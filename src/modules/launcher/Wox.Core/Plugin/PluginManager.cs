@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -22,15 +26,16 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Directories that will hold Wox plugin directory
         /// </summary>
-
         public static List<PluginPair> AllPlugins { get; private set; }
+
         public static readonly List<PluginPair> GlobalPlugins = new List<PluginPair>();
         public static readonly Dictionary<string, PluginPair> NonGlobalPlugins = new Dictionary<string, PluginPair>();
 
         public static IPublicAPI API { private set; get; }
 
-        // todo happlebao, this should not be public, the indicator function should be embedded 
-        public static PluginsSettings Settings;
+
+        // todo happlebao, this should not be public, the indicator function should be embedded
+        public static PluginSettings Settings;
         private static List<PluginMetadata> _metadatas;
         private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.PluginsDirectory };
 
@@ -70,7 +75,7 @@ namespace Wox.Core.Plugin
         /// todo happlebao The API should be removed
         /// </summary>
         /// <param name="settings"></param>
-        public static void LoadPlugins(PluginsSettings settings)
+        public static void LoadPlugins(PluginSettings settings)
         {
             _metadatas = PluginConfig.Parse(Directories);
             Settings = settings;
@@ -221,7 +226,6 @@ namespace Wox.Core.Plugin
             {
                 return new List<ContextMenuResult>();
             }
-
         }
 
         public static bool ActionKeywordRegistered(string actionKeyword)
@@ -252,6 +256,7 @@ namespace Wox.Core.Plugin
             {
                 NonGlobalPlugins[newActionKeyword] = plugin;
             }
+
             plugin.Metadata.ActionKeywords.Add(newActionKeyword);
         }
 
@@ -274,7 +279,6 @@ namespace Wox.Core.Plugin
 
             if (oldActionkeyword != Query.GlobalPluginWildcardSign)
                 NonGlobalPlugins.Remove(oldActionkeyword);
-
 
             plugin.Metadata.ActionKeywords.Remove(oldActionkeyword);
         }

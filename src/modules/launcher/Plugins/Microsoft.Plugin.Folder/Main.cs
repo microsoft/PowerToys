@@ -1,4 +1,7 @@
-using Microsoft.PowerToys.Settings.UI.Lib;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,6 +11,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -22,19 +26,16 @@ namespace Microsoft.Plugin.Folder
         public const string CopyImagePath = "Images\\copy.dark.png";
 
         private const string _fileExplorerProgramName = "explorer";
+
+        private static readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
+        private static readonly FolderSettings _settings = _storage.Load();
+
         private static List<string> _driverNames;
         private PluginInitContext _context;
 
-        private readonly FolderSettings _settings;
-        private readonly PluginJsonStorage<FolderSettings> _storage;
         private IContextMenu _contextMenuLoader;
-        private static string WarningIconPath { get; set; }
 
-        public Main()
-        {
-            _storage = new PluginJsonStorage<FolderSettings>();
-            _settings = _storage.Load();
-        }
+        private static string WarningIconPath { get; set; }
 
         public void Save()
         {
@@ -76,18 +77,12 @@ namespace Microsoft.Plugin.Folder
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
         public List<Result> Query(Query query)
         {
-            if(query == null)
+            if (query == null)
             {
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            var results = GetUserFolderResults(query);
-
-            string search = query.Search.ToLower(CultureInfo.InvariantCulture);
-            if (!IsDriveOrSharedFolder(search))
-                return results;
-
-            results.AddRange(QueryInternal_Directory_Exists(query));
+            var results = GetFolderPluginResults(query);
 
             // todo why was this hack here?
             foreach (var result in results)
@@ -98,8 +93,28 @@ namespace Microsoft.Plugin.Folder
             return results;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
+        public static List<Result> GetFolderPluginResults(Query query)
+        {
+            var results = GetUserFolderResults(query);
+            string search = query.Search.ToLower(CultureInfo.InvariantCulture);
+
+            if (!IsDriveOrSharedFolder(search))
+            {
+                return results;
+            }
+
+            results.AddRange(QueryInternalDirectoryExists(query));
+            return results;
+        }
+
         private static bool IsDriveOrSharedFolder(string search)
         {
+            if (search == null)
+            {
+                throw new ArgumentNullException(nameof(search));
+            }
+
             if (search.StartsWith(@"\\", StringComparison.InvariantCulture))
             { // share folder
                 return true;
@@ -132,14 +147,14 @@ namespace Microsoft.Plugin.Folder
                 {
                     Process.Start(_fileExplorerProgramName, path);
                     return true;
-                }
+                },
             };
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private List<Result> GetUserFolderResults(Query query)
+        private static List<Result> GetUserFolderResults(Query query)
         {
-            if(query == null)
+            if (query == null)
             {
                 throw new ArgumentNullException(paramName: nameof(query));
             }
@@ -168,19 +183,19 @@ namespace Microsoft.Plugin.Folder
 
         private static readonly char[] _specialSearchChars = new char[]
         {
-            '?', '*', '>'
+            '?', '*', '>',
         };
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private List<Result> QueryInternal_Directory_Exists(Query query)
+        private static List<Result> QueryInternalDirectoryExists(Query query)
         {
             var search = query.Search;
             var results = new List<Result>();
             var hasSpecial = search.IndexOfAny(_specialSearchChars) >= 0;
-            string incompleteName = "";
+            string incompleteName = string.Empty;
             if (hasSpecial || !Directory.Exists(search + "\\"))
             {
-                // if folder doesn't exist, we want to take the last part and use it afterwards to help the user 
+                // if folder doesn't exist, we want to take the last part and use it afterwards to help the user
                 // find the right folder.
                 int index = search.LastIndexOf('\\');
                 if (index > 0 && index < (search.Length - 1))
@@ -206,7 +221,7 @@ namespace Microsoft.Plugin.Folder
                 }
             }
 
-            results.Add(CreateOpenCurrentFolderResult( search));
+            results.Add(CreateOpenCurrentFolderResult(search));
 
             var searchOption = SearchOption.TopDirectoryOnly;
             incompleteName += "*";
@@ -231,7 +246,10 @@ namespace Microsoft.Plugin.Folder
 
                 foreach (var fileSystemInfo in fileSystemInfos)
                 {
-                    if ((fileSystemInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
+                    if ((fileSystemInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    {
+                        continue;
+                    }
 
                     if (fileSystemInfo is DirectoryInfo)
                     {
@@ -257,6 +275,7 @@ namespace Microsoft.Plugin.Folder
                 throw;
             }
 
+            // Initial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
             if(folderList.Count > _settings.MaxFolderResults || fileList.Count > _settings.MaxFileResults)
             {
                 var preTruncationCount = folderList.Count + fileList.Count;
@@ -269,6 +288,18 @@ namespace Microsoft.Plugin.Folder
             // Initial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
             results = results.Concat(folderList.OrderBy(x => x.Title).Take(_settings.MaxFolderResults)).Concat(fileList.OrderBy(x => x.Title).Take(_settings.MaxFileResults)).ToList();
             return results.ToList();
+        }
+
+        private Result CreateTruncatedItemsResult(string search, int preTruncationCount, int postTruncationCount)
+        {
+            return new Result
+            {
+                Title = _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_title"),
+                QueryTextDisplay = search,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_subtitle"), postTruncationCount, preTruncationCount),
+                IcoPath = WarningIconPath,
+                Score = 1,
+                };
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alve and instead inform the user of the error")]
@@ -293,7 +324,7 @@ namespace Microsoft.Plugin.Folder
 
                     return true;
                 },
-                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath }
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath },
             };
             return result;
         }
@@ -304,6 +335,7 @@ namespace Microsoft.Plugin.Folder
 
             var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
             var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
+
             // A network path must start with \\
             if (sanitizedPath.StartsWith("\\", StringComparison.InvariantCulture))
             {
@@ -321,19 +353,7 @@ namespace Microsoft.Plugin.Folder
                 {
                     Process.Start(_fileExplorerProgramName, sanitizedPath);
                     return true;
-                }
-            };
-        }
-
-        private Result CreateTruncatedItemsResult(string search, int preTruncationCount, int postTruncationCount)
-        {
-            return new Result
-            {
-                Title = _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_title"),
-                QueryTextDisplay = search,
-                SubTitle = string.Format(CultureInfo.InvariantCulture, _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_subtitle"), postTruncationCount, preTruncationCount),
-                IcoPath = WarningIconPath,
-                Score = 1,
+                },
             };
         }
 
@@ -354,7 +374,6 @@ namespace Microsoft.Plugin.Folder
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-
         }
     }
 }

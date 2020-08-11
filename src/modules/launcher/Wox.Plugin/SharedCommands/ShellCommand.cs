@@ -1,19 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Wox.Plugin.SharedCommands
 {
     public static class ShellCommand
     {
         public delegate bool EnumThreadDelegate(IntPtr hwnd, IntPtr lParam);
+
         [DllImport("user32.dll")] static extern bool EnumThreadWindows(uint threadId, EnumThreadDelegate lpfn, IntPtr lParam);
+
         [DllImport("user32.dll")] static extern int GetWindowText(IntPtr hwnd, StringBuilder lpString, int nMaxCount);
+
         [DllImport("user32.dll")] static extern int GetWindowTextLength(IntPtr hwnd);
 
         private static bool containsSecurityWindow;
@@ -29,6 +33,7 @@ namespace Wox.Plugin.SharedCommands
                 CheckSecurityWindow();
                 Thread.Sleep(25);
             }
+
             while (containsSecurityWindow) // while this process contains a "Windows Security" dialog, stay open
             {
                 containsSecurityWindow = false;

@@ -1,14 +1,14 @@
-﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Wox.Plugin;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using NUnit.Framework;
 using PowerLauncher.ViewModel;
 
 namespace Wox.Test
 {
     [TestFixture]
-    class MainViewModelTest
+    internal class MainViewModelTest
     {
         [Test]
         public void MainViewModel_GetAutoCompleteTextReturnsEmptyString_WhenInputIsNull()
@@ -16,7 +16,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = null;
-            String query = "M";
+            string query = "M";
 
             // Act
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
@@ -31,7 +31,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = string.Empty;
-            String query = "M";
+            string query = "M";
 
             // Act
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
@@ -46,7 +46,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = "M";
-            String query = null;
+            string query = null;
 
             // Act
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
@@ -61,7 +61,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = "M";
-            String query = string.Empty;
+            string query = string.Empty;
 
             // Act
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
@@ -76,7 +76,7 @@ namespace Wox.Test
             // Arrange
             int index = 2;
             string input = "Visual";
-            String query = "Vis";
+            string query = "Vis";
 
             // Act
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
@@ -91,14 +91,14 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = "VISUAL";
-            String query = "VIs";
-            string ExpectedAutoCompleteText = "VIsUAL";
+            string query = "VIs";
+            string expectedAutoCompleteText = "VIsUAL";
 
             // Act
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, ExpectedAutoCompleteText);
+            Assert.AreEqual(autoCompleteText, expectedAutoCompleteText);
         }
 
         [Test]
@@ -107,14 +107,14 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = "VISUAL";
-            String query = "Vim";
-            string ExpectedAutoCompleteText = string.Empty;
+            string query = "Vim";
+            string expectedAutoCompleteText = string.Empty;
 
             // Act
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, ExpectedAutoCompleteText);
+            Assert.AreEqual(autoCompleteText, expectedAutoCompleteText);
         }
 
         [Test]
@@ -123,7 +123,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = null;
-            String query = "M";
+            string query = "M";
 
             // Act
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
@@ -138,7 +138,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = string.Empty;
-            String query = "M";
+            string query = "M";
 
             // Act
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
@@ -153,7 +153,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = "Visual";
-            String query = null;
+            string query = null;
 
             // Act
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
@@ -168,7 +168,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = "Visual";
-            String query = string.Empty;
+            string query = string.Empty;
 
             // Act
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
@@ -183,14 +183,14 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = "VISUAL";
-            String query = "VIs";
-            string ExpectedAutoCompleteText = "VIsUAL";
+            string query = "VIs";
+            string expectedAutoCompleteText = "VIsUAL";
 
             // Act
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, ExpectedAutoCompleteText);
+            Assert.AreEqual(autoCompleteText, expectedAutoCompleteText);
         }
 
         [Test]
@@ -199,7 +199,7 @@ namespace Wox.Test
             // Arrange
             int index = 0;
             string input = "VISUAL";
-            String query = "Vim";
+            string query = "Vim";
 
             // Act
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);

@@ -275,6 +275,11 @@
                   <Directory Id="IndexerLanguagesFolder" Name="Languages" />
                   <Directory Id="IndexerpinyindbFolder" Name="pinyindb" />
                 </Directory>
+                <Directory Id="UriPluginFolder" Name="Microsoft.Plugin.Uri">
+                  <Directory Id="UriImagesFolder" Name="Images" />
+                  <Directory Id="UriLanguagesFolder" Name="Languages" />
+                  <Directory Id="UripinyindbFolder" Name="pinyindb" />
+                </Directory>
                 <Directory Id="WindowWalkerPluginFolder" Name="Microsoft.Plugin.WindowWalker">
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
@@ -1010,6 +1015,36 @@
       <Component Id="IndexerpinyindbComponent" Directory="IndexerpinyindbFolder" Guid="48DE333A-80F8-400A-87F4-244DF0A2DB05">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
           <File Id="IndexerPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\pinyindb\$(var.File)" />
+        <?endforeach?>
+      </Component>
+
+      <!-- Uri Plugin -->
+      <Component Id="UriComponent" Directory="UriPluginFolder" Guid="C7DC8F88-554C-4375-9510-9435399B5D3D">
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Microsoft.Plugin.Uri.deps.json;Microsoft.Plugin.Uri.dll;Telemetry.dll?>
+          <File Id="Uri_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="UriImagesComponent" Directory="UriImagesFolder" Guid="8C9C1634-28C8-45C4-A8EA-8D4C9B4810D0">
+        <File Id="UriDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.dark.png" />
+        <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.light.png" />
+      </Component>
+      <Component Id="UriLanguagesComponent" Directory="UriLanguagesFolder" Guid="4CA9CECE-BB93-4686-A58F-35835F5C3F7D">
+        <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
+          <!--NB: Ids can't contain hyphens-->
+          <?if $(var.LanguageFile) = zh-cn.xaml?>
+            <?define IdSafeLanguage = zh_cn.xaml?>
+          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
+            <?define IdSafeLanguage = zh_tw.xaml?>
+          <?else?>
+            <?define IdSafeLanguage = $(var.LanguageFile)?>
+          <?endif?>
+            <File Id="File_Uri_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Languages\$(var.LanguageFile)" />
+          <?undef IdSafeLanguage?>
+        <?endforeach?>
+      </Component>
+      <Component Id="UripinyindbComponent" Directory="UripinyindbFolder" Guid="A52A7281-CD7C-4E7D-A5A6-EA8CFCF462A2">
+        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
+          <File Id="UriPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
 

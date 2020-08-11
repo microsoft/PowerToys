@@ -6,5 +6,5 @@ cd ..
 set SolutionDir=%cd%
 popd
 SET IsPipeline=1
-call msbuild ../src/bootstrapper/bootstrapper.vcxproj /p:Configuration=Release /p:Platform=x64 /p:CIBuild=true /p:BuildProjectReferences=false /p:SolutionDir=%SolutionDir%\ || exit /b 1
+call msbuild ../installer/PowerToysBootstrapper/PowerToysBootstrapper.sln /p:Configuration=Release /p:Platform=x64 /p:CIBuild=true || exit /b 1
 

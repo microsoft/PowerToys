@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -8,6 +12,7 @@ namespace Wox.Core.Resource
     public static class FontHelper
     {
         static FontWeightConverter fontWeightConverter = new FontWeightConverter();
+
         public static FontWeight GetFontWeightFromInvariantStringOrNormal(string value)
         {
             if (value == null) return FontWeights.Normal;
@@ -23,6 +28,7 @@ namespace Wox.Core.Resource
         }
 
         static FontStyleConverter fontStyleConverter = new FontStyleConverter();
+
         public static FontStyle GetFontStyleFromInvariantStringOrNormal(string value)
         {
             if (value == null) return FontStyles.Normal;
@@ -38,6 +44,7 @@ namespace Wox.Core.Resource
         }
 
         static FontStretchConverter fontStretchConverter = new FontStretchConverter();
+
         public static FontStretch GetFontStretchFromInvariantStringOrNormal(string value)
         {
             if (value == null) return FontStretches.Normal;
@@ -69,6 +76,5 @@ namespace Wox.Core.Resource
             return family.FamilyTypefaces.FirstOrDefault(o => o.Style == styleObj && o.Weight == weightObj && o.Stretch == stretchObj)
                 ?? family.ChooseRegularFamilyTypeface();
         }
-
     }
 }

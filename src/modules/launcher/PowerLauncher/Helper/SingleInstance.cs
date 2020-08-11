@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.IO.Pipes;
-using System.Runtime.Serialization.Formatters;
 using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using static PowerLauncher.Helper.WindowsInteropHelper;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
@@ -99,7 +100,6 @@ namespace PowerLauncher.Helper
         XBUTTONDBLCLK = 0x020D,
         MOUSEHWHEEL = 0x020E,
 
-
         CAPTURECHANGED = 0x0215,
 
         ENTERSIZEMOVE = 0x0231,
@@ -131,7 +131,7 @@ namespace PowerLauncher.Helper
 
         // This is the hard-coded message value used by WinForms for Shell_NotifyIcon.
         // It's relatively safe to reuse.
-        TRAYMOUSEMESSAGE = 0x800, //WM_USER + 1024
+        TRAYMOUSEMESSAGE = 0x800, // WM_USER + 1024
         APP = 0x8000
     }
 
@@ -145,7 +145,6 @@ namespace PowerLauncher.Helper
 
         [DllImport("shell32.dll", EntryPoint = "CommandLineToArgvW", CharSet = CharSet.Unicode)]
         private static extern IntPtr _CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string cmdLine, out int numArgs);
-
 
         [DllImport("kernel32.dll", EntryPoint = "LocalFree", SetLastError = true)]
         internal static extern IntPtr _LocalFree(IntPtr hMem);
@@ -189,6 +188,7 @@ namespace PowerLauncher.Helper
                 {
                     throw new Win32Exception();
                 }
+
                 var result = new string[numArgs];
 
                 for (int i = 0; i < numArgs; i++)
@@ -201,13 +201,12 @@ namespace PowerLauncher.Helper
             }
             finally
             {
-
                 IntPtr p = _LocalFree(argv);
+
                 // Otherwise LocalFree failed.
                 // Assert.AreEqual(IntPtr.Zero, p);
             }
         }
-
     }
 
     public interface ISingleInstanceApp
@@ -216,7 +215,7 @@ namespace PowerLauncher.Helper
     }
 
     /// <summary>
-    /// This class checks to make sure that only one instance of 
+    /// This class checks to make sure that only one instance of
     /// this application is running at a time.
     /// </summary>
     /// <remarks>
@@ -256,7 +255,7 @@ namespace PowerLauncher.Helper
         #region Public Methods
 
         /// <summary>
-        /// Checks if the instance of the application attempting to start is the first instance. 
+        /// Checks if the instance of the application attempting to start is the first instance.
         /// If not, activates the first instance.
         /// </summary>
         /// <returns>True if this is the first instance of the application.</returns>
@@ -267,7 +266,7 @@ namespace PowerLauncher.Helper
 
             string channelName = String.Concat(applicationIdentifier, Delimiter, ChannelNameSuffix);
 
-            // Create mutex based on unique application Id to check if this is the first instance of the application. 
+            // Create mutex based on unique application Id to check if this is the first instance of the application.
             bool firstInstance;
             singleInstanceMutex = new Mutex(true, applicationIdentifier, out firstInstance);
             if (firstInstance)
@@ -309,12 +308,11 @@ namespace PowerLauncher.Helper
             }
             catch (NotSupportedException)
             {
-
                 // The application was clickonce deployed
                 // Clickonce deployed apps cannot receive traditional commandline arguments
-                // As a workaround commandline arguments can be written to a shared location before 
-                // the app is launched and the app can obtain its commandline arguments from the 
-                // shared location               
+                // As a workaround commandline arguments can be written to a shared location before
+                // the app is launched and the app can obtain its commandline arguments from the
+                // shared location
                 string appFolderPath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), uniqueApplicationName);
 
@@ -345,7 +343,7 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// Creates a remote server pipe for communication. 
+        /// Creates a remote server pipe for communication.
         /// Once receives signal from client, will activate first instance.
         /// </summary>
         /// <param name="channelName">Application's IPC channel name.</param>
@@ -362,6 +360,7 @@ namespace PowerLauncher.Helper
                         // Do an asynchronous call to ActivateFirstInstance function
                         Application.Current.Dispatcher.Invoke(ActivateFirstInstance);
                     }
+
                     // Disconnect client
                     pipeServer.Disconnect();
                 }

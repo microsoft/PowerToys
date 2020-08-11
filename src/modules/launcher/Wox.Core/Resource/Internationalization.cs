@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,6 +19,7 @@ namespace Wox.Core.Resource
     public class Internationalization
     {
         public Settings Settings { get; set; }
+
         private const string Folder = "Languages";
         private const string DefaultFile = "en.xaml";
         private const string Extension = ".xaml";
@@ -25,18 +30,17 @@ namespace Wox.Core.Resource
         {
             AddPluginLanguageDirectories();
             LoadDefaultLanguage();
+
             // we don't want to load /Languages/en.xaml twice
             // so add wox language directory after load plugin language files
             AddWoxLanguageDirectory();
         }
-
 
         private void AddWoxLanguageDirectory()
         {
             var directory = Path.Combine(Constant.ProgramDirectory, Folder);
             _languageDirectories.Add(directory);
         }
-
 
         private void AddPluginLanguageDirectories()
         {
@@ -95,8 +99,8 @@ namespace Wox.Core.Resource
             {
                 LoadLanguage(language);
             }
-            UpdatePluginMetadataTranslations();
 
+            UpdatePluginMetadataTranslations();
         }
 
         public bool PromptShouldUsePinyin(string languageCodeToSet)

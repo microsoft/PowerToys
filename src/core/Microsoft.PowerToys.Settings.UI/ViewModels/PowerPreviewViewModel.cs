@@ -27,9 +27,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
-            this._svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
-            this._svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
-            this._mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
+            _svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
+            _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
+            _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
         }
 
         private bool _svgRenderIsEnabled = false;

@@ -67,7 +67,7 @@ bool is_process_elevated(const bool use_cached_value = true);
 bool drop_elevated_privileges();
 
 // Run command as elevated user, returns true if succeeded
-bool run_elevated(const std::wstring& file, const std::wstring& params);
+HANDLE run_elevated(const std::wstring& file, const std::wstring& params);
 
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
 bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid);
@@ -113,19 +113,6 @@ struct typed_storage
     inline operator T*()
     {
         return reinterpret_cast<T*>(_buffer.get());
-    }
-};
-
-template<typename Callable>
-struct on_scope_exit
-{
-    Callable _f;
-    on_scope_exit(Callable f) :
-        _f{ std::move(f) } {}
-
-    ~on_scope_exit()
-    {
-        _f();
     }
 };
 

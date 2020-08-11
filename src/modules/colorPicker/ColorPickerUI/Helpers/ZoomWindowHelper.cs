@@ -18,6 +18,7 @@ namespace ColorPicker.Helpers
     [Export(typeof(ZoomWindowHelper))]
     public class ZoomWindowHelper
     {
+        private const int ZoomWindowChangeDelayInMS = 50;
         private const int ZoomFactor = 2;
         private const int BaseZoomImageSize = 50;
         private const int MaxZoomLevel = 3;
@@ -25,6 +26,7 @@ namespace ColorPicker.Helpers
 
         private readonly IZoomViewModel _zoomViewModel;
         private readonly AppStateHandler _appStateHandler;
+        private readonly IThrottledActionInvoker _throttledActionInvoker;
 
         private int _currentZoomLevel = 0;
         private int _previousZoomLevel = 0;
@@ -38,10 +40,11 @@ namespace ColorPicker.Helpers
         private double _previousScaledY;
 
         [ImportingConstructor]
-        public ZoomWindowHelper(IZoomViewModel zoomViewModel, AppStateHandler appStateHandler)
+        public ZoomWindowHelper(IZoomViewModel zoomViewModel, AppStateHandler appStateHandler, IThrottledActionInvoker throttledActionInvoker)
         {
             _zoomViewModel = zoomViewModel;
             _appStateHandler = appStateHandler;
+            _throttledActionInvoker = throttledActionInvoker;
             _appStateHandler.AppClosed += AppStateHandler_AppClosed;
             _appStateHandler.AppHidden += AppStateHandler_AppClosed;
         }
@@ -174,10 +177,15 @@ namespace ColorPicker.Helpers
                 PowerToysTelemetry.Log.WriteEvent(new ColorPickerZoomOpenedEvent());
             }
 
-            _zoomWindow.DesiredLeft = _lastLeft;
-            _zoomWindow.DesiredTop = _lastTop;
-            _zoomViewModel.DesiredHeight = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
-            _zoomViewModel.DesiredWidth = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
+            _throttledActionInvoker.ScheduleAction(
+            () =>
+            {
+                _zoomWindow.DesiredLeft = _lastLeft;
+                _zoomWindow.DesiredTop = _lastTop;
+                _zoomViewModel.DesiredHeight = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
+                _zoomViewModel.DesiredWidth = BaseZoomImageSize * _zoomViewModel.ZoomFactor;
+            },
+            ZoomWindowChangeDelayInMS);
         }
 
         private void ZoomWindow_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)

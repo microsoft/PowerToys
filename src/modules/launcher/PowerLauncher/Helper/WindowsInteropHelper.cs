@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -12,13 +16,13 @@ namespace PowerLauncher.Helper
 {
     public static class WindowsInteropHelper
     {
-        private const int GWL_STYLE = -16; //WPF's Message code for Title Bar's Style 
-        private const int WS_SYSMENU = 0x80000; //WPF's Message code for System Menu
+        private const int GWL_STYLE = -16; // WPF's Message code for Title Bar's Style
+        private const int WS_SYSMENU = 0x80000; // WPF's Message code for System Menu
         private static IntPtr _hwnd_shell;
         private static IntPtr _hwnd_desktop;
 
-        //Accessors for shell and desktop handlers
-        //Will set the variables once and then will return them
+        // Accessors for shell and desktop handlers
+        // Will set the variables once and then will return them
         private static IntPtr HWND_SHELL
         {
             get
@@ -101,19 +105,19 @@ namespace PowerLauncher.Helper
 
         public static bool IsWindowFullscreen()
         {
-            //get current active window
+            // get current active window
             IntPtr hWnd = NativeMethods.GetForegroundWindow();
 
             if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
             {
-                //if current active window is NOT desktop or shell
+                // if current active window is NOT desktop or shell
                 if (!(hWnd.Equals(HWND_DESKTOP) || hWnd.Equals(HWND_SHELL)))
                 {
                     StringBuilder sb = new StringBuilder(256);
                     _ = NativeMethods.GetClassName(hWnd, sb, sb.Capacity);
                     string windowClass = sb.ToString();
 
-                    //for Win+Tab (Flip3D)
+                    // for Win+Tab (Flip3D)
                     if (windowClass == WINDOW_CLASS_WINTAB)
                     {
                         return false;
@@ -122,13 +126,13 @@ namespace PowerLauncher.Helper
                     RECT appBounds;
                     _ = NativeMethods.GetWindowRect(hWnd, out appBounds);
 
-                    //for console (ConsoleWindowClass), we have to check for negative dimensions
+                    // for console (ConsoleWindowClass), we have to check for negative dimensions
                     if (windowClass == WINDOW_CLASS_CONSOLE)
                     {
                         return appBounds.Top < 0 && appBounds.Bottom < 0;
                     }
 
-                    //for desktop (Progman or WorkerW, depends on the system), we have to check 
+                    // for desktop (Progman or WorkerW, depends on the system), we have to check
                     if (windowClass == WINDOW_CLASS_PROGMAN || windowClass == WINDOW_CLASS_WORKERW)
                     {
                         IntPtr hWndDesktop = NativeMethods.FindWindowEx(hWnd, IntPtr.Zero, "SHELLDLL_DefView", null);
@@ -182,9 +186,9 @@ namespace PowerLauncher.Helper
                     matrix = src.CompositionTarget.TransformFromDevice;
                 }
             }
+
             return new Point((int)(matrix.M11 * unitX), (int)(matrix.M22 * unitY));
         }
-
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct RECT

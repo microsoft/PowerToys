@@ -1,8 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Media;
 
 namespace Wox.Infrastructure.Image
@@ -23,6 +26,7 @@ namespace Wox.Infrastructure.Image
                 var i = _data[path];
                 return i;
             }
+
             set
             {
                 _data[path] = value;
@@ -86,5 +90,4 @@ namespace Wox.Infrastructure.Image
             Usage = new ConcurrentDictionary<string, int>(usage);
         }
     }
-
 }

@@ -1,11 +1,16 @@
-﻿using PowerLauncher.Helper;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using PowerLauncher.Helper;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
@@ -15,17 +20,18 @@ namespace PowerLauncher.ViewModel
     {
         #region Private Fields
 
-        public ResultCollection Results { get; }
-
         private readonly object _collectionLock = new object();
+
         private readonly Settings _settings;
-        // private int MaxResults => _settings?.MaxResultsToShow ?? 6;
+
+        #endregion
 
         public ResultsViewModel()
         {
             Results = new ResultCollection();
             BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
         }
+
         public ResultsViewModel(Settings settings) : this()
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -41,8 +47,6 @@ namespace PowerLauncher.ViewModel
             };
         }
 
-        #endregion
-
         #region Properties
 
         public int MaxHeight
@@ -52,15 +56,18 @@ namespace PowerLauncher.ViewModel
                 return _settings.MaxResultsToShow * 75;
             }
         }
+
         public int SelectedIndex { get; set; }
 
         private ResultViewModel _selectedItem;
+
         public ResultViewModel SelectedItem
         {
             get { return _selectedItem; }
+
             set
             {
-                //value can be null when selecting an item in a virtualized list
+                // value can be null when selecting an item in a virtualized list
                 if (value != null)
                 {
                     if (_selectedItem != null)
@@ -78,10 +85,11 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-
-
         public Thickness Margin { get; set; }
+
         public Visibility Visibility { get; set; } = Visibility.Hidden;
+
+        public ResultCollection Results { get; }
 
         #endregion
 
@@ -98,6 +106,7 @@ namespace PowerLauncher.ViewModel
                     break;
                 }
             }
+
             return index;
         }
 
@@ -115,7 +124,6 @@ namespace PowerLauncher.ViewModel
                 return -1;
             }
         }
-
 
         #endregion
 
@@ -163,7 +171,7 @@ namespace PowerLauncher.ViewModel
 
         public void SelectNextTabItem()
         {
-            //Do nothing if there is no selected item or we've selected the next context button
+            // Do nothing if there is no selected item or we've selected the next context button
             if (!SelectedItem?.SelectNextContextButton() ?? true)
             {
                 SelectNextResult();
@@ -172,10 +180,10 @@ namespace PowerLauncher.ViewModel
 
         public void SelectPrevTabItem()
         {
-            //Do nothing if there is no selected item or we've selected the previous context button
+            // Do nothing if there is no selected item or we've selected the previous context button
             if (!SelectedItem?.SelectPrevContextButton() ?? true)
             {
-                //Tabbing backwards should highlight the last item of the previous row
+                // Tabbing backwards should highlight the last item of the previous row
                 SelectPrevResult();
                 SelectedItem.SelectLastContextButton();
             }
@@ -183,9 +191,9 @@ namespace PowerLauncher.ViewModel
 
         public void SelectNextContextMenuItem()
         {
-            if(SelectedItem != null)
+            if (SelectedItem != null)
             {
-                if(!SelectedItem.SelectNextContextButton())
+                if (!SelectedItem.SelectNextContextButton())
                 {
                     SelectedItem.SelectLastContextButton();
                 }
@@ -215,7 +223,7 @@ namespace PowerLauncher.ViewModel
         /// <summary>
         /// Add new results to ResultCollection
         /// </summary>
-        public void AddResults(List<Result> newRawResults, string resultId, CancellationToken ct)
+        public void AddResults(List<Result> newRawResults, CancellationToken ct)
         {
             if (newRawResults == null)
             {
@@ -223,15 +231,22 @@ namespace PowerLauncher.ViewModel
             }
 
             List<ResultViewModel> newResults = new List<ResultViewModel>(newRawResults.Count);
-            foreach(Result r in newRawResults)
+            foreach (Result r in newRawResults)
             {
                 newResults.Add(new ResultViewModel(r));
                 ct.ThrowIfCancellationRequested();
             }
 
-            Results.RemoveAll(r => r.Result.PluginID == resultId);
             Results.AddRange(newResults);
         }
+
+        public void Sort()
+        {
+            var sorted = Results.OrderByDescending(x => x.Result.Score).ToList();
+            Clear();
+            Results.AddRange(sorted);
+        }
+
         #endregion
 
         #region FormattedText Dependency Property
@@ -267,7 +282,6 @@ namespace PowerLauncher.ViewModel
             textBlock.Inlines.Add(inline);
         }
         #endregion
-
 
     }
 }

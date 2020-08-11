@@ -1,27 +1,33 @@
-using Microsoft.PowerToys.Settings.UI.Lib;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Windows.Input;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
-using Wox.Plugin.SharedCommands;
 using Wox.Plugin;
+using Wox.Plugin.SharedCommands;
 using Control = System.Windows.Controls.Control;
-using System.Windows.Input;
-using System.Reflection;
 
 namespace Microsoft.Plugin.Shell
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
-        private string IconPath { get; set; }
-        private PluginInitContext _context;
-
         private readonly Settings _settings;
         private readonly PluginJsonStorage<Settings> _storage;
+
+        private string IconPath { get; set; }
+
+        private PluginInitContext _context;
 
         public Main()
         {
@@ -33,7 +39,6 @@ namespace Microsoft.Plugin.Shell
         {
             _storage.Save();
         }
-
 
         public List<Result> Query(Query query)
         {
@@ -52,45 +57,14 @@ namespace Microsoft.Plugin.Shell
 
                 try
                 {
-                    string basedir = null;
-                    string dir = null;
-                    string excmd = Environment.ExpandEnvironmentVariables(cmd);
-                    if (Directory.Exists(excmd) && (cmd.EndsWith("/") || cmd.EndsWith(@"\")))
-                    {
-                        basedir = excmd;
-                        dir = cmd;
-                    }
-                    else if (Directory.Exists(Path.GetDirectoryName(excmd) ?? string.Empty))
-                    {
-                        basedir = Path.GetDirectoryName(excmd);
-                        var dirn = Path.GetDirectoryName(cmd);
-                        dir = (dirn.EndsWith("/") || dirn.EndsWith(@"\")) ? dirn : cmd.Substring(0, dirn.Length + 1);
-                    }
-
-                    if (basedir != null)
-                    {
-                        var autocomplete = Directory.GetFileSystemEntries(basedir).
-                            Select(o => dir + Path.GetFileName(o)).
-                            Where(o => o.StartsWith(cmd, StringComparison.OrdinalIgnoreCase) &&
-                                       !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase)) &&
-                                       !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
-                        autocomplete.Sort();
-                        results.AddRange(autocomplete.ConvertAll(m => new Result
-                        {
-                            Title = m,
-                            IcoPath = IconPath,
-                            Action = c =>
-                            {
-                                Execute(Process.Start, PrepareProcessStartInfo(m));
-                                return true;
-                            }
-                        }));
-                    }
+                    List<Result> folderPluginResults = Folder.Main.GetFolderPluginResults(query);
+                    results.AddRange(folderPluginResults);
                 }
                 catch (Exception e)
                 {
                     Log.Exception($"|Microsoft.Plugin.Shell.Main.Query|Exception when query for <{query}>", e);
                 }
+
                 return results;
             }
         }
@@ -116,7 +90,7 @@ namespace Microsoft.Plugin.Shell
                         {
                             Execute(Process.Start, PrepareProcessStartInfo(m.Key));
                             return true;
-                        }
+                        },
                     };
                     return ret;
                 }).Where(o => o != null).Take(4);
@@ -135,7 +109,7 @@ namespace Microsoft.Plugin.Shell
                 {
                     Execute(Process.Start, PrepareProcessStartInfo(cmd));
                     return true;
-                }
+                },
             };
 
             return result;
@@ -153,7 +127,7 @@ namespace Microsoft.Plugin.Shell
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(m.Key));
                         return true;
-                    }
+                    },
                 }).Take(5);
             return history.ToList();
         }
@@ -163,7 +137,7 @@ namespace Microsoft.Plugin.Shell
             command = command.Trim();
             command = Environment.ExpandEnvironmentVariables(command);
             var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? "" : "runas";
+            var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? string.Empty : "runas";
 
             ProcessStartInfo info;
             if (_settings.Shell == Shell.Cmd)
@@ -188,7 +162,7 @@ namespace Microsoft.Plugin.Shell
             }
             else if (_settings.Shell == Shell.RunCommand)
             {
-                //Open explorer if the path is a file or directory
+                // Open explorer if the path is a file or directory
                 if (Directory.Exists(command) || File.Exists(command))
                 {
                     info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsAdministratorArg);
@@ -267,6 +241,7 @@ namespace Microsoft.Plugin.Shell
                             return true;
                         }
                     }
+
                     return false;
                 }
                 else
@@ -296,7 +271,7 @@ namespace Microsoft.Plugin.Shell
             }
         }
 
-        private void OnThemeChanged(Theme _, Theme newTheme)
+        private void OnThemeChanged(Theme currentTheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
         }
@@ -327,13 +302,13 @@ namespace Microsoft.Plugin.Shell
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = c =>
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, true));
                         return true;
-                    }
-                }
+                    },
+                },
             };
 
             return resultlist;

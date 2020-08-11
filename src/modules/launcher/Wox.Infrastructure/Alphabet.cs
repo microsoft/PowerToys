@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +16,6 @@ using Wox.Infrastructure.UserSettings;
 
 namespace Wox.Infrastructure
 {
-    public interface IAlphabet
-    {
-        string Translate(string stringToTranslate);
-    }
-
     public class Alphabet : IAlphabet
     {
         private readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();
@@ -79,6 +78,7 @@ namespace Wox.Infrastructure
             {
                 return;
             }
+
             _pinyinStorage.Save(GetPinyinCacheAsDictionary());
         }
 
@@ -162,7 +162,7 @@ namespace Wox.Infrastructure
 
             if (word.Length > 40)
             {
-                //Skip strings that are too long string for Pinyin conversion.
+                // Skip strings that are too long string for Pinyin conversion.
                 return false;
             }
 

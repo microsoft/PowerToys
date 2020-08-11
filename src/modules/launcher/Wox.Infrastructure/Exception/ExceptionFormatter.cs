@@ -1,9 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Xml;
 using Microsoft.Win32;
 
 namespace Wox.Infrastructure.Exception
@@ -15,7 +18,7 @@ namespace Wox.Infrastructure.Exception
             return CreateExceptionReport(exception);
         }
 
-        //todo log /display line by line 
+        // todo log /display line by line
         private static string CreateExceptionReport(System.Exception ex)
         {
             var sb = new StringBuilder();
@@ -37,6 +40,7 @@ namespace Wox.Infrastructure.Exception
                     exsb.Append("   Source: ");
                     exsb.AppendLine(ex.Source);
                 }
+
                 if (ex.TargetSite != null)
                 {
                     exsb.Append("   TargetAssembly: ");
@@ -46,6 +50,7 @@ namespace Wox.Infrastructure.Exception
                     exsb.Append("   TargetSite: ");
                     exsb.AppendLine(ex.TargetSite.ToString());
                 }
+
                 exsb.AppendLine(ex.StackTrace);
                 exlist.Add(exsb);
 
@@ -56,6 +61,7 @@ namespace Wox.Infrastructure.Exception
             {
                 sb.AppendLine(result);
             }
+
             sb.AppendLine("```");
             sb.AppendLine();
 
@@ -90,13 +96,12 @@ namespace Wox.Infrastructure.Exception
                 else if (string.IsNullOrEmpty(ass.Location))
                 {
                     sb.Append("location is null or empty");
-
                 }
                 else
                 {
                     sb.Append(ass.Location);
-
                 }
+
                 sb.AppendLine(")");
             }
 
@@ -129,6 +134,7 @@ namespace Wox.Infrastructure.Exception
                             {
                                 continue;
                             }
+
                             foreach (string subKeyName in versionKey.GetSubKeyNames())
                             {
                                 RegistryKey subKey = versionKey.OpenSubKey(subKeyName);
@@ -143,12 +149,11 @@ namespace Wox.Infrastructure.Exception
                                     else if (install == "1")
                                         result.Add(string.Format("{0} {1} {2}", versionKeyName, subKeyName, name));
                                 }
-
                             }
-
                         }
                     }
                 }
+
                 using (RegistryKey ndpKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\"))
                 {
                     int releaseKey = (int)ndpKey.GetValue("Release");
@@ -163,13 +168,13 @@ namespace Wox.Infrastructure.Exception
                             result.Add("4.5.1 installed on Windows 8, Windows 7 SP1, or Windows Vista SP2");
                     }
                 }
+
                 return result;
             }
             catch (System.Exception e)
             {
                 return new List<string>();
             }
-
         }
     }
 }

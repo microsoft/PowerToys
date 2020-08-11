@@ -1,19 +1,21 @@
-﻿using Moq;
-using NUnit.Framework;
-using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
-using System.Text;
-using Wox.Plugin;
 using Microsoft.Plugin.Folder;
+using Moq;
+using NUnit.Framework;
+using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
-    class FolderPluginTest
+    internal class FolderPluginTest
     {
         [Test]
         public void ContextMenuLoader_ReturnContextMenuForFolderWithOpenInConsole_WhenLoadContextMenusIsCalled()
         {
-            // Arrange 
+            // Arrange
             var mock = new Mock<IPublicAPI>();
             mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
             var pluginInitContext = new PluginInitContext() { API = mock.Object };
@@ -33,7 +35,7 @@ namespace Wox.Test.Plugins
         [Test]
         public void ContextMenuLoader_ReturnContextMenuForFileWithOpenInConsole_WhenLoadContextMenusIsCalled()
         {
-            // Arrange 
+            // Arrange
             var mock = new Mock<IPublicAPI>();
             mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
             var pluginInitContext = new PluginInitContext() { API = mock.Object };

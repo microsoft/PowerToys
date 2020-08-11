@@ -1,13 +1,15 @@
-﻿using NUnit.Framework;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
+using NUnit.Framework;
 using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
     [TestFixture]
-    class ToolTipDataTest
+    internal class ToolTipDataTest
     {
         [Test]
         public void Constructor_ThrowsNullArgumentException_WhenToolTipTitleIsNull()

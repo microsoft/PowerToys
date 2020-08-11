@@ -15,28 +15,22 @@
         <viewModel:ImageResizerViewModel x:Key="ViewModel"/>
     </Page.Resources>
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
-                        <Setter Target="ImageResizerView.(Grid.Row)" Value="0" />
-                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
-                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="500"/>
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
                         <Setter Target="ImageResizerView.(Grid.Row)" Value="1" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
@@ -259,32 +253,38 @@
                         <TextBlock x:Uid="ImageResizer_FileFormatDescription"/>
                         <TextBlock Margin="{StaticResource SmallTopMargin}">
                             <Run Text="%1" FontWeight="Bold" />
-                            <Run Text=" - Original filename" />
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_Filename" />
                         </TextBlock>
 
                         <TextBlock>
                             <Run Text="%2" FontWeight="Bold" />
-                            <Run Text=" - Size name"/>
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_Sizename"/>
                         </TextBlock>
 
                         <TextBlock>
                             <Run Text="%3" FontWeight="Bold" />
-                            <Run Text=" - Selected width"/>
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_SelectedWidth"/>
                         </TextBlock>
 
                         <TextBlock>
                             <Run Text="%4" FontWeight="Bold" />
-                            <Run Text=" - Selected height"/>
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_SelectedHeight"/>
                         </TextBlock>
 
                         <TextBlock>
                             <Run Text="%5" FontWeight="Bold" />
-                            <Run Text=" - Actual height"/>
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_ActualWidth"/>
                         </TextBlock>
 
                         <TextBlock>
                             <Run Text="%6" FontWeight="Bold" />
-                            <Run Text=" - Actual width"/>
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
                         </TextBlock>
                     </StackPanel>
                 </ToolTipService.ToolTip>
@@ -320,12 +320,13 @@
             </Border>
             
             <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ImageResizer">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
 

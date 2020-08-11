@@ -25,7 +25,7 @@ namespace PowerLauncher.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://github.com/Wox-launcher/Wox")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://aka.ms/powerToys")]
         public string GithubRepo {
             get {
                 return ((string)(this["GithubRepo"]));

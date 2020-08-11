@@ -13,7 +13,7 @@ namespace Microsoft.Plugin.Program.Programs
     public class ShellLinkHelper : IShellLinkHelper
     {
         [Flags()]
-        public enum SLGP_FLAGS
+        private enum SLGP_FLAGS
         {
             SLGP_SHORTPATH = 0x1,
             SLGP_UNCPRIORITY = 0x2,
@@ -21,7 +21,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        public struct WIN32_FIND_DATAW
+        private struct WIN32_FIND_DATAW
         {
             public uint dwFileAttributes;
             public long ftCreationTime;
@@ -38,6 +38,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [Flags()]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Represents flags specified in IShellLink interface")]
         public enum SLR_FLAGS
         {
             SLR_NO_UI = 0x1,
@@ -96,7 +97,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [ComImport(), Guid("00021401-0000-0000-C000-000000000046")]
-        public class ShellLink
+        private class ShellLink
         {
         }
 
