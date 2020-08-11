@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using static Wox.Infrastructure.StringMatcher;
 
-[assembly: InternalsVisibleToAttribute("Microsoft.Plugin.Program.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
 
 namespace Wox.Infrastructure
 {

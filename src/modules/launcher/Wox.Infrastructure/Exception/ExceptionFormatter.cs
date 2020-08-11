@@ -190,7 +190,7 @@ namespace Wox.Infrastructure.Exception
 
                 return result;
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 return new List<string>();
             }

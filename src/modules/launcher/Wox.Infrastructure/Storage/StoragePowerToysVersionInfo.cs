@@ -10,9 +10,9 @@ namespace Wox.Infrastructure.Storage
     public class StoragePowerToysVersionInfo
     {
         // This detail is accessed by the storage items and is used to decide if the cache must be deleted or not
-        public bool clearCache = false;
+        public bool ClearCache { get; set; } = false;
 
-        private string currentPowerToysVersion = string.Empty;
+        private readonly string currentPowerToysVersion = string.Empty;
 
         private string FilePath { get; set; } = string.Empty;
 
@@ -81,7 +81,7 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private string GetFilePath(string AssociatedFilePath, int type)
+        private string GetFilePath(string associatedFilePath, int type)
         {
             string suffix = string.Empty;
             string cacheSuffix = ".cache";
@@ -96,13 +96,13 @@ namespace Wox.Infrastructure.Storage
                 suffix = jsonSuffix;
             }
 
-            string filePath = AssociatedFilePath.Substring(0, AssociatedFilePath.Length - suffix.Length) + "_version.txt";
+            string filePath = associatedFilePath.Substring(0, associatedFilePath.Length - suffix.Length) + "_version.txt";
             return filePath;
         }
 
-        public StoragePowerToysVersionInfo(string AssociatedFilePath, int type)
+        public StoragePowerToysVersionInfo(string associatedFilePath, int type)
         {
-            FilePath = GetFilePath(AssociatedFilePath, type);
+            FilePath = GetFilePath(associatedFilePath, type);
 
             // Get the previous version of PowerToys and cache Storage details from the CacheDetails.json storage file
             string previousVersion = GetPreviousVersion();
@@ -112,7 +112,7 @@ namespace Wox.Infrastructure.Storage
             // However, we do not want to delete the cache if the same version of powerToys is being launched
             if (Lessthan(previousVersion, currentPowerToysVersion))
             {
-                clearCache = true;
+                ClearCache = true;
             }
         }
 
