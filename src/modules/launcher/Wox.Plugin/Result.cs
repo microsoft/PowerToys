@@ -19,7 +19,10 @@ namespace Wox.Plugin
 
         public string Title
         {
-            get { return _title; }
+            get
+            {
+                return _title;
+            }
 
             set
             {
@@ -50,13 +53,16 @@ namespace Wox.Plugin
         }
 
         /// <summary>
-        /// The text that will get displayed in the Search text box, when this item is selected in the result list.
+        /// Gets or sets the text that will get displayed in the Search text box, when this item is selected in the result list.
         /// </summary>
         public string QueryTextDisplay { get; set; }
 
         public string IcoPath
         {
-            get { return _icoPath; }
+            get
+            {
+                return _icoPath;
+            }
 
             set
             {
@@ -73,37 +79,39 @@ namespace Wox.Plugin
 
         public delegate ImageSource IconDelegate();
 
-        public IconDelegate Icon;
-
+        public IconDelegate Icon { get; set; }
 
         /// <summary>
-        /// return true to hide wox after select result
+        /// Gets or sets return true to hide wox after select result
         /// </summary>
         public Func<ActionContext, bool> Action { get; set; }
 
         public int Score { get; set; }
 
         /// <summary>
-        /// A list of indexes for the characters to be highlighted in Title
+        /// Gets or sets a list of indexes for the characters to be highlighted in Title
         /// </summary>
         public IList<int> TitleHighlightData { get; set; }
 
         /// <summary>
-        /// A list of indexes for the characters to be highlighted in SubTitle
+        /// Gets or sets a list of indexes for the characters to be highlighted in SubTitle
         /// </summary>
         public IList<int> SubTitleHighlightData { get; set; }
 
         /// <summary>
-        /// Only results that originQuery match with current query will be displayed in the panel
+        /// Gets or sets only results that originQuery match with current query will be displayed in the panel
         /// </summary>
         internal Query OriginQuery { get; set; }
 
         /// <summary>
-        /// Plugin directory
+        /// Gets or sets plugin directory
         /// </summary>
         public string PluginDirectory
         {
-            get { return _pluginDirectory; }
+            get
+            {
+                return _pluginDirectory;
+            }
 
             set
             {
@@ -140,29 +148,17 @@ namespace Wox.Plugin
             return Title + SubTitle;
         }
 
-        [Obsolete("Use IContextMenu instead")]
-        /// <summary>
-        /// Context menus associate with this result
-        /// </summary>
-        public List<Result> ContextMenu { get; set; }
-
-        [Obsolete("Use Object initializers instead")]
-        public Result(string Title, string IcoPath, string SubTitle = null)
+        public Result()
         {
-            this.Title = Title;
-            this.IcoPath = IcoPath;
-            this.SubTitle = SubTitle;
         }
 
-        public Result() { }
-
         /// <summary>
-        /// Additional data associate with this result
+        /// Gets or sets additional data associate with this result
         /// </summary>
         public object ContextData { get; set; }
 
         /// <summary>
-        /// Plugin ID that generated this result
+        /// Gets plugin ID that generated this result
         /// </summary>
         public string PluginID { get; internal set; }
     }
