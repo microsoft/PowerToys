@@ -18,7 +18,7 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu
+    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu, IDisposable
     {
         public const string FolderImagePath = "Images\\folder.dark.png";
         public const string FileImagePath = "Images\\file.dark.png";
@@ -26,14 +26,13 @@ namespace Microsoft.Plugin.Folder
         public const string CopyImagePath = "Images\\copy.dark.png";
 
         private const string _fileExplorerProgramName = "explorer";
-
         private static readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
         private static readonly FolderSettings _settings = _storage.Load();
-
         private static List<string> _driverNames;
-        private PluginInitContext _context;
-
+        private static PluginInitContext _context;
         private IContextMenu _contextMenuLoader;
+        private static string warningIconPath;
+        private bool _disposed = false;
 
         public void Save()
         {
@@ -47,9 +46,30 @@ namespace Microsoft.Plugin.Folder
 
         public void Init(PluginInitContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _contextMenuLoader = new ContextMenuLoader(context);
             InitialDriverList();
+
+            _context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(_context.API.GetCurrentTheme());
+        }
+
+        private static void UpdateIconPath(Theme theme)
+        {
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
+                warningIconPath = "Images/Warning.light.png";
+            }
+            else
+            {
+                warningIconPath = "Images/Warning.dark.png";
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1313:Parameter names should begin with lower-case letter", Justification = "The parameter is unused")]
+        private void OnThemeChanged(Theme _, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
@@ -253,8 +273,28 @@ namespace Microsoft.Plugin.Folder
                 throw;
             }
 
-            // Initial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
-            return results.Concat(folderList.OrderBy(x => x.Title)).Concat(fileList.OrderBy(x => x.Title)).ToList();
+            results = results.Concat(folderList.OrderBy(x => x.Title).Take(_settings.MaxFolderResults)).Concat(fileList.OrderBy(x => x.Title).Take(_settings.MaxFileResults)).ToList();
+
+            // Show warning message if result has been truncated
+            if (folderList.Count > _settings.MaxFolderResults || fileList.Count > _settings.MaxFileResults)
+            {
+                var preTruncationCount = folderList.Count + fileList.Count;
+                var postTruncationCount = Math.Min(folderList.Count, _settings.MaxFolderResults) + Math.Min(fileList.Count, _settings.MaxFileResults);
+                results.Add(CreateTruncatedItemsResult(search, preTruncationCount, postTruncationCount));
+            }
+
+            return results.ToList();
+        }
+
+        private static Result CreateTruncatedItemsResult(string search, int preTruncationCount, int postTruncationCount)
+        {
+            return new Result
+            {
+                Title = _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_title"),
+                QueryTextDisplay = search,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_subtitle"), postTruncationCount, preTruncationCount),
+                IcoPath = warningIconPath,
+            };
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alve and instead inform the user of the error")]
@@ -329,6 +369,24 @@ namespace Microsoft.Plugin.Folder
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _context.API.ThemeChanged -= OnThemeChanged;
+                    _disposed = true;
+                }
+            }
         }
     }
 }
