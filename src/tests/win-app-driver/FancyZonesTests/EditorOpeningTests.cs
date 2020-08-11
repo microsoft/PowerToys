@@ -1,5 +1,6 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
@@ -11,6 +12,7 @@ namespace PowerToysTests
         void RemoveSettingsFile()
         {
             File.Delete(_zoneSettingsPath);
+            File.Delete(_appHistoryPath);
         }
 
         void RemoveSettingsFolder()
@@ -22,36 +24,54 @@ namespace PowerToysTests
         {
             string zoneSettings = "";
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
+
+            string appHistory = "";
+            File.WriteAllText(_appHistoryPath, appHistory);
         }
 
         void CreateDefaultSettingsFile()
         {
-            string zoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
+            string zoneSettings = "{\"devices\":[],\"custom-zone-sets\":[]}";
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
+
+            string appHistory = "{\"app-zone-history\":[]}";
+            File.WriteAllText(_appHistoryPath, appHistory);
         }
 
         void CreateValidSettingsFile()
         {
-            string zoneSettings = "{\"app-zone-history\":[{\"app-path\":\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\Extensions\\TestPlatform\\testhost.exe\",\"zone-index\":3,\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"zoneset-uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\"}],\"devices\":[{\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}],\"custom-zone-sets\":[]}";
+            string zoneSettings = "{\"devices\":[{\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}],\"custom-zone-sets\":[]}";
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
+
+            string appHistory = "{\"app-zone-history\":[{\"app-path\":\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\Extensions\\TestPlatform\\testhost.exe\",\"zone-index\":3,\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"zoneset-uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\"}]}";
+            File.WriteAllText(_appHistoryPath, appHistory);
         }
 
         void CreateValidSettingsFileWithUtf8()
         {
-            string zoneSettings = "{\"app-zone-history\":[{\"app-path\":\"C:\\Program Files (x86)\\йцукен\\testhost.exe\",\"zone-index\":3,\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"zoneset-uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\"}],\"devices\":[{\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}],\"custom-zone-sets\":[]}";
+            string zoneSettings = "{\"devices\":[{\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}],\"custom-zone-sets\":[]}";
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
+
+            string appHistory = "{\"app-zone-history\":[{\"app-path\":\"C:\\Program Files (x86)\\йцукен\\testhost.exe\",\"zone-index\":3,\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"zoneset-uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\"}]}";
+            File.WriteAllText(_appHistoryPath, appHistory);
         }
 
         void CreateInvalidSettingsFile()
         {
             string zoneSettings = "{\"app-zone-history\":[{\"app-path\":\"C:\\Program Files (x86)\\Microsoft Visual Studio\\testhost.exe\",\"zone-index\":3,\"device-id\":\"wrong-device-id\",\"zoneset-uuid\":\"{D13ABB6D-invalid-uuid-C8C0836D99CC}\"}],\"devices\":[{\"device-id\":\"DELA026#5&10a58c63&0&UID16777488_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{D13ABB6D-7721-4176-9647-C8C0836D99CC}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}],\"custom-zone-sets\":[]}";
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
+
+            string appHistory = "";
+            File.WriteAllText(_appHistoryPath, appHistory);
         }
 
         void CreateCroppedSettingsFile()
         {
-            string zoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[{\"uuid\":\"{8BEC7183-C90E-4D41-AD1C-1AC2BC4760BA}\",\"name\":\"";
+            string zoneSettings = "{\"devices\":[],\"custom-zone-sets\":[{\"uuid\":\"{8BEC7183-C90E-4D41-AD1C-1AC2BC4760BA}\",\"name\":\"";
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
+
+            string appHistory = "{\"app-zone-history\":[]}";
+            File.WriteAllText(_appHistoryPath, appHistory);
         }
 
         void TestEditorOpened()
