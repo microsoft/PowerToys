@@ -24,20 +24,20 @@ namespace Wox.Core.Plugin
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
         /// <summary>
-        /// Directories that will hold Wox plugin directory
+        /// Gets directories that will hold Wox plugin directory
         /// </summary>
         public static List<PluginPair> AllPlugins { get; private set; }
 
+        public static IPublicAPI API { get; private set; }
+
         public static readonly List<PluginPair> GlobalPlugins = new List<PluginPair>();
         public static readonly Dictionary<string, PluginPair> NonGlobalPlugins = new Dictionary<string, PluginPair>();
-
-        public static IPublicAPI API { private set; get; }
-
+        private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.PluginsDirectory };
 
         // todo happlebao, this should not be public, the indicator function should be embedded
-        public static PluginSettings Settings;
+        public static PluginSettings Settings { get; set; }
+
         private static List<PluginMetadata> _metadatas;
-        private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.PluginsDirectory };
 
         private static void ValidateUserDirectory()
         {
@@ -74,7 +74,7 @@ namespace Wox.Core.Plugin
         /// because InitializePlugins needs API, so LoadPlugins needs to be called first
         /// todo happlebao The API should be removed
         /// </summary>
-        /// <param name="settings"></param>
+        /// <param name="settings">Plugin settings</param>
         public static void LoadPlugins(PluginSettings settings)
         {
             _metadatas = PluginConfig.Parse(Directories);
@@ -86,7 +86,6 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Call initialize for all plugins
         /// </summary>
-        /// <returns>return the list of failed to init plugins or null for none</returns>
         public static void InitializePlugins(IPublicAPI api)
         {
             API = api;
@@ -100,7 +99,7 @@ namespace Wox.Core.Plugin
                         pair.Plugin.Init(new PluginInitContext
                         {
                             CurrentPluginMetadata = pair.Metadata,
-                            API = API
+                            API = API,
                         });
                     });
                     pair.Metadata.InitTime += milliseconds;
@@ -118,7 +117,9 @@ namespace Wox.Core.Plugin
             foreach (var plugin in AllPlugins)
             {
                 if (IsGlobalPlugin(plugin.Metadata))
+                {
                     GlobalPlugins.Add(plugin);
+                }
 
                 // Plugins may have multiple ActionKeywords, eg. WebSearch
                 plugin.Metadata.ActionKeywords.Where(x => x != Query.GlobalPluginWildcardSign)
@@ -129,7 +130,7 @@ namespace Wox.Core.Plugin
             if (failedPlugins.Any())
             {
                 var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                API.ShowMsg($"Fail to Init Plugins", $"Plugins: {failed} - fail to load and would be disabled, please contact plugin creator for help", "", false);
+                API.ShowMsg($"Fail to Init Plugins", $"Plugins: {failed} - fail to load and would be disabled, please contact plugin creator for help", string.Empty, false);
             }
         }
 
@@ -191,14 +192,15 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// get specified plugin, return null if not found
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="id">id of plugin</param>
+        /// <returns>plugin</returns>
         public static PluginPair GetPluginForId(string id)
         {
             return AllPlugins.FirstOrDefault(o => o.Metadata.ID == id);
         }
 
-        public static IEnumerable<PluginPair> GetPluginsForInterface<T>() where T : IFeatures
+        public static IEnumerable<PluginPair> GetPluginsForInterface<T>()
+            where T : IFeatures
         {
             return AllPlugins.Where(p => p.Plugin is T);
         }
@@ -278,7 +280,9 @@ namespace Wox.Core.Plugin
             }
 
             if (oldActionkeyword != Query.GlobalPluginWildcardSign)
+            {
                 NonGlobalPlugins.Remove(oldActionkeyword);
+            }
 
             plugin.Metadata.ActionKeywords.Remove(oldActionkeyword);
         }
