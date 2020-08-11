@@ -18,11 +18,11 @@ namespace FancyZonesEditor
     public partial class GridZone : UserControl
     {
         // Non-localizable strings
-        private const string ObjectDependency = "IsSelected";
-        private const string GridZoneBackgroundBrush = "GridZoneBackgroundBrush";
-        private const string PropertyIsShiftKeyPressed = "IsShiftKeyPressed";
+        private const string ObjectDependencyID = "IsSelected";
+        private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
+        private const string PropertyIsShiftKeyPressedID = "IsShiftKeyPressed";
 
-        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependency, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
+        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
         public event SplitEventHandler Split;
 
@@ -50,7 +50,7 @@ namespace FancyZonesEditor
 
         private void OnSelectionChanged()
         {
-            Background = IsSelected ? SystemParameters.WindowGlassBrush : App.Current.Resources[GridZoneBackgroundBrush] as SolidColorBrush;
+            Background = IsSelected ? SystemParameters.WindowGlassBrush : App.Current.Resources[GridZoneBackgroundBrushID] as SolidColorBrush;
         }
 
         public bool IsSelected
@@ -74,7 +74,7 @@ namespace FancyZonesEditor
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == PropertyIsShiftKeyPressed)
+            if (e.PropertyName == PropertyIsShiftKeyPressedID)
             {
                 _switchOrientation = ((App)Application.Current).ZoneSettings.IsShiftKeyPressed;
                 if (_lastPos.X != -1)

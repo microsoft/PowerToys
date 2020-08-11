@@ -290,10 +290,10 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& dev
                     }
 
                     // if there is another instance of same application placed in the same zone don't erase history
-                    size_t windowZoneStamp = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::MultipleZone));
+                    size_t windowZoneStamp = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID));
                     for (auto placedWindow : data->processIdToHandleMap)
                     {
-                        size_t placedWindowZoneStamp = reinterpret_cast<size_t>(::GetProp(placedWindow.second, ZonedWindowProperties::MultipleZone));
+                        size_t placedWindowZoneStamp = reinterpret_cast<size_t>(::GetProp(placedWindow.second, ZonedWindowProperties::PropertyMultipleZoneID));
                         if (IsWindow(placedWindow.second) && (windowZoneStamp == placedWindowZoneStamp))
                         {
                             return false;

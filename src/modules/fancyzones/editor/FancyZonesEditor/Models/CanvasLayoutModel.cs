@@ -18,7 +18,7 @@ namespace FancyZonesEditor.Models
         private const string ErrorPersistingCanvasLayout = "Error persisting canvas layout";
 
         // Non-localizable strings
-        private const string ModelType = "canvas";
+        private const string ModelTypeID = "canvas";
 
         public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight)
             : base(uuid, name, type)
@@ -189,7 +189,7 @@ namespace FancyZonesEditor.Models
             {
                 Uuid = "{" + Guid.ToString().ToUpper() + "}",
                 Name = Name,
-                Type = ModelType,
+                Type = ModelTypeID,
                 Info = layoutInfo,
             };
 

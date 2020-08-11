@@ -18,7 +18,7 @@ namespace FancyZonesEditor.Models
         private const string ErrorPersistingGridLayout = "Error persisting grid layout";
 
         // Non-localizable strings
-        private const string ModelType = "grid";
+        private const string ModelTypeID = "grid";
 
         // Rows - number of rows in the Grid
         public int Rows
@@ -226,7 +226,7 @@ namespace FancyZonesEditor.Models
             {
                 Uuid = "{" + Guid.ToString().ToUpper() + "}",
                 Name = Name,
-                Type = ModelType,
+                Type = ModelTypeID,
                 Info = layoutInfo,
             };
             JsonSerializerOptions options = new JsonSerializerOptions

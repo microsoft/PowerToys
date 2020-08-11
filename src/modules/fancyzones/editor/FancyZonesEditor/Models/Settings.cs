@@ -61,12 +61,12 @@ namespace FancyZonesEditor
         private const string ErrorNonStandaloneApp = "FancyZones Editor should not be run as standalone application.";
 
         // Displayed layout names are localizable strings, but their underlying json tags are not.
-        private const string FocusLayout = "Focus";
-        private const string ColumnsLayout = "Columns";
-        private const string RowsLayout = "Rows";
-        private const string GridLayout = "Grid";
-        private const string PriorityGridLayout = "Priority Grid";
-        private const string CustomLayout = "Create new custom";
+        private const string FocusLayoutID = "Focus";
+        private const string ColumnsLayoutID = "Columns";
+        private const string RowsLayoutID = "Rows";
+        private const string GridLayoutID = "Grid";
+        private const string PriorityGridLayoutID = "Priority Grid";
+        private const string CreateNewCustomLabel = "Create new custom";
 
         // Non-localizable strings
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
@@ -147,30 +147,30 @@ namespace FancyZonesEditor
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel(FocusLayout, LayoutType.Focus);
+            _focusModel = new CanvasLayoutModel(FocusLayoutID, LayoutType.Focus);
             DefaultModels.Add(_focusModel);
 
-            _columnsModel = new GridLayoutModel(ColumnsLayout, LayoutType.Columns)
+            _columnsModel = new GridLayoutModel(ColumnsLayoutID, LayoutType.Columns)
             {
                 Rows = 1,
                 RowPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_columnsModel);
 
-            _rowsModel = new GridLayoutModel(RowsLayout, LayoutType.Rows)
+            _rowsModel = new GridLayoutModel(RowsLayoutID, LayoutType.Rows)
             {
                 Columns = 1,
                 ColumnPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_rowsModel);
 
-            _gridModel = new GridLayoutModel(GridLayout, LayoutType.Grid);
+            _gridModel = new GridLayoutModel(GridLayoutID, LayoutType.Grid);
             DefaultModels.Add(_gridModel);
 
-            _priorityGridModel = new GridLayoutModel(PriorityGridLayout, LayoutType.PriorityGrid);
+            _priorityGridModel = new GridLayoutModel(PriorityGridLayoutID, LayoutType.PriorityGrid);
             DefaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel(CustomLayout, LayoutType.Blank);
+            _blankCustomModel = new CanvasLayoutModel(CreateNewCustomLabel, LayoutType.Blank);
 
             UpdateLayoutModels();
         }

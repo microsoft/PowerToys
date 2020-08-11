@@ -337,7 +337,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         {
             if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
             {
-                ::RemoveProp(window, ZonedWindowProperties::RestoreSize);
+                ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
             }
             else if (!IsWindowMaximized(window))
             {
@@ -363,7 +363,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
                 }
             }
         }
-        ::RemoveProp(window, ZonedWindowProperties::MultipleZone);
+        ::RemoveProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
     }
     
     m_inMoveSize = false;

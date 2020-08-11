@@ -192,7 +192,7 @@ bool IsWindowMaximized(HWND window) noexcept
 
 void SaveWindowSizeAndOrigin(HWND window) noexcept
 {
-    HANDLE handle = GetPropW(window, ZonedWindowProperties::RestoreSize);
+    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID);
     if (handle)
     {
         // Size already set, skip
@@ -214,7 +214,7 @@ void SaveWindowSizeAndOrigin(HWND window) noexcept
         std::array<int, 2> windowOriginData = { originX, originY };
         HANDLE rawData;
         memcpy(&rawData, windowSizeData.data(), sizeof rawData);
-        SetPropW(window, ZonedWindowProperties::RestoreSize, rawData);
+        SetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID, rawData);
         memcpy(&rawData, windowOriginData.data(), sizeof rawData);
         SetPropW(window, ZonedWindowProperties::RestoreOrigin, rawData);
     }
@@ -222,7 +222,7 @@ void SaveWindowSizeAndOrigin(HWND window) noexcept
 
 void RestoreWindowSize(HWND window) noexcept
 {
-    auto windowSizeData = GetPropW(window, ZonedWindowProperties::RestoreSize);
+    auto windowSizeData = GetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID);
     if (windowSizeData)
     {
         std::array<int, 2> windowSize;
@@ -239,7 +239,7 @@ void RestoreWindowSize(HWND window) noexcept
             SizeWindowToRect(window, rect);
         }
 
-        ::RemoveProp(window, ZonedWindowProperties::RestoreSize);
+        ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
     }
 }
 

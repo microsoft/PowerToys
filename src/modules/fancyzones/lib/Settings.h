@@ -5,10 +5,11 @@
 // Zoned window properties are not localized.
 namespace ZonedWindowProperties
 {
-    const wchar_t MultipleZone[]       = L"FancyZones_zones";
-    const wchar_t RestoreSize[]        = L"FancyZones_RestoreSize";
-    const wchar_t RestoreOrigin[]      = L"FancyZones_RestoreOrigin";
-    const wchar_t MultiMonitorDevice[] = L"FancyZones_MultiMonitorDevice";
+    const wchar_t PropertyMultipleZoneID[]  = L"FancyZones_zones";
+    const wchar_t PropertyRestoreSizeID[]   = L"FancyZones_RestoreSize";
+    const wchar_t PropertyRestoreOriginID[] = L"FancyZones_RestoreOrigin";
+
+    const wchar_t MultiMonitorDeviceID[]    = L"FancyZones_MultiMonitorDevice";
 }
 
 struct Settings
