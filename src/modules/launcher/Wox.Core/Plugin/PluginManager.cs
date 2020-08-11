@@ -163,11 +163,15 @@ namespace Wox.Core.Plugin
                     {
                         results = ((IDelayedExecutionPlugin)pair.Plugin).Query(query, delayedExecution) ?? new List<Result>();
                     }
-                    else
+                    else if (!delayedExecution)
                     {
                         results = pair.Plugin.Query(query) ?? new List<Result>();
                     }
-                    UpdatePluginMetadata(results, metadata, query);
+
+                    if (results != null)
+                    {
+                        UpdatePluginMetadata(results, metadata, query);
+                    }
                 });
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;

@@ -512,11 +512,11 @@ namespace PowerLauncher.ViewModel
                             currentCancellationToken.ThrowIfCancellationRequested();
                             Parallel.ForEach(plugins, (plugin) =>
                                 {
-                                    if (!plugin.Metadata.Disabled && plugin.Metadata.DelayedExecution)
+                                    if (!plugin.Metadata.Disabled)
                                     {
                                         var results = PluginManager.QueryForPlugin(plugin, query, true);
                                         currentCancellationToken.ThrowIfCancellationRequested();
-                                        if (results.Count != 0)
+                                        if ((results?.Count ?? 0) != 0)
                                         {
                                             lock (_addResultsLock)
                                             {
