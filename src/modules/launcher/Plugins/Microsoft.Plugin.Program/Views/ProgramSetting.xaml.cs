@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Microsoft.Plugin.Program.Views.Models;
 using Microsoft.Plugin.Program.Views.Commands;
 using Microsoft.Plugin.Program.Programs;
 using System.ComponentModel;
 using System.Windows.Data;
 using Wox.Plugin;
+using System.Globalization;
 
 namespace Microsoft.Plugin.Program.Views
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Plugin.Program.Views
     public partial class ProgramSetting : UserControl
     {
         private PluginInitContext context;
-        private Settings _settings;
+        private ProgramPluginSettings _settings;
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection;
 
@@ -28,7 +28,7 @@ namespace Microsoft.Plugin.Program.Views
         // this as temporary holder for displaying all loaded programs sources. 
         internal static List<ProgramSource> ProgramSettingDisplayList { get; set; }
 
-        public ProgramSetting(PluginInitContext context, Settings settings, Programs.Win32[] win32s, UWP.Application[] uwps)
+        public ProgramSetting(PluginInitContext context, ProgramPluginSettings settings)
         {
             this.context = context;
             InitializeComponent();
@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Program.Views
 
         private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            var selectedProgramSource = programSourceView.SelectedItem as Settings.ProgramSource;
+            var selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
             if (selectedProgramSource != null)
             {
                 var add = new AddProgramSource(selectedProgramSource, _settings);
@@ -143,7 +143,7 @@ namespace Microsoft.Plugin.Program.Views
                     }
                 }
 
-                if (directoriesToAdd.Count() > 0)
+                if (directoriesToAdd.Count > 0)
                 {
                     directoriesToAdd.ForEach(x => _settings.ProgramSources.Add(x));
                     directoriesToAdd.ForEach(x => ProgramSettingDisplayList.Add(x));
@@ -179,7 +179,7 @@ namespace Microsoft.Plugin.Program.Views
                                 .SelectedItems.Cast<ProgramSource>()
                                 .ToList();
 
-            if (selectedItems.Count() == 0)
+            if (selectedItems.Count == 0)
             {
                 string msg = context.API.GetTranslation("wox_plugin_program_pls_select_program_source");
                 MessageBox.Show(msg);
@@ -190,9 +190,9 @@ namespace Microsoft.Plugin.Program.Views
                 .Where(t1 => !_settings
                                 .ProgramSources
                                 .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
-                .Count() == 0)
+                .Any())
             {
-                var msg = string.Format(context.API.GetTranslation("wox_plugin_program_delete_program_source"));
+                var msg = string.Format(CultureInfo.CurrentCulture, context.API.GetTranslation("wox_plugin_program_delete_program_source"));
 
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
                 {
@@ -273,7 +273,7 @@ namespace Microsoft.Plugin.Program.Views
             dataView.Refresh();
         }
 
-        private bool IsSelectedRowStatusEnabledMoreOrEqualThanDisabled(List<ProgramSource> selectedItems)
+        private static bool IsSelectedRowStatusEnabledMoreOrEqualThanDisabled(List<ProgramSource> selectedItems)
         {
             return selectedItems.Where(x => x.Enabled).Count() >= selectedItems.Where(x => !x.Enabled).Count();
         }
@@ -288,7 +288,7 @@ namespace Microsoft.Plugin.Program.Views
                 .Where(t1 => !_settings
                                 .ProgramSources
                                 .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
-                .Count() == 0)
+                .Any())
             {
                 btnProgramSourceStatus.Content = context.API.GetTranslation("wox_plugin_program_delete");
                 return;
