@@ -11,13 +11,9 @@ namespace PowerLauncher.Helper
 {
     public class ResultCollection : List<ResultViewModel>, INotifyCollectionChanged
     {
-        public ResultCollection()
-        {
-        }
+        public ResultCollection() { }
 
-        public ResultCollection(IEnumerable<ResultViewModel> rvm) : base(rvm)
-        {
-        }
+        public ResultCollection(IEnumerable<ResultViewModel> rvm) : base(rvm) { }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 

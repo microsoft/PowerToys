@@ -243,7 +243,7 @@ namespace PowerLauncher.ViewModel
         public void Sort()
         {
             var sorted = Results.OrderByDescending(x => x.Result.Score).ToList();
-            Results.Clear();
+            Clear();
             Results.AddRange(sorted);
         }
 
