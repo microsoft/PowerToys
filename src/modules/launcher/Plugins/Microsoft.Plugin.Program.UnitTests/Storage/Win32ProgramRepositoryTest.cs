@@ -1,15 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
-using Moq;
-using NUnit.Framework;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using Wox.Infrastructure.Storage;
-using Wox.Plugin;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
-using System.IO;
+using Moq;
+using NUnit.Framework;
 using Wox.Infrastructure.FileSystemHelper;
-using System.Diagnostics;
+using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
@@ -256,7 +258,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(string.Empty);
             Win32Program.Helper = mockShellLink.Object;
 
             // Act
@@ -317,7 +319,6 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(_win32ProgramRepository.Contains(olditem));
         }
 
-
         [TestCase("path.lnk")]
         public void Win32ProgramRepository_MustCallOnAppCreatedForLnkApps_WhenCreatedEventIsRaised(string path)
         {
@@ -327,7 +328,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(string.Empty);
             Win32Program.Helper = mockShellLink.Object;
 
             // Act
@@ -347,7 +348,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(string.Empty);
             Win32Program.Helper = mockShellLink.Object;
 
             string fullPath = directory + "\\" + path;
@@ -380,7 +381,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(string.Empty);
             Win32Program.Helper = mockShellLink.Object;
 
             // old item and new item are the actual items when they are in existence

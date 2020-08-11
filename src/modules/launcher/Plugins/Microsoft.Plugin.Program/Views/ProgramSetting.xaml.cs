@@ -1,16 +1,19 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.Plugin.Program.Views.Commands;
-using Microsoft.Plugin.Program.Programs;
-using System.ComponentModel;
-using System.Windows.Data;
 using Wox.Plugin;
-using System.Globalization;
 
 namespace Microsoft.Plugin.Program.Views
 {

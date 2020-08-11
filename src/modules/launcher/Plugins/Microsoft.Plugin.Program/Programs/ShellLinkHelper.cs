@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Runtime.InteropServices;
-using System.IO;
-using Accessibility;
 using System.Runtime.InteropServices.ComTypes;
-using System.Security.Policy;
+using System.Text;
+using Accessibility;
 using Microsoft.Plugin.Program.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -50,7 +51,6 @@ namespace Microsoft.Plugin.Program.Programs
             SLR_NOLINKINFO = 0x40,
             SLR_INVOKE_MSI = 0x80
         }
-
 
         // Reference : http://www.pinvoke.net/default.aspx/Interfaces.IShellLinkW
         /// The IShellLink interface allows Shell links to be created, modified, and resolved
@@ -102,10 +102,11 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Contains the description of the app
-        public string description { get; set; } = String.Empty;
+        public string description { get; set; } = string.Empty;
 
         // Contains the arguments to the app
-        public string Arguments { get; set; } = String.Empty;
+        public string Arguments { get; set; } = string.Empty;
+
         public bool hasArguments { get; set; } = false;
 
         // Retrieve the target path using Shell Link
@@ -121,7 +122,7 @@ namespace Microsoft.Plugin.Program.Programs
             catch (System.IO.FileNotFoundException ex)
             {
                 ProgramLogger.LogException($"|Win32| ShellLinkHelper.retrieveTargetPath | {path} | Path could not be retrieved", ex);
-                return String.Empty;
+                return string.Empty;
             }
 
             var hwnd = new _RemotableHandle();
@@ -135,7 +136,7 @@ namespace Microsoft.Plugin.Program.Programs
             var target = buffer.ToString();
 
             // To set the app description
-            if (!String.IsNullOrEmpty(target))
+            if (!string.IsNullOrEmpty(target))
             {
                 buffer = new StringBuilder(MAX_PATH);
                 ((IShellLinkW)link).GetDescription(buffer, MAX_PATH);

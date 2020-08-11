@@ -1,12 +1,9 @@
-﻿using Microsoft.Plugin.Program.Storage;
-using Moq;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Threading.Tasks;
-using Windows.Media.Capture;
+using NUnit.Framework;
 using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
@@ -18,51 +15,51 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         [Test]
         public void Contains_ShouldReturnTrue_WhenListIsInitializedWithItem()
         {
-            //Arrange
+            // Arrange
             var itemName = "originalItem1";
             IRepository<string> repository = new ListRepository<string>() { itemName };
 
-            //Act
+            // Act
             var result = repository.Contains(itemName);
 
-            //Assert
+            // Assert
             Assert.IsTrue(result);
         }
 
         [Test]
         public void Contains_ShouldReturnTrue_WhenListIsUpdatedWithAdd()
         {
-            //Arrange
+            // Arrange
             IRepository<string> repository = new ListRepository<string>();
 
-            //Act
+            // Act
             var itemName = "newItem";
             repository.Add(itemName);
             var result = repository.Contains(itemName);
 
-            //Assert
+            // Assert
             Assert.IsTrue(result);
         }
 
         [Test]
         public void Contains_ShouldReturnFalse_WhenListIsUpdatedWithRemove()
         {
-            //Arrange
+            // Arrange
             var itemName = "originalItem1";
             IRepository<string> repository = new ListRepository<string>() { itemName };
 
-            //Act
+            // Act
             repository.Remove(itemName);
             var result = repository.Contains(itemName);
 
-            //Assert
+            // Assert
             Assert.IsFalse(result);
         }
 
         [Test]
         public async Task Add_ShouldNotThrow_WhenBeingIterated()
         {
-            //Arrange
+            // Arrange
             ListRepository<string> repository = new ListRepository<string>();
             var numItems = 1000;
             for (var i = 0; i < numItems; ++i)
@@ -70,7 +67,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 repository.Add($"OriginalItem_{i}");
             }
 
-            //Act - Begin iterating on one thread
+            // Act - Begin iterating on one thread
             var iterationTask = Task.Run(() =>
             {
                 var remainingIterations = 10000;
@@ -78,15 +75,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 {
                     foreach (var item in repository)
                     {
-                        //keep iterating
-
+                        // keep iterating
                     }
+
                     --remainingIterations;
                 }
-
             });
 
-            //Act - Insert on another thread
+            // Act - Insert on another thread
             var addTask = Task.Run(() =>
            {
                for (var i = 0; i < numItems; ++i)
@@ -95,7 +91,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                }
            });
 
-            //Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
+            // Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
             Assert.DoesNotThrowAsync(async () =>
             {
                 await Task.WhenAll(new Task[] { iterationTask, addTask });
@@ -105,7 +101,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         [Test]
         public async Task Remove_ShouldNotThrow_WhenBeingIterated()
         {
-            //Arrange
+            // Arrange
             ListRepository<string> repository = new ListRepository<string>();
             var numItems = 1000;
             for (var i = 0; i < numItems; ++i)
@@ -113,7 +109,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 repository.Add($"OriginalItem_{i}");
             }
 
-            //Act - Begin iterating on one thread
+            // Act - Begin iterating on one thread
             var iterationTask = Task.Run(() =>
             {
                 var remainingIterations = 10000;
@@ -121,15 +117,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 {
                     foreach (var item in repository)
                     {
-                        //keep iterating
-
+                        // keep iterating
                     }
+
                     --remainingIterations;
                 }
-
             });
 
-            //Act - Remove on another thread
+            // Act - Remove on another thread
             var addTask = Task.Run(() =>
             {
                 for (var i = 0; i < numItems; ++i)
@@ -138,7 +133,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 }
             });
 
-            //Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
+            // Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
             Assert.DoesNotThrowAsync(async () =>
             {
                 await Task.WhenAll(new Task[] { iterationTask, addTask });

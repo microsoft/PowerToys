@@ -1,9 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using Windows.Storage;
 using static Microsoft.Plugin.Program.Programs.UWP;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -52,6 +54,7 @@ namespace Microsoft.Plugin.Program.Programs
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
         void _VtblGap0_2(); // skip 2 methods
+
         IAppxManifestReader CreateManifestReader(IStream inputStream);
     }
 
@@ -60,10 +63,12 @@ namespace Microsoft.Plugin.Program.Programs
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
         void _VtblGap0_1(); // skip 1 method
+
         IAppxManifestProperties GetProperties();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
         void _VtblGap1_5(); // skip 5 methods
+
         IAppxManifestApplicationsEnumerator GetApplications();
     }
 
@@ -71,7 +76,9 @@ namespace Microsoft.Plugin.Program.Programs
     public interface IAppxManifestApplicationsEnumerator
     {
         IAppxManifestApplication GetCurrent();
+
         bool GetHasCurrent();
+
         bool MoveNext();
     }
 
@@ -90,6 +97,7 @@ namespace Microsoft.Plugin.Program.Programs
     {
         [PreserveSig]
         Hresult GetBoolValue([MarshalAs(UnmanagedType.LPWStr)] string name, out bool value);
+
         [PreserveSig]
         Hresult GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
     }
