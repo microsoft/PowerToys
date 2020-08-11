@@ -901,7 +901,7 @@
         <?endforeach?>
       </Component>
       <Component Id="FolderImagesComponent" Directory="FolderPluginImagesFolder" Guid="6C5226EB-E312-4768-B4D1-B1D3ACFCCBDF">
-        <?foreach File in copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png?>
+        <?foreach File in copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png;Warning.dark.png;Warning.light.png?>
           <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Images\$(var.File)" />
         <?endforeach?>
       </Component>
