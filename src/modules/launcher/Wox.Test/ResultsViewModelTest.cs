@@ -4,16 +4,12 @@
 
 using NUnit.Framework;
 using PowerLauncher.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Wox.Core.Plugin;
 using Wox.Plugin;
 
 namespace Wox.Test
 {
     [TestFixture]
-    class ResultsViewModelTest
+    internal class ResultsViewModelTest
     {
         [Test]
         public void ContextMenuSelectedIndex_ShouldEqualNoSelectionIndex_WhenInitialized()
@@ -24,7 +20,7 @@ namespace Wox.Test
             ResultViewModel selectedItem = new ResultViewModel(result);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu"
+                Title = "Dummy Context Menu",
             });
             rvm.SelectedItem = selectedItem;
 
@@ -41,7 +37,7 @@ namespace Wox.Test
             ResultViewModel selectedItem = new ResultViewModel(result);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu"
+                Title = "Dummy Context Menu",
             });
             rvm.SelectedItem = selectedItem;
 
@@ -61,7 +57,7 @@ namespace Wox.Test
             ResultViewModel selectedItem = new ResultViewModel(result);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu"
+                Title = "Dummy Context Menu",
             });
             rvm.SelectedItem = selectedItem;
 
@@ -81,15 +77,15 @@ namespace Wox.Test
             ResultViewModel selectedItem = new ResultViewModel(result);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu 1"
+                Title = "Dummy Context Menu 1",
             });
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu 2"
+                Title = "Dummy Context Menu 2",
             });
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu 3"
+                Title = "Dummy Context Menu 3",
             });
             rvm.SelectedItem = selectedItem;
 
@@ -112,7 +108,7 @@ namespace Wox.Test
             ResultViewModel selectedItem = new ResultViewModel(result);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu"
+                Title = "Dummy Context Menu",
             });
             rvm.SelectedItem = selectedItem;
 
@@ -133,7 +129,7 @@ namespace Wox.Test
             ResultViewModel selectedItem = new ResultViewModel(result);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu"
+                Title = "Dummy Context Menu",
             });
             rvm.SelectedItem = selectedItem;
 
@@ -154,7 +150,7 @@ namespace Wox.Test
             ResultViewModel selectedItem = new ResultViewModel(result);
             selectedItem.ContextMenuItems.Add(new ContextMenuItemViewModel()
             {
-                Title = "Dummy Context Menu"
+                Title = "Dummy Context Menu",
             });
             rvm.SelectedItem = selectedItem;
 

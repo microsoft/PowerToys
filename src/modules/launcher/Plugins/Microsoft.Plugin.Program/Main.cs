@@ -86,8 +86,11 @@ namespace Microsoft.Plugin.Program
                 .Where(p => p.Enabled)
                 .Select(p => p.Result(query.Search, _context.API));
 
-            var result = results1.Concat(results2).Where(r => r != null && r.Score > 0).ToList();
-            return result;
+            var result = results1.Concat(results2).Where(r => r != null && r.Score > 0);
+            var maxScore = result.Max(x => x.Score);
+            result = result.Where(x => x.Score > _settings.MinScoreThreshold * maxScore);
+
+            return result.ToList();
         }
 
         public void Init(PluginInitContext context)
