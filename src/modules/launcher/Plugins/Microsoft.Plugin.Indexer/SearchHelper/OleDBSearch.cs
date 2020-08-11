@@ -33,9 +33,9 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 {
                     using (wDSResults = command.ExecuteReader())
                     {
-                        if (wDSResults.HasRows)
+                        if (!wDSResults.IsClosed && wDSResults.HasRows)
                         {
-                            while (wDSResults.Read())
+                            while (!wDSResults.IsClosed && wDSResults.Read())
                             {
                                 List<object> fieldData = new List<object>();
                                 for (int i = 0; i < wDSResults.FieldCount; i++)

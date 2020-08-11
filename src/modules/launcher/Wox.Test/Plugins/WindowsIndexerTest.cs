@@ -316,5 +316,82 @@ namespace Wox.Test.Plugins
             // Act & Assert
             return driveDetection.DisplayWarning();
         }
+
+        [Test]
+        public void SimplifyQuery_ShouldRemoveLikeQuery_WhenSQLQueryUsesLIKESyntax()
+        {
+            // Arrange
+            string sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (System.FileName LIKE 'abcd.%' OR CONTAINS(System.FileName,'\"abcd.*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Act
+            var simplifiedSqlQuery = WindowsSearchAPI.SimplifyQuery(sqlQuery);
+
+            // Assert
+            string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"abcd.*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+            Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
+            Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        [Test]
+        public void SimplifyQuery_ShouldReturnArgument_WhenSQLQueryDoesNotUseLIKESyntax()
+        {
+            // Arrange
+            string sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE CONTAINS(System.FileName,'\"abcd*\"',1033) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Act
+            var simplifiedSqlQuery = WindowsSearchAPI.SimplifyQuery(sqlQuery);
+
+            // Assert
+            Assert.IsTrue(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        [Test]
+        public void SimplifyQuery_ShouldRemoveAllOccurrencesOfLikeQuery_WhenSQLQueryUsesLIKESyntaxMultipleTimes()
+        {
+            // Arrange
+            string sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\", \"System.FileExtension\" FROM \"SystemIndex\" WHERE (System.FileName LIKE 'ab.%' OR CONTAINS(System.FileName,'\"ab.*\"',1033)) AND (System.FileExtension LIKE '.cd%' OR CONTAINS(System.FileName,'\".cd*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Act
+            var simplifiedSqlQuery = WindowsSearchAPI.SimplifyQuery(sqlQuery);
+
+            // Assert
+            string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\", \"System.FileExtension\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"ab.*\"',1033)) AND (CONTAINS(System.FileName,'\".cd*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+            Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
+            Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        [Test]
+        public void SimplifyQuery_ShouldRemoveLikeQuery_WhenSQLQueryUsesLIKESyntaxAndContainsEscapedSingleQuotationMarks()
+        {
+            // Arrange
+            string sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (System.FileName LIKE '''ab.cd''%' OR CONTAINS(System.FileName,'\"'ab.cd'*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Act
+            var simplifiedSqlQuery = WindowsSearchAPI.SimplifyQuery(sqlQuery);
+
+            // Assert
+            string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"'ab.cd'*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+            Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
+            Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        [Test]
+        public void WindowsSearchAPI_ShouldReturnEmptyResults_WhenIsFullQueryIsTrueAndTheQueryDoesNotRequireLIKESyntax()
+        {
+            // Arrange
+            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value, (Int64)0x0 });
+            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", (Int64)0x0 });
+
+            List<OleDBResult> results = new List<OleDBResult>() { file1, file2 };
+            var mock = new Mock<ISearch>();
+            mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
+            WindowsSearchAPI _api = new WindowsSearchAPI(mock.Object, false);
+
+            // Act
+            var windowsSearchAPIResults = _api.Search("file", true);
+
+            // Assert
+            Assert.IsTrue(windowsSearchAPIResults.Count() == 0);
+        }
     }
 }
