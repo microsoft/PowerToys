@@ -298,7 +298,7 @@ namespace Microsoft.Plugin.Program.Programs
             return ExecutableName;
         }
 
-        private static Win32Program Create(string path)
+        private static Win32Program CreateWin32Program(string path)
         {
             try
             {
@@ -394,7 +394,7 @@ namespace Microsoft.Plugin.Program.Programs
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Unsure of what exceptions are caught here while enabling static analysis")]
         private static Win32Program LnkProgram(string path)
         {
-            var program = Create(path);
+            var program = CreateWin32Program(path);
             try
             {
                 const int MAX_PATH = 260;
@@ -446,7 +446,7 @@ namespace Microsoft.Plugin.Program.Programs
         {
             try
             {
-                var program = Create(path);
+                var program = CreateWin32Program(path);
                 var info = FileVersionInfoWrapper.GetVersionInfo(path);
 
                 if (!string.IsNullOrEmpty(info?.FileDescription))
@@ -491,7 +491,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else if (extension.Equals(apprefExtension, StringComparison.OrdinalIgnoreCase))
             {
-                app = Create(path);
+                app = CreateWin32Program(path);
             }
             else if (extension.Equals(urlExtenion, StringComparison.OrdinalIgnoreCase))
             {
@@ -599,7 +599,7 @@ namespace Microsoft.Plugin.Program.Programs
             var programs3 = from p in paths.AsParallel()
                             let e = Extension(p)
                             where e != ShortcutExtension && e != ExeExtension
-                            select Create(p);
+                            select CreateWin32Program(p);
             return programs1.Concat(programs2).Concat(programs3);
         }
 
@@ -630,7 +630,7 @@ namespace Microsoft.Plugin.Program.Programs
                         .ToArray();
 
             var programs1 = allPaths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
-            var programs2 = allPaths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Create);
+            var programs2 = allPaths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(CreateWin32Program);
             var programs3 = allPaths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
             var programs4 = allPaths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
 
@@ -660,7 +660,7 @@ namespace Microsoft.Plugin.Program.Programs
                         .ToArray();
 
             var programs1 = paths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
-            var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Create);
+            var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(CreateWin32Program);
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
             var programs4 = paths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
 
@@ -762,7 +762,7 @@ namespace Microsoft.Plugin.Program.Programs
             if (!File.Exists(path))
                 return new Win32Program();
 
-            var entry = Create(path);
+            var entry = CreateWin32Program(path);
             entry.ExecutableName = Path.GetFileName(path);
 
             return entry;
