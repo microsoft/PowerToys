@@ -18,7 +18,7 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu
+    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu, IDisposable
     {
         public const string FolderImagePath = "Images\\folder.dark.png";
         public const string FileImagePath = "Images\\file.dark.png";
@@ -26,16 +26,13 @@ namespace Microsoft.Plugin.Folder
         public const string CopyImagePath = "Images\\copy.dark.png";
 
         private const string _fileExplorerProgramName = "explorer";
-
         private static readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
         private static readonly FolderSettings _settings = _storage.Load();
-
         private static List<string> _driverNames;
         private static PluginInitContext _context;
-
         private IContextMenu _contextMenuLoader;
-
-        private static string WarningIconPath { get; set; }
+        private static string warningIconPath;
+        private bool _disposed = false;
 
         public void Save()
         {
@@ -61,11 +58,11 @@ namespace Microsoft.Plugin.Folder
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                WarningIconPath = "Images/Warning.light.png";
+                warningIconPath = "Images/Warning.light.png";
             }
             else
             {
-                WarningIconPath = "Images/Warning.dark.png";
+                warningIconPath = "Images/Warning.dark.png";
             }
         }
 
@@ -296,7 +293,7 @@ namespace Microsoft.Plugin.Folder
                 Title = _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_title"),
                 QueryTextDisplay = search,
                 SubTitle = string.Format(CultureInfo.InvariantCulture, _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_subtitle"), postTruncationCount, preTruncationCount),
-                IcoPath = WarningIconPath,
+                IcoPath = warningIconPath,
             };
         }
 
@@ -372,6 +369,24 @@ namespace Microsoft.Plugin.Folder
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _context.API.ThemeChanged -= OnThemeChanged;
+                    _disposed = true;
+                }
+            }
         }
     }
 }
