@@ -33,9 +33,9 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("http://test.co", true, "http://test.co/")]
         [TestCase("http://test.com", true, "http://test.com/")]
         [TestCase("http:3", true,"http://http:3/")]
-        [TestCase("[::]", true, "http://[::]")]
-        [TestCase("[2001:0DB8::1]", true, "http://[2001:0DB8::1]/")]
-        [TestCase("[2001:0DB8::1]:80",true, "http://[2001:0DB8::1]/")]
+        [TestCase("[::]", true, "http://[::]/")]
+        [TestCase("[2001:0DB8::1]", true, "http://[2001:db8::1]/")]
+        [TestCase("[2001:0DB8::1]:80",true, "http://[2001:db8::1]/")]
         public void TryParse_CanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
             // Arrange

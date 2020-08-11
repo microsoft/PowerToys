@@ -86,6 +86,7 @@ steps:
       **\ImageResizer.Test.dll
       **\KeyboardManagerTest.dll
       **\Microsoft.Plugin.Program.UnitTests.dll
+      **\Microsoft.Plugin.Uri.UnitTests.dll
       **\PowerRenameUnitTests.dll
       **\UnitTests-CommonLib.dll
       **\PreviewPaneUnitTests.dll #this is the markdown tests
