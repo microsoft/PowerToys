@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
-    class PackageRepositoryTest
+    public class PackageRepositoryTest
     {
     }
 }

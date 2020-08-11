@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
     [TestFixture]
-    class UWPTests
+    public class UWPTests
     {
         static readonly PackageWrapper developmentModeApp = new PackageWrapper(
             "DevelopmentApp",
