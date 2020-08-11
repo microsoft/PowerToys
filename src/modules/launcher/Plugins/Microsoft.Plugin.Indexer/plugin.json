@@ -8,6 +8,5 @@
   "Language": "csharp",
   "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Indexer.dll",
-  "IcoPath": "Images\\indexer.dark.png",
-  "DelayedExecution": "true"
+  "IcoPath": "Images\\indexer.dark.png"
 }
