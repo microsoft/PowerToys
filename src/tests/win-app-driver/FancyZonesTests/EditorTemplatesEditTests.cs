@@ -164,8 +164,7 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
-            if (session == null)
-                return;
+            Assert.IsNotNull(session);
 
             ResetDefaultFancyZonesSettings(false);
             ResetDefaultZoneSettings(true);
@@ -175,17 +174,12 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseSettings();
+            TearDown();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            Assert.IsNotNull(session);
-
-            if (!isPowerToysLaunched)
-            {
-                LaunchPowerToys();
-            }
             Assert.IsTrue(OpenEditor());
             OpenTemplates();
         }
@@ -203,7 +197,7 @@ namespace PowerToysTests
             }
             catch (OpenQA.Selenium.WebDriverException)
             {
-                //editor has already closed
+                //editor was already closed
             }
 
             ResetDefaultZoneSettings(true);

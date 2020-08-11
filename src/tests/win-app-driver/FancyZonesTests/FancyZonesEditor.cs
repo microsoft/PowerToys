@@ -19,8 +19,6 @@ namespace PowerToysTests
 
         protected static bool OpenEditor()
         {
-            Console.WriteLine("Open Editor");
-
             try
             {
                 new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();

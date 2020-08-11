@@ -74,7 +74,7 @@ namespace PowerToysTests
             File.WriteAllText(_appHistoryPath, appHistory);
         }
 
-        void TestEditorOpened()
+        void TestEditorOpened(bool errorExpected = false)
         {
             WindowsElement errorMessage = null;
             try
@@ -90,34 +90,30 @@ namespace PowerToysTests
                 //no error message, it's ok
             }
 
-            try
-            {
-                editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-            }
-            catch (OpenQA.Selenium.WebDriverException)
-            {
-            }
-
+            WaitSeconds(1);
+            editorWindow = WaitElementByName("FancyZones Editor");
             Assert.IsNotNull(editorWindow);
-            Assert.IsNull(errorMessage);
+
+            if (!errorExpected)
+            {
+                Assert.IsNull(errorMessage);
+            }
+            else
+            {
+                Assert.IsNotNull(errorMessage);
+            }
         }
 
         void OpenEditorBySettingsButton()
         {
             OpenSettings();
             OpenFancyZonesSettings();
-
-            WindowsElement editorButton = session.FindElementByXPath("//Button[@Name=\"Edit zones\"]");
-            Assert.IsNotNull(editorButton);
-
-            editorButton.Click();
-            TestEditorOpened();
+            settingsWindow.FindElementByName("Launch zones editor").Click();
         }
 
         void OpenEditorByHotkey()
         {
             new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
-            TestEditorOpened();
         }
 
         [TestMethod]
@@ -125,6 +121,7 @@ namespace PowerToysTests
         {
             RemoveSettingsFile();
             OpenEditorBySettingsButton();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -141,6 +138,7 @@ namespace PowerToysTests
 
             RemoveSettingsFolder();
             OpenEditorBySettingsButton();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -148,6 +146,7 @@ namespace PowerToysTests
         {
             CreateEmptySettingsFile();
             OpenEditorBySettingsButton();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -155,6 +154,7 @@ namespace PowerToysTests
         {
             CreateDefaultSettingsFile();
             OpenEditorBySettingsButton();
+            TestEditorOpened();
         }
 
         [TestMethod]
@@ -162,6 +162,7 @@ namespace PowerToysTests
         {
             CreateValidSettingsFile();
             OpenEditorBySettingsButton();
+            TestEditorOpened();
         }
 
         [TestMethod]
@@ -169,6 +170,7 @@ namespace PowerToysTests
         {
             CreateValidSettingsFileWithUtf8();
             OpenEditorBySettingsButton();
+            TestEditorOpened();
         }
 
         [TestMethod]
@@ -176,6 +178,7 @@ namespace PowerToysTests
         {
             CreateInvalidSettingsFile();
             OpenEditorBySettingsButton();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -183,6 +186,7 @@ namespace PowerToysTests
         {
             CreateCroppedSettingsFile();
             OpenEditorBySettingsButton();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -190,6 +194,7 @@ namespace PowerToysTests
         {
             RemoveSettingsFile();
             OpenEditorByHotkey();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -205,6 +210,7 @@ namespace PowerToysTests
             */
             RemoveSettingsFolder();
             OpenEditorByHotkey();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -212,6 +218,7 @@ namespace PowerToysTests
         {
             CreateEmptySettingsFile();
             OpenEditorByHotkey();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -219,6 +226,7 @@ namespace PowerToysTests
         {
             CreateDefaultSettingsFile();
             OpenEditorByHotkey();
+            TestEditorOpened();
         }
 
         [TestMethod]
@@ -226,6 +234,7 @@ namespace PowerToysTests
         {
             CreateValidSettingsFile();
             OpenEditorByHotkey();
+            TestEditorOpened();
         }
 
         [TestMethod]
@@ -233,6 +242,7 @@ namespace PowerToysTests
         {
             CreateValidSettingsFileWithUtf8();
             OpenEditorByHotkey();
+            TestEditorOpened();
         }
 
         [TestMethod]
@@ -240,6 +250,7 @@ namespace PowerToysTests
         {
             CreateInvalidSettingsFile();
             OpenEditorByHotkey();
+            TestEditorOpened(true);
         }
 
         [TestMethod]
@@ -247,6 +258,7 @@ namespace PowerToysTests
         {
             CreateCroppedSettingsFile();
             OpenEditorByHotkey();
+            TestEditorOpened(true);
         }
 
         [ClassInitialize]

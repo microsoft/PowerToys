@@ -179,7 +179,6 @@ namespace PowerToysTests
         {
             Setup(context, false);
             Assert.IsNotNull(session);
-
             ResetSettings();
         }
 
@@ -187,19 +186,19 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseSettings();
+            ResetDefaultFancyZonesSettings(false);
+            ResetDefaultZoneSettings(false);
             TearDown();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            ResetSettings();
         }
     }
 }

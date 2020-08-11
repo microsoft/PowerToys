@@ -195,10 +195,6 @@ namespace PowerToysTests
             //check settings
             settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
             Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
-            foreach (JObject device in settings["devices"].ToObject<JArray>())
-            {
-                Assert.AreNotEqual(layoutId, device["active-zoneset"]["uuid"], "Deleted layout still applied");
-            }
         }
 
         [TestMethod]
@@ -289,10 +285,6 @@ namespace PowerToysTests
             //check settings
             settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
             Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
-            foreach (JObject device in settings["devices"].ToObject<JArray>())
-            {
-                Assert.AreNotEqual(layoutId, device["active-zoneset"]["uuid"], "Deleted layout still applied");
-            }
         }
 
         [TestMethod]
@@ -342,7 +334,7 @@ namespace PowerToysTests
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            ResetDefaultZoneSettings(true);
+            TearDown();
         }
 
         [TestInitialize]
@@ -357,6 +349,7 @@ namespace PowerToysTests
         public void TestCleanup()
         {
             CloseEditor();
+            ExitPowerToys();
         }
     }
 }
