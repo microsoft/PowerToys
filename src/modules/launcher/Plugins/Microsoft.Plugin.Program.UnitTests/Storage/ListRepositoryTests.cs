@@ -96,10 +96,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
            });
 
             //Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
-            Assert.DoesNotThrowAsync(async () =>
-            {
-                await Task.WhenAll(new Task[] { iterationTask, addTask });
-            });
+            await Task.WhenAll(new Task[] { iterationTask, addTask }).ConfigureAwait(false);
         }
 
         [Test]
@@ -139,10 +136,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             });
 
             //Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
-            Assert.DoesNotThrowAsync(async () =>
-            {
-                await Task.WhenAll(new Task[] { iterationTask, addTask });
-            });
+            await Task.WhenAll(new Task[] { iterationTask, addTask }).ConfigureAwait(false);
         }
     }
 }
