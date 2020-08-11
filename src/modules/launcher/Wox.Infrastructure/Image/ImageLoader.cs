@@ -33,7 +33,7 @@ namespace Wox.Infrastructure.Image
             ".gif",
             ".bmp",
             ".tiff",
-            ".ico"
+            ".ico",
         };
 
         public static void Initialize(Theme theme)
@@ -104,7 +104,7 @@ namespace Wox.Infrastructure.Image
             Data,
             ImageFile,
             Error,
-            Cache
+            Cache,
         }
 
         private static ImageResult LoadInternal(string path, bool loadFullImage = false)
@@ -144,8 +144,7 @@ namespace Wox.Infrastructure.Image
                      * - Solution: just load the icon
                      */
                     type = ImageType.Folder;
-                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
-                        Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
                 }
                 else if (File.Exists(path))
                 {
@@ -164,15 +163,13 @@ namespace Wox.Infrastructure.Image
                              * be the case in many situations while testing.
                              * - Solution: explicitly pass the ThumbnailOnly flag
                              */
-                            image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
-                                Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly);
+                            image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly);
                         }
                     }
                     else
                     {
                         type = ImageType.File;
-                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
-                            Constant.ThumbnailSize, ThumbnailOptions.None);
+                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.None);
                     }
                 }
                 else

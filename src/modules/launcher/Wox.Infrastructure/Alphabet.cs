@@ -18,8 +18,8 @@ namespace Wox.Infrastructure
 {
     public class Alphabet : IAlphabet
     {
-        private readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();
-        private ConcurrentDictionary<string, string[][]> PinyinCache;
+        private readonly HanyuPinyinOutputFormat _pinyinFormat = new HanyuPinyinOutputFormat();
+        private ConcurrentDictionary<string, string[][]> _pinyinCache;
         private BinaryStorage<Dictionary<string, string[][]>> _pinyinStorage;
         private Settings _settings;
 
@@ -31,7 +31,7 @@ namespace Wox.Infrastructure
 
         private void InitializePinyinHelpers()
         {
-            Format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+            _pinyinFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
 
             Stopwatch.Normal("|Wox.Infrastructure.Alphabet.Initialize|Preload pinyin cache", () =>
             {
@@ -39,9 +39,9 @@ namespace Wox.Infrastructure
                 SetPinyinCacheAsDictionary(_pinyinStorage.TryLoad(new Dictionary<string, string[][]>()));
 
                 // force pinyin library static constructor initialize
-                PinyinHelper.toHanyuPinyinStringArray('T', Format);
+                PinyinHelper.toHanyuPinyinStringArray('T', _pinyinFormat);
             });
-            Log.Info($"|Wox.Infrastructure.Alphabet.Initialize|Number of preload pinyin combination<{PinyinCache.Count}>");
+            Log.Info($"|Wox.Infrastructure.Alphabet.Initialize|Number of preload pinyin combination<{_pinyinCache.Count}>");
         }
 
         public string Translate(string str)
@@ -52,17 +52,23 @@ namespace Wox.Infrastructure
         public string ConvertChineseCharactersToPinyin(string source)
         {
             if (!_settings.ShouldUsePinyin)
+            {
                 return source;
+            }
 
             if (string.IsNullOrEmpty(source))
+            {
                 return source;
+            }
 
             if (!ContainsChinese(source))
+            {
                 return source;
+            }
 
             var combination = PinyinCombination(source);
 
-            var pinyinArray = combination.Select(x => string.Join("", x));
+            var pinyinArray = combination.Select(x => string.Join(string.Empty, x));
             var acronymArray = combination.Select(Acronym).Distinct();
 
             var joinedSingleStringCombination = new StringBuilder();
@@ -85,11 +91,11 @@ namespace Wox.Infrastructure
         private static string[] EmptyStringArray = new string[0];
         private static string[][] Empty2DStringArray = new string[0][];
 
-        [Obsolete("Not accurate, eg 音乐 will not return yinyue but returns yinle ")]
         /// <summary>
         /// replace chinese character with pinyin, non chinese character won't be modified
         /// <param name="word"> should be word or sentence, instead of single character. e.g. 微软 </param>
         /// </summary>
+        [Obsolete("Not accurate, eg 音乐 will not return yinyue but returns yinle ")]
         public string[] Pinyin(string word)
         {
             if (!_settings.ShouldUsePinyin)
@@ -119,12 +125,12 @@ namespace Wox.Infrastructure
                 return Empty2DStringArray;
             }
 
-            if (!PinyinCache.ContainsKey(characters))
+            if (!_pinyinCache.ContainsKey(characters))
             {
                 var allPinyins = new List<string[]>();
                 foreach (var c in characters)
                 {
-                    var pinyins = PinyinHelper.toHanyuPinyinStringArray(c, Format);
+                    var pinyins = PinyinHelper.toHanyuPinyinStringArray(c, _pinyinFormat);
                     if (pinyins != null)
                     {
                         var r = pinyins.Distinct().ToArray();
@@ -138,18 +144,18 @@ namespace Wox.Infrastructure
                 }
 
                 var combination = allPinyins.Aggregate(Combination).Select(c => c.Split(';')).ToArray();
-                PinyinCache[characters] = combination;
+                _pinyinCache[characters] = combination;
                 return combination;
             }
             else
             {
-                return PinyinCache[characters];
+                return _pinyinCache[characters];
             }
         }
 
         public string Acronym(string[] pinyin)
         {
-            var acronym = string.Join("", pinyin.Select(p => p[0]));
+            var acronym = string.Join(string.Empty, pinyin.Select(p => p[0]));
             return acronym;
         }
 
@@ -188,12 +194,12 @@ namespace Wox.Infrastructure
 
         private Dictionary<string, string[][]> GetPinyinCacheAsDictionary()
         {
-            return new Dictionary<string, string[][]>(PinyinCache);
+            return new Dictionary<string, string[][]>(_pinyinCache);
         }
 
         private void SetPinyinCacheAsDictionary(Dictionary<string, string[][]> usage)
         {
-            PinyinCache = new ConcurrentDictionary<string, string[][]>(usage);
+            _pinyinCache = new ConcurrentDictionary<string, string[][]>(usage);
         }
     }
 }

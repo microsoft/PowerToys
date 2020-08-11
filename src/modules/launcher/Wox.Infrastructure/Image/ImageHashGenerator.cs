@@ -25,7 +25,6 @@ namespace Wox.Infrastructure.Image
                 {
                     // PngBitmapEncoder enc2 = new PngBitmapEncoder();
                     // enc2.Frames.Add(BitmapFrame.Create(tt));
-
                     var enc = new JpegBitmapEncoder();
                     var bitmapFrame = BitmapFrame.Create(image);
                     bitmapFrame.Freeze();

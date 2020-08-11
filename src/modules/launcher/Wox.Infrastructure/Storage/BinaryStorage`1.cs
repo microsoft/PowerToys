@@ -77,7 +77,7 @@ namespace Wox.Infrastructure.Storage
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             BinaryFormatter binaryFormatter = new BinaryFormatter
             {
-                AssemblyFormat = FormatterAssemblyStyle.Simple
+                AssemblyFormat = FormatterAssemblyStyle.Simple,
             };
 
             try
@@ -119,7 +119,7 @@ namespace Wox.Infrastructure.Storage
             {
                 BinaryFormatter binaryFormatter = new BinaryFormatter
                 {
-                    AssemblyFormat = FormatterAssemblyStyle.Simple
+                    AssemblyFormat = FormatterAssemblyStyle.Simple,
                 };
 
                 try
