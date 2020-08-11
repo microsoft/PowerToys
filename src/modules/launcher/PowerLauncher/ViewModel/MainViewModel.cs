@@ -502,7 +502,7 @@ namespace PowerLauncher.ViewModel
                                     }
 
                                     currentCancellationToken.ThrowIfCancellationRequested();
-                                    Results.Results.Sort();
+                                    Results.Sort();
                                 }
                             }
 
