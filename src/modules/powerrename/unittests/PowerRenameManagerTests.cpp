@@ -311,8 +311,27 @@ namespace PowerRenameManagerTests
 
         TEST_METHOD (VerifyFileAttributesMonthandDayNames)
         {
+            SYSTEMTIME LocalTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };
+            wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+            wchar_t result[MAX_PATH] = L"bar";
+            wchar_t formattedDate[MAX_PATH];
+            if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+                StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
+
+            GetDateFormatEx(localeName, NULL, &LocalTime, L"MMM", formattedDate, MAX_PATH, NULL);
+            StringCchPrintf(result, MAX_PATH, TEXT("%s%s"), result, formattedDate);
+            
+            GetDateFormatEx(localeName, NULL, &LocalTime, L"MMMM", formattedDate, MAX_PATH, NULL);
+            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+
+            GetDateFormatEx(localeName, NULL, &LocalTime, L"ddd", formattedDate, MAX_PATH, NULL);
+            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+
+            GetDateFormatEx(localeName, NULL, &LocalTime, L"dddd", formattedDate, MAX_PATH, NULL);
+            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+
             rename_pairs renamePairs[] = {
-                { L"foo", L"barJan-January-Wed-Wednesday", true, true, 0 },
+                { L"foo", result, true, true, 0 },
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$MMM-$MMMM-$DDD-$DDDD", SYSTEMTIME{ 2020, 1, 3, 1, 15, 6, 42, 453 }, DEFAULT_FLAGS);

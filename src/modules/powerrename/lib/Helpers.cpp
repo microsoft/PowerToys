@@ -184,19 +184,19 @@ bool isFileAttributesUsed(_In_ PCWSTR source)
     }
     return used;
 }
+
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME LocalTime)
 {
-    PWSTR months[] = { L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun", L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"};
-    PWSTR monthsFullName[] = { L"January", L"February", L"March", L"April", L"May", L"June", L"July", L"August", L"September", L"October", L"November", L"December" };
-    PWSTR days[] = { L"Sun", L"Mon", L"Tue", L"Wed", L"Thu", L"Fri", L"Sat" };
-    PWSTR daysFullName[] = { L"Sunday", L"Monday", L"Tuesday", L"Wednesday", L"Thursday", L"Friday", L"Saturday" };
-
-
     HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
     if (SUCCEEDED(hr))
     {
         std::wstring res(source);
-        wchar_t replaceTerm[MAX_PATH] = {0};
+        wchar_t replaceTerm[MAX_PATH] = { 0 };
+        wchar_t formattedDate[MAX_PATH] = { 0 };
+
+        wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+        if(GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+            StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%04d"), L"$01", LocalTime.wYear);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YYYY"), replaceTerm);
@@ -207,26 +207,26 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", (LocalTime.wYear % 10));
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y"), replaceTerm);
         
-        //Just in case.
-        if (LocalTime.wMonth > 0)
-        {
-            StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", monthsFullName[LocalTime.wMonth - 1]);
-            res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMMM"), replaceTerm);
-
-            StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", months[LocalTime.wMonth - 1]);
-            res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMM"), replaceTerm);
-        }
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"MMMM", formattedDate, MAX_PATH, NULL);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMMM"), replaceTerm);
         
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"MMM", formattedDate, MAX_PATH, NULL);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMM"), replaceTerm);
+                
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMonth);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MM"), replaceTerm);
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMonth);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$M"), replaceTerm);
 
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFullName[LocalTime.wDayOfWeek]);
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"dddd", formattedDate, MAX_PATH, NULL);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD"), replaceTerm);
         
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[LocalTime.wDayOfWeek]);
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"ddd", formattedDate, MAX_PATH, NULL);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD"), replaceTerm);
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wDay);
