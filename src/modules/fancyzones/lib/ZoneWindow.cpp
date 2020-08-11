@@ -15,6 +15,13 @@
 
 #include <gdiplus.h>
 
+// Non-Localizable strings
+namespace NonLocalizable
+{
+    const wchar_t SegoeUiFont[] = L"Segoe ui";
+    const wchar_t ToolWindowClassName[] = L"SuperFancyZones_ZoneWindow";
+}
+
 namespace ZoneWindowUtils
 {
     std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId)
@@ -36,7 +43,7 @@ namespace ZoneWindowUtils
 
     std::wstring GenerateUniqueIdAllMonitorsArea(PCWSTR virtualDesktopId)
     {
-        std::wstring result{ MULTI_MONITOR_MODE_DEVICE };
+        std::wstring result{ ZonedWindowProperties::MultiMonitorDeviceID };
 
         RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
 
@@ -71,7 +78,7 @@ namespace ZoneWindowDrawUtils
     {
         Gdiplus::Graphics g(hdc.get());
 
-        Gdiplus::FontFamily fontFamily(L"Segoe ui");
+        Gdiplus::FontFamily fontFamily(NonLocalizable::SegoeUiFont);
         Gdiplus::Font font(&fontFamily, 80, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
         Gdiplus::SolidBrush solidBrush(Gdiplus::Color(255, 0, 0, 0));
 
@@ -253,7 +260,7 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpfnWndProc = s_WndProc;
     wcex.hInstance = hinstance;
-    wcex.lpszClassName = L"SuperFancyZones_ZoneWindow";
+    wcex.lpszClassName = NonLocalizable::ToolWindowClassName;
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     RegisterClassExW(&wcex);
 
@@ -292,7 +299,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     InitializeZoneSets(parentUniqueId);
 
     m_window = wil::unique_hwnd{
-        CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones_ZoneWindow", L"", WS_POPUP, workAreaRect.left(), workAreaRect.top(), workAreaRect.width(), workAreaRect.height(), nullptr, nullptr, hinstance, this)
+        CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, workAreaRect.left(), workAreaRect.top(), workAreaRect.width(), workAreaRect.height(), nullptr, nullptr, hinstance, this)
     };
 
     if (!m_window)
