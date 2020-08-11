@@ -83,6 +83,11 @@ namespace PowerToysTests
         {
             Setup(context);
             Assert.IsNotNull(session);
+
+            if (!isPowerToysLaunched)
+            {
+                LaunchPowerToys();
+            }
         }
 
         [ClassCleanup]
@@ -94,9 +99,6 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
-            if (session == null)
-                return;
-
             isSettingsOpened = false;
             isTrayOpened = false;
         }

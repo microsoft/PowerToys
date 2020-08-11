@@ -2,7 +2,6 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
@@ -163,11 +162,11 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context, false);
+            Setup(context);
             Assert.IsNotNull(session);
+            EnableModules(false, true, false, false, false, false, false, false);
 
             ResetDefaultFancyZonesSettings(false);
-            ResetDefaultZoneSettings(true);
         }
 
         [ClassCleanup]
@@ -180,6 +179,7 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
+            ResetDefaultZoneSettings(true);
             Assert.IsTrue(OpenEditor());
             OpenTemplates();
         }
@@ -199,8 +199,6 @@ namespace PowerToysTests
             {
                 //editor was already closed
             }
-
-            ResetDefaultZoneSettings(true);
         }
     }
 }

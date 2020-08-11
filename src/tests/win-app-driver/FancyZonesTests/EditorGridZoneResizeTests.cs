@@ -397,8 +397,9 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context, false);
+            Setup(context);
             Assert.IsNotNull(session);
+            EnableModules(false, true, false, false, false, false, false, false);
 
             ResetSettings();
 

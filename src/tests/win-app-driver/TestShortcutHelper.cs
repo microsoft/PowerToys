@@ -114,6 +114,12 @@ namespace PowerToysTests
         {
             Setup(context);
             Assert.IsNotNull(session);
+            EnableModules(false, false, false, false, false, false, false, true);
+
+            if (!isPowerToysLaunched)
+            {
+                LaunchPowerToys();
+            }
         }
 
         [ClassCleanup]

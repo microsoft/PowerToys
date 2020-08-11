@@ -40,7 +40,7 @@ namespace PowerToysTests
         {
             try
             {
-                JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));
+                JObject settings = JObject.Parse(File.ReadAllText(_fancyZonesSettingsPath));
                 return settings["properties"].ToObject<JObject>();
             }
             catch (Newtonsoft.Json.JsonReaderException)
@@ -752,7 +752,7 @@ namespace PowerToysTests
 
             try
             {
-                _initialSettingsJson = JObject.Parse(_initialSettings);
+                _initialSettingsJson = JObject.Parse(_initialFancyZonesSettings);
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {

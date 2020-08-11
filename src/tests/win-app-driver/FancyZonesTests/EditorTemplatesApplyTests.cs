@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
@@ -66,8 +66,9 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context, false);
+            Setup(context);
             Assert.IsNotNull(session);
+            EnableModules(false, true, false, false, false, false, false, false);
 
             ResetDefaultFancyZonesSettings(true);
         }
@@ -82,9 +83,6 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
-            if (session == null)
-                return;
-
             Assert.IsTrue(OpenEditor());
             OpenTemplates();
         }
