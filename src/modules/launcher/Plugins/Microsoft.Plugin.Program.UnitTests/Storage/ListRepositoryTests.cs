@@ -12,7 +12,7 @@ using Wox.Infrastructure.Storage;
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
     [TestFixture]
-    class ListRepositoryTests
+    public class ListRepositoryTests
     {
 
         [Test]

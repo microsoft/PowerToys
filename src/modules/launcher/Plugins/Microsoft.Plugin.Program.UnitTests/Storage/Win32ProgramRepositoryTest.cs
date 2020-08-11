@@ -16,7 +16,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
     using Win32Program = Program.Programs.Win32Program;
 
     [TestFixture]
-    class Win32ProgramRepositoryTest
+    public class Win32ProgramRepositoryTest
     {
         List<IFileSystemWatcherWrapper> _fileSystemWatchers;
         ProgramPluginSettings _settings = new ProgramPluginSettings();
