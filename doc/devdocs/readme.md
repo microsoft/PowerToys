@@ -66,6 +66,7 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community
 --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
 --add Microsoft.VisualStudio.Component.VC.ATL.Spectre
 ```
+4. Install WDK 1903(install with vs extension) https://docs.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads
 
 ### Compiling Source Code
 
@@ -84,6 +85,10 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community
 
 - From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+
+## Verification
+
+- After building installer and installing check in device manager that under cameras there is "PowerToys VideoConference"
 
 ## Debugging
 
