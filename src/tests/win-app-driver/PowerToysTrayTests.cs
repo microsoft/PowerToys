@@ -61,7 +61,7 @@ namespace PowerToysTests
             new Actions(session).MoveToElement(powerToys).ContextClick().Perform();
 
             //exit
-            WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+            session.FindElementByAccessibilityId("40001").Click();
 
             //check PowerToys exited
             powerToys = null;
