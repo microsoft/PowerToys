@@ -16,7 +16,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
     {
 
         [Test]
-        public void Contains_ShouldReturnTrue_WhenListIsInitializedWithItem()
+        public void ContainsShouldReturnTrueWhenListIsInitializedWithItem()
         {
             //Arrange
             var itemName = "originalItem1";
@@ -30,7 +30,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [Test]
-        public void Contains_ShouldReturnTrue_WhenListIsUpdatedWithAdd()
+        public void ContainsShouldReturnTrueWhenListIsUpdatedWithAdd()
         {
             //Arrange
             IRepository<string> repository = new ListRepository<string>();
@@ -45,7 +45,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [Test]
-        public void Contains_ShouldReturnFalse_WhenListIsUpdatedWithRemove()
+        public void ContainsShouldReturnFalseWhenListIsUpdatedWithRemove()
         {
             //Arrange
             var itemName = "originalItem1";
@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [Test]
-        public async Task Add_ShouldNotThrow_WhenBeingIterated()
+        public async Task AddShouldNotThrowWhenBeingIterated()
         {
             //Arrange
             ListRepository<string> repository = new ListRepository<string>();
@@ -103,7 +103,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [Test]
-        public async Task Remove_ShouldNotThrow_WhenBeingIterated()
+        public async Task RemoveShouldNotThrowWhenBeingIterated()
         {
             //Arrange
             ListRepository<string> repository = new ListRepository<string>();
