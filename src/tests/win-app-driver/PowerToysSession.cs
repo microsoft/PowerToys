@@ -8,7 +8,6 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
-using Windows.Data.Json;
 
 namespace PowerToysTests
 {
@@ -66,6 +65,7 @@ namespace PowerToysTests
         public static void TearDown()
         {
             RestoreUserSettings(); //restore initial settings files
+            ExitPowerToys();
 
             if (session != null)
             {
