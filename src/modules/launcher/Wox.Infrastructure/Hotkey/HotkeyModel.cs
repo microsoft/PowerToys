@@ -24,7 +24,7 @@ namespace Wox.Infrastructure.Hotkey
         Dictionary<Key, string> specialSymbolDictionary = new Dictionary<Key, string>
         {
             { Key.Space, "Space" },
-            { Key.Oem3, "~" }
+            { Key.Oem3, "~" },
         };
 
         public ModifierKeys ModifierKeys
@@ -81,7 +81,7 @@ namespace Wox.Infrastructure.Hotkey
                 return;
             }
 
-            List<string> keys = hotkeyString.Replace(" ", "").Split('+').ToList();
+            List<string> keys = hotkeyString.Replace(" ", string.Empty).Split('+').ToList();
             if (keys.Contains("Alt"))
             {
                 Alt = true;

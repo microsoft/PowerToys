@@ -28,10 +28,13 @@ BEGIN
     IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL                     "Configure the zone editor hotkey"
     IDS_SETTING_EXCLUDED_APPS_DESCRIPTION                      "To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings."
     IDS_SETTINGS_HIGHLIGHT_OPACITY                             "Zone opacity (%)"
-    IDS_FANCYZONES                                             L"FancyZones"
-    IDS_CANT_DRAG_ELEVATED                                     L"We've detected an application running with administrator privileges. This blocks some functionality in PowerToys. Visit our wiki page to learn more."
-    IDS_CANT_DRAG_ELEVATED_LEARN_MORE                          L"Learn more"
-    IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN              L"Don't show again"
+    IDS_FANCYZONES                                             "FancyZones"
+    IDS_CANT_DRAG_ELEVATED                                     "We've detected an application running with administrator privileges. This blocks some functionality in PowerToys. Visit our wiki page to learn more."
+    IDS_CANT_DRAG_ELEVATED_LEARN_MORE                          "Learn more"
+    IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN              "Don't show again"
+    IDS_KEYBOARD_LISTENER_ERROR                                "Cannot install keyboard listener."
+    IDS_WINDOW_EVENT_LISTENER_ERROR                            "Cannot install Windows event listener."
+    IDS_POWERTOYS_FANCYZONES                                   "PowerToys - FancyZones"
 END
 
 1 VERSIONINFO

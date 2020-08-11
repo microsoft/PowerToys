@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
@@ -48,9 +47,10 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|PluginsLoader.CSharpPlugins|Couldn't load assembly for {metadata.Name}", e);
+                        Infrastructure.Logger.Log.Exception($"|PluginsLoader.CSharpPlugins|Couldn't load assembly for {metadata.Name}", e);
                         return;
                     }
+
                     var types = assembly.GetTypes();
                     Type type;
                     try
@@ -59,9 +59,10 @@ namespace Wox.Core.Plugin
                     }
                     catch (InvalidOperationException e)
                     {
-                        Log.Exception($"|PluginsLoader.CSharpPlugins|Can't find class implement IPlugin for <{metadata.Name}>", e);
+                        Infrastructure.Logger.Log.Exception($"|PluginsLoader.CSharpPlugins|Can't find class implement IPlugin for <{metadata.Name}>", e);
                         return;
                     }
+
                     IPlugin plugin;
                     try
                     {
@@ -69,14 +70,14 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|PluginsLoader.CSharpPlugins|Can't create instance for <{metadata.Name}>", e);
+                        Infrastructure.Logger.Log.Exception($"|PluginsLoader.CSharpPlugins|Can't create instance for <{metadata.Name}>", e);
                         return;
                     }
 #endif
                     PluginPair pair = new PluginPair
                     {
                         Plugin = plugin,
-                        Metadata = metadata
+                        Metadata = metadata,
                     };
                     plugins.Add(pair);
                 });
@@ -93,7 +94,7 @@ namespace Wox.Core.Plugin
             var plugins = metadatas.Select(metadata => new PluginPair
             {
                 Plugin = new ExecutablePlugin(metadata.ExecuteFilePath),
-                Metadata = metadata
+                Metadata = metadata,
             });
             return plugins;
         }

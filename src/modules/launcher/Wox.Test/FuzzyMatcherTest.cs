@@ -33,7 +33,7 @@ namespace Wox.Test
                 UninstallOrChangeProgramsOnYourComputer,
                 "Add, change, and manage fonts on your computer",
                 LastIsChrome,
-                OneOneOneOne
+                OneOneOneOne,
             };
 
         public List<int> GetPrecisionScores()
@@ -57,7 +57,7 @@ namespace Wox.Test
                 "Install Package",
                 "add new bsd",
                 "Inste",
-                "aac"
+                "aac",
             };
 
             var results = new List<Result>();
@@ -67,7 +67,7 @@ namespace Wox.Test
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = matcher.FuzzyMatch("inst", str).RawScore
+                    Score = matcher.FuzzyMatch("inst", str).RawScore,
                 });
             }
 
@@ -104,7 +104,7 @@ namespace Wox.Test
                 results.Add(new Result
                 {
                     Title = str,
-                    Score = matcher.FuzzyMatch(searchTerm, str).Score
+                    Score = matcher.FuzzyMatch(searchTerm, str).Score,
                 });
             }
 
@@ -112,7 +112,7 @@ namespace Wox.Test
             {
                 var filteredResult = results.Where(result => result.Score >= precisionScore).Select(result => result).OrderByDescending(x => x.Score).ToList();
 
-                Debug.WriteLine("");
+                Debug.WriteLine(string.Empty);
                 Debug.WriteLine("###############################################");
                 Debug.WriteLine("SEARCHTERM: " + searchTerm + ", GreaterThanSearchPrecisionScore: " + precisionScore);
                 foreach (var item in filteredResult)
@@ -121,7 +121,7 @@ namespace Wox.Test
                 }
 
                 Debug.WriteLine("###############################################");
-                Debug.WriteLine("");
+                Debug.WriteLine(string.Empty);
 
                 Assert.IsFalse(filteredResult.Any(x => x.Score < precisionScore));
             }
@@ -169,19 +169,18 @@ namespace Wox.Test
             // Given
             var matchResult = matcher.FuzzyMatch(queryString, compareString);
 
-            Debug.WriteLine("");
+            Debug.WriteLine(string.Empty);
             Debug.WriteLine("###############################################");
             Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
-            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
+            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
             Debug.WriteLine("###############################################");
-            Debug.WriteLine("");
+            Debug.WriteLine(string.Empty);
 
             // Should
-            Assert.AreEqual(expectedPrecisionResult, matchResult.IsSearchPrecisionScoreMet(),
-                $"Query:{queryString}{Environment.NewLine} " +
-                $"Compare:{compareString}{Environment.NewLine}" +
-                $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
-                $"Precision Score: {(int)expectedPrecisionScore}");
+            Assert.AreEqual(
+                expectedPrecisionResult,
+                matchResult.IsSearchPrecisionScoreMet(),
+                $"{$"Query:{queryString}{Environment.NewLine} "}{$"Compare:{compareString}{Environment.NewLine}"}{$"Raw Score: {matchResult.RawScore}{Environment.NewLine}"}{$"Precision Score: {(int)expectedPrecisionScore}"}");
         }
 
         [TestCase("exce", "OverLeaf-Latex: An online LaTeX editor", StringMatcher.SearchPrecisionScore.Regular, false)]
@@ -213,19 +212,18 @@ namespace Wox.Test
             // Given
             var matchResult = matcher.FuzzyMatch(queryString, compareString);
 
-            Debug.WriteLine("");
+            Debug.WriteLine(string.Empty);
             Debug.WriteLine("###############################################");
             Debug.WriteLine($"QueryString: {queryString}     CompareString: {compareString}");
-            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore.ToString()}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
+            Debug.WriteLine($"RAW SCORE: {matchResult.RawScore}, PrecisionLevelSetAt: {expectedPrecisionScore} ({(int)expectedPrecisionScore})");
             Debug.WriteLine("###############################################");
-            Debug.WriteLine("");
+            Debug.WriteLine(string.Empty);
 
             // Should
-            Assert.AreEqual(expectedPrecisionResult, matchResult.IsSearchPrecisionScoreMet(),
-                $"Query:{queryString}{Environment.NewLine} " +
-                $"Compare:{compareString}{Environment.NewLine}" +
-                $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
-                $"Precision Score: {(int)expectedPrecisionScore}");
+            Assert.AreEqual(
+                expectedPrecisionResult,
+                matchResult.IsSearchPrecisionScoreMet(),
+                $"{$"Query:{queryString}{Environment.NewLine} "}{$"Compare:{compareString}{Environment.NewLine}"}{$"Raw Score: {matchResult.RawScore}{Environment.NewLine}"}{$"Precision Score: {(int)expectedPrecisionScore}"}");
         }
 
         [TestCase("Windows Terminal", "Windows_Terminal", "term")]

@@ -20,28 +20,27 @@ namespace Microsoft.Plugin.Program
 {
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
     {
-        private static readonly object IndexLock = new object();
-        internal static Settings _settings { get; set; }
+        internal static ProgramPluginSettings _settings { get; set; }
 
         private static bool IsStartupIndexProgramsRequired => _settings.LastIndexTime.AddDays(3) < DateTime.Today;
 
         private static PluginInitContext _context;
 
-        private readonly PluginJsonStorage<Settings> _settingsStorage;
+        private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed = false;
-        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWP.Application>>("UWP"));
+        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
         private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
         private static Win32ProgramRepository _win32ProgramRepository;
 
         public Main()
         {
-            _settingsStorage = new PluginJsonStorage<Settings>();
+            _settingsStorage = new PluginJsonStorage<ProgramPluginSettings>();
             _settings = _settingsStorage.Load();
             // This helper class initializes the file system watchers based on the locations to watch
             _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
             // Initialize the Win32ProgramRepository with the settings object
-            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32Program>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
 
             Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
             {
@@ -86,13 +85,16 @@ namespace Microsoft.Plugin.Program
                 .Where(p => p.Enabled)
                 .Select(p => p.Result(query.Search, _context.API));
 
-            var result = results1.Concat(results2).Where(r => r != null && r.Score > 0).ToList();
-            return result;
+            var result = results1.Concat(results2).Where(r => r != null && r.Score > 0);
+            var maxScore = result.Max(x => x.Score);
+            result = result.Where(x => x.Score > _settings.MinScoreThreshold * maxScore);
+
+            return result.ToList();
         }
 
         public void Init(PluginInitContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context)); ;
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateUWPIconPath(_context.API.GetCurrentTheme());
         }
@@ -104,7 +106,7 @@ namespace Microsoft.Plugin.Program
 
         public void UpdateUWPIconPath(Theme theme)
         {
-            foreach (UWP.Application app in _packageRepository)
+            foreach (UWPApplication app in _packageRepository)
             {
                 app.UpdatePath(theme);
             }
@@ -132,6 +134,11 @@ namespace Microsoft.Plugin.Program
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
+            if(selectedResult == null)
+            {
+                throw new ArgumentNullException(nameof(selectedResult));
+            }
+
             var menuOptions = new List<ContextMenuResult>();
             var program = selectedResult.ContextData as Programs.IProgram;
             if (program != null)
@@ -142,10 +149,21 @@ namespace Microsoft.Plugin.Program
             return menuOptions;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and show the user a warning message")]
         public static void StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
             try
             {
+                if(runProcess == null)
+                {
+                    throw new ArgumentNullException(nameof(runProcess));
+                }
+
+                if(info == null)
+                {
+                    throw new ArgumentNullException(nameof(info));
+                }
+
                 runProcess(info);
             }
             catch (Exception)
@@ -161,7 +179,7 @@ namespace Microsoft.Plugin.Program
             IndexPrograms();
         }
 
-        public void UpdateSettings(PowerLauncherSettings settings)
+        public static void UpdateSettings(PowerLauncherSettings _)
         {
         }
 

@@ -32,6 +32,14 @@ namespace
     constexpr int CUSTOM_POSITIONING_LEFT_TOP_PADDING = 16;
 }
 
+// Non-localizable strings
+namespace NonLocalizable
+{
+    const wchar_t ToolWindowClassName[] = L"SuperFancyZones";
+    const wchar_t FZEditorExecutablePath[] = L"modules\\FancyZones\\FancyZonesEditor.exe";
+    const wchar_t SplashClassName[] = L"MsoSplash";
+}
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
@@ -301,14 +309,16 @@ FancyZones::Run() noexcept
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpfnWndProc = s_WndProc;
     wcex.hInstance = m_hinstance;
-    wcex.lpszClassName = L"SuperFancyZones";
+    wcex.lpszClassName = NonLocalizable::ToolWindowClassName;
     RegisterClassExW(&wcex);
 
     BufferedPaintInit();
 
-    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones", L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
+    m_window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window)
+    {
         return;
+    }
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
 
@@ -363,7 +373,7 @@ bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
     // Avoid processing splash screens, already stamped (zoned) windows, or those windows
     // that belong to excluded applications list.
     if (IsSplashScreen(window) ||
-        (reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP)) != 0) ||
+        (reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0) ||
         !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
         return false;
@@ -715,7 +725,7 @@ void FancyZones::ToggleEditor() noexcept
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-    sei.lpFile = L"modules\\FancyZones\\FancyZonesEditor.exe";
+    sei.lpFile = NonLocalizable::FZEditorExecutablePath;
     sei.lpParameters = params.c_str();
     sei.nShow = SW_SHOWNORMAL;
     ShellExecuteEx(&sei);
@@ -1016,7 +1026,7 @@ void FancyZones::UpdateZoneWindows() noexcept
 void FancyZones::UpdateWindowsPositions() noexcept
 {
     auto callback = [](HWND window, LPARAM data) -> BOOL {
-        size_t bitmask = reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP));
+        size_t bitmask = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID));
 
         if (bitmask != 0)
         {
@@ -1145,14 +1155,13 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
 
 bool FancyZones::IsSplashScreen(HWND window)
 {
-    wchar_t splashClassName[] = L"MsoSplash"; // shouldn't be localized
     wchar_t className[MAX_PATH];
     if (GetClassName(window, className, MAX_PATH) == 0)
     {
         return false;
     }
 
-    return wcscmp(splashClassName, className) == 0;
+    return wcscmp(NonLocalizable::SplashClassName, className) == 0;
 }
 
 void FancyZones::OnEditorExitEvent() noexcept

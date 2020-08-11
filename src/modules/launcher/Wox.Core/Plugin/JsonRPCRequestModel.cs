@@ -16,38 +16,10 @@
  *
  */
 
-using System.Collections.Generic;
 using System.Linq;
-using Wox.Plugin;
 
 namespace Wox.Core.Plugin
 {
-    public class JsonRPCErrorModel
-    {
-        public int Code { get; set; }
-
-        public string Message { get; set; }
-
-        public string Data { get; set; }
-    }
-
-    public class JsonRPCModelBase
-    {
-        public int Id { get; set; }
-    }
-
-    public class JsonRPCResponseModel : JsonRPCModelBase
-    {
-        public string Result { get; set; }
-
-        public JsonRPCErrorModel Error { get; set; }
-    }
-
-    public class JsonRPCQueryResponseModel : JsonRPCResponseModel
-    {
-        public new List<JsonRPCResult> Result { get; set; }
-    }
-
     public class JsonRPCRequestModel : JsonRPCModelBase
     {
         public string Method { get; set; }
@@ -102,41 +74,5 @@ namespace Wox.Core.Plugin
                 .Replace(@"\", @"\\") // Escapes itself when passed to client
                 .Replace(@"""", @"\\""""");
         }
-    }
-
-    /// <summary>
-    /// Json RPC Request that Wox sent to client
-    /// </summary>
-    public class JsonRPCServerRequestModel : JsonRPCRequestModel
-    {
-        public override string ToString()
-        {
-            string rpc = base.ToString();
-            return rpc + "}";
-        }
-    }
-
-    /// <summary>
-    /// Json RPC Request(in query response) that client sent to Wox
-    /// </summary>
-    public class JsonRPCClientRequestModel : JsonRPCRequestModel
-    {
-        public bool DontHideAfterAction { get; set; }
-
-        public override string ToString()
-        {
-            string rpc = base.ToString();
-            return rpc + "}";
-        }
-    }
-
-    /// <summary>
-    /// Represent the json-rpc result item that client send to Wox
-    /// Typically, we will send back this request model to client after user select the result item
-    /// But if the request method starts with "Wox.", we will invoke the public APIs we expose.
-    /// </summary>
-    public class JsonRPCResult : Result
-    {
-        public JsonRPCClientRequestModel JsonRPCAction { get; set; }
     }
 }

@@ -20,6 +20,8 @@ namespace FancyZonesEditor
         // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const int MaxZones = 40;
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+
+        // Localizable string
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
         public int WrapPanelItemSize { get; set; } = 262;

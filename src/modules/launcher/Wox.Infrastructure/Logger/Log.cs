@@ -100,7 +100,8 @@ namespace Wox.Infrastructure.Logger
                 logger.Error($"Exception target site:\n <{e.TargetSite}>");
                 logger.Error($"Exception HResult:\n <{e.HResult}>");
                 e = e.InnerException;
-            } while (e != null);
+            }
+            while (e != null);
 
             logger.Error("-------------------------- End exception --------------------------");
         }

@@ -22,7 +22,7 @@ namespace Wox.Plugin
         public ModifierKeys AcceleratorModifiers { get; set; }
 
         /// <summary>
-        /// return true to hide wox after select result
+        /// Gets or sets return true to hide wox after select result
         /// </summary>
         public Func<ActionContext, bool> Action { get; set; }
 

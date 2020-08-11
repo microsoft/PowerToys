@@ -24,6 +24,6 @@ namespace Wox.Infrastructure.Hotkey
         /// <summary>
         /// System key down
         /// </summary>
-        WM_SYSKEYDOWN = 260
+        WM_SYSKEYDOWN = 260,
     }
 }

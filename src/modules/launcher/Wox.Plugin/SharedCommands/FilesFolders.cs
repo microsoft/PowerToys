@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.Windows;
 
 namespace Wox.Plugin.SharedCommands
 {
@@ -25,6 +24,7 @@ namespace Wox.Plugin.SharedCommands
             try
             {
                 DirectoryInfo[] dirs = dir.GetDirectories();
+
                 // If the destination directory doesn't exist, create it.
                 if (!Directory.Exists(targetPath))
                 {
@@ -51,11 +51,10 @@ namespace Wox.Plugin.SharedCommands
 #if DEBUG
                 throw e;
 #else
-                MessageBox.Show(string.Format("Copying path {0} has failed, it will now be deleted for consistency", targetPath));
+                System.Windows.MessageBox.Show(string.Format("Copying path {0} has failed, it will now be deleted for consistency", targetPath));
                 RemoveFolder(targetPath);
 #endif
             }
-
         }
 
         public static bool VerifyBothFolderFilesEqual(this string fromPath, string toPath)
@@ -66,10 +65,14 @@ namespace Wox.Plugin.SharedCommands
                 var toDir = new DirectoryInfo(toPath);
 
                 if (fromDir.GetFiles("*", SearchOption.AllDirectories).Length != toDir.GetFiles("*", SearchOption.AllDirectories).Length)
+                {
                     return false;
+                }
 
                 if (fromDir.GetDirectories("*", SearchOption.AllDirectories).Length != toDir.GetDirectories("*", SearchOption.AllDirectories).Length)
+                {
                     return false;
+                }
 
                 return true;
             }
@@ -78,11 +81,10 @@ namespace Wox.Plugin.SharedCommands
 #if DEBUG
                 throw e;
 #else
-                MessageBox.Show(string.Format("Unable to verify folders and files between {0} and {1}", fromPath, toPath));
+                System.Windows.MessageBox.Show(string.Format("Unable to verify folders and files between {0} and {1}", fromPath, toPath));
                 return false;
 #endif
             }
-
         }
 
         public static void RemoveFolder(this string path)
@@ -90,14 +92,16 @@ namespace Wox.Plugin.SharedCommands
             try
             {
                 if (Directory.Exists(path))
+                {
                     Directory.Delete(path, true);
+                }
             }
             catch (Exception e)
             {
 #if DEBUG
                 throw e;
 #else
-                MessageBox.Show(string.Format("Not able to delete folder {0}, please go to the location and manually delete it", path));
+                System.Windows.MessageBox.Show(string.Format("Not able to delete folder {0}, please go to the location and manually delete it", path));
 #endif
             }
         }

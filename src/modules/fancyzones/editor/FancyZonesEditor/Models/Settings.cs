@@ -60,9 +60,19 @@ namespace FancyZonesEditor
         private const string ErrorInvalidArgs = "FancyZones Editor arguments are invalid.";
         private const string ErrorNonStandaloneApp = "FancyZones Editor should not be run as standalone application.";
 
-        // Non-localizable strings
-        private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
+        // Displayed layout names are localizable strings, but their underlying json tags are not.
+        private const string FocusLayoutID = "Focus";
+        private const string ColumnsLayoutID = "Columns";
+        private const string RowsLayoutID = "Rows";
+        private const string GridLayoutID = "Grid";
+        private const string PriorityGridLayoutID = "Priority Grid";
+        private const string CreateNewCustomLabel = "Create new custom";
 
+        // Non-localizable strings
+        public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
+        public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
+
+        private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
         private const string ActiveZoneSetsTmpFileName = "FancyZonesActiveZoneSets.json";
         private const string AppliedZoneSetsTmpFileName = "FancyZonesAppliedZoneSets.json";
         private const string DeletedCustomZoneSetsTmpFileName = "FancyZonesDeletedCustomZoneSets.json";
@@ -78,6 +88,15 @@ namespace FancyZonesEditor
         private const string EditorShowSpacingJsonTag = "editor-show-spacing";
         private const string EditorSpacingJsonTag = "editor-spacing";
         private const string EditorZoneCountJsonTag = "editor-zone-count";
+
+        private const string FocusJsonTag = "focus";
+        private const string ColumnsJsonTag = "columns";
+        private const string RowsJsonTag = "rows";
+        private const string GridJsonTag = "grid";
+        private const string PriorityGridJsonTag = "priority-grid";
+        private const string CustomJsonTag = "custom";
+
+        private const string DebugMode = "Debug";
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -128,30 +147,30 @@ namespace FancyZonesEditor
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel("Focus", LayoutType.Focus);
+            _focusModel = new CanvasLayoutModel(FocusLayoutID, LayoutType.Focus);
             DefaultModels.Add(_focusModel);
 
-            _columnsModel = new GridLayoutModel("Columns", LayoutType.Columns)
+            _columnsModel = new GridLayoutModel(ColumnsLayoutID, LayoutType.Columns)
             {
                 Rows = 1,
                 RowPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_columnsModel);
 
-            _rowsModel = new GridLayoutModel("Rows", LayoutType.Rows)
+            _rowsModel = new GridLayoutModel(RowsLayoutID, LayoutType.Rows)
             {
                 Columns = 1,
                 ColumnPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_rowsModel);
 
-            _gridModel = new GridLayoutModel("Grid", LayoutType.Grid);
+            _gridModel = new GridLayoutModel(GridLayoutID, LayoutType.Grid);
             DefaultModels.Add(_gridModel);
 
-            _priorityGridModel = new GridLayoutModel("Priority Grid", LayoutType.PriorityGrid);
+            _priorityGridModel = new GridLayoutModel(PriorityGridLayoutID, LayoutType.PriorityGrid);
             DefaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel("Create new custom", LayoutType.Blank);
+            _blankCustomModel = new CanvasLayoutModel(CreateNewCustomLabel, LayoutType.Blank);
 
             UpdateLayoutModels();
         }
@@ -421,22 +440,22 @@ namespace FancyZonesEditor
                 {
                     switch (layoutType)
                     {
-                        case "focus":
+                        case FocusJsonTag:
                             ActiveZoneSetLayoutType = LayoutType.Focus;
                             break;
-                        case "columns":
+                        case ColumnsJsonTag:
                             ActiveZoneSetLayoutType = LayoutType.Columns;
                             break;
-                        case "rows":
+                        case RowsJsonTag:
                             ActiveZoneSetLayoutType = LayoutType.Rows;
                             break;
-                        case "grid":
+                        case GridJsonTag:
                             ActiveZoneSetLayoutType = LayoutType.Grid;
                             break;
-                        case "priority-grid":
+                        case PriorityGridJsonTag:
                             ActiveZoneSetLayoutType = LayoutType.PriorityGrid;
                             break;
-                        case "custom":
+                        case CustomJsonTag:
                             ActiveZoneSetLayoutType = LayoutType.Custom;
                             break;
                     }
@@ -461,7 +480,7 @@ namespace FancyZonesEditor
 
             if (args.Length == 2)
             {
-                if (args[1].Equals("Debug"))
+                if (args[1].Equals(DebugMode))
                 {
                     ParseDeviceInfoData(ParseDeviceMode.Debug);
                 }
@@ -528,9 +547,6 @@ namespace FancyZonesEditor
         }
 
         private static ObservableCollection<LayoutModel> _customModels;
-
-        public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
-        public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
 
         public static bool IsPredefinedLayout(LayoutModel model)
         {
