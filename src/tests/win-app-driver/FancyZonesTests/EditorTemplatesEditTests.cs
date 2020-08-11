@@ -11,7 +11,7 @@ namespace PowerToysTests
     {
         private void ChangeLayout()
         {
-            new Actions(session).MoveToElement(session.FindElementByAccessibilityId("PART_TitleBar")).MoveByOffset(0, -50).Click().Perform();
+            new Actions(session).MoveToElement(creatorWindow.FindElementByAccessibilityId("PART_TitleBar")).MoveByOffset(0, -50).Click().Perform();
         }
 
         private void Cancel(AppiumWebElement creatorWindow)
@@ -31,7 +31,7 @@ namespace PowerToysTests
 
         private void SaveTest()
         {
-            new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
+            new Actions(session).MoveToElement(creatorWindow.FindElementByName("Save and apply")).Click().Perform();
             WaitSeconds(1);
 
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
@@ -45,7 +45,7 @@ namespace PowerToysTests
             OpenCreatorWindow("Focus", "EditTemplateButton");
             ZoneCountTest(3, 0);
 
-            session.FindElementByAccessibilityId("newZoneButton").Click();
+            creatorWindow.FindElementByAccessibilityId("newZoneButton").Click();
             ZoneCountTest(4, 0);
 
             CancelTest(creatorWindow);
@@ -105,7 +105,7 @@ namespace PowerToysTests
             OpenCreatorWindow("Focus", "EditTemplateButton");
             ZoneCountTest(3, 0);
 
-            session.FindElementByAccessibilityId("newZoneButton").Click();
+            creatorWindow.FindElementByAccessibilityId("newZoneButton").Click();
             ZoneCountTest(4, 0);
 
             SaveTest();
