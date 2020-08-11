@@ -40,3 +40,6 @@
 #define IDS_CANT_DRAG_ELEVATED                                      126
 #define IDS_CANT_DRAG_ELEVATED_LEARN_MORE                           127
 #define IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN               128
+#define IDS_KEYBOARD_LISTENER_ERROR                                 129
+#define IDS_WINDOW_EVENT_LISTENER_ERROR                             130
+#define IDS_POWERTOYS_FANCYZONES                                    131

@@ -82,7 +82,10 @@ public:
                 s_llKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
                 if (!s_llKeyboardHook)
                 {
-                    MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
+                    MessageBoxW(NULL,
+                                GET_RESOURCE_STRING(IDS_KEYBOARD_LISTENER_ERROR).c_str(),
+                                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+                                MB_OK | MB_ICONERROR);
                 }
             }
 
@@ -103,7 +106,10 @@ public:
                 }
                 else
                 {
-                    MessageBoxW(NULL, L"Cannot install Windows event listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
+                    MessageBoxW(NULL,
+                                GET_RESOURCE_STRING(IDS_WINDOW_EVENT_LISTENER_ERROR).c_str(),
+                                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+                                MB_OK | MB_ICONERROR);
                 }
             }
 
