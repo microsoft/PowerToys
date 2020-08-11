@@ -17,6 +17,7 @@ Instead, send dumps/traces to secure@microsoft.com, referencing this GitHub issu
 - Windows build number: [run "winver"]
 - PowerToys version: 
 - PowerToy module:
+- Running PowerToys as Admin:
 
 ## 📝 Provide detailed reproduction steps (if any)
 
