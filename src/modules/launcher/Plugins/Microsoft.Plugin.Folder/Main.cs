@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.Folder
         private static readonly FolderSettings _settings = _storage.Load();
 
         private static List<string> _driverNames;
-        private PluginInitContext _context;
+        private static PluginInitContext _context;
 
         private IContextMenu _contextMenuLoader;
 
@@ -69,6 +69,7 @@ namespace Microsoft.Plugin.Folder
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1313:Parameter names should begin with lower-case letter", Justification = "The parameter is unused")]
         private void OnThemeChanged(Theme _, Theme newTheme)
         {
             UpdateIconPath(newTheme);
@@ -275,22 +276,20 @@ namespace Microsoft.Plugin.Folder
                 throw;
             }
 
-            // Initial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
-            if(folderList.Count > _settings.MaxFolderResults || fileList.Count > _settings.MaxFileResults)
+            results = results.Concat(folderList.OrderBy(x => x.Title).Take(_settings.MaxFolderResults)).Concat(fileList.OrderBy(x => x.Title).Take(_settings.MaxFileResults)).ToList();
+
+            // Show warning message if result has been truncated
+            if (folderList.Count > _settings.MaxFolderResults || fileList.Count > _settings.MaxFileResults)
             {
                 var preTruncationCount = folderList.Count + fileList.Count;
-                var postTruncationCount = 0;
-                postTruncationCount += Math.Min(folderList.Count, _settings.MaxFolderResults);
-                postTruncationCount += Math.Min(fileList.Count, _settings.MaxFileResults);
+                var postTruncationCount = Math.Min(folderList.Count, _settings.MaxFolderResults) + Math.Min(fileList.Count, _settings.MaxFileResults);
                 results.Add(CreateTruncatedItemsResult(search, preTruncationCount, postTruncationCount));
             }
 
-            // Initial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
-            results = results.Concat(folderList.OrderBy(x => x.Title).Take(_settings.MaxFolderResults)).Concat(fileList.OrderBy(x => x.Title).Take(_settings.MaxFileResults)).ToList();
             return results.ToList();
         }
 
-        private Result CreateTruncatedItemsResult(string search, int preTruncationCount, int postTruncationCount)
+        private static Result CreateTruncatedItemsResult(string search, int preTruncationCount, int postTruncationCount)
         {
             return new Result
             {
@@ -298,8 +297,7 @@ namespace Microsoft.Plugin.Folder
                 QueryTextDisplay = search,
                 SubTitle = string.Format(CultureInfo.InvariantCulture, _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_subtitle"), postTruncationCount, preTruncationCount),
                 IcoPath = WarningIconPath,
-                Score = 1,
-                };
+            };
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alve and instead inform the user of the error")]
