@@ -506,71 +506,41 @@ namespace PowerLauncher.ViewModel
                             }
 
                             currentCancellationToken.ThrowIfCancellationRequested();
-                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                if (query.RawQuery == _currentQuery.RawQuery)
-                                {
-                                    Results.Results.NotifyChanges();
-                                }
-
-                                if (Results.Results.Count > 0)
-                                {
-                                    Results.Visibility = Visibility.Visible;
-                                    Results.SelectedIndex = 0;
-                                }
-                                else
-                                {
-                                    Results.Visibility = Visibility.Hidden;
-                                }
-                            }));
+                            UpdateResultsListViewAfterQuery(query);
 
                             // Run the slower query of the DelayedExecution plugins
                             currentCancellationToken.ThrowIfCancellationRequested();
-                            foreach (PluginPair plugin in plugins)
-                            {
-                                if (!plugin.Metadata.Disabled && plugin.Metadata.DelayedExecution)
+                            Parallel.ForEach(plugins, (plugin) =>
                                 {
-                                    var results = PluginManager.QueryForPlugin(plugin, query, true);
-                                    currentCancellationToken.ThrowIfCancellationRequested();
-                                    if (results.Count != 0)
+                                    if (!plugin.Metadata.Disabled && plugin.Metadata.DelayedExecution)
                                     {
-                                        lock (_addResultsLock)
-                                        {
-                                            if (query.RawQuery == _currentQuery.RawQuery)
-                                            {
-                                                currentCancellationToken.ThrowIfCancellationRequested();
-
-                                                // Remove the original results from the plugin
-                                                Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
-                                                currentCancellationToken.ThrowIfCancellationRequested();
-
-                                                // Add the new results from the plugin
-                                                UpdateResultView(results, query, currentCancellationToken);
-                                                currentCancellationToken.ThrowIfCancellationRequested();
-                                                Results.Sort();
-                                            }
-                                        }
-
+                                        var results = PluginManager.QueryForPlugin(plugin, query, true);
                                         currentCancellationToken.ThrowIfCancellationRequested();
-                                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                        if (results.Count != 0)
                                         {
-                                            if (query.RawQuery == _currentQuery.RawQuery)
+                                            lock (_addResultsLock)
                                             {
-                                                Results.Results.NotifyChanges();
+                                                if (query.RawQuery == _currentQuery.RawQuery)
+                                                {
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
+
+                                                    // Remove the original results from the plugin
+                                                    Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
+
+                                                    // Add the new results from the plugin
+                                                    UpdateResultView(results, query, currentCancellationToken);
+                                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                                    Results.Sort();
+                                                }
                                             }
 
-                                            if (Results.Results.Count > 0)
-                                            {
-                                                Results.Visibility = Visibility.Visible;
-                                            }
-                                            else
-                                            {
-                                                Results.Visibility = Visibility.Hidden;
-                                            }
-                                        }));
+                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            UpdateResultsListViewAfterQuery(query, true);
+                                        }
                                     }
-                                }
-                            }
+                                });
+
                         }
                         catch (OperationCanceledException)
                         {
@@ -597,6 +567,30 @@ namespace PowerLauncher.ViewModel
                 Results.Visibility = Visibility.Hidden;
                 Results.Clear();
             }
+        }
+
+        private void UpdateResultsListViewAfterQuery(Query query, bool isDelayedInvoke = false)
+        {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (query.RawQuery == _currentQuery.RawQuery)
+                {
+                    Results.Results.NotifyChanges();
+                }
+
+                if (Results.Results.Count > 0)
+                {
+                    Results.Visibility = Visibility.Visible;
+                    if (!isDelayedInvoke)
+                    {
+                        Results.SelectedIndex = 0;
+                    }
+                }
+                else
+                {
+                    Results.Visibility = Visibility.Hidden;
+                }
+            }));
         }
 
         private bool SelectedIsFromQueryResults()
