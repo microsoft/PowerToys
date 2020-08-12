@@ -1,25 +1,28 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Wox.Infrastructure;
-using Microsoft.Plugin.Program.Logger;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Wox.Plugin;
-using System.Windows.Input;
-using Wox.Plugin.SharedCommands;
-using System.Reflection;
+using Microsoft.Plugin.Program.Logger;
+using Microsoft.Plugin.Program.Win32;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
+using Wox.Plugin;
+using Wox.Plugin.SharedCommands;
 using static Microsoft.Plugin.Program.Programs.UWP;
-using System.Runtime.InteropServices.ComTypes;
-using System.Globalization;
-using Microsoft.Plugin.Program.Win32;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -28,20 +31,29 @@ namespace Microsoft.Plugin.Program.Programs
     public class UWPApplication : IProgram
     {
         public string AppListEntry { get; set; }
+
         public string UniqueIdentifier { get; set; }
+
         public string DisplayName { get; set; }
+
         public string Description { get; set; }
+
         public string UserModelId { get; set; }
+
         public string BackgroundColor { get; set; }
 
         public string EntryPoint { get; set; }
+
         public string Name => DisplayName;
+
         public string Location => Package.Location;
+
         public bool Enabled { get; set; }
+
         public bool CanRunElevated { get; set; }
 
-        
         public string LogoPath { get; set; }
+
         public UWP Package { get; set; }
 
         private string logoUri;
@@ -84,13 +96,12 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     Launch(api);
                     return true;
-                }
+                },
             };
 
             // To set the title to always be the displayname of the packaged application
             result.Title = DisplayName;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
-
 
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), Package.Location);
@@ -130,7 +141,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                                 Process.Start(info);
                                 return true;
-                            }
+                            },
                         }
                     );
             }
@@ -148,7 +159,7 @@ namespace Microsoft.Plugin.Program.Programs
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
 
                         return true;
-                    }
+                    },
                 });
 
             contextMenus.Add(new ContextMenuResult
@@ -171,7 +182,7 @@ namespace Microsoft.Plugin.Program.Programs
                         Log.Exception($"|Microsoft.Plugin.Program.UWP.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
                         return false;
                     }
-                }
+                },
             });
 
             return contextMenus;
@@ -318,7 +329,6 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-
         internal string LogoUriFromManifest(IAppxManifestApplication app)
         {
             var logoKeyFromVersion = new Dictionary<PackageVersion, string>
@@ -382,7 +392,7 @@ namespace Microsoft.Plugin.Program.Programs
                         // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
                         { PackageVersion.Windows10, new List<int> { 100, 125, 150, 200, 400 } },
                         { PackageVersion.Windows81, new List<int> { 100, 120, 140, 160, 180 } },
-                        { PackageVersion.Windows8, new List<int> { 100 } }
+                        { PackageVersion.Windows8, new List<int> { 100 } },
                     };
 
                 if (scaleFactors.ContainsKey(Package.Version))
@@ -450,7 +460,6 @@ namespace Microsoft.Plugin.Program.Programs
             var logo = ImageFromPath(LogoPath);
             return logo;
         }
-
 
         private BitmapImage ImageFromPath(string path)
         {

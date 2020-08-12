@@ -1,15 +1,18 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using Moq;
-using NUnit.Framework;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using Wox.Infrastructure.Storage;
-using Wox.Plugin;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
-using System.IO;
+using Moq;
+using NUnit.Framework;
 using Wox.Infrastructure.FileSystemHelper;
-using System.Diagnostics;
+using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
@@ -47,7 +50,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 Name = name,
                 ExecutableName = exename,
                 FullPath = fullPath,
-                Description = description1
+                Description = description1,
             };
 
             Win32Program item2 = new Win32Program
@@ -55,7 +58,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 Name = name,
                 ExecutableName = exename,
                 FullPath = fullPath,
-                Description = description2
+                Description = description2,
             };
 
             // Act
@@ -357,7 +360,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 ExecutableName = "path.exe",
                 ParentDirectory = "directory",
                 FullPath = "directory\\path.exe",
-                LnkResolvedPath = "directory\\path.lnk" // This must be equal for lnk applications
+                LnkResolvedPath = "directory\\path.lnk", // This must be equal for lnk applications
             };
             _win32ProgramRepository.Add(item);
 

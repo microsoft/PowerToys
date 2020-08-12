@@ -1,14 +1,14 @@
-﻿using Moq;
-using NUnit.Framework;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Moq;
+using NUnit.Framework;
 using Wox.Infrastructure;
 using Wox.Plugin;
-
-using Microsoft.Plugin.Program;
-using System.IO.Packaging;
-using Windows.ApplicationModel;
-using System;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
@@ -23,7 +23,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "notepad.exe",
             FullPath = "c:\\windows\\system32\\notepad.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\accessories\\notepad.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program notepad_users = new Win32Program
@@ -32,7 +32,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "notepad.exe",
             FullPath = "c:\\windows\\system32\\notepad.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\accessories\\notepad.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program azure_command_prompt = new Win32Program
@@ -41,7 +41,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft azure\\microsoft azure sdk for .net\\v2.9\\microsoft azure command prompt - v2.9.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program visual_studio_command_prompt = new Win32Program
@@ -50,7 +50,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\visual studio 2019\\visual studio tools\\vc\\x64 native tools command prompt for vs 2019.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program command_prompt = new Win32Program
@@ -59,7 +59,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\command prompt.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program file_explorer = new Win32Program
@@ -68,7 +68,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "File Explorer.lnk",
             FullPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\file explorer.lnk",
             LnkResolvedPath = null,
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program wordpad = new Win32Program
@@ -77,7 +77,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "wordpad.exe",
             FullPath = "c:\\program files\\windows nt\\accessories\\wordpad.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\accessories\\wordpad.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program wordpad_duplicate = new Win32Program
@@ -86,7 +86,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "WORDPAD.EXE",
             FullPath = "c:\\program files\\windows nt\\accessories\\wordpad.exe",
             LnkResolvedPath = null,
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program twitter_pwa = new Win32Program
@@ -95,7 +95,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\chrome apps\\twitter.lnk",
             Arguments = " --profile-directory=Default --app-id=jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi",
-            AppType = 0
+            AppType = 0,
         };
 
         static Win32Program pinned_webpage = new Win32Program
@@ -104,7 +104,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\web page.lnk",
             Arguments = "--profile-directory=Default --app-id=homljgmgpmcbpjbnjpfijnhipfkiclkd",
-            AppType = 0
+            AppType = 0,
         };
 
         static Win32Program edge_named_pinned_webpage = new Win32Program
@@ -113,7 +113,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\edge - bing.lnk",
             Arguments = "  --profile-directory=Default --app-id=aocfnapldcnfbofgmbbllojgocaelgdd",
-            AppType = 0
+            AppType = 0,
         };
 
         static Win32Program msedge = new Win32Program
@@ -122,7 +122,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "msedge.exe",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft edge.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program chrome = new Win32Program
@@ -131,7 +131,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "chrome.exe",
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\google chrome.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program dummy_proxy_app = new Win32Program
@@ -140,7 +140,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "test_proxy.exe",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\test_proxy.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\test proxy.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
         static Win32Program cmd_run_command = new Win32Program
@@ -149,7 +149,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
             LnkResolvedPath = null,
-            AppType = 3 // Run command
+            AppType = 3, // Run command
         };
 
         static Win32Program cmder_run_command = new Win32Program
@@ -159,7 +159,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             ExecutableName = "Cmder.exe",
             FullPath = "c:\\tools\\cmder\\cmder.exe",
             LnkResolvedPath = null,
-            AppType = 3 // Run command
+            AppType = 3, // Run command
         };
 
         static Win32Program dummy_internetShortcut_app = new Win32Program
@@ -169,7 +169,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             FullPath = "steam://rungameid/1258080",
             ParentDirectory = "C:\\Users\\temp\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Steam",
             LnkResolvedPath = null,
-            AppType = 1
+            AppType = 1,
         };
 
         static Win32Program dummy_internetShortcut_app_duplicate = new Win32Program
@@ -179,7 +179,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             FullPath = "steam://rungameid/1258080",
             ParentDirectory = "C:\\Users\\temp\\Desktop",
             LnkResolvedPath = null,
-            AppType = 1
+            AppType = 1,
         };
 
         [Test]

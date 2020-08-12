@@ -1,9 +1,13 @@
-﻿using System.Windows;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Linq;
+using System.Windows;
 using System.Windows.Forms;
 using Microsoft.Plugin.Program.Views;
-using System.Linq;
 using Wox.Plugin;
-using System;
 
 namespace Microsoft.Plugin.Program
 {
@@ -60,7 +64,7 @@ namespace Microsoft.Plugin.Program
                     var source = new ProgramSource
                     {
                         Location = Directory.Text,
-                        UniqueIdentifier = Directory.Text
+                        UniqueIdentifier = Directory.Text,
                     };
 
                     _settings.ProgramSources.Insert(0, source);

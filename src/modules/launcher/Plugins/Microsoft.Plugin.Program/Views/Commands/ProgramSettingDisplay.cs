@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
 using System.Linq;
-
 
 namespace Microsoft.Plugin.Program.Views.Commands
 {
@@ -18,7 +20,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                     Enabled = x.Enabled,
                                                     Location = x.Location,
                                                     Name = x.Name,
-                                                    UniqueIdentifier = x.UniqueIdentifier
+                                                    UniqueIdentifier = x.UniqueIdentifier,
                                                 }
                                         ));
 
@@ -37,7 +39,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                         Enabled = x.Enabled,
                                         Location = x.Location,
                                         Name = x.Name,
-                                        UniqueIdentifier = x.UniqueIdentifier
+                                        UniqueIdentifier = x.UniqueIdentifier,
                                     }
                               ));
 
@@ -92,7 +94,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                         Name = x.Name,
                                                         Location = x.Location,
                                                         UniqueIdentifier = x.UniqueIdentifier,
-                                                        Enabled = false
+                                                        Enabled = false,
                                                     }
                                             ));
         }

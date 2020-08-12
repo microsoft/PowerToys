@@ -1,22 +1,25 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Reflection;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.Plugin.Program.Logger;
 using Microsoft.Win32;
 using Wox.Infrastructure;
-using Microsoft.Plugin.Program.Logger;
-using Wox.Plugin;
-using System.Windows.Input;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.FileSystemHelper;
-using System.Globalization;
+using Wox.Infrastructure.Logger;
+using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -25,22 +28,38 @@ namespace Microsoft.Plugin.Program.Programs
     public class Win32Program : IProgram
     {
         public string Name { get; set; }
+
         public string UniqueIdentifier { get; set; }
+
         public string IcoPath { get; set; }
+
         public string FullPath { get; set; }
+
         public string LnkResolvedPath { get; set; }
+
         public string ParentDirectory { get; set; }
+
         public string ExecutableName { get; set; }
+
         public string Description { get; set; } = String.Empty;
+
         public bool Valid { get; set; }
+
         public bool Enabled { get; set; }
+
         public bool hasArguments { get; set; } = false;
+
         public string Arguments { get; set; } = String.Empty;
+
         public string Location => ParentDirectory;
+
         public uint AppType { get; set; }
+
         // Wrappers for File Operations
         public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set;} =  new FileVersionInfoWrapper();
+
         public static IFileWrapper FileWrapper { get; set; } = new FileWrapper();
+
         public static IShellLinkHelper Helper { get; set; } = new ShellLinkHelper();
 
         private const string ShortcutExtension = "lnk";
@@ -56,7 +75,7 @@ namespace Microsoft.Plugin.Program.Programs
             WEB_APPLICATION = 0,
             INTERNET_SHORTCUT_APPLICATION = 1,
             WIN32_APPLICATION = 2,
-            RUN_COMMAND = 3
+            RUN_COMMAND = 3,
         }
 
         // Function to calculate the score of a result
@@ -197,7 +216,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Main.StartProcess(Process.Start, info);
 
                     return true;
-                }
+                },
             };
 
             // To set the title for the result to always be the name of the application            
@@ -244,7 +263,7 @@ namespace Microsoft.Plugin.Program.Programs
                         Task.Run(() => Main.StartProcess(Process.Start, info));
 
                         return true;
-                    }
+                    },
                 });
             }
 
@@ -261,7 +280,7 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
                         return true;
-                    }
+                    },
                 });
 
             contextMenus.Add(
@@ -285,13 +304,11 @@ namespace Microsoft.Plugin.Program.Programs
                             Log.Exception($"|Microsoft.Plugin.Program.Win32.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
                             return false;
                         }
-                    }
+                    },
                 });
 
             return contextMenus;
         }
-
-
 
         public override string ToString()
         {
@@ -313,7 +330,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Description = string.Empty,
                     Valid = true,
                     Enabled = true,
-                    AppType = (uint)ApplicationTypes.WIN32_APPLICATION
+                    AppType = (uint)ApplicationTypes.WIN32_APPLICATION,
                 };
                 return p;
             }
@@ -378,7 +395,7 @@ namespace Microsoft.Plugin.Program.Programs
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Valid = true,
                     Enabled = true,
-                    AppType = (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION
+                    AppType = (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION,
                 };
                 return p;
             }
@@ -602,7 +619,6 @@ namespace Microsoft.Plugin.Program.Programs
                             select CreateWin32Program(p);
             return programs1.Concat(programs2).Concat(programs3);
         }
-
 
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
         private static ParallelQuery<Win32Program> PathEnvironmentPrograms(IList<string> suffixes)
