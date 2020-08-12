@@ -12,11 +12,11 @@ using Wox.Infrastructure.Storage;
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
     [TestFixture]
-    class ListRepositoryTests
+    public class ListRepositoryTests
     {
 
         [Test]
-        public void Contains_ShouldReturnTrue_WhenListIsInitializedWithItem()
+        public void ContainsShouldReturnTrueWhenListIsInitializedWithItem()
         {
             //Arrange
             var itemName = "originalItem1";
@@ -30,7 +30,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [Test]
-        public void Contains_ShouldReturnTrue_WhenListIsUpdatedWithAdd()
+        public void ContainsShouldReturnTrueWhenListIsUpdatedWithAdd()
         {
             //Arrange
             IRepository<string> repository = new ListRepository<string>();
@@ -45,7 +45,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [Test]
-        public void Contains_ShouldReturnFalse_WhenListIsUpdatedWithRemove()
+        public void ContainsShouldReturnFalseWhenListIsUpdatedWithRemove()
         {
             //Arrange
             var itemName = "originalItem1";
@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [Test]
-        public async Task Add_ShouldNotThrow_WhenBeingIterated()
+        public async Task AddShouldNotThrowWhenBeingIterated()
         {
             //Arrange
             ListRepository<string> repository = new ListRepository<string>();
@@ -96,14 +96,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
            });
 
             //Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
-            Assert.DoesNotThrowAsync(async () =>
-            {
-                await Task.WhenAll(new Task[] { iterationTask, addTask });
-            });
+            await Task.WhenAll(new Task[] { iterationTask, addTask }).ConfigureAwait(false);
         }
 
         [Test]
-        public async Task Remove_ShouldNotThrow_WhenBeingIterated()
+        public async Task RemoveShouldNotThrowWhenBeingIterated()
         {
             //Arrange
             ListRepository<string> repository = new ListRepository<string>();
@@ -139,10 +136,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             });
 
             //Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
-            Assert.DoesNotThrowAsync(async () =>
-            {
-                await Task.WhenAll(new Task[] { iterationTask, addTask });
-            });
+            await Task.WhenAll(new Task[] { iterationTask, addTask }).ConfigureAwait(false);
         }
     }
 }

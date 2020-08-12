@@ -8,6 +8,8 @@ using Wox.Plugin;
 using Microsoft.Plugin.Program;
 using System.IO.Packaging;
 using Windows.ApplicationModel;
+using System;
+
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
     using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
@@ -181,7 +183,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         };
 
         [Test]
-        public void DedupFunction_whenCalled_mustRemoveDuplicateNotepads()
+        public void DedupFunctionWhenCalledMustRemoveDuplicateNotepads()
         {
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>();
@@ -196,7 +198,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void DedupFunction_whenCalled_MustRemoveInternetShortcuts()
+        public void DedupFunctionWhenCalledMustRemoveInternetShortcuts()
         {
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>();
@@ -211,7 +213,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void DedupFunction_whenCalled_mustNotRemovelnkWhichdoesNotHaveExe()
+        public void DedupFunctionWhenCalledMustNotRemovelnkWhichdoesNotHaveExe()
         {
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>();
@@ -225,7 +227,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void DedupFunction_mustRemoveDuplicates_forExeExtensionsWithoutLnkResolvedPath()
+        public void DedupFunctionMustRemoveDuplicatesForExeExtensionsWithoutLnkResolvedPath()
         {
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>();
@@ -241,7 +243,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void DedupFunction_mustNotRemovePrograms_withSameExeNameAndFullPath()
+        public void DedupFunctionMustNotRemoveProgramsWithSameExeNameAndFullPath()
         {
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>();
@@ -257,7 +259,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void FunctionIsWebApplication_ShouldReturnTrue_ForWebApplications()
+        public void FunctionIsWebApplicationShouldReturnTrueForWebApplications()
         {
             // The IsWebApplication(() function must return true for all PWAs and pinned web pages
             Assert.IsTrue(twitter_pwa.IsWebApplication());
@@ -269,7 +271,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [TestCase("ignore")]
-        public void FunctionFilterWebApplication_ShouldReturnFalse_WhenSearchingForTheMainApp(string query)
+        public void FunctionFilterWebApplicationShouldReturnFalseWhenSearchingForTheMainApp(string query)
         {
             // Irrespective of the query, the FilterWebApplication() Function must not filter main apps such as edge and chrome
             Assert.IsFalse(msedge.FilterWebApplication(query));
@@ -283,7 +285,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("edg", ExpectedResult = true)]
         [TestCase("Edge page", ExpectedResult = false)]
         [TestCase("Edge Web page", ExpectedResult = false)]
-        public bool EdgeWebSites_ShouldBeFiltered_WhenSearchingForEdge(string query)
+        public bool EdgeWebSitesShouldBeFilteredWhenSearchingForEdge(string query)
         {
             return pinned_webpage.FilterWebApplication(query);
         }
@@ -293,7 +295,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("Google", ExpectedResult = true)]
         [TestCase("Google Chrome", ExpectedResult = true)]
         [TestCase("Google Chrome twitter", ExpectedResult = false)]
-        public bool ChromeWebSites_ShouldBeFiltered_WhenSearchingForChrome(string query)
+        public bool ChromeWebSitesShouldBeFilteredWhenSearchingForChrome(string query)
         {
             return twitter_pwa.FilterWebApplication(query);
         }
@@ -306,7 +308,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("WEB PAGE", 1, ExpectedResult = false)]
         [TestCase("edge", 2, ExpectedResult = false)]
         [TestCase("EDGE", 2, ExpectedResult = false)]
-        public bool PinnedWebPages_ShouldNotBeFiltered_WhenSearchingForThem(string query, int Case)
+        public bool PinnedWebPagesShouldNotBeFilteredWhenSearchingForThem(string query, int Case)
         {
             const uint CASE_TWITTER = 0;
             const uint CASE_WEB_PAGE = 1;
@@ -334,7 +336,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("cmd")]
         [TestCase("cmd.exe")]
         [TestCase("ignoreQueryText")]
-        public void Win32Applications_ShouldNotBeFiltered_WhenFilteringRunCommands(string query)
+        public void Win32ApplicationsShouldNotBeFilteredWhenFilteringRunCommands(string query)
         {
             // Even if there is an exact match in the name or exe name, win32 applications should never be filtered
             Assert.IsTrue(command_prompt.QueryEqualsNameForRunCommands(query));
@@ -343,7 +345,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("cmd")]
         [TestCase("Cmd")]
         [TestCase("CMD")]
-        public void RunCommands_ShouldNotBeFiltered_OnExactMatch(string query)
+        public void RunCommandsShouldNotBeFilteredOnExactMatch(string query)
         {
             // Partial matches should be filtered as cmd is not equal to cmder
             Assert.IsFalse(cmder_run_command.QueryEqualsNameForRunCommands(query));
@@ -353,7 +355,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void WEB_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void WebApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -370,7 +372,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void INTERNET_SHORTCUT_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void InternetShortcutApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -386,7 +388,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void WIN32_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void Win32ApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -403,7 +405,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void RUN_COMMAND_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void RunCommandShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -420,7 +422,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult()
+        public void Win32AppsShouldSetNameAsTitleWhileCreatingResult()
         {
             var mock = new Mock<IPublicAPI>();
             mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
@@ -430,8 +432,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var result = cmder_run_command.Result("cmder", mock.Object);
 
             // Assert
-            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name));
-            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description));
+            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name, StringComparison.Ordinal));
+            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description, StringComparison.Ordinal));
         }
     }
 }
