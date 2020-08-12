@@ -60,10 +60,10 @@ namespace Microsoft.Plugin.Program.Storage
                     {
                         _fileSystemWatchers[index].Dispose();
                     }
+
                     _disposed = true;
                 }
             }
         }
-
     }
 }
