@@ -94,8 +94,12 @@ steps:
       **\UnitTests-SvgPreviewHandler.dll
       **\Wox.Test.dll
       **\powerpreviewTest.dll
-      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
       # Can't get working, says no tests
       # crashes CI
       #**\interop-tests.dll 
       #**\UnitTests-FancyZones.dll
+ 
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: '**/*Microsoft.PowerToys.Settings.UI.UnitTests.dll'
