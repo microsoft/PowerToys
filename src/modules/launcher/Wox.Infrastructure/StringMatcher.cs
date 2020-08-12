@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleToAttribute("Microsoft.Plugin.Program.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
 
 namespace Wox.Infrastructure
 {

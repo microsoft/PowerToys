@@ -60,8 +60,7 @@ namespace Wox.Infrastructure.Logger
             ExceptionInternal(classNameWithMethod, message, exception);
         }
 
-        private static string CheckClassAndMessageAndReturnFullClassWithMethod(string className, string message,
-            string methodName)
+        private static string CheckClassAndMessageAndReturnFullClassWithMethod(string className, string message, string methodName)
         {
             if (string.IsNullOrWhiteSpace(className))
             {

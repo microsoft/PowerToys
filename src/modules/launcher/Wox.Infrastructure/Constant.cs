@@ -14,14 +14,15 @@ namespace Wox.Infrastructure
         public const string ExeFileName = "PowerLauncher";
         public const string ModuleLocation = "Microsoft\\PowerToys\\PowerToys Run";
         public const string Plugins = "Plugins";
+        public const string PortableFolderName = "UserData";
 
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
         public static readonly string ProgramDirectory = Directory.GetParent(Assembly.Location.NonNull()).ToString();
         public static readonly string ExecutablePath = Path.Combine(ProgramDirectory, ExeFileName + ".exe");
 
-        public static bool IsPortableMode;
-        public const string PortableFolderName = "UserData";
-        public static string PortableDataPath = Path.Combine(ProgramDirectory, PortableFolderName);
+        public static bool IsPortableMode { get; set; }
+
+        public static string PortableDataPath { get; set; } = Path.Combine(ProgramDirectory, PortableFolderName);
 
         public static string DetermineDataDirectory()
         {
