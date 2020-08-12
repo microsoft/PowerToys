@@ -17,7 +17,7 @@ namespace PowerToysTests
             OpenSettings();
 
             //check settings window opened
-            WindowsElement settingsWindow = WaitElementByName("PowerToys Settings");
+            WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
             Assert.IsNotNull(settingsWindow);
 
             isSettingsOpened = true;
@@ -38,10 +38,10 @@ namespace PowerToysTests
             new Actions(session).MoveToElement(pt).ContextClick().Perform();
 
             //open settings
-            WaitElementByXPath("//MenuItem[@Name=\"Settings\"]").Click();
+            session.FindElementByXPath("//MenuItem[@Name=\"Settings\"]").Click();
 
             //check settings window opened
-            WindowsElement settingsWindow = WaitElementByName("PowerToys Settings");
+            WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
             Assert.IsNotNull(settingsWindow);
 
             isSettingsOpened = true;

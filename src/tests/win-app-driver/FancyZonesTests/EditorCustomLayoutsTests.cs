@@ -134,10 +134,19 @@ namespace PowerToysTests
         }
 
         [TestMethod]
-        public void CreateWithUnicodeCharactersName()
+        public void RenameLayout()
         {
+            //create layout
             OpenCreatorWindow("Create new custom");
-            string name = "ёÖ±¬āݾᵩὡ√ﮘﻹտ";
+            string name = "My custom zone layout name";
+            SetLayoutName(name);
+            SaveTest("canvas", name, 0);
+
+            //rename layout
+            Assert.IsTrue(OpenEditor());
+            OpenCustomLayouts();
+            OpenCreatorWindow(name);
+            name = "New name";
             SetLayoutName(name);
             SaveTest("canvas", name, 0);
         }
@@ -168,32 +177,31 @@ namespace PowerToysTests
         }
 
         [TestMethod]
-        public void RemoveLayout()
+        public void AddRemoveSameLayoutNames()
         {
-            //create layout
-            OpenCreatorWindow("Create new custom");
             string name = "Name";
-            SetLayoutName(name);
-            SaveTest("canvas", name, 0);
-            WaitSeconds(1);
 
-            //save layout id
-            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
-            Assert.AreEqual(1, settings["custom-zone-sets"].ToObject<JArray>().Count);
-            string layoutId = settings["custom-zone-sets"][0]["uuid"].ToString();
+            for (int i = 0; i < 3; i++)
+            {
+                //create layout
+                OpenCreatorWindow("Create new custom");
+                SetLayoutName(name);
 
-            //remove layout
-            Assert.IsTrue(OpenEditor());
-            OpenCustomLayouts();
-            AppiumWebElement nameLabel = editorWindow.FindElementByXPath("//Text[@Name=\"" + name + "\"]");
-            new Actions(session).MoveToElement(nameLabel).MoveByOffset(nameLabel.Rect.Width / 2 + 10, 0).Click().Perform();
+                new Actions(session).MoveToElement(editorWindow.FindElementByName("Save and apply")).Click().Perform();
+
+                //remove layout
+                Assert.IsTrue(OpenEditor());
+                OpenCustomLayouts();
+                AppiumWebElement nameLabel = editorWindow.FindElementByXPath("//Text[@Name=\"" + name + "\"]");
+                new Actions(session).MoveToElement(nameLabel).MoveByOffset(nameLabel.Rect.Width / 2 + 10, 0).Click().Perform();
+            }
 
             //settings are saved on window closing
             new Actions(session).MoveToElement(editorWindow.FindElementByAccessibilityId("PART_Close")).Click().Perform();
             WaitSeconds(1);
 
             //check settings
-            settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
             Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
         }
 
@@ -228,31 +236,32 @@ namespace PowerToysTests
         }
 
         [TestMethod]
-        public void AddRemoveDifferentLayoutNames()
+        public void RemoveApply()
         {
-            for (int i = 0; i < 3; i++)
-            {
-                string name = i.ToString();
+            string name = "Name";
 
-                //create layout
-                OpenCreatorWindow("Create new custom");
-                SetLayoutName(name);
+            //create layout
+            OpenCreatorWindow("Create new custom");
+            SetLayoutName(name);
+            new Actions(session).MoveToElement(editorWindow.FindElementByName("Save and apply")).Click().Perform();
+            WaitSeconds(1);
 
-                new Actions(session).MoveToElement(editorWindow.FindElementByName("Save and apply")).Click().Perform();
+            //save layout id
+            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            Assert.AreEqual(1, settings["custom-zone-sets"].ToObject<JArray>().Count);
 
-                //remove layout
-                Assert.IsTrue(OpenEditor());
-                OpenCustomLayouts();
-                AppiumWebElement nameLabel = editorWindow.FindElementByXPath("//Text[@Name=\"" + name + "\"]");
-                new Actions(session).MoveToElement(nameLabel).MoveByOffset(nameLabel.Rect.Width / 2 + 10, 0).Click().Perform();
-            }
+            //remove layout
+            Assert.IsTrue(OpenEditor());
+            OpenCustomLayouts();
+            AppiumWebElement nameLabel = editorWindow.FindElementByXPath("//Text[@Name=\"" + name + "\"]");
+            new Actions(session).MoveToElement(nameLabel).MoveByOffset(nameLabel.Rect.Width / 2 + 10, 0).Click().Perform();
 
-            //settings are saved on window closing
-            new Actions(session).MoveToElement(editorWindow.FindElementByAccessibilityId("PART_Close")).Click().Perform();
+            //apply
+            new Actions(session).MoveToElement(editorWindow.FindElementByName("Apply")).Click().Perform();
             WaitSeconds(1);
 
             //check settings
-            JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
+            settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
             Assert.AreEqual(0, settings["custom-zone-sets"].ToObject<JArray>().Count);
         }
 

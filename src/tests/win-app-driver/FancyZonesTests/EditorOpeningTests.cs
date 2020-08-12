@@ -79,7 +79,7 @@ namespace PowerToysTests
             WindowsElement errorMessage = null;
             try
             {
-                errorMessage = WaitElementByName("FancyZones Editor Exception Handler");
+                errorMessage = session.FindElementByName("FancyZones Editor Exception Handler");
                 if (errorMessage != null)
                 {
                     errorMessage.FindElementByName("OK").Click();
@@ -90,8 +90,7 @@ namespace PowerToysTests
                 //no error message, it's ok
             }
 
-            WaitSeconds(1);
-            editorWindow = WaitElementByName("FancyZones Editor");
+            editorWindow = session.FindElementByName("FancyZones Editor");
             Assert.IsNotNull(editorWindow);
 
             if (!errorExpected)

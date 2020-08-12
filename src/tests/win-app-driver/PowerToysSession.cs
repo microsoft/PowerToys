@@ -51,6 +51,8 @@ namespace PowerToysTests
                 try
                 {
                     session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appiumOptions);
+                    session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+
                     trayButton = session.FindElementByAccessibilityId("1502");
 
                     isPowerToysLaunched = CheckPowerToysLaunched();
@@ -65,10 +67,12 @@ namespace PowerToysTests
         public static void TearDown()
         {
             RestoreUserSettings(); //restore initial settings files
-            ExitPowerToys();
 
             if (session != null)
             {
+                trayButton = null;
+                settingsWindow = null;
+
                 session.Quit();
                 session = null;
             }
@@ -79,83 +83,22 @@ namespace PowerToysTests
             Thread.Sleep(TimeSpan.FromSeconds(seconds));
         }
 
-        //Trying to find element by name
-        protected static WindowsElement WaitElementByName(string name, double maxTime = 10)
-        {
-            WindowsElement result = null;
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
-            {
-                try
-                {
-                    result = session.FindElementByName(name);
-                    return result;
-                }
-                catch { }
-
-                WaitSeconds(0.5);
-            }
-            return null;
-        }
-
-        //Trying to find element by XPath
-        protected static WindowsElement WaitElementByXPath(string xPath, double maxTime = 10)
-        {
-            WindowsElement result = null;
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
-            {
-                try
-                {
-                    result = session.FindElementByXPath(xPath);
-                    return result;
-                }
-                catch { }
-
-                WaitSeconds(0.5);
-            }
-            return null;
-        }
-
-        //Trying to find element by AccessibilityId
-        protected static WindowsElement WaitElementByAccessibilityId(string accessibilityId, double maxTime = 10)
-        {
-            WindowsElement result = null;
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
-            {
-                try
-                {
-                    result = session.FindElementByAccessibilityId(accessibilityId);
-                    return result;
-                }
-                catch { }
-
-                WaitSeconds(0.5);
-            }
-            return null;
-        }
-
         public static void OpenSettings()
         {
+            trayButton.Click();
+
             try
             {
-                trayButton.Click();
-                WaitSeconds(1);
-
                 PowerToysTrayButton().Click();
-                trayButton.Click(); //close
-
-                settingsWindow = WaitElementByName("PowerToys Settings");
-                Assert.IsNotNull(settingsWindow);
+                settingsWindow = session.FindElementByName("PowerToys Settings");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+
+            trayButton.Click(); //close
+            Assert.IsNotNull(settingsWindow);
         }
 
         public static void OpenFancyZonesSettings()
@@ -181,7 +124,6 @@ namespace PowerToysTests
                 if (settings != null)
                 {
                     settings.Click();
-                    WaitSeconds(1);
                     settings.FindElementByName("Close").Click();
                     //settings.SendKeys(Keys.Alt + Keys.F4);
                 }
@@ -195,31 +137,27 @@ namespace PowerToysTests
         protected static AppiumWebElement PowerToysTrayButton()
         {
             WindowsElement notificationOverflow = session.FindElementByName("Notification Overflow");
-            Assert.IsNotNull(notificationOverflow);
             AppiumWebElement overflowArea = notificationOverflow.FindElementByName("Overflow Notification Area");
-            Assert.IsNotNull(overflowArea);
             AppiumWebElement powerToys = overflowArea.FindElementByXPath("//Button[contains(@Name, \"PowerToys\")]");
-            Assert.IsNotNull(powerToys);
-
             return powerToys;
         }
 
         private static bool CheckPowerToysLaunched()
         {
             bool isLaunched = false;
+            trayButton.Click();
+
             try
             {
-                trayButton.Click();
-                WaitSeconds(1);
                 AppiumWebElement pt = PowerToysTrayButton();
                 isLaunched = (pt != null);
-                trayButton.Click(); //close
             }
             catch (OpenQA.Selenium.WebDriverException)
             {
                 //PowerToys not found
             }
 
+            trayButton.Click(); //close
             return isLaunched;
         }
 
@@ -245,7 +183,6 @@ namespace PowerToysTests
         public static void ExitPowerToys()
         {
             trayButton.Click();
-            WaitSeconds(1);
 
             try
             {
@@ -254,7 +191,6 @@ namespace PowerToysTests
 
                 new Actions(session).MoveToElement(pt).ContextClick().Perform();
                 session.FindElementByAccessibilityId("40001").Click();
-                WaitSeconds(1);
                 //WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
 
                 isPowerToysLaunched = false;

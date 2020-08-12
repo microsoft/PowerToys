@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -287,7 +287,7 @@ namespace PowerToysTests
         {
             //create canvas zone
             OpenCreatorWindow("Create new custom");
-            WaitElementByAccessibilityId("newZoneButton").Click();
+            creatorWindow.FindElementByAccessibilityId("newZoneButton").Click();
         }
 
         [TestCleanup]

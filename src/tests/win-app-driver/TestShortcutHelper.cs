@@ -69,7 +69,6 @@ namespace PowerToysTests
             }
 
             ReleaseWinKey();
-            WaitSeconds(0.5);
             shortcutHelperWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Pane[@ClassName=\"PToyD2DPopup\"]");
             Assert.IsNull(shortcutHelperWindow);
         }
@@ -83,7 +82,6 @@ namespace PowerToysTests
             WindowsElement shortcutHelperWindow = session.FindElementByClassName("PToyD2DPopup");
             Assert.IsNotNull(shortcutHelperWindow);
             ReleaseWinKey();
-            WaitSeconds(0.5);
             WindowsElement startMenuWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Window[@Name=\"Start\"]");
         }
         [TestMethod]
@@ -105,7 +103,6 @@ namespace PowerToysTests
                 Assert.Fail("Shortcut Guide not found");
             }
             ReleaseWinKey();
-            WaitSeconds(0.5);
             WindowsElement startMenuWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Window[@Name=\"Start\"]");
         }
         

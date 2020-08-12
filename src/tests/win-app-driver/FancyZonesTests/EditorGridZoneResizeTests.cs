@@ -52,7 +52,7 @@ namespace PowerToysTests
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
-            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("GridZone").Count);
             ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
             Assert.AreEqual(2, thumbs.Count);
 
@@ -94,7 +94,7 @@ namespace PowerToysTests
             {
                 int expected = thumb.Rect.X;
 
-                Move(thumb, Screen.PrimaryScreen.WorkingArea.Right, false, false);
+                Move(thumb, Screen.PrimaryScreen.WorkingArea.Right, true, false);
                 int actual = thumb.Rect.X;
 
                 Assert.AreEqual(expected, actual);
@@ -108,7 +108,7 @@ namespace PowerToysTests
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
-            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("GridZone").Count);
             ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
             Assert.AreEqual(2, thumbs.Count);
 
@@ -161,9 +161,10 @@ namespace PowerToysTests
         public void CreateSplitter()
         {
             OpenCreatorWindow("Columns", "EditTemplateButton");
-            WaitSeconds(2);
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
 
-            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            ReadOnlyCollection<AppiumWebElement> zones = gridEditor.FindElementsByClassName("GridZone");
             Assert.AreEqual(3, zones.Count, "Zones count invalid");
 
             const int defaultSpacing = 16;
@@ -171,7 +172,7 @@ namespace PowerToysTests
 
             new Actions(session).MoveToElement(zones[0]).Click().Perform();
 
-            zones = session.FindElementsByClassName("GridZone");
+            zones = gridEditor.FindElementsByClassName("GridZone");
             Assert.AreEqual(4, zones.Count);
 
             //check splitted zone 
@@ -185,9 +186,10 @@ namespace PowerToysTests
         public void TestSplitterShiftAfterCreation()
         {
             OpenCreatorWindow("Columns", "EditTemplateButton");
-            WaitSeconds(2);
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
 
-            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            ReadOnlyCollection<AppiumWebElement> zones = gridEditor.FindElementsByClassName("GridZone");
             Assert.AreEqual(3, zones.Count, "Zones count invalid");
 
             const int defaultSpacing = 16;
@@ -196,7 +198,7 @@ namespace PowerToysTests
             int firstSplitPos = zones[0].Rect.Y + zones[0].Rect.Height / 4;
             new Actions(session).MoveToElement(zones[0]).MoveByOffset(0, -(zones[0].Rect.Height / 4)).Click().Perform();
 
-            zones = session.FindElementsByClassName("GridZone");
+            zones = gridEditor.FindElementsByClassName("GridZone");
             Assert.AreEqual(4, zones.Count);
 
             Assert.AreEqual(zones[0].Rect.Top, defaultSpacing);
@@ -210,7 +212,7 @@ namespace PowerToysTests
 
             new Actions(session).MoveToElement(zones[3]).Click().Perform();
 
-            zones = session.FindElementsByClassName("GridZone");
+            zones = gridEditor.FindElementsByClassName("GridZone");
             Assert.AreEqual(5, zones.Count);
 
             //check first split on same position
@@ -232,7 +234,7 @@ namespace PowerToysTests
             Assert.IsNotNull(gridEditor);
 
             ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
-            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("GridZone").Count);
             Assert.AreEqual(2, thumbs.Count);
 
             new Actions(session).MoveToElement(thumbs[0]).Click().MoveByOffset(-100, 0)
@@ -240,7 +242,7 @@ namespace PowerToysTests
                 .Perform();
             Assert.AreEqual(3, gridEditor.FindElementsByClassName("Thumb").Count);
 
-            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            ReadOnlyCollection<AppiumWebElement> zones = gridEditor.FindElementsByClassName("GridZone");
             Assert.AreEqual(4, zones.Count);
 
             //check that zone was splitted vertically
@@ -257,7 +259,7 @@ namespace PowerToysTests
             Assert.IsNotNull(gridEditor);
 
             ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
-            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("GridZone").Count);
             Assert.AreEqual(2, thumbs.Count);
 
             new Actions(session).MoveToElement(thumbs[0]).Click().MoveByOffset(-100, 0)
@@ -265,7 +267,7 @@ namespace PowerToysTests
                 .Perform();
             Assert.AreEqual(3, gridEditor.FindElementsByClassName("Thumb").Count);
 
-            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            ReadOnlyCollection<AppiumWebElement> zones = gridEditor.FindElementsByClassName("GridZone");
             Assert.AreEqual(4, zones.Count);
 
             //check that zone was splitted vertically
@@ -281,7 +283,7 @@ namespace PowerToysTests
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
-            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("GridZone").Count);
             ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
             Assert.AreEqual(2, thumbs.Count);
 
@@ -290,7 +292,7 @@ namespace PowerToysTests
                 .KeyDown(OpenQA.Selenium.Keys.Shift).Click().KeyUp(OpenQA.Selenium.Keys.Shift)
                 .Perform();
             thumbs = gridEditor.FindElementsByClassName("Thumb");
-            Assert.AreEqual(4, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(4, gridEditor.FindElementsByClassName("GridZone").Count);
             Assert.AreEqual(3, thumbs.Count);
 
             //move thumbs
@@ -315,7 +317,7 @@ namespace PowerToysTests
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
-            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(3, gridEditor.FindElementsByClassName("GridZone").Count);
             ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
             Assert.AreEqual(2, thumbs.Count);
 
@@ -324,7 +326,7 @@ namespace PowerToysTests
                 .KeyDown(OpenQA.Selenium.Keys.Shift).Click().KeyUp(OpenQA.Selenium.Keys.Shift)
                 .Perform();
             thumbs = gridEditor.FindElementsByClassName("Thumb");
-            Assert.AreEqual(4, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(4, gridEditor.FindElementsByClassName("GridZone").Count);
             Assert.AreEqual(3, thumbs.Count);
 
             //move thumbs
@@ -349,18 +351,18 @@ namespace PowerToysTests
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
-            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            ReadOnlyCollection<AppiumWebElement> zones = gridEditor.FindElementsByClassName("GridZone");
             ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
             Assert.AreEqual(3, zones.Count);
             Assert.AreEqual(2, thumbs.Count);
 
             Move(zones[0], thumbs[0].Rect.X + thumbs[0].Rect.Width + 10, true, true, -(zones[0].Rect.Height / 2) + 10);
 
-            WindowsElement mergeButton = session.FindElementByName("Merge zones");
+            AppiumWebElement mergeButton = gridEditor.FindElementByName("Merge zones");
             Assert.IsNotNull(mergeButton, "Cannot merge: no merge button");
             new Actions(session).Click(mergeButton).Perform();
 
-            Assert.AreEqual(2, session.FindElementsByClassName("GridZone").Count);
+            Assert.AreEqual(2, gridEditor.FindElementsByClassName("GridZone").Count);
             Assert.AreEqual(1, gridEditor.FindElementsByClassName("Thumb").Count);
         }
 
@@ -380,9 +382,9 @@ namespace PowerToysTests
             thumbs = gridEditor.FindElementsByClassName("Thumb");
 
             //merge zones
-            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            ReadOnlyCollection<AppiumWebElement> zones = gridEditor.FindElementsByClassName("GridZone");
             Move(zones[0], thumbs[0].Rect.X + thumbs[0].Rect.Width + 10, true, true, -(zones[0].Rect.Height / 2) + 10);
-            WindowsElement mergeButton = session.FindElementByName("Merge zones");
+            AppiumWebElement mergeButton = gridEditor.FindElementByName("Merge zones");
             Assert.IsNotNull(mergeButton, "Cannot merge: no merge button");
             new Actions(session).Click(mergeButton).Perform();
 
@@ -428,7 +430,7 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
-            WindowsElement cancelButton = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]/Window/Button[@Name=\"Cancel\"]");
+            AppiumWebElement cancelButton = creatorWindow.FindElementByName("Cancel");
             Assert.IsNotNull(cancelButton);
             new Actions(session).MoveToElement(cancelButton).Click().Perform();
         }

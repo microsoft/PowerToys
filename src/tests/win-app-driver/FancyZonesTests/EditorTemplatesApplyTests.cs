@@ -14,7 +14,7 @@ namespace PowerToysTests
 
             try
             {
-                Assert.IsNull(session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]"));
+                Assert.IsNull(session.FindElementByName("FancyZones Editor"));
             }
             catch (OpenQA.Selenium.WebDriverException)
             {

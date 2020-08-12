@@ -22,10 +22,9 @@ namespace PowerToysTests
             try
             {
                 new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
-                WaitSeconds(1);
                 
                 //editorWindow = WaitElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-                editorWindow = WaitElementByName("FancyZones Editor");
+                editorWindow = session.FindElementByName("FancyZones Editor");
                 Assert.IsNotNull(editorWindow, "Couldn't find editor window");
                 
                 return true;
