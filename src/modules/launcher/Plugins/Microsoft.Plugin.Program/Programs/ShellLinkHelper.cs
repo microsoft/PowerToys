@@ -18,7 +18,7 @@ namespace Microsoft.Plugin.Program.Programs
         {
             SLGP_SHORTPATH = 0x1,
             SLGP_UNCPRIORITY = 0x2,
-            SLGP_RAWPATH = 0x4
+            SLGP_RAWPATH = 0x4,
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -49,9 +49,8 @@ namespace Microsoft.Plugin.Program.Programs
             SLR_NOSEARCH = 0x10,
             SLR_NOTRACK = 0x20,
             SLR_NOLINKINFO = 0x40,
-            SLR_INVOKE_MSI = 0x80
+            SLR_INVOKE_MSI = 0x80,
         }
-
 
         // Reference : http://www.pinvoke.net/default.aspx/Interfaces.IShellLinkW
         /// The IShellLink interface allows Shell links to be created, modified, and resolved
@@ -107,6 +106,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         // Contains the arguments to the app
         public string Arguments { get; set; } = String.Empty;
+
         public bool hasArguments { get; set; } = false;
 
         // Retrieve the target path using Shell Link

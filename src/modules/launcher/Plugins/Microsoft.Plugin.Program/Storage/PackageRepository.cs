@@ -21,6 +21,7 @@ namespace Microsoft.Plugin.Program.Storage
         private IStorage<IList<UWPApplication>> _storage;
 
         private IPackageCatalog _packageCatalog;
+
         public PackageRepository(IPackageCatalog packageCatalog, IStorage<IList<UWPApplication>> storage)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage), "StorageRepository requires an initialized storage interface");

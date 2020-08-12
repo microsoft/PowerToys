@@ -53,7 +53,6 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-
         //
         // Summary:
         //     Indicates that an app package is updating.

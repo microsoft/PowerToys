@@ -60,7 +60,6 @@ namespace Microsoft.Plugin.Program
                     Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _packageRepository.IndexPrograms);
             });
 
-
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;

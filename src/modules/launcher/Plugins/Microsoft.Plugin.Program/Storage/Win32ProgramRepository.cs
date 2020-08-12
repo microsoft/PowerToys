@@ -95,7 +95,6 @@ namespace Microsoft.Plugin.Program.Storage
                 Log.Info($"|Win32ProgramRepository|OnAppRenamed-{extension}Program|{oldPath}|Unable to create program from {oldPath}| {ex.Message}");
             }
 
-
             // To remove the old app which has been renamed and to add the new application.
             if (oldApp != null)
             {

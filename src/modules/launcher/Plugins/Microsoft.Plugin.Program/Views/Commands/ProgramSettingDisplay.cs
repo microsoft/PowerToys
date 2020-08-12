@@ -5,7 +5,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace Microsoft.Plugin.Program.Views.Commands
 {
     internal static class ProgramSettingDisplay
@@ -21,7 +20,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                     Enabled = x.Enabled,
                                                     Location = x.Location,
                                                     Name = x.Name,
-                                                    UniqueIdentifier = x.UniqueIdentifier
+                                                    UniqueIdentifier = x.UniqueIdentifier,
                                                 }
                                         ));
 
@@ -40,7 +39,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                         Enabled = x.Enabled,
                                         Location = x.Location,
                                         Name = x.Name,
-                                        UniqueIdentifier = x.UniqueIdentifier
+                                        UniqueIdentifier = x.UniqueIdentifier,
                                     }
                               ));
 
@@ -95,7 +94,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                         Name = x.Name,
                                                         Location = x.Location,
                                                         UniqueIdentifier = x.UniqueIdentifier,
-                                                        Enabled = false
+                                                        Enabled = false,
                                                     }
                                             ));
         }

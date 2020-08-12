@@ -29,7 +29,7 @@ namespace Microsoft.Plugin.Program.Storage
                             {
                                Environment.GetFolderPath(Environment.SpecialFolder.Programs),
                                Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),
-                               Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+                               Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                             };
             return paths;
         }

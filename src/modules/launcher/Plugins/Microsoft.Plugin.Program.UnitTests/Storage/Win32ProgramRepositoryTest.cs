@@ -50,7 +50,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 Name = name,
                 ExecutableName = exename,
                 FullPath = fullPath,
-                Description = description1
+                Description = description1,
             };
 
             Win32Program item2 = new Win32Program
@@ -58,7 +58,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 Name = name,
                 ExecutableName = exename,
                 FullPath = fullPath,
-                Description = description2
+                Description = description2,
             };
 
             // Act
@@ -360,7 +360,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 ExecutableName = "path.exe",
                 ParentDirectory = "directory",
                 FullPath = "directory\\path.exe",
-                LnkResolvedPath = "directory\\path.lnk" // This must be equal for lnk applications
+                LnkResolvedPath = "directory\\path.lnk", // This must be equal for lnk applications
             };
             _win32ProgramRepository.Add(item);
 

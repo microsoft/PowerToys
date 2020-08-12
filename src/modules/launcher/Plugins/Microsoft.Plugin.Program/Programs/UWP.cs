@@ -19,8 +19,11 @@ namespace Microsoft.Plugin.Program.Programs
     public partial class UWP
     {
         public string Name { get; }
+
         public string FullName { get; }
+
         public string FamilyName { get; }
+
         public string Location { get; set; }
 
         public IList<UWPApplication> Apps { get; private set; }
@@ -84,8 +87,6 @@ namespace Microsoft.Plugin.Program.Programs
                 Apps = new List<UWPApplication>().ToArray();
             }
         }
-
-
 
         /// http://www.hanselman.com/blog/GetNamespacesFromAnXMLDocumentWithXPathDocumentAndLINQToXML.aspx
         private static string[] XmlNamespaces(string path)
@@ -193,7 +194,6 @@ namespace Microsoft.Plugin.Program.Programs
                     return false;
                 }
 
-
                 return valid;
             });
 
@@ -227,7 +227,7 @@ namespace Microsoft.Plugin.Program.Programs
             Windows10,
             Windows81,
             Windows8,
-            Unknown
+            Unknown,
         }
 
         [Flags]
@@ -241,7 +241,6 @@ namespace Microsoft.Plugin.Program.Programs
         {
             Ok = 0x0,
         }
-
 
     }
 }

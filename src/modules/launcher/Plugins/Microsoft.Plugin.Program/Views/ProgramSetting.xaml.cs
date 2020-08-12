@@ -139,7 +139,7 @@ namespace Microsoft.Plugin.Program.Views
                         var source = new ProgramSource
                         {
                             Location = directory,
-                            UniqueIdentifier = directory
+                            UniqueIdentifier = directory,
                         };
 
                         directoriesToAdd.Add(source);

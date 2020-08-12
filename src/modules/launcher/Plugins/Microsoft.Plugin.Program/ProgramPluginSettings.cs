@@ -11,8 +11,11 @@ namespace Microsoft.Plugin.Program
     public class ProgramPluginSettings
     {
         public DateTime LastIndexTime { get; set; }
+
         public List<ProgramSource> ProgramSources { get;} = new List<ProgramSource>();
+
         public List<DisabledProgramSource> DisabledProgramSources { get;} = new List<DisabledProgramSource>();
+
         public List<string> ProgramSuffixes { get; } = new List<string>(){ "bat", "appref-ms", "exe", "lnk", "url" };
 
         public bool EnableStartMenuSource { get; set; } = true;
@@ -26,7 +29,6 @@ namespace Microsoft.Plugin.Program
         public double MinScoreThreshold { get; set; } = 0.75;
 
         internal const char SuffixSeparator = ';';
-
 
     }
 
@@ -43,8 +45,11 @@ namespace Microsoft.Plugin.Program
         private string name;
 
         public string Location { get; set; }
+
         public string Name { get => name ?? new DirectoryInfo(Location).Name; set => name = value; }
+
         public bool Enabled { get; set; } = true;
+
         public string UniqueIdentifier { get; set; }
     }
 
