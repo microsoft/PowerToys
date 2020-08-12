@@ -178,3 +178,4 @@ void RestoreWindowOrigin(HWND window) noexcept;
 bool IsValidGuid(const std::wstring& str);
 bool IsValidDeviceId(const std::wstring& str);
 size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
+RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept;

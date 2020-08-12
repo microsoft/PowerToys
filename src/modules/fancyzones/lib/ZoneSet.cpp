@@ -407,6 +407,18 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
             MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
             return true;
         }
+        else if (cycle)
+        {
+            // Try again from the position off the screen in the opposite direction to vkCode
+            windowRect = PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
+            result = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+
+            if (result < zoneRects.size())
+            {
+                MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+                return true;
+            }
+        }
     }
 
     return false;

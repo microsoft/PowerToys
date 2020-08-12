@@ -1151,9 +1151,10 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     }
 
-    return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, false, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+    // TODO cycling?
+    bool cycle = !m_settings->GetSettings()->moveWindowAcrossMonitors;
+    return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
 
-    // TODO
 }
 
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept

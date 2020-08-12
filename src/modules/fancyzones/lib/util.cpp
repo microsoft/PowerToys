@@ -379,6 +379,12 @@ size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector
             double cosAngle = scalarProduct / abs(zoneDirection);
             double tanAngle = abs(tan(acos(cosAngle)));
 
+            if (tanAngle > 10)
+            {
+                // The angle is too wide
+                return inf;
+            }
+
             // find the intersection with the ellipse with given eccentricity and major axis along arrowDirection
             double intersectY = 2 * eccentricity / (1.0 + eccentricity * eccentricity * tanAngle * tanAngle);
             double distanceEstimate = scalarProduct / intersectY;
@@ -439,4 +445,30 @@ size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector
     }
 
     return closestIdx;
+}
+
+RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept
+{
+    LONG deltaX = 0, deltaY = 0;
+    switch (vkCode)
+    {
+    case VK_UP:
+        deltaY = zoneWindowRect.bottom - zoneWindowRect.top;
+        break;
+    case VK_DOWN:
+        deltaY = zoneWindowRect.top - zoneWindowRect.bottom;
+        break;
+    case VK_LEFT:
+        deltaX = zoneWindowRect.right - zoneWindowRect.left;
+        break;
+    case VK_RIGHT:
+        deltaX = zoneWindowRect.left - zoneWindowRect.right;
+    }
+
+    windowRect.left += deltaX;
+    windowRect.right += deltaX;
+    windowRect.top += deltaY;
+    windowRect.bottom += deltaY;
+
+    return windowRect;
 }
