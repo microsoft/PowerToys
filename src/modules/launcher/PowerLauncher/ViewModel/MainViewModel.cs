@@ -512,32 +512,39 @@ namespace PowerLauncher.ViewModel
                             currentCancellationToken.ThrowIfCancellationRequested();
                             Parallel.ForEach(plugins, (plugin) =>
                                 {
-                                    if (!plugin.Metadata.Disabled)
+                                    try
                                     {
-                                        var results = PluginManager.QueryForPlugin(plugin, query, true);
-                                        currentCancellationToken.ThrowIfCancellationRequested();
-                                        if ((results?.Count ?? 0) != 0)
+                                        if (!plugin.Metadata.Disabled)
                                         {
-                                            lock (_addResultsLock)
-                                            {
-                                                if (query.RawQuery == _currentQuery.RawQuery)
-                                                {
-                                                    currentCancellationToken.ThrowIfCancellationRequested();
-
-                                                    // Remove the original results from the plugin
-                                                    Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
-                                                    currentCancellationToken.ThrowIfCancellationRequested();
-
-                                                    // Add the new results from the plugin
-                                                    UpdateResultView(results, query, currentCancellationToken);
-                                                    currentCancellationToken.ThrowIfCancellationRequested();
-                                                    Results.Sort();
-                                                }
-                                            }
-
+                                            var results = PluginManager.QueryForPlugin(plugin, query, true);
                                             currentCancellationToken.ThrowIfCancellationRequested();
-                                            UpdateResultsListViewAfterQuery(query, true);
+                                            if ((results?.Count ?? 0) != 0)
+                                            {
+                                                lock (_addResultsLock)
+                                                {
+                                                    if (query.RawQuery == _currentQuery.RawQuery)
+                                                    {
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+
+                                                        // Remove the original results from the plugin
+                                                        Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+
+                                                        // Add the new results from the plugin
+                                                        UpdateResultView(results, query, currentCancellationToken);
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                        Results.Sort();
+                                                    }
+                                                }
+
+                                                currentCancellationToken.ThrowIfCancellationRequested();
+                                                UpdateResultsListViewAfterQuery(query, true);
+                                            }
                                         }
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
+                                        // nothing to do here
                                     }
                                 });
 
