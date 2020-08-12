@@ -83,7 +83,7 @@ namespace PowerLauncher
             var ps = new ProcessStartInfo(e.Uri.ToString())
             {
                 UseShellExecute = true,
-                Verb = "open"
+                Verb = "open",
             };
             Process.Start(ps);
         }
