@@ -98,11 +98,6 @@ steps:
       # crashes CI
       #**\interop-tests.dll 
       #**\UnitTests-FancyZones.dll
- 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-    projects: '**/*Microsoft.PowerToys.Settings.UI.UnitTests.csproj'
 
 - task: DotNetCoreCLI@2
   inputs:
