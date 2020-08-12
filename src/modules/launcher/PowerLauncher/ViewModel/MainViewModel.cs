@@ -518,34 +518,41 @@ namespace PowerLauncher.ViewModel
                             currentCancellationToken.ThrowIfCancellationRequested();
                             Parallel.ForEach(plugins, (plugin) =>
                                 {
-                                    if (!plugin.Metadata.Disabled)
+                                    try
                                     {
-                                        Query query;
-                                        pluginQueryPair.TryGetValue(plugin, out query);
-                                        var results = PluginManager.QueryForPlugin(plugin, query, true);
-                                        currentCancellationToken.ThrowIfCancellationRequested();
-                                        if ((results?.Count ?? 0) != 0)
+                                        if (!plugin.Metadata.Disabled)
                                         {
-                                            lock (_addResultsLock)
-                                            {
-                                                if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
-                                                {
-                                                    currentCancellationToken.ThrowIfCancellationRequested();
-
-                                                    // Remove the original results from the plugin
-                                                    Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
-                                                    currentCancellationToken.ThrowIfCancellationRequested();
-
-                                                    // Add the new results from the plugin
-                                                    UpdateResultView(results, queryText, currentCancellationToken);
-                                                    currentCancellationToken.ThrowIfCancellationRequested();
-                                                    Results.Sort();
-                                                }
-                                            }
-
+                                            Query query;
+                                            pluginQueryPair.TryGetValue(plugin, out query);
+                                            var results = PluginManager.QueryForPlugin(plugin, query, true);
                                             currentCancellationToken.ThrowIfCancellationRequested();
-                                            UpdateResultsListViewAfterQuery(queryText, true);
+                                            if ((results?.Count ?? 0) != 0)
+                                            {
+                                                lock (_addResultsLock)
+                                                {
+                                                    if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
+                                                    {
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+
+                                                        // Remove the original results from the plugin
+                                                        Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+
+                                                        // Add the new results from the plugin
+                                                        UpdateResultView(results, queryText, currentCancellationToken);
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                        Results.Sort();
+                                                    }
+                                                }
+
+                                                currentCancellationToken.ThrowIfCancellationRequested();
+                                                UpdateResultsListViewAfterQuery(queryText, true);
+                                            }
                                         }
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
+                                        // nothing to do here
                                     }
                                 });
 
