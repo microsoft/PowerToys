@@ -1,22 +1,25 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Reflection;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.Plugin.Program.Logger;
 using Microsoft.Win32;
 using Wox.Infrastructure;
-using Microsoft.Plugin.Program.Logger;
-using Wox.Plugin;
-using System.Windows.Input;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.FileSystemHelper;
-using System.Globalization;
+using Wox.Infrastructure.Logger;
+using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program.Programs
 {

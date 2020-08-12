@@ -1,20 +1,19 @@
-using Microsoft.PowerToys.Settings.UI.Lib;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Controls;
+using Microsoft.Plugin.Program.Programs;
+using Microsoft.Plugin.Program.Storage;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using Microsoft.Plugin.Program.Views;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
-using Windows.ApplicationModel;
-using Microsoft.Plugin.Program.Storage;
-using Microsoft.Plugin.Program.Programs;
 
 namespace Microsoft.Plugin.Program
 {

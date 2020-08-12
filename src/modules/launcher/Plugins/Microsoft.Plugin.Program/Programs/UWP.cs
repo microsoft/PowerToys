@@ -1,19 +1,17 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
-using System.Text;
-using System.Xml.Linq;
-using Windows.ApplicationModel;
-using Windows.Management.Deployment;
-using Microsoft.Plugin.Program.Logger;
-using Rect = System.Windows.Rect;
-using System.Windows.Controls;
 using System.Runtime.InteropServices.ComTypes;
-using Wox.Infrastructure.Logger;
+using System.Xml.Linq;
+using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Win32;
+using Wox.Infrastructure.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {

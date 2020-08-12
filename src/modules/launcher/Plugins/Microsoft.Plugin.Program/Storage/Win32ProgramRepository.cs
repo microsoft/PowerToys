@@ -1,16 +1,18 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Plugin.Program.Programs;
+using System.Globalization;
+using System.IO;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
-using System.IO;
-using System.Linq;
-using System.Globalization;
+using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
 
 namespace Microsoft.Plugin.Program.Storage
 {
-    using Win32Program = Programs.Win32Program;
     internal class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
     {
         private IStorage<IList<Programs.Win32Program>> _storage;
