@@ -30,18 +30,20 @@ namespace Wox.Core.Plugin
 
             string possibleActionKeyword = terms[0];
 
-            foreach (PluginPair nonGlobalPlugin in nonGlobalPlugins.Values)
+            foreach (string pluginActionKeyword in nonGlobalPlugins.Keys)
             {
-                string pluginActionKeyword = nonGlobalPlugin.Metadata.ActionKeyword;
                 if (possibleActionKeyword.StartsWith(pluginActionKeyword))
                 {
-                    // The search string is the raw query excluding the action keyword
-                    string search = rawQuery.Length > pluginActionKeyword.Length ? rawQuery.Substring(pluginActionKeyword.Length).Trim() : string.Empty;
+                    if (nonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
+                    {
+                        // The search string is the raw query excluding the action keyword
+                        string search = rawQuery.Length > pluginActionKeyword.Length ? rawQuery.Substring(pluginActionKeyword.Length).Trim() : string.Empty;
 
-                    // A new query is constructed for each plugin as they have different action keywords
-                    var query = new Query(rawQuery, search, terms, pluginActionKeyword);
+                        // A new query is constructed for each plugin as they have different action keywords
+                        var query = new Query(rawQuery, search, terms, pluginActionKeyword);
 
-                    pluginQueryPair.Add(nonGlobalPlugin, query);
+                        pluginQueryPair.TryAdd(pluginPair, query);
+                    }
                 }
             }
 
