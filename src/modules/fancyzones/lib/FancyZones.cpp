@@ -1151,10 +1151,115 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     }
 
-    // TODO cycling?
-    bool cycle = !m_settings->GetSettings()->moveWindowAcrossMonitors;
-    return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+    auto allMonitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
 
+    if (current && allMonitors.size() > 1 && m_settings->GetSettings()->moveWindowAcrossMonitors)
+    {
+        // Multi monitor environment.
+        // First, try to stay on the same monitor
+        bool success = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, false, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+        if (success)
+        {
+            return true;
+        }
+
+        // If that didn't work, extract zones from all other monitors and target one of them
+        std::vector<RECT> zoneRects;
+        std::vector<std::pair<size_t, winrt::com_ptr<IZoneWindow>>> zoneRectsInfo;
+        RECT currentMonitorRect{ .top = 0, .bottom = -1 };
+
+        for (const auto& [monitor, monitorRect] : allMonitors)
+        {
+            if (monitor == current)
+            {
+                currentMonitorRect = monitorRect;
+            }
+            else
+            {
+                auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+                auto zones = workArea->ActiveZoneSet()->GetZones();
+                for (size_t i = 0; i < zones.size(); i++)
+                {
+                    const auto& zone = zones[i];
+                    RECT zoneRect = zone->GetZoneRect();
+
+                    zoneRect.left += monitorRect.left;
+                    zoneRect.right += monitorRect.left;
+                    zoneRect.top += monitorRect.top;
+                    zoneRect.bottom += monitorRect.top;
+
+                    zoneRects.emplace_back(zoneRect);
+                    zoneRectsInfo.emplace_back(i, workArea);
+                }
+            }
+        }
+
+        // Ensure we can get the windowRect, if not, just quit
+        RECT windowRect;
+        if (!GetWindowRect(window, &windowRect))
+        {
+            return false;
+        }
+
+        size_t chosenIdx = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+
+        if (chosenIdx < zoneRects.size())
+        {
+            // Moving to another monitor succeeded
+            const auto& [trueZoneIdx, zoneWindow] = zoneRectsInfo[chosenIdx];
+            m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, { static_cast<int>(trueZoneIdx) }, zoneWindow);
+            return true;
+        }
+
+        // We reached the end of all monitors.
+        // Try again, cycling on all monitors.
+        // First, add zones from the origin monitor to zoneRects
+        // Sanity check: the current monitor is valid
+        if (currentMonitorRect.top <= currentMonitorRect.bottom)
+        {
+            auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
+            auto zones = workArea->ActiveZoneSet()->GetZones();
+            for (size_t i = 0; i < zones.size(); i++)
+            {
+                const auto& zone = zones[i];
+                RECT zoneRect = zone->GetZoneRect();
+
+                zoneRect.left += currentMonitorRect.left;
+                zoneRect.right += currentMonitorRect.left;
+                zoneRect.top += currentMonitorRect.top;
+                zoneRect.bottom += currentMonitorRect.top;
+
+                zoneRects.emplace_back(zoneRect);
+                zoneRectsInfo.emplace_back(i, workArea);
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        RECT combinedRect = GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
+        windowRect = PrepareRectForCycling(windowRect, combinedRect, vkCode);
+        chosenIdx = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+        if (chosenIdx < zoneRects.size())
+        {
+            // Moving to another monitor succeeded
+            const auto& [trueZoneIdx, zoneWindow] = zoneRectsInfo[chosenIdx];
+            m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, { static_cast<int>(trueZoneIdx) }, zoneWindow);
+            return true;
+        }
+        else
+        {
+            // Giving up
+            return false;
+        }
+    }
+    else
+    {
+        // Single monitor environment, or combined multi-monitor environment.
+        return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, true, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+
+    }
 }
 
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
