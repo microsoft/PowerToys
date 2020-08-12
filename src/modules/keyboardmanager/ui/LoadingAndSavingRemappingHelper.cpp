@@ -44,7 +44,7 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to return the set of keys that have been orphaned from the remap buffer
-    std::vector<DWORD> GetOrphanedKeys(std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remappings)
+    std::vector<DWORD> GetOrphanedKeys(const std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remappings)
     {
         std::set<DWORD> ogKeys;
         std::set<DWORD> newKeys;
@@ -100,7 +100,7 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to apply the single key remappings from the buffer to the KeyboardManagerState variable
-    void ApplySingleKeyRemappings(KeyboardManagerState& keyboardManagerState, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remappings, bool isTelemetryRequired)
+    void ApplySingleKeyRemappings(KeyboardManagerState& keyboardManagerState, const std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remappings, bool isTelemetryRequired)
     {
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
@@ -164,7 +164,7 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to apply the shortcut remappings from the buffer to the KeyboardManagerState variable
-    void ApplyShortcutRemappings(KeyboardManagerState& keyboardManagerState, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remappings, bool isTelemetryRequired)
+    void ApplyShortcutRemappings(KeyboardManagerState& keyboardManagerState, const std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remappings, bool isTelemetryRequired)
     {
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
