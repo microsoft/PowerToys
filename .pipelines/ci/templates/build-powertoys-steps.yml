@@ -102,4 +102,4 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'test'
-    projects: '**/*Microsoft.PowerToys.Settings.UI.UnitTests.dll'
+    projects: '**/*Microsoft.PowerToys.Settings.UI.UnitTests.csproj'
