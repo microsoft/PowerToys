@@ -95,6 +95,7 @@ steps:
       **\Wox.Test.dll
       **\powerpreviewTest.dll
       **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
+      **\Microsoft.PowerToys.Settings.UI.XUnitTests.dll
       # Can't get working, says no tests
       # crashes CI
       #**\interop-tests.dll 
