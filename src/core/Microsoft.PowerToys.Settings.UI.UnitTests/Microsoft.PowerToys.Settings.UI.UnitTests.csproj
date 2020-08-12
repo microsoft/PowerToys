@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\x64\Release\SettingsUI\</OutputPath>
+    <OutputPath>..\..\..\x64\Release\SettingsTest\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
