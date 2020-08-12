@@ -1,10 +1,12 @@
-﻿using Microsoft.Plugin.Program.Logger;
-using Microsoft.Plugin.Program.Programs;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Plugin.Program.Logger;
+using Microsoft.Plugin.Program.Programs;
 using Windows.ApplicationModel;
 using Wox.Infrastructure.Storage;
 
@@ -19,6 +21,7 @@ namespace Microsoft.Plugin.Program.Storage
         private IStorage<IList<UWPApplication>> _storage;
 
         private IPackageCatalog _packageCatalog;
+
         public PackageRepository(IPackageCatalog packageCatalog, IStorage<IList<UWPApplication>> storage)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage), "StorageRepository requires an initialized storage interface");

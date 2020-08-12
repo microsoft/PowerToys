@@ -524,6 +524,7 @@ namespace PowerLauncher.ViewModel
                                         {
                                             Query query;
                                             pluginQueryPair.TryGetValue(plugin, out query);
+
                                             var results = PluginManager.QueryForPlugin(plugin, query, true);
                                             currentCancellationToken.ThrowIfCancellationRequested();
                                             if ((results?.Count ?? 0) != 0)
@@ -540,6 +541,7 @@ namespace PowerLauncher.ViewModel
 
                                                         // Add the new results from the plugin
                                                         UpdateResultView(results, queryText, currentCancellationToken);
+
                                                         currentCancellationToken.ThrowIfCancellationRequested();
                                                         Results.Sort();
                                                     }
@@ -547,6 +549,7 @@ namespace PowerLauncher.ViewModel
 
                                                 currentCancellationToken.ThrowIfCancellationRequested();
                                                 UpdateResultsListViewAfterQuery(queryText, true);
+
                                             }
                                         }
                                     }

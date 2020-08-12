@@ -1,22 +1,25 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using Moq;
-using NUnit.Framework;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using Wox.Infrastructure.Storage;
-using Wox.Plugin;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
-using System.IO;
+using Moq;
+using NUnit.Framework;
 using Wox.Infrastructure.FileSystemHelper;
-using System.Diagnostics;
+using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
     using Win32Program = Program.Programs.Win32Program;
 
     [TestFixture]
-    class Win32ProgramRepositoryTest
+    public class Win32ProgramRepositoryTest
     {
         List<IFileSystemWatcherWrapper> _fileSystemWatchers;
         ProgramPluginSettings _settings = new ProgramPluginSettings();
@@ -37,7 +40,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("Name", "ExecutableName", "FullPath", "description1", "description2")]
-        public void Win32Repository_MustNotStoreDuplicates_WhileAddingItemsWithSameHashCode(string name, string exename, string fullPath, string description1, string description2)
+        public void Win32RepositoryMustNotStoreDuplicatesWhileAddingItemsWithSameHashCode(string name, string exename, string fullPath, string description1, string description2)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -47,7 +50,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 Name = name,
                 ExecutableName = exename,
                 FullPath = fullPath,
-                Description = description1
+                Description = description1,
             };
 
             Win32Program item2 = new Win32Program
@@ -55,7 +58,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 Name = name,
                 ExecutableName = exename,
                 FullPath = fullPath,
-                Description = description2
+                Description = description2,
             };
 
             // Act
@@ -71,7 +74,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("path.appref-ms")]
-        public void Win32ProgramRepository_MustCallOnAppCreatedForApprefApps_WhenCreatedEventIsRaised(string path)
+        public void Win32ProgramRepositoryMustCallOnAppCreatedForApprefAppsWhenCreatedEventIsRaised(string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -86,7 +89,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("directory", "path.appref-ms")]
-        public void Win32ProgramRepository_MustCallOnAppDeletedForApprefApps_WhenDeletedEventIsRaised(string directory, string path)
+        public void Win32ProgramRepositoryMustCallOnAppDeletedForApprefAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -104,7 +107,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("directory", "oldpath.appref-ms", "newpath.appref-ms")]
-        public void Win32ProgramRepository_MustCallOnAppRenamedForApprefApps_WhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
+        public void Win32ProgramRepositoryMustCallOnAppRenamedForApprefAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -127,7 +130,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("path.exe")]
-        public void Win32ProgramRepository_MustCallOnAppCreatedForExeApps_WhenCreatedEventIsRaised(string path)
+        public void Win32ProgramRepositoryMustCallOnAppCreatedForExeAppsWhenCreatedEventIsRaised(string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -147,7 +150,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("directory", "path.exe")]
-        public void Win32ProgramRepository_MustCallOnAppDeletedForExeApps_WhenDeletedEventIsRaised(string directory, string path)
+        public void Win32ProgramRepositoryMustCallOnAppDeletedForExeAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -170,7 +173,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("directory", "oldpath.appref-ms", "newpath.appref-ms")]
-        public void Win32ProgramRepository_MustCallOnAppRenamedForExeApps_WhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
+        public void Win32ProgramRepositoryMustCallOnAppRenamedForExeAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -198,7 +201,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("path.url")]
-        public void Win32ProgramRepository_MustCallOnAppChangedForUrlApps_WhenChangedEventIsRaised(string path)
+        public void Win32ProgramRepositoryMustCallOnAppChangedForUrlAppsWhenChangedEventIsRaised(string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -218,7 +221,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("path.url")]
-        public void Win32ProgramRepository_MustNotCreateUrlApp_WhenCreatedEventIsRaised(string path)
+        public void Win32ProgramRepositoryMustNotCreateUrlAppWhenCreatedEventIsRaised(string path)
         {
             // We are handing internet shortcut apps using the Changed event instead
 
@@ -241,7 +244,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         [TestCase("path.exe")]
         [TestCase("path.lnk")]
         [TestCase("path.appref-ms")]
-        public void Win32ProgramRepository_MustNotCreateAnyAppOtherThanUrlApp_WhenChangedEventIsRaised(string path)
+        public void Win32ProgramRepositoryMustNotCreateAnyAppOtherThanUrlAppWhenChangedEventIsRaised(string path)
         {
             // We are handing internet shortcut apps using the Changed event instead
 
@@ -267,7 +270,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("directory", "path.url")]
-        public void Win32ProgramRepository_MustCallOnAppDeletedForUrlApps_WhenDeletedEventIsRaised(string directory, string path)
+        public void Win32ProgramRepositoryMustCallOnAppDeletedForUrlAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -290,7 +293,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("directory", "oldpath.url", "newpath.url")]
-        public void Win32ProgramRepository_MustCallOnAppRenamedForUrlApps_WhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
+        public void Win32ProgramRepositoryMustCallOnAppRenamedForUrlAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -319,7 +322,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
 
         [TestCase("path.lnk")]
-        public void Win32ProgramRepository_MustCallOnAppCreatedForLnkApps_WhenCreatedEventIsRaised(string path)
+        public void Win32ProgramRepositoryMustCallOnAppCreatedForLnkAppsWhenCreatedEventIsRaised(string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -339,7 +342,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("directory", "path.lnk")]
-        public void Win32ProgramRepository_MustCallOnAppDeletedForLnkApps_WhenDeletedEventIsRaised(string directory, string path)
+        public void Win32ProgramRepositoryMustCallOnAppDeletedForLnkAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
@@ -357,7 +360,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 ExecutableName = "path.exe",
                 ParentDirectory = "directory",
                 FullPath = "directory\\path.exe",
-                LnkResolvedPath = "directory\\path.lnk" // This must be equal for lnk applications
+                LnkResolvedPath = "directory\\path.lnk", // This must be equal for lnk applications
             };
             _win32ProgramRepository.Add(item);
 
@@ -369,7 +372,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("directory", "oldpath.lnk", "path.lnk")]
-        public void Win32ProgramRepository_MustCallOnAppRenamedForLnkApps_WhenRenamedEventIsRaised(string directory, string oldpath, string path)
+        public void Win32ProgramRepositoryMustCallOnAppRenamedForLnkAppsWhenRenamedEventIsRaised(string directory, string oldpath, string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);

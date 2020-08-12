@@ -43,7 +43,8 @@ namespace Wox.Infrastructure.Image
         [Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe")]
         internal interface IShellItem
         {
-            void BindToHandler(IntPtr pbc,
+            void BindToHandler(
+                IntPtr pbc,
                 [MarshalAs(UnmanagedType.LPStruct)] Guid bhid,
                 [MarshalAs(UnmanagedType.LPStruct)] Guid riid,
                 out IntPtr ppv);
@@ -87,9 +88,9 @@ namespace Wox.Infrastructure.Image
             AccessDenied = unchecked((int)0x80030005),
         }
 
-        [ComImportAttribute()]
-        [GuidAttribute("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
-        [InterfaceTypeAttribute(ComInterfaceType.InterfaceIsIUnknown)]
+        [ComImport]
+        [Guid("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         internal interface IShellItemImageFactory
         {
             [PreserveSig]
@@ -133,9 +134,8 @@ namespace Wox.Infrastructure.Image
 
         private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
         {
-            IShellItem nativeShellItem;
             Guid shellItem2Guid = new Guid(IShellItem2Guid);
-            int retCode = SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out nativeShellItem);
+            int retCode = SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out IShellItem nativeShellItem);
 
             if (retCode != 0)
             {
@@ -148,8 +148,7 @@ namespace Wox.Infrastructure.Image
                 Height = height,
             };
 
-            IntPtr hBitmap;
-            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
+            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out IntPtr hBitmap);
 
             // if extracting image thumbnail and failed, extract shell icon
             if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)

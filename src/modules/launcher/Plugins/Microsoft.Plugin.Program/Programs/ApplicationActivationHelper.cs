@@ -1,8 +1,10 @@
-﻿using System;
-using System.Diagnostics;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.Plugin.Program.Programs.ApplicationActivationHelper
 {
@@ -21,7 +23,9 @@ namespace Microsoft.Plugin.Program.Programs.ApplicationActivationHelper
     public interface IApplicationActivationManager
     {
         IntPtr ActivateApplication([In] String appUserModelId, [In] String arguments, [In] ActivateOptions options, [Out] out UInt32 processId);
+
         IntPtr ActivateForFile([In] String appUserModelId, [In] IntPtr /*IShellItemArray* */ itemArray, [In] String verb, [Out] out UInt32 processId);
+
         IntPtr ActivateForProtocol([In] String appUserModelId, [In] IntPtr /* IShellItemArray* */itemArray, [Out] out UInt32 processId);
     }
 

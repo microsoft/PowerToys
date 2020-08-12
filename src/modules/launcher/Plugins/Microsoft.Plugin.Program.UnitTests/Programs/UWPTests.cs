@@ -1,13 +1,17 @@
-﻿using Castle.Core.Internal;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
+using Castle.Core.Internal;
 using Microsoft.Plugin.Program.Programs;
 using Moq;
 using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
     [TestFixture]
-    class UWPTests
+    public class UWPTests
     {
         static readonly PackageWrapper developmentModeApp = new PackageWrapper(
             "DevelopmentApp",
@@ -37,7 +41,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         );
 
         [Test]
-        public void All_ShouldReturnPackagesWithDevelopmentMode_WhenCalled()
+        public void AllShouldReturnPackagesWithDevelopmentModeWhenCalled()
         {
             // Arrange
             Main._settings = new ProgramPluginSettings();
@@ -56,7 +60,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void All_ShouldNotReturnPackageFrameworks_WhenCalled()
+        public void AllShouldNotReturnPackageFrameworksWhenCalled()
         {
             // Arrange
             Main._settings = new ProgramPluginSettings();
@@ -74,7 +78,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void PowerToysRun_ShouldNotAddInvalidApp_WhenIndexingUWPApplications()
+        public void PowerToysRunShouldNotAddInvalidAppWhenIndexingUWPApplications()
         {
             // Arrange
             PackageWrapper invalidPackagedApp = new PackageWrapper();
