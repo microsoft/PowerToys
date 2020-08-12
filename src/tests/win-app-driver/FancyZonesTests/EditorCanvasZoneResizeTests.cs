@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -278,6 +278,7 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseEditor();
+            ExitPowerToys();
             TearDown();
         }
 

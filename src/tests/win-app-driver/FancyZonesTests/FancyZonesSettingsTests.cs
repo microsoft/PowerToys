@@ -741,6 +741,7 @@ namespace PowerToysTests
                 //element couldn't be located
             }
 
+            ExitPowerToys();
             TearDown();
         }
 

@@ -415,6 +415,7 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseEditor();
+            ExitPowerToys();
             TearDown();
         }
 

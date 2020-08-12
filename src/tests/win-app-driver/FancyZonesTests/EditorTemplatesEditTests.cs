@@ -173,6 +173,7 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseSettings();
+            ExitPowerToys();
             TearDown();
         }
 

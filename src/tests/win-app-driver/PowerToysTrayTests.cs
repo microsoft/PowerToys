@@ -93,6 +93,7 @@ namespace PowerToysTests
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            ExitPowerToys();
             TearDown();
         }
 
