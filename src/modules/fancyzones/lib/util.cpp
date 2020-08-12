@@ -377,11 +377,10 @@ size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector
 
             // no need to divide by abs(arrowDirection) because it's = 1
             double cosAngle = scalarProduct / abs(zoneDirection);
-            double tanAngle = tan(acos(cosAngle));
+            double tanAngle = abs(tan(acos(cosAngle)));
 
             // find the intersection with the ellipse with given eccentricity and major axis along arrowDirection
-            double intersectX = 2 * eccentricity * tanAngle / (eccentricity * eccentricity + tanAngle * tanAngle);
-            double intersectY = intersectX * tanAngle;
+            double intersectY = 2 * eccentricity / (1.0 + eccentricity * eccentricity * tanAngle * tanAngle);
             double distanceEstimate = scalarProduct / intersectY;
 
             if (std::isfinite(distanceEstimate))
@@ -398,16 +397,12 @@ size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector
     std::vector<std::pair<size_t, complex>> candidateCenters;
     for (size_t i = 0; i < zoneRects.size(); i++)
     {
-        const RECT& zoneRect = zoneRects[i];
-        if (windowRect.bottom != zoneRect.bottom ||
-            windowRect.right != zoneRect.right ||
-            windowRect.left != zoneRect.left ||
-            windowRect.top != zoneRect.top)
-        {
-            auto center = rectCenter(zoneRect);
-            center += 0.001 * i;
-            candidateCenters.emplace_back(i, center);
-        }
+        auto center = rectCenter(zoneRects[i]);
+
+        // Offset the zone slightly, to differentiate in case there are overlapping zones
+        center += 0.001 * (i + 1);
+
+        candidateCenters.emplace_back(i, center);
     }
 
     complex directionVector, windowCenter = rectCenter(windowRect);
