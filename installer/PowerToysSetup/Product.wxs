@@ -12,7 +12,12 @@
   <?define ColorPickerProjectName="ColorPicker"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
+
+<?if $(var.Configuration)="Release with Video Conference" ?>
+  <?define BinX64Dir="$(var.RepoDir)x64\Release\" ?>
+<?else ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
+<?endif?>
   <Product Id="*"
        Name="PowerToys (Preview)"
        Language="1033"
@@ -87,6 +92,7 @@
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
+<?if $(var.Configuration)="Release with Video Conference" ?>
       <Custom Action="SetCertifyVirtualCameraDriverParam" After="RegisterPowerToysSchTask" />
       <Custom Action="CertifyVirtualCameraDriver" After="SetCertifyVirtualCameraDriverParam" >
         NOT Installed
@@ -95,12 +101,14 @@
       <Custom Action="InstallVirtualCameraDriver" After="SetInstallVirtualCameraDriverParam" >
         NOT Installed
       </Custom>
+	  <Custom Action="SetUninstallVirtualCameraDriverParam" Before="UninstallVirtualCameraDriver" />
+	  <Custom Action="UninstallVirtualCameraDriver" Before="RemoveFiles">
+	  	Installed
+	  </Custom>
+<?endif?>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
-      <Custom Action="SetUninstallVirtualCameraDriverParam" Before="UninstallVirtualCameraDriver" />
-      <Custom Action="UninstallVirtualCameraDriver" Before="RemoveFiles">
-        Installed
-      </Custom>
+      
       <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
         NOT Installed
       </Custom>
@@ -215,10 +223,11 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="DetectPrevInstallPathCA"
                   />
-    
-    <CustomAction Id="SetCertifyVirtualCameraDriverParam"
-              Property="CertifyVirtualCameraDriver"
-              Value="[#VideoConferenceVirtualDriver.cer]" />
+
+<?if $(var.Configuration)="Release with Video Conference" ?>
+	<CustomAction Id="SetCertifyVirtualCameraDriverParam"
+                  Property="CertifyVirtualCameraDriver"
+                  Value="[#VideoConferenceVirtualDriver.cer]" />
     
     <CustomAction Id="CertifyVirtualCameraDriver"
                   Return="ignore"
@@ -251,6 +260,7 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="UninstallVirtualCameraDriverCA"
                    />
+<?endif?>
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
@@ -288,9 +298,11 @@
             </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
+<?if $(var.Configuration)="Release with Video Conference" ?>  
             <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)">
 		        <Directory Id="VideoConferenceIconsFolder" Name="Icons" />
 			</Directory>
+<?endif?>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
@@ -664,36 +676,35 @@
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
-      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceModule.dll" KeyPath="yes" /> 
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\black.bmp" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\videoconferencevirtualdriver.cat" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceCustomMediaSource.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.inf" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver.cer" />
-      </Component>
-    </DirectoryRef>
-	  
-	<DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons">
-      <Component Id="Module_VideoConferenceIcons" Guid="5996527a-40fc-432e-b34c-abc0b4bd3887" Win64="yes">
-		<File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Light.png" />
-		<File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Dark.png" />
-		<File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Light.png" />
-		<File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Dark.png" />
-		<File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Light.png" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Light.png" />
-		<File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Dark.png" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
-
-      </Component>
-    </DirectoryRef>
-	  
+<?if $(var.Configuration)="Release with Video Conference" ?>
+	  <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
+		  <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceModule.dll" KeyPath="yes" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\black.bmp" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\videoconferencevirtualdriver.cat" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceCustomMediaSource.dll" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.dll" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.inf" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver.cer" />
+		  </Component>
+	  </DirectoryRef>
+	  <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons">
+		  <Component Id="Module_VideoConferenceIcons" Guid="5996527a-40fc-432e-b34c-abc0b4bd3887" Win64="yes">
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Light.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Dark.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-On Light.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Dark.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-NotInUse Light.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Light.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-Off Dark.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Dark.png" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\On-On Light.png" />
+		  </Component>
+	  </DirectoryRef>
+<?endif?>
 	  
 
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\">
@@ -876,8 +887,10 @@
       <ComponentRef Id="vcredist_dlls" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
-      <ComponentRef Id="Module_VideoConference" />
+<?if $(var.Configuration)="Release with Video Conference" ?>
+	  <ComponentRef Id="Module_VideoConference" />
       <ComponentRef Id="Module_VideoConferenceIcons" />
+<?endif?>
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
