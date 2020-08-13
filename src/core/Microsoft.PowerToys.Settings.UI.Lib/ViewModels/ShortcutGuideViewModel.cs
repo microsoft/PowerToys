@@ -16,16 +16,21 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ShortcutGuideViewModel(Func<string, int> ipcMSGCallBackFunc)
+        public string SettingsConfigFileFolder = string.Empty;
+
+        public ShortcutGuideViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            // Update Settings file folder:
+            SettingsConfigFileFolder = configFileSubfolder;
+
             try
             {
-                Settings = SettingsUtils.GetSettings<ShortcutGuideSettings>(ModuleName);
+                Settings = SettingsUtils.GetSettings<ShortcutGuideSettings>(GetSettingsSubPath());
             }
             catch
             {
                 Settings = new ShortcutGuideSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
             GeneralSettings generalSettings;
@@ -163,6 +168,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     RaisePropertyChanged();
                 }
             }
+        }
+
+        public string GetSettingsSubPath()
+        {
+            return SettingsConfigFileFolder + "\\" + ModuleName;
         }
 
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
