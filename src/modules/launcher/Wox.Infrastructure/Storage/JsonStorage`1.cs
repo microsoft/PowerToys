@@ -125,7 +125,7 @@ namespace Wox.Infrastructure.Storage
                 _storageHelper.Close();
                 Log.Info($"|JsonStorage.Save|Saving cached data| <{FilePath}>");
             }
-            catch (System.Exception e)
+            catch (IOException e)
             {
                 Log.Error($"|JsonStorage.Save|Error in saving data| <{FilePath}>", e.Message);
             }
