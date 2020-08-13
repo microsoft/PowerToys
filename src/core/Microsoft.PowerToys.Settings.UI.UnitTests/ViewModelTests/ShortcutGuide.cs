@@ -14,7 +14,7 @@ namespace ViewModelTests
     [TestClass]
     public class ShortcutGuide
     {
-        public const string PowerRenameTestFolderName = "Test\\PowerRename";
+        public const string ShortCutGuideTestFolderName = "Test\\ShortCutGuide";
 
         [TestInitialize]
         public void Setup()
@@ -26,7 +26,7 @@ namespace ViewModelTests
             ShortcutGuideSettings shortcutGuide = new ShortcutGuideSettings();
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), PowerRenameTestFolderName);
+            SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ShortCutGuideTestFolderName);
         }
 
         [TestCleanup]
@@ -34,16 +34,16 @@ namespace ViewModelTests
         {
             // delete folder created.
             // delete general settings folder.
-            string PowerRenameTestFolderName = string.Empty;
+            string ShortCutGuideTestFolderName = string.Empty;
             if (SettingsUtils.SettingsFolderExists(string.Empty))
             {
                 DeleteFolder(string.Empty);
             }
 
             // delete power rename folder.
-            if (SettingsUtils.SettingsFolderExists(PowerRenameTestFolderName))
+            if (SettingsUtils.SettingsFolderExists(ShortCutGuideTestFolderName))
             {
-                DeleteFolder(PowerRenameTestFolderName);
+                DeleteFolder(ShortCutGuideTestFolderName);
             }
         }
 
@@ -65,7 +65,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, PowerRenameTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
 
             // Act
             viewModel.IsEnabled = true;
@@ -84,7 +84,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, PowerRenameTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(1, viewModel.ThemeIndex);
 
             // Act
@@ -104,7 +104,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, PowerRenameTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(900, viewModel.PressTime);
 
             // Act
@@ -126,7 +126,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, PowerRenameTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(90, viewModel.OverlayOpacity);
 
             // Act
