@@ -1177,7 +1177,8 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             else
             {
                 auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-                if (auto zoneSet = workArea->ActiveZoneSet(); zoneSet)
+                auto zoneSet = workArea->ActiveZoneSet();
+                if (zoneSet)
                 {
                     auto zones = zoneSet->GetZones();
                     for (size_t i = 0; i < zones.size(); i++)
@@ -1221,7 +1222,8 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         if (currentMonitorRect.top <= currentMonitorRect.bottom)
         {
             auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
-            if (auto zoneSet = workArea->ActiveZoneSet(); zoneSet)
+            auto zoneSet = workArea->ActiveZoneSet();
+            if (zoneSet)
             {
                 auto zones = zoneSet->GetZones();
                 for (size_t i = 0; i < zones.size(); i++)
