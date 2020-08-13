@@ -27,7 +27,7 @@ namespace PowerLauncher
             BitmapImage image = GetImageFromPath(ImageLoader.ErrorIconPath);
             if (image != null)
             {
-                this.Icon = image;
+                Icon = image;
             }
 
             ErrorTextbox.Document.Blocks.FirstBlock.Margin = new Thickness(0);

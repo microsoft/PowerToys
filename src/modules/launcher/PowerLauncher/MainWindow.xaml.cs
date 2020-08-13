@@ -23,9 +23,9 @@ namespace PowerLauncher
         private Settings _settings;
         private MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
-        bool _deletePressed = false;
-        Timer _firstDeleteTimer = new Timer();
-        bool _coldStateHotkeyPressed = false;
+        private bool _deletePressed = false;
+        private Timer _firstDeleteTimer = new Timer();
+        private bool _coldStateHotkeyPressed = false;
 
         public MainWindow(Settings settings, MainViewModel mainVM)
             : this()
@@ -133,7 +133,7 @@ namespace PowerLauncher
             }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
-                this._isTextSetProgrammatically = true;
+                _isTextSetProgrammatically = true;
                 if (_viewModel.Results != null)
                 {
                     SearchBox.QueryTextBox.Text = MainViewModel.GetSearchText(
@@ -209,7 +209,7 @@ namespace PowerLauncher
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
+            var left = ((dip2.X - ActualWidth) / 2) + dip1.X;
             return left;
         }
 
@@ -218,7 +218,7 @@ namespace PowerLauncher
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            var top = (dip2.Y - this.SearchBox.ActualHeight) / 4 + dip1.Y;
+            var top = ((dip2.Y - SearchBox.ActualHeight) / 4) + dip1.Y;
             return top;
         }
 
@@ -322,7 +322,7 @@ namespace PowerLauncher
         {
             if (_isTextSetProgrammatically)
             {
-                var textBox = ((TextBox)sender);
+                var textBox = (TextBox)sender;
                 textBox.SelectionStart = textBox.Text.Length;
                 _isTextSetProgrammatically = false;
             }

@@ -223,7 +223,6 @@ namespace PowerLauncher.Helper
     /// </remarks>
     public static class SingleInstance<TApplication>
                 where TApplication : Application, ISingleInstanceApp
-
     {
         /// <summary>
         /// String delimiter used in channel names.
@@ -369,7 +368,7 @@ namespace PowerLauncher.Helper
         /// <summary>
         /// Callback for activating first instance of the application.
         /// </summary>
-        /// <param name="arg">Callback argument.</param>
+        /// <param name="args">Callback argument.</param>
         /// <returns>Always null.</returns>
         private static object ActivateFirstInstanceCallback(object _)
         {

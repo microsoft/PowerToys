@@ -27,6 +27,8 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
 
+        private readonly Alphabet _alphabet = new Alphabet();
+
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed = false;
         private static int _powerToysPid;
@@ -35,7 +37,6 @@ namespace PowerLauncher
         private MainWindow _mainWindow;
         private ThemeManager _themeManager;
         private SettingWindowViewModel _settingsVM;
-        private readonly Alphabet _alphabet = new Alphabet();
         private StringMatcher _stringMatcher;
         private SettingsWatcher _settingsWatcher;
 

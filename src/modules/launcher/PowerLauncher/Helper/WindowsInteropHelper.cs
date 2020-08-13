@@ -98,10 +98,10 @@ namespace PowerLauncher.Helper
             INPUTHARDWARE = 2,
         }
 
-        const string WINDOW_CLASS_CONSOLE = "ConsoleWindowClass";
-        const string WINDOW_CLASS_WINTAB = "Flip3D";
-        const string WINDOW_CLASS_PROGMAN = "Progman";
-        const string WINDOW_CLASS_WORKERW = "WorkerW";
+        private const string WINDOW_CLASS_CONSOLE = "ConsoleWindowClass";
+        private const string WINDOW_CLASS_WINTAB = "Flip3D";
+        private const string WINDOW_CLASS_PROGMAN = "Progman";
+        private const string WINDOW_CLASS_WORKERW = "WorkerW";
 
         public static bool IsWindowFullscreen()
         {
@@ -181,7 +181,7 @@ namespace PowerLauncher.Helper
             }
             else
             {
-                using (var src = new HwndSource(new HwndSourceParameters()))
+                using (var src = new HwndSource(default(HwndSourceParameters)))
                 {
                     matrix = src.CompositionTarget.TransformFromDevice;
                 }

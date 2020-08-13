@@ -22,7 +22,7 @@ namespace PowerLauncher.Storage
             var span = DateTime.Now - dt;
             if (span.Days > 365)
             {
-                int years = (span.Days / 365);
+                int years = span.Days / 365;
                 if (span.Days % 365 != 0)
                 {
                     years += 1;
@@ -33,7 +33,7 @@ namespace PowerLauncher.Storage
 
             if (span.Days > 30)
             {
-                int months = (span.Days / 30);
+                int months = span.Days / 30;
                 if (span.Days % 31 != 0)
                 {
                     months += 1;
