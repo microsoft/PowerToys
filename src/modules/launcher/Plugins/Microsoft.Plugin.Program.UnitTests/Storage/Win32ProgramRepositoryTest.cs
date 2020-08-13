@@ -19,9 +19,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
     [TestFixture]
     public class Win32ProgramRepositoryTest
     {
+        private readonly ProgramPluginSettings _settings = new ProgramPluginSettings();
+        private readonly string[] _pathsToWatch = new string[] { "location1", "location2" };
+
         private List<IFileSystemWatcherWrapper> _fileSystemWatchers;
-        private ProgramPluginSettings _settings = new ProgramPluginSettings();
-        private string[] _pathsToWatch = new string[] { "location1", "location2" };
         private List<Mock<IFileSystemWatcherWrapper>> _fileSystemMocks;
 
         [SetUp]
@@ -41,7 +42,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         public void Win32RepositoryMustNotStoreDuplicatesWhileAddingItemsWithSameHashCode(string name, string exename, string fullPath, string description1, string description2)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
 
             Win32Program item1 = new Win32Program
             {
@@ -60,55 +61,55 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             };
 
             // Act
-            _win32ProgramRepository.Add(item1);
+            win32ProgramRepository.Add(item1);
 
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
 
             // To add an item with the same hashCode, ie, same name, exename and fullPath
-            _win32ProgramRepository.Add(item2);
+            win32ProgramRepository.Add(item2);
 
             // Assert, count still remains 1 because they are duplicate items
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
         }
 
         [TestCase("path.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppCreatedForApprefAppsWhenCreatedEventIsRaised(string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(_win32ProgramRepository.ElementAt(0).AppType, 2);
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, 2);
         }
 
         [TestCase("directory", "path.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForApprefAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Deleted, directory, path);
 
             string fullPath = directory + "\\" + path;
             Win32Program item = Win32Program.GetAppFromPath(fullPath);
-            _win32ProgramRepository.Add(item);
+            win32ProgramRepository.Add(item);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(win32ProgramRepository.Count(), 0);
         }
 
         [TestCase("directory", "oldpath.appref-ms", "newpath.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppRenamedForApprefAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, newpath, oldpath);
 
             string oldFullPath = directory + "\\" + oldpath;
@@ -116,22 +117,22 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             Win32Program olditem = Win32Program.GetAppFromPath(oldFullPath);
             Win32Program newitem = Win32Program.GetAppFromPath(newFullPath);
-            _win32ProgramRepository.Add(olditem);
+            win32ProgramRepository.Add(olditem);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.IsTrue(_win32ProgramRepository.Contains(newitem));
-            Assert.IsFalse(_win32ProgramRepository.Contains(olditem));
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.IsTrue(win32ProgramRepository.Contains(newitem));
+            Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
         [TestCase("path.exe")]
         public void Win32ProgramRepositoryMustCallOnAppCreatedForExeAppsWhenCreatedEventIsRaised(string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
 
             // FileVersionInfo must be mocked for exe applications
@@ -143,15 +144,15 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(_win32ProgramRepository.ElementAt(0).AppType, 2);
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, 2);
         }
 
         [TestCase("directory", "path.exe")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForExeAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Deleted, directory, path);
 
             // FileVersionInfo must be mocked for exe applications
@@ -161,20 +162,20 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             string fullPath = directory + "\\" + path;
             Win32Program item = Win32Program.GetAppFromPath(fullPath);
-            _win32ProgramRepository.Add(item);
+            win32ProgramRepository.Add(item);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(win32ProgramRepository.Count(), 0);
         }
 
         [TestCase("directory", "oldpath.appref-ms", "newpath.appref-ms")]
         public void Win32ProgramRepositoryMustCallOnAppRenamedForExeAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, newpath, oldpath);
 
             string oldFullPath = directory + "\\" + oldpath;
@@ -187,22 +188,22 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             Win32Program olditem = Win32Program.GetAppFromPath(oldFullPath);
             Win32Program newitem = Win32Program.GetAppFromPath(newFullPath);
-            _win32ProgramRepository.Add(olditem);
+            win32ProgramRepository.Add(olditem);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.IsTrue(_win32ProgramRepository.Contains(newitem));
-            Assert.IsFalse(_win32ProgramRepository.Contains(olditem));
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.IsTrue(win32ProgramRepository.Contains(newitem));
+            Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
         [TestCase("path.url")]
         public void Win32ProgramRepositoryMustCallOnAppChangedForUrlAppsWhenChangedEventIsRaised(string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Changed, "directory", path);
 
             // File.ReadAllLines must be mocked for url applications
@@ -214,8 +215,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Changed += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(_win32ProgramRepository.ElementAt(0).AppType, 1); // Internet Shortcut Application
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, 1); // Internet Shortcut Application
         }
 
         [TestCase("path.url")]
@@ -224,7 +225,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // We are handing internet shortcut apps using the Changed event instead
 
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
 
             // File.ReadAllLines must be mocked for url applications
@@ -236,7 +237,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(win32ProgramRepository.Count(), 0);
         }
 
         [TestCase("path.exe")]
@@ -247,7 +248,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // We are handing internet shortcut apps using the Changed event instead
 
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Changed, "directory", path);
 
             // FileVersionInfo must be mocked for exe applications
@@ -264,14 +265,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Changed += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(win32ProgramRepository.Count(), 0);
         }
 
         [TestCase("directory", "path.url")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForUrlAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Deleted, directory, path);
 
             // File.ReadAllLines must be mocked for url applications
@@ -281,20 +282,20 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             string fullPath = directory + "\\" + path;
             Win32Program item = Win32Program.GetAppFromPath(fullPath);
-            _win32ProgramRepository.Add(item);
+            win32ProgramRepository.Add(item);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(win32ProgramRepository.Count(), 0);
         }
 
         [TestCase("directory", "oldpath.url", "newpath.url")]
         public void Win32ProgramRepositoryMustCallOnAppRenamedForUrlAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, newpath, oldpath);
 
             // File.ReadAllLines must be mocked for url applications
@@ -307,22 +308,22 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             Win32Program olditem = Win32Program.GetAppFromPath(oldFullPath);
             Win32Program newitem = Win32Program.GetAppFromPath(newFullPath);
-            _win32ProgramRepository.Add(olditem);
+            win32ProgramRepository.Add(olditem);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.IsTrue(_win32ProgramRepository.Contains(newitem));
-            Assert.IsFalse(_win32ProgramRepository.Contains(olditem));
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.IsTrue(win32ProgramRepository.Contains(newitem));
+            Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
 
         [TestCase("path.lnk")]
         public void Win32ProgramRepositoryMustCallOnAppCreatedForLnkAppsWhenCreatedEventIsRaised(string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
 
             // ShellLinkHelper must be mocked for lnk applications
@@ -334,15 +335,15 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(_win32ProgramRepository.ElementAt(0).AppType, 2);
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, 2);
         }
 
         [TestCase("directory", "path.lnk")]
         public void Win32ProgramRepositoryMustCallOnAppDeletedForLnkAppsWhenDeletedEventIsRaised(string directory, string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Deleted, directory, path);
 
             // ShellLinkHelper must be mocked for lnk applications
@@ -359,24 +360,24 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                 FullPath = "directory\\path.exe",
                 LnkResolvedPath = "directory\\path.lnk", // This must be equal for lnk applications
             };
-            _win32ProgramRepository.Add(item);
+            win32ProgramRepository.Add(item);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(win32ProgramRepository.Count(), 0);
         }
 
         [TestCase("directory", "oldpath.lnk", "path.lnk")]
         public void Win32ProgramRepositoryMustCallOnAppRenamedForLnkAppsWhenRenamedEventIsRaised(string directory, string oldpath, string path)
         {
             // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
+            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
             RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, path, oldpath);
 
             string oldFullPath = directory + "\\" + oldpath;
-            string FullPath = directory + "\\" + path;
+            string fullPath = directory + "\\" + path;
 
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
@@ -388,25 +389,25 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             {
                 Name = "oldpath",
                 ExecutableName = path,
-                FullPath = FullPath,
+                FullPath = fullPath,
             };
 
             Win32Program newitem = new Win32Program
             {
                 Name = "path",
                 ExecutableName = path,
-                FullPath = FullPath,
+                FullPath = fullPath,
             };
 
-            _win32ProgramRepository.Add(olditem);
+            win32ProgramRepository.Add(olditem);
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.IsTrue(_win32ProgramRepository.Contains(newitem));
-            Assert.IsFalse(_win32ProgramRepository.Contains(olditem));
+            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.IsTrue(win32ProgramRepository.Contains(newitem));
+            Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
     }
 }
