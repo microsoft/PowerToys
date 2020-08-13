@@ -1,5 +1,5 @@
 parameters:
-  additionalBuildArguments: '/p:VisualStudioVersion=12.0'
+  additionalBuildArguments: ''
 
 steps:
 - checkout: self
