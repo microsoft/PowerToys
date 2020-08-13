@@ -14,7 +14,7 @@ namespace ViewModelTests
     [TestClass]
     public class PowerPreview
     {
-        public const string Module = "File Explorer";
+        public const string Module = "Test\\File Explorer";
 
         [TestInitialize]
         public void Setup()
@@ -60,7 +60,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -78,7 +78,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -96,7 +96,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG);;
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);;
 
             // act
             viewModel.MDRenderIsEnabled = true;

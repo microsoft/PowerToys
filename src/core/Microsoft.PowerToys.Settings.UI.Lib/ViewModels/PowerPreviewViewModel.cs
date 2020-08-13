@@ -17,16 +17,21 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerPreviewViewModel(Func<string, int> ipcMSGCallBackFunc)
+        public string SettingsConfigFileFolder = string.Empty;
+
+        public PowerPreviewViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            // Update Settings file folder:
+            SettingsConfigFileFolder = configFileSubfolder;
+
             try
             {
-                Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(ModuleName);
+                Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(GetSettingsSubPath());
             }
             catch
             {
                 Settings = new PowerPreviewSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -93,6 +98,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     RaisePropertyChanged();
                 }
             }
+        }
+
+        public string GetSettingsSubPath()
+        {
+            return SettingsConfigFileFolder + "\\" + ModuleName;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
