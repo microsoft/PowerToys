@@ -12,22 +12,27 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     {
         private const string ModuleName = "PowerRename";
 
+        public string SettingsConfigFileFolder = string.Empty;
+
         private PowerRenameSettings Settings { get; set; }
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerRenameViewModel(Func<string, int> ipcMSGCallBackFunc)
+        public PowerRenameViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            // Update Settings file folder:
+            SettingsConfigFileFolder = configFileSubfolder;
+
             try
             {
-                PowerRenameLocalProperties localSettings = SettingsUtils.GetSettings<PowerRenameLocalProperties>(ModuleName, "power-rename-settings.json");
+                PowerRenameLocalProperties localSettings = SettingsUtils.GetSettings<PowerRenameLocalProperties>(GetSettingsSubPath(), "power-rename-settings.json");
                 Settings = new PowerRenameSettings(localSettings);
             }
             catch
             {
                 PowerRenameLocalProperties localSettings = new PowerRenameLocalProperties();
                 Settings = new PowerRenameSettings(localSettings);
-                SettingsUtils.SaveSettings(localSettings.ToJsonString(), ModuleName, "power-rename-settings.json");
+                SettingsUtils.SaveSettings(localSettings.ToJsonString(), GetSettingsSubPath(), "power-rename-settings.json");
             }
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -181,6 +186,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     RaisePropertyChanged();
                 }
             }
+        }
+
+        public string GetSettingsSubPath()
+        {
+            return SettingsConfigFileFolder + "\\" + ModuleName;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
