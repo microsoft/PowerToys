@@ -17,7 +17,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
     [TestFixture]
     public class Win32Tests
     {
-        static Win32Program notepad_appdata = new Win32Program
+        private static Win32Program notepad_appdata = new Win32Program
         {
             Name = "Notepad",
             ExecutableName = "notepad.exe",
@@ -26,7 +26,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program notepad_users = new Win32Program
+        private static Win32Program notepad_users = new Win32Program
         {
             Name = "Notepad",
             ExecutableName = "notepad.exe",
@@ -35,7 +35,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program azure_command_prompt = new Win32Program
+        private static Win32Program azure_command_prompt = new Win32Program
         {
             Name = "Microsoft Azure Command Prompt - v2.9",
             ExecutableName = "cmd.exe",
@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program visual_studio_command_prompt = new Win32Program
+        private static Win32Program visual_studio_command_prompt = new Win32Program
         {
             Name = "x64 Native Tools Command Prompt for VS 2019",
             ExecutableName = "cmd.exe",
@@ -53,7 +53,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program command_prompt = new Win32Program
+        private static Win32Program command_prompt = new Win32Program
         {
             Name = "Command Prompt",
             ExecutableName = "cmd.exe",
@@ -62,7 +62,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program file_explorer = new Win32Program
+        private static Win32Program file_explorer = new Win32Program
         {
             Name = "File Explorer",
             ExecutableName = "File Explorer.lnk",
@@ -71,7 +71,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program wordpad = new Win32Program
+        private static Win32Program wordpad = new Win32Program
         {
             Name = "Wordpad",
             ExecutableName = "wordpad.exe",
@@ -80,7 +80,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program wordpad_duplicate = new Win32Program
+        private static Win32Program wordpad_duplicate = new Win32Program
         {
             Name = "WORDPAD",
             ExecutableName = "WORDPAD.EXE",
@@ -89,7 +89,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program twitter_pwa = new Win32Program
+        private static Win32Program twitter_pwa = new Win32Program
         {
             Name = "Twitter",
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome_proxy.exe",
@@ -98,7 +98,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 0,
         };
 
-        static Win32Program pinned_webpage = new Win32Program
+        private static Win32Program pinned_webpage = new Win32Program
         {
             Name = "Web page",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
@@ -107,7 +107,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 0,
         };
 
-        static Win32Program edge_named_pinned_webpage = new Win32Program
+        private static Win32Program edge_named_pinned_webpage = new Win32Program
         {
             Name = "edge - Bing",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
@@ -116,7 +116,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 0,
         };
 
-        static Win32Program msedge = new Win32Program
+        private static Win32Program msedge = new Win32Program
         {
             Name = "Microsoft Edge",
             ExecutableName = "msedge.exe",
@@ -125,7 +125,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program chrome = new Win32Program
+        private static Win32Program chrome = new Win32Program
         {
             Name = "Google Chrome",
             ExecutableName = "chrome.exe",
@@ -134,7 +134,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program dummy_proxy_app = new Win32Program
+        private static Win32Program dummy_proxy_app = new Win32Program
         {
             Name = "Proxy App",
             ExecutableName = "test_proxy.exe",
@@ -143,7 +143,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        static Win32Program cmd_run_command = new Win32Program
+        private static Win32Program cmd_run_command = new Win32Program
         {
             Name = "cmd",
             ExecutableName = "cmd.exe",
@@ -152,7 +152,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 3, // Run command
         };
 
-        static Win32Program cmder_run_command = new Win32Program
+        private static Win32Program cmder_run_command = new Win32Program
         {
             Name = "Cmder",
             Description = "Cmder: Lovely Console Emulator",
@@ -162,7 +162,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 3, // Run command
         };
 
-        static Win32Program dummy_internetShortcut_app = new Win32Program
+        private static Win32Program dummy_internetShortcut_app = new Win32Program
         {
             Name = "Shop Titans",
             ExecutableName = "Shop Titans.url",
@@ -172,7 +172,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 1,
         };
 
-        static Win32Program dummy_internetShortcut_app_duplicate = new Win32Program
+        private static Win32Program dummy_internetShortcut_app_duplicate = new Win32Program
         {
             Name = "Shop Titans",
             ExecutableName = "Shop Titans.url",
@@ -186,9 +186,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void DedupFunctionWhenCalledMustRemoveDuplicateNotepads()
         {
             // Arrange
-            List<Win32Program> prgms = new List<Win32Program>();
-            prgms.Add(notepad_appdata);
-            prgms.Add(notepad_users);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                notepad_appdata,
+                notepad_users
+            };
 
             // Act
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
@@ -201,9 +203,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void DedupFunctionWhenCalledMustRemoveInternetShortcuts()
         {
             // Arrange
-            List<Win32Program> prgms = new List<Win32Program>();
-            prgms.Add(dummy_internetShortcut_app);
-            prgms.Add(dummy_internetShortcut_app_duplicate);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                dummy_internetShortcut_app,
+                dummy_internetShortcut_app_duplicate
+            };
 
             // Act
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
@@ -216,8 +220,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void DedupFunctionWhenCalledMustNotRemovelnkWhichdoesNotHaveExe()
         {
             // Arrange
-            List<Win32Program> prgms = new List<Win32Program>();
-            prgms.Add(file_explorer);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                file_explorer
+            };
 
             // Act
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
@@ -230,9 +236,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void DedupFunctionMustRemoveDuplicatesForExeExtensionsWithoutLnkResolvedPath()
         {
             // Arrange
-            List<Win32Program> prgms = new List<Win32Program>();
-            prgms.Add(wordpad);
-            prgms.Add(wordpad_duplicate);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                wordpad,
+                wordpad_duplicate
+            };
 
             // Act
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
@@ -246,10 +254,12 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void DedupFunctionMustNotRemoveProgramsWithSameExeNameAndFullPath()
         {
             // Arrange
-            List<Win32Program> prgms = new List<Win32Program>();
-            prgms.Add(azure_command_prompt);
-            prgms.Add(visual_studio_command_prompt);
-            prgms.Add(command_prompt);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                azure_command_prompt,
+                visual_studio_command_prompt,
+                command_prompt
+            };
 
             // Act
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
@@ -328,6 +338,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             {
                 return edge_named_pinned_webpage.FilterWebApplication(query);
             }
+
             // unreachable code
             return true;
         }
