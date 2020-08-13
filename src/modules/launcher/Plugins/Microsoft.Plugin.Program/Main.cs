@@ -35,6 +35,7 @@ namespace Microsoft.Plugin.Program
         {
             _settingsStorage = new PluginJsonStorage<ProgramPluginSettings>();
             _settings = _settingsStorage.Load();
+
             // This helper class initializes the file system watchers based on the locations to watch
             _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
@@ -63,7 +64,6 @@ namespace Microsoft.Plugin.Program
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
-
         }
 
         public void Save()
@@ -132,7 +132,7 @@ namespace Microsoft.Plugin.Program
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            if(selectedResult == null)
+            if (selectedResult == null)
             {
                 throw new ArgumentNullException(nameof(selectedResult));
             }
@@ -152,12 +152,12 @@ namespace Microsoft.Plugin.Program
         {
             try
             {
-                if(runProcess == null)
+                if (runProcess == null)
                 {
                     throw new ArgumentNullException(nameof(runProcess));
                 }
 
-                if(info == null)
+                if (info == null)
                 {
                     throw new ArgumentNullException(nameof(info));
                 }

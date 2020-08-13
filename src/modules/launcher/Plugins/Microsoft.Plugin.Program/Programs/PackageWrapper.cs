@@ -37,7 +37,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static PackageWrapper GetWrapperFromPackage(Package package)
         {
-            if(package == null)
+            if (package == null)
             {
                 throw new ArgumentNullException(nameof(package));
             }
@@ -55,7 +55,7 @@ namespace Microsoft.Plugin.Program.Programs
                     package.Id.FullName,
                     package.Id.FamilyName,
                     package.IsFramework,
-                    package.IsDevelopmentMode, 
+                    package.IsDevelopmentMode,
                     string.Empty);
             }
 
@@ -67,7 +67,6 @@ namespace Microsoft.Plugin.Program.Programs
                     package.IsDevelopmentMode,
                     path
                     );
-
         }
     }
 }

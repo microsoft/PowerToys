@@ -13,6 +13,5 @@ namespace Microsoft.Plugin.Program.Programs
         string Arguments { get; set; }
 
         bool hasArguments { get; set; }
-
     }
 }

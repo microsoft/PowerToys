@@ -12,11 +12,11 @@ namespace Microsoft.Plugin.Program
     {
         public DateTime LastIndexTime { get; set; }
 
-        public List<ProgramSource> ProgramSources { get;} = new List<ProgramSource>();
+        public List<ProgramSource> ProgramSources { get; } = new List<ProgramSource>();
 
-        public List<DisabledProgramSource> DisabledProgramSources { get;} = new List<DisabledProgramSource>();
+        public List<DisabledProgramSource> DisabledProgramSources { get; } = new List<DisabledProgramSource>();
 
-        public List<string> ProgramSuffixes { get; } = new List<string>(){ "bat", "appref-ms", "exe", "lnk", "url" };
+        public List<string> ProgramSuffixes { get; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url" };
 
         public bool EnableStartMenuSource { get; set; } = true;
 
@@ -29,7 +29,6 @@ namespace Microsoft.Plugin.Program
         public double MinScoreThreshold { get; set; } = 0.75;
 
         internal const char SuffixSeparator = ';';
-
     }
 
     /// <summary>

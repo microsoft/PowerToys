@@ -117,7 +117,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
             if (selectedItems.Where(t1 => t1.Enabled).Any())
                 return true;
 
-            // ProgramSources holds list of user added directories, 
+            // ProgramSources holds list of user added directories,
             // so when we enable/disable we need to reindex to show/not show the programs
             // that are found in those directories.
             if (selectedItems.Where(t1 => Main._settings.ProgramSources.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Any())

@@ -145,6 +145,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                     );
             }
+
             contextMenus.Add(
                 new ContextMenuResult
                 {
@@ -263,6 +264,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
             }
+
             return false;
         }
 
@@ -305,7 +307,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException($"|UWP|ResourceFromPri|{Package.Location}|Can't load null or empty result "
+                        ProgramLogger.LogException(
+                            $"|UWP|ResourceFromPri|{Package.Location}|Can't load null or empty result "
                                                     + $"pri {source} in uwp location {Package.Location}", new NullReferenceException());
                         return string.Empty;
                     }
@@ -368,7 +371,6 @@ namespace Microsoft.Plugin.Program.Programs
             // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
             // windows 8.1 https://msdn.microsoft.com/en-us/library/windows/apps/hh965372.aspx#target_size
             // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
-
             string path;
             if (uri.Contains("\\", StringComparison.Ordinal))
             {
@@ -440,7 +442,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
+                        ProgramLogger.LogException(
+                            $"|UWP|LogoPathFromUri|{Package.Location}" +
                             $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
                         return string.Empty;
                     }
@@ -448,7 +451,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
+                ProgramLogger.LogException(
+                    $"|UWP|LogoPathFromUri|{Package.Location}" +
                                                 $"|Unable to find extension from {uri} for {UserModelId} " +
                                                 $"in package location {Package.Location}", new FileNotFoundException());
                 return string.Empty;
@@ -479,7 +483,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                ProgramLogger.LogException($"|UWP|ImageFromPath|{path}" +
+                ProgramLogger.LogException(
+                    $"|UWP|ImageFromPath|{path}" +
                                                 $"|Unable to get logo for {UserModelId} from {path} and" +
                                                 $" located in {Package.Location}", new FileNotFoundException());
                 return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
@@ -491,5 +496,4 @@ namespace Microsoft.Plugin.Program.Programs
             return $"{DisplayName}: {Description}";
         }
     }
-
 }
