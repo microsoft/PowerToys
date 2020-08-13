@@ -7,7 +7,7 @@ using OpenQA.Selenium.Interactions;
 namespace PowerToysTests
 {
     [TestClass]
-    public class TestShortcutHelper : PowerToysSession
+    public class TestShortcutGuideHelper : PowerToysSession
     {
         // Try to manage Press/Release of Windows Key here,
         // since Keyboard.PressKey seems to release the key if pressed
