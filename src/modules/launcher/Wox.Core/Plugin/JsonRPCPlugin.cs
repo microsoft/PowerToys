@@ -19,11 +19,12 @@ namespace Wox.Core.Plugin
     /// </summary>
     internal abstract class JsonRPCPlugin : IPlugin, IContextMenu
     {
-        protected PluginInitContext context;
+        protected PluginInitContext Context { get; set; }
+
         public const string JsonRPC = "JsonRPC";
 
         /// <summary>
-        /// The language this JsonRPCPlugin support
+        /// Gets or sets the language this JsonRPCPlugin support
         /// </summary>
         public abstract string SupportedLanguage { get; set; }
 
@@ -67,21 +68,27 @@ namespace Wox.Core.Plugin
 
         private List<Result> DeserializedResult(string output)
         {
-            if (!String.IsNullOrEmpty(output))
+            if (!string.IsNullOrEmpty(output))
             {
                 List<Result> results = new List<Result>();
 
                 JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
-                if (queryResponseModel.Result == null) return null;
+                if (queryResponseModel.Result == null)
+                {
+                    return null;
+                }
 
                 foreach (JsonRPCResult result in queryResponseModel.Result)
                 {
                     JsonRPCResult result1 = result;
                     result.Action = c =>
                     {
-                        if (result1.JsonRPCAction == null) return false;
+                        if (result1.JsonRPCAction == null)
+                        {
+                            return false;
+                        }
 
-                        if (!String.IsNullOrEmpty(result1.JsonRPCAction.Method))
+                        if (!string.IsNullOrEmpty(result1.JsonRPCAction.Method))
                         {
                             if (result1.JsonRPCAction.Method.StartsWith("Wox."))
                             {
@@ -92,7 +99,7 @@ namespace Wox.Core.Plugin
                                 string actionResponse = ExecuteCallback(result1.JsonRPCAction);
                                 JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionResponse);
                                 if (jsonRpcRequestModel != null
-                                    && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
+                                    && !string.IsNullOrEmpty(jsonRpcRequestModel.Method)
                                     && jsonRpcRequestModel.Method.StartsWith("Wox."))
                                 {
                                     ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
@@ -136,18 +143,21 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Execute external program and return the output
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
+        /// <param name="fileName">file to execute</param>
+        /// <param name="arguments">args to pass in to that exe</param>
+        /// <returns>results</returns>
         protected string Execute(string fileName, string arguments)
         {
-            ProcessStartInfo start = new ProcessStartInfo();
-            start.FileName = fileName;
-            start.Arguments = arguments;
-            start.UseShellExecute = false;
-            start.CreateNoWindow = true;
-            start.RedirectStandardOutput = true;
-            start.RedirectStandardError = true;
+            ProcessStartInfo start = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
             return Execute(start);
         }
 
@@ -206,7 +216,7 @@ namespace Wox.Core.Plugin
 
         public void Init(PluginInitContext ctx)
         {
-            context = ctx;
+            Context = ctx;
         }
     }
 }

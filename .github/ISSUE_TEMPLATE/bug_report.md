@@ -14,9 +14,10 @@ Instead, send dumps/traces to secure@microsoft.com, referencing this GitHub issu
 
 ## ℹ Computer information
 
-- Windows build number: [run "winver"]
 - PowerToys version: 
-- PowerToy module:
+- PowerToy Utility:
+- Running PowerToys as Admin:
+- Windows build number: [run "winver"]
 
 ## 📝 Provide detailed reproduction steps (if any)
 

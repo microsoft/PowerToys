@@ -84,6 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _openWindowOnActiveMonitor;
+        private bool _spanZonesAcrossMonitors;
         private bool _restoreSize;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
@@ -311,6 +312,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _showOnAllMonitors = value;
                     Settings.Properties.FancyzonesShowOnAllMonitors.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool SpanZonesAcrossMonitors
+        {
+            get
+            {
+                return _spanZonesAcrossMonitors;
+            }
+
+            set
+            {
+                if (value != _spanZonesAcrossMonitors)
+                {
+                    _spanZonesAcrossMonitors = value;
+                    Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value = value;
                     RaisePropertyChanged();
                 }
             }

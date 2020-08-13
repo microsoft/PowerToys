@@ -108,13 +108,19 @@ namespace Wox.Core.Resource
             var languageToSet = GetLanguageByLanguageCode(languageCodeToSet);
 
             if (Settings.ShouldUsePinyin)
+            {
                 return false;
+            }
 
             if (languageToSet != AvailableLanguages.Chinese && languageToSet != AvailableLanguages.Chinese_TW)
+            {
                 return false;
+            }
 
             if (MessageBox.Show("Do you want to turn on search with Pinyin?", string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -143,7 +149,7 @@ namespace Wox.Core.Resource
                 {
                     var r = new ResourceDictionary
                     {
-                        Source = new Uri(f, UriKind.Absolute)
+                        Source = new Uri(f, UriKind.Absolute),
                     };
                     dicts.Add(r);
                     _oldResources.Add(r);
@@ -174,8 +180,11 @@ namespace Wox.Core.Resource
         {
             foreach (var p in PluginManager.GetPluginsForInterface<IPluginI18n>())
             {
-                var pluginI18N = p.Plugin as IPluginI18n;
-                if (pluginI18N == null) return;
+                if (!(p.Plugin is IPluginI18n pluginI18N))
+                {
+                    return;
+                }
+
                 try
                 {
                     p.Metadata.Name = pluginI18N.GetTranslatedPluginTitle();

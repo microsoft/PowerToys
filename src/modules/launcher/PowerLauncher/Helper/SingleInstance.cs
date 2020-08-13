@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.IO.Pipes;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading;
@@ -121,18 +121,14 @@ namespace PowerLauncher.Helper
         DWMNCRENDERINGCHANGED = 0x031F,
         DWMCOLORIZATIONCOLORCHANGED = 0x0320,
         DWMWINDOWMAXIMIZEDCHANGE = 0x0321,
-
-        #region Windows 7
         DWMSENDICONICTHUMBNAIL = 0x0323,
         DWMSENDICONICLIVEPREVIEWBITMAP = 0x0326,
-        #endregion
-
         USER = 0x0400,
 
         // This is the hard-coded message value used by WinForms for Shell_NotifyIcon.
         // It's relatively safe to reuse.
         TRAYMOUSEMESSAGE = 0x800, // WM_USER + 1024
-        APP = 0x8000
+        APP = 0x8000,
     }
 
     [SuppressUnmanagedCodeSecurity]
@@ -229,8 +225,6 @@ namespace PowerLauncher.Helper
                 where TApplication : Application, ISingleInstanceApp
 
     {
-        #region Private Fields
-
         /// <summary>
         /// String delimiter used in channel names.
         /// </summary>
@@ -246,14 +240,6 @@ namespace PowerLauncher.Helper
         /// </summary>
         internal static Mutex singleInstanceMutex;
 
-        #endregion
-
-        #region Public Properties
-
-        #endregion
-
-        #region Public Methods
-
         /// <summary>
         /// Checks if the instance of the application attempting to start is the first instance.
         /// If not, activates the first instance.
@@ -264,7 +250,7 @@ namespace PowerLauncher.Helper
             // Build unique application Id and the IPC channel name.
             string applicationIdentifier = uniqueName + Environment.UserName;
 
-            string channelName = String.Concat(applicationIdentifier, Delimiter, ChannelNameSuffix);
+            string channelName = string.Concat(applicationIdentifier, Delimiter, ChannelNameSuffix);
 
             // Create mutex based on unique application Id to check if this is the first instance of the application.
             bool firstInstance;
@@ -288,10 +274,6 @@ namespace PowerLauncher.Helper
         {
             singleInstanceMutex?.ReleaseMutex();
         }
-
-        #endregion
-
-        #region Private Methods
 
         /// <summary>
         /// Gets command line args - for ClickOnce deployed applications, command line args may not be passed directly, they have to be retrieved.
@@ -409,7 +391,5 @@ namespace PowerLauncher.Helper
 
             ((TApplication)Application.Current).OnSecondAppStarted();
         }
-
-        #endregion
     }
 }
