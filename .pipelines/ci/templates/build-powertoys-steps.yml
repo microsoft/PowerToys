@@ -76,6 +76,7 @@ steps:
 # Running VSTest@2 step seperatly for .netframework and .netcore.
 # .NetCore assemblies
 - task: VSTest@2
+  displayName: 'Run .Net Core Tests'
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
@@ -88,6 +89,7 @@ steps:
       !**\obj\**
 # .NetFramework assemblies
 - task: VSTest@2
+  displayName: 'Run .Net Framework Tests'
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
