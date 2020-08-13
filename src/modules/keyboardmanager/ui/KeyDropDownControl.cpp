@@ -178,7 +178,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutCon
                 ValidateShortcutFromDropDownList(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
             }
 
-            // Reset the buffer based on the new selected drop down items
+            // Reset the buffer based on the new selected drop down items. Use static key code list since the KeyDropDownControl object might be deleted
             std::vector selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(GetSelectedIndicesFromStackPanel(parent), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
             if (!isHybridControl)
             {
