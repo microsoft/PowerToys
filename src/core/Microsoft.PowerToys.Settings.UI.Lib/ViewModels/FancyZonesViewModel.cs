@@ -121,7 +121,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
+                    OnPropertyChanged("SnapHotkeysCategoryEnabled");
                 }
+            }
+        }
+
+        public bool SnapHotkeysCategoryEnabled
+        {
+            get
+            {
+                return _isEnabled && _overrideSnapHotkeys;
             }
         }
 
@@ -180,6 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _overrideSnapHotkeys = value;
                     Settings.Properties.FancyzonesOverrideSnapHotkeys.Value = value;
                     RaisePropertyChanged();
+                    OnPropertyChanged("SnapHotkeysCategoryEnabled");
                 }
             }
         }
