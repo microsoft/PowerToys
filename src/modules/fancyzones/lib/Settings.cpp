@@ -68,7 +68,7 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[13 /* 14 */] = { // "Turning FLASHING_ZONE option off"
+    } m_configBools[14 /* 15 */] = { // "Turning FLASHING_ZONE option off"
         { NonLocalizable::ShiftDragID, &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { NonLocalizable::MouseSwitchID, &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { NonLocalizable::OverrideSnapHotKeysID, &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
