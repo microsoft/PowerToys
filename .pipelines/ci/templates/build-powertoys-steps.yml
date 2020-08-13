@@ -105,4 +105,5 @@ steps:
     projects: 'D:\a\1\s\x64\Release\SettingsTest\netcoreapp3.1\Microsoft.PowerToys.Settings.UI.UnitTests.dll'
     publishTestResults: false
     testRunTitle: '.NetCore Tests'
+    displayName: 'Run .Net Core Tests'
     
