@@ -66,7 +66,7 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community
 --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
 --add Microsoft.VisualStudio.Component.VC.ATL.Spectre
 ```
-4. Install WDK 1903(install with vs extension) https://docs.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads
+4. Install WDK 1903 (check "Install Windows Driver Kit Visual Studio Extension" checkbox) https://go.microsoft.com/fwlink/?linkid=2085767
 
 ### Compiling Source Code
 
