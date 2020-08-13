@@ -568,7 +568,6 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesSettingsUnitTests)
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
-        PowerToysSettings::Settings* m_ptSettings = nullptr;
         PCWSTR m_moduleName = L"FancyZonesUnitTests";
 
         std::wstring serializedPowerToySettings(const Settings& settings)
@@ -609,152 +608,93 @@ namespace FancyZonesUnitTests
         }
 
         TEST_METHOD_INITIALIZE(Init)
-            {
-                HINSTANCE hInst = (HINSTANCE)GetModuleHandleW(nullptr);
+        {
+            HINSTANCE hInst = (HINSTANCE)GetModuleHandleW(nullptr);
 
-                //init m_settings
-                const Settings expected;
+            m_settings = MakeFancyZonesSettings(hInst, m_moduleName);
+            Assert::IsTrue(m_settings != nullptr);
+        }
 
-                PowerToysSettings::PowerToyValues values(m_moduleName);
-                values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
-                values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
-                values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
-                //values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
-                values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
-                values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
-                values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
-                values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
-                values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
-                values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
-                values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
-                values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
-                values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
-                values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
-                values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
-                values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
-                values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
-                values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
+        TEST_METHOD_CLEANUP(Cleanup)
+        {
+            std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+        }
 
-                values.save_to_settings_file();
+        TEST_METHOD (GetConfig)
+        {
+            int expectedSize = 0;
+            m_settings->GetConfig(nullptr, &expectedSize);
+            Assert::AreNotEqual(0, expectedSize);
+            
+            int actualBufferSize = expectedSize;
+            PWSTR actualBuffer = new wchar_t[actualBufferSize];
 
-                m_settings = MakeFancyZonesSettings(hInst, m_moduleName);
-                Assert::IsTrue(m_settings != nullptr);
+            Assert::IsTrue(m_settings->GetConfig(actualBuffer, &actualBufferSize));
+            Assert::AreEqual(expectedSize, actualBufferSize);
+        }
 
-                //init m_ptSettings
-                m_ptSettings = new PowerToysSettings::Settings(hInst, m_moduleName);
-                m_ptSettings->set_description(IDS_SETTING_DESCRIPTION);
-                m_ptSettings->set_icon_key(L"pt-fancy-zones");
-                m_ptSettings->set_overview_link(L"https://aka.ms/PowerToysOverview_FancyZones");
-                m_ptSettings->set_video_link(L"https://youtu.be/rTtGzZYAXgY");
+        TEST_METHOD (GetConfigSmallBuffer)
+        {
+            int size = 0;
+            m_settings->GetConfig(nullptr, &size);
+            Assert::AreNotEqual(0, size);
 
-                m_ptSettings->add_custom_action(
-                    L"ToggledFZEditor", // action name.
-                    IDS_SETTING_LAUNCH_EDITOR_LABEL,
-                    IDS_SETTING_LAUNCH_EDITOR_BUTTON,
-                    IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION);
-                m_ptSettings->add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, expected.editorHotkey);
-                m_ptSettings->add_bool_toggle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, expected.shiftDrag);
-                m_ptSettings->add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, expected.mouseSwitch);
-                m_ptSettings->add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, expected.overrideSnapHotkeys);
-                m_ptSettings->add_bool_toggle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, expected.moveWindowAcrossMonitors);
-                //m_ptSettings->add_bool_toggle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, expected.zoneSetChange_flashZones);
-                m_ptSettings->add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, expected.displayChange_moveWindows);
-                m_ptSettings->add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, expected.zoneSetChange_moveWindows);
-                m_ptSettings->add_bool_toggle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, expected.appLastZone_moveWindows);
-                m_ptSettings->add_bool_toggle(L"fancyzones_openWindowOnActiveMonitor", IDS_SETTING_DESCRIPTION_OPEN_WINDOW_ON_ACTIVE_MONITOR, expected.openWindowOnActiveMonitor);
-                m_ptSettings->add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, expected.restoreSize);
-                m_ptSettings->add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, expected.use_cursorpos_editor_startupscreen);
-                m_ptSettings->add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, expected.showZonesOnAllMonitors);
-                m_ptSettings->add_bool_toggle(L"fancyzones_multi_monitor_mode", IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS, expected.spanZonesAcrossMonitors);
-                m_ptSettings->add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, expected.makeDraggedWindowTransparent);
-                m_ptSettings->add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, expected.zoneHighlightColor);
-                m_ptSettings->add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, expected.zoneColor);
-                m_ptSettings->add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, expected.zoneBorderColor);
-                m_ptSettings->add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, expected.zoneHighlightOpacity, 0, 100, 1);
-                m_ptSettings->add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, expected.excludedApps);
-            }
+            int actualBufferSize = size - 1;
+            PWSTR actualBuffer = new wchar_t[actualBufferSize];
+            
+            Assert::IsFalse(m_settings->GetConfig(actualBuffer, &actualBufferSize));
+            Assert::AreEqual(size, actualBufferSize);
+        }
 
-            TEST_METHOD_CLEANUP(Cleanup)
-                {
-                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
-                }
+        TEST_METHOD (GetConfigNullBuffer)
+        {
+            int expectedSize = 0;
+            m_settings->GetConfig(nullptr, &expectedSize);
+            Assert::AreNotEqual(0, expectedSize);
 
-                TEST_METHOD (GetConfig)
-                {
-                    const int expectedSize = static_cast<int>(m_ptSettings->serialize().size()) + 1;
+            int actualBufferSize = 0;
 
-                    int actualBufferSize = expectedSize;
-                    PWSTR actualBuffer = new wchar_t[actualBufferSize];
+            Assert::IsFalse(m_settings->GetConfig(nullptr, &actualBufferSize));
+            Assert::AreEqual(expectedSize, actualBufferSize);
+        }
 
-                    Assert::IsTrue(m_settings->GetConfig(actualBuffer, &actualBufferSize));
-                    Assert::AreEqual(expectedSize, actualBufferSize);
+        TEST_METHOD (SetConfig)
+        {
+            //cleanup file before call set config
+            const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
+            std::filesystem::remove(settingsFile);
 
-                    Assert::AreEqual(m_ptSettings->serialize().c_str(), actualBuffer);
-                }
+            const Settings expected{
+                .shiftDrag = true,
+                .mouseSwitch = true,
+                .displayChange_moveWindows = true,
+                .zoneSetChange_flashZones = false,
+                .zoneSetChange_moveWindows = true,
+                .overrideSnapHotkeys = false,
+                .moveWindowAcrossMonitors = false,
+                .appLastZone_moveWindows = true,
+                .openWindowOnActiveMonitor = false,
+                .restoreSize = false,
+                .use_cursorpos_editor_startupscreen = true,
+                .showZonesOnAllMonitors = false,
+                .spanZonesAcrossMonitors = false,
+                .makeDraggedWindowTransparent = true,
+                .zoneColor = L"#FAFAFA",
+                .zoneBorderColor = L"CCDDEE",
+                .zoneHighlightColor = L"#00AABB",
+                .zoneHighlightOpacity = 45,
+                .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
+                .excludedApps = L"app\r\napp2",
+                .excludedAppsArray = { L"APP", L"APP2" },
+            };
 
-                TEST_METHOD (GetConfigSmallBuffer)
-                {
-                    const auto serialized = m_ptSettings->serialize();
-                    const int size = static_cast<int>(serialized.size());
-                    const int expectedSize = size + 1;
+            auto config = serializedPowerToySettings(expected);
+            m_settings->SetConfig(config.c_str());
 
-                    int actualBufferSize = size - 1;
-                    PWSTR actualBuffer = new wchar_t[actualBufferSize];
+            auto actual = m_settings->GetSettings();
+            compareSettings(expected, *actual);
 
-                    Assert::IsFalse(m_settings->GetConfig(actualBuffer, &actualBufferSize));
-                    Assert::AreEqual(expectedSize, actualBufferSize);
-                    Assert::AreNotEqual(serialized.c_str(), actualBuffer);
-                }
-
-                TEST_METHOD (GetConfigNullBuffer)
-                {
-                    const auto serialized = m_ptSettings->serialize();
-                    const int expectedSize = static_cast<int>(serialized.size()) + 1;
-
-                    int actualBufferSize = 0;
-
-                    Assert::IsFalse(m_settings->GetConfig(nullptr, &actualBufferSize));
-                    Assert::AreEqual(expectedSize, actualBufferSize);
-                }
-
-                TEST_METHOD (SetConfig)
-                {
-                    //cleanup file before call set config
-                    const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
-                    std::filesystem::remove(settingsFile);
-
-                    const Settings expected{
-                        .shiftDrag = true,
-                        .mouseSwitch = true,
-                        .displayChange_moveWindows = true,
-                        .zoneSetChange_flashZones = false,
-                        .zoneSetChange_moveWindows = true,
-                        .overrideSnapHotkeys = false,
-                        .moveWindowAcrossMonitors = false,
-                        .appLastZone_moveWindows = true,
-                        .openWindowOnActiveMonitor = false,
-                        .restoreSize = false,
-                        .use_cursorpos_editor_startupscreen = true,
-                        .showZonesOnAllMonitors = false,
-                        .spanZonesAcrossMonitors = false,
-                        .makeDraggedWindowTransparent = true,
-                        .zoneColor = L"#FAFAFA",
-                        .zoneBorderColor = L"CCDDEE",
-                        .zoneHighlightColor = L"#00AABB",
-                        .zoneHighlightOpacity = 45,
-                        .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
-                        .excludedApps = L"app\r\napp2",
-                        .excludedAppsArray = { L"APP", L"APP2" },
-                    };
-
-                    auto config = serializedPowerToySettings(expected);
-                    m_settings->SetConfig(config.c_str());
-
-                    auto actual = m_settings->GetSettings();
-                    compareSettings(expected, *actual);
-
-                    Assert::IsTrue(std::filesystem::exists(settingsFile));
-                }
+            Assert::IsTrue(std::filesystem::exists(settingsFile));
+        }
     };
 }
