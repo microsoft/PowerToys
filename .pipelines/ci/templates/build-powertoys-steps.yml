@@ -102,6 +102,6 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'test'
-    projects: '**/*.csproj'
+    projects: '**/*Microsoft.PowerToys.Settings.UI.UnitTests.csproj'
     publishTestResults: false
     testRunTitle: '.NetCore Tests'
