@@ -21,7 +21,7 @@ namespace Wox.Core.Plugin
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
             };
         }
 

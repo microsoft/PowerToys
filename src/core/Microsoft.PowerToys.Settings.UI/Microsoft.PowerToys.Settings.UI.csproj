@@ -110,7 +110,6 @@
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\ColorPickerViewModel.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
-    <Compile Include="ViewModels\GeneralViewModel.cs" />
     <Compile Include="ViewModels\FancyZonesViewModel.cs" />
     <Compile Include="ViewModels\ImageResizerViewModel.cs" />
     <Compile Include="ViewModels\KeyboardManagerViewModel.cs" />

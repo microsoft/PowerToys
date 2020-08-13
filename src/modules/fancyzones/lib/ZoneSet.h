@@ -89,13 +89,13 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * Calculate zone coordinates within zone layout based on number of zones and spacing. Used for one of
      * the predefined layouts (focus, columns, rows, grid, priority grid) or for custom layout.
      *
-     * @param   monitorInfo Information about monitor on which zone layout is applied.
-     * @param   zoneCount   Number of zones inside zone layout.
-     * @param   spacing     Spacing between zones in pixels.
+     * @param   workAreaRect The rectangular area on the screen on which the zone layout is applied.
+     * @param   zoneCount    Number of zones inside zone layout.
+     * @param   spacing      Spacing between zones in pixels.
      *
      * @returns Boolean indicating if calculation was successful.
      */
-    IFACEMETHOD_(bool, CalculateZones)(MONITORINFO monitorInfo, int zoneCount, int spacing) = 0;
+    IFACEMETHOD_(bool, CalculateZones)(RECT workAreaRect, int zoneCount, int spacing) = 0;
     /**
      * Check if the zone with the specified index is empty. Returns true if the zone does not exist.
      * 

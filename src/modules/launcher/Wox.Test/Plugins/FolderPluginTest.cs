@@ -2,17 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using Microsoft.Plugin.Folder;
 using Moq;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Wox.Plugin;
-using Microsoft.Plugin.Folder;
 
 namespace Wox.Test.Plugins
 {
-    class FolderPluginTest
+    internal class FolderPluginTest
     {
         [Test]
         public void ContextMenuLoader_ReturnContextMenuForFolderWithOpenInConsole_WhenLoadContextMenusIsCalled()

@@ -16,7 +16,12 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class GridEditor : UserControl
     {
-        public static readonly DependencyProperty ModelProperty = DependencyProperty.Register("Model", typeof(GridLayoutModel), typeof(GridEditor), new PropertyMetadata(null, OnGridDimensionsChanged));
+        // Non-localizable strings
+        private const string PropertyRowsChangedID = "Rows";
+        private const string PropertyColumnsChangedID = "Columns";
+        private const string ObjectDependencyID = "Model";
+
+        public static readonly DependencyProperty ModelProperty = DependencyProperty.Register(ObjectDependencyID, typeof(GridLayoutModel), typeof(GridEditor), new PropertyMetadata(null, OnGridDimensionsChanged));
 
         private static int gridEditorUniqueIdCounter = 0;
 
@@ -336,7 +341,7 @@ namespace FancyZonesEditor
         private void OnGridDimensionsChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             // Only enter if this is the newest instance
-            if (((e.PropertyName == "Rows") || (e.PropertyName == "Columns")) && gridEditorUniqueId == gridEditorUniqueIdCounter)
+            if (((e.PropertyName == PropertyRowsChangedID) || (e.PropertyName == PropertyColumnsChangedID)) && gridEditorUniqueId == gridEditorUniqueIdCounter)
             {
                 OnGridDimensionsChanged();
             }

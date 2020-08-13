@@ -5,6 +5,7 @@
 namespace ZoneWindowUtils
 {
     std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId);
+    std::wstring GenerateUniqueIdAllMonitorsArea(PCWSTR virtualDesktopId);
 }
 
 /**
