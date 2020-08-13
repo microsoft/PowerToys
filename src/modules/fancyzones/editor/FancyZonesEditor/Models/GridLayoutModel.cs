@@ -14,6 +14,12 @@ namespace FancyZonesEditor.Models
     //  Grid-styled Layout Model, which specifies rows, columns, percentage sizes, and row/column spans
     public class GridLayoutModel : LayoutModel
     {
+        // Localizable strings
+        private const string ErrorPersistingGridLayout = "Error persisting grid layout";
+
+        // Non-localizable strings
+        private const string ModelTypeID = "grid";
+
         // Rows - number of rows in the Grid
         public int Rows
         {
@@ -220,7 +226,7 @@ namespace FancyZonesEditor.Models
             {
                 Uuid = "{" + Guid.ToString().ToUpper() + "}",
                 Name = Name,
-                Type = "grid",
+                Type = ModelTypeID,
                 Info = layoutInfo,
             };
             JsonSerializerOptions options = new JsonSerializerOptions
@@ -235,7 +241,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                ShowExceptionMessageBox("Error persisting grid layout", ex);
+                ShowExceptionMessageBox(ErrorPersistingGridLayout, ex);
             }
         }
     }

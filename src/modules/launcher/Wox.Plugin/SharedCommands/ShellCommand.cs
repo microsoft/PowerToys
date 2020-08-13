@@ -14,11 +14,14 @@ namespace Wox.Plugin.SharedCommands
     {
         public delegate bool EnumThreadDelegate(IntPtr hwnd, IntPtr lParam);
 
-        [DllImport("user32.dll")] static extern bool EnumThreadWindows(uint threadId, EnumThreadDelegate lpfn, IntPtr lParam);
+        [DllImport("user32.dll")]
+        private static extern bool EnumThreadWindows(uint threadId, EnumThreadDelegate lpfn, IntPtr lParam);
 
-        [DllImport("user32.dll")] static extern int GetWindowText(IntPtr hwnd, StringBuilder lpString, int nMaxCount);
+        [DllImport("user32.dll")]
+        private static extern int GetWindowText(IntPtr hwnd, StringBuilder lpString, int nMaxCount);
 
-        [DllImport("user32.dll")] static extern int GetWindowTextLength(IntPtr hwnd);
+        [DllImport("user32.dll")]
+        private static extern int GetWindowTextLength(IntPtr hwnd);
 
         private static bool containsSecurityWindow;
 
@@ -28,13 +31,16 @@ namespace Wox.Plugin.SharedCommands
             var process = Process.Start(processStartInfo);
 
             containsSecurityWindow = false;
-            while (!containsSecurityWindow) // wait for windows to bring up the "Windows Security" dialog
+
+            // wait for windows to bring up the "Windows Security" dialog
+            while (!containsSecurityWindow)
             {
                 CheckSecurityWindow();
                 Thread.Sleep(25);
             }
 
-            while (containsSecurityWindow) // while this process contains a "Windows Security" dialog, stay open
+            // while this process contains a "Windows Security" dialog, stay open
+            while (containsSecurityWindow)
             {
                 containsSecurityWindow = false;
                 CheckSecurityWindow();
@@ -48,13 +54,18 @@ namespace Wox.Plugin.SharedCommands
         {
             ProcessThreadCollection ptc = Process.GetCurrentProcess().Threads;
             for (int i = 0; i < ptc.Count; i++)
+            {
                 EnumThreadWindows((uint)ptc[i].Id, CheckSecurityThread, IntPtr.Zero);
+            }
         }
 
         private static bool CheckSecurityThread(IntPtr hwnd, IntPtr lParam)
         {
             if (GetWindowTitle(hwnd) == "Windows Security")
+            {
                 containsSecurityWindow = true;
+            }
+
             return true;
         }
 
@@ -72,7 +83,7 @@ namespace Wox.Plugin.SharedCommands
                 FileName = fileName,
                 WorkingDirectory = workingDirectory,
                 Arguments = arguments,
-                Verb = verb
+                Verb = verb,
             };
 
             return info;
