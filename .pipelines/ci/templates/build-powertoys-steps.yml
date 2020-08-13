@@ -100,7 +100,6 @@ steps:
       #**\UnitTests-FancyZones.dll
 
 - task: DotNetCoreCLI@2
-  nobuild: true
   inputs:
     command: 'test'
     projects: '**/*Microsoft.PowerToys.Settings.UI.UnitTests.dll'
