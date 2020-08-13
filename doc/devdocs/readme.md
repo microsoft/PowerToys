@@ -66,7 +66,8 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community
 --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
 --add Microsoft.VisualStudio.Component.VC.ATL.Spectre
 ```
-**Optional:** 4. to build the Video Conference module, install the [WDK version 1903](https://docs.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads) ([direct download link](https://go.microsoft.com/fwlink/?linkid=2085767))<br />
+**Optional step:**<br/>
+4. to build the Video Conference module, install the [WDK version 1903](https://docs.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads) ([direct download link](https://go.microsoft.com/fwlink/?linkid=2085767))<br />
    During the installation, make sure that, when prompted, the `Install Windows Driver Kit Visual Studio extension` option is checked.
 
 ### Compiling Source Code
