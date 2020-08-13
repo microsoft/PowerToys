@@ -52,12 +52,19 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 
 1. Windows 10 April 2018 Update (version 1803) or newer
 2. Visual Studio Community/Professional/Enterprise 2019
-3. Run the command below in cmd/terminal to install all the workloads and components for VS.<br />
-**Note:** the script assumes VS is installed and Community edition. Please update path accordingly if Professional/Enterprise.
+3. Run the command below in cmd/terminal to install all the workloads and components for VS.
 
 ```shell
+cd "%ProgramFiles(x86)%\Microsoft Visual Studio\2019"
+SET targetFolder="\"
+IF EXIST Enterprise\NUL (SET targetFolder=Enterprise)
+IF EXIST Professional\NUL (SET targetFolder=Professional)
+IF EXIST Community\NUL (SET targetFolder=Community)
+
+ECHO %targetFolder%
+
 "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vs_installer.exe" ^
-modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community" ^
+modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFolder%" ^
 --add Microsoft.VisualStudio.Workload.NativeDesktop ^
 --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
 --add Microsoft.VisualStudio.Workload.Universal ^
