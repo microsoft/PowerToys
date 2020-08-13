@@ -43,7 +43,10 @@ namespace PowerLauncher.Helper
 
             public override string ContentType
             {
-                get { return m_contentType; }
+                get
+                {
+                    return m_contentType;
+                }
 
                 set
                 {
@@ -53,7 +56,10 @@ namespace PowerLauncher.Helper
 
             public override long ContentLength
             {
-                get { return m_data.Length; }
+                get
+                {
+                    return m_data.Length;
+                }
 
                 set
                 {

@@ -151,6 +151,7 @@ namespace Microsoft.Plugin.Program.Storage
                     return app;
                 }
             }
+
             return null;
         }
 
@@ -165,6 +166,7 @@ namespace Microsoft.Plugin.Program.Storage
                     return app;
                 }
             }
+
             return null;
         }
 
@@ -210,6 +212,5 @@ namespace Microsoft.Plugin.Program.Storage
             var items = _storage.TryLoad(Array.Empty<Win32Program>());
             Set(items);
         }
-
     }
 }

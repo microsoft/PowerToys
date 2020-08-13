@@ -20,7 +20,6 @@ namespace PowerLauncher
 {
     public partial class MainWindow : IDisposable
     {
-        #region Private Fields
         private Settings _settings;
         private MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
@@ -28,9 +27,8 @@ namespace PowerLauncher
         Timer _firstDeleteTimer = new Timer();
         bool _coldStateHotkeyPressed = false;
 
-        #endregion
-
-        public MainWindow(Settings settings, MainViewModel mainVM) : this()
+        public MainWindow(Settings settings, MainViewModel mainVM)
+            : this()
         {
             DataContext = mainVM;
             _viewModel = mainVM;
@@ -148,7 +146,10 @@ namespace PowerLauncher
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left) DragMove();
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
+            }
         }
 
         private void InitializePosition()
@@ -362,7 +363,7 @@ namespace PowerLauncher
 
                 _settings.ActivateTimes++;
 
-                if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
                 {
                     SearchBox.QueryTextBox.SelectAll();
                 }

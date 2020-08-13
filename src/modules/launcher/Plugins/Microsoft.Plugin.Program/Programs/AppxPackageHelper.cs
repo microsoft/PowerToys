@@ -28,8 +28,10 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     apps.Add(manifestApp);
                 }
+
                 manifestApps.MoveNext();
             }
+
             return apps;
         }
 
@@ -39,17 +41,20 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 Marshal.ThrowExceptionForHR((int)hr);
             }
+
             return result;
         }
     }
 
     // Reference : https://stackoverflow.com/questions/32122679/getting-icon-of-modern-windows-app-from-a-desktop-application
-    [Guid("5842a140-ff9f-4166-8f5c-62f5b7b0c781"), ComImport]
+    [Guid("5842a140-ff9f-4166-8f5c-62f5b7b0c781")]
+    [ComImport]
     public class AppxFactory
     {
     }
 
-    [Guid("BEB94909-E451-438B-B5A7-D79E767B75D8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("BEB94909-E451-438B-B5A7-D79E767B75D8")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxFactory
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
@@ -58,7 +63,8 @@ namespace Microsoft.Plugin.Program.Programs
         IAppxManifestReader CreateManifestReader(IStream inputStream);
     }
 
-    [Guid("4E1BD148-55A0-4480-A3D1-15544710637C"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("4E1BD148-55A0-4480-A3D1-15544710637C")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxManifestReader
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
@@ -72,7 +78,8 @@ namespace Microsoft.Plugin.Program.Programs
         IAppxManifestApplicationsEnumerator GetApplications();
     }
 
-    [Guid("9EB8A55A-F04B-4D0D-808D-686185D4847A"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("9EB8A55A-F04B-4D0D-808D-686185D4847A")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxManifestApplicationsEnumerator
     {
         IAppxManifestApplication GetCurrent();
@@ -82,7 +89,8 @@ namespace Microsoft.Plugin.Program.Programs
         bool MoveNext();
     }
 
-    [Guid("5DA89BF4-3773-46BE-B650-7E744863B7E8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("5DA89BF4-3773-46BE-B650-7E744863B7E8")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxManifestApplication
     {
         [PreserveSig]
@@ -92,7 +100,8 @@ namespace Microsoft.Plugin.Program.Programs
         Hresult GetAppUserModelId([MarshalAs(UnmanagedType.LPWStr)] out string value);
     }
 
-    [Guid("03FAF64D-F26F-4B2C-AAF7-8FE7789B8BCA"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("03FAF64D-F26F-4B2C-AAF7-8FE7789B8BCA")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxManifestProperties
     {
         [PreserveSig]

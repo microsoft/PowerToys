@@ -40,9 +40,10 @@ namespace Microsoft.Plugin.Program.Logger
                 var rule = new LoggingRule("*", LogLevel.Debug, target);
 #else
                 var rule = new LoggingRule("*", LogLevel.Error, target);
-#endif          
+#endif
                 configuration.LoggingRules.Add(rule);
             }
+
             LogManager.Configuration = configuration;
         }
 
@@ -55,7 +56,7 @@ namespace Microsoft.Plugin.Program.Logger
         {
             Debug.WriteLine($"ERROR{classname}|{callingMethodName}|{loadingProgramPath}|{interpretationMessage}");
 
-            var logger = LogManager.GetLogger("");
+            var logger = LogManager.GetLogger(string.Empty);
 
             var innerExceptionNumber = 1;
 
@@ -102,11 +103,11 @@ namespace Microsoft.Plugin.Program.Logger
         [MethodImpl(MethodImplOptions.Synchronized)]
         internal static void LogException(string message, Exception e)
         {
-            //Index 0 is always empty.
+            // Index 0 is always empty.
             var parts = message.Split('|');
             if (parts.Length < 4)
             {
-                var logger = LogManager.GetLogger("");
+                var logger = LogManager.GetLogger(string.Empty);
                 logger.Error(e, $"fail to log exception in program logger, parts length is too small: {parts.Length}, message: {message}");
             }
 
