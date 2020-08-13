@@ -16,9 +16,11 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-namespace
+// Non-Localizable strings
+namespace NonLocalizable
 {
-    const wchar_t TOAST_TITLE[] = L"FancyZones";
+    const wchar_t FancyZonesRunAsAdminInfoPage[] = L"https://aka.ms/powertoysDetectedElevatedHelp";
+    const wchar_t ToastNotificationButtonUrl[] = L"powertoys://cant_drag_elevated_disable/";
 }
 
 namespace WindowMoveHandlerUtils
@@ -335,7 +337,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         {
             if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
             {
-                ::RemoveProp(window, RESTORE_SIZE_STAMP);
+                ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
             }
             else if (!IsWindowMaximized(window))
             {
@@ -361,7 +363,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
                 }
             }
         }
-        ::RemoveProp(window, MULTI_ZONE_STAMP);
+        ::RemoveProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
     }
     
     m_inMoveSize = false;
@@ -401,11 +403,11 @@ void WindowMoveHandlerPrivate::WarnIfElevationIsRequired(HWND window) noexcept
         if (!warning_shown && !is_cant_drag_elevated_warning_disabled())
         {
             std::vector<notifications::action_t> actions = {
-                notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), L"https://aka.ms/powertoysDetectedElevatedHelp" },
-                notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), L"powertoys://cant_drag_elevated_disable/" }
+                notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), NonLocalizable::FancyZonesRunAsAdminInfoPage },
+                notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), NonLocalizable::ToastNotificationButtonUrl }
             };
             notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED),
-                                                       TOAST_TITLE,
+                                                       GET_RESOURCE_STRING(IDS_FANCYZONES),
                                                        {},
                                                        std::move(actions));
             warning_shown = true;

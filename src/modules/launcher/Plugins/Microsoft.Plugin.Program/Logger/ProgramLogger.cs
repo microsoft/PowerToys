@@ -1,11 +1,15 @@
-﻿using NLog;
-using NLog.Config;
-using NLog.Targets;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 using Wox.Infrastructure;
 
 namespace Microsoft.Plugin.Program.Logger
@@ -28,15 +32,17 @@ namespace Microsoft.Plugin.Program.Logger
             }
 
             var configuration = new LoggingConfiguration();
-            var target = new FileTarget();
-            configuration.AddTarget("file", target);
-            target.FileName = path.Replace(@"\", "/") + "/${shortdate}.txt";
+            using (var target = new FileTarget())
+            {
+                configuration.AddTarget("file", target);
+                target.FileName = path.Replace(@"\", "/", StringComparison.Ordinal) + "/${shortdate}.txt";
 #if DEBUG
-            var rule = new LoggingRule("*", LogLevel.Debug, target);
+                var rule = new LoggingRule("*", LogLevel.Debug, target);
 #else
-            var rule = new LoggingRule("*", LogLevel.Error, target);
-#endif
-            configuration.LoggingRules.Add(rule);
+                var rule = new LoggingRule("*", LogLevel.Error, target);
+#endif          
+                configuration.LoggingRules.Add(rule);
+            }
             LogManager.Configuration = configuration;
         }
 

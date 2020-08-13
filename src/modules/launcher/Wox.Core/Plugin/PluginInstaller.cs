@@ -87,9 +87,7 @@ namespace Wox.Core.Plugin
                     // {
                     //    Plugins.Initialize();
                     // }
-                    if (MessageBox.Show($"You have installed plugin {plugin.Name} successfully.{Environment.NewLine}" +
-                                        "Restart Wox to take effect?",
-                                        "Install plugin", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    if (MessageBox.Show($"You have installed plugin {plugin.Name} successfully.{Environment.NewLine} Restart Wox to take effect?", "Install plugin", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
                         PluginManager.API.RestartApp();
                     }
@@ -119,8 +117,9 @@ namespace Wox.Core.Plugin
                 {
                     throw new Exception(error);
                 }
-#endif
+#else
                 return null;
+#endif
             }
 
             if (!AllowedLanguage.IsAllowed(metadata.Language))
@@ -130,8 +129,9 @@ namespace Wox.Core.Plugin
                 {
                     throw new Exception(error);
                 }
-#endif
+#else
                 return null;
+#endif
             }
 
             if (!File.Exists(metadata.ExecuteFilePath))
@@ -141,8 +141,9 @@ namespace Wox.Core.Plugin
                 {
                     throw new Exception(error);
                 }
-#endif
+#else
                 return null;
+#endif
             }
 
             return metadata;
@@ -156,10 +157,15 @@ namespace Wox.Core.Plugin
         /// <param name="overWrite">overwrite</param>
         private static void UnZip(string zippedFile, string strDirectory, bool overWrite)
         {
-            if (strDirectory == "")
+            if (strDirectory == string.Empty)
+            {
                 strDirectory = Directory.GetCurrentDirectory();
+            }
+
             if (!strDirectory.EndsWith("\\"))
-                strDirectory = strDirectory + "\\";
+            {
+                strDirectory += "\\";
+            }
 
             using (ZipInputStream s = new ZipInputStream(File.OpenRead(zippedFile)))
             {
@@ -167,18 +173,20 @@ namespace Wox.Core.Plugin
 
                 while ((theEntry = s.GetNextEntry()) != null)
                 {
-                    string directoryName = "";
-                    string pathToZip = "";
+                    string directoryName = string.Empty;
+                    string pathToZip = string.Empty;
                     pathToZip = theEntry.Name;
 
-                    if (pathToZip != "")
+                    if (pathToZip != string.Empty)
+                    {
                         directoryName = Path.GetDirectoryName(pathToZip) + "\\";
+                    }
 
                     string fileName = Path.GetFileName(pathToZip);
 
                     Directory.CreateDirectory(strDirectory + directoryName);
 
-                    if (fileName != "")
+                    if (fileName != string.Empty)
                     {
                         if ((File.Exists(strDirectory + directoryName + fileName) && overWrite) || (!File.Exists(strDirectory + directoryName + fileName)))
                         {
@@ -190,9 +198,13 @@ namespace Wox.Core.Plugin
                                     int size = s.Read(data, 0, data.Length);
 
                                     if (size > 0)
+                                    {
                                         streamWriter.Write(data, 0, size);
+                                    }
                                     else
+                                    {
                                         break;
+                                    }
                                 }
 
                                 streamWriter.Close();

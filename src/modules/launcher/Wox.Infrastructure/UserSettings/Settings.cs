@@ -14,7 +14,7 @@ namespace Wox.Infrastructure.UserSettings
     public class Settings : BaseModel
     {
         private string _hotkey = "Alt + Space";
-        private string _previousHotkey = "";
+        private string _previousHotkey = string.Empty;
 
         public string PreviousHotkey
         {
@@ -63,7 +63,7 @@ namespace Wox.Infrastructure.UserSettings
         public string ResultFontStretch { get; set; }
 
         /// <summary>
-        /// when false Alphabet static service will always return empty results
+        /// Gets or sets a value indicating whether when false Alphabet static service will always return empty results
         /// </summary>
         public bool ShouldUsePinyin { get; set; } = false;
 
@@ -72,7 +72,10 @@ namespace Wox.Infrastructure.UserSettings
         [JsonIgnore]
         public string QuerySearchPrecisionString
         {
-            get { return QuerySearchPrecision.ToString(); }
+            get
+            {
+                return QuerySearchPrecision.ToString();
+            }
 
             set
             {
@@ -125,7 +128,7 @@ namespace Wox.Infrastructure.UserSettings
 
         // Order defaults to 0 or -1, so 1 will let this property appear last
         [JsonProperty(Order = 1)]
-        public PluginsSettings PluginSettings { get; set; } = new PluginsSettings();
+        public PluginSettings PluginSettings { get; set; } = new PluginSettings();
 
         public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new ObservableCollection<CustomPluginHotkey>();
 
@@ -143,11 +146,14 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool HideOnStartup { get; set; }
 
-        bool _hideNotifyIcon { get; set; }
+        private bool _hideNotifyIcon;
 
         public bool HideNotifyIcon
         {
-            get { return _hideNotifyIcon; }
+            get
+            {
+                return _hideNotifyIcon;
+            }
 
             set
             {
@@ -176,7 +182,7 @@ namespace Wox.Infrastructure.UserSettings
     {
         Selected,
         Empty,
-        Preserved
+        Preserved,
     }
 
     [Obsolete]
@@ -184,6 +190,6 @@ namespace Wox.Infrastructure.UserSettings
     {
         Normal = 0,
         LayeredWindow = 1,
-        DWM = 2
+        DWM = 2,
     }
 }

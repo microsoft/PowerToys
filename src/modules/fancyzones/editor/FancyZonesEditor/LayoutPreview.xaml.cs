@@ -17,7 +17,13 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class LayoutPreview : UserControl
     {
-        public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register("IsActualSize", typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
+        // Non-localizable strings
+        private const string PropertyZoneCountID = "ZoneCount";
+        private const string PropertyShowSpacingID = "ShowSpacing";
+        private const string PropertySpacingID = "Spacing";
+        private const string ObjectDependencyID = "IsActualSize";
+
+        public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
 
         private LayoutModel _model;
         private List<Int32Rect> _zones = new List<Int32Rect>();
@@ -43,11 +49,11 @@ namespace FancyZonesEditor
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "ZoneCount")
+            if (e.PropertyName == PropertyZoneCountID)
             {
                 RenderPreview();
             }
-            else if ((e.PropertyName == "ShowSpacing") || (e.PropertyName == "Spacing"))
+            else if ((e.PropertyName == PropertyShowSpacingID) || (e.PropertyName == PropertySpacingID))
             {
                 if (_model is GridLayoutModel)
                 {

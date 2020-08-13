@@ -14,4 +14,7 @@
     <system:String x:Key="Microsoft_plugin_folder_copy_path">Copy path (Ctrl+C)</system:String>
     <system:String x:Key="Microsoft_plugin_folder_open_in_console">Open path in console (Ctrl+Shift+C)</system:String>
     <system:String x:Key="Microsoft_plugin_folder_open_containing_folder">Open containing folder (Ctrl+Shift+E)</system:String>
+
+    <system:String x:Key="Microsoft_plugin_folder_truncation_warning_title">Warning: Folder Plugin Results truncated.</system:String>
+    <system:String x:Key="Microsoft_plugin_folder_truncation_warning_subtitle">Showing {0} of {1} results</system:String>
 </ResourceDictionary>
