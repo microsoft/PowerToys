@@ -13,6 +13,7 @@
 #include <keyboardmanager/dll/resource.h>
 #include "../common/shared_constants.h"
 #include "keyboardmanager/common/KeyboardManagerState.h"
+#include "LoadingAndSavingRemappingHelper.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -27,36 +28,6 @@ HWND hwndEditKeyboardNativeWindow = nullptr;
 std::mutex editKeyboardWindowMutex;
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
-
-static std::vector<DWORD> GetOrphanedKeys()
-{
-    std::set<DWORD> ogKeys;
-    std::set<DWORD> newKeys;
-
-    for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
-    {
-        DWORD ogKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
-        std::variant<DWORD, Shortcut> newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1];
-
-        if (ogKey != NULL && ((newKey.index() == 0 && std::get<DWORD>(newKey) != 0) || (newKey.index() == 1 && std::get<Shortcut>(newKey).IsValidShortcut())))
-        {
-            ogKeys.insert(ogKey);
-
-            // newKey should be added only if the target is a key
-            if (SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1].index() == 0)
-            {
-                newKeys.insert(std::get<DWORD>(newKey));
-            }
-        }
-    }
-
-    for (auto& k : newKeys)
-    {
-        ogKeys.erase(k);
-    }
-
-    return std::vector(ogKeys.begin(), ogKeys.end());
-}
 
 static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     KeyboardManagerState& state,
@@ -92,7 +63,7 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
 
 static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
+    KeyboardManagerHelper::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
 
     if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
     {
@@ -104,7 +75,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 
     // Check for orphaned keys
     // Draw content Dialog
-    std::vector<DWORD> orphanedKeys = GetOrphanedKeys();
+    std::vector<DWORD> orphanedKeys = LoadingAndSavingRemappingHelper::GetOrphanedKeys(SingleKeyRemapControl::singleKeyRemapBuffer);
     if (orphanedKeys.size() > 0)
     {
         if (!co_await OrphanKeysConfirmationDialog(keyboardManagerState, orphanedKeys, root))
@@ -113,31 +84,6 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
         }
     }
     ApplyRemappings();
-}
-
-// Function to combine remappings if the L and R version of the modifier is mapped to the same key
-void CombineRemappings(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
-{
-    if (table.find(leftKey) != table.end() && table.find(rightKey) != table.end())
-    {
-        // If they are mapped to the same key, delete those entries and set the common version
-        if (table[leftKey] == table[rightKey])
-        {
-            table[combinedKey] = table[leftKey];
-            table.erase(leftKey);
-            table.erase(rightKey);
-        }
-    }
-}
-
-// Function to pre process the remap table before loading it into the UI
-void PreProcessRemapTable(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table)
-{
-    // Pre process the table to combine L and R versions of Ctrl/Alt/Shift/Win that are mapped to the same key
-    CombineRemappings(table, VK_LCONTROL, VK_RCONTROL, VK_CONTROL);
-    CombineRemappings(table, VK_LMENU, VK_RMENU, VK_MENU);
-    CombineRemappings(table, VK_LSHIFT, VK_RSHIFT, VK_SHIFT);
-    CombineRemappings(table, VK_LWIN, VK_RWIN, CommonSharedConstants::VK_WIN_BOTH);
 }
 
 // Function to create the Edit Keyboard Window
@@ -306,7 +252,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
     std::unordered_map<DWORD, std::variant<DWORD, Shortcut>> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
     lock.unlock();
-    PreProcessRemapTable(singleKeyRemapCopy);
+    LoadingAndSavingRemappingHelper::PreProcessRemapTable(singleKeyRemapCopy);
 
     for (const auto& it : singleKeyRemapCopy)
     {
@@ -323,78 +269,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.SetLeftOf(applyButton, cancelButton);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow]() {
-        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
-        // Clear existing Key Remaps
-        keyboardManagerState.ClearSingleKeyRemaps();
-        DWORD successfulKeyToKeyRemapCount = 0;
-        DWORD successfulKeyToShortcutRemapCount = 0;
-        for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
-        {
-            DWORD originalKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
-            std::variant<DWORD, Shortcut> newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1];
-
-            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !std::get<Shortcut>(newKey).IsValidShortcut()))
-            {
-                // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
-                bool result = false;
-                bool res1, res2;
-                switch (originalKey)
-                {
-                case VK_CONTROL:
-                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LCONTROL, newKey);
-                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RCONTROL, newKey);
-                    result = res1 && res2;
-                    break;
-                case VK_MENU:
-                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LMENU, newKey);
-                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RMENU, newKey);
-                    result = res1 && res2;
-                    break;
-                case VK_SHIFT:
-                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LSHIFT, newKey);
-                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RSHIFT, newKey);
-                    result = res1 && res2;
-                    break;
-                case CommonSharedConstants::VK_WIN_BOTH:
-                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LWIN, newKey);
-                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RWIN, newKey);
-                    result = res1 && res2;
-                    break;
-                default:
-                    result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
-                }
-
-                if (!result)
-                {
-                    isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-                    // Tooltip is already shown for this row
-                }
-                else
-                {
-                    if (newKey.index() == 0)
-                    {
-                        successfulKeyToKeyRemapCount += 1;
-                    }
-                    else
-                    {
-                        successfulKeyToShortcutRemapCount += 1;
-                    }
-                }
-            }
-            else
-            {
-                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-            }
-        }
-
-        Trace::KeyRemapCount(successfulKeyToKeyRemapCount, successfulKeyToShortcutRemapCount);
+        LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(keyboardManagerState, SingleKeyRemapControl::singleKeyRemapBuffer, true);
         // Save the updated shortcuts remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
-        if (!saveResult)
-        {
-            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
-        }
-
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     };
 
