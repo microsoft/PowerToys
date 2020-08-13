@@ -1,5 +1,6 @@
 #pragma once
 #include "ModifierKey.h"
+#include <variant>
 class InputInterface;
 class LayoutMap;
 namespace KeyboardManagerHelper
@@ -166,3 +167,7 @@ public:
     // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
     KeyboardManagerHelper::ErrorType IsShortcutIllegal() const;
 };
+
+using RemapBufferItem = std::vector<std::variant<DWORD, Shortcut>>;
+using RemapBufferRow = std::pair<RemapBufferItem, std::wstring>;
+using RemapBuffer = std::vector<RemapBufferRow>;

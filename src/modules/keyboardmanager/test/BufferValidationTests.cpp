@@ -24,11 +24,11 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is successful when setting a key to null in a new row
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldUpdateAndReturnNoError_OnSettingKeyToNullInANewRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add 2 empty rows
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, NULL }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, NULL }), std::wstring()));
 
             // Validate and update the element when -1 i.e. null selection is made on an empty row.
             KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(0, 0, -1, keyboardLayout.GetKeyCodeList(false), remapBuffer);
@@ -44,10 +44,10 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is successful when setting a key to non-null in a new row
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldUpdateAndReturnNoError_OnSettingKeyToNonNullInANewRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add an empty row
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, NULL }), std::wstring()));
 
             // Validate and update the element when selecting B on an empty row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
@@ -63,10 +63,10 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is successful when setting a key to non-null in a valid key to key
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldUpdateAndReturnNoError_OnSettingKeyToNonNullInAValidKeyToKeyRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add a row with A as the target
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, 0x41 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, 0x41 }), std::wstring()));
 
             // Validate and update the element when selecting B on a row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
@@ -82,13 +82,13 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is successful when setting a key to non-null in a valid key to shortcut
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldUpdateAndReturnNoError_OnSettingKeyToNonNullInAValidKeyToShortcutRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add a row with Ctrl+A as the target
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, dest }), std::wstring()));
 
             // Validate and update the element when selecting B on a row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
@@ -104,10 +104,10 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column to the same value as the right column
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldReturnMapToSameKeyError_OnSettingFirstColumnToSameValueAsRightColumn)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add a row with A as the target
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, 0x41 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, 0x41 }), std::wstring()));
 
             // Validate and update the element when selecting A on a row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
@@ -123,11 +123,11 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to key row to the same value as in another row
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldReturnSameKeyPreviouslyMappedError_OnSettingFirstColumnOfAKeyToKeyRowToSameValueAsInAnotherRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add a row from A->B and a row with C as target
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ 0x41, 0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, 0x43 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, 0x42 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, 0x43 }), std::wstring()));
 
             // Validate and update the element when selecting A on second row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
@@ -143,14 +143,14 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to shortcut row to the same value as in another row
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldReturnSameKeyPreviouslyMappedError_OnSettingFirstColumnOfAKeyToShortcutRowToSameValueAsInAnotherRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add a row from A->B and a row with Ctrl+A as target
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ 0x41, 0x42 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, 0x42 }), std::wstring()));
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, dest }), std::wstring()));
 
             // Validate and update the element when selecting A on second row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
@@ -166,11 +166,11 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to key row to a conflicting modifier with another row
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldReturnConflictingModifierKeyError_OnSettingFirstColumnOfAKeyToKeyRowToConflictingModifierWithAnotherRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add a row from Ctrl->B and a row with C as target
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ VK_CONTROL, 0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, 0x43 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ VK_CONTROL, 0x42 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, 0x43 }), std::wstring()));
 
             // Validate and update the element when selecting LCtrl on second row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
@@ -198,14 +198,14 @@ namespace RemappingUITests
         // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to shortcut row to a conflicting modifier with another row
         TEST_METHOD (ValidateAndUpdateKeyBufferElement_ShouldReturnConflictingModifierKeyError_OnSettingFirstColumnOfAKeyToShortcutRowToConflictingModifierWithAnotherRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add a row from Ctrl->B and a row with Ctrl+A as target
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ VK_CONTROL, 0x42 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ VK_CONTROL, 0x42 }), std::wstring()));
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ NULL, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, dest }), std::wstring()));
 
             // Validate and update the element when selecting LCtrl on second row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
@@ -233,18 +233,18 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method is successful and no drop down action is required on setting a column to null in a new or valid row
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndNoAction_OnSettingColumnToNullInANewOrValidRow)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add empty rows
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), NULL }), std::wstring()));
             Shortcut src1;
             src1.SetKey(VK_CONTROL);
             src1.SetKey(0x43);
             Shortcut dest1;
             dest1.SetKey(VK_CONTROL);
             dest1.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src1, dest1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
             Shortcut src2;
             src2.SetKey(VK_CONTROL);
             src2.SetKey(VK_SHIFT);
@@ -253,7 +253,7 @@ namespace RemappingUITests
             dest2.SetKey(VK_CONTROL);
             dest2.SetKey(VK_SHIFT);
             dest2.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src2, dest2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
 
             // Case 1: Validate the element when making null-selection (-1 index) on first column of empty shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -394,7 +394,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutStartWithModifier error and no drop down action is required on setting first drop down to an action key on a non-hybrid control column
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutStartWithModifierErrorAndNoAction_OnSettingFirstDropDownToActionKeyOnANonHybridColumn)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add empty rows and Ctrl+C->Ctrl+A
             Shortcut src;
@@ -403,9 +403,9 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), NULL }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on first dropdown of first column of empty shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -449,7 +449,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error and no drop down action is required on setting first drop down to an action key on an empty hybrid control column
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndNoAction_OnSettingFirstDropDownToActionKeyOnAnEmptyHybridColumn)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Add empty rows and Ctrl+C->Ctrl+A
             Shortcut src;
@@ -458,8 +458,8 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), NULL }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on first dropdown of second column of empty shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -482,7 +482,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutNotMoreThanOneActionKey error and no drop down action is required on setting first drop down to an action key on a hybrid control column with full shortcut
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutNotMoreThanOneActionKeyAndNoAction_OnSettingNonLastDropDownToActionKeyOnAHybridColumnWithFullShortcut)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+C and Ctrl+Shift+B on right column
             Shortcut dest1;
@@ -492,8 +492,8 @@ namespace RemappingUITests
             dest2.SetKey(VK_CONTROL);
             dest2.SetKey(VK_SHIFT);
             dest2.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), dest2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), dest1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), dest2 }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on first dropdown of second column of hybrid shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -515,7 +515,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutNotMoreThanOneActionKey error and no drop down action is required on setting non first non last drop down to an action key on a non hybrid control column with full shortcut
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutNotMoreThanOneActionKeyAndNoAction_OnSettingNonFirstNonLastDropDownToActionKeyOnANonHybridColumnWithFullShortcut)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+Shift+C on left column, Ctrl+Shift+B on right column
             Shortcut src;
@@ -526,7 +526,7 @@ namespace RemappingUITests
             dest.SetKey(VK_CONTROL);
             dest.SetKey(VK_SHIFT);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on second dropdown of first column of shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -549,7 +549,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error and no drop down action is required on setting last drop down to an action key on a column with atleast two drop downs
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndNoAction_OnSettingLastDropDownToActionKeyOnAColumnWithAtleastTwoDropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+Shift+C on left column, Ctrl+Shift+B on right column
             Shortcut src1;
@@ -566,8 +566,8 @@ namespace RemappingUITests
             Shortcut dest2;
             dest2.SetKey(VK_CONTROL);
             dest2.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src1, dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src2, dest2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on last dropdown of first column of three key shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -618,7 +618,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error and ClearUnusedDropDowns action is required on setting non first drop down to an action key on a column if all the drop downs after it are empty
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndClearUnusedDropDownsAction_OnSettingNonFirstDropDownToActionKeyOnAColumnIfAllTheDropDownsAfterItAreEmpty)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+C on left column, Ctrl+B on right column
             Shortcut src;
@@ -627,8 +627,8 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on second dropdown of first column of 3 dropdown shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -679,10 +679,10 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error and ClearUnusedDropDowns action is required on setting first drop down to an action key on a hybrid column if all the drop downs after it are empty
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndClearUnusedDropDownsAction_OnSettingFirstDropDownToActionKeyOnAHybridColumnIfAllTheDropDownsAfterItAreEmpty)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // empty row
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on first dropdown of second column of empty 3 dropdown hybrid shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -698,7 +698,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error and AddDropDown action is required on setting last drop down to a non-repeated modifier key on a column there are less than 3 drop downs
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndAddDropDownAction_OnSettingLastDropDownToNonRepeatedModifierKeyOnAColumnIfThereAreLessThan3DropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+C on left column, Ctrl+B on right column
             Shortcut src;
@@ -707,9 +707,9 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), 0x44 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), 0x44 }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on second dropdown of first column of 2 dropdown shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -767,7 +767,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutCannotHaveRepeatedModifier error and no action is required on setting last drop down to a repeated modifier key on a column there are less than 3 drop downs
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutCannotHaveRepeatedModifierErrorAndNoAction_OnSettingLastDropDownToRepeatedModifierKeyOnAColumnIfThereAreLessThan3DropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+C on left column, Ctrl+B on right column
             Shortcut src;
@@ -776,7 +776,7 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
 
             // Case 1: Validate the element when selecting Ctrl on second dropdown of first column of 2 dropdown shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -828,7 +828,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutMaxShortcutSizeOneActionKey error and no action is required on setting last drop down to a non repeated modifier key on a column there 3 or more drop downs
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutMaxShortcutSizeOneActionKeyErrorAndNoAction_OnSettingLastDropDownToNonRepeatedModifierKeyOnAColumnIfThereAre3OrMoreDropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+C on left column, Ctrl+B on right column
             Shortcut src1;
@@ -845,10 +845,10 @@ namespace RemappingUITests
             dest2.SetKey(VK_CONTROL);
             dest2.SetKey(VK_MENU);
             dest2.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src1, dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), 0x44 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src2, dest2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), 0x44 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
 
             // Case 1: Validate the element when selecting A on second dropdown of first column of 3 dropdown shortcut to shortcut row with middle empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -948,7 +948,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutMaxShortcutSizeOneActionKey error and no action is required on setting last drop down to a repeated modifier key on a column there 3 or more drop downs
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutMaxShortcutSizeOneActionKeyErrorAndNoAction_OnSettingLastDropDownToRepeatedModifierKeyOnAColumnIfThereAre3OrMoreDropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+C on left column, Ctrl+B on right column
             Shortcut src1;
@@ -965,8 +965,8 @@ namespace RemappingUITests
             dest2.SetKey(VK_CONTROL);
             dest2.SetKey(VK_MENU);
             dest2.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src1, dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src2, dest2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
 
             // Case 1: Validate the element when selecting Ctrl on second dropdown of first column of 3 dropdown shortcut to shortcut row with middle empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1038,7 +1038,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error and no action is required on setting non-last drop down to a non repeated modifier key on a column
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndNoAction_OnSettingNonLastDropDownToNonRepeatedModifierKeyOnAColumn)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+C on left column, Ctrl+B on right column
             Shortcut src1;
@@ -1055,8 +1055,8 @@ namespace RemappingUITests
             dest2.SetKey(VK_CONTROL);
             dest2.SetKey(VK_MENU);
             dest2.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src1, dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src2, dest2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
 
             // Case 1: Validate the element when selecting Shift on first dropdown of first column of 2 dropdown shortcut to shortcut
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1128,7 +1128,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutCannotHaveRepeatedModifier error and no action is required on setting non-last drop down to a repeated modifier key on a column
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutCannotHaveRepeatedModifierErrorAndNoAction_OnSettingNonLastDropDownToRepeatedModifierKeyOnAColumn)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // Ctrl+C on left column, Ctrl+B on right column
             Shortcut src1;
@@ -1145,7 +1145,7 @@ namespace RemappingUITests
             dest2.SetKey(VK_CONTROL);
             dest2.SetKey(VK_MENU);
             dest2.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src2, dest2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
 
             // Case 1: Validate the element when selecting Shift on first dropdown of first column of 3 dropdown shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1198,10 +1198,10 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutStartWithModifier error and no action is required on setting first drop down to None on a non-hybrid column with one drop down
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutStartWithModifierErrorAndNoAction_OnSettingFirstDropDownToNoneOnNonHybridColumnWithOneDropDown)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // empty row
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
 
             // Case 1: Validate the element when selecting None on first dropdown of first column of 1 dropdown shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1224,10 +1224,10 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutOneActionKey error and no action is required on setting first drop down to None on a hybrid column with one drop down
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutOneActionKeyErrorAndNoAction_OnSettingFirstDropDownToNoneOnHybridColumnWithOneDropDown)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // empty row
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
 
             // Case 1: Validate the element when selecting None on first dropdown of first column of 1 dropdown hybrid shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1243,16 +1243,16 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutAtleast2Keys error and no action is required on setting first drop down to None on a non-hybrid column with two drop down
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutAtleast2KeysAndNoAction_OnSettingFirstDropDownToNoneOnNonHybridColumnWithTwoDropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x43);
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
 
             // Case 1: Validate the element when selecting None on first dropdown of first column of 2 dropdown empty shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1289,16 +1289,16 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutOneActionKey error and no action is required on setting second drop down to None on a non-hybrid column with two drop down
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutOneActionKeyAndNoAction_OnSettingSecondDropDownToNoneOnNonHybridColumnWithTwoDropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x43);
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
 
             // Case 1: Validate the element when selecting None on second dropdown of first column of 2 dropdown empty shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1335,16 +1335,16 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error and DeleteDropDown action is required on setting drop down to None on a hybrid column with two drop down
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndDeleteDropDownAction_OnSettingDropDownToNoneOnHybridColumnWithTwoDropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x43);
             Shortcut dest;
             dest.SetKey(VK_CONTROL);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
 
             // Case 1: Validate the element when selecting None on first dropdown of second column of 2 dropdown empty hybrid shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1381,9 +1381,9 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error and DeleteDropDown action is required on setting non last drop down to None on a column with three drop down
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndDeleteDropDownAction_OnSettingNonLastDropDownToNoneOnColumnWithThreeDropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(VK_SHIFT);
@@ -1392,7 +1392,7 @@ namespace RemappingUITests
             dest.SetKey(VK_CONTROL);
             dest.SetKey(VK_SHIFT);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
 
             // Case 1: Validate the element when selecting None on first dropdown of first column of 3 dropdown empty shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1485,9 +1485,9 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ShortcutOneActionKey error and no action is required on setting last drop down to None on a column with three drop down
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnShortcutOneActionKeyErrorAndNoAction_OnSettingLastDropDownToNoneOnColumnWithThreeDropDowns)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(VK_SHIFT);
@@ -1496,7 +1496,7 @@ namespace RemappingUITests
             dest.SetKey(VK_CONTROL);
             dest.SetKey(VK_SHIFT);
             dest.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src, dest }), std::wstring()));
 
             // Case 1: Validate the element when selecting None on last dropdown of first column of 3 dropdown empty shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1547,10 +1547,10 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns WinL error on setting a drop down to Win or L on a column resulting in Win+L
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnWinLError_OnSettingDropDownToWinOrLOnColumnResultingInWinL)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // empty row
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), Shortcut() }), std::wstring()));
             Shortcut s1;
             s1.SetKey(VK_LWIN);
             Shortcut s2;
@@ -1560,14 +1560,14 @@ namespace RemappingUITests
             Shortcut s4;
             s4.SetKey(VK_CONTROL);
             s4.SetKey(0x4C);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s2 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s3 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s4 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s3 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s4 }), std::wstring()));
 
             // Case 1: Validate the element when selecting L on second dropdown of first column of LWin+Empty shortcut
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1686,15 +1686,15 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns WinL error on setting a drop down to null or none on a column resulting in Win+L
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnWinLError_OnSettingDropDownToNullOrNoneOnColumnResultingInWinL)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             // LWin+Ctrl+L
             Shortcut s4;
             s4.SetKey(VK_LWIN);
             s4.SetKey(VK_CONTROL);
             s4.SetKey(0x4C);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s4 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s4 }), std::wstring()));
 
             // Case 1 : Validate the element when selecting null on second dropdown of first column of LWin + Ctrl + L shortcut
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1777,7 +1777,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns CtrlAltDel error on setting a drop down to Ctrl, Alt or Del on a column resulting in Ctrl+Alt+Del
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnCtrlAltDelError_OnSettingDropDownToCtrlAltOrDelOnColumnResultingInCtrlAltDel)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -1793,14 +1793,14 @@ namespace RemappingUITests
             s4.SetKey(VK_SHIFT);
             s4.SetKey(VK_MENU);
             s4.SetKey(VK_DELETE);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s2 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s3 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, Shortcut() }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), s4 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s3 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, Shortcut() }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ Shortcut(), s4 }), std::wstring()));
 
             // Case 1 : Validate the element when selecting Del on third dropdown of first column of Ctrl+Alt+Empty shortcut
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1905,15 +1905,15 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns MapToSameKey error on setting hybrid second column to match first column in a remap keys table
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnMapToSameKeyError_OnSettingHybridSecondColumnToFirstColumnInKeyTable)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
             s1.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ 0x41, NULL }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ 0x42, 0x43 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ 0x43, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ VK_CONTROL, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x42, 0x43 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x43, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ VK_CONTROL, s1 }), std::wstring()));
 
             // Case 1 : Validate the element when selecting A on first dropdown of empty hybrid second column
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -1980,7 +1980,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns MapToSameShortcut error on setting one column to match the other and both are valid 3 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnMapToSameShortcutError_OnSettingOneColumnToTheOtherAndBothAreValid3KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2000,14 +2000,14 @@ namespace RemappingUITests
             s5.SetKey(VK_MENU);
             s5.SetKey(VK_SHIFT);
             s5.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s2 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s3 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s4 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s5 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s3 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s4 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s5 }), std::wstring()));
 
             // Case 1 : Validate the element when selecting C on third dropdown of first column with Ctrl+Shift+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -2134,7 +2134,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns MapToSameShortcut error on setting one column to match the other and both are valid 2 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnMapToSameShortcutError_OnSettingOneColumnToTheOtherAndBothAreValid2KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2153,16 +2153,16 @@ namespace RemappingUITests
             s6.SetKey(VK_CONTROL);
             s6.SetKey(VK_SHIFT);
             s6.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s2 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s3 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s4 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s5 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s6, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, s6 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s2 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s3 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s4 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s5 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s6, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, s6 }), std::wstring()));
 
             // Case 1 : Validate the element when selecting C on second dropdown of first column with Ctrl+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -2397,7 +2397,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns SameShortcutPreviouslyMapped error on setting first column to match first column in another row with same target app and both are valid 3 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnSameShortcutPreviouslyMappedError_OnSettingFirstColumnToFirstColumnInAnotherRowWithSameTargetAppAndBothAreValid3KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2420,11 +2420,11 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_LWIN);
             dest.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, dest }), std::wstring()));
 
             // Case 1 : Validate the element when selecting C on third dropdown of first column with Ctrl+Shift+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -2479,7 +2479,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error on setting first column to match first column in another row with different target app and both are valid 3 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoError_OnSettingFirstColumnToFirstColumnInAnotherRowWithDifferentTargetAppAndBothAreValid3KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2502,11 +2502,11 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_LWIN);
             dest.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, dest }), testApp1));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, dest }), testApp1));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, dest }), testApp2));
 
             // Case 1 : Validate the element when selecting C on third dropdown of first column with Ctrl+Shift+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -2561,7 +2561,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ConflictingModifierShortcut error on setting first column to conflict with first column in another row with same target app and both are valid 3 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnConflictingModifierShortcutError_OnSettingFirstColumnToConflictWithFirstColumnInAnotherRowWithSameTargetAppAndBothAreValid3KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2584,11 +2584,11 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_LWIN);
             dest.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, dest }), std::wstring()));
 
             // Case 1 : Validate the element when selecting C on third dropdown of first column with LCtrl+Shift+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -2643,7 +2643,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error on setting first column to conflict with first column in another row with different target app and both are valid 3 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoError_OnSettingFirstColumnToConflictWithFirstColumnInAnotherRowWithDifferentTargetAppAndBothAreValid3KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2666,11 +2666,11 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_LWIN);
             dest.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, dest }), testApp1));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, dest }), testApp1));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, dest }), testApp2));
 
             // Case 1 : Validate the element when selecting C on third dropdown of first column with LCtrl+Shift+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -2725,7 +2725,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns SameShortcutPreviouslyMapped error on setting first column to match first column in another row with same target app and both are valid 2 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnSameShortcutPreviouslyMappedError_OnSettingFirstColumnToFirstColumnInAnotherRowWithSameTargetAppAndBothAreValid2KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2747,12 +2747,12 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_LWIN);
             dest.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s6, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s6, dest }), std::wstring()));
 
             // Case 1 : Validate the element when selecting C on second dropdown of first column with Ctrl+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -2843,7 +2843,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error on setting first column to match first column in another row with different target app and both are valid 2 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoError_OnSettingFirstColumnToFirstColumnInAnotherRowWithDifferentTargetAppAndBothAreValid2KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2865,12 +2865,12 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_LWIN);
             dest.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, dest }), testApp1));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s6, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, dest }), testApp1));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s6, dest }), testApp2));
 
             // Case 1 : Validate the element when selecting C on second dropdown of first column with Ctrl+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -2961,7 +2961,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns ConflictingModifierShortcut error on setting first column to conflict with first column in another row with same target app and both are valid 2 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnConflictingModifierShortcutError_OnSettingFirstColumnToConflictWithFirstColumnInAnotherRowWithSameTargetAppAndBothAreValid2KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -2983,12 +2983,12 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_LWIN);
             dest.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, dest }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s6, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s6, dest }), std::wstring()));
 
             // Case 1 : Validate the element when selecting C on second dropdown of first column with LCtrl+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -3079,7 +3079,7 @@ namespace RemappingUITests
         // Test if the ValidateShortcutBufferElement method returns no error on setting first column to conflict with first column in another row with different target app and both are valid 2 key shortcuts
         TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoError_OnSettingFirstColumnToConflictWithFirstColumnInAnotherRowWithDifferentTargetAppAndBothAreValid2KeyShortcuts)
         {
-            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+            RemapBuffer remapBuffer;
 
             Shortcut s1;
             s1.SetKey(VK_CONTROL);
@@ -3101,12 +3101,12 @@ namespace RemappingUITests
             Shortcut dest;
             dest.SetKey(VK_LWIN);
             dest.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s1, dest }), testApp1));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s2, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s3, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s4, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s5, dest }), testApp2));
-            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ s6, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, dest }), testApp1));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s3, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s4, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s5, dest }), testApp2));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s6, dest }), testApp2));
 
             // Case 1 : Validate the element when selecting C on second dropdown of first column with LCtrl+Empty
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
