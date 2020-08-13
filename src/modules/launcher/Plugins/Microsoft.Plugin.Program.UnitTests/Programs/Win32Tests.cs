@@ -17,7 +17,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
     [TestFixture]
     public class Win32Tests
     {
-        private static Win32Program notepad_appdata = new Win32Program
+        private static readonly Win32Program _notepadAppdata = new Win32Program
         {
             Name = "Notepad",
             ExecutableName = "notepad.exe",
@@ -26,7 +26,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program notepad_users = new Win32Program
+        private static readonly Win32Program _notepadUsers = new Win32Program
         {
             Name = "Notepad",
             ExecutableName = "notepad.exe",
@@ -35,7 +35,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program azure_command_prompt = new Win32Program
+        private static readonly Win32Program _azureCommandPrompt = new Win32Program
         {
             Name = "Microsoft Azure Command Prompt - v2.9",
             ExecutableName = "cmd.exe",
@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program visual_studio_command_prompt = new Win32Program
+        private static readonly Win32Program _visualStudioCommandPrompt = new Win32Program
         {
             Name = "x64 Native Tools Command Prompt for VS 2019",
             ExecutableName = "cmd.exe",
@@ -53,7 +53,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program command_prompt = new Win32Program
+        private static readonly Win32Program _commandPrompt = new Win32Program
         {
             Name = "Command Prompt",
             ExecutableName = "cmd.exe",
@@ -62,7 +62,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program file_explorer = new Win32Program
+        private static readonly Win32Program _fileExplorer = new Win32Program
         {
             Name = "File Explorer",
             ExecutableName = "File Explorer.lnk",
@@ -71,7 +71,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program wordpad = new Win32Program
+        private static readonly Win32Program _wordpad = new Win32Program
         {
             Name = "Wordpad",
             ExecutableName = "wordpad.exe",
@@ -80,7 +80,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program wordpad_duplicate = new Win32Program
+        private static readonly Win32Program _wordpadDuplicate = new Win32Program
         {
             Name = "WORDPAD",
             ExecutableName = "WORDPAD.EXE",
@@ -89,7 +89,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program twitter_pwa = new Win32Program
+        private static readonly Win32Program _twitterChromePwa = new Win32Program
         {
             Name = "Twitter",
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome_proxy.exe",
@@ -98,7 +98,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 0,
         };
 
-        private static Win32Program pinned_webpage = new Win32Program
+        private static readonly Win32Program _pinnedWebpage = new Win32Program
         {
             Name = "Web page",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
@@ -107,7 +107,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 0,
         };
 
-        private static Win32Program edge_named_pinned_webpage = new Win32Program
+        private static readonly Win32Program _edgeNamedPinnedWebpage = new Win32Program
         {
             Name = "edge - Bing",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
@@ -116,7 +116,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 0,
         };
 
-        private static Win32Program msedge = new Win32Program
+        private static readonly Win32Program _msedge = new Win32Program
         {
             Name = "Microsoft Edge",
             ExecutableName = "msedge.exe",
@@ -125,7 +125,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program chrome = new Win32Program
+        private static readonly Win32Program _chrome = new Win32Program
         {
             Name = "Google Chrome",
             ExecutableName = "chrome.exe",
@@ -134,7 +134,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program dummy_proxy_app = new Win32Program
+        private static readonly Win32Program _dummyProxyApp = new Win32Program
         {
             Name = "Proxy App",
             ExecutableName = "test_proxy.exe",
@@ -143,7 +143,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 2,
         };
 
-        private static Win32Program cmd_run_command = new Win32Program
+        private static readonly Win32Program _cmdRunCommand = new Win32Program
         {
             Name = "cmd",
             ExecutableName = "cmd.exe",
@@ -152,7 +152,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 3, // Run command
         };
 
-        private static Win32Program cmder_run_command = new Win32Program
+        private static readonly Win32Program _cmderRunCommand = new Win32Program
         {
             Name = "Cmder",
             Description = "Cmder: Lovely Console Emulator",
@@ -162,7 +162,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 3, // Run command
         };
 
-        private static Win32Program dummy_internetShortcut_app = new Win32Program
+        private static readonly Win32Program _dummyInternetShortcutApp = new Win32Program
         {
             Name = "Shop Titans",
             ExecutableName = "Shop Titans.url",
@@ -172,7 +172,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = 1,
         };
 
-        private static Win32Program dummy_internetShortcut_app_duplicate = new Win32Program
+        private static readonly Win32Program _dummyInternetShortcutAppDuplicate = new Win32Program
         {
             Name = "Shop Titans",
             ExecutableName = "Shop Titans.url",
@@ -188,8 +188,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>
             {
-                notepad_appdata,
-                notepad_users
+                _notepadAppdata,
+                _notepadUsers,
             };
 
             // Act
@@ -205,8 +205,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>
             {
-                dummy_internetShortcut_app,
-                dummy_internetShortcut_app_duplicate
+                _dummyInternetShortcutApp,
+                _dummyInternetShortcutAppDuplicate,
             };
 
             // Act
@@ -222,7 +222,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>
             {
-                file_explorer
+                _fileExplorer,
             };
 
             // Act
@@ -238,8 +238,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>
             {
-                wordpad,
-                wordpad_duplicate
+                _wordpad,
+                _wordpadDuplicate,
             };
 
             // Act
@@ -256,9 +256,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>
             {
-                azure_command_prompt,
-                visual_studio_command_prompt,
-                command_prompt
+                _azureCommandPrompt,
+                _visualStudioCommandPrompt,
+                _commandPrompt,
             };
 
             // Act
@@ -272,20 +272,20 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void FunctionIsWebApplicationShouldReturnTrueForWebApplications()
         {
             // The IsWebApplication(() function must return true for all PWAs and pinned web pages
-            Assert.IsTrue(twitter_pwa.IsWebApplication());
-            Assert.IsTrue(pinned_webpage.IsWebApplication());
-            Assert.IsTrue(edge_named_pinned_webpage.IsWebApplication());
+            Assert.IsTrue(_twitterChromePwa.IsWebApplication());
+            Assert.IsTrue(_pinnedWebpage.IsWebApplication());
+            Assert.IsTrue(_edgeNamedPinnedWebpage.IsWebApplication());
 
             // Should not filter apps whose executable name ends with proxy.exe
-            Assert.IsFalse(dummy_proxy_app.IsWebApplication());
+            Assert.IsFalse(_dummyProxyApp.IsWebApplication());
         }
 
         [TestCase("ignore")]
         public void FunctionFilterWebApplicationShouldReturnFalseWhenSearchingForTheMainApp(string query)
         {
             // Irrespective of the query, the FilterWebApplication() Function must not filter main apps such as edge and chrome
-            Assert.IsFalse(msedge.FilterWebApplication(query));
-            Assert.IsFalse(chrome.FilterWebApplication(query));
+            Assert.IsFalse(_msedge.FilterWebApplication(query));
+            Assert.IsFalse(_chrome.FilterWebApplication(query));
         }
 
         [TestCase("edge", ExpectedResult = true)]
@@ -297,7 +297,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("Edge Web page", ExpectedResult = false)]
         public bool EdgeWebSitesShouldBeFilteredWhenSearchingForEdge(string query)
         {
-            return pinned_webpage.FilterWebApplication(query);
+            return _pinnedWebpage.FilterWebApplication(query);
         }
 
         [TestCase("chrome", ExpectedResult = true)]
@@ -307,7 +307,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("Google Chrome twitter", ExpectedResult = false)]
         public bool ChromeWebSitesShouldBeFilteredWhenSearchingForChrome(string query)
         {
-            return twitter_pwa.FilterWebApplication(query);
+            return _twitterChromePwa.FilterWebApplication(query);
         }
 
         [TestCase("twitter", 0, ExpectedResult = false)]
@@ -318,25 +318,24 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("WEB PAGE", 1, ExpectedResult = false)]
         [TestCase("edge", 2, ExpectedResult = false)]
         [TestCase("EDGE", 2, ExpectedResult = false)]
-        public bool PinnedWebPagesShouldNotBeFilteredWhenSearchingForThem(string query, int Case)
+        public bool PinnedWebPagesShouldNotBeFilteredWhenSearchingForThem(string query, int scenario)
         {
-            const uint CASE_TWITTER = 0;
-            const uint CASE_WEB_PAGE = 1;
-            const uint CASE_EDGE_NAMED_WEBPAGE = 2;
+            const int CASE_TWITTER = 0;
+            const int CASE_WEB_PAGE = 1;
+            const int CASE_EDGE_NAMED_WEBPAGE = 2;
 
             // If the query is a part of the name of the web application, it should not be filtered,
             // even if the name is the same as that of the main application, eg: case 2 - edge
-            if (Case == CASE_TWITTER)
+            switch (scenario)
             {
-                return twitter_pwa.FilterWebApplication(query);
-            }
-            else if (Case == CASE_WEB_PAGE)
-            {
-                return pinned_webpage.FilterWebApplication(query);
-            }
-            else if (Case == CASE_EDGE_NAMED_WEBPAGE)
-            {
-                return edge_named_pinned_webpage.FilterWebApplication(query);
+                case CASE_TWITTER:
+                    return _twitterChromePwa.FilterWebApplication(query);
+                case CASE_WEB_PAGE:
+                    return _pinnedWebpage.FilterWebApplication(query);
+                case CASE_EDGE_NAMED_WEBPAGE:
+                    return _edgeNamedPinnedWebpage.FilterWebApplication(query);
+                default:
+                    break;
             }
 
             // unreachable code
@@ -350,7 +349,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void Win32ApplicationsShouldNotBeFilteredWhenFilteringRunCommands(string query)
         {
             // Even if there is an exact match in the name or exe name, win32 applications should never be filtered
-            Assert.IsTrue(command_prompt.QueryEqualsNameForRunCommands(query));
+            Assert.IsTrue(_commandPrompt.QueryEqualsNameForRunCommands(query));
         }
 
         [TestCase("cmd")]
@@ -359,10 +358,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void RunCommandsShouldNotBeFilteredOnExactMatch(string query)
         {
             // Partial matches should be filtered as cmd is not equal to cmder
-            Assert.IsFalse(cmder_run_command.QueryEqualsNameForRunCommands(query));
+            Assert.IsFalse(_cmderRunCommand.QueryEqualsNameForRunCommands(query));
 
             // the query matches the name (cmd) and is therefore not filtered (case-insensitive)
-            Assert.IsTrue(cmd_run_command.QueryEqualsNameForRunCommands(query));
+            Assert.IsTrue(_cmdRunCommand.QueryEqualsNameForRunCommands(query));
         }
 
         [Test]
@@ -373,7 +372,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
-            List<ContextMenuResult> contextMenuResults = pinned_webpage.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _pinnedWebpage.ContextMenus(mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
@@ -390,7 +389,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
-            List<ContextMenuResult> contextMenuResults = dummy_internetShortcut_app.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
@@ -406,7 +405,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
-            List<ContextMenuResult> contextMenuResults = chrome.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _chrome.ContextMenus(mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
@@ -423,7 +422,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
-            List<ContextMenuResult> contextMenuResults = cmd_run_command.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _cmdRunCommand.ContextMenus(mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
@@ -440,11 +439,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             StringMatcher.Instance = new StringMatcher();
 
             // Act
-            var result = cmder_run_command.Result("cmder", mock.Object);
+            var result = _cmderRunCommand.Result("cmder", mock.Object);
 
             // Assert
-            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name, StringComparison.Ordinal));
-            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description, StringComparison.Ordinal));
+            Assert.IsTrue(result.Title.Equals(_cmderRunCommand.Name, StringComparison.Ordinal));
+            Assert.IsFalse(result.Title.Equals(_cmderRunCommand.Description, StringComparison.Ordinal));
         }
     }
 }

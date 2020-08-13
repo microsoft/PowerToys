@@ -52,10 +52,9 @@ namespace Microsoft.Plugin.Program.Programs
             var namespaces = XmlNamespaces(path);
             InitPackageVersion(namespaces);
 
-            IStream stream;
             const uint noAttribute = 0x80;
             const Stgm exclusiveRead = Stgm.Read;
-            var hResult = NativeMethods.SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
+            var hResult = NativeMethods.SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out IStream stream);
 
             if (hResult == Hresult.Ok)
             {

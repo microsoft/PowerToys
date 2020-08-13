@@ -192,14 +192,13 @@ namespace Microsoft.Plugin.Program.Programs
         private async void Launch(IPublicAPI api)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
-            uint unusedPid;
             const string noArgs = "";
             const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;
             await Task.Run(() =>
             {
                 try
                 {
-                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out unusedPid);
+                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out uint unusedPid);
                 }
                 catch (Exception)
                 {
