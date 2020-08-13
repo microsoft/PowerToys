@@ -21,10 +21,10 @@ namespace Wox.Infrastructure.Hotkey
 
         public Key CharKey { get; set; }
 
-        Dictionary<Key, string> specialSymbolDictionary = new Dictionary<Key, string>
+        private readonly Dictionary<Key, string> _specialSymbolDictionary = new Dictionary<Key, string>
         {
             { Key.Space, "Space" },
-            { Key.Oem3, "~" }
+            { Key.Oem3, "~" },
         };
 
         public ModifierKeys ModifierKeys
@@ -32,6 +32,7 @@ namespace Wox.Infrastructure.Hotkey
             get
             {
                 ModifierKeys modifierKeys = ModifierKeys.None;
+
                 if (Alt)
                 {
                     modifierKeys = ModifierKeys.Alt;
@@ -39,17 +40,17 @@ namespace Wox.Infrastructure.Hotkey
 
                 if (Shift)
                 {
-                    modifierKeys = modifierKeys | ModifierKeys.Shift;
+                    modifierKeys |= ModifierKeys.Shift;
                 }
 
                 if (Win)
                 {
-                    modifierKeys = modifierKeys | ModifierKeys.Windows;
+                    modifierKeys |= ModifierKeys.Windows;
                 }
 
                 if (Ctrl)
                 {
-                    modifierKeys = modifierKeys | ModifierKeys.Control;
+                    modifierKeys |= ModifierKeys.Control;
                 }
 
                 return modifierKeys;
@@ -81,7 +82,7 @@ namespace Wox.Infrastructure.Hotkey
                 return;
             }
 
-            List<string> keys = hotkeyString.Replace(" ", "").Split('+').ToList();
+            List<string> keys = hotkeyString.Replace(" ", string.Empty).Split('+').ToList();
             if (keys.Contains("Alt"))
             {
                 Alt = true;
@@ -109,7 +110,7 @@ namespace Wox.Infrastructure.Hotkey
             if (keys.Count > 0)
             {
                 string charKey = keys[0];
-                KeyValuePair<Key, string>? specialSymbolPair = specialSymbolDictionary.FirstOrDefault(pair => pair.Value == charKey);
+                KeyValuePair<Key, string>? specialSymbolPair = _specialSymbolDictionary.FirstOrDefault(pair => pair.Value == charKey);
                 if (specialSymbolPair.Value.Value != null)
                 {
                     CharKey = specialSymbolPair.Value.Key;
@@ -152,8 +153,8 @@ namespace Wox.Infrastructure.Hotkey
 
             if (CharKey != Key.None)
             {
-                text += specialSymbolDictionary.ContainsKey(CharKey)
-                    ? specialSymbolDictionary[CharKey]
+                text += _specialSymbolDictionary.ContainsKey(CharKey)
+                    ? _specialSymbolDictionary[CharKey]
                     : CharKey.ToString();
             }
             else if (!string.IsNullOrEmpty(text))

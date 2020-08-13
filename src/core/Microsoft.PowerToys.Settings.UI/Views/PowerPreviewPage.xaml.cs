@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             ViewModel = new PowerPreviewViewModel();
-            PowerPreviewSettingsView.DataContext = ViewModel;
+            PowerPreviewView.DataContext = ViewModel;
         }
     }
 }

@@ -38,6 +38,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.restoreSize, actual.restoreSize);
         Assert::AreEqual(expected.use_cursorpos_editor_startupscreen, actual.use_cursorpos_editor_startupscreen);
         Assert::AreEqual(expected.showZonesOnAllMonitors, actual.showZonesOnAllMonitors);
+        Assert::AreEqual(expected.spanZonesAcrossMonitors, actual.spanZonesAcrossMonitors);
         Assert::AreEqual(expected.makeDraggedWindowTransparent, actual.makeDraggedWindowTransparent);
         Assert::AreEqual(expected.zoneColor.c_str(), actual.zoneColor.c_str());
         Assert::AreEqual(expected.zoneBorderColor.c_str(), actual.zoneBorderColor.c_str());
@@ -117,6 +118,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
@@ -155,6 +157,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
@@ -187,6 +190,7 @@ namespace FancyZonesUnitTests
                         .restoreSize = m_defaultSettings.restoreSize,
                         .use_cursorpos_editor_startupscreen = m_defaultSettings.use_cursorpos_editor_startupscreen,
                         .showZonesOnAllMonitors = m_defaultSettings.showZonesOnAllMonitors,
+                        .spanZonesAcrossMonitors = m_defaultSettings.spanZonesAcrossMonitors,
                         .makeDraggedWindowTransparent = m_defaultSettings.makeDraggedWindowTransparent,
                         .zoneColor = L"FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
@@ -232,6 +236,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
@@ -264,6 +269,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
@@ -297,6 +303,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
@@ -331,6 +338,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                    values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
@@ -446,6 +454,7 @@ namespace FancyZonesUnitTests
                     .restoreSize = false,
                     .use_cursorpos_editor_startupscreen = true,
                     .showZonesOnAllMonitors = false,
+                    .spanZonesAcrossMonitors = false,
                     .makeDraggedWindowTransparent = true,
                     .zoneColor = L"FAFAFA",
                     .zoneBorderColor = L"CCDDEE",
@@ -469,6 +478,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                 values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                 values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                 values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                 values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                 values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
@@ -587,6 +597,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, settings.restoreSize);
             ptSettings.add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_multi_monitor_mode", IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS, settings.spanZonesAcrossMonitors);
             ptSettings.add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
@@ -617,6 +628,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
                 values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                 values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
+                values.add_property(L"fancyzones_multi_monitor_mode", expected.spanZonesAcrossMonitors);
                 values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                 values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                 values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
@@ -654,6 +666,7 @@ namespace FancyZonesUnitTests
                 m_ptSettings->add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, expected.restoreSize);
                 m_ptSettings->add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, expected.use_cursorpos_editor_startupscreen);
                 m_ptSettings->add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, expected.showZonesOnAllMonitors);
+                m_ptSettings->add_bool_toggle(L"fancyzones_multi_monitor_mode", IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS, expected.spanZonesAcrossMonitors);
                 m_ptSettings->add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, expected.makeDraggedWindowTransparent);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, expected.zoneHighlightColor);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, expected.zoneColor);
@@ -724,6 +737,7 @@ namespace FancyZonesUnitTests
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .spanZonesAcrossMonitors = false,
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"CCDDEE",

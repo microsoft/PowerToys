@@ -31,7 +31,7 @@ namespace PowerLauncher.ViewModel
     {
         #region Private Fields
 
-        private Query _lastQuery;
+        private Query _currentQuery;
         private static Query _emptyQuery = new Query();
         private static bool _disposed;
         private string _queryTextBeforeLeaveResults;
@@ -65,7 +65,7 @@ namespace PowerLauncher.ViewModel
             _hotkeyManager = new HotkeyManager();
             _saved = false;
             _queryTextBeforeLeaveResults = "";
-            _lastQuery = _emptyQuery;
+            _currentQuery = _emptyQuery;
             _disposed = false;
 
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -118,7 +118,7 @@ namespace PowerLauncher.ViewModel
                     Task.Run(() =>
                     {
                         PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
-                        UpdateResultView(e.Results, pair.Metadata, e.Query, _updateToken);
+                        UpdateResultView(e.Results, e.Query, _updateToken);
                     }, _updateToken);
                 };
             }
@@ -260,7 +260,6 @@ namespace PowerLauncher.ViewModel
                 if (!string.IsNullOrEmpty(QueryText))
                 {
                     ChangeQueryText(string.Empty, true);
-
                     // Push Event to UI SystemQuery has changed
                     OnPropertyChanged(nameof(SystemQueryText));
                 }
@@ -338,7 +337,6 @@ namespace PowerLauncher.ViewModel
                         QueryText = string.Empty;
                     }
                 }
-
                 _selectedResults.Visibility = Visibility.Visible;
             }
         }
@@ -362,6 +360,7 @@ namespace PowerLauncher.ViewModel
                 {
                     PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
                 }
+
             }
         }
 
@@ -413,7 +412,6 @@ namespace PowerLauncher.ViewModel
 
         private void QueryHistory()
         {
-            const string id = "Query History ID";
 #pragma warning disable CA1308 // Normalize strings to uppercase
             var query = QueryText.ToLower(CultureInfo.InvariantCulture).Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
@@ -447,11 +445,11 @@ namespace PowerLauncher.ViewModel
                     r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet() ||
                          StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
                 ).ToList();
-                History.AddResults(filtered, id, _updateToken);
+                History.AddResults(filtered, _updateToken);
             }
             else
             {
-                History.AddResults(results, id, _updateToken);
+                History.AddResults(results, _updateToken);
             }
         }
 
@@ -470,7 +468,7 @@ namespace PowerLauncher.ViewModel
                 var query = QueryBuilder.Build(QueryText.Trim(), PluginManager.NonGlobalPlugins);
                 if (query != null)
                 {
-                    _lastQuery = query;
+                    _currentQuery = query;
                     Task.Run(() =>
                     {
                         Thread.Sleep(20);
@@ -493,35 +491,63 @@ namespace PowerLauncher.ViewModel
 
                             lock (_addResultsLock)
                             {
-                                RemoveOldQueryResults(query);
-                                foreach (var p in resultPluginPair)
+                                if (query.RawQuery == _currentQuery.RawQuery)
                                 {
-                                    UpdateResultView(p.Item1, p.Item2, query, currentCancellationToken);
-                                    currentCancellationToken.ThrowIfCancellationRequested();
-                                }
+                                    Results.Clear();
+                                    foreach (var p in resultPluginPair)
+                                    {
+                                        UpdateResultView(p.Item1, query, currentCancellationToken);
+                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                    }
 
-                                currentCancellationToken.ThrowIfCancellationRequested();
-                                Results.Results.Sort();
+                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                    Results.Sort();
+                                }
                             }
 
                             currentCancellationToken.ThrowIfCancellationRequested();
-                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                if (query.RawQuery == _lastQuery.RawQuery)
-                                {
-                                    Results.Results.NotifyChanges();
-                                }
+                            UpdateResultsListViewAfterQuery(query);
 
-                                if (Results.Results.Count > 0)
+                            // Run the slower query of the DelayedExecution plugins
+                            currentCancellationToken.ThrowIfCancellationRequested();
+                            Parallel.ForEach(plugins, (plugin) =>
                                 {
-                                    Results.Visibility = Visibility.Visible;
-                                    Results.SelectedIndex = 0;
-                                }
-                                else
-                                {
-                                    Results.Visibility = Visibility.Hidden;
-                                }
-                            }));
+                                    try
+                                    {
+                                        if (!plugin.Metadata.Disabled)
+                                        {
+                                            var results = PluginManager.QueryForPlugin(plugin, query, true);
+                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            if ((results?.Count ?? 0) != 0)
+                                            {
+                                                lock (_addResultsLock)
+                                                {
+                                                    if (query.RawQuery == _currentQuery.RawQuery)
+                                                    {
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+
+                                                        // Remove the original results from the plugin
+                                                        Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+
+                                                        // Add the new results from the plugin
+                                                        UpdateResultView(results, query, currentCancellationToken);
+                                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                                        Results.Sort();
+                                                    }
+                                                }
+
+                                                currentCancellationToken.ThrowIfCancellationRequested();
+                                                UpdateResultsListViewAfterQuery(query, true);
+                                            }
+                                        }
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
+                                        // nothing to do here
+                                    }
+                                });
+
                         }
                         catch (OperationCanceledException)
                         {
@@ -536,41 +562,42 @@ namespace PowerLauncher.ViewModel
                             QueryLength = query.RawQuery.Length
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
+
                     }, currentCancellationToken);
                 }
             }
             else
             {
                 _updateSource?.Cancel();
-                _lastQuery = _emptyQuery;
+                _currentQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Visibility = Visibility.Hidden;
                 Results.Clear();
             }
         }
 
-        private void RemoveOldQueryResults(Query query)
+        private void UpdateResultsListViewAfterQuery(Query query, bool isDelayedInvoke = false)
         {
-            string lastKeyword = _lastQuery.ActionKeyword;
-            string keyword = query.ActionKeyword;
-            if (string.IsNullOrEmpty(lastKeyword))
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                if (!string.IsNullOrEmpty(keyword))
+                if (query.RawQuery == _currentQuery.RawQuery)
                 {
-                    Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
+                    Results.Results.NotifyChanges();
                 }
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(keyword))
+
+                if (Results.Results.Count > 0)
                 {
-                    Results.RemoveResultsFor(PluginManager.NonGlobalPlugins[lastKeyword].Metadata);
+                    Results.Visibility = Visibility.Visible;
+                    if (!isDelayedInvoke)
+                    {
+                        Results.SelectedIndex = 0;
+                    }
                 }
-                else if (lastKeyword != keyword)
+                else
                 {
-                    Results.RemoveResultsExcept(PluginManager.NonGlobalPlugins[keyword].Metadata);
+                    Results.Visibility = Visibility.Hidden;
                 }
-            }
+            }));
         }
 
         private bool SelectedIsFromQueryResults()
@@ -660,7 +687,6 @@ namespace PowerLauncher.ViewModel
                     {
                         StartHotkeyTimer();
                     }
-
                     if (_settings.LastQueryMode == LastQueryMode.Empty)
                     {
                         ChangeQueryText(string.Empty);
@@ -714,16 +740,11 @@ namespace PowerLauncher.ViewModel
         /// <summary>
         /// To avoid deadlock, this method should not called from main thread
         /// </summary>
-        public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery, CancellationToken ct)
+        public void UpdateResultView(List<Result> list, Query originQuery, CancellationToken ct)
         {
             if (list == null)
             {
                 throw new ArgumentNullException(nameof(list));
-            }
-
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
             }
 
             if (originQuery == null)
@@ -743,10 +764,10 @@ namespace PowerLauncher.ViewModel
                 }
             }
 
-            if (originQuery.RawQuery == _lastQuery.RawQuery)
+            if (originQuery.RawQuery == _currentQuery.RawQuery)
             {
                 ct.ThrowIfCancellationRequested();
-                Results.AddResults(list, metadata.ID, ct);
+                Results.AddResults(list, ct);
             }
         }
 
@@ -759,7 +780,7 @@ namespace PowerLauncher.ViewModel
                 Title = "hello"
             };
             list.Add(r);
-            Results.AddResults(list, "0", _updateToken);
+            Results.AddResults(list, _updateToken);
             Results.Clear();
             MainWindowVisibility = System.Windows.Visibility.Collapsed;
 
@@ -773,9 +794,7 @@ namespace PowerLauncher.ViewModel
                 {
                     var _ = PluginManager.QueryForPlugin(plugin, query);
                 }
-            }
-
-;
+            };
         }
 
         public void HandleContextMenu(Key AcceleratorKey, ModifierKeys AcceleratorModifiers)
@@ -822,7 +841,6 @@ namespace PowerLauncher.ViewModel
                         return query + input.Substring(query.Length);
                     }
                 }
-
                 return input;
             }
 
@@ -853,7 +871,6 @@ namespace PowerLauncher.ViewModel
                     {
                         _hotkeyManager?.UnregisterHotkey(_hotkeyHandle);
                     }
-
                     _hotkeyManager?.Dispose();
                     _updateSource?.Dispose();
                     _disposed = true;

@@ -19,11 +19,14 @@ namespace Wox.Infrastructure.Image
     public static class ImageLoader
     {
         private static readonly ImageCache ImageCache = new ImageCache();
-        private static BinaryStorage<Dictionary<string, int>> _storage;
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
+
+        private static BinaryStorage<Dictionary<string, int>> _storage;
         private static IImageHashGenerator _hashGenerator;
-        public static string ErrorIconPath;
-        public static string DefaultIconPath;
+
+        public static string ErrorIconPath { get; set; }
+
+        public static string DefaultIconPath { get; set; }
 
         private static readonly string[] ImageExtensions =
         {
@@ -33,7 +36,7 @@ namespace Wox.Infrastructure.Image
             ".gif",
             ".bmp",
             ".tiff",
-            ".ico"
+            ".ico",
         };
 
         public static void Initialize(Theme theme)
@@ -104,7 +107,7 @@ namespace Wox.Infrastructure.Image
             Data,
             ImageFile,
             Error,
-            Cache
+            Cache,
         }
 
         private static ImageResult LoadInternal(string path, bool loadFullImage = false)
@@ -144,8 +147,7 @@ namespace Wox.Infrastructure.Image
                      * - Solution: just load the icon
                      */
                     type = ImageType.Folder;
-                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
-                        Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
+                    image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
                 }
                 else if (File.Exists(path))
                 {
@@ -164,15 +166,13 @@ namespace Wox.Infrastructure.Image
                              * be the case in many situations while testing.
                              * - Solution: explicitly pass the ThumbnailOnly flag
                              */
-                            image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
-                                Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly);
+                            image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.ThumbnailOnly);
                         }
                     }
                     else
                     {
                         type = ImageType.File;
-                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
-                            Constant.ThumbnailSize, ThumbnailOptions.None);
+                        image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize, Constant.ThumbnailSize, ThumbnailOptions.None);
                     }
                 }
                 else
@@ -197,7 +197,7 @@ namespace Wox.Infrastructure.Image
             return new ImageResult(image, type);
         }
 
-        private static bool EnableImageHash = true;
+        private static readonly bool _enableImageHash = true;
 
         public static ImageSource Load(string path, bool loadFullImage = false)
         {
@@ -205,20 +205,23 @@ namespace Wox.Infrastructure.Image
 
             var img = imageResult.ImageSource;
             if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)
-            { // we need to get image hash
-                string hash = EnableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
+            {
+                // we need to get image hash
+                string hash = _enableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
+
                 if (hash != null)
                 {
-                    int ImageCacheValue;
                     if (GuidToKey.TryGetValue(hash, out string key))
-                    { // image already exists
-                        if (ImageCache.Usage.TryGetValue(path, out ImageCacheValue))
+                    {
+                        // image already exists
+                        if (ImageCache.Usage.TryGetValue(path, out _))
                         {
                             img = ImageCache[key];
                         }
                     }
                     else
-                    { // new guid
+                    {
+                        // new guid
                         GuidToKey[hash] = path;
                     }
                 }

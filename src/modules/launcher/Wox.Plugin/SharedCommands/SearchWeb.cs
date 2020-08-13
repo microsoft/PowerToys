@@ -15,7 +15,7 @@ namespace Wox.Plugin.SharedCommands
         /// Opens search in a new browser. If no browser path is passed in then Chrome is used.
         /// Leave browser path blank to use Chrome.
         /// </summary>
-		public static void NewBrowserWindow(this string url, string browserPath)
+        public static void NewBrowserWindow(this string url, string browserPath)
         {
             var browserExecutableName = browserPath?
                                         .Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None)
@@ -35,7 +35,7 @@ namespace Wox.Plugin.SharedCommands
                 var psi = new ProcessStartInfo
                 {
                     FileName = url,
-                    UseShellExecute = true
+                    UseShellExecute = true,
                 };
                 Process.Start(psi);
             }

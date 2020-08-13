@@ -13,47 +13,54 @@ namespace Wox.Plugin
 {
     public class ThemeManager : IDisposable
     {
+        private readonly Application _app;
+        private const string LightTheme = "Light.Accent1";
+        private const string DarkTheme = "Dark.Accent1";
+        private const string HighContrastOneTheme = "HighContrast.Accent2";
+        private const string HighContrastTwoTheme = "HighContrast.Accent3";
+        private const string HighContrastBlackTheme = "HighContrast.Accent4";
+        private const string HighContrastWhiteTheme = "HighContrast.Accent5";
+
         private Theme currentTheme;
-        private readonly Application App;
         private bool _disposed = false;
-        private readonly string LightTheme = "Light.Accent1";
-        private readonly string DarkTheme = "Dark.Accent1";
-        private readonly string HighContrastOneTheme = "HighContrast.Accent2";
-        private readonly string HighContrastTwoTheme = "HighContrast.Accent3";
-        private readonly string HighContrastBlackTheme = "HighContrast.Accent4";
-        private readonly string HighContrastWhiteTheme = "HighContrast.Accent5";
 
         public event ThemeChangedHandler ThemeChanged;
 
         public ThemeManager(Application app)
         {
-            this.App = app;
+            _app = app;
 
-            Uri HighContrastOneThemeUri = new Uri("pack://application:,,,/Themes/HighContrast1.xaml");
-            Uri HighContrastTwoThemeUri = new Uri("pack://application:,,,/Themes/HighContrast2.xaml");
-            Uri HighContrastBlackThemeUri = new Uri("pack://application:,,,/Themes/HighContrastWhite.xaml");
-            Uri HighContrastWhiteThemeUri = new Uri("pack://application:,,,/Themes/HighContrastBlack.xaml");
-            Uri LightThemeUri = new Uri("pack://application:,,,/Themes/Light.xaml");
-            Uri DarkThemeUri = new Uri("pack://application:,,,/Themes/Dark.xaml");
+            Uri highContrastOneThemeUri = new Uri("pack://application:,,,/Themes/HighContrast1.xaml");
+            Uri highContrastTwoThemeUri = new Uri("pack://application:,,,/Themes/HighContrast2.xaml");
+            Uri highContrastBlackThemeUri = new Uri("pack://application:,,,/Themes/HighContrastWhite.xaml");
+            Uri highContrastWhiteThemeUri = new Uri("pack://application:,,,/Themes/HighContrastBlack.xaml");
+            Uri lightThemeUri = new Uri("pack://application:,,,/Themes/Light.xaml");
+            Uri darkThemeUri = new Uri("pack://application:,,,/Themes/Dark.xaml");
 
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(HighContrastOneThemeUri,
-                MahAppsLibraryThemeProvider.DefaultInstance));
+                new LibraryTheme(
+                    highContrastOneThemeUri,
+                    MahAppsLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(HighContrastTwoThemeUri,
-                MahAppsLibraryThemeProvider.DefaultInstance));
+                new LibraryTheme(
+                    highContrastTwoThemeUri,
+                    MahAppsLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(HighContrastBlackThemeUri,
-                MahAppsLibraryThemeProvider.DefaultInstance));
+                new LibraryTheme(
+                    highContrastBlackThemeUri,
+                    MahAppsLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(HighContrastWhiteThemeUri,
-                MahAppsLibraryThemeProvider.DefaultInstance));
+                new LibraryTheme(
+                    highContrastWhiteThemeUri,
+                    MahAppsLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(LightThemeUri,
-                MahAppsLibraryThemeProvider.DefaultInstance));
+                new LibraryTheme(
+                    lightThemeUri,
+                    MahAppsLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(DarkThemeUri,
-                MahAppsLibraryThemeProvider.DefaultInstance));
+                new LibraryTheme(
+                    darkThemeUri,
+                    MahAppsLibraryThemeProvider.DefaultInstance));
 
             ResetTheme();
             ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
@@ -76,20 +83,23 @@ namespace Wox.Plugin
 
         private static Theme GetHighContrastBaseType()
         {
-            string RegistryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
-            string theme = (string)Registry.GetValue(RegistryKey, "CurrentTheme", string.Empty);
+            string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
+            string theme = (string)Registry.GetValue(registryKey, "CurrentTheme", string.Empty);
             theme = theme.Split('\\').Last().Split('.').First().ToString();
 
-            if (theme == "hc1")
-                return Theme.HighContrastOne;
-            else if (theme == "hc2")
-                return Theme.HighContrastTwo;
-            else if (theme == "hcwhite")
-                return Theme.HighContrastWhite;
-            else if (theme == "hcblack")
-                return Theme.HighContrastBlack;
-            else
-                return Theme.None;
+            switch (theme)
+            {
+                case "hc1":
+                    return Theme.HighContrastOne;
+                case "hc2":
+                    return Theme.HighContrastTwo;
+                case "hcwhite":
+                    return Theme.HighContrastWhite;
+                case "hcblack":
+                    return Theme.HighContrastBlack;
+                default:
+                    return Theme.None;
+            }
         }
 
         private void ResetTheme()
@@ -110,35 +120,38 @@ namespace Wox.Plugin
         {
             Theme oldTheme = currentTheme;
             if (theme == currentTheme)
+            {
                 return;
+            }
+
             if (theme == Theme.HighContrastOne)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.HighContrastOneTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastOneTheme);
                 currentTheme = Theme.HighContrastOne;
             }
             else if (theme == Theme.HighContrastTwo)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.HighContrastTwoTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastTwoTheme);
                 currentTheme = Theme.HighContrastTwo;
             }
             else if (theme == Theme.HighContrastWhite)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.HighContrastWhiteTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastWhiteTheme);
                 currentTheme = Theme.HighContrastWhite;
             }
             else if (theme == Theme.HighContrastBlack)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.HighContrastBlackTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastBlackTheme);
                 currentTheme = Theme.HighContrastBlack;
             }
             else if (theme == Theme.Light)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.LightTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, LightTheme);
                 currentTheme = Theme.Light;
             }
             else if (theme == Theme.Dark)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.DarkTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, DarkTheme);
                 currentTheme = Theme.Dark;
             }
             else

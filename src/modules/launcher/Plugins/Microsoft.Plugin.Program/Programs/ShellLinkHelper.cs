@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Runtime.InteropServices;
-using System.IO;
-using Accessibility;
 using System.Runtime.InteropServices.ComTypes;
-using System.Security.Policy;
+using System.Text;
+using Accessibility;
 using Microsoft.Plugin.Program.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -13,15 +14,15 @@ namespace Microsoft.Plugin.Program.Programs
     public class ShellLinkHelper : IShellLinkHelper
     {
         [Flags()]
-        public enum SLGP_FLAGS
+        private enum SLGP_FLAGS
         {
             SLGP_SHORTPATH = 0x1,
             SLGP_UNCPRIORITY = 0x2,
-            SLGP_RAWPATH = 0x4
+            SLGP_RAWPATH = 0x4,
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        public struct WIN32_FIND_DATAW
+        private struct WIN32_FIND_DATAW
         {
             public uint dwFileAttributes;
             public long ftCreationTime;
@@ -38,6 +39,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [Flags()]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Represents flags specified in IShellLink interface")]
         public enum SLR_FLAGS
         {
             SLR_NO_UI = 0x1,
@@ -47,9 +49,8 @@ namespace Microsoft.Plugin.Program.Programs
             SLR_NOSEARCH = 0x10,
             SLR_NOTRACK = 0x20,
             SLR_NOLINKINFO = 0x40,
-            SLR_INVOKE_MSI = 0x80
+            SLR_INVOKE_MSI = 0x80,
         }
-
 
         // Reference : http://www.pinvoke.net/default.aspx/Interfaces.IShellLinkW
         /// The IShellLink interface allows Shell links to be created, modified, and resolved
@@ -96,7 +97,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [ComImport(), Guid("00021401-0000-0000-C000-000000000046")]
-        public class ShellLink
+        private class ShellLink
         {
         }
 
@@ -105,6 +106,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         // Contains the arguments to the app
         public string Arguments { get; set; } = String.Empty;
+
         public bool hasArguments { get; set; } = false;
 
         // Retrieve the target path using Shell Link

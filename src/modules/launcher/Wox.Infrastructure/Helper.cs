@@ -73,11 +73,8 @@ namespace Wox.Infrastructure
 
         public static string Formatted<T>(this T t)
         {
-            var formatted = JsonConvert.SerializeObject(
-               t,
-               Formatting.Indented,
-               new StringEnumConverter()
-           );
+            var formatted = JsonConvert.SerializeObject(t, Formatting.Indented, new StringEnumConverter());
+
             return formatted;
         }
 
@@ -89,7 +86,7 @@ namespace Wox.Infrastructure
                 FileName = path,
                 WorkingDirectory = Path.GetDirectoryName(path),
                 Verb = "runas",
-                UseShellExecute = true
+                UseShellExecute = true,
             };
 
             try
@@ -107,7 +104,7 @@ namespace Wox.Infrastructure
             var processStartInfo = new ProcessStartInfo
             {
                 WorkingDirectory = path,
-                FileName = "cmd.exe"
+                FileName = "cmd.exe",
             };
 
             return Process.Start(processStartInfo);

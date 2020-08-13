@@ -451,7 +451,7 @@ std::wstring get_process_path(DWORD pid) noexcept
     return name;
 }
 
-bool run_elevated(const std::wstring& file, const std::wstring& params)
+HANDLE run_elevated(const std::wstring& file, const std::wstring& params)
 {
     SHELLEXECUTEINFOW exec_info = { 0 };
     exec_info.cbSize = sizeof(SHELLEXECUTEINFOW);
@@ -464,14 +464,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params)
     exec_info.hInstApp = 0;
     exec_info.nShow = SW_SHOWDEFAULT;
 
-    if (ShellExecuteExW(&exec_info))
-    {
-        return exec_info.hProcess != nullptr;
-    }
-    else
-    {
-        return false;
-    }
+    return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
 }
 
 bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
