@@ -15,6 +15,19 @@ namespace RemappingUITests
         std::wstring testApp1 = L"testprocess1.exe";
         std::wstring testApp2 = L"testprocess2.exe";
         LayoutMap keyboardLayout;
+        
+        struct ValidateAndUpdateKeyBufferElementArgs
+        {
+            int elementRowIndex;
+            int elementColIndex;
+            int selectedIndexFromDropDown;
+        };
+
+        // Function to return the index of the given key code from the drop down key list
+        int GetDropDownIndexFromDropDownList(DWORD key, const std::vector<DWORD>& keyList)
+        {
+            return (int)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), key));
+        }
 
     public:
         TEST_METHOD_INITIALIZE(InitializeTestEnv)
@@ -31,7 +44,8 @@ namespace RemappingUITests
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, NULL }), std::wstring()));
 
             // Validate and update the element when -1 i.e. null selection is made on an empty row.
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(0, 0, -1, keyboardLayout.GetKeyCodeList(false), remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, -1 };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is validated and buffer is updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::NoError);
@@ -51,8 +65,8 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting B on an empty row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
-            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x42));
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(0, 0, (int)index, keyList, remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, GetDropDownIndexFromDropDownList(0x42, keyList) };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is validated and buffer is updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::NoError);
@@ -70,8 +84,8 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting B on a row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
-            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x42));
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(0, 0, (int)index, keyList, remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, GetDropDownIndexFromDropDownList(0x42, keyList) };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is validated and buffer is updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::NoError);
@@ -85,20 +99,17 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add a row with Ctrl+A as the target
-            Shortcut dest;
-            dest.SetKey(VK_CONTROL);
-            dest.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, Shortcut(std::vector<DWORD>{ VK_CONTROL, 0x41 }) }), std::wstring()));
 
             // Validate and update the element when selecting B on a row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
-            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x42));
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(0, 0, (int)index, keyList, remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, GetDropDownIndexFromDropDownList(0x42, keyList) };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is validated and buffer is updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::NoError);
             Assert::AreEqual((DWORD)0x42, std::get<DWORD>(remapBuffer[0].first[0]));
-            Assert::AreEqual(true, dest == std::get<Shortcut>(remapBuffer[0].first[1]));
+            Assert::AreEqual(true, Shortcut(std::vector<DWORD>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[0].first[1]));
         }
 
         // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column to the same value as the right column
@@ -111,8 +122,8 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting A on a row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
-            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x41));
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(0, 0, (int)index, keyList, remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 0, 0, GetDropDownIndexFromDropDownList(0x41, keyList) };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::MapToSameKey);
@@ -131,8 +142,8 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting A on second row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
-            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x41));
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(1, 0, (int)index, keyList, remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, GetDropDownIndexFromDropDownList(0x41, keyList) };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::SameKeyPreviouslyMapped);
@@ -147,20 +158,17 @@ namespace RemappingUITests
 
             // Add a row from A->B and a row with Ctrl+A as target
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ 0x41, 0x42 }), std::wstring()));
-            Shortcut dest;
-            dest.SetKey(VK_CONTROL);
-            dest.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, Shortcut(std::vector<DWORD>{ VK_CONTROL, 0x41 }) }), std::wstring()));
 
             // Validate and update the element when selecting A on second row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
-            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x41));
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(1, 0, (int)index, keyList, remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, GetDropDownIndexFromDropDownList(0x41, keyList) };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::SameKeyPreviouslyMapped);
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-            Assert::AreEqual(true, dest == std::get<Shortcut>(remapBuffer[1].first[1]));
+            Assert::AreEqual(true, Shortcut(std::vector<DWORD>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[1].first[1]));
         }
 
         // Test if the ValidateAndUpdateKeyBufferElement method is unsuccessful when setting first column of a key to key row to a conflicting modifier with another row
@@ -174,20 +182,8 @@ namespace RemappingUITests
 
             // Validate and update the element when selecting LCtrl on second row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
-            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_LCONTROL));
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(1, 0, (int)index, keyList, remapBuffer);
-
-            // Assert that the element is invalid and buffer is not updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::ConflictingModifierKey);
-            Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-            Assert::AreEqual((DWORD)0x43, std::get<DWORD>(remapBuffer[1].first[1]));
-
-            // Change first row to LCtrl->B
-            remapBuffer[0].first[0] = VK_LCONTROL;
-
-            // Select Ctrl
-            index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL));
-            error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(1, 0, (int)index, keyList, remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, GetDropDownIndexFromDropDownList(VK_LCONTROL, keyList) };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::ConflictingModifierKey);
@@ -202,32 +198,17 @@ namespace RemappingUITests
 
             // Add a row from Ctrl->B and a row with Ctrl+A as target
             remapBuffer.push_back(std::make_pair(RemapBufferItem({ VK_CONTROL, 0x42 }), std::wstring()));
-            Shortcut dest;
-            dest.SetKey(VK_CONTROL);
-            dest.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, dest }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(RemapBufferItem({ NULL, Shortcut(std::vector<DWORD>{ VK_CONTROL, 0x41 }) }), std::wstring()));
 
             // Validate and update the element when selecting LCtrl on second row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(false);
-            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_LCONTROL));
-            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(1, 0, (int)index, keyList, remapBuffer);
+            ValidateAndUpdateKeyBufferElementArgs args = { 1, 0, GetDropDownIndexFromDropDownList(VK_LCONTROL, keyList) };
+            KeyboardManagerHelper::ErrorType error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(args.elementRowIndex, args.elementColIndex, args.selectedIndexFromDropDown, keyboardLayout.GetKeyCodeList(false), remapBuffer);
 
             // Assert that the element is invalid and buffer is not updated
             Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::ConflictingModifierKey);
             Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-            Assert::AreEqual(true, dest == std::get<Shortcut>(remapBuffer[1].first[1]));
-
-            // Change first row to LCtrl->B
-            remapBuffer[0].first[0] = VK_LCONTROL;
-
-            // Select Ctrl
-            index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL));
-            error = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(1, 0, (int)index, keyList, remapBuffer);
-
-            // Assert that the element is invalid and buffer is not updated
-            Assert::AreEqual(true, error == KeyboardManagerHelper::ErrorType::ConflictingModifierKey);
-            Assert::AreEqual((DWORD)NULL, std::get<DWORD>(remapBuffer[1].first[0]));
-            Assert::AreEqual(true, dest == std::get<Shortcut>(remapBuffer[1].first[1]));
+            Assert::AreEqual(true, Shortcut(std::vector<DWORD>{ VK_CONTROL, 0x41 }) == std::get<Shortcut>(remapBuffer[1].first[1]));
         }
 
         // Test if the ValidateShortcutBufferElement method is successful and no drop down action is required on setting a column to null in a new or valid row

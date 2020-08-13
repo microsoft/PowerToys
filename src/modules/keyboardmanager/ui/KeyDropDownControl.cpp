@@ -125,7 +125,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
         }
 
         // Validate shortcut element
-        validationResult = BufferValidationHelpers::ValidateShortcutBufferElement(rowIndex, colIndex, dropDownIndex, dropDownFound, selectedKeyIndex, selectedIndices, appName, keyCodeList, shortcutRemapBuffer, isHybridControl);
+        validationResult = BufferValidationHelpers::ValidateShortcutBufferElement(rowIndex, colIndex, dropDownIndex, selectedIndices, appName, isHybridControl, keyCodeList, shortcutRemapBuffer, dropDownFound);
 
         // Add or clear unused drop downs
         if (validationResult.second == BufferValidationHelpers::DropDownAction::AddDropDown)

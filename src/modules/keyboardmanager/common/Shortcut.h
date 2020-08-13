@@ -27,6 +27,9 @@ public:
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
 
+    // Constructor to initialize shortcut from a list of keys
+    Shortcut(const std::vector<DWORD>& keys);
+
     // == operator
     inline bool operator==(const Shortcut& sc) const
     {

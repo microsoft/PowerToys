@@ -18,5 +18,5 @@ namespace BufferValidationHelpers
     KeyboardManagerHelper::ErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList, RemapBuffer& remapBuffer);
 
     // Function to validate an element of the shortcut remap buffer when the selection has changed
-    std::pair<KeyboardManagerHelper::ErrorType, DropDownAction> ValidateShortcutBufferElement(int rowIndex, int colIndex, uint32_t dropDownIndex, bool dropDownFound, int selectedKeyIndex, const std::vector<int32_t>& selectedIndices, std::wstring, const std::vector<DWORD>& keyCodeList, const RemapBuffer& remapBuffer, bool isHybridControl);
+    std::pair<KeyboardManagerHelper::ErrorType, DropDownAction> ValidateShortcutBufferElement(int rowIndex, int colIndex, uint32_t dropDownIndex, const std::vector<int32_t>& selectedIndices, std::wstring appName, bool isHybridControl, const std::vector<DWORD>& keyCodeList, const RemapBuffer& remapBuffer, bool dropDownFound);
 }
