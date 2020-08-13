@@ -36,7 +36,6 @@ namespace Microsoft.Plugin.Program.Programs.ApplicationActivationHelper
     [Guid("45BA127D-10A8-46EA-8AB7-56EA9078943C")]
     public class ApplicationActivationManager : IApplicationActivationManager
     {
-
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)/*, PreserveSig*/]
         public extern IntPtr ActivateApplication([In] string appUserModelId, [In] string arguments, [In] ActivateOptions options, [Out] out uint processId);
 

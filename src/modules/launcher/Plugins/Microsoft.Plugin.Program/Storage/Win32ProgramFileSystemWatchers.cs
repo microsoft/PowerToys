@@ -10,7 +10,6 @@ namespace Microsoft.Plugin.Program.Storage
 {
     internal class Win32ProgramFileSystemWatchers : IDisposable
     {
-
         public readonly string[] _pathsToWatch;
         public List<FileSystemWatcherWrapper> _fileSystemWatchers;
         private bool _disposed = false;

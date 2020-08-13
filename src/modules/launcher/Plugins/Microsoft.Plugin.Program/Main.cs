@@ -52,13 +52,17 @@ namespace Microsoft.Plugin.Program
             var a = Task.Run(() =>
             {
                 if (IsStartupIndexProgramsRequired || !_win32ProgramRepository.Any())
+                {
                     Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _win32ProgramRepository.IndexPrograms);
+                }
             });
 
             var b = Task.Run(() =>
             {
                 if (IsStartupIndexProgramsRequired || !_packageRepository.Any())
+                {
                     Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _packageRepository.IndexPrograms);
+                }
             });
 
             Task.WaitAll(a, b);
@@ -92,7 +96,7 @@ namespace Microsoft.Plugin.Program
 
         public void Init(PluginInitContext context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context)); ;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateUWPIconPath(_context.API.GetCurrentTheme());
         }

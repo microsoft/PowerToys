@@ -98,10 +98,8 @@ namespace Microsoft.Plugin.Program.Programs
                     Where(a => a.IsNamespaceDeclaration).
                     GroupBy(
                         a => a.Name.Namespace == XNamespace.None ? string.Empty : a.Name.LocalName,
-                        a => XNamespace.Get(a.Value)
-                    ).Select(
-                        g => g.First().ToString()
-                    ).ToArray();
+                        a => XNamespace.Get(a.Value)).Select(
+                        g => g.First().ToString()).ToArray();
                 return namespaces;
             }
             else
@@ -116,9 +114,9 @@ namespace Microsoft.Plugin.Program.Programs
         {
             var versionFromNamespace = new Dictionary<string, PackageVersion>
             {
-                {"http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10},
-                {"http://schemas.microsoft.com/appx/2013/manifest", PackageVersion.Windows81},
-                {"http://schemas.microsoft.com/appx/2010/manifest", PackageVersion.Windows8},
+                { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
+                { "http://schemas.microsoft.com/appx/2013/manifest", PackageVersion.Windows81 },
+                { "http://schemas.microsoft.com/appx/2010/manifest", PackageVersion.Windows8 },
             };
 
             foreach (var n in versionFromNamespace.Keys)
