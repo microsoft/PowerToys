@@ -100,10 +100,10 @@ steps:
       #**\UnitTests-FancyZones.dll
 
 - task: DotNetCoreCLI@2
+  displayName: 'Run .Net Core Tests'
   inputs:
     command: 'test'
     projects: 'D:\a\1\s\x64\Release\SettingsTest\netcoreapp3.1\Microsoft.PowerToys.Settings.UI.UnitTests.dll'
     publishTestResults: false
     testRunTitle: '.NetCore Tests'
-    displayName: 'Run .Net Core Tests'
     
