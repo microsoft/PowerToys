@@ -1,6 +1,10 @@
-﻿using Microsoft.Plugin.Program.Logger;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.IO;
+using Microsoft.Plugin.Program.Logger;
 using Package = Windows.ApplicationModel.Package;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -33,6 +37,11 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static PackageWrapper GetWrapperFromPackage(Package package)
         {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
             string path;
             try
             {
@@ -46,7 +55,7 @@ namespace Microsoft.Plugin.Program.Programs
                     package.Id.FullName,
                     package.Id.FamilyName,
                     package.IsFramework,
-                    package.IsDevelopmentMode, 
+                    package.IsDevelopmentMode,
                     string.Empty);
             }
 
@@ -58,7 +67,6 @@ namespace Microsoft.Plugin.Program.Programs
                     package.IsDevelopmentMode,
                     path
                     );
-
         }
     }
 }

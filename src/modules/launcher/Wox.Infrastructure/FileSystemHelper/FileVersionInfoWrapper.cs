@@ -9,7 +9,9 @@ namespace Wox.Infrastructure.FileSystemHelper
 {
     public class FileVersionInfoWrapper : IFileVersionInfoWrapper
     {
-        public FileVersionInfoWrapper() { }
+        public FileVersionInfoWrapper()
+        {
+        }
 
         public FileVersionInfo GetVersionInfo(string path)
         {

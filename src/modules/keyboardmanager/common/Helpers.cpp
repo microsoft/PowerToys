@@ -3,6 +3,7 @@
 #include <sstream>
 #include "../common/shared_constants.h"
 #include <shlwapi.h>
+#include "../common/keyboard_layout.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -324,5 +325,60 @@ namespace KeyboardManagerHelper
         std::sort(shortcutVector.begin(), shortcutVector.end(), [](Shortcut first, Shortcut second) {
             return first.Size() > second.Size();
         });
+    }
+
+    // Function to check if a modifier has been repeated in the previous drop downs
+    bool CheckRepeatedModifier(std::vector<DWORD>& currentKeys, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList)
+    {
+        // check if modifier has already been added before in a previous drop down
+        int currentDropDownIndex = -1;
+
+        // Find the key index of the current drop down selection so that we skip that index while searching for repeated modifiers
+        for (int i = 0; i < currentKeys.size(); i++)
+        {
+            if (currentKeys[i] == keyCodeList[selectedKeyIndex])
+            {
+                currentDropDownIndex = i;
+                break;
+            }
+        }
+
+        bool matchPreviousModifier = false;
+        for (int i = 0; i < currentKeys.size(); i++)
+        {
+            // Skip the current drop down
+            if (i != currentDropDownIndex)
+            {
+                // If the key type for the newly added key matches any of the existing keys in the shortcut
+                if (KeyboardManagerHelper::GetKeyType(keyCodeList[selectedKeyIndex]) == KeyboardManagerHelper::GetKeyType(currentKeys[i]))
+                {
+                    matchPreviousModifier = true;
+                    break;
+                }
+            }
+        }
+
+        return matchPreviousModifier;
+    }
+
+    // Function to get the selected key codes from the list of selected indices
+    std::vector<DWORD> GetKeyCodesFromSelectedIndices(const std::vector<int32_t>& selectedIndices, const std::vector<DWORD>& keyCodeList)
+    {
+        std::vector<DWORD> keys;
+
+        for (int i = 0; i < selectedIndices.size(); i++)
+        {
+            int selectedKeyIndex = selectedIndices[i];
+            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
+            {
+                // If None is not the selected key
+                if (keyCodeList[selectedKeyIndex] != 0)
+                {
+                    keys.push_back(keyCodeList[selectedKeyIndex]);
+                }
+            }
+        }
+
+        return keys;
     }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,21 +18,18 @@ namespace PowerLauncher.ViewModel
 {
     public class ResultsViewModel : BaseModel
     {
-        #region Private Fields
-
-        public ResultCollection Results { get; }
-
         private readonly object _collectionLock = new object();
+
         private readonly Settings _settings;
 
-        // private int MaxResults => _settings?.MaxResultsToShow ?? 6;
         public ResultsViewModel()
         {
             Results = new ResultCollection();
             BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
         }
 
-        public ResultsViewModel(Settings settings) : this()
+        public ResultsViewModel(Settings settings)
+            : this()
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _settings.PropertyChanged += (s, e) =>
@@ -45,10 +43,6 @@ namespace PowerLauncher.ViewModel
                 }
             };
         }
-
-        #endregion
-
-        #region Properties
 
         public int MaxHeight
         {
@@ -64,11 +58,13 @@ namespace PowerLauncher.ViewModel
 
         public ResultViewModel SelectedItem
         {
-            get { return _selectedItem; }
+            get
+            {
+                return _selectedItem;
+            }
 
             set
             {
-                // value can be null when selecting an item in a virtualized list
                 if (value != null)
                 {
                     if (_selectedItem != null)
@@ -90,9 +86,7 @@ namespace PowerLauncher.ViewModel
 
         public Visibility Visibility { get; set; } = Visibility.Hidden;
 
-        #endregion
-
-        #region Private Methods
+        public ResultCollection Results { get; }
 
         private static int InsertIndexOf(int newScore, IList<ResultViewModel> list)
         {
@@ -123,10 +117,6 @@ namespace PowerLauncher.ViewModel
                 return -1;
             }
         }
-
-        #endregion
-
-        #region Public Methods
 
         public void SelectNextResult()
         {
@@ -222,7 +212,7 @@ namespace PowerLauncher.ViewModel
         /// <summary>
         /// Add new results to ResultCollection
         /// </summary>
-        public void AddResults(List<Result> newRawResults, string resultId, CancellationToken ct)
+        public void AddResults(List<Result> newRawResults, CancellationToken ct)
         {
             if (newRawResults == null)
             {
@@ -236,12 +226,16 @@ namespace PowerLauncher.ViewModel
                 ct.ThrowIfCancellationRequested();
             }
 
-            Results.RemoveAll(r => r.Result.PluginID == resultId);
             Results.AddRange(newResults);
         }
-        #endregion
 
-        #region FormattedText Dependency Property
+        public void Sort()
+        {
+            var sorted = Results.OrderByDescending(x => x.Result.Score).ToList();
+            Clear();
+            Results.AddRange(sorted);
+        }
+
         public static readonly DependencyProperty FormattedTextProperty = DependencyProperty.RegisterAttached(
             "FormattedText",
             typeof(Inline),
@@ -264,16 +258,20 @@ namespace PowerLauncher.ViewModel
         private static void FormattedTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var textBlock = d as TextBlock;
-            if (textBlock == null) return;
+            if (textBlock == null)
+            {
+                return;
+            }
 
             var inline = (Inline)e.NewValue;
 
             textBlock.Inlines.Clear();
-            if (inline == null) return;
+            if (inline == null)
+            {
+                return;
+            }
 
             textBlock.Inlines.Add(inline);
         }
-        #endregion
-
     }
 }

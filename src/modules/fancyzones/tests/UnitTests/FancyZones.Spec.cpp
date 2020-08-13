@@ -77,6 +77,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, settings.restoreSize);
             ptSettings.add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_multi_monitor_mode", IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS, settings.spanZonesAcrossMonitors);
             ptSettings.add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
@@ -122,6 +123,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = true,
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
+                        .spanZonesAcrossMonitors = false,
                         .zoneColor = L"#abafee",
                         .zoneBorderColor = L"FAFAFA",
                         .zoneHighlightColor = L"#FAFAFA",
@@ -152,6 +154,7 @@ namespace FancyZonesUnitTests
                         .appLastZone_moveWindows = true,
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
+                        .spanZonesAcrossMonitors = false,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"#abafee",
                         .zoneHighlightColor = L"#FAFAFA",
@@ -183,6 +186,7 @@ namespace FancyZonesUnitTests
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .spanZonesAcrossMonitors = false,
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
@@ -215,6 +219,7 @@ namespace FancyZonesUnitTests
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .spanZonesAcrossMonitors = false,
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
@@ -247,6 +252,7 @@ namespace FancyZonesUnitTests
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .spanZonesAcrossMonitors = false,
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
@@ -289,6 +295,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, settings.restoreSize);
             ptSettings.add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_multi_monitor_mode", IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS, settings.spanZonesAcrossMonitors);
             ptSettings.add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -56,40 +57,8 @@ namespace Microsoft.Plugin.Shell
 
                 try
                 {
-                    string basedir = null;
-                    string dir = null;
-                    string excmd = Environment.ExpandEnvironmentVariables(cmd);
-                    if (Directory.Exists(excmd) && (cmd.EndsWith("/") || cmd.EndsWith(@"\")))
-                    {
-                        basedir = excmd;
-                        dir = cmd;
-                    }
-                    else if (Directory.Exists(Path.GetDirectoryName(excmd) ?? string.Empty))
-                    {
-                        basedir = Path.GetDirectoryName(excmd);
-                        var dirn = Path.GetDirectoryName(cmd);
-                        dir = (dirn.EndsWith("/") || dirn.EndsWith(@"\")) ? dirn : cmd.Substring(0, dirn.Length + 1);
-                    }
-
-                    if (basedir != null)
-                    {
-                        var autocomplete = Directory.GetFileSystemEntries(basedir).
-                            Select(o => dir + Path.GetFileName(o)).
-                            Where(o => o.StartsWith(cmd, StringComparison.OrdinalIgnoreCase) &&
-                                       !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase)) &&
-                                       !results.Any(p => o.Equals(p.Title, StringComparison.OrdinalIgnoreCase))).ToList();
-                        autocomplete.Sort();
-                        results.AddRange(autocomplete.ConvertAll(m => new Result
-                        {
-                            Title = m,
-                            IcoPath = IconPath,
-                            Action = c =>
-                            {
-                                Execute(Process.Start, PrepareProcessStartInfo(m));
-                                return true;
-                            },
-                        }));
-                    }
+                    List<Result> folderPluginResults = Folder.Main.GetFolderPluginResults(query);
+                    results.AddRange(folderPluginResults);
                 }
                 catch (Exception e)
                 {

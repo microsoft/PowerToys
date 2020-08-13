@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -20,8 +20,8 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Parse plugin metadata in giving directories
         /// </summary>
-        /// <param name="pluginDirectories"></param>
-        /// <returns></returns>
+        /// <param name="pluginDirectories">directories with plugins</param>
+        /// <returns>List with plugin meta data</returns>
         public static List<PluginMetadata> Parse(string[] pluginDirectories)
         {
             PluginMetadatas.Clear();

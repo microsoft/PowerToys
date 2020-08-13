@@ -11,6 +11,7 @@
 #include "Dialog.h"
 #include <keyboardmanager/dll/resource.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
+#include "LoadingAndSavingRemappingHelper.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -31,7 +32,7 @@ static IAsyncAction OnClickAccept(
     XamlRoot root,
     std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
+    KeyboardManagerHelper::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
 
     if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
     {
@@ -252,78 +253,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     header.SetLeftOf(applyButton, cancelButton);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditShortcutsWindow]() {
-        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
-        // Clear existing shortcuts
-        keyboardManagerState.ClearOSLevelShortcuts();
-        keyboardManagerState.ClearAppSpecificShortcuts();
-        DWORD successfulOSLevelShortcutToShortcutRemapCount = 0;
-        DWORD successfulOSLevelShortcutToKeyRemapCount = 0;
-        DWORD successfulAppSpecificShortcutToShortcutRemapCount = 0;
-        DWORD successfulAppSpecificShortcutToKeyRemapCount = 0;
-        // Save the shortcuts that are valid and report if any of them were invalid
-        for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
-        {
-            Shortcut originalShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].first[0]);
-            std::variant<DWORD, Shortcut> newShortcut = ShortcutControl::shortcutRemapBuffer[i].first[1];
-
-            if (originalShortcut.IsValidShortcut() && ((newShortcut.index() == 0 && std::get<DWORD>(newShortcut) != NULL) || (newShortcut.index() == 1 && std::get<Shortcut>(newShortcut).IsValidShortcut())))
-            {
-                if (ShortcutControl::shortcutRemapBuffer[i].second == L"")
-                {
-                    bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
-                    if (!result)
-                    {
-                        isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-                    }
-                    else
-                    {
-                        if (newShortcut.index() == 0)
-                        {
-                            successfulOSLevelShortcutToKeyRemapCount += 1;
-                        }
-                        else
-                        {
-                            successfulOSLevelShortcutToShortcutRemapCount += 1;
-                        }
-                    }
-                }
-                else
-                {
-                    bool result = keyboardManagerState.AddAppSpecificShortcut(ShortcutControl::shortcutRemapBuffer[i].second, originalShortcut, newShortcut);
-                    if (!result)
-                    {
-                        isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-                    }
-                    else
-                    {
-                        if (newShortcut.index() == 0)
-                        {
-                            successfulAppSpecificShortcutToKeyRemapCount += 1;
-                        }
-                        else
-                        {
-                            successfulAppSpecificShortcutToShortcutRemapCount += 1;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-            }
-        }
-
-        // Telemetry events
-        Trace::OSLevelShortcutRemapCount(successfulOSLevelShortcutToShortcutRemapCount, successfulOSLevelShortcutToKeyRemapCount);
-        Trace::AppSpecificShortcutRemapCount(successfulAppSpecificShortcutToShortcutRemapCount, successfulAppSpecificShortcutToKeyRemapCount);
-
+        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerState, ShortcutControl::shortcutRemapBuffer, true);
         // Save the updated key remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
-        if (!saveResult)
-        {
-            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
-        }
-
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     };
 
