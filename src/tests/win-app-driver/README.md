@@ -40,8 +40,8 @@ Windows Application Driver can run remotely on any Windows 10 machine with `WinA
 3. Run `WinAppDriver.exe 10.X.X.10 4723/wd/hub` as **administrator** with command line arguments as seen above specifying local IP and port
 4. On the *test runner* machine where the runner and scripts are, update the test script to point to the IP of the remote *test machine*
 
-### Starting the tests in the Development Machine
-  - Open `powertoys.sln` in Visual Studio 2017.
+### Starting the tests on the Development Machine
+  - Open `PowerToys.sln` in Visual Studio.
   - Build the `PowerToysTests` project.
   - Select `Test > Windows > Test Explorer`.
   - Select `Test > Run > All` tests in the menu bar.
