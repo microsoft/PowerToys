@@ -7,6 +7,7 @@
 #include <functional>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace TestHelpers;
 
 namespace RemappingUITests
 {
@@ -34,12 +35,6 @@ namespace RemappingUITests
             bool isHybridColumn;
             RemapBufferRow bufferRow;
         };
-
-        // Function to return the index of the given key code from the drop down key list
-        int GetDropDownIndexFromDropDownList(DWORD key, const std::vector<DWORD>& keyList)
-        {
-            return (int)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), key));
-        }
 
         void RunTestCases(const std::vector<ValidateShortcutBufferElementArgs>& testCases, std::function<void(const ValidateShortcutBufferElementArgs&)> testMethod)
         {
