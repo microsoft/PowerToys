@@ -108,10 +108,12 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             }
         }
 
-        public static void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
+        public static void InitQueryHelper(out ISearchQueryHelper queryHelper, ISearchManager manager, int maxCount)
         {
-            // This uses the Microsoft.Search.Interop assembly
-            CSearchManager manager = new CSearchManager();
+            if (manager == null)
+            {
+                throw new ArgumentNullException(nameof(manager));
+            }
 
             // SystemIndex catalog is the default catalog in Windows
             ISearchCatalogManager catalogManager = manager.GetCatalog("SystemIndex");
@@ -135,10 +137,15 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
-        public IEnumerable<SearchResult> Search(string keyword, bool isFullQuery = false, string pattern = "*", int maxCount = 30)
+        public IEnumerable<SearchResult> Search(string keyword, ISearchManager manager, bool isFullQuery = false, string pattern = "*", int maxCount = 30)
         {
+            if (manager == null)
+            {
+                throw new ArgumentNullException(nameof(manager));
+            }
+
             ISearchQueryHelper queryHelper;
-            InitQueryHelper(out queryHelper, maxCount);
+            InitQueryHelper(out queryHelper, manager, maxCount);
             ModifyQueryHelper(ref queryHelper, pattern);
             return ExecuteQuery(queryHelper, keyword, isFullQuery);
         }

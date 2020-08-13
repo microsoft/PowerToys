@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using Microsoft.Plugin.Indexer.DriveDetection;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.Search.Interop;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -95,7 +96,9 @@ namespace Microsoft.Plugin.Indexer
                             });
                         }
 
-                        var searchResultsList = _api.Search(searchQuery, isFullQuery, maxCount: _settings.MaxSearchCount).ToList();
+                        // This uses the Microsoft.Search.Interop assembly
+                        var searchManager = new CSearchManager();
+                        var searchResultsList = _api.Search(searchQuery, searchManager, isFullQuery, maxCount: _settings.MaxSearchCount).ToList();
 
                         // If the delayed execution query is not required (since the SQL query is fast) return empty results
                         if (searchResultsList.Count == 0 && isFullQuery)

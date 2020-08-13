@@ -18,11 +18,25 @@ namespace Wox.Test.Plugins
     [TestFixture]
     public class WindowsIndexerTest
     {
-        public WindowsSearchAPI GetWindowsSearchAPI()
+        private WindowsSearchAPI GetWindowsSearchAPI()
         {
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query("dummy-connection-string", "dummy-query")).Returns(new List<OleDBResult>());
             return new WindowsSearchAPI(mock.Object);
+        }
+
+        private ISearchManager GetMockSearchManager()
+        {
+            var sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE CONTAINS(System.FileName,'\"m*\"',1033) AND scope='file:' ORDER BY System.DateModified DESC";
+            var mockSearchManager = new Mock<ISearchManager>();
+            var mockCatalog = new Mock<CSearchCatalogManager>();
+            var mockQueryHelper = new Mock<CSearchQueryHelper>();
+            mockQueryHelper.SetupAllProperties();
+            mockQueryHelper.Setup(x => x.ConnectionString).Returns("provider=Search.CollatorDSO.1;");
+            mockQueryHelper.Setup(x => x.GenerateSQLFromUserQuery(It.IsAny<string>())).Returns(sqlQuery);
+            mockSearchManager.Setup(x => x.GetCatalog(It.IsAny<string>())).Returns(mockCatalog.Object);
+            mockCatalog.Setup(x => x.GetQueryHelper()).Returns(mockQueryHelper.Object);
+            return mockSearchManager.Object;
         }
 
         [Test]
@@ -32,9 +46,10 @@ namespace Wox.Test.Plugins
             int maxCount = 10;
             WindowsSearchAPI api = GetWindowsSearchAPI();
             ISearchQueryHelper queryHelper = null;
+            var mockSearchManager = GetMockSearchManager();
 
             // Act
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, maxCount);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, maxCount);
 
             // Assert
             Assert.IsNotNull(queryHelper);
@@ -48,7 +63,8 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             string pattern = "*";
             WindowsSearchAPI api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            var mockSearchManager = GetMockSearchManager();
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -65,7 +81,8 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             string pattern = "tt*^&)";
             WindowsSearchAPI api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            var mockSearchManager = GetMockSearchManager();
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -82,7 +99,8 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             string pattern = "tt%^&)";
             WindowsSearchAPI api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            var mockSearchManager = GetMockSearchManager();
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -99,7 +117,8 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             string pattern = "tt_^&)";
             WindowsSearchAPI api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            var mockSearchManager = GetMockSearchManager();
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -116,7 +135,8 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             string pattern = "tt?^&)";
             WindowsSearchAPI api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            var mockSearchManager = GetMockSearchManager();
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -133,7 +153,8 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             string pattern = "tt^&)bc";
             WindowsSearchAPI api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            var mockSearchManager = GetMockSearchManager();
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -149,9 +170,10 @@ namespace Wox.Test.Plugins
             // Arrange
             OleDBSearch oleDbSearch = new OleDBSearch();
             WindowsSearchAPI api = new WindowsSearchAPI(oleDbSearch);
+            var mockSearchManager = GetMockSearchManager();
 
             // Act
-            api.Search("FilePath");
+            api.Search("FilePath", mockSearchManager);
 
             // Assert
             Assert.IsTrue(oleDbSearch.HaveAllDisposableItemsBeenDisposed());
@@ -167,9 +189,10 @@ namespace Wox.Test.Plugins
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
             WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, true);
+            var mockSearchManager = GetMockSearchManager();
 
             // Act
-            var windowsSearchAPIResults = api.Search("FilePath");
+            var windowsSearchAPIResults = api.Search("FilePath", mockSearchManager);
 
             // Assert
             Assert.IsTrue(windowsSearchAPIResults.Count() == 2);
@@ -187,9 +210,10 @@ namespace Wox.Test.Plugins
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
             WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
+            var mockSearchManager = GetMockSearchManager();
 
             // Act
-            var windowsSearchAPIResults = api.Search("FilePath");
+            var windowsSearchAPIResults = api.Search("FilePath", mockSearchManager);
 
             // Assert
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
@@ -208,9 +232,10 @@ namespace Wox.Test.Plugins
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
             WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
+            var mockSearchManager = GetMockSearchManager();
 
             // Act
-            var windowsSearchAPIResults = api.Search("FilePath");
+            var windowsSearchAPIResults = api.Search("FilePath", mockSearchManager);
 
             // Assert
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
@@ -386,9 +411,10 @@ namespace Wox.Test.Plugins
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
             WindowsSearchAPI _api = new WindowsSearchAPI(mock.Object, false);
+            var searchManager = GetMockSearchManager();
 
             // Act
-            var windowsSearchAPIResults = _api.Search("file", true);
+            var windowsSearchAPIResults = _api.Search("file", searchManager, true);
 
             // Assert
             Assert.IsTrue(windowsSearchAPIResults.Count() == 0);
