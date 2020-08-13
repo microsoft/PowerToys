@@ -1177,19 +1177,22 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             else
             {
                 auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-                auto zones = workArea->ActiveZoneSet()->GetZones();
-                for (size_t i = 0; i < zones.size(); i++)
+                if (auto zoneSet = workArea->ActiveZoneSet(); zoneSet)
                 {
-                    const auto& zone = zones[i];
-                    RECT zoneRect = zone->GetZoneRect();
+                    auto zones = zoneSet->GetZones();
+                    for (size_t i = 0; i < zones.size(); i++)
+                    {
+                        const auto& zone = zones[i];
+                        RECT zoneRect = zone->GetZoneRect();
 
-                    zoneRect.left += monitorRect.left;
-                    zoneRect.right += monitorRect.left;
-                    zoneRect.top += monitorRect.top;
-                    zoneRect.bottom += monitorRect.top;
+                        zoneRect.left += monitorRect.left;
+                        zoneRect.right += monitorRect.left;
+                        zoneRect.top += monitorRect.top;
+                        zoneRect.bottom += monitorRect.top;
 
-                    zoneRects.emplace_back(zoneRect);
-                    zoneRectsInfo.emplace_back(i, workArea);
+                        zoneRects.emplace_back(zoneRect);
+                        zoneRectsInfo.emplace_back(i, workArea);
+                    }
                 }
             }
         }
@@ -1218,19 +1221,22 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         if (currentMonitorRect.top <= currentMonitorRect.bottom)
         {
             auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
-            auto zones = workArea->ActiveZoneSet()->GetZones();
-            for (size_t i = 0; i < zones.size(); i++)
+            if (auto zoneSet = workArea->ActiveZoneSet(); zoneSet)
             {
-                const auto& zone = zones[i];
-                RECT zoneRect = zone->GetZoneRect();
+                auto zones = zoneSet->GetZones();
+                for (size_t i = 0; i < zones.size(); i++)
+                {
+                    const auto& zone = zones[i];
+                    RECT zoneRect = zone->GetZoneRect();
 
-                zoneRect.left += currentMonitorRect.left;
-                zoneRect.right += currentMonitorRect.left;
-                zoneRect.top += currentMonitorRect.top;
-                zoneRect.bottom += currentMonitorRect.top;
+                    zoneRect.left += currentMonitorRect.left;
+                    zoneRect.right += currentMonitorRect.left;
+                    zoneRect.top += currentMonitorRect.top;
+                    zoneRect.bottom += currentMonitorRect.top;
 
-                zoneRects.emplace_back(zoneRect);
-                zoneRectsInfo.emplace_back(i, workArea);
+                    zoneRects.emplace_back(zoneRect);
+                    zoneRectsInfo.emplace_back(i, workArea);
+                }
             }
         }
         else
@@ -1258,7 +1264,6 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
     {
         // Single monitor environment, or combined multi-monitor environment.
         return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, true, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
-
     }
 }
 
