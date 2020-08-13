@@ -60,10 +60,76 @@ std::optional<fs::path> extractIcon()
     return iconRes->saveAsFile(icoPath) ? std::make_optional(std::move(icoPath)) : std::nullopt;
 }
 
+enum class CmdArgs
+{
+    silent,
+    noFullUI,
+    noStartPT
+};
+
+std::unordered_set<CmdArgs> parseCmdArgs(const int nCmdArgs, LPWSTR* argList)
+{
+    const std::unordered_map<std::wstring_view, CmdArgs> knownArgs = { { L"--no_full_ui", CmdArgs::noFullUI }, { L"--silent", CmdArgs::silent }, { L"--no_start_pt", CmdArgs::noStartPT } };
+    std::unordered_set<CmdArgs> result;
+    for (size_t i = 1; i < nCmdArgs; ++i)
+    {
+        if (auto it = knownArgs.find(argList[i]); it != end(knownArgs))
+        {
+            result.emplace(it->second);
+        }
+    }
+    return result;
+}
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     using namespace localized_strings;
     winrt::init_apartment();
+
+    int nCmdArgs = 0;
+    LPWSTR* argList = CommandLineToArgvW(GetCommandLineW(), &nCmdArgs);
+    const auto cmdArgs = parseCmdArgs(nCmdArgs, argList);
+    if (!cmdArgs.contains(CmdArgs::noFullUI))
+    {
+        MsiSetInternalUI(INSTALLUILEVEL_FULL, nullptr);
+    }
+    if (cmdArgs.contains(CmdArgs::silent))
+    {
+        if (is_process_elevated())
+        {
+            MsiSetInternalUI(INSTALLUILEVEL_NONE, nullptr);
+        }
+        else
+        {
+            // MSI fails to run in silent mode due to a suppressed UAC w/o elevation, so we restart elevated
+            std::wstring params;
+            for (int i = 1; i < nCmdArgs; ++i)
+            {
+                params += argList[i];
+                if (i != nCmdArgs - 1)
+                {
+                    params += L' ';
+                }
+            }
+            const auto processHandle = run_elevated(argList[0], params.c_str());
+            if (!processHandle)
+            {
+                return 1;
+            }
+            if (WaitForSingleObject(processHandle, 3600000) == WAIT_OBJECT_0)
+            {
+                DWORD exitCode = 0;
+                GetExitCodeProcess(processHandle, &exitCode);
+                return exitCode;
+            }
+            else
+            {
+                // Couldn't install using the completely silent mode in an hour, use basic UI.
+                TerminateProcess(processHandle, 0);
+                MsiSetInternalUI(INSTALLUILEVEL_BASIC, nullptr);
+            }
+        }
+    }
 
     // Try killing PowerToys and prevent future processes launch
     for (auto& handle : getProcessHandlesByName(L"PowerToys.exe", PROCESS_TERMINATE))
@@ -71,10 +137,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         TerminateProcess(handle.get(), 0);
     }
     auto powerToysMutex = createAppMutex(POWERTOYS_MSI_MUTEX_NAME);
-
-    int n_cmd_args = 0;
-    LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
-    const bool silent = n_cmd_args > 1 && std::wstring_view{ L"-silent" } == cmd_arg_list[1];
 
     auto instanceMutex = createAppMutex(POWERTOYS_BOOTSTRAPPER_MUTEX_NAME);
     if (!instanceMutex)
@@ -102,7 +164,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         auto msi_path = updating::get_msi_package_path();
         if (!msi_path.empty())
         {
-            MsiSetInternalUI(INSTALLUILEVEL_FULL, nullptr);
             MsiInstallProductW(msi_path.c_str(), nullptr);
             return 0;
         }
@@ -113,27 +174,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     progressParams.progress = 0.0f;
     progressParams.progress_title = EXTRACTING_INSTALLER;
     notifications::toast_params params{ TOAST_TAG, false, std::move(progressParams) };
-    notifications::show_toast_with_activations({}, TOAST_TITLE, {}, {}, std::move(params));
+    if (!cmdArgs.contains(CmdArgs::silent))
+    {
+        notifications::show_toast_with_activations({}, TOAST_TITLE, {}, {}, std::move(params));
+    }
 
     auto processToasts = wil::scope_exit([&] {
         run_message_loop(true, 2);
     });
 
-    // Worker thread to periodically increase progress and keep the progress toast from losing focus
-    std::thread{ [&] {
-        for (;; Sleep(3000))
-        {
-            std::scoped_lock lock{ progressLock };
-            if (progressParams.progress == 1.f)
+    if (!cmdArgs.contains(CmdArgs::silent))
+    {
+        // Worker thread to periodically increase progress and keep the progress toast from losing focus
+        std::thread{ [&] {
+            for (;; Sleep(3000))
             {
-                break;
+                std::scoped_lock lock{ progressLock };
+                if (progressParams.progress == 1.f)
+                {
+                    break;
+                }
+                progressParams.progress = min(0.99f, progressParams.progress + 0.001f);
+                notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
             }
-            progressParams.progress = min(0.99f, progressParams.progress + 0.001f);
-            notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
-        }
-    } }.detach();
+        } }.detach();
+    }
 
     auto updateProgressBar = [&](const float value, const wchar_t* title) {
+        if (cmdArgs.contains(CmdArgs::silent))
+        {
+            return;
+        }
         std::scoped_lock lock{ progressLock };
         progressParams.progress = value;
         progressParams.progress_title = title;
@@ -143,7 +214,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     const auto installerPath = extractEmbeddedInstaller();
     if (!installerPath)
     {
-        notifications::show_toast(INSTALLER_EXTRACT_ERROR, TOAST_TITLE);
+        if (!cmdArgs.contains(CmdArgs::silent))
+        {
+            notifications::show_toast(INSTALLER_EXTRACT_ERROR, TOAST_TITLE);
+        }
         return 1;
     }
     auto removeExtractedInstaller = wil::scope_exit([&] {
@@ -153,38 +227,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     updateProgressBar(.25f, UNINSTALLING_PREVIOUS_VERSION);
     const auto package_path = updating::get_msi_package_path();
-    if (!package_path.empty() && !updating::uninstall_msi_version(package_path))
+    if (!package_path.empty() && !updating::uninstall_msi_version(package_path) && !cmdArgs.contains(CmdArgs::silent))
     {
         notifications::show_toast(UNINSTALL_PREVIOUS_VERSION_ERROR, TOAST_TITLE);
     }
 
     updateProgressBar(.5f, INSTALLING_DOTNET);
-    if (!updating::dotnet_is_installed() && !updating::install_dotnet())
+    if (!updating::dotnet_is_installed() && !updating::install_dotnet() && !cmdArgs.contains(CmdArgs::silent))
     {
         notifications::show_toast(DOTNET_INSTALL_ERROR, TOAST_TITLE);
     }
 
     updateProgressBar(.75f, INSTALLING_NEW_VERSION);
-    if (!silent)
-    {
-        MsiSetInternalUI(INSTALLUILEVEL_FULL, nullptr);
-    }
+
     const bool installationDone = MsiInstallProductW(installerPath->c_str(), nullptr) == ERROR_SUCCESS;
-
     updateProgressBar(1.f, installationDone ? NEW_VERSION_INSTALLATION_DONE : NEW_VERSION_INSTALLATION_ERROR);
-
     if (!installationDone)
     {
         return 1;
     }
-    auto newPTPath = updating::get_msi_package_installed_path();
-    if (!newPTPath)
+
+    if (!cmdArgs.contains(CmdArgs::noStartPT) && !cmdArgs.contains(CmdArgs::silent))
     {
-        return 1;
-    }
-    // Do not launch PowerToys, if we're launched from the action_runner
-    if (!silent)
-    {
+        auto newPTPath = updating::get_msi_package_installed_path();
+        if (!newPTPath)
+        {
+            return 1;
+        }
         *newPTPath += L"\\PowerToys.exe";
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NO_CONSOLE };

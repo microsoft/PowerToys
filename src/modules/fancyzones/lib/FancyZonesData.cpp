@@ -22,19 +22,19 @@ namespace NonLocalizable
     const wchar_t FancyZonesStr[] = L"FancyZones";
     const wchar_t LayoutsStr[] = L"Layouts";
     const wchar_t NullStr[] = L"null";
-}
 
-namespace
-{
-    const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
-    const wchar_t* FANCY_ZONES_APP_ZONE_HISTORY_FILE = L"app-zone-history.json";
-    const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
-    const wchar_t* REG_SETTINGS = L"Software\\SuperFancyZones";
+    const wchar_t FancyZonesDataFile[] = L"zones-settings.json";
+    const wchar_t FancyZonesAppZoneHistoryFile[] = L"app-zone-history.json";
+    const wchar_t DefaultGuid[] = L"{00000000-0000-0000-0000-000000000000}";
+    const wchar_t RegistryPath[] = L"Software\\SuperFancyZones";
 
     const wchar_t ActiveZoneSetsTmpFileName[] = L"FancyZonesActiveZoneSets.json";
     const wchar_t AppliedZoneSetsTmpFileName[] = L"FancyZonesAppliedZoneSets.json";
     const wchar_t DeletedCustomZoneSetsTmpFileName[] = L"FancyZonesDeletedCustomZoneSets.json";
+}
 
+namespace
+{
     std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
     {
         // Format: <device-id>_<resolution>_<virtual-desktop-id>
@@ -71,12 +71,12 @@ FancyZonesData& FancyZonesDataInstance()
 FancyZonesData::FancyZonesData()
 {
     std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::FancyZonesStr);
-    zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
-    appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
+    zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
+    appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
 
-    activeZoneSetTmpFileName = GetTempDirPath() + ActiveZoneSetsTmpFileName;
-    appliedZoneSetTmpFileName = GetTempDirPath() + AppliedZoneSetsTmpFileName;
-    deletedCustomZoneSetsTmpFileName = GetTempDirPath() + DeletedCustomZoneSetsTmpFileName;
+    activeZoneSetTmpFileName = GetTempDirPath() + NonLocalizable::ActiveZoneSetsTmpFileName;
+    appliedZoneSetTmpFileName = GetTempDirPath() + NonLocalizable::AppliedZoneSetsTmpFileName;
+    deletedCustomZoneSetsTmpFileName = GetTempDirPath() + NonLocalizable::DeletedCustomZoneSetsTmpFileName;
 }
 
 std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const std::wstring& zoneWindowId) const
@@ -141,7 +141,7 @@ void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
     {
         for (auto& data : perDesktopData)
         {
-            if (ExtractVirtualDesktopId(data.deviceId) == DEFAULT_GUID)
+            if (ExtractVirtualDesktopId(data.deviceId) == NonLocalizable::DefaultGuid)
             {
                 data.deviceId = replaceDesktopId(data.deviceId);
             }
@@ -150,7 +150,7 @@ void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
     std::vector<std::wstring> toReplace{};
     for (const auto& [id, data] : deviceInfoMap)
     {
-        if (ExtractVirtualDesktopId(id) == DEFAULT_GUID)
+        if (ExtractVirtualDesktopId(id) == NonLocalizable::DefaultGuid)
         {
             toReplace.push_back(id);
         }
@@ -290,10 +290,10 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& dev
                     }
 
                     // if there is another instance of same application placed in the same zone don't erase history
-                    size_t windowZoneStamp = reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP));
+                    size_t windowZoneStamp = reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID));
                     for (auto placedWindow : data->processIdToHandleMap)
                     {
-                        size_t placedWindowZoneStamp = reinterpret_cast<size_t>(::GetProp(placedWindow.second, MULTI_ZONE_STAMP));
+                        size_t placedWindowZoneStamp = reinterpret_cast<size_t>(::GetProp(placedWindow.second, ZonedWindowProperties::PropertyMultipleZoneID));
                         if (IsWindow(placedWindow.second) && (windowZoneStamp == placedWindowZoneStamp))
                         {
                             return false;
@@ -477,7 +477,7 @@ void FancyZonesData::MigrateCustomZoneSetsFromRegistry()
 {
     std::scoped_lock lock{ dataLock };
     wchar_t key[256];
-    StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", REG_SETTINGS, NonLocalizable::LayoutsStr);
+    StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", NonLocalizable::RegistryPath, NonLocalizable::LayoutsStr);
     HKEY hkey;
     if (RegOpenKeyExW(HKEY_CURRENT_USER, key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS)
     {
