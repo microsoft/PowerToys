@@ -101,11 +101,6 @@ steps:
 
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'build'
-    projects: '**/*Microsoft.PowerToys.Settings*'
-
-- task: DotNetCoreCLI@2
-  inputs:
     command: 'test'
     projects: '**/*Microsoft.PowerToys.Settings.UI.UnitTests.csproj'
     publishTestResults: false
