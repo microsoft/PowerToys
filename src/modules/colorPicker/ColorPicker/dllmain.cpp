@@ -132,7 +132,7 @@ public:
     {
         if (m_enabled)
         {
-            terminateProcess();
+            TerminateProcess(m_hProcess, 1);
         }
 
         m_enabled = false;
@@ -141,28 +141,6 @@ public:
     virtual bool is_enabled() override
     {
         return m_enabled;
-    }
-
-    static BOOL CALLBACK requestMainWindowClose(HWND nextWindow, LPARAM closePid)
-    {
-        DWORD windowPid;
-        GetWindowThreadProcessId(nextWindow, &windowPid);
-
-        if (windowPid == (DWORD)closePid)
-            ::PostMessage(nextWindow, WM_CLOSE, 0, 0);
-
-        return true;
-    }
-
-    void terminateProcess()
-    {
-        DWORD processID = GetProcessId(m_hProcess);
-        EnumWindows(&requestMainWindowClose, processID);
-        const DWORD result = WaitForSingleObject(m_hProcess, MAX_WAIT_MILLISEC);
-        if (result == WAIT_TIMEOUT)
-        {
-            TerminateProcess(m_hProcess, 1);
-        }
     }
 };
 

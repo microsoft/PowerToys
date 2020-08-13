@@ -36,7 +36,10 @@ namespace Wox.Plugin
 
         public string PluginDirectory
         {
-            get { return _pluginDirectory; }
+            get
+            {
+                return _pluginDirectory;
+            }
 
             internal set
             {
@@ -61,7 +64,7 @@ namespace Wox.Plugin
         public string FullIcoPath => IcoPath;
 
         /// <summary>
-        /// Init time include both plugin load time and init time
+        /// Gets or sets init time include both plugin load time and init time
         /// </summary>
         [JsonIgnore]
         public long InitTime { get; set; }

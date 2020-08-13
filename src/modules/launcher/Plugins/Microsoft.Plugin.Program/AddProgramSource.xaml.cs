@@ -1,8 +1,12 @@
-﻿using System.Windows;
-using System.Windows.Forms;
-using Microsoft.Plugin.Program.Views.Models;
-using Microsoft.Plugin.Program.Views;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Linq;
+using System.Windows;
+using System.Windows.Forms;
+using Microsoft.Plugin.Program.Views;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program
@@ -13,10 +17,10 @@ namespace Microsoft.Plugin.Program
     public partial class AddProgramSource
     {
         private PluginInitContext _context;
-        private Settings.ProgramSource _editing;
-        private Settings _settings;
+        private ProgramSource _editing;
+        private ProgramPluginSettings _settings;
 
-        public AddProgramSource(PluginInitContext context, Settings settings)
+        public AddProgramSource(PluginInitContext context, ProgramPluginSettings settings)
         {
             InitializeComponent();
             _context = context;
@@ -24,9 +28,9 @@ namespace Microsoft.Plugin.Program
             Directory.Focus();
         }
 
-        public AddProgramSource(Settings.ProgramSource edit, Settings settings)
+        public AddProgramSource(ProgramSource edit, ProgramPluginSettings settings)
         {
-            _editing = edit;
+            _editing = edit ?? throw new ArgumentNullException(nameof(edit));
             _settings = settings;
 
             InitializeComponent();
@@ -35,11 +39,13 @@ namespace Microsoft.Plugin.Program
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new FolderBrowserDialog();
-            DialogResult result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            using (var dialog = new FolderBrowserDialog())
             {
-                Directory.Text = dialog.SelectedPath;
+                DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    Directory.Text = dialog.SelectedPath;
+                }
             }
         }
 
@@ -51,6 +57,7 @@ namespace Microsoft.Plugin.Program
                 System.Windows.MessageBox.Show(_context.API.GetTranslation("wox_plugin_program_invalid_path"));
                 return;
             }
+
             if (_editing == null)
             {
                 if (!ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == Directory.Text))
@@ -58,7 +65,7 @@ namespace Microsoft.Plugin.Program
                     var source = new ProgramSource
                     {
                         Location = Directory.Text,
-                        UniqueIdentifier = Directory.Text
+                        UniqueIdentifier = Directory.Text,
                     };
 
                     _settings.ProgramSources.Insert(0, source);

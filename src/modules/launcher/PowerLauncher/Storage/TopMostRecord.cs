@@ -40,7 +40,7 @@ namespace PowerLauncher.Storage
             {
                 PluginID = result.PluginID,
                 Title = result.Title,
-                SubTitle = result.SubTitle
+                SubTitle = result.SubTitle,
             };
             records[result.OriginQuery.RawQuery] = record;
         }

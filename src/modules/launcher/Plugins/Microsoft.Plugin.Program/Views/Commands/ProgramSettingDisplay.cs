@@ -1,15 +1,15 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Plugin.Program.Views.Models;
 
 namespace Microsoft.Plugin.Program.Views.Commands
 {
     internal static class ProgramSettingDisplay
     {
-        internal static List<ProgramSource> LoadProgramSources(this List<Settings.ProgramSource> programSources)
+        internal static List<ProgramSource> LoadProgramSources(this List<ProgramSource> programSources)
         {
             var list = new List<ProgramSource>();
 
@@ -20,7 +20,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                     Enabled = x.Enabled,
                                                     Location = x.Location,
                                                     Name = x.Name,
-                                                    UniqueIdentifier = x.UniqueIdentifier
+                                                    UniqueIdentifier = x.UniqueIdentifier,
                                                 }
                                         ));
 
@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                         Enabled = x.Enabled,
                                         Location = x.Location,
                                         Name = x.Name,
-                                        UniqueIdentifier = x.UniqueIdentifier
+                                        UniqueIdentifier = x.UniqueIdentifier,
                                     }
                               ));
 
@@ -89,12 +89,12 @@ namespace Microsoft.Plugin.Program.Views.Commands
                 .ToList()
                 .ForEach(x => Main._settings.DisabledProgramSources
                                             .Add(
-                                                    new Settings.DisabledProgramSource
+                                                    new DisabledProgramSource
                                                     {
                                                         Name = x.Name,
                                                         Location = x.Location,
                                                         UniqueIdentifier = x.UniqueIdentifier,
-                                                        Enabled = false
+                                                        Enabled = false,
                                                     }
                                             ));
         }
@@ -114,13 +114,13 @@ namespace Microsoft.Plugin.Program.Views.Commands
 
         internal static bool IsReindexRequired(this List<ProgramSource> selectedItems)
         {
-            if (selectedItems.Where(t1 => t1.Enabled).Count() > 0)
+            if (selectedItems.Where(t1 => t1.Enabled).Any())
                 return true;
 
-            // ProgramSources holds list of user added directories, 
+            // ProgramSources holds list of user added directories,
             // so when we enable/disable we need to reindex to show/not show the programs
             // that are found in those directories.
-            if (selectedItems.Where(t1 => Main._settings.ProgramSources.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Count() > 0)
+            if (selectedItems.Where(t1 => Main._settings.ProgramSources.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Any())
                 return true;
 
             return false;

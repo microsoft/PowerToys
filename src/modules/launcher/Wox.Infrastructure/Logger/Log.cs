@@ -60,8 +60,7 @@ namespace Wox.Infrastructure.Logger
             ExceptionInternal(classNameWithMethod, message, exception);
         }
 
-        private static string CheckClassAndMessageAndReturnFullClassWithMethod(string className, string message,
-            string methodName)
+        private static string CheckClassAndMessageAndReturnFullClassWithMethod(string className, string message, string methodName)
         {
             if (string.IsNullOrWhiteSpace(className))
             {
@@ -100,7 +99,8 @@ namespace Wox.Infrastructure.Logger
                 logger.Error($"Exception target site:\n <{e.TargetSite}>");
                 logger.Error($"Exception HResult:\n <{e.HResult}>");
                 e = e.InnerException;
-            } while (e != null);
+            }
+            while (e != null);
 
             logger.Error("-------------------------- End exception --------------------------");
         }
