@@ -127,7 +127,7 @@ namespace Wox.Infrastructure.Storage
             }
             catch (System.Exception e)
             {
-                Log.Error($"|Wox.Infrastructure.Storage.Save| Unable to save data", e.Message);
+                Log.Error($"JsonStorage.Save|Error in saving data| <{FilePath}>", e.Message);
             }
         }
     }
