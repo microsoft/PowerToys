@@ -94,6 +94,7 @@ steps:
       **\UnitTests-SvgPreviewHandler.dll
       **\Wox.Test.dll
       **\powerpreviewTest.dll
+      'D:\a\1\s\x64\Release\SettingsTest\netcoreapp3.1\Microsoft.PowerToys.Settings.UI.UnitTests.dll'
       # Can't get working, says no tests
       # crashes CI
       #**\interop-tests.dll 
