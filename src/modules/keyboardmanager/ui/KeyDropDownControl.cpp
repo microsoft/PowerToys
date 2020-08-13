@@ -179,7 +179,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutCon
             }
 
             // Reset the buffer based on the new selected drop down items
-            std::vector selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(GetSelectedIndicesFromStackPanel(parent), keyCodeList);
+            std::vector selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(GetSelectedIndicesFromStackPanel(parent), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
             if (!isHybridControl)
             {
                 std::get<Shortcut>(shortcutRemapBuffer[validationResult.second].first[colIndex]).SetKeyCodes(selectedKeyCodes);
@@ -287,7 +287,7 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel
     for (int i = 0; i < keyDropDownControlObjects.size(); i++)
     {
         // Check for errors only if the current selection is a valid shortcut
-        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(keyDropDownControlObjects[i]->GetSelectedIndicesFromStackPanel(parent), keyDropDownControlObjects[i]->keyCodeList);
+        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(keyDropDownControlObjects[i]->GetSelectedIndicesFromStackPanel(parent), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
         std::variant<DWORD, Shortcut> currentShortcut;
         if (selectedKeyCodes.size() == 1 && isHybridControl)
         {
