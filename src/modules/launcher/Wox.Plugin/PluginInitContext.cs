@@ -9,7 +9,7 @@ namespace Wox.Plugin
         public PluginMetadata CurrentPluginMetadata { get; internal set; }
 
         /// <summary>
-        /// Public APIs for plugin invocation
+        /// Gets or sets public APIs for plugin invocation
         /// </summary>
         public IPublicAPI API { get; set; }
     }

@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
 using Wox.Infrastructure.Logger;
 
@@ -10,7 +9,9 @@ namespace Wox.Infrastructure.FileSystemHelper
 {
     public class FileWrapper : IFileWrapper
     {
-        public FileWrapper() { }
+        public FileWrapper()
+        {
+        }
 
         public string[] ReadAllLines(string path)
         {
@@ -21,7 +22,7 @@ namespace Wox.Infrastructure.FileSystemHelper
             catch (IOException ex)
             {
                 Log.Info($"File {path} is being accessed by another process| {ex.Message}");
-                return new string[] { String.Empty };
+                return new string[] { string.Empty };
             }
         }
     }

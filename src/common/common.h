@@ -67,7 +67,7 @@ bool is_process_elevated(const bool use_cached_value = true);
 bool drop_elevated_privileges();
 
 // Run command as elevated user, returns true if succeeded
-bool run_elevated(const std::wstring& file, const std::wstring& params);
+HANDLE run_elevated(const std::wstring& file, const std::wstring& params);
 
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
 bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid);

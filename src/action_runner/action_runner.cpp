@@ -98,7 +98,7 @@ bool install_new_version_stage_1(const std::wstring_view installer_filename, con
     }
 }
 
-bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view install_path, const bool launch_powertoys)
+bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view install_path, bool launch_powertoys)
 {
     std::transform(begin(installer_path), end(installer_path), begin(installer_path), ::towlower);
 
@@ -112,10 +112,20 @@ bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view 
     {
         // If it's not .msi, then it's our .exe installer
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE};
+        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
         sei.lpFile = installer_path.c_str();
         sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = L"-silent";
+        std::wstring parameters = L"--no_full_ui";
+        if (launch_powertoys)
+        {
+            // .exe installer launches the main app by default
+            launch_powertoys = false;
+        }
+        else
+        {
+            parameters += L"--no_start_pt";
+        }
+        sei.lpParameters = parameters.c_str();
 
         success = ShellExecuteExW(&sei) == TRUE;
         // Wait for the install completion

@@ -9,3 +9,5 @@
 #include <fstream>
 #include <wil/resource.h>
 #include <Msi.h>
+
+#include <unordered_set>

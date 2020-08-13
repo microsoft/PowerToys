@@ -1,239 +1,249 @@
-﻿using Moq;
-using NUnit.Framework;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Moq;
+using NUnit.Framework;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
-using Microsoft.Plugin.Program;
-using System.IO.Packaging;
-using Windows.ApplicationModel;
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
-    using Win32 = Microsoft.Plugin.Program.Programs.Win32;
+    using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
 
     [TestFixture]
     public class Win32Tests
     {
-        static Win32 notepad_appdata = new Win32
+        private static Win32Program notepad_appdata = new Win32Program
         {
             Name = "Notepad",
             ExecutableName = "notepad.exe",
             FullPath = "c:\\windows\\system32\\notepad.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\accessories\\notepad.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 notepad_users = new Win32
+        private static Win32Program notepad_users = new Win32Program
         {
             Name = "Notepad",
             ExecutableName = "notepad.exe",
             FullPath = "c:\\windows\\system32\\notepad.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\accessories\\notepad.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 azure_command_prompt = new Win32
+        private static Win32Program azure_command_prompt = new Win32Program
         {
             Name = "Microsoft Azure Command Prompt - v2.9",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft azure\\microsoft azure sdk for .net\\v2.9\\microsoft azure command prompt - v2.9.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 visual_studio_command_prompt = new Win32
+        private static Win32Program visual_studio_command_prompt = new Win32Program
         {
             Name = "x64 Native Tools Command Prompt for VS 2019",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\visual studio 2019\\visual studio tools\\vc\\x64 native tools command prompt for vs 2019.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 command_prompt = new Win32
+        private static Win32Program command_prompt = new Win32Program
         {
             Name = "Command Prompt",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\command prompt.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 file_explorer = new Win32
+        private static Win32Program file_explorer = new Win32Program
         {
             Name = "File Explorer",
             ExecutableName = "File Explorer.lnk",
             FullPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\file explorer.lnk",
             LnkResolvedPath = null,
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 wordpad = new Win32
+        private static Win32Program wordpad = new Win32Program
         {
             Name = "Wordpad",
             ExecutableName = "wordpad.exe",
             FullPath = "c:\\program files\\windows nt\\accessories\\wordpad.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\accessories\\wordpad.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 wordpad_duplicate = new Win32
+        private static Win32Program wordpad_duplicate = new Win32Program
         {
             Name = "WORDPAD",
             ExecutableName = "WORDPAD.EXE",
             FullPath = "c:\\program files\\windows nt\\accessories\\wordpad.exe",
             LnkResolvedPath = null,
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 twitter_pwa = new Win32
+        private static Win32Program twitter_pwa = new Win32Program
         {
             Name = "Twitter",
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\chrome apps\\twitter.lnk",
             Arguments = " --profile-directory=Default --app-id=jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi",
-            AppType = 0
+            AppType = 0,
         };
 
-        static Win32 pinned_webpage = new Win32
+        private static Win32Program pinned_webpage = new Win32Program
         {
             Name = "Web page",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\web page.lnk",
             Arguments = "--profile-directory=Default --app-id=homljgmgpmcbpjbnjpfijnhipfkiclkd",
-            AppType = 0
+            AppType = 0,
         };
 
-        static Win32 edge_named_pinned_webpage = new Win32
+        private static Win32Program edge_named_pinned_webpage = new Win32Program
         {
             Name = "edge - Bing",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\edge - bing.lnk",
             Arguments = "  --profile-directory=Default --app-id=aocfnapldcnfbofgmbbllojgocaelgdd",
-            AppType = 0
+            AppType = 0,
         };
 
-        static Win32 msedge = new Win32
+        private static Win32Program msedge = new Win32Program
         {
             Name = "Microsoft Edge",
             ExecutableName = "msedge.exe",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft edge.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 chrome = new Win32
+        private static Win32Program chrome = new Win32Program
         {
             Name = "Google Chrome",
             ExecutableName = "chrome.exe",
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\google chrome.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 dummy_proxy_app = new Win32
+        private static Win32Program dummy_proxy_app = new Win32Program
         {
             Name = "Proxy App",
             ExecutableName = "test_proxy.exe",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\test_proxy.exe",
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\test proxy.lnk",
-            AppType = 2
+            AppType = 2,
         };
 
-        static Win32 cmd_run_command = new Win32
+        private static Win32Program cmd_run_command = new Win32Program
         {
             Name = "cmd",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
             LnkResolvedPath = null,
-            AppType = 3 // Run command
+            AppType = 3, // Run command
         };
 
-        static Win32 cmder_run_command = new Win32
+        private static Win32Program cmder_run_command = new Win32Program
         {
             Name = "Cmder",
             Description = "Cmder: Lovely Console Emulator",
             ExecutableName = "Cmder.exe",
             FullPath = "c:\\tools\\cmder\\cmder.exe",
             LnkResolvedPath = null,
-            AppType = 3 // Run command
+            AppType = 3, // Run command
         };
 
-        static Win32 dummy_internetShortcut_app = new Win32
+        private static Win32Program dummy_internetShortcut_app = new Win32Program
         {
             Name = "Shop Titans",
             ExecutableName = "Shop Titans.url",
             FullPath = "steam://rungameid/1258080",
             ParentDirectory = "C:\\Users\\temp\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Steam",
             LnkResolvedPath = null,
-            AppType = 1
+            AppType = 1,
         };
 
-        static Win32 dummy_internetShortcut_app_duplicate = new Win32
+        private static Win32Program dummy_internetShortcut_app_duplicate = new Win32Program
         {
             Name = "Shop Titans",
             ExecutableName = "Shop Titans.url",
             FullPath = "steam://rungameid/1258080",
             ParentDirectory = "C:\\Users\\temp\\Desktop",
             LnkResolvedPath = null,
-            AppType = 1
+            AppType = 1,
         };
 
         [Test]
-        public void DedupFunction_whenCalled_mustRemoveDuplicateNotepads()
+        public void DedupFunctionWhenCalledMustRemoveDuplicateNotepads()
         {
             // Arrange
-            List<Win32> prgms = new List<Win32>();
-            prgms.Add(notepad_appdata);
-            prgms.Add(notepad_users);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                notepad_appdata,
+                notepad_users
+            };
 
             // Act
-            Win32[] apps = Win32.DeduplicatePrograms(prgms.AsParallel());
+            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
             Assert.AreEqual(apps.Length, 1);
         }
 
         [Test]
-        public void DedupFunction_whenCalled_MustRemoveInternetShortcuts()
+        public void DedupFunctionWhenCalledMustRemoveInternetShortcuts()
         {
             // Arrange
-            List<Win32> prgms = new List<Win32>();
-            prgms.Add(dummy_internetShortcut_app);
-            prgms.Add(dummy_internetShortcut_app_duplicate);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                dummy_internetShortcut_app,
+                dummy_internetShortcut_app_duplicate
+            };
 
             // Act
-            Win32[] apps = Win32.DeduplicatePrograms(prgms.AsParallel());
+            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
             Assert.AreEqual(apps.Length, 1);
         }
 
         [Test]
-        public void DedupFunction_whenCalled_mustNotRemovelnkWhichdoesNotHaveExe()
+        public void DedupFunctionWhenCalledMustNotRemovelnkWhichdoesNotHaveExe()
         {
             // Arrange
-            List<Win32> prgms = new List<Win32>();
-            prgms.Add(file_explorer);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                file_explorer
+            };
 
             // Act
-            Win32[] apps = Win32.DeduplicatePrograms(prgms.AsParallel());
+            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
             Assert.AreEqual(apps.Length, 1);
         }
 
         [Test]
-        public void DedupFunction_mustRemoveDuplicates_forExeExtensionsWithoutLnkResolvedPath()
+        public void DedupFunctionMustRemoveDuplicatesForExeExtensionsWithoutLnkResolvedPath()
         {
             // Arrange
-            List<Win32> prgms = new List<Win32>();
-            prgms.Add(wordpad);
-            prgms.Add(wordpad_duplicate);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                wordpad,
+                wordpad_duplicate
+            };
 
             // Act
-            Win32[] apps = Win32.DeduplicatePrograms(prgms.AsParallel());
+            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
             Assert.AreEqual(apps.Length, 1);
@@ -241,23 +251,25 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void DedupFunction_mustNotRemovePrograms_withSameExeNameAndFullPath()
+        public void DedupFunctionMustNotRemoveProgramsWithSameExeNameAndFullPath()
         {
             // Arrange
-            List<Win32> prgms = new List<Win32>();
-            prgms.Add(azure_command_prompt);
-            prgms.Add(visual_studio_command_prompt);
-            prgms.Add(command_prompt);
+            List<Win32Program> prgms = new List<Win32Program>
+            {
+                azure_command_prompt,
+                visual_studio_command_prompt,
+                command_prompt
+            };
 
             // Act
-            Win32[] apps = Win32.DeduplicatePrograms(prgms.AsParallel());
+            Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
             Assert.AreEqual(apps.Length, 3);
         }
 
         [Test]
-        public void FunctionIsWebApplication_ShouldReturnTrue_ForWebApplications()
+        public void FunctionIsWebApplicationShouldReturnTrueForWebApplications()
         {
             // The IsWebApplication(() function must return true for all PWAs and pinned web pages
             Assert.IsTrue(twitter_pwa.IsWebApplication());
@@ -269,7 +281,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [TestCase("ignore")]
-        public void FunctionFilterWebApplication_ShouldReturnFalse_WhenSearchingForTheMainApp(string query)
+        public void FunctionFilterWebApplicationShouldReturnFalseWhenSearchingForTheMainApp(string query)
         {
             // Irrespective of the query, the FilterWebApplication() Function must not filter main apps such as edge and chrome
             Assert.IsFalse(msedge.FilterWebApplication(query));
@@ -283,7 +295,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("edg", ExpectedResult = true)]
         [TestCase("Edge page", ExpectedResult = false)]
         [TestCase("Edge Web page", ExpectedResult = false)]
-        public bool EdgeWebSites_ShouldBeFiltered_WhenSearchingForEdge(string query)
+        public bool EdgeWebSitesShouldBeFilteredWhenSearchingForEdge(string query)
         {
             return pinned_webpage.FilterWebApplication(query);
         }
@@ -293,7 +305,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("Google", ExpectedResult = true)]
         [TestCase("Google Chrome", ExpectedResult = true)]
         [TestCase("Google Chrome twitter", ExpectedResult = false)]
-        public bool ChromeWebSites_ShouldBeFiltered_WhenSearchingForChrome(string query)
+        public bool ChromeWebSitesShouldBeFilteredWhenSearchingForChrome(string query)
         {
             return twitter_pwa.FilterWebApplication(query);
         }
@@ -306,7 +318,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("WEB PAGE", 1, ExpectedResult = false)]
         [TestCase("edge", 2, ExpectedResult = false)]
         [TestCase("EDGE", 2, ExpectedResult = false)]
-        public bool PinnedWebPages_ShouldNotBeFiltered_WhenSearchingForThem(string query, int Case)
+        public bool PinnedWebPagesShouldNotBeFilteredWhenSearchingForThem(string query, int Case)
         {
             const uint CASE_TWITTER = 0;
             const uint CASE_WEB_PAGE = 1;
@@ -326,6 +338,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             {
                 return edge_named_pinned_webpage.FilterWebApplication(query);
             }
+
             // unreachable code
             return true;
         }
@@ -334,7 +347,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("cmd")]
         [TestCase("cmd.exe")]
         [TestCase("ignoreQueryText")]
-        public void Win32Applications_ShouldNotBeFiltered_WhenFilteringRunCommands(string query)
+        public void Win32ApplicationsShouldNotBeFilteredWhenFilteringRunCommands(string query)
         {
             // Even if there is an exact match in the name or exe name, win32 applications should never be filtered
             Assert.IsTrue(command_prompt.QueryEqualsNameForRunCommands(query));
@@ -343,7 +356,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         [TestCase("cmd")]
         [TestCase("Cmd")]
         [TestCase("CMD")]
-        public void RunCommands_ShouldNotBeFiltered_OnExactMatch(string query)
+        public void RunCommandsShouldNotBeFilteredOnExactMatch(string query)
         {
             // Partial matches should be filtered as cmd is not equal to cmder
             Assert.IsFalse(cmder_run_command.QueryEqualsNameForRunCommands(query));
@@ -353,7 +366,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void WEB_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void WebApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -370,7 +383,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void INTERNET_SHORTCUT_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void InternetShortcutApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -386,7 +399,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void WIN32_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void Win32ApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -403,7 +416,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void RUN_COMMAND_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void RunCommandShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
@@ -420,7 +433,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         }
 
         [Test]
-        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult()
+        public void Win32AppsShouldSetNameAsTitleWhileCreatingResult()
         {
             var mock = new Mock<IPublicAPI>();
             mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
@@ -430,8 +443,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var result = cmder_run_command.Result("cmder", mock.Object);
 
             // Assert
-            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name));
-            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description));
+            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name, StringComparison.Ordinal));
+            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description, StringComparison.Ordinal));
         }
     }
 }

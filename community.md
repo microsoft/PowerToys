@@ -14,6 +14,9 @@ Niels has helped drive large sums of our update toward a new [consistent and mod
 
 Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/microsoft/PowerToys/issues/1907).  He directly provided feedback to the CppWinRT team for bugs from this migration as well.
 
+### [@royvou](https://github.com/royvou)
+Roy has helped out contributing a features to PowerToys Run
+
 ## Open source projects
 
 As PowerToys creates new utilities, some will be based off existing technology. We'll continue to do our best to contribute back to these projects but their efforts were the base of some of our projects. We want to be sure their work is directly recognized.

@@ -7,10 +7,11 @@
 
 #include <sstream>
 
-namespace
+// Non-Localizable strings
+namespace NonLocalizable
 {
-    const wchar_t POWER_TOYS_APP_POWER_LAUCHER[] = L"POWERLAUNCHER.EXE";
-    const wchar_t POWER_TOYS_APP_FANCY_ZONES_EDITOR[] = L"FANCYZONESEDITOR.EXE";
+    const wchar_t PowerToysAppPowerLauncher[] = L"POWERLAUNCHER.EXE";
+    const wchar_t PowerToysAppFZEditor[] = L"FANCYZONESEDITOR.EXE";
 }
 
 typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
@@ -167,11 +168,11 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedA
     {
         return false;
     }
-    if (find_app_name_in_path(filtered.process_path, { POWER_TOYS_APP_POWER_LAUCHER }))
+    if (find_app_name_in_path(filtered.process_path, { NonLocalizable::PowerToysAppPowerLauncher }))
     {
         return false;
     }
-    if (find_app_name_in_path(filtered.process_path, { POWER_TOYS_APP_FANCY_ZONES_EDITOR }))
+    if (find_app_name_in_path(filtered.process_path, { NonLocalizable::PowerToysAppFZEditor }))
     {
         return false;
     }
@@ -191,7 +192,7 @@ bool IsWindowMaximized(HWND window) noexcept
 
 void SaveWindowSizeAndOrigin(HWND window) noexcept
 {
-    HANDLE handle = GetPropW(window, RESTORE_SIZE_STAMP);
+    HANDLE handle = GetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID);
     if (handle)
     {
         // Size already set, skip
@@ -213,15 +214,15 @@ void SaveWindowSizeAndOrigin(HWND window) noexcept
         std::array<int, 2> windowOriginData = { originX, originY };
         HANDLE rawData;
         memcpy(&rawData, windowSizeData.data(), sizeof rawData);
-        SetPropW(window, RESTORE_SIZE_STAMP, rawData);
+        SetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID, rawData);
         memcpy(&rawData, windowOriginData.data(), sizeof rawData);
-        SetPropW(window, RESTORE_ORIGIN_STAMP, rawData);
+        SetPropW(window, ZonedWindowProperties::PropertyRestoreOriginID, rawData);
     }
 }
 
 void RestoreWindowSize(HWND window) noexcept
 {
-    auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
+    auto windowSizeData = GetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID);
     if (windowSizeData)
     {
         std::array<int, 2> windowSize;
@@ -238,13 +239,13 @@ void RestoreWindowSize(HWND window) noexcept
             SizeWindowToRect(window, rect);
         }
 
-        ::RemoveProp(window, RESTORE_SIZE_STAMP);
+        ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
     }
 }
 
 void RestoreWindowOrigin(HWND window) noexcept
 {
-    auto windowOriginData = GetPropW(window, RESTORE_ORIGIN_STAMP);
+    auto windowOriginData = GetPropW(window, ZonedWindowProperties::PropertyRestoreOriginID);
     if (windowOriginData)
     {
         std::array<int, 2> windowOrigin;
@@ -266,7 +267,7 @@ void RestoreWindowOrigin(HWND window) noexcept
             SizeWindowToRect(window, rect);
         }
 
-        ::RemoveProp(window, RESTORE_ORIGIN_STAMP);
+        ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreOriginID);
     }
 }
 

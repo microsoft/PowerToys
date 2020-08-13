@@ -46,7 +46,7 @@ namespace Wox.Core.Plugin
 
                 // Obsolete value initialisation
                 ActionName = actionKeyword,
-                ActionParameters = actionParameters
+                ActionParameters = actionParameters,
             };
 
             return query;
