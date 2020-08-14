@@ -19,16 +19,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public FancyZonesViewModel(Func<string, int> ipcMSGCallBackFunc)
+        private string settingsConfigFileFolder = string.Empty;
+
+        public FancyZonesViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            settingsConfigFileFolder = configFileSubfolder;
+
             try
             {
-                Settings = SettingsUtils.GetSettings<FancyZonesSettings>(ModuleName);
+                Settings = SettingsUtils.GetSettings<FancyZonesSettings>(GetSettingsSubPath());
             }
             catch
             {
                 Settings = new FancyZonesSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
             this.LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
@@ -153,6 +157,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     RaisePropertyChanged();
                 }
             }
+        }
+
+        public string GetSettingsSubPath()
+        {
+            return settingsConfigFileFolder + "\\" + ModuleName;
         }
 
         public bool OverrideSnapHotkeys
