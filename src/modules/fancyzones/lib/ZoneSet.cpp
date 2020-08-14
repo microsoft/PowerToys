@@ -366,8 +366,6 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND windowZone, DWO
 IFACEMETHODIMP_(bool)
 ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
 {
-    // TODO: cycle
-
     if (m_zones.empty())
     {
         return false;
