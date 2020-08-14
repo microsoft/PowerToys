@@ -286,20 +286,20 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
         if (index < static_cast<int>(m_zones.size()))
         {
             RECT newSize = m_zones.at(index)->ComputeActualZoneRect(window, windowZone);
-if (!sizeEmpty)
-{
-    size.left = min(size.left, newSize.left);
-    size.top = min(size.top, newSize.top);
-    size.right = max(size.right, newSize.right);
-    size.bottom = max(size.bottom, newSize.bottom);
-}
-else
-{
-    size = newSize;
-    sizeEmpty = false;
-}
+            if (!sizeEmpty)
+            {
+                size.left = min(size.left, newSize.left);
+                size.top = min(size.top, newSize.top);
+                size.right = max(size.right, newSize.right);
+                size.bottom = max(size.bottom, newSize.bottom);
+            }
+            else
+            {
+                size = newSize;
+                sizeEmpty = false;
+            }
 
-storedIndexSet.push_back(index);
+            storedIndexSet.push_back(index);
         }
 
         if (index < std::numeric_limits<size_t>::digits)
