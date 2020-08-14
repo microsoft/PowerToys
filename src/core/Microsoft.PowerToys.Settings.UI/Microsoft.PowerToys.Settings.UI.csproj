@@ -314,6 +314,14 @@
     <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
     <EnableXBindDiagnostics>false</EnableXBindDiagnostics>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release with Video Conference|x64' ">
+    <OutputPath>..\..\..\x64\Release\SettingsUI\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP;VIDEO_CONFERENCE;</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>8305;2008</NoWarn>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
