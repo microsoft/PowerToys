@@ -123,8 +123,7 @@ namespace PowerLauncher.Helper
                         return false;
                     }
 
-                    RECT appBounds;
-                    _ = NativeMethods.GetWindowRect(hWnd, out appBounds);
+                    _ = NativeMethods.GetWindowRect(hWnd, out RECT appBounds);
 
                     // for console (ConsoleWindowClass), we have to check for negative dimensions
                     if (windowClass == WINDOW_CLASS_CONSOLE)
@@ -181,7 +180,7 @@ namespace PowerLauncher.Helper
             }
             else
             {
-                using (var src = new HwndSource(default(HwndSourceParameters)))
+                using (var src = new HwndSource(default))
                 {
                     matrix = src.CompositionTarget.TransformFromDevice;
                 }

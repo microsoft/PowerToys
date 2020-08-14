@@ -45,7 +45,7 @@ namespace PowerLauncher.ViewModel
         private Query _currentQuery;
         private string _queryTextBeforeLeaveResults;
 
-        private CancellationTokenSource _updateSource { get; set; }
+        private CancellationTokenSource _updateSource;
 
         private CancellationToken _updateToken;
         private bool _saved;
@@ -626,12 +626,14 @@ namespace PowerLauncher.ViewModel
             string hotkeyStr = hotkeyModel.ToString();
             try
             {
-                Hotkey hotkey = new Hotkey();
-                hotkey.Alt = hotkeyModel.Alt;
-                hotkey.Shift = hotkeyModel.Shift;
-                hotkey.Ctrl = hotkeyModel.Ctrl;
-                hotkey.Win = hotkeyModel.Win;
-                hotkey.Key = (byte)KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey);
+                Hotkey hotkey = new Hotkey
+                {
+                    Alt = hotkeyModel.Alt,
+                    Shift = hotkeyModel.Shift,
+                    Ctrl = hotkeyModel.Ctrl,
+                    Win = hotkeyModel.Win,
+                    Key = (byte)KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey)
+                };
 
                 _hotkeyHandle = _hotkeyManager.RegisterHotkey(hotkey, action);
             }
