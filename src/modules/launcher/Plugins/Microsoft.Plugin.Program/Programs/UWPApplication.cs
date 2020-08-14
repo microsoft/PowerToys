@@ -20,6 +20,7 @@ using static Microsoft.Plugin.Program.Programs.UWP;
 using System.Runtime.InteropServices.ComTypes;
 using System.Globalization;
 using Microsoft.Plugin.Program.Win32;
+using System.Windows;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -395,7 +396,6 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
 
-                paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.OrdinalIgnoreCase)).ToList();
                 var selected = paths.FirstOrDefault(File.Exists);
                 if (!string.IsNullOrEmpty(selected))
                 {
@@ -448,7 +448,75 @@ namespace Microsoft.Plugin.Program.Programs
         public ImageSource Logo()
         {
             var logo = ImageFromPath(LogoPath);
-            return logo;
+            var plated = PlatedImage(logo);
+            return plated;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "something")]
+        private ImageSource PlatedImage(BitmapImage image)
+        {
+            if (!string.IsNullOrEmpty(BackgroundColor))
+            {
+                string currentBackgroundColor;
+                if(BackgroundColor == "transparent")
+                {
+                    currentBackgroundColor = SystemParameters.WindowGlassBrush.ToString();
+                }
+                else
+                {
+                    currentBackgroundColor = BackgroundColor;
+                }
+
+                var width = image.Width;
+                var height = image.Height;
+                var x = 0;
+                var y = 0;
+
+                var group = new DrawingGroup();
+
+                var converted = ColorConverter.ConvertFromString(currentBackgroundColor);
+                if (converted != null)
+                {
+                    var color = (Color)converted;
+                    var brush = new SolidColorBrush(color);
+                    var pen = new Pen(brush, 1);
+                    var backgroundArea = new Rect(0, 0, width, width);
+                    var rectabgle = new RectangleGeometry(backgroundArea);
+                    var rectDrawing = new GeometryDrawing(brush, pen, rectabgle);
+                    group.Children.Add(rectDrawing);
+
+                    var imageArea = new Rect(x, y, image.Width, image.Height);
+                    var imageDrawing = new ImageDrawing(image, imageArea);
+                    group.Children.Add(imageDrawing);
+
+                    // http://stackoverflow.com/questions/6676072/get-system-drawing-bitmap-of-a-wpf-area-using-visualbrush
+                    var visual = new DrawingVisual();
+                    var context = visual.RenderOpen();
+                    context.DrawDrawing(group);
+                    context.Close();
+                    const int dpiScale100 = 96;
+                    var bitmap = new RenderTargetBitmap(
+                        Convert.ToInt32(width), Convert.ToInt32(height),
+                        dpiScale100, dpiScale100,
+                        PixelFormats.Pbgra32
+                    );
+                    bitmap.Render(visual);
+                    return bitmap;
+                }
+                else
+                {
+                    ProgramLogger.LogException($"|UWP|PlatedImage|{Package.Location}" +
+                                                $"|Unable to convert background string {BackgroundColor} " +
+                                                $"to color for {Package.Location}", new InvalidOperationException());
+
+                    return new BitmapImage(new Uri(Constant.ErrorIcon));
+                }
+            }
+            else
+            {
+                // todo use windows theme as background
+                return image;
+            }
         }
 
 
