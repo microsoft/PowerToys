@@ -12,9 +12,10 @@ namespace Wox
 {
     public partial class ActionKeywords : Window
     {
+        private readonly Internationalization _translater = InternationalizationManager.Instance;
+
         private PluginPair _plugin;
         private Settings _settings;
-        private readonly Internationalization _translater = InternationalizationManager.Instance;
 
         public ActionKeywords(string pluginId, Settings settings)
         {

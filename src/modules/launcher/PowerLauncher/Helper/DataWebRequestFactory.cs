@@ -10,7 +10,7 @@ namespace PowerLauncher.Helper
 {
     public class DataWebRequestFactory : IWebRequestCreate
     {
-        class DataWebRequest : WebRequest
+        private class DataWebRequest : WebRequest
         {
             private readonly Uri m_uri;
 
@@ -25,7 +25,7 @@ namespace PowerLauncher.Helper
             }
         }
 
-        class DataWebResponse : WebResponse
+        private class DataWebResponse : WebResponse
         {
             private readonly string m_contentType;
             private readonly byte[] m_data;

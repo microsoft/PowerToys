@@ -29,10 +29,8 @@ namespace PowerLauncher.ViewModel
 {
     public class MainViewModel : BaseModel, ISavable, IDisposable
     {
-        private Query _currentQuery;
         private static Query _emptyQuery = new Query();
         private static bool _disposed;
-        private string _queryTextBeforeLeaveResults;
 
         private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
         private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
@@ -41,6 +39,11 @@ namespace PowerLauncher.ViewModel
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
+        private readonly object _addResultsLock = new object();
+        private readonly Internationalization _translator = InternationalizationManager.Instance;
+
+        private Query _currentQuery;
+        private string _queryTextBeforeLeaveResults;
 
         private CancellationTokenSource _updateSource { get; set; }
 
@@ -50,10 +53,7 @@ namespace PowerLauncher.ViewModel
         private HotkeyManager _hotkeyManager { get; set; }
 
         private ushort _hotkeyHandle;
-        private readonly Internationalization _translator = InternationalizationManager.Instance;
         private System.Diagnostics.Stopwatch hotkeyTimer = new System.Diagnostics.Stopwatch();
-
-        private readonly object _addResultsLock = new object();
 
         public MainViewModel(Settings settings)
         {
@@ -110,7 +110,8 @@ namespace PowerLauncher.ViewModel
                 var plugin = (IResultUpdated)pair.Plugin;
                 plugin.ResultsUpdated += (s, e) =>
                 {
-                    Task.Run(() =>
+                    Task.Run(
+                        () =>
                     {
                         PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
                         UpdateResultView(e.Results, e.Query, _updateToken);
@@ -257,6 +258,7 @@ namespace PowerLauncher.ViewModel
                 if (!string.IsNullOrEmpty(QueryText))
                 {
                     ChangeQueryText(string.Empty, true);
+
                     // Push Event to UI SystemQuery has changed
                     OnPropertyChanged(nameof(SystemQueryText));
                 }
@@ -465,7 +467,8 @@ namespace PowerLauncher.ViewModel
                 if (query != null)
                 {
                     _currentQuery = query;
-                    Task.Run(() =>
+                    Task.Run(
+                        () =>
                     {
                         Thread.Sleep(20);
                         var plugins = PluginManager.ValidPluginsForQuery(query);
