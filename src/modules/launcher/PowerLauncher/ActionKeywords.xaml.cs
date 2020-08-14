@@ -13,15 +13,13 @@ namespace Wox
     public partial class ActionKeywords : Window
     {
         private readonly Internationalization _translater = InternationalizationManager.Instance;
+        private readonly PluginPair _plugin;
 
-        private PluginPair _plugin;
-        private Settings _settings;
-
-        public ActionKeywords(string pluginId, Settings settings)
+        public ActionKeywords(string pluginId)
         {
             InitializeComponent();
             _plugin = PluginManager.GetPluginForId(pluginId);
-            _settings = settings;
+
             if (_plugin == null)
             {
                 MessageBox.Show(_translater.GetTranslation("cannotFindSpecifiedPlugin"));

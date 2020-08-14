@@ -20,8 +20,8 @@ namespace PowerLauncher
 {
     public partial class MainWindow : IDisposable
     {
-        private Settings _settings;
-        private MainViewModel _viewModel;
+        private readonly Settings _settings;
+        private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed = false;
         private Timer _firstDeleteTimer = new Timer();
@@ -65,7 +65,7 @@ namespace PowerLauncher
         private void BringProcessToForeground()
         {
             // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
-            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, data = { } };
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { Type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, Data = { } };
             WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
 
             // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
