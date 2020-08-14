@@ -18,7 +18,7 @@ namespace PowerLauncher
     // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
     public class SettingsWatcher : BaseModel
     {
-        private static readonly int MAX_RETRIES = 10;
+        private const int MaxRetries = 10;
         private static readonly object _watcherSyncObject = new object();
         private readonly FileSystemWatcher _watcher;
         private readonly Settings _settings;
@@ -96,7 +96,7 @@ namespace PowerLauncher
                 // This should be changed to properly synch with the settings app instead of retrying.
                 catch (IOException e)
                 {
-                    if (retryCount > MAX_RETRIES)
+                    if (retryCount > MaxRetries)
                     {
                         retry = false;
                     }
