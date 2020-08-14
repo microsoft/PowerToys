@@ -40,7 +40,7 @@ namespace Wox
             Close();
         }
 
-        private void btnDone_OnClick(object sender, RoutedEventArgs _)
+        private void BtnDone_OnClick(object sender, RoutedEventArgs e)
         {
             var oldActionKeyword = _plugin.Metadata.ActionKeywords[0];
             var newActionKeyword = tbAction.Text.Trim();
