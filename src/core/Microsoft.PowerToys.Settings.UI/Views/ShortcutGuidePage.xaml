@@ -124,7 +124,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysShortcutGuideSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/ShortcutGuide.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
@@ -134,7 +134,7 @@
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
             </StackPanel>
