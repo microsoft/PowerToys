@@ -22,6 +22,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Matching COM")]
         private struct WIN32_FIND_DATAW
         {
             public uint dwFileAttributes;
@@ -58,7 +59,7 @@ namespace Microsoft.Plugin.Program.Programs
         [ComImport]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         [Guid("000214F9-0000-0000-C000-000000000046")]
-        interface IShellLinkW
+        private interface IShellLinkW
         {
             /// <summary>Retrieves the path and file name of a Shell link object</summary>
             void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, ref WIN32_FIND_DATAW pfd, SLGP_FLAGS fFlags);
@@ -122,12 +123,12 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Contains the description of the app
-        public string description { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         // Contains the arguments to the app
         public string Arguments { get; set; } = string.Empty;
 
-        public bool hasArguments { get; set; } = false;
+        public bool HasArguments { get; set; } = false;
 
         // Retrieve the target path using Shell Link
         public string RetrieveTargetPath(string path)
@@ -160,7 +161,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 buffer = new StringBuilder(MAX_PATH);
                 ((IShellLinkW)link).GetDescription(buffer, MAX_PATH);
-                description = buffer.ToString();
+                Description = buffer.ToString();
 
                 StringBuilder argumentBuffer = new StringBuilder(MAX_PATH);
                 ((IShellLinkW)link).GetArguments(argumentBuffer, argumentBuffer.Capacity);
@@ -169,7 +170,7 @@ namespace Microsoft.Plugin.Program.Programs
                 // Set variable to true if the program takes in any arguments
                 if (argumentBuffer.Length != 0)
                 {
-                    hasArguments = true;
+                    HasArguments = true;
                 }
             }
 

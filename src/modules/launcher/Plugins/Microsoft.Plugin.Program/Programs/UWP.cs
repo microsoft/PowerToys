@@ -60,10 +60,10 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var apps = new List<UWPApplication>();
 
-                List<IAppxManifestApplication> _apps = AppxPackageHelper.getAppsFromManifest(stream);
-                foreach (var _app in _apps)
+                List<IAppxManifestApplication> appsViaManifests = AppxPackageHelper.GetAppsFromManifest(stream);
+                foreach (var appInManifest in appsViaManifests)
                 {
-                    var app = new UWPApplication(_app, this);
+                    var app = new UWPApplication(appInManifest, this);
                     apps.Add(app);
                 }
 
@@ -163,7 +163,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }).ToArray();
 
                 var updatedListWithoutDisabledApps = applications
-                                                        .Where(t1 => !Main._settings.DisabledProgramSources
+                                                        .Where(t1 => !Main.Settings.DisabledProgramSources
                                                                         .Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
                                                         .Select(x => x);
 

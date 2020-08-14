@@ -12,7 +12,7 @@ namespace Microsoft.Plugin.Program.Programs
     /// </summary>
     internal class PackageCatalogWrapper : IPackageCatalog
     {
-        PackageCatalog _packageCatalog;
+        private PackageCatalog _packageCatalog;
 
         public PackageCatalogWrapper()
         {

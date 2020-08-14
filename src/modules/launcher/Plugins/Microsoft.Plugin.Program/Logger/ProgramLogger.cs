@@ -90,7 +90,8 @@ namespace Microsoft.Plugin.Program.Logger
 
                 innerExceptionNumber++;
                 e = e.InnerException;
-            } while (e != null);
+            }
+            while (e != null);
 
             logger.Error("------------- END Microsoft.Plugin.Program exception -------------");
         }

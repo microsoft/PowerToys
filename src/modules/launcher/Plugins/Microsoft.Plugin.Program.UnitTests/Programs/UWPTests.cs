@@ -41,7 +41,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void AllShouldReturnPackagesWithDevelopmentModeWhenCalled()
         {
             // Arrange
-            Main._settings = new ProgramPluginSettings();
+            Main.Settings = new ProgramPluginSettings();
             List<IPackage> packages = new List<IPackage>() { DevelopmentModeApp, PackagedApp };
             var mock = new Mock<IPackageManager>();
             mock.Setup(x => x.FindPackagesForCurrentUser()).Returns(packages);
@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         public void AllShouldNotReturnPackageFrameworksWhenCalled()
         {
             // Arrange
-            Main._settings = new ProgramPluginSettings();
+            Main.Settings = new ProgramPluginSettings();
             List<IPackage> packages = new List<IPackage>() { FrameworkApp, PackagedApp };
             var mock = new Mock<IPackageManager>();
             mock.Setup(x => x.FindPackagesForCurrentUser()).Returns(packages);
@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         {
             // Arrange
             PackageWrapper invalidPackagedApp = new PackageWrapper();
-            Main._settings = new ProgramPluginSettings();
+            Main.Settings = new ProgramPluginSettings();
             List<IPackage> packages = new List<IPackage>() { invalidPackagedApp };
             var mock = new Mock<IPackageManager>();
             mock.Setup(x => x.FindPackagesForCurrentUser()).Returns(packages);

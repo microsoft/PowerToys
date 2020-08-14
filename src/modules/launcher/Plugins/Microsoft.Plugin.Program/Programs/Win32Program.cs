@@ -46,7 +46,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public bool Enabled { get; set; }
 
-        public bool hasArguments { get; set; } = false;
+        public bool HasArguments { get; set; } = false;
 
         public string Arguments { get; set; } = string.Empty;
 
@@ -66,8 +66,8 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
 
-        private const string proxyWebApp = "_proxy.exe";
-        private const string appIdArgument = "--app-id";
+        private const string ProxyWebApp = "_proxy.exe";
+        private const string AppIdArgument = "--app-id";
 
         private enum ApplicationTypes
         {
@@ -92,7 +92,7 @@ namespace Microsoft.Plugin.Program.Programs
             // To Filter PWAs when the user searches for the main application
             // All Chromium based applications contain the --app-id argument
             // Reference : https://codereview.chromium.org/399045/show
-            bool isWebApplication = FullPath.Contains(proxyWebApp, StringComparison.OrdinalIgnoreCase) && Arguments.Contains(appIdArgument, StringComparison.OrdinalIgnoreCase);
+            bool isWebApplication = FullPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase) && Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase);
             return isWebApplication;
         }
 
@@ -178,7 +178,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return null;
             }
 
-            if (!hasArguments)
+            if (!HasArguments)
             {
                 var noArgumentScoreModifier = 5;
                 score += noArgumentScoreModifier;
@@ -348,13 +348,11 @@ namespace Microsoft.Plugin.Program.Programs
         private static Win32Program InternetShortcutProgram(string path)
         {
             string[] lines = FileWrapper.ReadAllLines(path);
-            string appName = string.Empty;
             string iconPath = string.Empty;
             string urlPath = string.Empty;
-            string scheme = string.Empty;
             bool validApp = false;
 
-            Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run)\/|^com\.epicgames\.launcher:\/\/apps\/");
+            Regex internetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run)\/|^com\.epicgames\.launcher:\/\/apps\/");
 
             const string urlPrefix = "URL=";
             const string iconFilePrefix = "IconFile=";
@@ -367,7 +365,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Uri uri = new Uri(urlPath);
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                    if (InternetShortcutURLPrefixes.Match(urlPath).Success)
+                    if (internetShortcutURLPrefixes.Match(urlPath).Success)
                     {
                         validApp = true;
                     }
@@ -429,10 +427,10 @@ namespace Microsoft.Plugin.Program.Programs
                         program.LnkResolvedPath = program.FullPath;
                         program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
                         program.ExecutableName = Path.GetFileName(target);
-                        program.hasArguments = Helper.hasArguments;
+                        program.HasArguments = Helper.HasArguments;
                         program.Arguments = Helper.Arguments;
 
-                        var description = Helper.description;
+                        var description = Helper.Description;
                         if (!string.IsNullOrEmpty(description))
                         {
                             program.Description = description;
@@ -588,7 +586,8 @@ namespace Microsoft.Plugin.Program.Programs
                         $"|Win32|ProgramPaths|{currentDirectory}" +
                                                 $"|Permission denied when trying to load programs from {currentDirectory}", e);
                 }
-            } while (folderQueue.Any());
+            }
+            while (folderQueue.Any());
 
             return files;
         }
@@ -613,7 +612,7 @@ namespace Microsoft.Plugin.Program.Programs
             sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
                 .SelectMany(s => ProgramPaths(s.Location, suffixes))
                 .ToList()
-                .Where(t1 => !Main._settings.DisabledProgramSources.Any(x => t1 == x.UniqueIdentifier))
+                .Where(t1 => !Main.Settings.DisabledProgramSources.Any(x => t1 == x.UniqueIdentifier))
                 .ToList()
                 .ForEach(x => listToAdd.Add(x));
 
@@ -660,20 +659,24 @@ namespace Microsoft.Plugin.Program.Programs
             var allPrograms = programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
                 .Concat(programs4).Where(p => p.Valid)
-                .Select(p => { p.AppType = (uint)ApplicationTypes.RUN_COMMAND; return p; });
+                .Select(p =>
+                {
+                    p.AppType = (uint)ApplicationTypes.RUN_COMMAND;
+                    return p;
+                });
 
             return allPrograms;
         }
 
-        private static ParallelQuery<Win32Program> IndexPath(IList<string> suffixes, List<string> IndexLocation)
+        private static ParallelQuery<Win32Program> IndexPath(IList<string> suffixes, List<string> indexLocation)
         {
-            var disabledProgramsList = Main._settings.DisabledProgramSources;
+            var disabledProgramsList = Main.Settings.DisabledProgramSources;
 
             IEnumerable<string> toFilter = new List<string>();
-            foreach (string location in IndexLocation)
+            foreach (string location in indexLocation)
             {
-                var _paths = ProgramPaths(location, suffixes);
-                toFilter = toFilter.Concat(_paths);
+                var programPaths = ProgramPaths(location, suffixes);
+                toFilter = toFilter.Concat(programPaths);
             }
 
             var paths = toFilter
@@ -696,17 +699,17 @@ namespace Microsoft.Plugin.Program.Programs
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
-            List<string> IndexLocation = new List<string>() { directory1, directory2 };
+            List<string> indexLocation = new List<string>() { directory1, directory2 };
 
-            return IndexPath(suffixes, IndexLocation);
+            return IndexPath(suffixes, indexLocation);
         }
 
         private static ParallelQuery<Win32Program> DesktopPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            List<string> IndexLocation = new List<string>() { directory1 };
+            List<string> indexLocation = new List<string>() { directory1 };
 
-            return IndexPath(suffixes, IndexLocation);
+            return IndexPath(suffixes, indexLocation);
         }
 
         private static ParallelQuery<Win32Program> AppPathsPrograms(IList<string> suffixes)
@@ -730,7 +733,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            var disabledProgramsList = Main._settings.DisabledProgramSources;
+            var disabledProgramsList = Main.Settings.DisabledProgramSources;
             var toFilter = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
 
             var filtered = toFilter.Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier)).Select(t1 => t1);
@@ -804,17 +807,15 @@ namespace Microsoft.Plugin.Program.Programs
         // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
         public override int GetHashCode()
         {
-            removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
-            return _removeDuplicatesHelper.GetHashCode(this);
+            return new RemoveDuplicatesComparer().GetHashCode(this);
         }
 
         public override bool Equals(object obj)
         {
-            removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
-            return obj is Win32Program win && _removeDuplicatesHelper.Equals(this, win);
+            return obj is Win32Program win && new RemoveDuplicatesComparer().Equals(this, win);
         }
 
-        private class removeDuplicatesComparer : IEqualityComparer<Win32Program>
+        private class RemoveDuplicatesComparer : IEqualityComparer<Win32Program>
         {
             public bool Equals(Win32Program app1, Win32Program app2)
             {
@@ -838,9 +839,9 @@ namespace Microsoft.Plugin.Program.Programs
                 int fullPathPrime = 31;
 
                 int result = 1;
-                result = result * namePrime + obj.Name.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
-                result = result * executablePrime + obj.ExecutableName.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
-                result = result * fullPathPrime + obj.FullPath.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
+                result = (result * namePrime) + obj.Name.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
+                result = (result * executablePrime) + obj.ExecutableName.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
+                result = (result * fullPathPrime) + obj.FullPath.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
 
                 return result;
             }
@@ -850,7 +851,7 @@ namespace Microsoft.Plugin.Program.Programs
         public static Win32Program[] DeduplicatePrograms(ParallelQuery<Win32Program> programs)
         {
             var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.RUN_COMMAND)));
-            var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
+            var uniquePrograms = uniqueExePrograms.Distinct(new RemoveDuplicatesComparer());
             return uniquePrograms.ToArray();
         }
 

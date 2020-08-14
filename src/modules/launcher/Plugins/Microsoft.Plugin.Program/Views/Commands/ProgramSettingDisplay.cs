@@ -24,9 +24,9 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                 }));
 
             // Even though these are disabled, we still want to display them so users can enable later on
-            Main._settings
+            Main.Settings
                 .DisabledProgramSources
-                .Where(t1 => !Main._settings
+                .Where(t1 => !Main.Settings
                                   .ProgramSources // program sources added above already, so exclude
                                   .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
                 .Select(x => x)
@@ -76,16 +76,16 @@ namespace Microsoft.Plugin.Program.Views.Commands
 
         internal static void StoreDisabledInSettings(this List<ProgramSource> list)
         {
-            Main._settings.ProgramSources
+            Main.Settings.ProgramSources
                .Where(t1 => ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && !x.Enabled))
                .ToList()
                .ForEach(t1 => t1.Enabled = false);
 
             ProgramSetting.ProgramSettingDisplayList
                 .Where(t1 => !t1.Enabled
-                                && !Main._settings.DisabledProgramSources.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
+                                && !Main.Settings.DisabledProgramSources.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
                 .ToList()
-                .ForEach(x => Main._settings.DisabledProgramSources
+                .ForEach(x => Main.Settings.DisabledProgramSources
                                             .Add(
                                                     new DisabledProgramSource
                                                     {
@@ -98,15 +98,15 @@ namespace Microsoft.Plugin.Program.Views.Commands
 
         internal static void RemoveDisabledFromSettings(this List<ProgramSource> list)
         {
-            Main._settings.ProgramSources
+            Main.Settings.ProgramSources
                .Where(t1 => ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && x.Enabled))
                .ToList()
                .ForEach(t1 => t1.Enabled = true);
 
-            Main._settings.DisabledProgramSources
+            Main.Settings.DisabledProgramSources
                 .Where(t1 => ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && x.Enabled))
                 .ToList()
-                .ForEach(x => Main._settings.DisabledProgramSources.Remove(x));
+                .ForEach(x => Main.Settings.DisabledProgramSources.Remove(x));
         }
 
         internal static bool IsReindexRequired(this List<ProgramSource> selectedItems)
@@ -119,7 +119,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
             // ProgramSources holds list of user added directories,
             // so when we enable/disable we need to reindex to show/not show the programs
             // that are found in those directories.
-            if (selectedItems.Where(t1 => Main._settings.ProgramSources.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Any())
+            if (selectedItems.Where(t1 => Main.Settings.ProgramSources.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Any())
             {
                 return true;
             }
