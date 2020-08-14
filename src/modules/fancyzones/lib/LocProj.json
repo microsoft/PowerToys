@@ -1,0 +1,14 @@
+{
+    "Projects": [
+      {
+        "LanguageSet": "Windows10_Languages",
+        "LocItems": [
+          {
+            "SourceFile": "src\\modules\\fancyzones\\lib\\fancyzones.rc",
+            "CopyOption": "LangIDOnPath",
+            "OutputPath": "src\\modules\\fancyzones\\lib"
+          }
+        ]
+      }
+    ]
+  }
