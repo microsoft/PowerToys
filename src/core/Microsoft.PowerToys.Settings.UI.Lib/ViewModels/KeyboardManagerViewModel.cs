@@ -156,7 +156,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             await Task.CompletedTask;
         }
 
-        public void NotifyFileChaged()
+        public void NotifyFileChanged()
         {
             OnPropertyChanged(nameof(RemapKeys));
             OnPropertyChanged(nameof(RemapShortcuts));

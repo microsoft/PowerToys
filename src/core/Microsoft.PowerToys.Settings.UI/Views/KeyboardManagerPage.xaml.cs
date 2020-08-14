@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
-                    ViewModel.NotifyFileChaged();
+                    ViewModel.NotifyFileChanged();
                 });
             }
         }
