@@ -218,7 +218,9 @@ namespace Microsoft.Plugin.Program.Views
             }
 
             if (selectedItems.IsReindexRequired())
+            {
                 ReIndexing();
+            }
 
             programSourceView.SelectedItems.Clear();
 

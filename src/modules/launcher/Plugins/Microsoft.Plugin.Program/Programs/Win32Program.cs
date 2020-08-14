@@ -23,7 +23,6 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-
     [Serializable]
     public class Win32Program : IProgram
     {
@@ -211,7 +210,7 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         FileName = LnkResolvedPath ?? FullPath,
                         WorkingDirectory = ParentDirectory,
-                        UseShellExecute = true
+                        UseShellExecute = true,
                     };
 
                     Main.StartProcess(Process.Start, info);
@@ -250,7 +249,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
                         var info = new ProcessStartInfo
@@ -258,7 +257,7 @@ namespace Microsoft.Plugin.Program.Programs
                             FileName = FullPath,
                             WorkingDirectory = ParentDirectory,
                             Verb = "runas",
-                            UseShellExecute = true
+                            UseShellExecute = true,
                         };
 
                         Task.Run(() => Main.StartProcess(Process.Start, info));
@@ -276,7 +275,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
@@ -632,7 +631,6 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
         private static ParallelQuery<Win32Program> PathEnvironmentPrograms(IList<string> suffixes)
         {
-
             // To get all the locations stored in the PATH env variable
             var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
             string[] searchPaths = pathEnvVariable.Split(Path.PathSeparator);
@@ -757,14 +755,18 @@ namespace Microsoft.Plugin.Program.Programs
                 using (var key = root.OpenSubKey(subkey))
                 {
                     if (key == null)
+                    {
                         return string.Empty;
+                    }
 
                     var defaultValue = string.Empty;
                     path = key.GetValue(defaultValue) as string;
                 }
 
                 if (string.IsNullOrEmpty(path))
+                {
                     return string.Empty;
+                }
 
                 // fix path like this: ""\"C:\\folder\\executable.exe\""
                 return path = path.Trim('"', ' ');
@@ -782,12 +784,16 @@ namespace Microsoft.Plugin.Program.Programs
         private static Win32Program GetProgramFromPath(string path)
         {
             if (string.IsNullOrEmpty(path))
+            {
                 return new Win32Program();
+            }
 
             path = Environment.ExpandEnvironmentVariables(path);
 
             if (!File.Exists(path))
+            {
                 return new Win32Program();
+            }
 
             var entry = CreateWin32Program(path);
             entry.ExecutableName = Path.GetFileName(path);
@@ -812,7 +818,6 @@ namespace Microsoft.Plugin.Program.Programs
         {
             public bool Equals(Win32Program app1, Win32Program app2)
             {
-
                 if (!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
                     && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName)
                     && !string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath))

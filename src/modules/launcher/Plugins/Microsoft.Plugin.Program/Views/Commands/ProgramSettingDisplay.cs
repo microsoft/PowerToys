@@ -21,8 +21,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                     Location = x.Location,
                                                     Name = x.Name,
                                                     UniqueIdentifier = x.UniqueIdentifier,
-                                                }
-                                        ));
+                                                }));
 
             // Even though these are disabled, we still want to display them so users can enable later on
             Main._settings
@@ -40,8 +39,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                         Location = x.Location,
                                         Name = x.Name,
                                         UniqueIdentifier = x.UniqueIdentifier,
-                                    }
-                              ));
+                                    }));
 
             return list;
         }
@@ -95,8 +93,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                         Location = x.Location,
                                                         UniqueIdentifier = x.UniqueIdentifier,
                                                         Enabled = false,
-                                                    }
-                                            ));
+                                                    }));
         }
 
         internal static void RemoveDisabledFromSettings(this List<ProgramSource> list)
@@ -115,13 +112,17 @@ namespace Microsoft.Plugin.Program.Views.Commands
         internal static bool IsReindexRequired(this List<ProgramSource> selectedItems)
         {
             if (selectedItems.Where(t1 => t1.Enabled).Any())
+            {
                 return true;
+            }
 
             // ProgramSources holds list of user added directories,
             // so when we enable/disable we need to reindex to show/not show the programs
             // that are found in those directories.
             if (selectedItems.Where(t1 => Main._settings.ProgramSources.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Any())
+            {
                 return true;
+            }
 
             return false;
         }

@@ -52,5 +52,7 @@ namespace Microsoft.Plugin.Program
         public string UniqueIdentifier { get; set; }
     }
 
-    public class DisabledProgramSource : ProgramSource { }
+    public class DisabledProgramSource : ProgramSource
+    {
+    }
 }
