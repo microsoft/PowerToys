@@ -92,7 +92,7 @@
             <TextBlock x:Uid="ShortcutGuide_Theme"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-            
+
             <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
                                Margin="{StaticResource HeaderTextTopMargin}">
