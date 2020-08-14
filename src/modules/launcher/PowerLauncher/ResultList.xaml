@@ -208,7 +208,7 @@
                                 </StackPanel>
                             </ToolTip>
                         </Grid.ToolTip>
-                        <Image AutomationProperties.Name="{DynamicResource AppIcon}" x:Name="AppIcon" Height="36" Width="36" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
+                        <Image AutomationProperties.Name="{DynamicResource AppIcon}" x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
                         <TextBlock AutomationProperties.Name="{DynamicResource Title}" x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
                         <TextBlock AutomationProperties.Name="{DynamicResource Subtitle}" x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
                         <ListView      

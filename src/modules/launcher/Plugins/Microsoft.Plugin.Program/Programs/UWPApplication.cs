@@ -467,25 +467,25 @@ namespace Microsoft.Plugin.Program.Programs
                     currentBackgroundColor = BackgroundColor;
                 }
 
-                var width = image.Width;
-                var height = image.Height;
+                var padding = 8;
+                var width = image.Width + 2 * padding;
+                var height = image.Height + 2 * padding;
                 var x = 0;
                 var y = 0;
 
                 var group = new DrawingGroup();
-
                 var converted = ColorConverter.ConvertFromString(currentBackgroundColor);
                 if (converted != null)
                 {
                     var color = (Color)converted;
                     var brush = new SolidColorBrush(color);
                     var pen = new Pen(brush, 1);
-                    var backgroundArea = new Rect(0, 0, width, width);
-                    var rectabgle = new RectangleGeometry(backgroundArea);
-                    var rectDrawing = new GeometryDrawing(brush, pen, rectabgle);
+                    var backgroundArea = new Rect(0, 0, width, height);
+                    var rectangleGeometry = new RectangleGeometry(backgroundArea);
+                    var rectDrawing = new GeometryDrawing(brush, pen, rectangleGeometry);
                     group.Children.Add(rectDrawing);
 
-                    var imageArea = new Rect(x, y, image.Width, image.Height);
+                    var imageArea = new Rect(x + padding, y + padding, image.Width, image.Height);
                     var imageDrawing = new ImageDrawing(image, imageArea);
                     group.Children.Add(imageDrawing);
 
