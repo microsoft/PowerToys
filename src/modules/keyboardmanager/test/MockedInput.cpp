@@ -70,6 +70,7 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
                     keyboardState[VK_RCONTROL] = false;
                     break;
                 }
+                [[fallthrough]]; // fallthrough is explicit for left Ctrl
             case VK_LCONTROL:
                 keyboardState[VK_CONTROL] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
                 break;
@@ -83,6 +84,7 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
                     keyboardState[VK_RMENU] = false;
                     break;
                 }
+                [[fallthrough]]; // fallthrough is explicit left menu
             case VK_LMENU:
                 keyboardState[VK_MENU] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
                 break;
@@ -96,6 +98,7 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
                     keyboardState[VK_RSHIFT] = false;
                     break;
                 }
+                [[fallthrough]]; // fallthrough is explicit for Left shift
             case VK_LSHIFT:
                 keyboardState[VK_SHIFT] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
                 break;
