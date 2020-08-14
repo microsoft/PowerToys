@@ -20,6 +20,7 @@ public:
     void SetItemCount(_In_ UINT itemCount);
     void OnKeyDown(_In_ IPowerRenameManager* psrm, _In_ LV_KEYDOWN* lvKeyDown);
     void OnClickList(_In_ IPowerRenameManager* psrm, NM_LISTVIEW* pnmListView);
+    void OnColumnClick(_In_ IPowerRenameManager* psrm, LPNMHDR pnmListView);
     void GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi);
     void OnSize();
     HWND GetHWND() { return m_hwndLV; }
@@ -29,6 +30,7 @@ private:
     void _UpdateColumnSizes();
     void _UpdateHeaderCheckState(_In_ bool check);
 
+    bool isFilterOn = false;
     HWND m_hwndLV = nullptr;
 };
 

@@ -30,6 +30,7 @@ public:
     IFACEMETHODIMP GetItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetSelectedItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetRenameItemCount(_Out_ UINT* count);
+    IFACEMETHODIMP SortItems( _In_ bool isFilterOn );
     IFACEMETHODIMP get_flags(_Out_ DWORD* flags);
     IFACEMETHODIMP put_flags(_In_ DWORD flags);
     IFACEMETHODIMP get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
@@ -96,6 +97,7 @@ protected:
 
     CSRWLock m_lockEvents;
     CSRWLock m_lockItems;
+    CSRWLock m_lockItemsNoFilter;
 
     DWORD m_flags = 0;
 
@@ -113,6 +115,7 @@ protected:
 
     _Guarded_by_(m_lockEvents) std::vector<RENAME_MGR_EVENT> m_powerRenameManagerEvents;
     _Guarded_by_(m_lockItems) std::map<int, IPowerRenameItem*> m_renameItems;
+    _Guarded_by_(m_lockItemsNoFilter) std::map<int, IPowerRenameItem*> m_renameItemsNoFilter;
 
     // Parent HWND used by IFileOperation
     HWND m_hwndParent = nullptr;

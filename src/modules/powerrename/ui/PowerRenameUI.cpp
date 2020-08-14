@@ -704,12 +704,19 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
     LPNMHDR pnmdr = (LPNMHDR)lParam;
     LPNMLISTVIEW pnmlv = (LPNMLISTVIEW)pnmdr;
     NMLVEMPTYMARKUP* pnmMarkup = NULL;
-
+    
     if (pnmdr)
     {
         BOOL checked = FALSE;
         switch (pnmdr->code)
         {
+        case LVN_COLUMNCLICK:
+            if (m_spsrm)
+            {
+                m_listview.OnColumnClick(m_spsrm, pnmdr);
+                _UpdateCounts();
+            }
+            break;
         case HDN_ITEMSTATEICONCLICK:
             if (m_spsrm)
             {
@@ -1312,3 +1319,35 @@ void CPowerRenameListView::_UpdateHeaderCheckState(_In_ bool check)
         Header_SetItem(hwndHeader, 0, &hdi);
     }
 }
+int CALLBACK comp(LPARAM lParam1, LPARAM lParam2, LPARAM lParam)
+{
+    NMLISTVIEW* pnmlv = (NMLISTVIEW*)lParam;
+
+    TCHAR str[MAX_PATH];
+    TCHAR str2[MAX_PATH];
+
+    ListView_GetItemText(pnmlv->hdr.hwndFrom, lParam1, pnmlv->iSubItem, str, MAX_PATH);
+    ListView_GetItemText(pnmlv->hdr.hwndFrom, lParam2, pnmlv->iSubItem, str2, MAX_PATH);
+
+
+    MessageBox(NULL, str2, str, MB_OK | MB_SYSTEMMODAL);
+    return (lstrcmp(str2, str));
+}
+void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, LPNMHDR pnmListView)
+{
+    isFilterOn = isFilterOn ? false : true ;
+
+    psrm->SortItems( isFilterOn );
+
+    UINT itemCount, renamingCount;
+    psrm->GetItemCount(&itemCount);
+    psrm->GetRenameItemCount(&renamingCount);
+
+    
+    RedrawItems(0, itemCount);
+
+    ListView_SetItemCount(m_hwndLV, isFilterOn ? renamingCount :itemCount);
+
+    //ListView_SortItems(m_hwndLV, comp, 1);
+}
+    

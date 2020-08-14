@@ -213,6 +213,104 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
     return S_OK;
 }
 
+struct cmp
+{
+    public:
+    cmp(DWORD flags) { 
+        this->flags = flags; 
+    }
+
+    bool operator()(const std::pair<int, IPowerRenameItem*>& a, const std::pair<int, IPowerRenameItem*>& b)
+    {
+        bool isSelected1, isSelected2;
+        a.second->ShouldRenameItem(flags, &isSelected1);
+        b.second->ShouldRenameItem(flags, &isSelected2);
+
+        if (isSelected1 && !isSelected2)
+            return true;
+        else if (!isSelected1 && isSelected2)
+            return false;
+        else
+            return a.first < b.first;
+    }
+
+    private:
+    DWORD flags;
+};
+
+IFACEMETHODIMP CPowerRenameManager::SortItems( _In_ bool isFilterOn )
+{
+    CSRWSharedAutoLock lock(&m_lockItems);
+
+    if (!isFilterOn)
+    {
+        m_renameItems.clear();
+        for (auto a : m_renameItemsNoFilter)
+        {
+            m_renameItems[a.first] = a.second;
+        }
+    }
+    else
+    {
+        /*for (auto it : m_renameItems)
+        {
+            IPowerRenameItem* pItem = it.second;
+            bool shouldRename = false;
+            if (SUCCEEDED(pItem->ShouldRenameItem(m_flags, &shouldRename)) && shouldRename)
+            {
+                PWSTR name = nullptr;
+                it.second->get_originalName(&name);
+                MessageBox(NULL, std::to_wstring(it.first).c_str(), name, MB_OK | MB_SYSTEMMODAL);
+            }
+        }*/
+
+        std::vector<std::pair<int, IPowerRenameItem*>> V;
+
+        m_renameItemsNoFilter.clear();
+
+        for (auto& it : m_renameItems)
+        {
+            V.push_back(it);
+            m_renameItemsNoFilter[it.first] = it.second;
+        }
+
+        std::sort(V.begin(), V.end(), cmp(m_flags));
+        /*std::sort(V.begin(), V.end(), [](const std::pair<int, IPowerRenameItem*>& a, const std::pair<int, IPowerRenameItem*>& b) -> bool {
+            bool isSelected1, isSelected2;
+            PWSTR name = nullptr;
+            a.second->get_newName(&name);
+            isSelected1 = name==std::wstring(L"") ? false : true;
+            b.second->get_newName(&name);
+            isSelected2 = name == std::wstring(L"") ? false : true;
+
+            //a.second->get_selected(&isSelected1);
+            //b.second->get_selected(&isSelected2);
+            if (isSelected1 && !isSelected2)
+                return true;
+            else if (!isSelected1 && isSelected2)
+                return false;
+            else
+                return a.first < b.first;
+        });*/
+
+        m_renameItems.clear();
+
+        int count = 2;
+        for (auto it : V)
+        {
+            m_renameItems[count++] = it.second;
+        }
+
+        //auto temp = m_renameItems[2];
+        //m_renameItems[2] = m_renameItems[3];
+        //m_renameItems[3] = temp;
+    }
+
+    
+
+    return S_OK;
+}
+
 IFACEMETHODIMP CPowerRenameManager::get_flags(_Out_ DWORD* flags)
 {
     _EnsureRegEx();
