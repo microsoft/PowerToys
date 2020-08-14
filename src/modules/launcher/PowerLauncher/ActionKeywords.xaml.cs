@@ -14,8 +14,8 @@ namespace Wox
     {
         private readonly Internationalization _translater = InternationalizationManager.Instance;
 
-        private PluginPair _plugin;
-        private Settings _settings;
+        private readonly PluginPair _plugin;
+        private readonly Settings _settings;
 
         public ActionKeywords(string pluginId, Settings settings)
         {
@@ -40,7 +40,7 @@ namespace Wox
             Close();
         }
 
-        private void BtnDone_OnClick(object sender, RoutedEventArgs e)
+        private void btnDone_OnClick(object sender, RoutedEventArgs _)
         {
             var oldActionKeyword = _plugin.Metadata.ActionKeywords[0];
             var newActionKeyword = tbAction.Text.Trim();
