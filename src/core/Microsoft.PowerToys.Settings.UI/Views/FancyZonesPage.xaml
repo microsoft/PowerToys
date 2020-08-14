@@ -275,6 +275,9 @@
                      Width="380"
                      Height="160"
                      HorizontalAlignment="Left"
+                     ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                     ScrollViewer.VerticalScrollMode="Enabled"
+                     ScrollViewer.IsVerticalRailEnabled="True"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"/>
         </StackPanel>
@@ -299,17 +302,17 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysFancyZoneSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/FancyZones.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones" Margin="0,-3,0,0">
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
             </StackPanel>
