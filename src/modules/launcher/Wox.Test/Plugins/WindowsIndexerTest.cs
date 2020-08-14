@@ -32,7 +32,7 @@ namespace Wox.Test.Plugins
             var mockCatalog = new Mock<CSearchCatalogManager>();
             var mockQueryHelper = new Mock<CSearchQueryHelper>();
             mockQueryHelper.SetupAllProperties();
-            mockQueryHelper.Setup(x => x.ConnectionString).Returns("provider=Search.CollatorDSO.1;");
+            mockQueryHelper.Setup(x => x.ConnectionString).Returns("provider=Search.CollatorDSO.1;EXTENDED PROPERTIES=\"Application=Windows\"");
             mockQueryHelper.Setup(x => x.GenerateSQLFromUserQuery(It.IsAny<string>())).Returns(sqlQuery);
             mockSearchManager.Setup(x => x.GetCatalog(It.IsAny<string>())).Returns(mockCatalog.Object);
             mockCatalog.Setup(x => x.GetQueryHelper()).Returns(mockQueryHelper.Object);
