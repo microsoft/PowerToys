@@ -15,22 +15,23 @@ namespace Microsoft.Plugin.Program.Storage
 {
     internal class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
     {
+        private const string LnkExtension = ".lnk";
+        private const string UrlExtension = ".url";
+
         private IStorage<IList<Programs.Win32Program>> _storage;
         private ProgramPluginSettings _settings;
         private IList<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
         private int _numberOfPathsToWatch;
-        private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", "*.lnk", "*.appref-ms", "*.url" };
-        private readonly string lnkExtension = ".lnk";
-        private readonly string urlExtension = ".url";
+        private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", $"*{LnkExtension}", "*.appref-ms", $"*{UrlExtension}" };
 
         public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32Program>> storage, ProgramPluginSettings settings, string[] pathsToWatch)
         {
-            this._fileSystemWatcherHelpers = fileSystemWatcherHelpers;
-            this._storage = storage ?? throw new ArgumentNullException(nameof(storage), "Win32ProgramRepository requires an initialized storage interface");
-            this._settings = settings ?? throw new ArgumentNullException(nameof(settings), "Win32ProgramRepository requires an initialized settings object");
-            this._pathsToWatch = pathsToWatch;
-            this._numberOfPathsToWatch = pathsToWatch.Length;
+            _fileSystemWatcherHelpers = fileSystemWatcherHelpers;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage), "Win32ProgramRepository requires an initialized storage interface");
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings), "Win32ProgramRepository requires an initialized settings object");
+            _pathsToWatch = pathsToWatch;
+            _numberOfPathsToWatch = pathsToWatch.Length;
             InitializeFileSystemWatchers();
         }
 
@@ -77,11 +78,11 @@ namespace Microsoft.Plugin.Program.Storage
             // This situation is not encountered for other application types because the fullPath is the path itself, instead of being computed by using the path to the app.
             try
             {
-                if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+                if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
                 }
-                else if (extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
+                else if (extension.Equals(UrlExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
                 }
@@ -117,11 +118,11 @@ namespace Microsoft.Plugin.Program.Storage
             try
             {
                 // To mitigate the issue of not having a FullPath for a shortcut app, we iterate through the items and find the app with the same hashcode.
-                if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+                if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     app = GetAppWithSameLnkResolvedPath(path);
                 }
-                else if (extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
+                else if (extension.Equals(UrlExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     app = GetAppWithSameNameAndExecutable(Path.GetFileNameWithoutExtension(path), Path.GetFileName(path));
                 }
@@ -173,7 +174,7 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (!Path.GetExtension(path).Equals(urlExtension, StringComparison.CurrentCultureIgnoreCase))
+            if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase))
             {
                 Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
                 if (app != null)
@@ -186,7 +187,7 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppChanged(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (Path.GetExtension(path).Equals(urlExtension, StringComparison.CurrentCultureIgnoreCase))
+            if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase))
             {
                 Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
                 if (app != null)

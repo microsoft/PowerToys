@@ -10,7 +10,7 @@ using static Microsoft.Plugin.Program.Programs.UWP;
 
 namespace Microsoft.Plugin.Program.Win32
 {
-    class NativeMethods
+    internal class NativeMethods
     {
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
         internal static extern Hresult SHCreateStreamOnFileEx(string fileName, Stgm grfMode, uint attributes, bool create, IStream reserved, out IStream stream);

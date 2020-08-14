@@ -27,14 +27,14 @@ namespace Microsoft.Plugin.Program.Programs
         {
         }
 
-        public PackageWrapper(string Name, string FullName, string FamilyName, bool IsFramework, bool IsDevelopmentMode, string InstalledLocation)
+        public PackageWrapper(string name, string fullName, string familyName, bool isFramework, bool isDevelopmentMode, string installedLocation)
         {
-            this.Name = Name;
-            this.FullName = FullName;
-            this.FamilyName = FamilyName;
-            this.IsFramework = IsFramework;
-            this.IsDevelopmentMode = IsDevelopmentMode;
-            this.InstalledLocation = InstalledLocation;
+            Name = name;
+            FullName = fullName;
+            FamilyName = familyName;
+            IsFramework = isFramework;
+            IsDevelopmentMode = isDevelopmentMode;
+            InstalledLocation = installedLocation;
         }
 
         public static PackageWrapper GetWrapperFromPackage(Package package)
