@@ -21,6 +21,7 @@ package_sources:
     feeds:
       'Nuget': 'https://api.nuget.org/v3/index.json'
       'PipelineBuildSupplement': 'https://msazure.pkgs.visualstudio.com/_packaging/PipelineBuildSupplement/nuget/v3/index.json'
+      'Toolset': 'ttps://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
 
 restore:
   commands:
@@ -37,6 +38,15 @@ restore:
 
 build:
   commands:
+    - !!buildcommand
+      name: 'Localization Build'
+      command: '.pipelines\build-localization.cmd'
+      artifacts:
+        - from: 'out\loc'
+          to: 'loc'
+          include:
+            - '**/*'
+
     - !!buildcommand
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
