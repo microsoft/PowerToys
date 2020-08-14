@@ -14,21 +14,6 @@ set OutDir=%RepoRoot%out
 set NUGET_PACKAGES=%RepoRoot%packages
 set LocalizationXLocPkgVer=2.0.0
 
-nuget install Localization.XLoc -Version %LocalizationXLocPkgVer% -OutputDirectory "%NUGET_PACKAGES%" -NonInteractive -Verbosity detailed
-if "%errorlevel%" neq "0" (
-    exit /b %errorlevel%
-)
-
-nuget install LSBuild.XLoc -OutputDirectory "%NUGET_PACKAGES%" -NonInteractive -Verbosity detailed
-if "%errorlevel%" neq "0" (
-    exit /b %errorlevel%
-)
-
-nuget install Localization.Languages -OutputDirectory "%NUGET_PACKAGES%" -NonInteractive -Verbosity detailed
-if "%errorlevel%" neq "0" (
-    exit /b %errorlevel%
-)
-
 echo Running localization build...
 
 set XLocPath=%NUGET_PACKAGES%\Localization.XLoc.%LocalizationXLocPkgVer%

@@ -34,6 +34,9 @@ restore:
     - !!defaultcommand
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
+    - !!defaultcommand
+      name: 'Restore Localization packages'
+      command: '.pipelines\restore-localization.cmd'
 
 
 build:
