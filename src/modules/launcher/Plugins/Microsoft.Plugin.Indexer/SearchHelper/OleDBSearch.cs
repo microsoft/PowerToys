@@ -28,25 +28,34 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 // open the connection
                 conn.Open();
 
-                // now create an OleDB command object with the query we built above and the connection we just opened.
-                using (command = new OleDbCommand(sqlQuery, conn))
+                try
                 {
-                    using (wDSResults = command.ExecuteReader())
+                    // now create an OleDB command object with the query we built above and the connection we just opened.
+                    using (command = new OleDbCommand(sqlQuery, conn))
                     {
-                        if (!wDSResults.IsClosed && wDSResults.HasRows)
+                        using (wDSResults = command.ExecuteReader())
                         {
-                            while (!wDSResults.IsClosed && wDSResults.Read())
+                            if (!wDSResults.IsClosed && wDSResults.HasRows)
                             {
-                                List<object> fieldData = new List<object>();
-                                for (int i = 0; i < wDSResults.FieldCount; i++)
+                                while (!wDSResults.IsClosed && wDSResults.Read())
                                 {
-                                    fieldData.Add(wDSResults.GetValue(i));
-                                }
+                                    List<object> fieldData = new List<object>();
+                                    for (int i = 0; i < wDSResults.FieldCount; i++)
+                                    {
+                                        fieldData.Add(wDSResults.GetValue(i));
+                                    }
 
-                                result.Add(new OleDBResult(fieldData));
+                                    result.Add(new OleDBResult(fieldData));
+                                }
                             }
                         }
                     }
+                }
+
+                // AccessViolationException can occur if another query is made before the current query completes. Since the old query would be cancelled we can ignore the exception
+                catch (System.AccessViolationException)
+                {
+                    // do nothing
                 }
             }
 

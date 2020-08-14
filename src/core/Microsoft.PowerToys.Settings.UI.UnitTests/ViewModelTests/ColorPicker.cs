@@ -5,8 +5,7 @@
 using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
-using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
@@ -39,22 +38,21 @@ namespace ViewModelTests
             {
                 DeleteFolder(ModuleName);
             }
-
-            ShellPage.DefaultSndMSGCallback = null;
         }
 
         [TestMethod]
         public void ColorPickerIsEnabledByDefault()
         {
-            var viewModel = new ColorPickerViewModel();
-
-            ShellPage.DefaultSndMSGCallback = msg =>
-            {
-                OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
-                Assert.IsTrue(snd.GeneralSettings.Enabled.ColorPicker);
-            };
+            var viewModel = new ColorPickerViewModel(ColorPickerIsEnabledByDefault_IPC);
 
             Assert.IsTrue(viewModel.IsEnabled);
+        }
+
+        public int ColorPickerIsEnabledByDefault_IPC(string msg)
+        {
+            OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+            Assert.IsTrue(snd.GeneralSettings.Enabled.ColorPicker);
+            return 0;
         }
 
         private static void DeleteFolder(string powertoy)

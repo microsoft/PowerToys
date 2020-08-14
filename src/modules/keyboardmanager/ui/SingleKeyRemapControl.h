@@ -1,7 +1,6 @@
 #pragma once
 #include "KeyDropDownControl.h"
 #include <keyboardmanager/common/Shortcut.h>
-#include <variant>
 
 class KeyboardManagerState;
 namespace winrt::Windows::UI::Xaml
@@ -34,7 +33,7 @@ public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
     // Stores the current list of remappings
-    static std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> singleKeyRemapBuffer;
+    static RemapBuffer singleKeyRemapBuffer;
 
     // constructor
     SingleKeyRemapControl(Grid table, const int colIndex);

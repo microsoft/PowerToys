@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using Wox.Infrastructure.Storage;
 
@@ -25,7 +29,7 @@ namespace Microsoft.Plugin.Program.Storage
                             {
                                Environment.GetFolderPath(Environment.SpecialFolder.Programs),
                                Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),
-                               Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+                               Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                             };
             return paths;
         }
@@ -56,10 +60,10 @@ namespace Microsoft.Plugin.Program.Storage
                     {
                         _fileSystemWatchers[index].Dispose();
                     }
+
                     _disposed = true;
                 }
             }
         }
-
     }
 }

@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
 using System.Linq;
-
 
 namespace Microsoft.Plugin.Program.Views.Commands
 {
@@ -18,7 +20,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                     Enabled = x.Enabled,
                                                     Location = x.Location,
                                                     Name = x.Name,
-                                                    UniqueIdentifier = x.UniqueIdentifier
+                                                    UniqueIdentifier = x.UniqueIdentifier,
                                                 }
                                         ));
 
@@ -37,7 +39,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                         Enabled = x.Enabled,
                                         Location = x.Location,
                                         Name = x.Name,
-                                        UniqueIdentifier = x.UniqueIdentifier
+                                        UniqueIdentifier = x.UniqueIdentifier,
                                     }
                               ));
 
@@ -92,7 +94,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                         Name = x.Name,
                                                         Location = x.Location,
                                                         UniqueIdentifier = x.UniqueIdentifier,
-                                                        Enabled = false
+                                                        Enabled = false,
                                                     }
                                             ));
         }
@@ -115,7 +117,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
             if (selectedItems.Where(t1 => t1.Enabled).Any())
                 return true;
 
-            // ProgramSources holds list of user added directories, 
+            // ProgramSources holds list of user added directories,
             // so when we enable/disable we need to reindex to show/not show the programs
             // that are found in those directories.
             if (selectedItems.Where(t1 => Main._settings.ProgramSources.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Any())

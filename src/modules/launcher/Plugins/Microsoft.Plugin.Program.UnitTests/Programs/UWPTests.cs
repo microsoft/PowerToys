@@ -1,47 +1,48 @@
-﻿using Castle.Core.Internal;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
+using Castle.Core.Internal;
 using Microsoft.Plugin.Program.Programs;
 using Moq;
 using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
     [TestFixture]
     public class UWPTests
     {
-        static readonly PackageWrapper developmentModeApp = new PackageWrapper(
+        private static readonly PackageWrapper DevelopmentModeApp = new PackageWrapper(
             "DevelopmentApp",
             "DevelopmentApp",
             "DevelopmentApp",
             false,
             true,
-            "AppxManifests/DevelopmentApp"
-        );
+            "AppxManifests/DevelopmentApp");
 
-        static readonly PackageWrapper frameworkApp = new PackageWrapper(
+        private static readonly PackageWrapper FrameworkApp = new PackageWrapper(
             "FrameworkApp",
             "FrameworkApp",
             "FrameworkApp",
             true,
             false,
-            "AppxManifests/FrameworkApp"
-        );
+            "AppxManifests/FrameworkApp");
 
-        static readonly PackageWrapper packagedApp = new PackageWrapper(
+        private static readonly PackageWrapper PackagedApp = new PackageWrapper(
             "PackagedApp",
             "PackagedApp",
             "PackagedApp",
             false,
             false,
-            "AppxManifests/PackagedApp"
-        );
+            "AppxManifests/PackagedApp");
 
         [Test]
         public void AllShouldReturnPackagesWithDevelopmentModeWhenCalled()
         {
             // Arrange
             Main._settings = new ProgramPluginSettings();
-            List<IPackage> packages = new List<IPackage>() { developmentModeApp, packagedApp };
+            List<IPackage> packages = new List<IPackage>() { DevelopmentModeApp, PackagedApp };
             var mock = new Mock<IPackageManager>();
             mock.Setup(x => x.FindPackagesForCurrentUser()).Returns(packages);
             UWP.PackageManagerWrapper = mock.Object;
@@ -60,7 +61,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         {
             // Arrange
             Main._settings = new ProgramPluginSettings();
-            List<IPackage> packages = new List<IPackage>() { frameworkApp, packagedApp };
+            List<IPackage> packages = new List<IPackage>() { FrameworkApp, PackagedApp };
             var mock = new Mock<IPackageManager>();
             mock.Setup(x => x.FindPackagesForCurrentUser()).Returns(packages);
             UWP.PackageManagerWrapper = mock.Object;

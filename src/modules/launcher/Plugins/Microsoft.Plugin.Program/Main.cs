@@ -1,20 +1,19 @@
-using Microsoft.PowerToys.Settings.UI.Lib;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Controls;
+using Microsoft.Plugin.Program.Programs;
+using Microsoft.Plugin.Program.Storage;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using Microsoft.Plugin.Program.Views;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
-using Windows.ApplicationModel;
-using Microsoft.Plugin.Program.Storage;
-using Microsoft.Plugin.Program.Programs;
 
 namespace Microsoft.Plugin.Program
 {
@@ -36,6 +35,7 @@ namespace Microsoft.Plugin.Program
         {
             _settingsStorage = new PluginJsonStorage<ProgramPluginSettings>();
             _settings = _settingsStorage.Load();
+
             // This helper class initializes the file system watchers based on the locations to watch
             _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
@@ -61,11 +61,9 @@ namespace Microsoft.Plugin.Program
                     Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _packageRepository.IndexPrograms);
             });
 
-
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
-
         }
 
         public void Save()
@@ -134,7 +132,7 @@ namespace Microsoft.Plugin.Program
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            if(selectedResult == null)
+            if (selectedResult == null)
             {
                 throw new ArgumentNullException(nameof(selectedResult));
             }
@@ -154,12 +152,12 @@ namespace Microsoft.Plugin.Program
         {
             try
             {
-                if(runProcess == null)
+                if (runProcess == null)
                 {
                     throw new ArgumentNullException(nameof(runProcess));
                 }
 
-                if(info == null)
+                if (info == null)
                 {
                     throw new ArgumentNullException(nameof(info));
                 }

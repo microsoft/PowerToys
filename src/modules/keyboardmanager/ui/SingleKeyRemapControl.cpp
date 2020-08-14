@@ -12,7 +12,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
 KeyboardManagerState* SingleKeyRemapControl::keyboardManagerState = nullptr;
 // Initialized as new vector
-std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> SingleKeyRemapControl::singleKeyRemapBuffer;
+RemapBuffer SingleKeyRemapControl::singleKeyRemapBuffer;
 
 SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
 {
@@ -96,7 +96,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     // Set the key text if the two keys are not null (i.e. default args)
     if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !std::get<Shortcut>(newKey).IsValidShortcut()))
     {
-        singleKeyRemapBuffer.push_back(std::make_pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>(std::vector<std::variant<DWORD, Shortcut>>{ originalKey, newKey }, L""));
+        singleKeyRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ originalKey, newKey }, L""));
         std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList();
         std::vector<DWORD> shortcutListKeyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList(true);
         auto it = std::find(keyCodes.begin(), keyCodes.end(), originalKey);
@@ -120,7 +120,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     else
     {
         // Initialize both keys to NULL
-        singleKeyRemapBuffer.push_back(std::make_pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>(std::vector<std::variant<DWORD, Shortcut>>{ NULL, NULL }, L""));
+        singleKeyRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ NULL, NULL }, L""));
     }
 
     // Delete row button

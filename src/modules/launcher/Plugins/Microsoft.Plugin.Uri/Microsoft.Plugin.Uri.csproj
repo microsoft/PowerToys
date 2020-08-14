@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
+<Import Project="..\..\..\..\Version.props" />
+  
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{03276a39-d4e9-417c-8ffd-200b0ee5e871}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Plugin.Uri</RootNamespace>
     <AssemblyName>Microsoft.Plugin.Uri</AssemblyName>
+    <Version>$(Version).0</Version>
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

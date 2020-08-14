@@ -1,16 +1,19 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.Plugin.Program.Views.Commands;
-using Microsoft.Plugin.Program.Programs;
-using System.ComponentModel;
-using System.Windows.Data;
 using Wox.Plugin;
-using System.Globalization;
 
 namespace Microsoft.Plugin.Program.Views
 {
@@ -25,7 +28,7 @@ namespace Microsoft.Plugin.Program.Views
         private ListSortDirection _lastDirection;
 
         // We do not save all program sources to settings, so using
-        // this as temporary holder for displaying all loaded programs sources. 
+        // this as temporary holder for displaying all loaded programs sources.
         internal static List<ProgramSource> ProgramSettingDisplayList { get; set; }
 
         public ProgramSetting(PluginInitContext context, ProgramPluginSettings settings)
@@ -136,7 +139,7 @@ namespace Microsoft.Plugin.Program.Views
                         var source = new ProgramSource
                         {
                             Location = directory,
-                            UniqueIdentifier = directory
+                            UniqueIdentifier = directory,
                         };
 
                         directoriesToAdd.Add(source);

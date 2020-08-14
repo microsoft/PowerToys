@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
+<Import Project="..\..\..\..\Version.props" />
+  
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{C21BFF9C-2C99-4B5F-B7C9-A5E6DDDB37B0}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Plugin.Shell</RootNamespace>
     <AssemblyName>Microsoft.Plugin.Shell</AssemblyName>
+    <Version>$(Version).0</Version>
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -63,7 +65,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
-    <ProjectReference Include="..\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj" />
+    <ProjectReference Include="..\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
   
   <ItemGroup>
