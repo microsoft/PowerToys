@@ -27,7 +27,7 @@ namespace Wox.Test.Plugins
 
         private ISearchManager GetMockSearchManager()
         {
-            var sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE CONTAINS(System.FileName,'\"m*\"',1033) AND scope='file:' ORDER BY System.DateModified DESC";
+            var sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE CONTAINS(System.FileName,'\"FilePath\"',1033) AND scope='file:' ORDER BY System.DateModified DESC";
             var mockSearchManager = new Mock<ISearchManager>();
             var mockCatalog = new Mock<CSearchCatalogManager>();
             var mockQueryHelper = new Mock<CSearchQueryHelper>();
