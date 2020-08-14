@@ -40,6 +40,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public KeyboardManagerViewModel(Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+            FilterRemapKeysList = filterRemapKeysList;
+
             if (SettingsUtils.SettingsExists(PowerToyName))
             {
                 // Todo: Be more resilient while reading and saving settings.
@@ -66,10 +70,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 generalSettings = new GeneralSettings();
                 SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
-
-            // set the callback functions value to hangle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
-            FilterRemapKeysList = filterRemapKeysList;
         }
 
         public bool Enabled
