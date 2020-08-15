@@ -1060,16 +1060,17 @@ void CPowerRenameListView::ToggleAll(_In_ IPowerRenameManager* psrm, _In_ bool s
     if (m_hwndLV)
     {
         UINT itemCount = 0;
-        psrm->GetVisibleItemCount(&itemCount);
+        psrm->GetItemCount(&itemCount);
         for (UINT i = 0; i < itemCount; i++)
         {
             CComPtr<IPowerRenameItem> spItem;
-            if (SUCCEEDED(psrm->GetVisibleItemByIndex(i, &spItem)))
+            if (SUCCEEDED(psrm->GetItemByIndex(i, &spItem)))
             {
                 spItem->put_selected(selected);
             }
         }
 
+        psrm->GetVisibleItemCount(&itemCount);
         RedrawItems(0, itemCount);
         SetItemCount(itemCount);
     }
