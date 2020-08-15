@@ -17,6 +17,13 @@ enum PowerRenameFlags
     Titlecase = 0x800
 };
 
+enum PowerRenameFilters
+{
+    None = 1,
+    Selected = 2,
+    ShoulRename = 3
+};
+
 interface __declspec(uuid("3ECBA62B-E0F0-4472-AA2E-DEE7A1AA46B9")) IPowerRenameRegExEvents : public IUnknown
 {
 public:
@@ -57,7 +64,7 @@ public:
     IFACEMETHOD(get_depth)(_Out_ UINT* depth) = 0;
     IFACEMETHOD(put_depth)(_In_ int depth) = 0;
     IFACEMETHOD(ShouldRenameItem)(_In_ DWORD flags, _Out_ bool* shouldRename) = 0;
-    IFACEMETHOD(IsItemVisible)(_In_ bool filter, _In_ DWORD flags, _Out_ bool* isItemVisible) = 0;
+    IFACEMETHOD(IsItemVisible)(_In_ DWORD filter, _In_ DWORD flags, _Out_ bool* isItemVisible) = 0;
     IFACEMETHOD(Reset)() = 0;
 };
 
@@ -99,7 +106,7 @@ public:
     IFACEMETHOD(GetVisibleItemCount)(_Out_ UINT * count) = 0;
     IFACEMETHOD(GetSelectedItemCount)(_Out_ UINT* count) = 0;
     IFACEMETHOD(GetRenameItemCount)(_Out_ UINT* count) = 0;
-    IFACEMETHOD(toggleFilter)() = 0;
+    IFACEMETHOD(switchFilter)(_In_ int columnNumber) = 0;
     IFACEMETHOD(get_flags)(_Out_ DWORD* flags) = 0;
     IFACEMETHOD(put_flags)(_In_ DWORD flags) = 0;
     IFACEMETHOD(get_renameRegEx)(_COM_Outptr_ IPowerRenameRegEx** ppRegEx) = 0;

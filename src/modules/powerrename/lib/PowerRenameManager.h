@@ -33,7 +33,7 @@ public:
     IFACEMETHODIMP GetVisibleItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetSelectedItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetRenameItemCount(_Out_ UINT* count);
-    IFACEMETHODIMP toggleFilter();
+    IFACEMETHODIMP switchFilter(_In_ int columnNumber);
     IFACEMETHODIMP get_flags(_Out_ DWORD* flags);
     IFACEMETHODIMP put_flags(_In_ DWORD flags);
     IFACEMETHODIMP get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
@@ -106,7 +106,7 @@ protected:
     DWORD m_cookie = 0;
     DWORD m_regExAdviseCookie = 0;
 
-    bool m_filter = false;
+    DWORD m_filter = PowerRenameFilters::None;
 
     struct RENAME_MGR_EVENT
     {

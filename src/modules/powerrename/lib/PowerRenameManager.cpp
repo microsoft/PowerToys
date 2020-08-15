@@ -290,9 +290,11 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameManager::toggleFilter() 
+IFACEMETHODIMP CPowerRenameManager::switchFilter(_In_ int columnNumber) 
 {
-    m_filter = !m_filter;
+    DWORD clickedFilter = (columnNumber == 0) ? PowerRenameFilters::Selected : PowerRenameFilters::ShoulRename;
+    m_filter = (m_filter == clickedFilter) ? PowerRenameFilters::None : clickedFilter;
+
     return S_OK;
 }
 

@@ -183,19 +183,20 @@ IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* 
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ bool filter, _In_ DWORD flags, _Out_ bool* isItemVisible)
+IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ DWORD filter, _In_ DWORD flags, _Out_ bool* isItemVisible)
 {
-    if (!filter)
+    bool shouldRenameItem = false;
+    switch (filter)
     {
+    case PowerRenameFilters::None:
         *isItemVisible = true;
-    }
-    else
-    {
-        bool shouldRenameItem = false;
-        if (SUCCEEDED(ShouldRenameItem(flags, &shouldRenameItem)) && shouldRenameItem)
-        {
-            *isItemVisible = true;
-        }
+        break;
+    case PowerRenameFilters::Selected:
+        get_selected(isItemVisible);
+        break;
+    case PowerRenameFilters::ShoulRename:
+        ShouldRenameItem(flags, isItemVisible);
+        break;
     }
 
     return S_OK;

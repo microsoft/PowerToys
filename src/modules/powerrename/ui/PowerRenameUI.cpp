@@ -714,7 +714,7 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
         case LVN_COLUMNCLICK:
             if (m_spsrm)
             {
-                m_listview.OnColumnClick(m_spsrm, pnmdr);
+                m_listview.OnColumnClick(m_spsrm, ((LPNMLISTVIEW)lParam)->iSubItem);
             }
             break;
         case HDN_ITEMSTATEICONCLICK:
@@ -1329,9 +1329,9 @@ void CPowerRenameListView::_UpdateHeaderCheckState(_In_ bool check)
     }
 }
 
-void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, LPNMHDR pnmListView)
+void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ int columnNumber)
 {
-    psrm->toggleFilter();
+    psrm->switchFilter(columnNumber);
     UINT itemCount = 0;
     psrm->GetVisibleItemCount(&itemCount);
     ListView_RedrawItems(m_hwndLV, 0, itemCount);

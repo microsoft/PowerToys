@@ -30,7 +30,7 @@ public:
     IFACEMETHODIMP put_depth(_In_ int depth);
     IFACEMETHODIMP Reset();
     IFACEMETHODIMP ShouldRenameItem(_In_ DWORD flags, _Out_ bool* shouldRename);
-    IFACEMETHODIMP IsItemVisible(_In_ bool filter, _In_ DWORD flags, _Out_ bool* isItemVisible);
+    IFACEMETHODIMP IsItemVisible(_In_ DWORD filter, _In_ DWORD flags, _Out_ bool* isItemVisible);
 
     // IPowerRenameItemFactory
     IFACEMETHODIMP Create(_In_ IShellItem* psi, _Outptr_ IPowerRenameItem** ppItem)
