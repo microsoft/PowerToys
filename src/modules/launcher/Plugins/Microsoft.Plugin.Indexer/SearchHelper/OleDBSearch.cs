@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                             {
                                 while (!wDSResults.IsClosed && wDSResults.Read())
                                 {
-                                    List<object> fieldData = new List<object>();
+                                    List<object> fieldData = new List<object>(wDSResults.FieldCount);
                                     for (int i = 0; i < wDSResults.FieldCount; i++)
                                     {
                                         fieldData.Add(wDSResults.GetValue(i));
