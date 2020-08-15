@@ -402,7 +402,7 @@ namespace Microsoft.Plugin.Program.Programs
                 var paths = new List<string> { };
                 int appIconSize = 36;
                 var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 }.AsParallel();
-                Dictionary<string, int> pathFactorPairs = new Dictionary<string, int>();
+                var pathFactorPairs = new Dictionary<string, int>();
 
                 foreach (var factor in targetSizes)
                 {
@@ -418,8 +418,11 @@ namespace Microsoft.Plugin.Program.Programs
                     else
                     {
                         string simplePath = $"{prefix}.targetsize-{factor}{extension}";
+                        string altformUnPlatedPath = $"{prefix}.targetsize-{factor}_altform-unplated{extension}";
                         paths.Add(simplePath);
+                        paths.Add(altformUnPlatedPath);
                         pathFactorPairs.Add(simplePath, factor);
+                        pathFactorPairs.Add(altformUnPlatedPath, factor);
                     }
                 }
 
