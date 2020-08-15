@@ -122,6 +122,7 @@ IFACEMETHODIMP CPowerRenameManager::AddItem(_In_ IPowerRenameItem* pItem)
         if (m_renameItems.find(id) == m_renameItems.end())
         {
             m_renameItems[id] = pItem;
+            m_isVisible.push_back(true);
             pItem->AddRef();
             hr = S_OK;
         }
@@ -152,6 +153,34 @@ IFACEMETHODIMP CPowerRenameManager::GetItemByIndex(_In_ UINT index, _COM_Outptr_
     return hr;
 }
 
+IFACEMETHODIMP CPowerRenameManager::GetVisibleItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem)
+{
+    *ppItem = nullptr;
+    CSRWSharedAutoLock lock(&m_lockItems);
+    UINT count = 0;
+    HRESULT hr = E_FAIL;
+    if (SUCCEEDED(GetVisibleItemCount(&count)) && index < count)
+    {
+        int realIndex = 0;
+        int visibleIndex = -1;
+        for (size_t i = 0; i < m_isVisible.size(); i++)
+        {
+            if (m_isVisible[i])
+            {
+                visibleIndex++;
+            }
+            if (visibleIndex == index)
+            {
+                realIndex = i;
+                break;
+            }
+        }
+        return GetItemByIndex(realIndex, ppItem);
+    }
+
+    return hr;
+}
+
 IFACEMETHODIMP CPowerRenameManager::GetItemById(_In_ int id, _COM_Outptr_ IPowerRenameItem** ppItem)
 {
     *ppItem = nullptr;
@@ -174,6 +203,59 @@ IFACEMETHODIMP CPowerRenameManager::GetItemCount(_Out_ UINT* count)
 {
     CSRWSharedAutoLock lock(&m_lockItems);
     *count = static_cast<UINT>(m_renameItems.size());
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameManager::setVisible()
+{
+    IPowerRenameItem* item = nullptr;
+    HRESULT hr = E_FAIL;
+    UINT lastVisibleDepth = 0;
+    for (size_t i = m_isVisible.size(); i-- > 0;)
+    {
+        bool isVisible = false;
+        GetItemByIndex(i, &item);
+        item->IsItemVisible(m_filter, m_flags, &isVisible);
+
+        UINT itemDepth = 0;
+        item->get_depth(&itemDepth);
+
+        if (isVisible)
+        {
+            lastVisibleDepth = itemDepth;
+        }
+        else if ( lastVisibleDepth > itemDepth )
+        {
+            isVisible = true;
+        }
+        else if ( lastVisibleDepth < itemDepth )
+        {
+            lastVisibleDepth = 0;
+        }
+
+        
+        m_isVisible[i] = isVisible;
+        hr = S_OK;
+    }
+
+    return hr; 
+}
+
+IFACEMETHODIMP CPowerRenameManager::GetVisibleItemCount(_Out_ UINT* count)
+{
+    *count = 0;
+    CSRWSharedAutoLock lock(&m_lockItems);
+
+    setVisible();
+
+    for (size_t i=0 ; i<m_isVisible.size(); i++)
+    {
+        if (m_isVisible[i])
+        {
+            (*count)++;
+        }
+    }
+
     return S_OK;
 }
 
@@ -216,98 +298,31 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
 struct cmp
 {
     public:
-    cmp(DWORD flags) { 
-        this->flags = flags; 
+    cmp(std::vector<bool> shouldAppear) { 
+        this->shouldAppear = shouldAppear; 
     }
 
     bool operator()(const std::pair<int, IPowerRenameItem*>& a, const std::pair<int, IPowerRenameItem*>& b)
     {
-        bool isSelected1, isSelected2;
+        /*bool isSelected1, isSelected2;
         a.second->ShouldRenameItem(flags, &isSelected1);
-        b.second->ShouldRenameItem(flags, &isSelected2);
+        b.second->ShouldRenameItem(flags, &isSelected2);*/
 
-        if (isSelected1 && !isSelected2)
+        if (shouldAppear[a.first-2] && !shouldAppear[b.first-2])
             return true;
-        else if (!isSelected1 && isSelected2)
+        else if (!shouldAppear[a.first-2] && shouldAppear[b.first-2])
             return false;
         else
             return a.first < b.first;
     }
 
     private:
-    DWORD flags;
+    std::vector<bool> shouldAppear;
 };
 
-IFACEMETHODIMP CPowerRenameManager::SortItems( _In_ bool isFilterOn )
+IFACEMETHODIMP CPowerRenameManager::toggleFilter() 
 {
-    CSRWSharedAutoLock lock(&m_lockItems);
-
-    if (!isFilterOn)
-    {
-        m_renameItems.clear();
-        for (auto a : m_renameItemsNoFilter)
-        {
-            m_renameItems[a.first] = a.second;
-        }
-    }
-    else
-    {
-        /*for (auto it : m_renameItems)
-        {
-            IPowerRenameItem* pItem = it.second;
-            bool shouldRename = false;
-            if (SUCCEEDED(pItem->ShouldRenameItem(m_flags, &shouldRename)) && shouldRename)
-            {
-                PWSTR name = nullptr;
-                it.second->get_originalName(&name);
-                MessageBox(NULL, std::to_wstring(it.first).c_str(), name, MB_OK | MB_SYSTEMMODAL);
-            }
-        }*/
-
-        std::vector<std::pair<int, IPowerRenameItem*>> V;
-
-        m_renameItemsNoFilter.clear();
-
-        for (auto& it : m_renameItems)
-        {
-            V.push_back(it);
-            m_renameItemsNoFilter[it.first] = it.second;
-        }
-
-        std::sort(V.begin(), V.end(), cmp(m_flags));
-        /*std::sort(V.begin(), V.end(), [](const std::pair<int, IPowerRenameItem*>& a, const std::pair<int, IPowerRenameItem*>& b) -> bool {
-            bool isSelected1, isSelected2;
-            PWSTR name = nullptr;
-            a.second->get_newName(&name);
-            isSelected1 = name==std::wstring(L"") ? false : true;
-            b.second->get_newName(&name);
-            isSelected2 = name == std::wstring(L"") ? false : true;
-
-            //a.second->get_selected(&isSelected1);
-            //b.second->get_selected(&isSelected2);
-            if (isSelected1 && !isSelected2)
-                return true;
-            else if (!isSelected1 && isSelected2)
-                return false;
-            else
-                return a.first < b.first;
-        });*/
-
-        m_renameItems.clear();
-
-        int count = 2;
-        for (auto it : V)
-        {
-            m_renameItems[count++] = it.second;
-        }
-
-        //auto temp = m_renameItems[2];
-        //m_renameItems[2] = m_renameItems[3];
-        //m_renameItems[3] = temp;
-    }
-
-    
-
+    m_filter = !m_filter;
     return S_OK;
 }
 

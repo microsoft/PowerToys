@@ -178,9 +178,10 @@ IFACEMETHODIMP CPowerRenameUI::OnUpdate(_In_ IPowerRenameItem*)
     UINT itemCount = 0;
     if (m_spsrm)
     {
-        m_spsrm->GetItemCount(&itemCount);
+        m_spsrm->GetVisibleItemCount(&itemCount);
     }
     m_listview.RedrawItems(0, itemCount);
+    m_listview.SetItemCount(itemCount);
     _UpdateCounts();
     return S_OK;
 }
@@ -385,7 +386,7 @@ void CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
         m_disableCountUpdate = false;
 
         UINT itemCount = 0;
-        m_spsrm->GetItemCount(&itemCount);
+        m_spsrm->GetVisibleItemCount(&itemCount);
         m_listview.SetItemCount(itemCount);
 
         _UpdateCounts();
@@ -714,7 +715,6 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
             if (m_spsrm)
             {
                 m_listview.OnColumnClick(m_spsrm, pnmdr);
-                _UpdateCounts();
             }
             break;
         case HDN_ITEMSTATEICONCLICK:
@@ -1060,30 +1060,35 @@ void CPowerRenameListView::ToggleAll(_In_ IPowerRenameManager* psrm, _In_ bool s
     if (m_hwndLV)
     {
         UINT itemCount = 0;
-        psrm->GetItemCount(&itemCount);
+        psrm->GetVisibleItemCount(&itemCount);
         for (UINT i = 0; i < itemCount; i++)
         {
             CComPtr<IPowerRenameItem> spItem;
-            if (SUCCEEDED(psrm->GetItemByIndex(i, &spItem)))
+            if (SUCCEEDED(psrm->GetVisibleItemByIndex(i, &spItem)))
             {
                 spItem->put_selected(selected);
             }
         }
 
         RedrawItems(0, itemCount);
+        SetItemCount(itemCount);
     }
 }
 
 void CPowerRenameListView::ToggleItem(_In_ IPowerRenameManager* psrm, _In_ int item)
 {
     CComPtr<IPowerRenameItem> spItem;
-    if (SUCCEEDED(psrm->GetItemByIndex(item, &spItem)))
+    if (SUCCEEDED(psrm->GetVisibleItemByIndex(item, &spItem)))
     {
         bool selected = false;
         spItem->get_selected(&selected);
         spItem->put_selected(!selected);
 
-        RedrawItems(item, item);
+        
+        UINT itemCount = 0;
+        psrm->GetVisibleItemCount(&itemCount);
+        ListView_RedrawItems(m_hwndLV, 0, itemCount);
+        ListView_SetItemCount(m_hwndLV, itemCount);
     }
 }
 
@@ -1121,7 +1126,7 @@ void CPowerRenameListView::UpdateItemCheckState(_In_ IPowerRenameManager* psrm, 
     if (psrm && m_hwndLV && (iItem > -1))
     {
         CComPtr<IPowerRenameItem> spItem;
-        if (SUCCEEDED(psrm->GetItemByIndex(iItem, &spItem)))
+        if (SUCCEEDED(psrm->GetVisibleItemByIndex(iItem, &spItem)))
         {
             bool checked = ListView_GetCheckState(m_hwndLV, iItem);
             spItem->put_selected(checked);
@@ -1132,7 +1137,10 @@ void CPowerRenameListView::UpdateItemCheckState(_In_ IPowerRenameManager* psrm, 
             // Update the rename column if necessary
             int id = 0;
             spItem->get_id(&id);
-            RedrawItems(id, id);
+            UINT itemCount = 0;
+            psrm->GetVisibleItemCount(&itemCount);
+            ListView_RedrawItems(m_hwndLV, 0, itemCount);
+            ListView_SetItemCount(m_hwndLV, itemCount);
         }
 
         // Get the total number of list items and compare it to what is selected
@@ -1149,7 +1157,7 @@ void CPowerRenameListView::UpdateItemCheckState(_In_ IPowerRenameManager* psrm, 
 void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi)
 {
     UINT count = 0;
-    psrm->GetItemCount(&count);
+    psrm->GetVisibleItemCount(&count);
     if (plvdi->item.iItem < 0 || plvdi->item.iItem > static_cast<int>(count))
     {
         // Invalid index
@@ -1157,7 +1165,7 @@ void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout
     }
 
     CComPtr<IPowerRenameItem> renameItem;
-    if (SUCCEEDED(psrm->GetItemByIndex((int)plvdi->item.iItem, &renameItem)))
+    if (SUCCEEDED(psrm->GetVisibleItemByIndex((int)plvdi->item.iItem, &renameItem)))
     {
         if (plvdi->item.mask & LVIF_IMAGE)
         {
@@ -1319,35 +1327,13 @@ void CPowerRenameListView::_UpdateHeaderCheckState(_In_ bool check)
         Header_SetItem(hwndHeader, 0, &hdi);
     }
 }
-int CALLBACK comp(LPARAM lParam1, LPARAM lParam2, LPARAM lParam)
-{
-    NMLISTVIEW* pnmlv = (NMLISTVIEW*)lParam;
 
-    TCHAR str[MAX_PATH];
-    TCHAR str2[MAX_PATH];
-
-    ListView_GetItemText(pnmlv->hdr.hwndFrom, lParam1, pnmlv->iSubItem, str, MAX_PATH);
-    ListView_GetItemText(pnmlv->hdr.hwndFrom, lParam2, pnmlv->iSubItem, str2, MAX_PATH);
-
-
-    MessageBox(NULL, str2, str, MB_OK | MB_SYSTEMMODAL);
-    return (lstrcmp(str2, str));
-}
 void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, LPNMHDR pnmListView)
 {
-    isFilterOn = isFilterOn ? false : true ;
-
-    psrm->SortItems( isFilterOn );
-
-    UINT itemCount, renamingCount;
-    psrm->GetItemCount(&itemCount);
-    psrm->GetRenameItemCount(&renamingCount);
-
-    
-    RedrawItems(0, itemCount);
-
-    ListView_SetItemCount(m_hwndLV, isFilterOn ? renamingCount :itemCount);
-
-    //ListView_SortItems(m_hwndLV, comp, 1);
+    psrm->toggleFilter();
+    UINT itemCount = 0;
+    psrm->GetVisibleItemCount(&itemCount);
+    ListView_RedrawItems(m_hwndLV, 0, itemCount);
+    ListView_SetItemCount(m_hwndLV, itemCount);
 }
     

@@ -183,6 +183,24 @@ IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* 
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ bool filter, _In_ DWORD flags, _Out_ bool* isItemVisible)
+{
+    if (!filter)
+    {
+        *isItemVisible = true;
+    }
+    else
+    {
+        bool shouldRenameItem = false;
+        if (SUCCEEDED(ShouldRenameItem(flags, &shouldRenameItem)) && shouldRenameItem)
+        {
+            *isItemVisible = true;
+        }
+    }
+
+    return S_OK;
+}
+
 IFACEMETHODIMP CPowerRenameItem::Reset()
 {
     CSRWSharedAutoLock lock(&m_lock);

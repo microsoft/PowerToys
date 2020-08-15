@@ -57,6 +57,7 @@ public:
     IFACEMETHOD(get_depth)(_Out_ UINT* depth) = 0;
     IFACEMETHOD(put_depth)(_In_ int depth) = 0;
     IFACEMETHOD(ShouldRenameItem)(_In_ DWORD flags, _Out_ bool* shouldRename) = 0;
+    IFACEMETHOD(IsItemVisible)(_In_ bool filter, _In_ DWORD flags, _Out_ bool* isItemVisible) = 0;
     IFACEMETHOD(Reset)() = 0;
 };
 
@@ -91,11 +92,14 @@ public:
     IFACEMETHOD(Rename)(_In_ HWND hwndParent) = 0;
     IFACEMETHOD(AddItem)(_In_ IPowerRenameItem* pItem) = 0;
     IFACEMETHOD(GetItemByIndex)(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem) = 0;
+    IFACEMETHOD(GetVisibleItemByIndex)(_In_ UINT index, _COM_Outptr_ IPowerRenameItem * *ppItem) = 0;
+    IFACEMETHOD(setVisible)() = 0;
     IFACEMETHOD(GetItemById)(_In_ int id, _COM_Outptr_ IPowerRenameItem** ppItem) = 0;
     IFACEMETHOD(GetItemCount)(_Out_ UINT* count) = 0;
+    IFACEMETHOD(GetVisibleItemCount)(_Out_ UINT * count) = 0;
     IFACEMETHOD(GetSelectedItemCount)(_Out_ UINT* count) = 0;
     IFACEMETHOD(GetRenameItemCount)(_Out_ UINT* count) = 0;
-    IFACEMETHOD(SortItems)(_In_ bool isFilterOn) = 0;
+    IFACEMETHOD(toggleFilter)() = 0;
     IFACEMETHOD(get_flags)(_Out_ DWORD* flags) = 0;
     IFACEMETHOD(put_flags)(_In_ DWORD flags) = 0;
     IFACEMETHOD(get_renameRegEx)(_COM_Outptr_ IPowerRenameRegEx** ppRegEx) = 0;
