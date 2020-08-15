@@ -29,7 +29,7 @@ public:
     IFACEMETHODIMP GetVisibleItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem);
     IFACEMETHODIMP GetItemById(_In_ int id, _COM_Outptr_ IPowerRenameItem** ppItem);
     IFACEMETHODIMP GetItemCount(_Out_ UINT* count);
-    IFACEMETHODIMP CPowerRenameManager::setVisible();
+    IFACEMETHODIMP setVisible();
     IFACEMETHODIMP GetVisibleItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetSelectedItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetRenameItemCount(_Out_ UINT* count);

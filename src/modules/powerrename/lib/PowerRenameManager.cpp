@@ -208,17 +208,17 @@ IFACEMETHODIMP CPowerRenameManager::GetItemCount(_Out_ UINT* count)
 
 IFACEMETHODIMP CPowerRenameManager::setVisible()
 {
-    IPowerRenameItem* item = nullptr;
     HRESULT hr = E_FAIL;
-    UINT lastVisibleDepth = 0;
-    for (size_t i = m_isVisible.size(); i-- > 0;)
+    UINT lastVisibleDepth = 0, i = m_isVisible.size() - 1;
+    for (auto rit = m_renameItems.rbegin(); rit != m_renameItems.rend(); ++rit, --i)
     {
         bool isVisible = false;
-        GetItemByIndex(i, &item);
-        item->IsItemVisible(m_filter, m_flags, &isVisible);
+        rit->second->IsItemVisible(m_filter, m_flags, &isVisible);
 
         UINT itemDepth = 0;
-        item->get_depth(&itemDepth);
+        rit->second->get_depth(&itemDepth);
+
+        /*Make an item visible if it has a least one visible subitem
 
         if (isVisible)
         {
@@ -231,7 +231,7 @@ IFACEMETHODIMP CPowerRenameManager::setVisible()
         else if ( lastVisibleDepth < itemDepth )
         {
             lastVisibleDepth = 0;
-        }
+        }*/
 
         
         m_isVisible[i] = isVisible;
@@ -294,31 +294,6 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
  
     return S_OK;
 }
-
-struct cmp
-{
-    public:
-    cmp(std::vector<bool> shouldAppear) { 
-        this->shouldAppear = shouldAppear; 
-    }
-
-    bool operator()(const std::pair<int, IPowerRenameItem*>& a, const std::pair<int, IPowerRenameItem*>& b)
-    {
-        /*bool isSelected1, isSelected2;
-        a.second->ShouldRenameItem(flags, &isSelected1);
-        b.second->ShouldRenameItem(flags, &isSelected2);*/
-
-        if (shouldAppear[a.first-2] && !shouldAppear[b.first-2])
-            return true;
-        else if (!shouldAppear[a.first-2] && shouldAppear[b.first-2])
-            return false;
-        else
-            return a.first < b.first;
-    }
-
-    private:
-    std::vector<bool> shouldAppear;
-};
 
 IFACEMETHODIMP CPowerRenameManager::toggleFilter() 
 {
