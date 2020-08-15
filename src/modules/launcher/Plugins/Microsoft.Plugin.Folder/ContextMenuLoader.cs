@@ -1,16 +1,17 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
-using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.Image;
-using Wox.Plugin.SharedCommands;
-using Wox.Plugin;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Input;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Logger;
+using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Plugin.Folder
                             _context.API.ShowMsg(message);
                             return false;
                         }
-                    }
+                    },
                 });
 
                 contextMenus.Add(new ContextMenuResult
@@ -89,7 +90,7 @@ namespace Microsoft.Plugin.Folder
                             Log.Exception($"|Microsoft.Plugin.Folder.ContextMenuLoader.LoadContextMenus| Failed to open {record.FullPath} in console, {e.Message}", e);
                             return false;
                         }
-                    }
+                    },
                 });
             }
 
@@ -106,7 +107,7 @@ namespace Microsoft.Plugin.Folder
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
-                AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
                 {
                     try
@@ -122,7 +123,7 @@ namespace Microsoft.Plugin.Folder
                     }
 
                     return true;
-                }
+                },
             };
         }
 
@@ -132,16 +133,10 @@ namespace Microsoft.Plugin.Folder
         }
     }
 
-    public class SearchResult
-    {
-        public string FullPath { get; set; }
-        public ResultType Type { get; set; }
-    }
-
     public enum ResultType
     {
         Volume,
         Folder,
-        File
+        File,
     }
 }

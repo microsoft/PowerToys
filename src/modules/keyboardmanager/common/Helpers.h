@@ -15,6 +15,8 @@ namespace winrt
     }
 }
 
+class LayoutMap;
+
 namespace KeyboardManagerHelper
 {
     // Type to distinguish between keys
@@ -99,4 +101,10 @@ namespace KeyboardManagerHelper
 
     // Function to sort a vector of shortcuts based on it's size
     void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
+
+    // Function to check if a modifier has been repeated in the previous drop downs
+    bool CheckRepeatedModifier(std::vector<DWORD>& currentKeys, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
+
+    // Function to get the selected key codes from the list of selected indices
+    std::vector<DWORD> GetKeyCodesFromSelectedIndices(const std::vector<int32_t>& selectedIndices, const std::vector<DWORD>& keyCodeList);
 }

@@ -12,11 +12,15 @@ namespace PowerLauncher.Storage
     {
         public List<HistoryItem> Items { get; } = new List<HistoryItem>();
 
-        private int _maxHistory = 300;
+        private readonly int _maxHistory = 300;
 
         public void Add(string query)
         {
-            if (string.IsNullOrEmpty(query)) return;
+            if (string.IsNullOrEmpty(query))
+            {
+                return;
+            }
+
             if (Items.Count > _maxHistory)
             {
                 Items.RemoveAt(0);
@@ -31,7 +35,7 @@ namespace PowerLauncher.Storage
                 Items.Add(new HistoryItem
                 {
                     Query = query,
-                    ExecutedDateTime = DateTime.Now
+                    ExecutedDateTime = DateTime.Now,
                 });
             }
         }

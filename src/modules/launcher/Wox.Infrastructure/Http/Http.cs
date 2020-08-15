@@ -41,7 +41,7 @@ namespace Wox.Infrastructure.Http
                 {
                     var webProxy = new WebProxy(Proxy.Server, Proxy.Port)
                     {
-                        Credentials = new NetworkCredential(Proxy.UserName, Proxy.Password)
+                        Credentials = new NetworkCredential(Proxy.UserName, Proxy.Password),
                     };
                     return webProxy;
                 }

@@ -34,16 +34,8 @@ namespace PowerLauncher.ViewModel
             _storage.Save();
         }
 
-        #region general
+        private static Internationalization Translater => InternationalizationManager.Instance;
 
-        private static Internationalization _translater => InternationalizationManager.Instance;
-
-        #endregion
-
-        #region about
-
-        public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, _translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
-
-        #endregion
+        public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, Translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
     }
 }

@@ -6,7 +6,8 @@ using System.IO;
 
 namespace Wox.Infrastructure.Storage
 {
-    public class WoxJsonStorage<T> : JsonStorage<T> where T : new()
+    public class WoxJsonStorage<T> : JsonStorage<T>
+        where T : new()
     {
         public WoxJsonStorage()
         {

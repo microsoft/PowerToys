@@ -18,7 +18,10 @@ namespace Wox.Infrastructure.Storage
     /// <typeparam name="T">typeof</typeparam>
     public class ListRepository<T> : IRepository<T>, IEnumerable<T>
     {
-        public IList<T> Items { get { return _items.Values.ToList(); } }
+        public IList<T> Items
+        {
+            get { return _items.Values.ToList(); }
+        }
 
         private ConcurrentDictionary<int, T> _items = new ConcurrentDictionary<int, T>();
 

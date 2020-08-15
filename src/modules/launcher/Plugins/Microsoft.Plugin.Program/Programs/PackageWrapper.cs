@@ -1,6 +1,10 @@
-﻿using Microsoft.Plugin.Program.Logger;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.IO;
+using Microsoft.Plugin.Program.Logger;
 using Package = Windows.ApplicationModel.Package;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -19,20 +23,27 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string InstalledLocation { get; } = string.Empty;
 
-        public PackageWrapper() { }
-
-        public PackageWrapper(string Name, string FullName, string FamilyName, bool IsFramework, bool IsDevelopmentMode, string InstalledLocation)
+        public PackageWrapper()
         {
-            this.Name = Name;
-            this.FullName = FullName;
-            this.FamilyName = FamilyName;
-            this.IsFramework = IsFramework;
-            this.IsDevelopmentMode = IsDevelopmentMode;
-            this.InstalledLocation = InstalledLocation;
+        }
+
+        public PackageWrapper(string name, string fullName, string familyName, bool isFramework, bool isDevelopmentMode, string installedLocation)
+        {
+            Name = name;
+            FullName = fullName;
+            FamilyName = familyName;
+            IsFramework = isFramework;
+            IsDevelopmentMode = isDevelopmentMode;
+            InstalledLocation = installedLocation;
         }
 
         public static PackageWrapper GetWrapperFromPackage(Package package)
         {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
             string path;
             try
             {
@@ -46,7 +57,7 @@ namespace Microsoft.Plugin.Program.Programs
                     package.Id.FullName,
                     package.Id.FamilyName,
                     package.IsFramework,
-                    package.IsDevelopmentMode, 
+                    package.IsDevelopmentMode,
                     string.Empty);
             }
 
@@ -56,9 +67,7 @@ namespace Microsoft.Plugin.Program.Programs
                     package.Id.FamilyName,
                     package.IsFramework,
                     package.IsDevelopmentMode,
-                    path
-                    );
-
+                    path);
         }
     }
 }

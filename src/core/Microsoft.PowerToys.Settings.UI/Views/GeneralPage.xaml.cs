@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Windows.ApplicationModel.Resources;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -23,10 +25,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public GeneralPage()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
-            ViewModel = new GeneralViewModel();
-            GeneralView.DataContext = ViewModel;
+            // Load string resources
+            ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+
+            this.ViewModel = new GeneralViewModel(
+                loader.GetString("GeneralSettings_RunningAsAdminText"),
+                loader.GetString("GeneralSettings_RunningAsUserText"),
+                ShellPage.IsElevated,
+                ShellPage.IsUserAnAdmin,
+                UpdateUIThemeMethod,
+                ShellPage.SendDefaultIPCMessage,
+                ShellPage.SendRestartAdminIPCMessage,
+                ShellPage.SendCheckForUpdatesIPCMessage);
+
+            DataContext = ViewModel;
+        }
+
+        public int UpdateUIThemeMethod(string themeName)
+        {
+            switch (themeName)
+            {
+                case "light":
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    break;
+                case "dark":
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    break;
+                case "system":
+                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    break;
+            }
+
+            return 0;
         }
     }
 }

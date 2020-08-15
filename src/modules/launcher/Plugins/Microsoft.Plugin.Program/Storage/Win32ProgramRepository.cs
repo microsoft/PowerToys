@@ -1,33 +1,37 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Plugin.Program.Programs;
+using System.Globalization;
+using System.IO;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
-using System.IO;
-using System.Linq;
+using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
 
 namespace Microsoft.Plugin.Program.Storage
 {
-    using Win32 = Programs.Win32;
-    internal class Win32ProgramRepository : ListRepository<Programs.Win32>, IProgramRepository
+    internal class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
     {
-        private IStorage<IList<Programs.Win32>> _storage;
-        private Settings _settings;
+        private const string LnkExtension = ".lnk";
+        private const string UrlExtension = ".url";
+
+        private IStorage<IList<Programs.Win32Program>> _storage;
+        private ProgramPluginSettings _settings;
         private IList<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
         private int _numberOfPathsToWatch;
-        private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", "*.lnk", "*.appref-ms", "*.url" };
-        private readonly string lnkExtension = ".lnk";
-        private readonly string urlExtension = ".url";
+        private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", $"*{LnkExtension}", "*.appref-ms", $"*{UrlExtension}" };
 
-        public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32>> storage, Settings settings, string[] pathsToWatch)
+        public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32Program>> storage, ProgramPluginSettings settings, string[] pathsToWatch)
         {
-            this._fileSystemWatcherHelpers = fileSystemWatcherHelpers;
-            this._storage = storage ?? throw new ArgumentNullException("storage", "Win32ProgramRepository requires an initialized storage interface");
-            this._settings = settings ?? throw new ArgumentNullException("settings", "Win32ProgramRepository requires an initialized settings object");
-            this._pathsToWatch = pathsToWatch;
-            this._numberOfPathsToWatch = pathsToWatch.Count();
+            _fileSystemWatcherHelpers = fileSystemWatcherHelpers;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage), "Win32ProgramRepository requires an initialized storage interface");
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings), "Win32ProgramRepository requires an initialized settings object");
+            _pathsToWatch = pathsToWatch;
+            _numberOfPathsToWatch = pathsToWatch.Length;
             InitializeFileSystemWatchers();
         }
 
@@ -58,14 +62,15 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive>")]
         private void OnAppRenamed(object sender, RenamedEventArgs e)
         {
             string oldPath = e.OldFullPath;
             string newPath = e.FullPath;
 
             string extension = Path.GetExtension(newPath);
-            Programs.Win32 newApp = Programs.Win32.GetAppFromPath(newPath);
-            Programs.Win32 oldApp = null;
+            Programs.Win32Program newApp = Programs.Win32Program.GetAppFromPath(newPath);
+            Programs.Win32Program oldApp = null;
 
             // Once the shortcut application is renamed, the old app does not exist and therefore when we try to get the FullPath we get the lnk path instead of the exe path
             // This changes the hashCode() of the old application.
@@ -73,24 +78,23 @@ namespace Microsoft.Plugin.Program.Storage
             // This situation is not encountered for other application types because the fullPath is the path itself, instead of being computed by using the path to the app.
             try
             {
-                if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+                if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    oldApp = new Win32() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
+                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
                 }
-                else if (extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
+                else if (extension.Equals(UrlExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    oldApp = new Win32() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
+                    oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
                 }
                 else
                 {
-                    oldApp = Win32.GetAppFromPath(oldPath);
+                    oldApp = Win32Program.GetAppFromPath(oldPath);
                 }
             }
             catch (Exception ex)
             {
                 Log.Info($"|Win32ProgramRepository|OnAppRenamed-{extension}Program|{oldPath}|Unable to create program from {oldPath}| {ex.Message}");
             }
-
 
             // To remove the old app which has been renamed and to add the new application.
             if (oldApp != null)
@@ -104,26 +108,27 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive")]
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
             string extension = Path.GetExtension(path);
-            Programs.Win32 app = null;
+            Programs.Win32Program app = null;
 
             try
             {
                 // To mitigate the issue of not having a FullPath for a shortcut app, we iterate through the items and find the app with the same hashcode.
-                if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+                if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     app = GetAppWithSameLnkResolvedPath(path);
                 }
-                else if (extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
+                else if (extension.Equals(UrlExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     app = GetAppWithSameNameAndExecutable(Path.GetFileNameWithoutExtension(path), Path.GetFileName(path));
                 }
                 else
                 {
-                    app = Programs.Win32.GetAppFromPath(path);
+                    app = Programs.Win32Program.GetAppFromPath(path);
                 }
             }
             catch (Exception ex)
@@ -138,38 +143,40 @@ namespace Microsoft.Plugin.Program.Storage
         }
 
         // When a URL application is deleted, we can no longer get the HashCode directly from the path because the FullPath a Url app is the URL obtained from reading the file
-        private Win32 GetAppWithSameNameAndExecutable(string name, string executableName)
+        private Win32Program GetAppWithSameNameAndExecutable(string name, string executableName)
         {
-            foreach (Win32 app in Items)
+            foreach (Win32Program app in Items)
             {
-                if (name.Equals(app.Name, StringComparison.OrdinalIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.OrdinalIgnoreCase))
+                if (name.Equals(app.Name, StringComparison.CurrentCultureIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return app;
                 }
             }
+
             return null;
         }
 
         // To mitigate the issue faced (as stated above) when a shortcut application is renamed, the Exe FullPath and executable name must be obtained.
         // Unlike the rename event args, since we do not have a newPath, we iterate through all the programs and find the one with the same LnkResolved path.
-        private Programs.Win32 GetAppWithSameLnkResolvedPath(string lnkResolvedPath)
+        private Programs.Win32Program GetAppWithSameLnkResolvedPath(string lnkResolvedPath)
         {
-            foreach (Programs.Win32 app in Items)
+            foreach (Programs.Win32Program app in Items)
             {
-                if (lnkResolvedPath.ToLower().Equals(app.LnkResolvedPath))
+                if (lnkResolvedPath.ToLower(CultureInfo.CurrentCulture).Equals(app.LnkResolvedPath, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return app;
                 }
             }
+
             return null;
         }
 
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (!Path.GetExtension(path).Equals(urlExtension))
+            if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase))
             {
-                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+                Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
                 if (app != null)
                 {
                     Add(app);
@@ -180,9 +187,9 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppChanged(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (Path.GetExtension(path).Equals(urlExtension))
+            if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase))
             {
-                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+                Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
                 if (app != null)
                 {
                     Add(app);
@@ -192,7 +199,7 @@ namespace Microsoft.Plugin.Program.Storage
 
         public void IndexPrograms()
         {
-            var applications = Programs.Win32.All(_settings);
+            var applications = Programs.Win32Program.All(_settings);
             Set(applications);
         }
 
@@ -203,9 +210,8 @@ namespace Microsoft.Plugin.Program.Storage
 
         public void Load()
         {
-            var items = _storage.TryLoad(new Programs.Win32[] { });
+            var items = _storage.TryLoad(Array.Empty<Win32Program>());
             Set(items);
         }
-
     }
 }

@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using Windows.ApplicationModel;
 using Windows.Foundation;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-
     /// <summary>
     /// This is a simple wrapper class around the PackageCatalog to facilitate unit testing.
     /// </summary>
     internal class PackageCatalogWrapper : IPackageCatalog
     {
-        PackageCatalog _packageCatalog;
+        private PackageCatalog _packageCatalog;
 
         public PackageCatalogWrapper()
         {
-            //Opens the catalog of packages that is available for the current user.
+            // Opens the catalog of packages that is available for the current user.
             _packageCatalog = PackageCatalog.OpenForCurrentUser();
         }
 
-        //
-        // Summary:
-        //     Indicates that an app package is installing.
+        // Summary: Indicates that an app package is installing.
         public event TypedEventHandler<PackageCatalog, PackageInstallingEventArgs> PackageInstalling
         {
             add
@@ -36,9 +34,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        //
-        // Summary:
-        //     Indicates that an app package is uninstalling.
+        // Summary: Indicates that an app package is uninstalling.
         public event TypedEventHandler<PackageCatalog, PackageUninstallingEventArgs> PackageUninstalling
         {
             add
@@ -52,10 +48,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-
-        //
-        // Summary:
-        //     Indicates that an app package is updating.
+        // Summary: Indicates that an app package is updating.
         public event TypedEventHandler<PackageCatalog, PackageUpdatingEventArgs> PackageUpdating
         {
             add
@@ -68,6 +61,5 @@ namespace Microsoft.Plugin.Program.Programs
                 _packageCatalog.PackageUpdating -= value;
             }
         }
-
     }
 }

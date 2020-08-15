@@ -1,20 +1,21 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
-using System.IO.Packaging;
 using System.Security.Principal;
 using Windows.Management.Deployment;
-using Windows.ApplicationModel;
 using Package = Windows.ApplicationModel.Package;
 
 namespace Microsoft.Plugin.Program.Programs
 {
     public class PackageManagerWrapper : IPackageManager
     {
-        readonly PackageManager packageManager;
+        private readonly PackageManager _packageManager;
 
         public PackageManagerWrapper()
         {
-            packageManager = new PackageManager();
+            _packageManager = new PackageManager();
         }
 
         public IEnumerable<IPackage> FindPackagesForCurrentUser()
@@ -25,7 +26,7 @@ namespace Microsoft.Plugin.Program.Programs
             if (user != null)
             {
                 var id = user.Value;
-                var m = this.packageManager.FindPackagesForUser(id);
+                var m = _packageManager.FindPackagesForUser(id);
                 foreach (Package p in m)
                 {
                     packages.Add(PackageWrapper.GetWrapperFromPackage(p));

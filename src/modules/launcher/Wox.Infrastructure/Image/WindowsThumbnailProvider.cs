@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.InteropServices;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
-using System.Windows;
 
 namespace Wox.Infrastructure.Image
 {
@@ -43,7 +43,8 @@ namespace Wox.Infrastructure.Image
         [Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe")]
         internal interface IShellItem
         {
-            void BindToHandler(IntPtr pbc,
+            void BindToHandler(
+                IntPtr pbc,
                 [MarshalAs(UnmanagedType.LPStruct)] Guid bhid,
                 [MarshalAs(UnmanagedType.LPStruct)] Guid riid,
                 out IntPtr ppv);
@@ -66,7 +67,7 @@ namespace Wox.Infrastructure.Image
             PARENTRELATIVEEDITING = 0x80031001,
             DESKTOPABSOLUTEEDITING = 0x8004c000,
             FILESYSPATH = 0x80058000,
-            URL = 0x80068000
+            URL = 0x80068000,
         }
 
         internal enum HResult
@@ -84,12 +85,12 @@ namespace Wox.Infrastructure.Image
             Win32ErrorCanceled = 1223,
             Canceled = unchecked((int)0x800704C7),
             ResourceInUse = unchecked((int)0x800700AA),
-            AccessDenied = unchecked((int)0x80030005)
+            AccessDenied = unchecked((int)0x80030005),
         }
 
-        [ComImportAttribute()]
-        [GuidAttribute("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
-        [InterfaceTypeAttribute(ComInterfaceType.InterfaceIsIUnknown)]
+        [ComImport]
+        [Guid("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         internal interface IShellItemImageFactory
         {
             [PreserveSig]
@@ -105,9 +106,15 @@ namespace Wox.Infrastructure.Image
             private int width;
             private int height;
 
-            public int Width { set { width = value; } }
+            public int Width
+            {
+                set { width = value; }
+            }
 
-            public int Height { set { height = value; } }
+            public int Height
+            {
+                set { height = value; }
+            }
         }
 
         public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
@@ -127,21 +134,21 @@ namespace Wox.Infrastructure.Image
 
         private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
         {
-            IShellItem nativeShellItem;
             Guid shellItem2Guid = new Guid(IShellItem2Guid);
-            int retCode = SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out nativeShellItem);
+            int retCode = SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out IShellItem nativeShellItem);
 
             if (retCode != 0)
+            {
                 throw Marshal.GetExceptionForHR(retCode);
+            }
 
             NativeSize nativeSize = new NativeSize
             {
                 Width = width,
-                Height = height
+                Height = height,
             };
 
-            IntPtr hBitmap;
-            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
+            HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out IntPtr hBitmap);
 
             // if extracting image thumbnail and failed, extract shell icon
             if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
@@ -151,7 +158,10 @@ namespace Wox.Infrastructure.Image
 
             Marshal.ReleaseComObject(nativeShellItem);
 
-            if (hr == HResult.Ok) return hBitmap;
+            if (hr == HResult.Ok)
+            {
+                return hBitmap;
+            }
 
             throw new COMException($"Error while extracting thumbnail for {fileName}", Marshal.GetExceptionForHR((int)hr));
         }

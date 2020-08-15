@@ -19,7 +19,7 @@ namespace Wox.Infrastructure.Storage
     public class BinaryStorage<T> : IStorage<T>
     {
         // This storage helper returns whether or not to delete the binary storage items
-        private static readonly int BINARY_STORAGE = 0;
+        private static readonly int _binaryStorage = 0;
         private StoragePowerToysVersionInfo _storageHelper;
 
         public BinaryStorage(string filename)
@@ -36,10 +36,10 @@ namespace Wox.Infrastructure.Storage
 
         public T TryLoad(T defaultData)
         {
-            _storageHelper = new StoragePowerToysVersionInfo(FilePath, BINARY_STORAGE);
+            _storageHelper = new StoragePowerToysVersionInfo(FilePath, _binaryStorage);
 
             // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
-            if (_storageHelper.clearCache)
+            if (_storageHelper.ClearCache)
             {
                 if (File.Exists(FilePath))
                 {
@@ -77,7 +77,7 @@ namespace Wox.Infrastructure.Storage
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             BinaryFormatter binaryFormatter = new BinaryFormatter
             {
-                AssemblyFormat = FormatterAssemblyStyle.Simple
+                AssemblyFormat = FormatterAssemblyStyle.Simple,
             };
 
             try
@@ -119,7 +119,7 @@ namespace Wox.Infrastructure.Storage
             {
                 BinaryFormatter binaryFormatter = new BinaryFormatter
                 {
-                    AssemblyFormat = FormatterAssemblyStyle.Simple
+                    AssemblyFormat = FormatterAssemblyStyle.Simple,
                 };
 
                 try

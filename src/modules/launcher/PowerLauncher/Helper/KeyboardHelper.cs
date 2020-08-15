@@ -7,7 +7,7 @@ using Wox.Plugin;
 
 namespace PowerLauncher.Helper
 {
-    class KeyboardHelper
+    internal class KeyboardHelper
     {
         public static SpecialKeyState CheckModifiers()
         {

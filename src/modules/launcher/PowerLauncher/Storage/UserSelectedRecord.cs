@@ -12,7 +12,7 @@ namespace PowerLauncher.Storage
     public class UserSelectedRecord
     {
         [JsonProperty]
-        private Dictionary<string, int> records = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> records = new Dictionary<string, int>();
 
         public void Add(Result result)
         {

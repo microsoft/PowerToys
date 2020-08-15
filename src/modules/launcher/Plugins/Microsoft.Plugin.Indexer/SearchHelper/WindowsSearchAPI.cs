@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Microsoft.Search.Interop;
 
 namespace Microsoft.Plugin.Indexer.SearchHelper
@@ -13,8 +14,9 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
         public bool DisplayHiddenFiles { get; set; }
 
         private readonly ISearch windowsIndexerSearch;
-        private readonly object _lock = new object();
+
         private const uint _fileAttributeHidden = 0x2;
+        private static readonly Regex _likeRegex = new Regex(@"[^\s(]+\s+LIKE\s+'([^']|'')*'\s+OR\s+", RegexOptions.Compiled);
 
         public WindowsSearchAPI(ISearch windowsIndexerSearch, bool displayHiddenFiles = false)
         {
@@ -22,7 +24,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             DisplayHiddenFiles = displayHiddenFiles;
         }
 
-        public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
+        public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword, bool isFullQuery = false)
         {
             if (queryHelper == null)
             {
@@ -33,6 +35,17 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
+            var simplifiedQuery = SimplifyQuery(sqlQuery);
+
+            if (!isFullQuery)
+            {
+                sqlQuery = simplifiedQuery;
+            }
+            else if (simplifiedQuery.Equals(sqlQuery, StringComparison.CurrentCultureIgnoreCase))
+            {
+                // if a full query is requested but there is no difference between the queries, return empty results
+                return results;
+            }
 
             // execute the command, which returns the results as an OleDBResults.
             List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
@@ -103,7 +116,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QueryMaxResults = maxCount;
 
             // Set list of columns we want to display, getting the path presently
-            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName";
+            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName, System.FileAttributes";
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
@@ -111,7 +124,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             if (!displayHiddenFiles)
             {
                 // https://docs.microsoft.com/en-us/windows/win32/search/all-bitwise
-                queryHelper.QueryWhereRestrictions += "AND System.FileAttributes <> SOME BITWISE " + _fileAttributeHidden;
+                queryHelper.QueryWhereRestrictions += " AND System.FileAttributes <> SOME BITWISE " + _fileAttributeHidden;
             }
 
             // To filter based on title for now
@@ -120,16 +133,18 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Set sorting order
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
-
-        public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 30)
+        
+        public IEnumerable<SearchResult> Search(string keyword, bool isFullQuery = false, string pattern = "*", int maxCount = 30)
         {
-            lock (_lock)
-            {
-                ISearchQueryHelper queryHelper;
-                InitQueryHelper(out queryHelper, maxCount, DisplayHiddenFiles);
-                ModifyQueryHelper(ref queryHelper, pattern);
-                return ExecuteQuery(queryHelper, keyword);
-            }
+            ISearchQueryHelper queryHelper;
+            InitQueryHelper(out queryHelper, maxCount, DisplayHiddenFiles);
+            ModifyQueryHelper(ref queryHelper, pattern);
+            return ExecuteQuery(queryHelper, keyword, isFullQuery);
+        }
+
+        public static string SimplifyQuery(string sqlQuery)
+        {
+            return _likeRegex.Replace(sqlQuery, string.Empty);
         }
     }
 }

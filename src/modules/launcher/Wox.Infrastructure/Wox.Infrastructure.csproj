@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
+<Import Project="..\..\..\Version.props" />
+  
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{4FD29318-A8AB-4D8F-AA47-60BC241B8DA3}</ProjectGuid>
@@ -8,6 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Wox.Infrastructure</RootNamespace>
     <AssemblyName>Wox.Infrastructure</AssemblyName>
+    <Version>$(Version).0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>
@@ -69,7 +71,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <!--<ItemGroup>
+  <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>
     </Compile>
@@ -83,5 +85,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-  </ItemGroup>-->
+  </ItemGroup>
 </Project>
