@@ -34,18 +34,17 @@ namespace Microsoft.Plugin.Program.Programs
         public string Description { get; set; }
         public string UserModelId { get; set; }
         public string BackgroundColor { get; set; }
-
         public string EntryPoint { get; set; }
         public string Name => DisplayName;
         public string Location => Package.Location;
         public bool Enabled { get; set; }
-        public bool CanRunElevated { get; set; }
-
-        
+        public bool CanRunElevated { get; set; }     
         public string LogoPath { get; set; }
         public LogoType LogoType { get; set; }
         public UWP Package { get; set; }
 
+        private const string ContrastWhite = "contrast-white";
+        private const string ContrastBlack = "contrast-black";
         private string logoUri;
 
         // Function to calculate the score of a result
@@ -347,7 +346,7 @@ namespace Microsoft.Plugin.Program.Programs
             LogoPathFromUri(this.logoUri, theme);
         }
 
-        private string GetScaleIcons(string path, string theme, bool isHighContrast = false)
+        private string GetScaleIcons(string path, string colorscheme, bool highContrast = false)
         {
             var extension = Path.GetExtension(path);
             if (extension != null)
@@ -363,19 +362,19 @@ namespace Microsoft.Plugin.Program.Programs
                         { PackageVersion.Windows8, new List<int> { 100 } }
                     };
 
+                if (!highContrast)
+                {
+                    paths.Add(path);
+                }
+
                 if (scaleFactors.ContainsKey(Package.Version))
                 {
-                    if(!isHighContrast)
-                    {
-                        paths.Add(path);
-                    }
-
                     foreach (var factor in scaleFactors[Package.Version])
                     {
-                        if(isHighContrast)
+                        if(highContrast)
                         {
-                            paths.Add($"{prefix}.scale-{factor}_{theme}{extension}");
-                            paths.Add($"{prefix}.{theme}_scale-{factor}{extension}");
+                            paths.Add($"{prefix}.scale-{factor}_{colorscheme}{extension}");
+                            paths.Add($"{prefix}.{colorscheme}_scale-{factor}{extension}");
                         }
                         else
                         {
@@ -393,7 +392,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static string GetTargetSizeIcon(string path, string theme, bool isHighContrast = false)
+        private static string GetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
         {
             var extension = Path.GetExtension(path);
             if (extension != null)
@@ -407,10 +406,10 @@ namespace Microsoft.Plugin.Program.Programs
 
                 foreach (var factor in targetSizes)
                 {
-                    if(isHighContrast)
+                    if(highContrast)
                     {
-                        string suffixThemePath = $"{prefix}.targetsize-{factor}_{theme}{extension}";
-                        string prefixThemePath = $"{prefix}.{theme}_targetsize-{factor}{extension}";
+                        string suffixThemePath = $"{prefix}.targetsize-{factor}_{colorscheme}{extension}";
+                        string prefixThemePath = $"{prefix}.{colorscheme}_targetsize-{factor}{extension}";
                         paths.Add(suffixThemePath);
                         paths.Add(prefixThemePath);
                         pathFactorPairs.Add(suffixThemePath, factor);
@@ -424,7 +423,6 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
 
-                paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.OrdinalIgnoreCase)).ToList();
                 var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
                 return selectedIconPath;
             }
@@ -434,9 +432,9 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private bool SetColoredIcon(string path, string theme)
+        private bool SetColoredIcon(string path, string colorscheme)
         {
-            var coloredScaleIcon = GetScaleIcons(path, theme);
+            var coloredScaleIcon = GetScaleIcons(path, colorscheme);
             if (!string.IsNullOrEmpty(coloredScaleIcon))
             {
                 LogoPath = coloredScaleIcon;
@@ -444,7 +442,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return true;
             }
 
-            var coloredTargetIcon = GetTargetSizeIcon(path, theme);
+            var coloredTargetIcon = GetTargetSizeIcon(path, colorscheme);
             if (!string.IsNullOrEmpty(coloredTargetIcon))
             {
                 LogoPath = coloredTargetIcon;
@@ -452,7 +450,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return true;
             }
 
-            var highContrastScaleIcon = GetScaleIcons(path, theme, true);
+            var highContrastScaleIcon = GetScaleIcons(path, colorscheme, true);
             if (!string.IsNullOrEmpty(highContrastScaleIcon))
             {
                 LogoPath = highContrastScaleIcon;
@@ -460,7 +458,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return true;
             }
 
-            var highContrastTargetIcon = GetTargetSizeIcon(path, theme, true);
+            var highContrastTargetIcon = GetTargetSizeIcon(path, colorscheme, true);
             if (!string.IsNullOrEmpty(highContrastTargetIcon))
             {
                 LogoPath = highContrastTargetIcon;
@@ -529,19 +527,19 @@ namespace Microsoft.Plugin.Program.Programs
 
             if(theme == Theme.HighContrastBlack || theme == Theme.HighContrastOne || theme == Theme.HighContrastTwo)
             {
-                isLogoUriSet = SetHighContrastIcon(path, "contrast-black");
+                isLogoUriSet = SetHighContrastIcon(path, ContrastBlack);
             }
             else if(theme == Theme.HighContrastWhite)
             {
-                isLogoUriSet = SetHighContrastIcon(path, "contrast-white");
+                isLogoUriSet = SetHighContrastIcon(path, ContrastWhite);
             }
             else if(theme == Theme.Light)
             {
-                isLogoUriSet = SetColoredIcon(path, "contrast-white");
+                isLogoUriSet = SetColoredIcon(path, ContrastWhite);
             }
             else
             {
-                isLogoUriSet = SetColoredIcon(path, "contrast-black");
+                isLogoUriSet = SetColoredIcon(path, ContrastBlack);
             }
 
             if(!isLogoUriSet)
@@ -566,7 +564,6 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "something")]
         private ImageSource PlatedImage(BitmapImage image)
         {
             if (!string.IsNullOrEmpty(BackgroundColor))
@@ -574,7 +571,7 @@ namespace Microsoft.Plugin.Program.Programs
                 string currentBackgroundColor;
                 if(BackgroundColor == "transparent")
                 {
-                    currentBackgroundColor = SystemParameters.WindowGlassBrush.ToString();
+                    currentBackgroundColor = SystemParameters.WindowGlassBrush.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -633,7 +630,6 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-
         private BitmapImage ImageFromPath(string path)
         {
             if (File.Exists(path))
@@ -669,5 +665,4 @@ namespace Microsoft.Plugin.Program.Programs
         Colored,
         HighContrast,
     }
-
 }
