@@ -218,21 +218,16 @@ IFACEMETHODIMP CPowerRenameManager::setVisible()
         UINT itemDepth = 0;
         rit->second->get_depth(&itemDepth);
 
-        /*Make an item visible if it has a least one visible subitem
-
+        //Make an item visible if it has a least one visible subitem
         if (isVisible)
         {
             lastVisibleDepth = itemDepth;
         }
-        else if ( lastVisibleDepth > itemDepth )
+        else if ( lastVisibleDepth == itemDepth+1 )
         {
             isVisible = true;
+            lastVisibleDepth = itemDepth;
         }
-        else if ( lastVisibleDepth < itemDepth )
-        {
-            lastVisibleDepth = 0;
-        }*/
-
         
         m_isVisible[i] = isVisible;
         hr = S_OK;
