@@ -99,11 +99,11 @@ public:
     IFACEMETHOD(Rename)(_In_ HWND hwndParent) = 0;
     IFACEMETHOD(AddItem)(_In_ IPowerRenameItem* pItem) = 0;
     IFACEMETHOD(GetItemByIndex)(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem) = 0;
-    IFACEMETHOD(GetVisibleItemByIndex)(_In_ UINT index, _COM_Outptr_ IPowerRenameItem * *ppItem) = 0;
+    IFACEMETHOD(GetVisibleItemByIndex)(_In_ UINT index, _COM_Outptr_ IPowerRenameItem ** ppItem) = 0;
     IFACEMETHOD(setVisible)() = 0;
     IFACEMETHOD(GetItemById)(_In_ int id, _COM_Outptr_ IPowerRenameItem** ppItem) = 0;
     IFACEMETHOD(GetItemCount)(_Out_ UINT* count) = 0;
-    IFACEMETHOD(GetVisibleItemCount)(_Out_ UINT * count) = 0;
+    IFACEMETHOD(GetVisibleItemCount)(_Out_ UINT* count) = 0;
     IFACEMETHOD(GetSelectedItemCount)(_Out_ UINT* count) = 0;
     IFACEMETHOD(GetRenameItemCount)(_Out_ UINT* count) = 0;
     IFACEMETHOD(switchFilter)(_In_ int columnNumber) = 0;

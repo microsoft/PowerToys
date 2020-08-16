@@ -223,7 +223,7 @@ IFACEMETHODIMP CPowerRenameManager::setVisible()
         {
             lastVisibleDepth = itemDepth;
         }
-        else if ( lastVisibleDepth == itemDepth+1 )
+        else if (lastVisibleDepth == itemDepth+1)
         {
             isVisible = true;
             lastVisibleDepth = itemDepth;
@@ -292,8 +292,8 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
 
 IFACEMETHODIMP CPowerRenameManager::switchFilter(_In_ int columnNumber) 
 {
-    DWORD clickedFilter = (columnNumber == 0) ? PowerRenameFilters::Selected : PowerRenameFilters::ShoulRename;
-    m_filter = (m_filter == clickedFilter) ? PowerRenameFilters::None : clickedFilter;
+    DWORD clickedFilter = (columnNumber == 0)?PowerRenameFilters::Selected:PowerRenameFilters::ShoulRename;
+    m_filter = (m_filter == clickedFilter)?PowerRenameFilters::None:clickedFilter;
 
     return S_OK;
 }

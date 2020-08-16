@@ -30,7 +30,6 @@ private:
     void _UpdateColumnSizes();
     void _UpdateHeaderCheckState(_In_ bool check);
 
-    bool isFilterOn = false;
     HWND m_hwndLV = nullptr;
 };
 
