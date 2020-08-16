@@ -39,8 +39,7 @@
                       
                        Foreground="{DynamicResource ControlTextBrushKey}">
                 <Run Text="Please file a bug in the"/>
-                <Hyperlink x:Name="RepositoryHyperlink" Click="RepositoryHyperlink_Click"  FontWeight="SemiBold" NavigateUri="https://aka.ms/powerToysReportBug">PowerToys GitHub repository</Hyperlink>
-                <Run Text="."/>
+                <Hyperlink x:Name="RepositoryHyperlink" Click="RepositoryHyperlink_Click"  FontWeight="SemiBold" NavigateUri="https://aka.ms/powerToysReportBug">PowerToys GitHub repository</Hyperlink><Run Text="."/>
                 <Run Text="Make sure to upload the log file and to include the error message."/>
             </TextBlock>
   
