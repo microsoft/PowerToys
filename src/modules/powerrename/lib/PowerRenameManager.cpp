@@ -175,7 +175,7 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemByIndex(_In_ UINT index, _COM_
                 break;
             }
         }
-        return GetItemByIndex(realIndex, ppItem);
+        hr = GetItemByIndex(realIndex, ppItem);
     }
 
     return hr;
