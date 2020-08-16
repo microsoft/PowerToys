@@ -21,6 +21,8 @@ namespace PowerLauncher
 {
     internal partial class ReportWindow
     {
+
+
         public ReportWindow(Exception exception)
         {
             InitializeComponent();
@@ -40,17 +42,14 @@ namespace PowerLauncher
             var directory = new DirectoryInfo(path);
             var log = directory.GetFiles().OrderByDescending(f => f.LastWriteTime).First();
 
-            var paragraph = Hyperlink("Please open new issue in: ", Constant.Issue);
-            paragraph.Inlines.Add($"1. upload log file: {log.FullName}\n");
-            paragraph.Inlines.Add($"2. copy below exception message");
-            ErrorTextbox.Document.Blocks.Add(paragraph);
+            LogFilePathBox.Text = log.FullName;
 
             StringBuilder content = new StringBuilder();
             content.AppendLine(ErrorReporting.RuntimeInfo());
             content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             content.AppendLine("Exception:");
             content.AppendLine(exception.ToString());
-            paragraph = new Paragraph();
+            var paragraph = new Paragraph();
             paragraph.Inlines.Add(content.ToString());
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
@@ -88,21 +87,15 @@ namespace PowerLauncher
             Process.Start(ps);
         }
 
-        private static Paragraph Hyperlink(string textBeforeUrl, string url)
+        private void RepositoryHyperlink_Click(object sender, RoutedEventArgs e)
         {
-            var paragraph = new Paragraph();
-            paragraph.Margin = new Thickness(0);
-
-            var link = new Hyperlink { IsEnabled = true };
-            link.Inlines.Add(url);
-            link.NavigateUri = new Uri(url);
-            link.RequestNavigate += LinkOnRequestNavigate;
-
-            paragraph.Inlines.Add(textBeforeUrl);
-            paragraph.Inlines.Add(link);
-            paragraph.Inlines.Add("\n");
-
-            return paragraph;
+      
+            var ps = new ProcessStartInfo((sender as Hyperlink).NavigateUri.ToString())
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            };
+            Process.Start(ps);
         }
     }
 }
