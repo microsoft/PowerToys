@@ -175,13 +175,13 @@ IFACEMETHODIMP CPowerRenameUI::OnItemAdded(_In_ IPowerRenameItem*)
 
 IFACEMETHODIMP CPowerRenameUI::OnUpdate(_In_ IPowerRenameItem*)
 {
-    UINT itemCount = 0;
+    UINT visibleItemCount = 0;
     if (m_spsrm)
     {
-        m_spsrm->GetVisibleItemCount(&itemCount);
+        m_spsrm->GetVisibleItemCount(&visibleItemCount);
     }
-    m_listview.RedrawItems(0, itemCount);
-    m_listview.SetItemCount(itemCount);
+    m_listview.RedrawItems(0, visibleItemCount);
+    m_listview.SetItemCount(visibleItemCount);
     _UpdateCounts();
     return S_OK;
 }
@@ -1059,7 +1059,7 @@ void CPowerRenameListView::ToggleAll(_In_ IPowerRenameManager* psrm, _In_ bool s
 {
     if (m_hwndLV)
     {
-        UINT itemCount = 0;
+        UINT visibleItemCount = 0, itemCount = 0;
         psrm->GetItemCount(&itemCount);
         for (UINT i = 0; i < itemCount; i++)
         {
@@ -1070,9 +1070,9 @@ void CPowerRenameListView::ToggleAll(_In_ IPowerRenameManager* psrm, _In_ bool s
             }
         }
 
-        psrm->GetVisibleItemCount(&itemCount);
-        RedrawItems(0, itemCount);
-        SetItemCount(itemCount);
+        psrm->GetVisibleItemCount(&visibleItemCount);
+        RedrawItems(0, visibleItemCount);
+        SetItemCount(visibleItemCount);
     }
 }
 
@@ -1086,10 +1086,10 @@ void CPowerRenameListView::ToggleItem(_In_ IPowerRenameManager* psrm, _In_ int i
         spItem->put_selected(!selected);
 
         
-        UINT itemCount = 0;
-        psrm->GetVisibleItemCount(&itemCount);
-        ListView_RedrawItems(m_hwndLV, 0, itemCount);
-        ListView_SetItemCount(m_hwndLV, itemCount);
+        UINT visibleItemCount = 0;
+        psrm->GetVisibleItemCount(&visibleItemCount);
+        RedrawItems(0, visibleItemCount);
+        SetItemCount(visibleItemCount);
     }
 }
 
@@ -1136,12 +1136,10 @@ void CPowerRenameListView::UpdateItemCheckState(_In_ IPowerRenameManager* psrm, 
             ListView_SetItemState(m_hwndLV, iItem, uSelected, LVIS_SELECTED);
 
             // Update the rename column if necessary
-            int id = 0;
-            spItem->get_id(&id);
-            UINT itemCount = 0;
-            psrm->GetVisibleItemCount(&itemCount);
-            ListView_RedrawItems(m_hwndLV, 0, itemCount);
-            ListView_SetItemCount(m_hwndLV, itemCount);
+            UINT visibleItemCount = 0;
+            psrm->GetVisibleItemCount(&visibleItemCount);
+            RedrawItems(0, visibleItemCount);
+            SetItemCount(visibleItemCount);
         }
 
         // Get the total number of list items and compare it to what is selected
@@ -1332,9 +1330,9 @@ void CPowerRenameListView::_UpdateHeaderCheckState(_In_ bool check)
 void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ int columnNumber)
 {
     psrm->switchFilter(columnNumber);
-    UINT itemCount = 0;
-    psrm->GetVisibleItemCount(&itemCount);
-    ListView_RedrawItems(m_hwndLV, 0, itemCount);
-    ListView_SetItemCount(m_hwndLV, itemCount);
+    UINT visibleItemCount = 0;
+    psrm->GetVisibleItemCount(&visibleItemCount);
+    RedrawItems(0, visibleItemCount);
+    SetItemCount(visibleItemCount);
 }
     
