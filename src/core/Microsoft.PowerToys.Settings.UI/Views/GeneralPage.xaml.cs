@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
 
             ViewModel = new GeneralViewModel();
-            GeneralView.DataContext = ViewModel;
+            GeneralSettingsView.DataContext = ViewModel;
         }
     }
 }
