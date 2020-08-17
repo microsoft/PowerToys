@@ -75,22 +75,12 @@ namespace PowerLauncher
             }
         }
 
-        private static void LinkOnRequestNavigate(object sender, RequestNavigateEventArgs e)
-        {
-            var ps = new ProcessStartInfo(e.Uri.ToString())
-            {
-                UseShellExecute = true,
-                Verb = "open"
-            };
-            Process.Start(ps);
-        }
-
         private void RepositoryHyperlink_Click(object sender, RoutedEventArgs e)
         {
             var ps = new ProcessStartInfo((sender as Hyperlink).NavigateUri.ToString())
             {
                 UseShellExecute = true,
-                Verb = "open"
+                Verb = "open",
             };
             Process.Start(ps);
         }
