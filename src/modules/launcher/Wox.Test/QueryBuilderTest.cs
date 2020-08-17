@@ -145,7 +145,7 @@ namespace Wox.Test
 
             // Assert
             Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search));
-            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.Search));
+            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword));
         }
 
         [Test]
