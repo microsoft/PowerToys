@@ -43,7 +43,6 @@ namespace KeyboardManagerHelper
         CtrlAltDel,
         RemapUnsuccessful,
         SaveFailed,
-        MissingKey,
         ShortcutStartWithModifier,
         ShortcutCannotHaveRepeatedModifier,
         ShortcutAtleast2Keys,
