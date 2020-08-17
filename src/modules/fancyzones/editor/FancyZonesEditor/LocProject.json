@@ -6,7 +6,7 @@
           {
             "SourceFile": "src\\modules\\fancyzones\\editor\\FancyZonesEditor\\Properties\\Resources.resx",
             "CopyOption": "LangIDOnPath",
-            "OutputPath": "src\\modules\\fancyzones\\editor\\FancyZonesEditor\\Properties\\Resources.resx"
+            "OutputPath": "src\\modules\\fancyzones\\editor\\FancyZonesEditor\\Properties"
           }
         ]
       }
