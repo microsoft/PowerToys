@@ -1,51 +1,68 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Wox.Infrastructure;
-using Microsoft.Plugin.Program.Logger;
+using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Wox.Plugin;
-using System.Windows.Input;
-using Wox.Plugin.SharedCommands;
-using System.Reflection;
+using Microsoft.Plugin.Program.Logger;
+using Microsoft.Plugin.Program.Win32;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
+using Wox.Plugin;
+using Wox.Plugin.SharedCommands;
 using static Microsoft.Plugin.Program.Programs.UWP;
-using System.Runtime.InteropServices.ComTypes;
-using System.Globalization;
-using Microsoft.Plugin.Program.Win32;
-using System.Windows;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-
     [Serializable]
     public class UWPApplication : IProgram
     {
         public string AppListEntry { get; set; }
+
         public string UniqueIdentifier { get; set; }
+
         public string DisplayName { get; set; }
+
         public string Description { get; set; }
+
         public string UserModelId { get; set; }
+
         public string BackgroundColor { get; set; }
+
         public string EntryPoint { get; set; }
+
         public string Name => DisplayName;
+
         public string Location => Package.Location;
+
         public bool Enabled { get; set; }
-        public bool CanRunElevated { get; set; }     
+
+        public bool CanRunElevated { get; set; }
+
         public string LogoPath { get; set; }
+
         public LogoType LogoType { get; set; }
+
         public UWP Package { get; set; }
 
-        private const string ContrastWhite = "contrast-white";
-        private const string ContrastBlack = "contrast-black";
         private string logoUri;
+
+        private const string ContrastWhite = "contrast-white";
+
+        private const string ContrastBlack = "contrast-black";
 
         // Function to calculate the score of a result
         private int Score(string query)
@@ -85,13 +102,12 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     Launch(api);
                     return true;
-                }
+                },
             };
 
             // To set the title to always be the displayname of the packaged application
             result.Title = DisplayName;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
-
 
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), Package.Location);
@@ -120,7 +136,7 @@ namespace Microsoft.Plugin.Program.Programs
                             Glyph = "\xE7EF",
                             FontFamily = "Segoe MDL2 Assets",
                             AcceleratorKey = Key.Enter,
-                            AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                            AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                             Action = _ =>
                             {
                                 string command = "shell:AppsFolder\\" + UniqueIdentifier;
@@ -131,10 +147,10 @@ namespace Microsoft.Plugin.Program.Programs
 
                                 Process.Start(info);
                                 return true;
-                            }
-                        }
-                    );
+                            },
+                        });
             }
+
             contextMenus.Add(
                 new ContextMenuResult
                 {
@@ -143,13 +159,13 @@ namespace Microsoft.Plugin.Program.Programs
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
 
                         return true;
-                    }
+                    },
                 });
 
             contextMenus.Add(new ContextMenuResult
@@ -172,7 +188,7 @@ namespace Microsoft.Plugin.Program.Programs
                         Log.Exception($"|Microsoft.Plugin.Program.UWP.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
                         return false;
                     }
-                }
+                },
             });
 
             return contextMenus;
@@ -182,14 +198,13 @@ namespace Microsoft.Plugin.Program.Programs
         private async void Launch(IPublicAPI api)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
-            uint unusedPid;
             const string noArgs = "";
             const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;
             await Task.Run(() =>
             {
                 try
                 {
-                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out unusedPid);
+                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out uint unusedPid);
                 }
                 catch (Exception)
                 {
@@ -229,7 +244,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             DisplayName = ResourceFromPri(package.FullName, DisplayName);
             Description = ResourceFromPri(package.FullName, Description);
-            this.logoUri = LogoUriFromManifest(manifestApp);
+            logoUri = LogoUriFromManifest(manifestApp);
 
             Enabled = true;
             CanRunElevated = IfApplicationcanRunElevated();
@@ -253,6 +268,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
             }
+
             return false;
         }
 
@@ -295,7 +311,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException($"|UWP|ResourceFromPri|{Package.Location}|Can't load null or empty result "
+                        ProgramLogger.LogException(
+                            $"|UWP|ResourceFromPri|{Package.Location}|Can't load null or empty result "
                                                     + $"pri {source} in uwp location {Package.Location}", new NullReferenceException());
                         return string.Empty;
                     }
@@ -318,7 +335,6 @@ namespace Microsoft.Plugin.Program.Programs
                 return resourceReference;
             }
         }
-
 
         internal string LogoUriFromManifest(IAppxManifestApplication app)
         {
@@ -353,13 +369,13 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var end = path.Length - extension.Length;
                 var prefix = path.Substring(0, end);
-                var paths = new List<string> {};
+                var paths = new List<string> { };
                 var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
                         // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
                         { PackageVersion.Windows10, new List<int> { 100, 125, 150, 200, 400 } },
                         { PackageVersion.Windows81, new List<int> { 100, 120, 140, 160, 180 } },
-                        { PackageVersion.Windows8, new List<int> { 100 } }
+                        { PackageVersion.Windows8, new List<int> { 100 } },
                     };
 
                 if (!highContrast)
@@ -371,7 +387,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     foreach (var factor in scaleFactors[Package.Version])
                     {
-                        if(highContrast)
+                        if (highContrast)
                         {
                             paths.Add($"{prefix}.scale-{factor}_{colorscheme}{extension}");
                             paths.Add($"{prefix}.{colorscheme}_scale-{factor}{extension}");
@@ -406,7 +422,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 foreach (var factor in targetSizes)
                 {
-                    if(highContrast)
+                    if (highContrast)
                     {
                         string suffixThemePath = $"{prefix}.targetsize-{factor}_{colorscheme}{extension}";
                         string prefixThemePath = $"{prefix}.{colorscheme}_targetsize-{factor}{extension}";
@@ -515,7 +531,6 @@ namespace Microsoft.Plugin.Program.Programs
             // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
             // windows 8.1 https://msdn.microsoft.com/en-us/library/windows/apps/hh965372.aspx#target_size
             // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
-
             string path;
             bool isLogoUriSet;
             if (uri.Contains("\\", StringComparison.Ordinal))
@@ -528,15 +543,15 @@ namespace Microsoft.Plugin.Program.Programs
                 path = Path.Combine(Package.Location, "Assets", uri);
             }
 
-            if(theme == Theme.HighContrastBlack || theme == Theme.HighContrastOne || theme == Theme.HighContrastTwo)
+            if (theme == Theme.HighContrastBlack || theme == Theme.HighContrastOne || theme == Theme.HighContrastTwo)
             {
                 isLogoUriSet = SetHighContrastIcon(path, ContrastBlack);
             }
-            else if(theme == Theme.HighContrastWhite)
+            else if (theme == Theme.HighContrastWhite)
             {
                 isLogoUriSet = SetHighContrastIcon(path, ContrastWhite);
             }
-            else if(theme == Theme.Light)
+            else if (theme == Theme.Light)
             {
                 isLogoUriSet = SetColoredIcon(path, ContrastWhite);
             }
@@ -545,17 +560,17 @@ namespace Microsoft.Plugin.Program.Programs
                 isLogoUriSet = SetColoredIcon(path, ContrastBlack);
             }
 
-            if(!isLogoUriSet)
+            if (!isLogoUriSet)
             {
-                ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
-                                                $"|Unable to find extension from {uri} for {UserModelId} " +
-                                                $"in package location {Package.Location}", new FileNotFoundException());
+                ProgramLogger.LogException(
+                            $"|UWP|LogoPathFromUri|{Package.Location}" +
+                            $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
             }
         }
 
         public ImageSource Logo()
         {
-            if(LogoType == LogoType.Colored)
+            if (LogoType == LogoType.Colored)
             {
                 var logo = ImageFromPath(LogoPath);
                 var platedImage = PlatedImage(logo);
@@ -572,7 +587,7 @@ namespace Microsoft.Plugin.Program.Programs
             if (!string.IsNullOrEmpty(BackgroundColor))
             {
                 string currentBackgroundColor;
-                if(BackgroundColor == "transparent")
+                if (BackgroundColor == "transparent")
                 {
                     currentBackgroundColor = SystemParameters.WindowGlassBrush.ToString(CultureInfo.InvariantCulture);
                 }
@@ -582,8 +597,8 @@ namespace Microsoft.Plugin.Program.Programs
                 }
 
                 var padding = 8;
-                var width = image.Width + 2 * padding;
-                var height = image.Height + 2 * padding;
+                var width = image.Width + (2 * padding);
+                var height = image.Height + (2 * padding);
                 var x = 0;
                 var y = 0;
 
@@ -610,17 +625,18 @@ namespace Microsoft.Plugin.Program.Programs
                     context.Close();
                     const int dpiScale100 = 96;
                     var bitmap = new RenderTargetBitmap(
-                        Convert.ToInt32(width), Convert.ToInt32(height),
-                        dpiScale100, dpiScale100,
-                        PixelFormats.Pbgra32
-                    );
+                        Convert.ToInt32(width),
+                        Convert.ToInt32(height),
+                        dpiScale100,
+                        dpiScale100,
+                        PixelFormats.Pbgra32);
                     bitmap.Render(visual);
                     return bitmap;
                 }
                 else
                 {
-                    ProgramLogger.LogException($"|UWP|PlatedImage|{Package.Location}" +
-                                                $"|Unable to convert background string {BackgroundColor} " +
+                    ProgramLogger.LogException(
+                        $"|UWP|PlatedImage|{Package.Location}|Unable to convert background string {BackgroundColor} " +
                                                 $"to color for {Package.Location}", new InvalidOperationException());
 
                     return new BitmapImage(new Uri(Constant.ErrorIcon));
@@ -651,8 +667,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                ProgramLogger.LogException($"|UWP|ImageFromPath|{path}" +
-                                                $"|Unable to get logo for {UserModelId} from {path} and" +
+                ProgramLogger.LogException(
+                    $"|UWP|ImageFromPath|{path}|Unable to get logo for {UserModelId} from {path} and" +
                                                 $" located in {Package.Location}", new FileNotFoundException());
                 return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
             }
@@ -664,7 +680,8 @@ namespace Microsoft.Plugin.Program.Programs
         }
     }
 
-    public enum LogoType {
+    public enum LogoType
+    {
         Colored,
         HighContrast,
     }

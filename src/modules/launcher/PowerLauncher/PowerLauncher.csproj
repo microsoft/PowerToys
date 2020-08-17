@@ -259,7 +259,7 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
-  <!--<ItemGroup>
+  <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>
     </Compile>
@@ -273,5 +273,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-  </ItemGroup>-->
+  </ItemGroup>
 </Project>

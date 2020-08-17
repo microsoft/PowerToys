@@ -18,13 +18,9 @@ namespace PowerLauncher.ViewModel
 {
     public class ResultsViewModel : BaseModel
     {
-        #region Private Fields
-
         private readonly object _collectionLock = new object();
 
         private readonly Settings _settings;
-
-        #endregion
 
         public ResultsViewModel()
         {
@@ -32,7 +28,8 @@ namespace PowerLauncher.ViewModel
             BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
         }
 
-        public ResultsViewModel(Settings settings) : this()
+        public ResultsViewModel(Settings settings)
+            : this()
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _settings.PropertyChanged += (s, e) =>
@@ -46,8 +43,6 @@ namespace PowerLauncher.ViewModel
                 }
             };
         }
-
-        #region Properties
 
         public int MaxHeight
         {
@@ -63,11 +58,13 @@ namespace PowerLauncher.ViewModel
 
         public ResultViewModel SelectedItem
         {
-            get { return _selectedItem; }
+            get
+            {
+                return _selectedItem;
+            }
 
             set
             {
-                // value can be null when selecting an item in a virtualized list
                 if (value != null)
                 {
                     if (_selectedItem != null)
@@ -90,10 +87,6 @@ namespace PowerLauncher.ViewModel
         public Visibility Visibility { get; set; } = Visibility.Hidden;
 
         public ResultCollection Results { get; }
-
-        #endregion
-
-        #region Private Methods
 
         private static int InsertIndexOf(int newScore, IList<ResultViewModel> list)
         {
@@ -124,10 +117,6 @@ namespace PowerLauncher.ViewModel
                 return -1;
             }
         }
-
-        #endregion
-
-        #region Public Methods
 
         public void SelectNextResult()
         {
@@ -247,9 +236,6 @@ namespace PowerLauncher.ViewModel
             Results.AddRange(sorted);
         }
 
-        #endregion
-
-        #region FormattedText Dependency Property
         public static readonly DependencyProperty FormattedTextProperty = DependencyProperty.RegisterAttached(
             "FormattedText",
             typeof(Inline),
@@ -272,16 +258,20 @@ namespace PowerLauncher.ViewModel
         private static void FormattedTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var textBlock = d as TextBlock;
-            if (textBlock == null) return;
+            if (textBlock == null)
+            {
+                return;
+            }
 
             var inline = (Inline)e.NewValue;
 
             textBlock.Inlines.Clear();
-            if (inline == null) return;
+            if (inline == null)
+            {
+                return;
+            }
 
             textBlock.Inlines.Add(inline);
         }
-        #endregion
-
     }
 }

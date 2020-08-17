@@ -1,16 +1,19 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.Plugin.Program.Views.Commands;
-using Microsoft.Plugin.Program.Programs;
-using System.ComponentModel;
-using System.Windows.Data;
 using Wox.Plugin;
-using System.Globalization;
 
 namespace Microsoft.Plugin.Program.Views
 {
@@ -25,7 +28,7 @@ namespace Microsoft.Plugin.Program.Views
         private ListSortDirection _lastDirection;
 
         // We do not save all program sources to settings, so using
-        // this as temporary holder for displaying all loaded programs sources. 
+        // this as temporary holder for displaying all loaded programs sources.
         internal static List<ProgramSource> ProgramSettingDisplayList { get; set; }
 
         public ProgramSetting(PluginInitContext context, ProgramPluginSettings settings)
@@ -55,7 +58,7 @@ namespace Microsoft.Plugin.Program.Views
             });
         }
 
-        private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
+        private void BtnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
             var add = new AddProgramSource(context, _settings);
             if (add.ShowDialog() ?? false)
@@ -77,7 +80,7 @@ namespace Microsoft.Plugin.Program.Views
             ReIndexing();
         }
 
-        private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
+        private void BtnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
             var selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
             if (selectedProgramSource != null)
@@ -95,7 +98,7 @@ namespace Microsoft.Plugin.Program.Views
             }
         }
 
-        private void btnReindex_Click(object sender, RoutedEventArgs e)
+        private void BtnReindex_Click(object sender, RoutedEventArgs e)
         {
             ReIndexing();
         }
@@ -109,7 +112,7 @@ namespace Microsoft.Plugin.Program.Views
             }
         }
 
-        private void programSourceView_DragEnter(object sender, DragEventArgs e)
+        private void ProgramSourceView_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -121,7 +124,7 @@ namespace Microsoft.Plugin.Program.Views
             }
         }
 
-        private void programSourceView_Drop(object sender, DragEventArgs e)
+        private void ProgramSourceView_Drop(object sender, DragEventArgs e)
         {
             var directories = (string[])e.Data.GetData(DataFormats.FileDrop);
 
@@ -136,7 +139,7 @@ namespace Microsoft.Plugin.Program.Views
                         var source = new ProgramSource
                         {
                             Location = directory,
-                            UniqueIdentifier = directory
+                            UniqueIdentifier = directory,
                         };
 
                         directoriesToAdd.Add(source);
@@ -166,14 +169,14 @@ namespace Microsoft.Plugin.Program.Views
             ReIndexing();
         }
 
-        private void btnLoadAllProgramSource_OnClick(object sender, RoutedEventArgs e)
+        private void BtnLoadAllProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
             ProgramSettingDisplayList.LoadAllApplications();
 
             programSourceView.Items.Refresh();
         }
 
-        private void btnProgramSourceStatus_OnClick(object sender, RoutedEventArgs e)
+        private void BtnProgramSourceStatus_OnClick(object sender, RoutedEventArgs e)
         {
             var selectedItems = programSourceView
                                 .SelectedItems.Cast<ProgramSource>()
@@ -215,7 +218,9 @@ namespace Microsoft.Plugin.Program.Views
             }
 
             if (selectedItems.IsReindexRequired())
+            {
                 ReIndexing();
+            }
 
             programSourceView.SelectedItems.Clear();
 

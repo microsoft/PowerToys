@@ -8,7 +8,7 @@
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
 KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 // Initialized as new vector
-std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> ShortcutControl::shortcutRemapBuffer;
+RemapBuffer ShortcutControl::shortcutRemapBuffer;
 
 ShortcutControl::ShortcutControl(Grid table, const int colIndex, TextBox targetApp)
 {
@@ -93,9 +93,9 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][1]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>(), 1, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][1]->keyDropDownControlObjects, targetAppTextBox, true, false);
 
         // Reset the buffer based on the selected drop down items
-        std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>()));
+        std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(KeyDropDownControl::GetSelectedIndicesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>()), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true)));
         // second column is a hybrid column
-        std::vector<DWORD> selectedKeyCodes = KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>());
+        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(KeyDropDownControl::GetSelectedIndicesFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>()), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
 
         // If exactly one key is selected consider it to be a key remap
         if (selectedKeyCodes.size() == 1)
@@ -172,7 +172,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     if (originalKeys.IsValidShortcut() && !(newKeys.index() == 0 && std::get<DWORD>(newKeys) == NULL) && !(newKeys.index() == 1 && !std::get<Shortcut>(newKeys).IsValidShortcut()))
     {
         // change to load app name
-        shortcutRemapBuffer.push_back(std::make_pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>(std::vector<std::variant<DWORD, Shortcut>>{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
+        shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
         KeyDropDownControl::AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel.as<StackPanel>(), *keyboardManagerState, 0, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects, shortcutRemapBuffer, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutControlLayout.as<StackPanel>(), targetAppTextBox, false, false);
 
         if (newKeys.index() == 0)
@@ -192,7 +192,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     else
     {
         // Initialize both shortcuts as empty shortcuts
-        shortcutRemapBuffer.push_back(std::make_pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>(std::vector<std::variant<DWORD, Shortcut>>{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
+        shortcutRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
     }
 }
 
@@ -203,7 +203,7 @@ StackPanel ShortcutControl::getShortcutControl()
 }
 
 // Function to create the detect shortcut UI window
-void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remapBuffer)
+void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer)
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;

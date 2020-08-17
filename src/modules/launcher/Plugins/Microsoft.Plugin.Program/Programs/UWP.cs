@@ -1,19 +1,17 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
-using System.Text;
-using System.Xml.Linq;
-using Windows.ApplicationModel;
-using Windows.Management.Deployment;
-using Microsoft.Plugin.Program.Logger;
-using Rect = System.Windows.Rect;
-using System.Windows.Controls;
 using System.Runtime.InteropServices.ComTypes;
-using Wox.Infrastructure.Logger;
+using System.Xml.Linq;
+using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Win32;
+using Wox.Infrastructure.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -21,8 +19,11 @@ namespace Microsoft.Plugin.Program.Programs
     public partial class UWP
     {
         public string Name { get; }
+
         public string FullName { get; }
+
         public string FamilyName { get; }
+
         public string Location { get; set; }
 
         public IList<UWPApplication> Apps { get; private set; }
@@ -51,19 +52,18 @@ namespace Microsoft.Plugin.Program.Programs
             var namespaces = XmlNamespaces(path);
             InitPackageVersion(namespaces);
 
-            IStream stream;
             const uint noAttribute = 0x80;
             const Stgm exclusiveRead = Stgm.Read;
-            var hResult = NativeMethods.SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
+            var hResult = NativeMethods.SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out IStream stream);
 
             if (hResult == Hresult.Ok)
             {
                 var apps = new List<UWPApplication>();
 
-                List<IAppxManifestApplication> _apps = AppxPackageHelper.getAppsFromManifest(stream);
-                foreach (var _app in _apps)
+                List<IAppxManifestApplication> appsViaManifests = AppxPackageHelper.GetAppsFromManifest(stream);
+                foreach (var appInManifest in appsViaManifests)
                 {
-                    var app = new UWPApplication(_app, this);
+                    var app = new UWPApplication(appInManifest, this);
                     apps.Add(app);
                 }
 
@@ -80,16 +80,15 @@ namespace Microsoft.Plugin.Program.Programs
             else
             {
                 var e = Marshal.GetExceptionForHR((int)hResult);
-                ProgramLogger.LogException($"|UWP|InitializeAppInfo|{path}" +
+                ProgramLogger.LogException(
+                    $"|UWP|InitializeAppInfo|{path}" +
                                                 "|Error caused while trying to get the details of the UWP program", e);
 
                 Apps = new List<UWPApplication>().ToArray();
             }
         }
 
-
-
-        /// http://www.hanselman.com/blog/GetNamespacesFromAnXMLDocumentWithXPathDocumentAndLINQToXML.aspx
+        // http://www.hanselman.com/blog/GetNamespacesFromAnXMLDocumentWithXPathDocumentAndLINQToXML.aspx
         private static string[] XmlNamespaces(string path)
         {
             XDocument z = XDocument.Load(path);
@@ -99,10 +98,8 @@ namespace Microsoft.Plugin.Program.Programs
                     Where(a => a.IsNamespaceDeclaration).
                     GroupBy(
                         a => a.Name.Namespace == XNamespace.None ? string.Empty : a.Name.LocalName,
-                        a => XNamespace.Get(a.Value)
-                    ).Select(
-                        g => g.First().ToString()
-                    ).ToArray();
+                        a => XNamespace.Get(a.Value)).Select(
+                        g => g.First().ToString()).ToArray();
                 return namespaces;
             }
             else
@@ -117,9 +114,9 @@ namespace Microsoft.Plugin.Program.Programs
         {
             var versionFromNamespace = new Dictionary<string, PackageVersion>
             {
-                {"http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10},
-                {"http://schemas.microsoft.com/appx/2013/manifest", PackageVersion.Windows81},
-                {"http://schemas.microsoft.com/appx/2010/manifest", PackageVersion.Windows8},
+                { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
+                { "http://schemas.microsoft.com/appx/2013/manifest", PackageVersion.Windows81 },
+                { "http://schemas.microsoft.com/appx/2010/manifest", PackageVersion.Windows8 },
             };
 
             foreach (var n in versionFromNamespace.Keys)
@@ -131,7 +128,8 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            ProgramLogger.LogException($"|UWP|XmlNamespaces|{Location}" +
+            ProgramLogger.LogException(
+                $"|UWP|XmlNamespaces|{Location}" +
                                                 "|Trying to get the package version of the UWP program, but a unknown UWP appmanifest version  "
                                                 + $"{FullName} from location {Location} is returned.", new FormatException());
 
@@ -155,15 +153,17 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
+                        ProgramLogger.LogException(
+                            $"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
                                                         + $"unable to convert Package to UWP for {p.FullName}", e);
                         return Array.Empty<UWPApplication>();
                     }
+
                     return u.Apps;
                 }).ToArray();
 
                 var updatedListWithoutDisabledApps = applications
-                                                        .Where(t1 => !Main._settings.DisabledProgramSources
+                                                        .Where(t1 => !Main.Settings.DisabledProgramSources
                                                                         .Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
                                                         .Select(x => x);
 
@@ -190,11 +190,9 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e)
                 {
-                    ProgramLogger.LogException("UWP", "CurrentUserPackages", $"id", "An unexpected error occurred and "
-                                                + $"unable to verify if package is valid", e);
+                    ProgramLogger.LogException("UWP", "CurrentUserPackages", $"id", "An unexpected error occurred and unable to verify if package is valid", e);
                     return false;
                 }
-
 
                 return valid;
             });
@@ -229,21 +227,19 @@ namespace Microsoft.Plugin.Program.Programs
             Windows10,
             Windows81,
             Windows8,
-            Unknown
+            Unknown,
         }
 
         [Flags]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1714:Flags enums should have plural names", Justification = "This name is consistent with the corresponding win32 flags: https://docs.microsoft.com/en-us/windows/win32/stg/stgm-constants ")]
-        public enum Stgm : Int64
+        public enum Stgm : long
         {
             Read = 0x00000000L,
         }
 
-        public enum Hresult : Int32
+        public enum Hresult : int
         {
             Ok = 0x0,
         }
-
-
     }
 }

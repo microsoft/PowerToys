@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -71,11 +72,13 @@ namespace Microsoft.Plugin.Calculator
 
                 if (!string.IsNullOrEmpty(result?.ToString()))
                 {
+                    var roundedResult = Math.Round(Convert.ToDecimal(result, CultureInfo.CurrentCulture), 10, MidpointRounding.AwayFromZero);
+
                     return new List<Result>
                     {
                         new Result
                         {
-                            Title = result.ToString(),
+                            Title = roundedResult.ToString(CultureInfo.CurrentCulture),
                             IcoPath = IconPath,
                             Score = 300,
                             SubTitle = Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),

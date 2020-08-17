@@ -108,17 +108,13 @@
     <Compile Include="Interop.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Services\NavigationService.cs" />
-    <Compile Include="ViewModels\ColorPickerViewModel.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
-    <Compile Include="ViewModels\GeneralViewModel.cs" />
     <Compile Include="ViewModels\FancyZonesViewModel.cs" />
     <Compile Include="ViewModels\ImageResizerViewModel.cs" />
     <Compile Include="ViewModels\KeyboardManagerViewModel.cs" />
     <Compile Include="ViewModels\PowerPreviewViewModel.cs" />
-    <Compile Include="ViewModels\PowerRenameViewModel.cs" />
     <Compile Include="ViewModels\PowerLauncherViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
-    <Compile Include="ViewModels\ShortcutGuideViewModel.cs" />
     <Compile Include="Views\ColorPickerPage.xaml.cs">
       <DependentUpon>ColorPickerPage.xaml</DependentUpon>
     </Compile>

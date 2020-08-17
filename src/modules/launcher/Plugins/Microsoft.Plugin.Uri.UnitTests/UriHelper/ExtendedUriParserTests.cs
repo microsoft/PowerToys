@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using Microsoft.Plugin.Uri.UriHelper;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NUnit.Framework;
@@ -32,10 +36,10 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("http://test.c", true, "http://test.c/")]
         [TestCase("http://test.co", true, "http://test.co/")]
         [TestCase("http://test.com", true, "http://test.com/")]
-        [TestCase("http:3", true,"http://http:3/")]
+        [TestCase("http:3", true, "http://http:3/")]
         [TestCase("[::]", true, "http://[::]/")]
         [TestCase("[2001:0DB8::1]", true, "http://[2001:db8::1]/")]
-        [TestCase("[2001:0DB8::1]:80",true, "http://[2001:db8::1]/")]
+        [TestCase("[2001:0DB8::1]:80", true, "http://[2001:db8::1]/")]
         public void TryParse_CanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
             // Arrange
@@ -50,4 +54,3 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         }
     }
 }
-

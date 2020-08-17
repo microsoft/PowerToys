@@ -88,8 +88,8 @@ namespace Wox.Infrastructure
             _pinyinStorage.Save(GetPinyinCacheAsDictionary());
         }
 
-        private static string[] EmptyStringArray = new string[0];
-        private static string[][] Empty2DStringArray = new string[0][];
+        private static readonly string[] _emptyStringArray = new string[0];
+        private static readonly string[][] _empty2DStringArray = new string[0][];
 
         /// <summary>
         /// replace chinese character with pinyin, non chinese character won't be modified
@@ -100,7 +100,7 @@ namespace Wox.Infrastructure
         {
             if (!_settings.ShouldUsePinyin)
             {
-                return EmptyStringArray;
+                return _emptyStringArray;
             }
 
             var pinyin = word.Select(c =>
@@ -122,7 +122,7 @@ namespace Wox.Infrastructure
         {
             if (!_settings.ShouldUsePinyin || string.IsNullOrEmpty(characters))
             {
-                return Empty2DStringArray;
+                return _empty2DStringArray;
             }
 
             if (!_pinyinCache.ContainsKey(characters))
@@ -181,7 +181,7 @@ namespace Wox.Infrastructure
         {
             if (!_settings.ShouldUsePinyin)
             {
-                return EmptyStringArray;
+                return _emptyStringArray;
             }
 
             var combination = (

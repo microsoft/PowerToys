@@ -43,10 +43,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{4574
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{3BB8493E-D18E-4485-A320-CB40F90F55AE}"
 	ProjectSection(SolutionItems) = preProject
-		src\modules\interface\lowlevel_keyboard_event_data.h = src\modules\interface\lowlevel_keyboard_event_data.h
 		src\modules\interface\powertoy_module_interface.h = src\modules\interface\powertoy_module_interface.h
-		src\modules\interface\powertoy_system_menu.h = src\modules\interface\powertoy_system_menu.h
-		src\modules\interface\win_hook_event_data.h = src\modules\interface\win_hook_event_data.h
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "settings", "src\settings\settings.vcxproj", "{07C389E3-6BC8-41CF-923E-307B1265FA2D}"
@@ -234,8 +231,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Lib", "src\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UnitTest", "src\core\Microsoft.PowerToys.Settings.UnitTest\Microsoft.PowerToys.Settings.UnitTest.csproj", "{A80355C2-780D-4245-BD80-25B8DE698EE3}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop", "src\common\interop\interop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common-md-flag", "src\common\common-md-flag\common-md-flag.vcxproj", "{985B3F2F-CEED-4C0A-A249-69257E719145}"
@@ -267,6 +262,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.csproj", "{03276A39-D4E9-417C-8FFD-200B0EE5E871}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri.UnitTests\Microsoft.Plugin.Uri.UnitTests.csproj", "{B81FB7B6-D30E-428F-908A-41422EFC1172}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\core\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -470,10 +467,6 @@ Global
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x64.Build.0 = Debug|x64
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x64.ActiveCfg = Release|x64
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x64.Build.0 = Release|x64
-		{A80355C2-780D-4245-BD80-25B8DE698EE3}.Debug|x64.ActiveCfg = Debug|x64
-		{A80355C2-780D-4245-BD80-25B8DE698EE3}.Debug|x64.Build.0 = Debug|x64
-		{A80355C2-780D-4245-BD80-25B8DE698EE3}.Release|x64.ActiveCfg = Release|x64
-		{A80355C2-780D-4245-BD80-25B8DE698EE3}.Release|x64.Build.0 = Release|x64
 		{F055103B-F80B-4D0C-BF48-057C55620033}.Debug|x64.ActiveCfg = Debug|x64
 		{F055103B-F80B-4D0C-BF48-057C55620033}.Debug|x64.Build.0 = Debug|x64
 		{F055103B-F80B-4D0C-BF48-057C55620033}.Release|x64.ActiveCfg = Release|x64
@@ -534,6 +527,10 @@ Global
 		{B81FB7B6-D30E-428F-908A-41422EFC1172}.Debug|x64.Build.0 = Debug|x64
 		{B81FB7B6-D30E-428F-908A-41422EFC1172}.Release|x64.ActiveCfg = Release|x64
 		{B81FB7B6-D30E-428F-908A-41422EFC1172}.Release|x64.Build.0 = Release|x64
+		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Debug|x64.ActiveCfg = Debug|x64
+		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Debug|x64.Build.0 = Debug|x64
+		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Release|x64.ActiveCfg = Release|x64
+		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -593,7 +590,6 @@ Global
 		{E4E0D2AE-B17D-4BD4-8BEE-AFC8CC464C5F} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
-		{A80355C2-780D-4245-BD80-25B8DE698EE3} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{F055103B-F80B-4D0C-BF48-057C55620033} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{985B3F2F-CEED-4C0A-A249-69257E719145} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{437AD818-3F1F-4CA5-A79B-25233A157026} = {1AFB6476-670D-4E80-A464-657E01DFF482}
@@ -610,6 +606,7 @@ Global
 		{1D78B84B-CA39-406C-98F4-71F7EC266CC0} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{03276A39-D4E9-417C-8FFD-200B0EE5E871} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{B81FB7B6-D30E-428F-908A-41422EFC1172} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{0F85E674-34AE-443D-954C-8321EB8B93B1} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

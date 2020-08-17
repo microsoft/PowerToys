@@ -1,5 +1,6 @@
 #pragma once
 #include "ModifierKey.h"
+#include <variant>
 class InputInterface;
 class LayoutMap;
 namespace KeyboardManagerHelper
@@ -25,6 +26,9 @@ public:
 
     // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
+
+    // Constructor to initialize shortcut from a list of keys
+    Shortcut(const std::vector<DWORD>& keys);
 
     // == operator
     inline bool operator==(const Shortcut& sc) const
@@ -166,3 +170,7 @@ public:
     // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
     KeyboardManagerHelper::ErrorType IsShortcutIllegal() const;
 };
+
+using RemapBufferItem = std::vector<std::variant<DWORD, Shortcut>>;
+using RemapBufferRow = std::pair<RemapBufferItem, std::wstring>;
+using RemapBuffer = std::vector<RemapBufferRow>;

@@ -40,7 +40,7 @@ namespace PowerLauncher.Storage
             {
                 PluginID = result.PluginID,
                 Title = result.Title,
-                SubTitle = result.SubTitle
+                SubTitle = result.SubTitle,
             };
             records[result.OriginQuery.RawQuery] = record;
         }
@@ -49,14 +49,5 @@ namespace PowerLauncher.Storage
         {
             records = dictionary;
         }
-    }
-
-    public class Record
-    {
-        public string Title { get; set; }
-
-        public string SubTitle { get; set; }
-
-        public string PluginID { get; set; }
     }
 }
