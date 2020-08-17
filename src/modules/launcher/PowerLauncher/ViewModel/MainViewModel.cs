@@ -796,19 +796,18 @@ namespace PowerLauncher.ViewModel
             MainWindowVisibility = System.Windows.Visibility.Collapsed;
 
             // Fix Cold start for plugins
-
-            // TODO: make same changes here
-            /*string s = "m";
-            var query = QueryBuilder.Build(ref s, PluginManager.NonGlobalPlugins);
-            var plugins = PluginManager.ValidPluginsForQuery(query);
+            string s = "m";
+            var pluginQueryPair = QueryBuilder.Build(ref s, PluginManager.NonGlobalPlugins);
+            var plugins = pluginQueryPair.Keys.ToList();
             foreach (PluginPair plugin in plugins)
             {
                 if (!plugin.Metadata.Disabled && plugin.Metadata.Name != "Window Walker")
                 {
+                    Query query;
+                    pluginQueryPair.TryGetValue(plugin, out query);
                     _ = PluginManager.QueryForPlugin(plugin, query);
                 }
-            }*/
-
+            }
         }
 
         public void HandleContextMenu(Key acceleratorKey, ModifierKeys acceleratorModifiers)
