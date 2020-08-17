@@ -50,13 +50,4 @@ namespace PowerLauncher.Storage
             records = dictionary;
         }
     }
-
-    public class Record
-    {
-        public string Title { get; set; }
-
-        public string SubTitle { get; set; }
-
-        public string PluginID { get; set; }
-    }
 }

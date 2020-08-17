@@ -8,10 +8,10 @@ namespace Microsoft.Plugin.Program.Programs
     {
         string RetrieveTargetPath(string path);
 
-        string description { get; set; }
+        string Description { get; set; }
 
         string Arguments { get; set; }
 
-        bool hasArguments { get; set; }
+        bool HasArguments { get; set; }
     }
 }

@@ -68,8 +68,8 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
                 {
                     keyboardState[VK_LCONTROL] = false;
                     keyboardState[VK_RCONTROL] = false;
-                    break;
                 }
+                break;
             case VK_LCONTROL:
                 keyboardState[VK_CONTROL] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
                 break;
@@ -81,8 +81,8 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
                 {
                     keyboardState[VK_LMENU] = false;
                     keyboardState[VK_RMENU] = false;
-                    break;
                 }
+                break;
             case VK_LMENU:
                 keyboardState[VK_MENU] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
                 break;
@@ -94,8 +94,8 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
                 {
                     keyboardState[VK_LSHIFT] = false;
                     keyboardState[VK_RSHIFT] = false;
-                    break;
                 }
+                break;
             case VK_LSHIFT:
                 keyboardState[VK_SHIFT] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
                 break;

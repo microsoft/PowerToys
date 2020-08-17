@@ -49,7 +49,7 @@ namespace Wox.Test.Plugins
             var mockSearchManager = GetMockSearchManager();
 
             // Act
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, maxCount);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, maxCount, api.DisplayHiddenFiles);
 
             // Assert
             Assert.IsNotNull(queryHelper);
@@ -64,7 +64,7 @@ namespace Wox.Test.Plugins
             string pattern = "*";
             WindowsSearchAPI api = GetWindowsSearchAPI();
             var mockSearchManager = GetMockSearchManager();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -82,7 +82,7 @@ namespace Wox.Test.Plugins
             string pattern = "tt*^&)";
             WindowsSearchAPI api = GetWindowsSearchAPI();
             var mockSearchManager = GetMockSearchManager();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -100,7 +100,7 @@ namespace Wox.Test.Plugins
             string pattern = "tt%^&)";
             WindowsSearchAPI api = GetWindowsSearchAPI();
             var mockSearchManager = GetMockSearchManager();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -118,7 +118,7 @@ namespace Wox.Test.Plugins
             string pattern = "tt_^&)";
             WindowsSearchAPI api = GetWindowsSearchAPI();
             var mockSearchManager = GetMockSearchManager();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -136,7 +136,7 @@ namespace Wox.Test.Plugins
             string pattern = "tt?^&)";
             WindowsSearchAPI api = GetWindowsSearchAPI();
             var mockSearchManager = GetMockSearchManager();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -154,7 +154,7 @@ namespace Wox.Test.Plugins
             string pattern = "tt^&)bc";
             WindowsSearchAPI api = GetWindowsSearchAPI();
             var mockSearchManager = GetMockSearchManager();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -181,11 +181,11 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldShowHiddenFiles_WhenDisplayHiddenFilesIsTrue()
+        public void WindowsSearchAPI_ShouldReturnResults_WhenSearchWasExecuted()
         {
             // Arrange
-            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", 0x0L });
-            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", 0x2L });
+            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt" });
+            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt" });
             List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
@@ -202,34 +202,12 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldNotShowHiddenFiles_WhenDisplayHiddenFilesIsFalse()
-        {
-            // Arrange
-            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", 0x0L });
-            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", 0x2L });
-            List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
-            var mock = new Mock<ISearch>();
-            mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
-            WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
-            var mockSearchManager = GetMockSearchManager();
-
-            // Act
-            var windowsSearchAPIResults = api.Search("FilePath", mockSearchManager);
-
-            // Assert
-            Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
-            Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
-            Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
-        }
-
-        [Test]
         public void WindowsSearchAPI_ShouldNotReturnResultsWithNullValue_WhenDbResultHasANullColumn()
         {
             // Arrange
-            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value, 0x0L });
-            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", 0x0L });
-
-            List<OleDBResult> results = new List<OleDBResult>() { file1, file2 };
+            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value });
+            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt" });
+            List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
             WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
@@ -243,6 +221,7 @@ namespace Wox.Test.Plugins
             Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
         }
+
 
         [TestCase("item.exe")]
         [TestCase("item.bat")]
@@ -405,8 +384,8 @@ namespace Wox.Test.Plugins
         public void WindowsSearchAPI_ShouldReturnEmptyResults_WhenIsFullQueryIsTrueAndTheQueryDoesNotRequireLIKESyntax()
         {
             // Arrange
-            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value, (Int64)0x0 });
-            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", (Int64)0x0 });
+            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value });
+            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt" });
 
             List<OleDBResult> results = new List<OleDBResult>() { file1, file2 };
             var mock = new Mock<ISearch>();

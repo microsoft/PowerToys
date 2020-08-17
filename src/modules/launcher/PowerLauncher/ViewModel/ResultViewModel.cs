@@ -231,7 +231,7 @@ namespace PowerLauncher.ViewModel
 
         public bool HasSelectedContextButton()
         {
-            var isContextSelected = (ContextMenuSelectedIndex != NoSelectionIndex);
+            var isContextSelected = ContextMenuSelectedIndex != NoSelectionIndex;
             return isContextSelected;
         }
 

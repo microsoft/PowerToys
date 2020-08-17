@@ -39,7 +39,7 @@ public
         HHOOK hookHandle;
         HookProcDelegate ^ hookProc;
 
-        LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+        LRESULT __clrcall HookProc(int nCode, WPARAM wParam, LPARAM lParam);
     };
 
 }
