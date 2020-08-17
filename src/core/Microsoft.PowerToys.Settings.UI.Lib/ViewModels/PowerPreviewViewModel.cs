@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.CompilerServices;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerPreviewViewModel : Observable
     {
@@ -15,21 +15,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private PowerPreviewSettings Settings { get; set; }
 
-        public PowerPreviewViewModel()
+        private Func<string, int> SendConfigMSG { get; }
+
+        public string SettingsConfigFileFolder = string.Empty;
+
+        public PowerPreviewViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            // Update Settings file folder:
+            SettingsConfigFileFolder = configFileSubfolder;
+
             try
             {
-                Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(ModuleName);
+                Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(GetSettingsSubPath());
             }
             catch
             {
                 Settings = new PowerPreviewSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
-            _svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
-            _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
-            _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+
+            this._svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
+            this._svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
+            this._mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
         }
 
         private bool _svgRenderIsEnabled = false;
@@ -90,16 +100,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string GetSettingsSubPath()
+        {
+            return SettingsConfigFileFolder + "\\" + ModuleName;
+        }
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
 
-            if (ShellPage.DefaultSndMSGCallback != null)
+            if (SendConfigMSG != null)
             {
                 SndPowerPreviewSettings snd = new SndPowerPreviewSettings(Settings);
                 SndModuleSettings<SndPowerPreviewSettings> ipcMessage = new SndModuleSettings<SndPowerPreviewSettings>(snd);
-                ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
+                SendConfigMSG(ipcMessage.ToJsonString());
             }
         }
     }
