@@ -46,17 +46,6 @@ namespace PowerToysTests
                     editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
                 }
             }
-        }
-
-        protected static void CloseEditor()
-        {
-            try
-            {
-                if (editorWindow != null)
-                {
-                    editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
-                }
-            }
             catch (OpenQA.Selenium.WebDriverException)
             {
                 //editor has been already closed

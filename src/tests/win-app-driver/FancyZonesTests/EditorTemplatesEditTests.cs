@@ -32,6 +32,8 @@ namespace PowerToysTests
         private void SaveTest()
         {
             new Actions(session).MoveToElement(creatorWindow.FindElementByName("Save and apply")).Click().Perform();
+            WaitSeconds(1);
+
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
             Assert.AreEqual("Custom Layout 1", settings["custom-zone-sets"][0]["name"]);
             Assert.AreEqual(settings["custom-zone-sets"][0]["uuid"], settings["devices"][0]["active-zoneset"]["uuid"]);
