@@ -65,19 +65,26 @@
     <PlatformTarget>x64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>..\..\..\x64\Release\SettingsUI\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP;CODE_ANALYSIS;</DefineConstants>
     <Optimize>true</Optimize>
     <NoWarn>8305;2008</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
     <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release with Video Conference|x64' ">
+    <OutputPath>..\..\..\x64\Release\SettingsUI\</OutputPath>
+    <DefineConstants>TRACE;VIDEO_CONFERENCE;NETFX_CORE;WINDOWS_UWP;VIDEO_CONFERENCE;;CODE_ANALYSIS</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>8305;2008</NoWarn>
+    <Optimize>true</Optimize>
+    <EnableGatekeeperAnalysis>false</EnableGatekeeperAnalysis>
   </PropertyGroup>
   <PropertyGroup>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
@@ -310,14 +317,6 @@
   <PropertyGroup>
     <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
     <EnableXBindDiagnostics>false</EnableXBindDiagnostics>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release with Video Conference|x64' ">
-    <OutputPath>..\..\..\x64\Release\SettingsUI\</OutputPath>
-    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP;VIDEO_CONFERENCE;</DefineConstants>
-    <PlatformTarget>x64</PlatformTarget>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>8305;2008</NoWarn>
-    <Optimize>true</Optimize>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -28,6 +28,7 @@
     
     <!-- crutkas TODO: added for fallback, may need to be removed for WinUI3 -->
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
+    <Configurations>Debug;Release;Release with Video Conference</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -38,6 +39,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUIRunner</OutputPath>
     <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Video Conference|x64'">
+    <OutputPath>..\..\..\x64\Release\SettingsUIRunner</OutputPath>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;VIDEO_CONFERENCE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
