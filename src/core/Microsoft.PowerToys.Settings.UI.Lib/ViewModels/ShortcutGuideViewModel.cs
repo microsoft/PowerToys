@@ -2,12 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.CompilerServices;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
@@ -15,16 +14,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private const string ModuleName = "Shortcut Guide";
 
-        public ShortcutGuideViewModel()
+        private Func<string, int> SendConfigMSG { get; }
+
+        public string SettingsConfigFileFolder = string.Empty;
+
+        public ShortcutGuideViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            // Update Settings file folder:
+            SettingsConfigFileFolder = configFileSubfolder;
+
             try
             {
-                Settings = SettingsUtils.GetSettings<ShortcutGuideSettings>(ModuleName);
+                Settings = SettingsUtils.GetSettings<ShortcutGuideSettings>(GetSettingsSubPath());
             }
             catch
             {
                 Settings = new ShortcutGuideSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
             GeneralSettings generalSettings;
@@ -39,9 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
 
-            _isEnabled = generalSettings.Enabled.ShortcutGuide;
-            _pressTime = Settings.Properties.PressTime.Value;
-            _opacity = Settings.Properties.OverlayOpacity.Value;
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+
+            this._isEnabled = generalSettings.Enabled.ShortcutGuide;
+            this._pressTime = Settings.Properties.PressTime.Value;
+            this._opacity = Settings.Properties.OverlayOpacity.Value;
 
             string theme = Settings.Properties.Theme.Value;
 
@@ -81,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
                     generalSettings.Enabled.ShortcutGuide = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
-                    ShellPage.DefaultSndMSGCallback(snd.ToString());
+                    SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }
             }
@@ -161,12 +170,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string GetSettingsSubPath()
+        {
+            return SettingsConfigFileFolder + "\\" + ModuleName;
+        }
+
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
             SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);
             SndModuleSettings<SndShortcutGuideSettings> ipcMessage = new SndModuleSettings<SndShortcutGuideSettings>(outsettings);
-            ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
+            SendConfigMSG(ipcMessage.ToJsonString());
         }
     }
 }

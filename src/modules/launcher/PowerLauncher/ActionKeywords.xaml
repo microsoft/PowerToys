@@ -37,7 +37,7 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3" Grid.Column="1">
             <Button x:Name="btnCancel" Click="BtnCancel_OnClick" Margin="10 0 10 0" Width="80" Height="25"
                     Content="{DynamicResource cancel}" />
-            <Button x:Name="btnDone" Margin="10 0 10 0" Width="80" Height="25" Click="btnDone_OnClick">
+            <Button x:Name="btnDone" Margin="10 0 10 0" Width="80" Height="25" Click="BtnDone_OnClick">
                 <TextBlock x:Name="lblAdd" Text="{DynamicResource done}" />
             </Button>
         </StackPanel>

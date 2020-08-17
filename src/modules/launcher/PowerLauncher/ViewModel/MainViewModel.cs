@@ -29,10 +29,8 @@ namespace PowerLauncher.ViewModel
 {
     public class MainViewModel : BaseModel, ISavable, IDisposable
     {
-        private Query _currentQuery;
-        private static Query _emptyQuery = new Query();
+        private static readonly Query _emptyQuery = new Query();
         private static bool _disposed;
-        private string _queryTextBeforeLeaveResults;
 
         private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
         private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
@@ -41,23 +39,24 @@ namespace PowerLauncher.ViewModel
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
+        private readonly object _addResultsLock = new object();
+        private readonly Internationalization _translator = InternationalizationManager.Instance;
+        private readonly System.Diagnostics.Stopwatch _hotkeyTimer = new System.Diagnostics.Stopwatch();
 
-        private CancellationTokenSource _updateSource { get; set; }
+        private Query _currentQuery;
+        private string _queryTextBeforeLeaveResults;
+
+        private CancellationTokenSource _updateSource;
 
         private CancellationToken _updateToken;
         private bool _saved;
-
-        private HotkeyManager _hotkeyManager { get; set; }
-
         private ushort _hotkeyHandle;
-        private readonly Internationalization _translator = InternationalizationManager.Instance;
-        private System.Diagnostics.Stopwatch hotkeyTimer = new System.Diagnostics.Stopwatch();
 
-        private readonly object _addResultsLock = new object();
+        internal HotkeyManager HotkeyManager { get; set; }
 
         public MainViewModel(Settings settings)
         {
-            _hotkeyManager = new HotkeyManager();
+            HotkeyManager = new HotkeyManager();
             _saved = false;
             _queryTextBeforeLeaveResults = string.Empty;
             _currentQuery = _emptyQuery;
@@ -88,7 +87,7 @@ namespace PowerLauncher.ViewModel
                     {
                         if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
                         {
-                            _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                            HotkeyManager.UnregisterHotkey(_hotkeyHandle);
                         }
 
                         if (!string.IsNullOrEmpty(_settings.Hotkey))
@@ -110,7 +109,8 @@ namespace PowerLauncher.ViewModel
                 var plugin = (IResultUpdated)pair.Plugin;
                 plugin.ResultsUpdated += (s, e) =>
                 {
-                    Task.Run(() =>
+                    Task.Run(
+                        () =>
                     {
                         PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
                         UpdateResultView(e.Results, e.Query, _updateToken);
@@ -257,6 +257,7 @@ namespace PowerLauncher.ViewModel
                 if (!string.IsNullOrEmpty(QueryText))
                 {
                     ChangeQueryText(string.Empty, true);
+
                     // Push Event to UI SystemQuery has changed
                     OnPropertyChanged(nameof(SystemQueryText));
                 }
@@ -465,7 +466,8 @@ namespace PowerLauncher.ViewModel
                 if (query != null)
                 {
                     _currentQuery = query;
-                    Task.Run(() =>
+                    Task.Run(
+                        () =>
                     {
                         Thread.Sleep(20);
                         var plugins = PluginManager.ValidPluginsForQuery(query);
@@ -600,12 +602,6 @@ namespace PowerLauncher.ViewModel
             return selected;
         }
 
-        private bool ContextMenuSelected()
-        {
-            var selected = SelectedResults == ContextMenu;
-            return selected;
-        }
-
         private bool HistorySelected()
         {
             var selected = SelectedResults == History;
@@ -623,14 +619,16 @@ namespace PowerLauncher.ViewModel
             string hotkeyStr = hotkeyModel.ToString();
             try
             {
-                Hotkey hotkey = new Hotkey();
-                hotkey.Alt = hotkeyModel.Alt;
-                hotkey.Shift = hotkeyModel.Shift;
-                hotkey.Ctrl = hotkeyModel.Ctrl;
-                hotkey.Win = hotkeyModel.Win;
-                hotkey.Key = (byte)KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey);
+                Hotkey hotkey = new Hotkey
+                {
+                    Alt = hotkeyModel.Alt,
+                    Shift = hotkeyModel.Shift,
+                    Ctrl = hotkeyModel.Ctrl,
+                    Win = hotkeyModel.Win,
+                    Key = (byte)KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey),
+                };
 
-                _hotkeyHandle = _hotkeyManager.RegisterHotkey(hotkey, action);
+                _hotkeyHandle = HotkeyManager.RegisterHotkey(hotkey, action);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
@@ -794,7 +792,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (!plugin.Metadata.Disabled && plugin.Metadata.Name != "Window Walker")
                 {
-                    var _ = PluginManager.QueryForPlugin(plugin, query);
+                    _ = PluginManager.QueryForPlugin(plugin, query);
                 }
             }
         }
@@ -872,10 +870,10 @@ namespace PowerLauncher.ViewModel
                 {
                     if (_hotkeyHandle != 0)
                     {
-                        _hotkeyManager?.UnregisterHotkey(_hotkeyHandle);
+                        HotkeyManager?.UnregisterHotkey(_hotkeyHandle);
                     }
 
-                    _hotkeyManager?.Dispose();
+                    HotkeyManager?.Dispose();
                     _updateSource?.Dispose();
                     _disposed = true;
                 }
@@ -890,16 +888,16 @@ namespace PowerLauncher.ViewModel
 
         public void StartHotkeyTimer()
         {
-            hotkeyTimer.Start();
+            _hotkeyTimer.Start();
         }
 
         public long GetHotkeyEventTimeMs()
         {
-            hotkeyTimer.Stop();
-            long recordedTime = hotkeyTimer.ElapsedMilliseconds;
+            _hotkeyTimer.Stop();
+            long recordedTime = _hotkeyTimer.ElapsedMilliseconds;
 
             // Reset the stopwatch and return the time elapsed
-            hotkeyTimer.Reset();
+            _hotkeyTimer.Reset();
             return recordedTime;
         }
     }
