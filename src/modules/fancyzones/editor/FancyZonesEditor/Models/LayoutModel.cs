@@ -293,6 +293,7 @@ namespace FancyZonesEditor.Models
                         if (error)
                         {
                             ShowExceptionMessageBox(string.Format(ErrorLayoutMalformedData, name));
+                            _deletedCustomModels.Add(Guid.Parse(uuid).ToString().ToUpper());
                             continue;
                         }
 
@@ -332,6 +333,7 @@ namespace FancyZonesEditor.Models
                         if (error)
                         {
                             ShowExceptionMessageBox(string.Format(ErrorLayoutMalformedData, name));
+                            _deletedCustomModels.Add(Guid.Parse(uuid).ToString().ToUpper());
                             continue;
                         }
 
