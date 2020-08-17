@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
     <Platforms>x64</Platforms>
     <RootNamespace>Microsoft.Plugin.Uri.UnitTests</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
