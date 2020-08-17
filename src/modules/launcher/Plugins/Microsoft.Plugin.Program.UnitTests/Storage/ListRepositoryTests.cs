@@ -11,7 +11,6 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
     [TestFixture]
     public class ListRepositoryTests
     {
-
         [Test]
         public void ContainsShouldReturnTrueWhenListIsInitializedWithItem()
         {
@@ -76,11 +75,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                     foreach (var item in repository)
                     {
                         // keep iterating
-
                     }
+
                     --remainingIterations;
                 }
-
             });
 
             // Act - Insert on another thread
@@ -116,11 +114,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
                     foreach (var item in repository)
                     {
                         // keep iterating
-
                     }
+
                     --remainingIterations;
                 }
-
             });
 
             // Act - Remove on another thread

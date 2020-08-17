@@ -57,6 +57,7 @@ namespace Microsoft.Plugin.Program
                 System.Windows.MessageBox.Show(_context.API.GetTranslation("wox_plugin_program_invalid_path"));
                 return;
             }
+
             if (_editing == null)
             {
                 if (!ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == Directory.Text))

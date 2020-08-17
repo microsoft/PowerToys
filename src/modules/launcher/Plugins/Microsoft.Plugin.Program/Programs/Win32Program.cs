@@ -23,7 +23,6 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-
     [Serializable]
     public class Win32Program : IProgram
     {
@@ -41,22 +40,22 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string ExecutableName { get; set; }
 
-        public string Description { get; set; } = String.Empty;
+        public string Description { get; set; } = string.Empty;
 
         public bool Valid { get; set; }
 
         public bool Enabled { get; set; }
 
-        public bool hasArguments { get; set; } = false;
+        public bool HasArguments { get; set; } = false;
 
-        public string Arguments { get; set; } = String.Empty;
+        public string Arguments { get; set; } = string.Empty;
 
         public string Location => ParentDirectory;
 
         public uint AppType { get; set; }
 
         // Wrappers for File Operations
-        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set;} =  new FileVersionInfoWrapper();
+        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
 
         public static IFileWrapper FileWrapper { get; set; } = new FileWrapper();
 
@@ -67,8 +66,8 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
 
-        private const string proxyWebApp = "_proxy.exe";
-        private const string appIdArgument = "--app-id";
+        private const string ProxyWebApp = "_proxy.exe";
+        private const string AppIdArgument = "--app-id";
 
         private enum ApplicationTypes
         {
@@ -93,7 +92,7 @@ namespace Microsoft.Plugin.Program.Programs
             // To Filter PWAs when the user searches for the main application
             // All Chromium based applications contain the --app-id argument
             // Reference : https://codereview.chromium.org/399045/show
-            bool isWebApplication = FullPath.Contains(proxyWebApp, StringComparison.OrdinalIgnoreCase) && Arguments.Contains(appIdArgument, StringComparison.OrdinalIgnoreCase);
+            bool isWebApplication = FullPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase) && Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase);
             return isWebApplication;
         }
 
@@ -126,6 +125,7 @@ namespace Microsoft.Plugin.Program.Programs
                     nameContainsQuery = true;
                 }
             }
+
             return pathContainsQuery && !nameContainsQuery;
         }
 
@@ -150,7 +150,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -167,7 +167,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public Result Result(string query, IPublicAPI api)
         {
-            if(api == null)
+            if (api == null)
             {
                 throw new ArgumentNullException(nameof(api));
             }
@@ -178,7 +178,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return null;
             }
 
-            if (!hasArguments)
+            if (!HasArguments)
             {
                 var noArgumentScoreModifier = 5;
                 score += noArgumentScoreModifier;
@@ -210,7 +210,7 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         FileName = LnkResolvedPath ?? FullPath,
                         WorkingDirectory = ParentDirectory,
-                        UseShellExecute = true
+                        UseShellExecute = true,
                     };
 
                     Main.StartProcess(Process.Start, info);
@@ -219,7 +219,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             };
 
-            // To set the title for the result to always be the name of the application            
+            // To set the title for the result to always be the name of the application
             result.Title = Name;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
@@ -249,7 +249,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
                         var info = new ProcessStartInfo
@@ -257,7 +257,7 @@ namespace Microsoft.Plugin.Program.Programs
                             FileName = FullPath,
                             WorkingDirectory = ParentDirectory,
                             Verb = "runas",
-                            UseShellExecute = true
+                            UseShellExecute = true,
                         };
 
                         Task.Run(() => Main.StartProcess(Process.Start, info));
@@ -275,7 +275,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
@@ -336,7 +336,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.LogException($"|Win32|Win32Program|{path}" +
+                ProgramLogger.LogException(
+                    $"|Win32|Win32Program|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
                 return new Win32Program() { Valid = false, Enabled = false };
@@ -347,13 +348,11 @@ namespace Microsoft.Plugin.Program.Programs
         private static Win32Program InternetShortcutProgram(string path)
         {
             string[] lines = FileWrapper.ReadAllLines(path);
-            string appName = string.Empty;
             string iconPath = string.Empty;
             string urlPath = string.Empty;
-            string scheme = string.Empty;
             bool validApp = false;
 
-            Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run)\/|^com\.epicgames\.launcher:\/\/apps\/");
+            Regex internetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run)\/|^com\.epicgames\.launcher:\/\/apps\/");
 
             const string urlPrefix = "URL=";
             const string iconFilePrefix = "IconFile=";
@@ -366,7 +365,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Uri uri = new Uri(urlPath);
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                    if (InternetShortcutURLPrefixes.Match(urlPath).Success)
+                    if (internetShortcutURLPrefixes.Match(urlPath).Success)
                     {
                         validApp = true;
                     }
@@ -401,7 +400,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.LogException($"|Win32|InternetShortcutProgram|{path}" +
+                ProgramLogger.LogException(
+                    $"|Win32|InternetShortcutProgram|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
                 return new Win32Program() { Valid = false, Enabled = false };
@@ -427,10 +427,10 @@ namespace Microsoft.Plugin.Program.Programs
                         program.LnkResolvedPath = program.FullPath;
                         program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
                         program.ExecutableName = Path.GetFileName(target);
-                        program.hasArguments = Helper.hasArguments;
+                        program.HasArguments = Helper.HasArguments;
                         program.Arguments = Helper.Arguments;
 
-                        var description = Helper.description;
+                        var description = Helper.Description;
                         if (!string.IsNullOrEmpty(description))
                         {
                             program.Description = description;
@@ -445,13 +445,16 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                     }
                 }
+
                 return program;
             }
-             //Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
-            //Error caused likely due to trying to get the description of the program
+
+            // Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
+            // Error caused likely due to trying to get the description of the program
             catch (Exception e)
             {
-                ProgramLogger.LogException($"|Win32|LnkProgram|{path}" +
+                ProgramLogger.LogException(
+                    $"|Win32|LnkProgram|{path}" +
                                                 "|An unexpected error occurred in the calling method LnkProgram", e);
 
                 program.Valid = false;
@@ -475,7 +478,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.LogException($"|Win32|ExeProgram|{path}" +
+                ProgramLogger.LogException(
+                    $"|Win32|ExeProgram|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
                 return new Win32Program() { Valid = false, Enabled = false };
@@ -524,7 +528,6 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 return null;
             }
-
         }
 
         private static IEnumerable<string> ProgramPaths(string directory, IList<string> suffixes, bool recursiveSearch = true)
@@ -551,14 +554,16 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         catch (DirectoryNotFoundException e)
                         {
-                            ProgramLogger.LogException($"|Win32|ProgramPaths|{currentDirectory}" +
+                            ProgramLogger.LogException(
+                                $"|Win32|ProgramPaths|{currentDirectory}" +
                                                 "|The directory trying to load the program from does not exist", e);
                         }
                     }
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    ProgramLogger.LogException($"|Win32|ProgramPaths|{currentDirectory}" +
+                    ProgramLogger.LogException(
+                        $"|Win32|ProgramPaths|{currentDirectory}" +
                                                 $"|Permission denied when trying to load programs from {currentDirectory}", e);
                 }
 
@@ -577,10 +582,12 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    ProgramLogger.LogException($"|Win32|ProgramPaths|{currentDirectory}" +
+                    ProgramLogger.LogException(
+                        $"|Win32|ProgramPaths|{currentDirectory}" +
                                                 $"|Permission denied when trying to load programs from {currentDirectory}", e);
                 }
-            } while (folderQueue.Any());
+            }
+            while (folderQueue.Any());
 
             return files;
         }
@@ -605,7 +612,7 @@ namespace Microsoft.Plugin.Program.Programs
             sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
                 .SelectMany(s => ProgramPaths(s.Location, suffixes))
                 .ToList()
-                .Where(t1 => !Main._settings.DisabledProgramSources.Any(x => t1 == x.UniqueIdentifier))
+                .Where(t1 => !Main.Settings.DisabledProgramSources.Any(x => t1 == x.UniqueIdentifier))
                 .ToList()
                 .ForEach(x => listToAdd.Add(x));
 
@@ -623,11 +630,10 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
         private static ParallelQuery<Win32Program> PathEnvironmentPrograms(IList<string> suffixes)
         {
-
             // To get all the locations stored in the PATH env variable
             var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
             string[] searchPaths = pathEnvVariable.Split(Path.PathSeparator);
-            IEnumerable<String> toFilterAllPaths = new List<String>();
+            IEnumerable<string> toFilterAllPaths = new List<string>();
             bool isRecursiveSearch = true;
 
             foreach (string path in searchPaths)
@@ -653,20 +659,24 @@ namespace Microsoft.Plugin.Program.Programs
             var allPrograms = programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
                 .Concat(programs4).Where(p => p.Valid)
-                .Select(p => { p.AppType = (uint)ApplicationTypes.RUN_COMMAND; return p; });
+                .Select(p =>
+                {
+                    p.AppType = (uint)ApplicationTypes.RUN_COMMAND;
+                    return p;
+                });
 
             return allPrograms;
         }
 
-        private static ParallelQuery<Win32Program> IndexPath(IList<string> suffixes, List<string> IndexLocation)
+        private static ParallelQuery<Win32Program> IndexPath(IList<string> suffixes, List<string> indexLocation)
         {
-            var disabledProgramsList = Main._settings.DisabledProgramSources;
+            var disabledProgramsList = Main.Settings.DisabledProgramSources;
 
             IEnumerable<string> toFilter = new List<string>();
-            foreach (string location in IndexLocation)
+            foreach (string location in indexLocation)
             {
-                var _paths = ProgramPaths(location, suffixes);
-                toFilter = toFilter.Concat(_paths);
+                var programPaths = ProgramPaths(location, suffixes);
+                toFilter = toFilter.Concat(programPaths);
             }
 
             var paths = toFilter
@@ -689,17 +699,17 @@ namespace Microsoft.Plugin.Program.Programs
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
-            List<string> IndexLocation = new List<string>() { directory1, directory2 };
+            List<string> indexLocation = new List<string>() { directory1, directory2 };
 
-            return IndexPath(suffixes, IndexLocation);
+            return IndexPath(suffixes, indexLocation);
         }
 
         private static ParallelQuery<Win32Program> DesktopPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            List<string> IndexLocation = new List<string>() { directory1 };
+            List<string> indexLocation = new List<string>() { directory1 };
 
-            return IndexPath(suffixes, IndexLocation);
+            return IndexPath(suffixes, indexLocation);
         }
 
         private static ParallelQuery<Win32Program> AppPathsPrograms(IList<string> suffixes)
@@ -714,6 +724,7 @@ namespace Microsoft.Plugin.Program.Programs
                     programs.AddRange(GetProgramsFromRegistry(root));
                 }
             }
+
             using (var root = Registry.CurrentUser.OpenSubKey(appPaths))
             {
                 if (root != null)
@@ -722,7 +733,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            var disabledProgramsList = Main._settings.DisabledProgramSources;
+            var disabledProgramsList = Main.Settings.DisabledProgramSources;
             var toFilter = programs.AsParallel().Where(p => suffixes.Contains(Extension(p.ExecutableName)));
 
             var filtered = toFilter.Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier)).Select(t1 => t1);
@@ -747,21 +758,26 @@ namespace Microsoft.Plugin.Program.Programs
                 using (var key = root.OpenSubKey(subkey))
                 {
                     if (key == null)
+                    {
                         return string.Empty;
+                    }
 
                     var defaultValue = string.Empty;
                     path = key.GetValue(defaultValue) as string;
                 }
 
                 if (string.IsNullOrEmpty(path))
+                {
                     return string.Empty;
+                }
 
                 // fix path like this: ""\"C:\\folder\\executable.exe\""
                 return path = path.Trim('"', ' ');
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.LogException($"|Win32|GetProgramPathFromRegistrySubKeys|{path}" +
+                ProgramLogger.LogException(
+                    $"|Win32|GetProgramPathFromRegistrySubKeys|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
                 return string.Empty;
@@ -771,12 +787,16 @@ namespace Microsoft.Plugin.Program.Programs
         private static Win32Program GetProgramFromPath(string path)
         {
             if (string.IsNullOrEmpty(path))
+            {
                 return new Win32Program();
+            }
 
             path = Environment.ExpandEnvironmentVariables(path);
 
             if (!File.Exists(path))
+            {
                 return new Win32Program();
+            }
 
             var entry = CreateWin32Program(path);
             entry.ExecutableName = Path.GetFileName(path);
@@ -787,21 +807,18 @@ namespace Microsoft.Plugin.Program.Programs
         // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
         public override int GetHashCode()
         {
-            removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
-            return _removeDuplicatesHelper.GetHashCode(this);
+            return new RemoveDuplicatesComparer().GetHashCode(this);
         }
 
         public override bool Equals(object obj)
         {
-            removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
-            return obj is Win32Program win && _removeDuplicatesHelper.Equals(this, win);
+            return obj is Win32Program win && new RemoveDuplicatesComparer().Equals(this, win);
         }
 
-        private class removeDuplicatesComparer : IEqualityComparer<Win32Program>
+        private class RemoveDuplicatesComparer : IEqualityComparer<Win32Program>
         {
             public bool Equals(Win32Program app1, Win32Program app2)
             {
-
                 if (!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
                     && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName)
                     && !string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath))
@@ -810,6 +827,7 @@ namespace Microsoft.Plugin.Program.Programs
                         && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase)
                         && app1.FullPath.Equals(app2.FullPath, StringComparison.OrdinalIgnoreCase);
                 }
+
                 return false;
             }
 
@@ -821,19 +839,19 @@ namespace Microsoft.Plugin.Program.Programs
                 int fullPathPrime = 31;
 
                 int result = 1;
-                result = result * namePrime + obj.Name.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
-                result = result * executablePrime + obj.ExecutableName.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
-                result = result * fullPathPrime + obj.FullPath.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
+                result = (result * namePrime) + obj.Name.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
+                result = (result * executablePrime) + obj.ExecutableName.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
+                result = (result * fullPathPrime) + obj.FullPath.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
 
                 return result;
             }
         }
 
         // Deduplication code
-        public static Win32Program[] DeduplicatePrograms(ParallelQuery<Win32Program>  programs)
+        public static Win32Program[] DeduplicatePrograms(ParallelQuery<Win32Program> programs)
         {
             var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.RUN_COMMAND)));
-            var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
+            var uniquePrograms = uniqueExePrograms.Distinct(new RemoveDuplicatesComparer());
             return uniquePrograms.ToArray();
         }
 

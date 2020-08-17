@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ColorPicker.Helpers;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -71,7 +72,7 @@ namespace ColorPicker.Mouse
                 if (!result)
                 {
                     int errorCode = Marshal.GetLastWin32Error();
-                    throw new Win32Exception(errorCode);
+                    Logger.LogError("Failed to unsubscribe mouse hook with the error code" + errorCode);
                 }
             }
         }
@@ -90,7 +91,7 @@ namespace ColorPicker.Mouse
                 if (_mouseHookHandle == IntPtr.Zero)
                 {
                     int errorCode = Marshal.GetLastWin32Error();
-                    throw new Win32Exception(errorCode);
+                    Logger.LogError("Failed to subscribe mouse hook with the error code" + errorCode);
                 }
             }
         }

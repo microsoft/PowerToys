@@ -33,7 +33,7 @@ public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
     // Stores the current list of remappings
-    static std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> shortcutRemapBuffer;
+    static RemapBuffer shortcutRemapBuffer;
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
 
@@ -47,5 +47,5 @@ public:
     StackPanel getShortcutControl();
 
     // Function to create the detect shortcut UI window
-    static void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remapBuffer);
+    static void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, HWND parentWindow, RemapBuffer& remapBuffer);
 };

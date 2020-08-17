@@ -20,17 +20,15 @@ namespace PowerLauncher
 {
     public partial class MainWindow : IDisposable
     {
-        #region Private Fields
-        private Settings _settings;
-        private MainViewModel _viewModel;
+        private readonly Settings _settings;
+        private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
-        bool _deletePressed = false;
-        Timer _firstDeleteTimer = new Timer();
-        bool _coldStateHotkeyPressed = false;
+        private bool _deletePressed = false;
+        private Timer _firstDeleteTimer = new Timer();
+        private bool _coldStateHotkeyPressed = false;
 
-        #endregion
-
-        public MainWindow(Settings settings, MainViewModel mainVM) : this()
+        public MainWindow(Settings settings, MainViewModel mainVM)
+            : this()
         {
             DataContext = mainVM;
             _viewModel = mainVM;
@@ -67,7 +65,7 @@ namespace PowerLauncher
         private void BringProcessToForeground()
         {
             // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
-            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, data = { } };
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { Type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, Data = { } };
             WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
 
             // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
@@ -75,13 +73,13 @@ namespace PowerLauncher
             Activate();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs _)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             WindowsInteropHelper.DisableControlBox(this);
             InitializePosition();
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
-            SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
+            SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
             SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
 
             // Set initial language flow direction
@@ -105,10 +103,8 @@ namespace PowerLauncher
             var result = ((FrameworkElement)e.OriginalSource).DataContext;
             if (result != null)
             {
-                var resultVM = result as ResultViewModel;
-
                 // This may be null if the tapped item was one of the context buttons (run as admin etc).
-                if (resultVM != null)
+                if (result is ResultViewModel resultVM)
                 {
                     _viewModel.Results.SelectedItem = resultVM;
                     _viewModel.OpenResultCommand.Execute(null);
@@ -135,7 +131,7 @@ namespace PowerLauncher
             }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
-                this._isTextSetProgrammatically = true;
+                _isTextSetProgrammatically = true;
                 if (_viewModel.Results != null)
                 {
                     SearchBox.QueryTextBox.Text = MainViewModel.GetSearchText(
@@ -148,7 +144,10 @@ namespace PowerLauncher
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left) DragMove();
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
+            }
         }
 
         private void InitializePosition()
@@ -208,7 +207,7 @@ namespace PowerLauncher
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
+            var left = ((dip2.X - ActualWidth) / 2) + dip1.X;
             return left;
         }
 
@@ -217,11 +216,11 @@ namespace PowerLauncher
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            var top = (dip2.Y - this.SearchBox.ActualHeight) / 4 + dip1.Y;
+            var top = ((dip2.Y - SearchBox.ActualHeight) / 4) + dip1.Y;
             return top;
         }
 
-        private void _launcher_KeyDown(object sender, KeyEventArgs e)
+        private void Launcher_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Tab && Keyboard.IsKeyDown(Key.LeftShift))
             {
@@ -321,7 +320,7 @@ namespace PowerLauncher
         {
             if (_isTextSetProgrammatically)
             {
-                var textBox = ((TextBox)sender);
+                var textBox = (TextBox)sender;
                 textBox.SelectionStart = textBox.Text.Length;
                 _isTextSetProgrammatically = false;
             }
@@ -362,7 +361,7 @@ namespace PowerLauncher
 
                 _settings.ActivateTimes++;
 
-                if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
                 {
                     SearchBox.QueryTextBox.SelectAll();
                 }

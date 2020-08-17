@@ -26,7 +26,6 @@ using static Microsoft.Plugin.Program.Programs.UWP;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-
     [Serializable]
     public class UWPApplication : IProgram
     {
@@ -130,7 +129,7 @@ namespace Microsoft.Plugin.Program.Programs
                             Glyph = "\xE7EF",
                             FontFamily = "Segoe MDL2 Assets",
                             AcceleratorKey = Key.Enter,
-                            AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                            AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                             Action = _ =>
                             {
                                 string command = "shell:AppsFolder\\" + UniqueIdentifier;
@@ -142,9 +141,9 @@ namespace Microsoft.Plugin.Program.Programs
                                 Process.Start(info);
                                 return true;
                             },
-                        }
-                    );
+                        });
             }
+
             contextMenus.Add(
                 new ContextMenuResult
                 {
@@ -153,7 +152,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
@@ -192,14 +191,13 @@ namespace Microsoft.Plugin.Program.Programs
         private async void Launch(IPublicAPI api)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
-            uint unusedPid;
             const string noArgs = "";
             const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;
             await Task.Run(() =>
             {
                 try
                 {
-                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out unusedPid);
+                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out uint unusedPid);
                 }
                 catch (Exception)
                 {
@@ -239,7 +237,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             DisplayName = ResourceFromPri(package.FullName, DisplayName);
             Description = ResourceFromPri(package.FullName, Description);
-            this.logoUri = LogoUriFromManifest(manifestApp);
+            logoUri = LogoUriFromManifest(manifestApp);
 
             Enabled = true;
             CanRunElevated = IfApplicationcanRunElevated();
@@ -263,6 +261,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
             }
+
             return false;
         }
 
@@ -305,7 +304,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException($"|UWP|ResourceFromPri|{Package.Location}|Can't load null or empty result "
+                        ProgramLogger.LogException(
+                            $"|UWP|ResourceFromPri|{Package.Location}|Can't load null or empty result "
                                                     + $"pri {source} in uwp location {Package.Location}", new NullReferenceException());
                         return string.Empty;
                     }
@@ -354,11 +354,11 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                LogoPath = LogoPathFromUri(this.logoUri, "contrast-white");
+                LogoPath = LogoPathFromUri(logoUri, "contrast-white");
             }
             else
             {
-                LogoPath = LogoPathFromUri(this.logoUri, "contrast-black");
+                LogoPath = LogoPathFromUri(logoUri, "contrast-black");
             }
         }
 
@@ -368,7 +368,6 @@ namespace Microsoft.Plugin.Program.Programs
             // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
             // windows 8.1 https://msdn.microsoft.com/en-us/library/windows/apps/hh965372.aspx#target_size
             // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
-
             string path;
             if (uri.Contains("\\", StringComparison.Ordinal))
             {
@@ -440,7 +439,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
+                        ProgramLogger.LogException(
+                            $"|UWP|LogoPathFromUri|{Package.Location}" +
                             $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
                         return string.Empty;
                     }
@@ -448,7 +448,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
+                ProgramLogger.LogException(
+                    $"|UWP|LogoPathFromUri|{Package.Location}" +
                                                 $"|Unable to find extension from {uri} for {UserModelId} " +
                                                 $"in package location {Package.Location}", new FileNotFoundException());
                 return string.Empty;
@@ -479,7 +480,8 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                ProgramLogger.LogException($"|UWP|ImageFromPath|{path}" +
+                ProgramLogger.LogException(
+                    $"|UWP|ImageFromPath|{path}" +
                                                 $"|Unable to get logo for {UserModelId} from {path} and" +
                                                 $" located in {Package.Location}", new FileNotFoundException());
                 return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
@@ -491,5 +493,4 @@ namespace Microsoft.Plugin.Program.Programs
             return $"{DisplayName}: {Description}";
         }
     }
-
 }

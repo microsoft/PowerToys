@@ -34,7 +34,6 @@ namespace Microsoft.Plugin.Program.Storage
         {
             if (args.IsComplete)
             {
-
                 try
                 {
                     var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
@@ -48,10 +47,10 @@ namespace Microsoft.Plugin.Program.Storage
                         }
                     }
                 }
-                //InitializeAppInfo will throw if there is no AppxManifest.xml for the package. 
-                //Note there are sometimes multiple packages per product and this doesn't necessarily mean that we haven't found the app.
-                //eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
 
+                // InitializeAppInfo will throw if there is no AppxManifest.xml for the package.
+                // Note there are sometimes multiple packages per product and this doesn't necessarily mean that we haven't found the app.
+                // eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
                 catch (System.IO.FileNotFoundException e)
                 {
                     ProgramLogger.LogException($"|UWP|OnPackageInstalling|{args.Package.InstalledLocation}|{e.Message}", e);
@@ -63,7 +62,7 @@ namespace Microsoft.Plugin.Program.Storage
         {
             if (args.Progress == 0)
             {
-                //find apps associated with this package. 
+                // find apps associated with this package.
                 var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
                 var uwp = new UWP(packageWrapper);
                 var apps = Items.Where(a => a.Package.Equals(uwp)).ToArray();

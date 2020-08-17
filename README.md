@@ -119,6 +119,23 @@ To upgrade PowerToys, run the following command from the command line / PowerShe
 ```powershell
 choco upgrade powertoys
 ```
+
+#### Via Scoop (Unofficial)
+
+Download and update PowerToys from [Scoop](https://scoop.sh). 
+
+To install PowerToys, run the following command from the command line / PowerShell:
+
+```powershell
+scoop install powertoys
+```
+
+To update PowerToys, run the following command from the command line / PowerShell:
+
+```powershell
+scoop update powertoys
+```
+
 ### Known issues
 
 - Color Picker at times won't work when PT is running elevated - [#5348](https://github.com/microsoft/PowerToys/issues/5348).  We are currently working on a fix now for this.

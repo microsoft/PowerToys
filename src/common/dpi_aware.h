@@ -1,6 +1,8 @@
 #pragma once
 #include "windef.h"
 
+#pragma comment(lib, "shcore.lib")
+
 namespace DPIAware
 {
     constexpr inline int DEFAULT_DPI = 96;
