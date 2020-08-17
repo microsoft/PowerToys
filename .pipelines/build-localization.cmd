@@ -21,6 +21,10 @@ set LocProject=%RepoRoot%src\core\Microsoft.PowerToys.Settings.UI\LocProject.jso
 
 dotnet "%XLocPath%\tools\netcore\Microsoft.Localization.XLoc.dll" /f "%LocProject%"
 
+set LocProject=%RepoRoot%src\modules\fancyzones\editor\FancyZonesEditor\LocProject.json
+
+dotnet "%XLocPath%\tools\netcore\Microsoft.Localization.XLoc.dll" /f "%LocProject%"
+
 set LocProject=%RepoRoot%src\modules\fancyzones\lib\LocProject.json
 
 dotnet "%XLocPath%\tools\netcore\Microsoft.Localization.XLoc.dll" /f "%LocProject%"
