@@ -12,7 +12,7 @@ namespace PowerLauncher.Storage
     {
         public List<HistoryItem> Items { get; } = new List<HistoryItem>();
 
-        private int _maxHistory = 300;
+        private readonly int _maxHistory = 300;
 
         public void Add(string query)
         {

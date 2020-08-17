@@ -16,7 +16,9 @@ namespace PowerLauncher.Helper
 {
     public static class WindowsInteropHelper
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Matching COM")]
         private const int GWL_STYLE = -16; // WPF's Message code for Title Bar's Style
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Matching COM")]
         private const int WS_SYSMENU = 0x80000; // WPF's Message code for System Menu
         private static IntPtr _hwnd_shell;
         private static IntPtr _hwnd_desktop;
@@ -42,8 +44,8 @@ namespace PowerLauncher.Helper
         [StructLayout(LayoutKind.Sequential)]
         internal struct INPUT
         {
-            public INPUTTYPE type;
-            public InputUnion data;
+            public INPUTTYPE Type;
+            public InputUnion Data;
 
             public static int Size
             {
@@ -52,6 +54,7 @@ namespace PowerLauncher.Helper
         }
 
         [StructLayout(LayoutKind.Explicit)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Matching COM")]
         internal struct InputUnion
         {
             [FieldOffset(0)]
@@ -63,6 +66,7 @@ namespace PowerLauncher.Helper
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Matching COM")]
         internal struct MOUSEINPUT
         {
             internal int dx;
@@ -74,6 +78,7 @@ namespace PowerLauncher.Helper
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Matching COM")]
         internal struct KEYBDINPUT
         {
             internal short wVk;
@@ -84,6 +89,7 @@ namespace PowerLauncher.Helper
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Matching COM")]
         internal struct HARDWAREINPUT
         {
             internal int uMsg;
@@ -98,10 +104,10 @@ namespace PowerLauncher.Helper
             INPUTHARDWARE = 2,
         }
 
-        const string WINDOW_CLASS_CONSOLE = "ConsoleWindowClass";
-        const string WINDOW_CLASS_WINTAB = "Flip3D";
-        const string WINDOW_CLASS_PROGMAN = "Progman";
-        const string WINDOW_CLASS_WORKERW = "WorkerW";
+        private const string WindowClassConsole = "ConsoleWindowClass";
+        private const string WindowClassWinTab = "Flip3D";
+        private const string WindowClassProgman = "Progman";
+        private const string WindowClassWorkerW = "WorkerW";
 
         public static bool IsWindowFullscreen()
         {
@@ -118,22 +124,21 @@ namespace PowerLauncher.Helper
                     string windowClass = sb.ToString();
 
                     // for Win+Tab (Flip3D)
-                    if (windowClass == WINDOW_CLASS_WINTAB)
+                    if (windowClass == WindowClassWinTab)
                     {
                         return false;
                     }
 
-                    RECT appBounds;
-                    _ = NativeMethods.GetWindowRect(hWnd, out appBounds);
+                    _ = NativeMethods.GetWindowRect(hWnd, out RECT appBounds);
 
                     // for console (ConsoleWindowClass), we have to check for negative dimensions
-                    if (windowClass == WINDOW_CLASS_CONSOLE)
+                    if (windowClass == WindowClassConsole)
                     {
                         return appBounds.Top < 0 && appBounds.Bottom < 0;
                     }
 
                     // for desktop (Progman or WorkerW, depends on the system), we have to check
-                    if (windowClass == WINDOW_CLASS_PROGMAN || windowClass == WINDOW_CLASS_WORKERW)
+                    if (windowClass == WindowClassProgman || windowClass == WindowClassWorkerW)
                     {
                         IntPtr hWndDesktop = NativeMethods.FindWindowEx(hWnd, IntPtr.Zero, "SHELLDLL_DefView", null);
                         hWndDesktop = NativeMethods.FindWindowEx(hWndDesktop, IntPtr.Zero, "SysListView32", "FolderView");
@@ -181,7 +186,7 @@ namespace PowerLauncher.Helper
             }
             else
             {
-                using (var src = new HwndSource(new HwndSourceParameters()))
+                using (var src = new HwndSource(default))
                 {
                     matrix = src.CompositionTarget.TransformFromDevice;
                 }

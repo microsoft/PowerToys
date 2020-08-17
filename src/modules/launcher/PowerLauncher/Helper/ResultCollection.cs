@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using PowerLauncher.ViewModel;
 
 namespace PowerLauncher.Helper

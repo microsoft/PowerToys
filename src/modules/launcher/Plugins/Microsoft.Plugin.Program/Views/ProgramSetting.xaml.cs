@@ -58,7 +58,7 @@ namespace Microsoft.Plugin.Program.Views
             });
         }
 
-        private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
+        private void BtnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
             var add = new AddProgramSource(context, _settings);
             if (add.ShowDialog() ?? false)
@@ -80,7 +80,7 @@ namespace Microsoft.Plugin.Program.Views
             ReIndexing();
         }
 
-        private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
+        private void BtnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
             var selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
             if (selectedProgramSource != null)
@@ -98,7 +98,7 @@ namespace Microsoft.Plugin.Program.Views
             }
         }
 
-        private void btnReindex_Click(object sender, RoutedEventArgs e)
+        private void BtnReindex_Click(object sender, RoutedEventArgs e)
         {
             ReIndexing();
         }
@@ -112,7 +112,7 @@ namespace Microsoft.Plugin.Program.Views
             }
         }
 
-        private void programSourceView_DragEnter(object sender, DragEventArgs e)
+        private void ProgramSourceView_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -124,7 +124,7 @@ namespace Microsoft.Plugin.Program.Views
             }
         }
 
-        private void programSourceView_Drop(object sender, DragEventArgs e)
+        private void ProgramSourceView_Drop(object sender, DragEventArgs e)
         {
             var directories = (string[])e.Data.GetData(DataFormats.FileDrop);
 
@@ -169,14 +169,14 @@ namespace Microsoft.Plugin.Program.Views
             ReIndexing();
         }
 
-        private void btnLoadAllProgramSource_OnClick(object sender, RoutedEventArgs e)
+        private void BtnLoadAllProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
             ProgramSettingDisplayList.LoadAllApplications();
 
             programSourceView.Items.Refresh();
         }
 
-        private void btnProgramSourceStatus_OnClick(object sender, RoutedEventArgs e)
+        private void BtnProgramSourceStatus_OnClick(object sender, RoutedEventArgs e)
         {
             var selectedItems = programSourceView
                                 .SelectedItems.Cast<ProgramSource>()
@@ -218,7 +218,9 @@ namespace Microsoft.Plugin.Program.Views
             }
 
             if (selectedItems.IsReindexRequired())
+            {
                 ReIndexing();
+            }
 
             programSourceView.SelectedItems.Clear();
 

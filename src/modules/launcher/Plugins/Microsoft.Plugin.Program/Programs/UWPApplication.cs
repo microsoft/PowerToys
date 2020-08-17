@@ -26,7 +26,6 @@ using static Microsoft.Plugin.Program.Programs.UWP;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-
     [Serializable]
     public class UWPApplication : IProgram
     {
@@ -130,7 +129,7 @@ namespace Microsoft.Plugin.Program.Programs
                             Glyph = "\xE7EF",
                             FontFamily = "Segoe MDL2 Assets",
                             AcceleratorKey = Key.Enter,
-                            AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                            AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                             Action = _ =>
                             {
                                 string command = "shell:AppsFolder\\" + UniqueIdentifier;
@@ -142,8 +141,7 @@ namespace Microsoft.Plugin.Program.Programs
                                 Process.Start(info);
                                 return true;
                             },
-                        }
-                    );
+                        });
             }
 
             contextMenus.Add(
@@ -154,7 +152,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
@@ -239,7 +237,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             DisplayName = ResourceFromPri(package.FullName, DisplayName);
             Description = ResourceFromPri(package.FullName, Description);
-            this.logoUri = LogoUriFromManifest(manifestApp);
+            logoUri = LogoUriFromManifest(manifestApp);
 
             Enabled = true;
             CanRunElevated = IfApplicationcanRunElevated();
@@ -356,11 +354,11 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                LogoPath = LogoPathFromUri(this.logoUri, "contrast-white");
+                LogoPath = LogoPathFromUri(logoUri, "contrast-white");
             }
             else
             {
-                LogoPath = LogoPathFromUri(this.logoUri, "contrast-black");
+                LogoPath = LogoPathFromUri(logoUri, "contrast-black");
             }
         }
 
