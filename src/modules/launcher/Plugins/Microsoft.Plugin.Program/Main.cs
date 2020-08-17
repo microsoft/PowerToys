@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Plugin.Program.ProgramArgumentParser;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
 using Wox.Infrastructure.Logger;
@@ -18,6 +19,13 @@ namespace Microsoft.Plugin.Program
 {
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
     {
+        private static readonly IProgramArgumentParser[] _programArgumentParsers = new IProgramArgumentParser[]
+        {
+            new DoubleDashProgramArgumentParser(),
+            new InferedProgramArgumentParser(),
+            new NoArgumentsArgumentParser(),
+        };
+
         internal static ProgramPluginSettings Settings { get; set; }
 
         private static PluginInitContext _context;
@@ -60,22 +68,35 @@ namespace Microsoft.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-            var results1 = _win32ProgramRepository.AsParallel()
-                .Where(p => p.Enabled)
-                .Select(p => p.Result(query.Search, _context.API));
-
-            var results2 = _packageRepository.AsParallel()
-                .Where(p => p.Enabled)
-                .Select(p => p.Result(query.Search, _context.API));
-
-            var result = results1.Concat(results2).Where(r => r != null && r.Score > 0);
-            if (result.Any())
+            foreach (var programArgumentParser in _programArgumentParsers)
             {
-                var maxScore = result.Max(x => x.Score);
-                result = result.Where(x => x.Score > Settings.MinScoreThreshold * maxScore);
+                if (!programArgumentParser.Enabled)
+                {
+                    continue;
+                }
+
+                if (!programArgumentParser.TryParse(query, out var program, out var programArguments))
+                {
+                    continue;
+                }
+
+                var results1 = _win32ProgramRepository.AsParallel()
+                    .Where(p => p.Enabled)
+                    .Select(p => p.Result(program, programArguments, _context.API));
+
+                var results2 = _packageRepository.AsParallel()
+                    .Where(p => p.Enabled)
+                    .Select(p => p.Result(program, programArguments, _context.API));
+
+                var result = results1.Concat(results2).Where(r => r != null && r.Score > 0);
+                if (result.Any())
+                {
+                    var maxScore = result.Max(x => x.Score);
+                    result = result.Where(x => x.Score > Settings.MinScoreThreshold * maxScore);
+                }
             }
 
-            return result.ToList();
+            return new List<Result>(0);
         }
 
         public void Init(PluginInitContext context)
