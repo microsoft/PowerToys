@@ -36,6 +36,7 @@ public:
     IFACEMETHODIMP switchFilter(_In_ int columnNumber);
     IFACEMETHODIMP get_flags(_Out_ DWORD* flags);
     IFACEMETHODIMP put_flags(_In_ DWORD flags);
+    IFACEMETHODIMP get_filter(_Out_ DWORD* filter);
     IFACEMETHODIMP get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
     IFACEMETHODIMP put_renameRegEx(_In_ IPowerRenameRegEx* pRegEx);
     IFACEMETHODIMP get_renameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);

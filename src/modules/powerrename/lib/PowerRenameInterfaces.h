@@ -110,6 +110,7 @@ public:
     IFACEMETHOD(switchFilter)(_In_ int columnNumber) = 0;
     IFACEMETHOD(get_flags)(_Out_ DWORD* flags) = 0;
     IFACEMETHOD(put_flags)(_In_ DWORD flags) = 0;
+    IFACEMETHOD(get_filter)(_Out_ DWORD * filter) = 0;
     IFACEMETHOD(get_renameRegEx)(_COM_Outptr_ IPowerRenameRegEx** ppRegEx) = 0;
     IFACEMETHOD(put_renameRegEx)(_In_ IPowerRenameRegEx* pRegEx) = 0;
     IFACEMETHOD(get_renameItemFactory)(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory) = 0;

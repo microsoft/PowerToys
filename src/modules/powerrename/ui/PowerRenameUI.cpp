@@ -1327,12 +1327,71 @@ void CPowerRenameListView::_UpdateHeaderCheckState(_In_ bool check)
     }
 }
 
+void CPowerRenameListView::_UpdateHeaderFilterState(_In_ DWORD filter)
+{
+    // Get a handle to the header of the columns
+    HWND hwndHeader = ListView_GetHeader(m_hwndLV);
+    if (hwndHeader)
+    {
+        wchar_t bufferOriginal[MAX_PATH] = { 0 };
+        bufferOriginal[0] = L'\0';
+
+        // Retrieve the existing header first so we
+        // don't trash the text already there
+        HDITEM hdiOriginal = { 0 };
+        hdiOriginal.mask = HDI_FORMAT | HDI_TEXT;
+        hdiOriginal.pszText = bufferOriginal;
+        hdiOriginal.cchTextMax = ARRAYSIZE(bufferOriginal);
+
+        Header_GetItem(hwndHeader, 0, &hdiOriginal);
+
+        if (filter == PowerRenameFilters::Selected || filter == PowerRenameFilters::FlagsApplicable)
+        {
+            hdiOriginal.fmt |= HDF_SORTDOWN;
+        }
+        else
+        {
+            hdiOriginal.fmt &= ~HDF_SORTDOWN;
+        }
+
+        Header_SetItem(hwndHeader, 0, &hdiOriginal);
+
+        wchar_t bufferRename[MAX_PATH] = { 0 };
+        bufferRename[0] = L'\0';
+
+        // Retrieve the existing header first so we
+        // don't trash the text already there
+        HDITEM hdiRename = { 0 };
+        hdiRename.mask = HDI_FORMAT | HDI_TEXT;
+        hdiRename.pszText = bufferRename;
+        hdiRename.cchTextMax = ARRAYSIZE(bufferRename);
+
+        Header_GetItem(hwndHeader, 1, &hdiRename);
+
+        if (filter == PowerRenameFilters::ShouldRename)
+        {
+            hdiRename.fmt |= HDF_SORTDOWN;
+        }
+        else
+        {
+            hdiRename.fmt &= ~HDF_SORTDOWN;
+        }
+
+        Header_SetItem(hwndHeader, 1, &hdiRename);
+
+    }
+}
+
 void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ int columnNumber)
 {
+    DWORD filter = PowerRenameFilters::None;
     psrm->switchFilter(columnNumber);
     UINT visibleItemCount = 0;
     psrm->GetVisibleItemCount(&visibleItemCount);
     RedrawItems(0, visibleItemCount);
     SetItemCount(visibleItemCount);
+
+    psrm->get_filter(&filter);
+    _UpdateHeaderFilterState(filter);
 }
     

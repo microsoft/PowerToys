@@ -329,6 +329,12 @@ IFACEMETHODIMP CPowerRenameManager::put_flags(_In_ DWORD flags)
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameManager::get_filter(_Out_ DWORD* filter)
+{
+    *filter = m_filter;
+    return S_OK;
+}
+
 IFACEMETHODIMP CPowerRenameManager::get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx)
 {
     *ppRegEx = nullptr;

@@ -29,6 +29,7 @@ private:
     void _UpdateColumns();
     void _UpdateColumnSizes();
     void _UpdateHeaderCheckState(_In_ bool check);
+    void _UpdateHeaderFilterState(_In_ DWORD filter);
 
     HWND m_hwndLV = nullptr;
 };
