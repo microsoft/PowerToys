@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.Indexer
         private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper());
 
         // Reserved keywords in oleDB
-        private readonly string reservedStringPattern = @"^[\/\\\$\%]+$";
+        private readonly string reservedStringPattern = @"^[\/\\\$\%]+$|^.*[<>:].*$";
 
         private string WarningIconPath { get; set; }
 
@@ -265,4 +265,3 @@ namespace Microsoft.Plugin.Indexer
         }
     }
 }
->>>>>>> d055ba1c3bcdb278c868bb2fbbf4458ebeb6ed3c
