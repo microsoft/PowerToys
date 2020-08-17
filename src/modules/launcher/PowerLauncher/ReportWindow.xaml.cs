@@ -87,7 +87,6 @@ namespace PowerLauncher
 
         private void RepositoryHyperlink_Click(object sender, RoutedEventArgs e)
         {
-      
             var ps = new ProcessStartInfo((sender as Hyperlink).NavigateUri.ToString())
             {
                 UseShellExecute = true,
