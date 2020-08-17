@@ -562,6 +562,8 @@ namespace Microsoft.Plugin.Program.Programs
 
             if (!isLogoUriSet)
             {
+                LogoPath = string.Empty;
+                LogoType = LogoType.Error;
                 ProgramLogger.LogException(
                             $"|UWP|LogoPathFromUri|{Package.Location}" +
                             $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
@@ -682,6 +684,7 @@ namespace Microsoft.Plugin.Program.Programs
 
     public enum LogoType
     {
+        Error,
         Colored,
         HighContrast,
     }
