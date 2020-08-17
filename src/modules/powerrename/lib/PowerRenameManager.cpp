@@ -292,8 +292,21 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
 
 IFACEMETHODIMP CPowerRenameManager::switchFilter(_In_ int columnNumber) 
 {
-    DWORD clickedFilter = (columnNumber == 0)?PowerRenameFilters::Selected:PowerRenameFilters::ShoulRename;
-    m_filter = (m_filter == clickedFilter)?PowerRenameFilters::None:clickedFilter;
+    switch (m_filter)
+    {
+    case PowerRenameFilters::None:
+        m_filter = (columnNumber == 0)?PowerRenameFilters::Selected:PowerRenameFilters::ShouldRename;
+        break;
+    case PowerRenameFilters::Selected:
+        m_filter = (columnNumber == 0) ? PowerRenameFilters::FlagsApplicable : PowerRenameFilters::ShouldRename;
+        break;
+    case PowerRenameFilters::FlagsApplicable:
+        m_filter = (columnNumber == 0) ? PowerRenameFilters::None : PowerRenameFilters::ShouldRename;
+        break;
+    case PowerRenameFilters::ShouldRename:
+        m_filter = (columnNumber == 0) ? PowerRenameFilters::Selected : PowerRenameFilters::None;
+        break;
+    }
 
     return S_OK;
 }

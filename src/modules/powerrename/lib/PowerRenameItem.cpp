@@ -194,7 +194,13 @@ IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ DWORD filter, _In_ DWORD fla
     case PowerRenameFilters::Selected:
         get_selected(isItemVisible);
         break;
-    case PowerRenameFilters::ShoulRename:
+
+    case PowerRenameFilters::FlagsApplicable:
+        *isItemVisible = !((m_isFolder && (flags & PowerRenameFlags::ExcludeFolders)) || 
+            (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles)) || 
+            (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders)));
+        break;
+    case PowerRenameFilters::ShouldRename:
         ShouldRenameItem(flags, isItemVisible);
         break;
     }

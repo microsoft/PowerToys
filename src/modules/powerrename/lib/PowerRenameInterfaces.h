@@ -21,7 +21,8 @@ enum PowerRenameFilters
 {
     None = 1,
     Selected = 2,
-    ShoulRename = 3
+    FlagsApplicable = 3,
+    ShouldRename = 4,
 };
 
 interface __declspec(uuid("3ECBA62B-E0F0-4472-AA2E-DEE7A1AA46B9")) IPowerRenameRegExEvents : public IUnknown
