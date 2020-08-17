@@ -17,9 +17,9 @@ set LocalizationXLocPkgVer=2.0.0
 echo Running localization build...
 
 set XLocPath=%NUGET_PACKAGES%\Localization.XLoc.%LocalizationXLocPkgVer%
-set LocProjectBaseDir=%RepoRoot%src\
+set LocProject=%RepoRoot%src\core\Microsoft.PowerToys.Settings.UI
 
-dotnet "%XLocPath%\tools\netcore\Microsoft.Localization.XLoc.dll" /f "%LocProjectBaseDir%"
+dotnet "%XLocPath%\tools\netcore\Microsoft.Localization.XLoc.dll" /f "%LocProject%"
 
 echo Localization build finished with exit code '%errorlevel%'.
 
