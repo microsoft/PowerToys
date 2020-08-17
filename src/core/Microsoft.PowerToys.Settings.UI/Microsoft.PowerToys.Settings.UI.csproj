@@ -111,7 +111,6 @@
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
     <Compile Include="ViewModels\FancyZonesViewModel.cs" />
     <Compile Include="ViewModels\ImageResizerViewModel.cs" />
-    <Compile Include="ViewModels\KeyboardManagerViewModel.cs" />
     <Compile Include="ViewModels\PowerLauncherViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="Views\ColorPickerPage.xaml.cs">
