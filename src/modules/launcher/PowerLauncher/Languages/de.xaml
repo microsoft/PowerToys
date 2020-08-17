@@ -23,11 +23,18 @@
     <system:String x:Key="dontPromptUpdateMsg">Zeige keine Nachricht wenn eine neue Version vorhanden ist</system:String>
     <system:String x:Key="rememberLastLocation">Merke letzte Ausführungsposition</system:String>
     <system:String x:Key="language">Sprache</system:String>
+    <system:String x:Key="lastQueryMode">Letzter Anfragenstyle</system:String>
+    <system:String x:Key="LastQueryPreserved">Letzte erhaltene Anfrage</system:String>
+    <system:String x:Key="LastQuerySelected">Letzte Anfrage anuswählen</system:String>
+    <system:String x:Key="LastQueryEmpty">Leerer letzte Anfrage</system:String>
     <system:String x:Key="maxShowResults">Maximale Anzahl Ergebnissen</system:String>
     <system:String x:Key="ignoreHotkeysOnFullscreen">Ignoriere Tastenkombination wenn Fenster im Vollbildmodus ist</system:String>
     <system:String x:Key="autoUpdates">Automatische Aktualisierung</system:String>
     <system:String x:Key="hideOnStartup">Verstecke Wox bei Systemstart</system:String>
-    
+    <system:String x:Key="hideNotifyIcon">Verstecke Taskbar icon</system:String>
+    <system:String x:Key="querySearchPrecision">Suchanfrage verfeinern</system:String>
+    <system:String x:Key="ShouldUsePinyin">Sollte Pinyin benutzen</system:String>
+   
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
     <system:String x:Key="browserMorePlugins">Suche nach weiteren Plugins</system:String>
@@ -46,7 +53,9 @@
     <system:String x:Key="resultItemFont">Ergebnis Schriftart</system:String>
     <system:String x:Key="windowMode">Fenstermodus</system:String>
     <system:String x:Key="opacity">Transparenz</system:String>
-    
+    <system:String x:Key="theme_load_failure_path_not_exists">Design {0} existiert nicht. Zurück zum Standarddesign</system:String>
+    <system:String x:Key="theme_load_failure_parse_error">Fehler beim Laden von Design {0}. Zurück zum Standarddesign</system:String>
+   
     <!--Setting Hotkey-->
     <system:String x:Key="hotkey">Tastenkombination</system:String>
     <system:String x:Key="woxHotkey">Wox Tastenkombination</system:String>
@@ -80,6 +89,11 @@
     <system:String x:Key="about_activate_times">Sie haben Wox {0} mal aktiviert</system:String>
     <system:String x:Key="checkUpdates">Nach Aktuallisierungen Suchen</system:String>
     <system:String x:Key="newVersionTips">Eine neue Version ({0}) ist vorhanden. Bitte starten Sie Wox neu.</system:String>
+    <system:String x:Key="checkUpdatesFailed">Suche nach Updates gescheitert, bitte überprüfe deine Verbindung und Proxyeinstelllungen zu api.github.com</system:String>
+    <system:String x:Key="downloadUpdatesFailed">
+        Updates herunterladen gescheitert, bitte überprüfe deine Verbindung und Proxyeinstelllungen zu github-cloud.s3.amazonaws.com 
+        oder gehe zu https://github.com/Wox-launcher/Wox/releases um automatisch herunterzuladen.
+    </system:String>
     <system:String x:Key="releaseNotes">Versionshinweise:</system:String>
 
     <!--Action Keyword Setting Dialog-->
