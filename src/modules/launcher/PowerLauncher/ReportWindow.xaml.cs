@@ -21,8 +21,6 @@ namespace PowerLauncher
 {
     internal partial class ReportWindow
     {
-
-
         public ReportWindow(Exception exception)
         {
             InitializeComponent();
