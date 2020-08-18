@@ -31,6 +31,7 @@ private:
     void _UpdateHeaderCheckState(_In_ bool check);
     void _UpdateHeaderFilterState(_In_ DWORD filter);
 
+    UINT m_itemCount = 0;
     HWND m_hwndLV = nullptr;
 };
 

@@ -159,7 +159,12 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemByIndex(_In_ UINT index, _COM_
     CSRWSharedAutoLock lock(&m_lockItems);
     UINT count = 0;
     HRESULT hr = E_FAIL;
-    if (SUCCEEDED(GetVisibleItemCount(&count)) && index < count)
+
+    if (m_filter == PowerRenameFilters::None)
+    {
+        hr = GetItemByIndex(index, ppItem);
+    }
+    else if (SUCCEEDED(GetVisibleItemCount(&count)) && index < count)
     {
         int realIndex = 0;
         int visibleIndex = -1;
@@ -241,15 +246,23 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemCount(_Out_ UINT* count)
     *count = 0;
     CSRWSharedAutoLock lock(&m_lockItems);
 
-    setVisible();
-
-    for (size_t i=0 ; i<m_isVisible.size(); i++)
+    if (m_filter != PowerRenameFilters::None)
     {
-        if (m_isVisible[i])
+        setVisible();
+
+        for (size_t i = 0; i < m_isVisible.size(); i++)
         {
-            (*count)++;
+            if (m_isVisible[i])
+            {
+                (*count)++;
+            }
         }
     }
+    else
+    {
+        GetItemCount(count);
+    }
+    
 
     return S_OK;
 }

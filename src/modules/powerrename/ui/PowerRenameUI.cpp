@@ -180,8 +180,8 @@ IFACEMETHODIMP CPowerRenameUI::OnUpdate(_In_ IPowerRenameItem*)
     {
         m_spsrm->GetVisibleItemCount(&visibleItemCount);
     }
-    m_listview.RedrawItems(0, visibleItemCount);
     m_listview.SetItemCount(visibleItemCount);
+    m_listview.RedrawItems(0, visibleItemCount);
     _UpdateCounts();
     return S_OK;
 }
@@ -1071,8 +1071,8 @@ void CPowerRenameListView::ToggleAll(_In_ IPowerRenameManager* psrm, _In_ bool s
         }
 
         psrm->GetVisibleItemCount(&visibleItemCount);
-        RedrawItems(0, visibleItemCount);
         SetItemCount(visibleItemCount);
+        RedrawItems(0, visibleItemCount);
     }
 }
 
@@ -1088,8 +1088,8 @@ void CPowerRenameListView::ToggleItem(_In_ IPowerRenameManager* psrm, _In_ int i
         
         UINT visibleItemCount = 0;
         psrm->GetVisibleItemCount(&visibleItemCount);
-        RedrawItems(0, visibleItemCount);
         SetItemCount(visibleItemCount);
+        RedrawItems(0, visibleItemCount);
     }
 }
 
@@ -1138,8 +1138,8 @@ void CPowerRenameListView::UpdateItemCheckState(_In_ IPowerRenameManager* psrm, 
             // Update the rename column if necessary
             UINT visibleItemCount = 0;
             psrm->GetVisibleItemCount(&visibleItemCount);
-            RedrawItems(0, visibleItemCount);
             SetItemCount(visibleItemCount);
+            RedrawItems(0, visibleItemCount);
         }
 
         // Get the total number of list items and compare it to what is selected
@@ -1243,7 +1243,11 @@ void CPowerRenameListView::RedrawItems(_In_ int first, _In_ int last)
 
 void CPowerRenameListView::SetItemCount(_In_ UINT itemCount)
 {
-    ListView_SetItemCount(m_hwndLV, itemCount);
+    if (m_itemCount != itemCount)
+    {
+        m_itemCount = itemCount;
+        ListView_SetItemCount(m_hwndLV, itemCount);
+    }
 }
 
 void CPowerRenameListView::_UpdateColumns()
@@ -1388,8 +1392,8 @@ void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ in
     psrm->switchFilter(columnNumber);
     UINT visibleItemCount = 0;
     psrm->GetVisibleItemCount(&visibleItemCount);
-    RedrawItems(0, visibleItemCount);
     SetItemCount(visibleItemCount);
+    RedrawItems(0, visibleItemCount);
 
     psrm->get_filter(&filter);
     _UpdateHeaderFilterState(filter);
