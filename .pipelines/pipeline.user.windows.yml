@@ -42,7 +42,7 @@ restore:
 build:
   commands:
     - !!buildcommand
-      name: 'Localization Build'
+      name: 'Localize Power Toys'
       command: '.pipelines\build-localization.cmd'
       artifacts:
         - from: 'out\loc'

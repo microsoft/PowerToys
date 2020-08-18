@@ -18,9 +18,10 @@ set LocalizationXLocPkgVer=2.0.0
 echo Running localization build...
 
 set XLocPath=%NUGET_PACKAGES%\Localization.XLoc.%LocalizationXLocPkgVer%
-set LocProject=%RepoRoot%src
+set LocProjectDirectory=%RepoRoot%src
 
-dotnet "%XLocPath%\tools\netcore\Microsoft.Localization.XLoc.dll" /f "%LocProject%"
+rem Run the localization tool on all LocProject.json files in the src directory and it's subdirectories
+dotnet "%XLocPath%\tools\netcore\Microsoft.Localization.XLoc.dll" /f "%LocProjectDirectory%"
 
 echo Localization build finished with exit code '%errorlevel%'.
 
