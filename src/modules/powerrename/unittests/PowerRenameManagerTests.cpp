@@ -311,6 +311,7 @@ namespace PowerRenameManagerTests
 
         TEST_METHOD (VerifyFileAttributesMonthandDayNames)
         {
+            std::locale::global(std::locale(""));
             SYSTEMTIME LocalTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };
             wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
             wchar_t result[MAX_PATH] = L"bar";
@@ -319,15 +320,19 @@ namespace PowerRenameManagerTests
                 StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
 
             GetDateFormatEx(localeName, NULL, &LocalTime, L"MMM", formattedDate, MAX_PATH, NULL);
+            formattedDate[0] = towupper(formattedDate[0]);
             StringCchPrintf(result, MAX_PATH, TEXT("%s%s"), result, formattedDate);
             
             GetDateFormatEx(localeName, NULL, &LocalTime, L"MMMM", formattedDate, MAX_PATH, NULL);
+            formattedDate[0] = towupper(formattedDate[0]);
             StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
 
             GetDateFormatEx(localeName, NULL, &LocalTime, L"ddd", formattedDate, MAX_PATH, NULL);
+            formattedDate[0] = towupper(formattedDate[0]);
             StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
 
             GetDateFormatEx(localeName, NULL, &LocalTime, L"dddd", formattedDate, MAX_PATH, NULL);
+            formattedDate[0] = towupper(formattedDate[0]);
             StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
 
             rename_pairs renamePairs[] = {
