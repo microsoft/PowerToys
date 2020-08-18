@@ -82,6 +82,8 @@
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
+            <!-- Replaced the Radiobuttons parent control with a StackPanel to mitigate the Tab and Arrow key related keyboard navigation issues due to XAML Islands
+            Tracking issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
             <TextBlock Name="RadioButtons_Name_Theme" 
                        x:Uid="RadioButtons_Name_Theme"
                        Margin="{StaticResource SmallTopMargin}"/>
