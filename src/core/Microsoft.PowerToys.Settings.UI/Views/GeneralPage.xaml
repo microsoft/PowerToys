@@ -107,7 +107,9 @@
 
             <TextBlock x:Uid="General_Updates"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
-            <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}">
+            <StackPanel Orientation="Horizontal" 
+                        Margin="{StaticResource SmallTopMargin}"
+                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
                 <TextBlock Text="Version: " x:Uid="General_Version"  />
                 <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
                     <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
