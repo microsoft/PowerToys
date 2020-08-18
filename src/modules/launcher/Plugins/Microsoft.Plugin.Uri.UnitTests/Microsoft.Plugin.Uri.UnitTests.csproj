@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
     <Platforms>x64</Platforms>
     <RootNamespace>Microsoft.Plugin.Uri.UnitTests</RootNamespace>
+    <Configurations>Debug;Release;Release with Video Conference</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

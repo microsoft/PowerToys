@@ -12,12 +12,8 @@
   <?define ColorPickerProjectName="ColorPicker"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
-
-<?if $(var.Configuration)="Release with Video Conference" ?>
-  <?define BinX64Dir="$(var.RepoDir)x64\Release\" ?>
-<?else ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
-<?endif?>
+
   <Product Id="*"
        Name="PowerToys (Preview)"
        Language="1033"

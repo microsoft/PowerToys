@@ -42,7 +42,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Video Conference|x64'">
-    <OutputPath>..\..\..\x64\Release\SettingsUIRunner</OutputPath>
+    <OutputPath>..\..\..\x64\Release with Video Conference\SettingsUIRunner</OutputPath>
     <Optimize>true</Optimize>
     <DefineConstants>TRACE;VIDEO_CONFERENCE</DefineConstants>
   </PropertyGroup>
