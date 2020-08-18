@@ -51,7 +51,7 @@ void KeyboardHook::Start()
     }
 }
 
-LRESULT CALLBACK KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT __clrcall KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode == HC_ACTION && isActiveCallback->Invoke())
     {

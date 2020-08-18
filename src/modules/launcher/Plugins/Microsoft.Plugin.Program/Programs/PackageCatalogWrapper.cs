@@ -7,13 +7,12 @@ using Windows.Foundation;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-
     /// <summary>
     /// This is a simple wrapper class around the PackageCatalog to facilitate unit testing.
     /// </summary>
     internal class PackageCatalogWrapper : IPackageCatalog
     {
-        PackageCatalog _packageCatalog;
+        private PackageCatalog _packageCatalog;
 
         public PackageCatalogWrapper()
         {

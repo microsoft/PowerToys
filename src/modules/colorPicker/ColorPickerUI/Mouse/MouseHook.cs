@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
+using ColorPicker.Helpers;
 using static ColorPicker.Win32Apis;
 
 namespace ColorPicker.Mouse
@@ -71,7 +71,7 @@ namespace ColorPicker.Mouse
                 if (!result)
                 {
                     int errorCode = Marshal.GetLastWin32Error();
-                    throw new Win32Exception(errorCode);
+                    Logger.LogError("Failed to unsubscribe mouse hook with the error code" + errorCode);
                 }
             }
         }
@@ -90,7 +90,7 @@ namespace ColorPicker.Mouse
                 if (_mouseHookHandle == IntPtr.Zero)
                 {
                     int errorCode = Marshal.GetLastWin32Error();
-                    throw new Win32Exception(errorCode);
+                    Logger.LogError("Failed to subscribe mouse hook with the error code" + errorCode);
                 }
             }
         }

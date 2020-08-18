@@ -12,6 +12,7 @@ using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
+    [Ignore]
     [TestClass]
     public class FancyZonesSettingsTests : PowerToysSession
     {
@@ -39,7 +40,7 @@ namespace PowerToysTests
         {
             try
             {
-                JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));
+                JObject settings = JObject.Parse(File.ReadAllText(_fancyZonesSettingsPath));
                 return settings["properties"].ToObject<JObject>();
             }
             catch (Newtonsoft.Json.JsonReaderException)
@@ -717,8 +718,7 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
-            if (session == null)
-                return;
+            Assert.IsNotNull(session);
 
             Init();
         }
@@ -741,6 +741,7 @@ namespace PowerToysTests
                 //element couldn't be located
             }
 
+            ExitPowerToys();
             TearDown();
         }
 
@@ -752,7 +753,7 @@ namespace PowerToysTests
 
             try
             {
-                _initialSettingsJson = JObject.Parse(_initialSettings);
+                _initialSettingsJson = JObject.Parse(_initialFancyZonesSettings);
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {

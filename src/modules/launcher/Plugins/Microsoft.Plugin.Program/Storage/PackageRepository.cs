@@ -34,7 +34,6 @@ namespace Microsoft.Plugin.Program.Storage
         {
             if (args.IsComplete)
             {
-
                 try
                 {
                     var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
