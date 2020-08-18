@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -8,7 +7,7 @@ using OpenQA.Selenium.Interactions;
 namespace PowerToysTests
 {
     [TestClass]
-    public class TestShortcutHelper : PowerToysSession
+    public class TestShortcutGuideHelper : PowerToysSession
     {
         // Try to manage Press/Release of Windows Key here,
         // since Keyboard.PressKey seems to release the key if pressed
@@ -37,19 +36,26 @@ namespace PowerToysTests
         public void AppearsOnWinKeyPress()
         {
             PressWinKey();
-            Thread.Sleep(TimeSpan.FromSeconds(2));
-            WindowsElement shortcutHelperWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Pane[@ClassName=\"PToyD2DPopup\"]");
-            Assert.IsNotNull(shortcutHelperWindow);
-            ReleaseWinKey();
-            Thread.Sleep(TimeSpan.FromSeconds(2));
+            WaitSeconds(3);
+
+            try
+            {
+                WindowsElement shortcutHelperWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Pane[@ClassName=\"PToyD2DPopup\"]");
+                Assert.IsNotNull(shortcutHelperWindow);
+            }
+            catch(OpenQA.Selenium.WebDriverException)
+            {
+                Assert.Fail("Shortcut Guide not found");
+            }
         }
+
         [TestMethod]
         [ExpectedException(typeof(InvalidOperationException),
             "The Shortcut Guide UI was still found after releasing the key.")]
         public void DisappearsOnWinKeyRelease()
         {
             PressWinKey();
-            Thread.Sleep(TimeSpan.FromSeconds(2));
+            WaitSeconds(2);
             WindowsElement shortcutHelperWindow;
             try
             {
@@ -61,20 +67,21 @@ namespace PowerToysTests
                 // Not the exception we wanted to catch here.
                 Assert.Fail("Shortcut Guide not found");
             }
+
             ReleaseWinKey();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
             shortcutHelperWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Pane[@ClassName=\"PToyD2DPopup\"]");
+            Assert.IsNull(shortcutHelperWindow);
         }
+
         [TestMethod]
         public void DoesNotBlockStartMenuOnShortPress()
         {
             PressWinKey();
-            Thread.Sleep(TimeSpan.FromSeconds(0.4));
+            WaitSeconds(0.4);
             // FindElementByClassName will be faster than using with XPath.
             WindowsElement shortcutHelperWindow = session.FindElementByClassName("PToyD2DPopup");
             Assert.IsNotNull(shortcutHelperWindow);
             ReleaseWinKey();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
             WindowsElement startMenuWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Window[@Name=\"Start\"]");
         }
         [TestMethod]
@@ -83,7 +90,7 @@ namespace PowerToysTests
         public void DoesNotSpawnStartMenuOnLongPress()
         {
             PressWinKey();
-            Thread.Sleep(TimeSpan.FromSeconds(2));
+            WaitSeconds(2);
             try
             {
                 // FindElementByClassName will be faster than using with XPath.
@@ -96,25 +103,32 @@ namespace PowerToysTests
                 Assert.Fail("Shortcut Guide not found");
             }
             ReleaseWinKey();
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
             WindowsElement startMenuWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Window[@Name=\"Start\"]");
         }
+        
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
+            Assert.IsNotNull(session);
+            EnableModules(false, false, false, false, false, false, false, true);
+
+            if (!isPowerToysLaunched)
+            {
+                LaunchPowerToys();
+            }
         }
+
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            ExitPowerToys();
             TearDown();
         }
+        
         [TestInitialize]
         public void TestInitialize()
         {
-            if (session == null)
-                return;
-
             isWinKeyPressed = false;
 
             // If the start menu is open, close it.
