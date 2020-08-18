@@ -389,7 +389,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                if (!value.Equals(_zoneBorderColor))
+                if (!value.Equals(_zoneBorderColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneBorderColor = value;
                     Settings.Properties.FancyzonesBorderColor.Value = value;
