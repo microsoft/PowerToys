@@ -399,6 +399,9 @@
   <data name="RadioButtons_Name_Theme.Header" xml:space="preserve">
     <value>Settings theme</value>
   </data>
+  <data name="RadioButtons_Name_Theme.AutomationProperties.Name" xml:space="preserve">
+    <value>Settings theme</value>
+  </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
     <value>Show icon on context menu</value>
   </data>
