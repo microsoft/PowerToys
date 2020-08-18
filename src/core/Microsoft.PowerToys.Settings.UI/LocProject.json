@@ -1,11 +1,11 @@
 {
     "Projects": [
       {
-        "LanguageSet": "Windows10_Languages",
+        "LanguageSet": "Azure_Languages",
         "LocItems": [
           {
             "SourceFile": "src\\core\\Microsoft.PowerToys.Settings.UI\\Strings\\en-us\\Resources.resw",
-            "CopyOption": "LangIDOnPath",
+            "CopyOption": "LangIDOnName",
             "OutputPath": "src\\core\\Microsoft.PowerToys.Settings.UI\\Strings"
           }
         ]
