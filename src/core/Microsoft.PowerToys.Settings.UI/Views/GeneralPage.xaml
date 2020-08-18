@@ -150,7 +150,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/PT.png" />
+                <Image x:Uid="PowerToys_Icon" Source="ms-appx:///Assets/Modules/PT.png"/>
             </Border>
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
