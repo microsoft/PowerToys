@@ -25,15 +25,15 @@ namespace PowerLauncher.ViewModel
         {
             get
             {
-                return this._command;
+                return _command;
             }
 
             set
             {
                 // ICommand does not implement the INotifyPropertyChanged interface and must call OnPropertyChanged() to prevent memory leaks
-                if (value != this._command)
+                if (value != _command)
                 {
-                    this._command = value;
+                    _command = value;
                     OnPropertyChanged();
                 }
             }

@@ -12,15 +12,14 @@ namespace Wox
 {
     public partial class ActionKeywords : Window
     {
-        private PluginPair _plugin;
-        private Settings _settings;
         private readonly Internationalization _translater = InternationalizationManager.Instance;
+        private readonly PluginPair _plugin;
 
-        public ActionKeywords(string pluginId, Settings settings)
+        public ActionKeywords(string pluginId)
         {
             InitializeComponent();
             _plugin = PluginManager.GetPluginForId(pluginId);
-            _settings = settings;
+
             if (_plugin == null)
             {
                 MessageBox.Show(_translater.GetTranslation("cannotFindSpecifiedPlugin"));
@@ -39,7 +38,7 @@ namespace Wox
             Close();
         }
 
-        private void btnDone_OnClick(object sender, RoutedEventArgs _)
+        private void BtnDone_OnClick(object sender, RoutedEventArgs e)
         {
             var oldActionKeyword = _plugin.Metadata.ActionKeywords[0];
             var newActionKeyword = tbAction.Text.Trim();

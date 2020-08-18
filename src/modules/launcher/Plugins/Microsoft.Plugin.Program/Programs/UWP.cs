@@ -60,10 +60,10 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var apps = new List<UWPApplication>();
 
-                List<IAppxManifestApplication> _apps = AppxPackageHelper.getAppsFromManifest(stream);
-                foreach (var _app in _apps)
+                List<IAppxManifestApplication> appsViaManifests = AppxPackageHelper.GetAppsFromManifest(stream);
+                foreach (var appInManifest in appsViaManifests)
                 {
-                    var app = new UWPApplication(_app, this);
+                    var app = new UWPApplication(appInManifest, this);
                     apps.Add(app);
                 }
 
@@ -98,10 +98,8 @@ namespace Microsoft.Plugin.Program.Programs
                     Where(a => a.IsNamespaceDeclaration).
                     GroupBy(
                         a => a.Name.Namespace == XNamespace.None ? string.Empty : a.Name.LocalName,
-                        a => XNamespace.Get(a.Value)
-                    ).Select(
-                        g => g.First().ToString()
-                    ).ToArray();
+                        a => XNamespace.Get(a.Value)).Select(
+                        g => g.First().ToString()).ToArray();
                 return namespaces;
             }
             else
@@ -116,9 +114,9 @@ namespace Microsoft.Plugin.Program.Programs
         {
             var versionFromNamespace = new Dictionary<string, PackageVersion>
             {
-                {"http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10},
-                {"http://schemas.microsoft.com/appx/2013/manifest", PackageVersion.Windows81},
-                {"http://schemas.microsoft.com/appx/2010/manifest", PackageVersion.Windows8},
+                { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
+                { "http://schemas.microsoft.com/appx/2013/manifest", PackageVersion.Windows81 },
+                { "http://schemas.microsoft.com/appx/2010/manifest", PackageVersion.Windows8 },
             };
 
             foreach (var n in versionFromNamespace.Keys)
@@ -165,7 +163,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }).ToArray();
 
                 var updatedListWithoutDisabledApps = applications
-                                                        .Where(t1 => !Main._settings.DisabledProgramSources
+                                                        .Where(t1 => !Main.Settings.DisabledProgramSources
                                                                         .Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
                                                         .Select(x => x);
 

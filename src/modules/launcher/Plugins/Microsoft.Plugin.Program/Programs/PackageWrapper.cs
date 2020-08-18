@@ -23,16 +23,18 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string InstalledLocation { get; } = string.Empty;
 
-        public PackageWrapper() { }
-
-        public PackageWrapper(string Name, string FullName, string FamilyName, bool IsFramework, bool IsDevelopmentMode, string InstalledLocation)
+        public PackageWrapper()
         {
-            this.Name = Name;
-            this.FullName = FullName;
-            this.FamilyName = FamilyName;
-            this.IsFramework = IsFramework;
-            this.IsDevelopmentMode = IsDevelopmentMode;
-            this.InstalledLocation = InstalledLocation;
+        }
+
+        public PackageWrapper(string name, string fullName, string familyName, bool isFramework, bool isDevelopmentMode, string installedLocation)
+        {
+            Name = name;
+            FullName = fullName;
+            FamilyName = familyName;
+            IsFramework = isFramework;
+            IsDevelopmentMode = isDevelopmentMode;
+            InstalledLocation = installedLocation;
         }
 
         public static PackageWrapper GetWrapperFromPackage(Package package)
@@ -65,8 +67,7 @@ namespace Microsoft.Plugin.Program.Programs
                     package.Id.FamilyName,
                     package.IsFramework,
                     package.IsDevelopmentMode,
-                    path
-                    );
+                    path);
         }
     }
 }

@@ -51,8 +51,7 @@ namespace Microsoft.Plugin.Program.Logger
         /// Logs an exception
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
-        internal static void LogException(string classname, string callingMethodName, string loadingProgramPath,
-            string interpretationMessage, Exception e)
+        internal static void LogException(string classname, string callingMethodName, string loadingProgramPath, string interpretationMessage, Exception e)
         {
             Debug.WriteLine($"ERROR{classname}|{callingMethodName}|{loadingProgramPath}|{interpretationMessage}");
 
@@ -91,7 +90,8 @@ namespace Microsoft.Plugin.Program.Logger
 
                 innerExceptionNumber++;
                 e = e.InnerException;
-            } while (e != null);
+            }
+            while (e != null);
 
             logger.Error("------------- END Microsoft.Plugin.Program exception -------------");
         }
@@ -122,10 +122,14 @@ namespace Microsoft.Plugin.Program.Logger
         private static bool IsKnownWinProgramError(Exception e, string callingMethodName)
         {
             if (e.TargetSite?.Name == "GetDescription" && callingMethodName == "LnkProgram")
+            {
                 return true;
+            }
 
             if (e is SecurityException || e is UnauthorizedAccessException || e is DirectoryNotFoundException)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -135,10 +139,14 @@ namespace Microsoft.Plugin.Program.Logger
             if (((e.HResult == -2147024774 || e.HResult == -2147009769) && callingMethodName == "ResourceFromPri")
                 || (e.HResult == -2147024894 && (callingMethodName == "LogoPathFromUri" || callingMethodName == "ImageFromPath"))
                 || (e.HResult == -2147024864 && callingMethodName == "InitializeAppInfo"))
+            {
                 return true;
+            }
 
             if (callingMethodName == "XmlNamespaces")
+            {
                 return true;
+            }
 
             return false;
         }
