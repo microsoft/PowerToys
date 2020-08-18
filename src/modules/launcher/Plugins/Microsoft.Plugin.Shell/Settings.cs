@@ -18,8 +18,7 @@ namespace Microsoft.Plugin.Shell
 
         public bool RunAsAdministrator { get; set; } = false;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "StyleCop error, actually used in main.cs")]
-        public Dictionary<string, int> Count = new Dictionary<string, int>();
+        public Dictionary<string, int> Count { get; set; } = new Dictionary<string, int>();
 
         public void AddCmdHistory(string cmdName)
         {

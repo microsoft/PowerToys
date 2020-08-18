@@ -10,15 +10,16 @@ namespace Microsoft.Plugin.Program.Storage
 {
     internal class Win32ProgramFileSystemWatchers : IDisposable
     {
+        public string[] PathsToWatch { get; set; }
 
-        public readonly string[] _pathsToWatch;
-        public List<FileSystemWatcherWrapper> _fileSystemWatchers;
+        public List<FileSystemWatcherWrapper> FileSystemWatchers { get; set; }
+
         private bool _disposed = false;
 
         // This class contains the list of directories to watch and initializes the File System Watchers
         public Win32ProgramFileSystemWatchers()
         {
-            _pathsToWatch = GetPathsToWatch();
+            PathsToWatch = GetPathsToWatch();
             SetFileSystemWatchers();
         }
 
@@ -37,10 +38,10 @@ namespace Microsoft.Plugin.Program.Storage
         // Initializes the FileSystemWatchers
         private void SetFileSystemWatchers()
         {
-            _fileSystemWatchers = new List<FileSystemWatcherWrapper>();
-            for (int index = 0; index < _pathsToWatch.Length; index++)
+            FileSystemWatchers = new List<FileSystemWatcherWrapper>();
+            for (int index = 0; index < PathsToWatch.Length; index++)
             {
-                _fileSystemWatchers.Add(new FileSystemWatcherWrapper());
+                FileSystemWatchers.Add(new FileSystemWatcherWrapper());
             }
         }
 
@@ -56,9 +57,9 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 if (disposing)
                 {
-                    for (int index = 0; index < _pathsToWatch.Length; index++)
+                    for (int index = 0; index < PathsToWatch.Length; index++)
                     {
-                        _fileSystemWatchers[index].Dispose();
+                        FileSystemWatchers[index].Dispose();
                     }
 
                     _disposed = true;

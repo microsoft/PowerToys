@@ -19,4 +19,9 @@ public:
         targetShortcut(Shortcut()), isShortcutInvoked(false), winKeyInvoked(ModifierKey::Disabled)
     {
     }
+
+    inline bool operator==(const RemapShortcut& sc) const
+    {
+        return targetShortcut == sc.targetShortcut && isShortcutInvoked == sc.isShortcutInvoked && winKeyInvoked == sc.winKeyInvoked;
+    }
 };

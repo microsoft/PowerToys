@@ -34,8 +34,8 @@ namespace PowerLauncher.ViewModel
             _storage.Save();
         }
 
-        private static Internationalization _translater => InternationalizationManager.Instance;
+        private static Internationalization Translater => InternationalizationManager.Instance;
 
-        public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, _translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
+        public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, Translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
     }
 }

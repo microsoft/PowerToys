@@ -17,6 +17,12 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
     }
 }
 
+// Constructor to initialize shortcut from a list of keys
+Shortcut::Shortcut(const std::vector<DWORD>& keys)
+{
+    SetKeyCodes(keys);
+}
+
 // Function to return the number of keys in the shortcut
 int Shortcut::Size() const
 {

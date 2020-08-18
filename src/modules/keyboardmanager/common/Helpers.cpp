@@ -3,6 +3,10 @@
 #include <sstream>
 #include "../common/shared_constants.h"
 #include <shlwapi.h>
+#include "../../common/common.h"
+#include "keyboardmanager/dll/resource.h"
+#include "../common/keyboard_layout.h"
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
 
@@ -136,43 +140,41 @@ namespace KeyboardManagerHelper
         switch (errorType)
         {
         case ErrorType::NoError:
-            return L"Remapping successful";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_REMAPSUCCESSFUL).c_str();
         case ErrorType::SameKeyPreviouslyMapped:
-            return L"Cannot remap a key more than once for the same target app";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAMEKEYPREVIOUSLYMAPPED).c_str();
         case ErrorType::MapToSameKey:
-            return L"Cannot remap a key to itself";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPPEDTOSAMEKEY).c_str();
         case ErrorType::ConflictingModifierKey:
-            return L"Cannot remap this key as it conflicts with another remapped key";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERKEY).c_str();
         case ErrorType::SameShortcutPreviouslyMapped:
-            return L"Cannot remap a shortcut more than once for the same target app";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAMESHORTCUTPREVIOUSLYMAPPED).c_str();
         case ErrorType::MapToSameShortcut:
-            return L"Cannot remap a shortcut to itself";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPTOSAMESHORTCUT).c_str();
         case ErrorType::ConflictingModifierShortcut:
-            return L"Cannot remap this shortcut as it conflicts with another remapped shortcut";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERSHORTCUT).c_str();
         case ErrorType::WinL:
-            return L"Cannot remap from/to Win L";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_WINL).c_str();
         case ErrorType::CtrlAltDel:
-            return L"Cannot remap from/to Ctrl Alt Del";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CTRLALTDEL).c_str();
         case ErrorType::RemapUnsuccessful:
-            return L"Some remappings were not applied";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_REMAPUNSUCCESSFUL).c_str();
         case ErrorType::SaveFailed:
-            return L"Failed to save the remappings";
-        case ErrorType::MissingKey:
-            return L"Incomplete remapping";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAVEFAILED).c_str();
         case ErrorType::ShortcutStartWithModifier:
-            return L"Shortcut must start with a modifier key";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTSTARTWITHMODIFIER).c_str();
         case ErrorType::ShortcutCannotHaveRepeatedModifier:
-            return L"Shortcut cannot contain a repeated modifier";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTNOREPEATEDMODIFIER).c_str();
         case ErrorType::ShortcutAtleast2Keys:
-            return L"Shortcut must have atleast 2 keys";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTATLEAST2KEYS).c_str();
         case ErrorType::ShortcutOneActionKey:
-            return L"Shortcut must contain an action key";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTONEACTIONKEY).c_str();
         case ErrorType::ShortcutNotMoreThanOneActionKey:
-            return L"Shortcut cannot have more than one action key";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTMAXONEACTIONKEY).c_str();
         case ErrorType::ShortcutMaxShortcutSizeOneActionKey:
-            return L"Shortcuts can only have up to 2 modifier keys";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAXSHORTCUTSIZE).c_str();
         default:
-            return L"Unexpected error";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_DEFAULT).c_str();
         }
     }
 
@@ -324,5 +326,60 @@ namespace KeyboardManagerHelper
         std::sort(shortcutVector.begin(), shortcutVector.end(), [](Shortcut first, Shortcut second) {
             return first.Size() > second.Size();
         });
+    }
+
+    // Function to check if a modifier has been repeated in the previous drop downs
+    bool CheckRepeatedModifier(std::vector<DWORD>& currentKeys, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList)
+    {
+        // check if modifier has already been added before in a previous drop down
+        int currentDropDownIndex = -1;
+
+        // Find the key index of the current drop down selection so that we skip that index while searching for repeated modifiers
+        for (int i = 0; i < currentKeys.size(); i++)
+        {
+            if (currentKeys[i] == keyCodeList[selectedKeyIndex])
+            {
+                currentDropDownIndex = i;
+                break;
+            }
+        }
+
+        bool matchPreviousModifier = false;
+        for (int i = 0; i < currentKeys.size(); i++)
+        {
+            // Skip the current drop down
+            if (i != currentDropDownIndex)
+            {
+                // If the key type for the newly added key matches any of the existing keys in the shortcut
+                if (KeyboardManagerHelper::GetKeyType(keyCodeList[selectedKeyIndex]) == KeyboardManagerHelper::GetKeyType(currentKeys[i]))
+                {
+                    matchPreviousModifier = true;
+                    break;
+                }
+            }
+        }
+
+        return matchPreviousModifier;
+    }
+
+    // Function to get the selected key codes from the list of selected indices
+    std::vector<DWORD> GetKeyCodesFromSelectedIndices(const std::vector<int32_t>& selectedIndices, const std::vector<DWORD>& keyCodeList)
+    {
+        std::vector<DWORD> keys;
+
+        for (int i = 0; i < selectedIndices.size(); i++)
+        {
+            int selectedKeyIndex = selectedIndices[i];
+            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
+            {
+                // If None is not the selected key
+                if (keyCodeList[selectedKeyIndex] != 0)
+                {
+                    keys.push_back(keyCodeList[selectedKeyIndex]);
+                }
+            }
+        }
+
+        return keys;
     }
 }
