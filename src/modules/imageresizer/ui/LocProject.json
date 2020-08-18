@@ -4,9 +4,9 @@
             "LanguageSet": "Azure_Languages",
             "LocItems": [
                 {
-                    "SourceFile": "src\\core\\Microsoft.PowerToys.Settings.UI\\Strings\\en-us\\Resources.resw",
+                    "SourceFile": "src\\modules\\imageresizer\\ui\\Properties\\Resources.resx",
                     "CopyOption": "LangIDOnName",
-                    "OutputPath": "src\\core\\Microsoft.PowerToys.Settings.UI\\Strings"
+                    "OutputPath": "src\\modules\\imageresizer\\ui\\Properties"
                 }
             ]
         }

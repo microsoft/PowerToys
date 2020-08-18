@@ -1,4 +1,5 @@
 @echo off
+rem This script will fail to run unless you have the appropriate permissions
 
 cd /D "%~dp0"
 
