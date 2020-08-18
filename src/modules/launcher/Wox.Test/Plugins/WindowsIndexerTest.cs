@@ -222,6 +222,59 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
         }
 
+        [Test]
+        public void WindowsSearchAPI_ShouldRequestNormalRequest_WhenDisplayHiddenFilesIsTrue()
+        {
+            ISearchQueryHelper queryHelper;
+            string pattern = "notepad";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
+            api.DisplayHiddenFiles = true;
+            var mockSearchManager = GetMockSearchManager();
+
+            // Act
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
+
+            // Assert
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
+        }
+
+        [Test]
+        public void WindowsSearchAPI_ShouldRequestFilteredRequest_WhenDisplayHiddenFilesIsFalse()
+        {
+            ISearchQueryHelper queryHelper;
+            string pattern = "notepad";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
+            api.DisplayHiddenFiles = false;
+            var mockSearchManager = GetMockSearchManager();
+
+            // Act
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
+
+            // Assert
+            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
+        }
+
+        [Test]
+        public void WindowsSearchAPI_ShouldRequestNormalRequest_WhenDisplayHiddenFilesIsTrue_AfterRuntimeSwap()
+        {
+            ISearchQueryHelper queryHelper;
+            string pattern = "notepad";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
+            api.DisplayHiddenFiles = false;
+            var mockSearchManager = GetMockSearchManager();
+
+            // Act
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
+            api.DisplayHiddenFiles = true;
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, mockSearchManager, 10, api.DisplayHiddenFiles);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
+
+            // Assert
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
+        }
 
         [TestCase("item.exe")]
         [TestCase("item.bat")]
@@ -390,11 +443,11 @@ namespace Wox.Test.Plugins
             List<OleDBResult> results = new List<OleDBResult>() { file1, file2 };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
-            WindowsSearchAPI _api = new WindowsSearchAPI(mock.Object, false);
+            WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
             var searchManager = GetMockSearchManager();
 
             // Act
-            var windowsSearchAPIResults = _api.Search("file", searchManager, true);
+            var windowsSearchAPIResults = api.Search("file", searchManager, true);
 
             // Assert
             Assert.IsTrue(windowsSearchAPIResults.Count() == 0);
