@@ -226,35 +226,23 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public void AddRow()
         {
-            try
-            {
-                ObservableCollection<ImageSize> imageSizes = Sizes;
-                int maxId = imageSizes.Count > 0 ? imageSizes.OrderBy(x => x.Id).Last().Id : -1;
-                ImageSize newSize = new ImageSize(maxId + 1);
-                newSize.PropertyChanged += Size_PropertyChanged;
-                imageSizes.Add(newSize);
-                _advancedSizes = imageSizes;
-                SavesImageSizes(imageSizes);
-            }
-            catch
-            {
-            }
+            ObservableCollection<ImageSize> imageSizes = Sizes;
+            int maxId = imageSizes.Count > 0 ? imageSizes.OrderBy(x => x.Id).Last().Id : -1;
+            ImageSize newSize = new ImageSize(maxId + 1);
+            newSize.PropertyChanged += Size_PropertyChanged;
+            imageSizes.Add(newSize);
+            _advancedSizes = imageSizes;
+            SavesImageSizes(imageSizes);
         }
 
         public void DeleteImageSize(int id)
         {
-            try
-            {
-                ImageSize size = _advancedSizes.Where<ImageSize>(x => x.Id == id).First();
-                ObservableCollection<ImageSize> imageSizes = Sizes;
-                imageSizes.Remove(size);
+            ImageSize size = _advancedSizes.Where<ImageSize>(x => x.Id == id).First();
+            ObservableCollection<ImageSize> imageSizes = Sizes;
+            imageSizes.Remove(size);
 
-                _advancedSizes = imageSizes;
-                SavesImageSizes(imageSizes);
-            }
-            catch
-            {
-            }
+            _advancedSizes = imageSizes;
+            SavesImageSizes(imageSizes);
         }
 
         public void SavesImageSizes(ObservableCollection<ImageSize> imageSizes)
