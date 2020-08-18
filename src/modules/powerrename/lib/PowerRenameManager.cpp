@@ -213,6 +213,7 @@ IFACEMETHODIMP CPowerRenameManager::GetItemCount(_Out_ UINT* count)
 
 IFACEMETHODIMP CPowerRenameManager::setVisible()
 {
+    CSRWSharedAutoLock lock(&m_lockItems);
     HRESULT hr = E_FAIL;
     UINT lastVisibleDepth = 0, i = m_isVisible.size() - 1;
     for (auto rit = m_renameItems.rbegin(); rit != m_renameItems.rend(); ++rit, --i)
