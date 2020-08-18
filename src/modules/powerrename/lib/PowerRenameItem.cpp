@@ -179,7 +179,6 @@ IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* 
     bool excludeBecauseSubFolderContent = (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders));
     *shouldRename = (m_selected && m_canRename && hasChanged && !excludeBecauseFile &&
                      !excludeBecauseFolder && !excludeBecauseSubFolderContent);
-
     return S_OK;
 }
 
@@ -194,7 +193,6 @@ IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ DWORD filter, _In_ DWORD fla
     case PowerRenameFilters::Selected:
         get_selected(isItemVisible);
         break;
-
     case PowerRenameFilters::FlagsApplicable:
         *isItemVisible = !((m_isFolder && (flags & PowerRenameFlags::ExcludeFolders)) || 
             (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles)) || 
@@ -204,7 +202,6 @@ IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ DWORD filter, _In_ DWORD fla
         ShouldRenameItem(flags, isItemVisible);
         break;
     }
-
     return S_OK;
 }
 

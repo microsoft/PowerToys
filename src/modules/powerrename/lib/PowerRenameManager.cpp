@@ -263,7 +263,6 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemCount(_Out_ UINT* count)
         GetItemCount(count);
     }
     
-
     return S_OK;
 }
 
@@ -299,27 +298,6 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
             (*count)++;
         }
     }
- 
-    return S_OK;
-}
-
-IFACEMETHODIMP CPowerRenameManager::switchFilter(_In_ int columnNumber) 
-{
-    switch (m_filter)
-    {
-    case PowerRenameFilters::None:
-        m_filter = (columnNumber == 0)?PowerRenameFilters::Selected:PowerRenameFilters::ShouldRename;
-        break;
-    case PowerRenameFilters::Selected:
-        m_filter = (columnNumber == 0) ? PowerRenameFilters::FlagsApplicable : PowerRenameFilters::ShouldRename;
-        break;
-    case PowerRenameFilters::FlagsApplicable:
-        m_filter = (columnNumber == 0) ? PowerRenameFilters::None : PowerRenameFilters::ShouldRename;
-        break;
-    case PowerRenameFilters::ShouldRename:
-        m_filter = (columnNumber == 0) ? PowerRenameFilters::Selected : PowerRenameFilters::None;
-        break;
-    }
 
     return S_OK;
 }
@@ -345,6 +323,27 @@ IFACEMETHODIMP CPowerRenameManager::put_flags(_In_ DWORD flags)
 IFACEMETHODIMP CPowerRenameManager::get_filter(_Out_ DWORD* filter)
 {
     *filter = m_filter;
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameManager::switchFilter(_In_ int columnNumber)
+{
+    switch (m_filter)
+    {
+    case PowerRenameFilters::None:
+        m_filter = (columnNumber == 0)?PowerRenameFilters::Selected:PowerRenameFilters::ShouldRename;
+        break;
+    case PowerRenameFilters::Selected:
+        m_filter = (columnNumber == 0)?PowerRenameFilters::FlagsApplicable:PowerRenameFilters::ShouldRename;
+        break;
+    case PowerRenameFilters::FlagsApplicable:
+        m_filter = (columnNumber == 0)?PowerRenameFilters::None:PowerRenameFilters::ShouldRename;
+        break;
+    case PowerRenameFilters::ShouldRename:
+        m_filter = (columnNumber == 0)?PowerRenameFilters::Selected:PowerRenameFilters::None;
+        break;
+    }
+
     return S_OK;
 }
 
