@@ -10,7 +10,7 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-  </ItemGroup>
+  </ItemGroup>  
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{89f34af7-1c34-4a72-aa6e-534bcf972bd9}</ProjectGuid>
@@ -118,12 +118,14 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Generated Files\resource.h" />
+    <ClInclude Include="resource.base.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="KeyboardEventHandlers.cpp" />
+    <None Include="KeyboardManager.base.rc" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
@@ -140,7 +142,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KeyboardManager.rc" />
+    <ResourceCompile Include="Generated Files\KeyboardManager.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Keyboard.ico" />

@@ -2,7 +2,7 @@
 #include "Dialog.h"
 #include <set>
 #include "common/common.h"
-#include "keyboardmanager/dll/resource.h"
+#include "keyboardmanager/dll/Generated Files/resource.h"
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
