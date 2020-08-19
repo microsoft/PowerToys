@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(Func<string, int> ipcMSGCallBackFunc)
+        public PowerLauncherViewModel(Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     settings = new PowerLauncherSettings();
                     settings.Properties.OpenPowerLauncher.Alt = true;
-                    settings.Properties.OpenPowerLauncher.Code = 32;
+                    settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
                     settings.Properties.MaximumNumberOfResults = 4;
                     callback(settings);
                 }
