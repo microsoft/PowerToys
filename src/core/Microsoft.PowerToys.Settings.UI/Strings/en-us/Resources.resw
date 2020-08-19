@@ -444,6 +444,9 @@
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
     <value>Zone border color (Default: #FFFFFF)</value>
   </data>
+  <data name="FancyZones_BorderColor_Textblock.Text" xml:space="preserve">
+    <value>Zone border color</value>
+  </data>
   <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
     <value>Zone inactive color (Default: #F5FCFF)</value>
   </data>
