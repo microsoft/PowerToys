@@ -140,13 +140,13 @@ namespace Microsoft.Plugin.Shell
             var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? string.Empty : "runas";
 
             ProcessStartInfo info;
-            if (_settings.Shell == Shell.Cmd)
+            if (_settings.Shell == ExecutionShell.Cmd)
             {
                 var arguments = _settings.LeaveShellOpen ? $"/k \"{command}\"" : $"/c \"{command}\" & pause";
 
                 info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsAdministratorArg);
             }
-            else if (_settings.Shell == Shell.Powershell)
+            else if (_settings.Shell == ExecutionShell.Powershell)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
@@ -160,7 +160,7 @@ namespace Microsoft.Plugin.Shell
 
                 info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsAdministratorArg);
             }
-            else if (_settings.Shell == Shell.RunCommand)
+            else if (_settings.Shell == ExecutionShell.RunCommand)
             {
                 // Open explorer if the path is a file or directory
                 if (Directory.Exists(command) || File.Exists(command))

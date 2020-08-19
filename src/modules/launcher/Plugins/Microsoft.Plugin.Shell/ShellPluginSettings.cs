@@ -8,7 +8,7 @@ namespace Microsoft.Plugin.Shell
 {
     public class ShellPluginSettings
     {
-        public Shell Shell { get; set; } = Shell.RunCommand;
+        public ExecutionShell Shell { get; set; } = ExecutionShell.RunCommand;
 
         // not overriding Win+R
         // crutkas we need to earn the right for Win+R override
@@ -33,7 +33,7 @@ namespace Microsoft.Plugin.Shell
         }
     }
 
-    public enum Shell
+    public enum ExecutionShell
     {
         Cmd = 0,
         Powershell = 1,

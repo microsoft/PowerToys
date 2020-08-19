@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.Shell
             ReplaceWinR.IsChecked = _settings.ReplaceWinR;
             LeaveShellOpen.IsChecked = _settings.LeaveShellOpen;
             AlwaysRunAsAdministrator.IsChecked = _settings.RunAsAdministrator;
-            LeaveShellOpen.IsEnabled = _settings.Shell != Shell.RunCommand;
+            LeaveShellOpen.IsEnabled = _settings.Shell != ExecutionShell.RunCommand;
 
             LeaveShellOpen.Checked += (o, e) =>
             {
@@ -56,8 +56,8 @@ namespace Microsoft.Plugin.Shell
             ShellComboBox.SelectedIndex = (int)_settings.Shell;
             ShellComboBox.SelectionChanged += (o, e) =>
             {
-                _settings.Shell = (Shell)ShellComboBox.SelectedIndex;
-                LeaveShellOpen.IsEnabled = _settings.Shell != Shell.RunCommand;
+                _settings.Shell = (ExecutionShell)ShellComboBox.SelectedIndex;
+                LeaveShellOpen.IsEnabled = _settings.Shell != ExecutionShell.RunCommand;
             };
         }
     }
