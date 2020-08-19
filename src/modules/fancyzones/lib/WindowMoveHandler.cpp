@@ -193,7 +193,10 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     }
 
     m_shiftHook.enable();
+    m_keyState->setShiftState(GetKeyState(VK_SHIFT) & 0x800);
+
     m_ctrlHook.enable();
+    m_keyState->setCtrlState(GetKeyState(VK_CONTROL) & 0x800);
 
     // This updates m_dragEnabled depending on if the shift key is being held down
     UpdateDragState();
