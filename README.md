@@ -104,37 +104,7 @@ WinGet install powertoys
 
 ### Other install methods
 
-#### Via Chocolatey (Unofficial)
-
-Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org). If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
-
-To install PowerToys, run the following command from the command line / PowerShell:
-
-```powershell
-choco install powertoys
-```
-
-To upgrade PowerToys, run the following command from the command line / PowerShell:
-
-```powershell
-choco upgrade powertoys
-```
-
-#### Via Scoop (Unofficial)
-
-Download and update PowerToys from [Scoop](https://scoop.sh). 
-
-To install PowerToys, run the following command from the command line / PowerShell:
-
-```powershell
-scoop install powertoys
-```
-
-To update PowerToys, run the following command from the command line / PowerShell:
-
-```powershell
-scoop update powertoys
-```
+There are [community driven install methods](./doc/unofficalInstallMethods.md) such as Chocolatey and Scoop.  If these are your perferred install solutions, this will have the install instructions.
 
 ### Known issues
 
