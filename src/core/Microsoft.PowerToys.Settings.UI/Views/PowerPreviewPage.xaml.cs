@@ -12,13 +12,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// </summary>
     public sealed partial class PowerPreviewPage : Page
     {
-        public PowerPreviewViewModel viewModel { get; set; }
+        public PowerPreviewViewModel ViewModel { get; set; }
 
         public PowerPreviewPage()
         {
-            this.InitializeComponent();
-            viewModel = new PowerPreviewViewModel(ShellPage.SendDefaultIPCMessage);
-            DataContext = viewModel;
+            InitializeComponent();
+            ViewModel = new PowerPreviewViewModel(ShellPage.SendDefaultIPCMessage);
+            DataContext = ViewModel;
         }
     }
 }

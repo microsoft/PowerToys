@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             watcher = Helper.GetFileWatcher(
                 PowerToyName,
-                ViewModel.settings.Properties.ActiveConfiguration.Value + ".json",
+                ViewModel.Settings.Properties.ActiveConfiguration.Value + ".json",
                 OnConfigFileUpdate);
 
             InitializeComponent();

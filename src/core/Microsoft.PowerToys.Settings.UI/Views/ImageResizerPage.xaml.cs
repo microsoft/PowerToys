@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
-using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -30,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 int rowNum = int.Parse(deleteRowButton.CommandParameter.ToString());
                 ViewModel.DeleteImageSize(rowNum);
             }
-            catch (Exception exp)
+            catch
             {
             }
         }
@@ -41,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 ViewModel.AddRow();
             }
-            catch (Exception exp)
+            catch
             {
             }
         }

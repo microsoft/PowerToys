@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     {
         private const string ModuleName = "PowerRename";
 
-        public string SettingsConfigFileFolder = string.Empty;
+        private string _settingsConfigFileFolder = string.Empty;
 
         private PowerRenameSettings Settings { get; set; }
 
@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public PowerRenameViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
-            SettingsConfigFileFolder = configFileSubfolder;
+            _settingsConfigFileFolder = configFileSubfolder;
 
             try
             {
@@ -76,7 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value != _powerRenameEnabled)
                 {
-
                         GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
                         generalSettings.Enabled.PowerRename = value;
                         OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
@@ -190,7 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public string GetSettingsSubPath()
         {
-            return SettingsConfigFileFolder + "\\" + ModuleName;
+            return _settingsConfigFileFolder + "\\" + ModuleName;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
