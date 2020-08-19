@@ -22,8 +22,8 @@ namespace Microsoft.Plugin.Shell
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
-        private readonly Settings _settings;
-        private readonly PluginJsonStorage<Settings> _storage;
+        private readonly ShellPluginSettings _settings;
+        private readonly PluginJsonStorage<ShellPluginSettings> _storage;
 
         private string IconPath { get; set; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.Shell
 
         public Main()
         {
-            _storage = new PluginJsonStorage<Settings>();
+            _storage = new PluginJsonStorage<ShellPluginSettings>();
             _settings = _storage.Load();
         }
 

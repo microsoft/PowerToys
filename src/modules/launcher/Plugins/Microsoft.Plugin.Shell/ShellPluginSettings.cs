@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Plugin.Shell
 {
-    public class Settings
+    public class ShellPluginSettings
     {
         public Shell Shell { get; set; } = Shell.RunCommand;
 

@@ -9,9 +9,9 @@ namespace Microsoft.Plugin.Shell
 {
     public partial class CMDSetting : UserControl
     {
-        private readonly Settings _settings;
+        private readonly ShellPluginSettings _settings;
 
-        public CMDSetting(Settings settings)
+        public CMDSetting(ShellPluginSettings settings)
         {
             InitializeComponent();
             _settings = settings;
