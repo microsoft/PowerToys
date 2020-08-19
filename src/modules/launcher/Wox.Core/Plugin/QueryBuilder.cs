@@ -39,6 +39,18 @@ namespace Wox.Core.Plugin
                         // The search string is the raw query excluding the action keyword
                         string search = rawQuery.Substring(pluginActionKeyword.Length).Trim();
 
+                        // To set the terms of the query after removing the action keyword
+                        if (possibleActionKeyword.Length > pluginActionKeyword.Length)
+                        {
+                            // If the first term contains the action keyword, then set the remaining string to be the first term
+                            terms[0] = possibleActionKeyword.Substring(pluginActionKeyword.Length);
+                        }
+                        else
+                        {
+                            // If the first term is the action keyword, then skip it.
+                            terms = terms.Skip(1).ToArray();
+                        }
+
                         // A new query is constructed for each plugin as they have different action keywords
                         var query = new Query(rawQuery, search, terms, pluginActionKeyword);
 

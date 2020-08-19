@@ -172,5 +172,31 @@ namespace Wox.Test
             Assert.IsTrue(AreEqual(firstQuery, new Query { RawQuery = searchQuery, Search = searchQuery.Substring(firstPlugin.Metadata.ActionKeyword.Length), ActionKeyword = firstPlugin.Metadata.ActionKeyword } ));
             Assert.IsTrue(AreEqual(secondQuery, new Query { RawQuery = searchQuery, Search = searchQuery.Substring(secondPlugin.Metadata.ActionKeyword.Length), ActionKeyword = secondPlugin.Metadata.ActionKeyword }));
         }
+
+        [Test]
+        public void QueryBuilder_ShouldSetTermsCorrently_WhenCalled()
+        {
+            // Arrange
+            string searchQuery = "abcd efgh";
+            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" } };
+            var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" } };
+
+            var nonGlobalPlugins = new Dictionary<string, PluginPair>
+            {
+                { "ab", firstPlugin },
+                { "abcd", secondPlugin },
+            };
+
+            // Act
+            var pluginQueryPairs = QueryBuilder.Build(ref searchQuery, nonGlobalPlugins);
+
+            var firstQuery = pluginQueryPairs.GetValueOrDefault(firstPlugin);
+            var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
+
+            // Assert
+            Assert.IsTrue(firstQuery.Terms[0].Equals("cd") && firstQuery.Terms[1].Equals("efgh") && firstQuery.Terms.Length == 2);
+            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh") && secondQuery.Terms.Length == 1);
+
+        }
     }
 }
