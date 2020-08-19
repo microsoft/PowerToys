@@ -37,7 +37,7 @@ namespace Wox.Core.Plugin
                     if (nonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
                     {
                         // The search string is the raw query excluding the action keyword
-                        string search = rawQuery.Length > pluginActionKeyword.Length ? rawQuery.Substring(pluginActionKeyword.Length).Trim() : string.Empty;
+                        string search = rawQuery.Substring(pluginActionKeyword.Length).Trim();
 
                         // A new query is constructed for each plugin as they have different action keywords
                         var query = new Query(rawQuery, search, terms, pluginActionKeyword);
