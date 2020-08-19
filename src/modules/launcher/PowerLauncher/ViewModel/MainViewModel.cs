@@ -465,7 +465,7 @@ namespace PowerLauncher.ViewModel
                 var queryText = QueryText.Trim();
 
                 var pluginQueryPairs = QueryBuilder.Build(ref queryText, PluginManager.NonGlobalPlugins);
-                if (pluginQueryPairs != null)
+                if (pluginQueryPairs != null && pluginQueryPairs.Count > 0)
                 {
                     _currentQuery = queryText;
                     Task.Run(
