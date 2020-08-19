@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     // Represents a powertoys module settings setnt to the runner.
     public class SndModuleSettings<T>
     {
+        [JsonPropertyName("powertoys")]
         public T PowertoysSetting { get; set; }
 
         public SndModuleSettings()
