@@ -25,12 +25,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public GeneralPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             // Load string resources
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
 
-            this.ViewModel = new GeneralViewModel(
+            ViewModel = new GeneralViewModel(
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
                 loader.GetString("GeneralSettings_RunningAsUserText"),
                 ShellPage.IsElevated,

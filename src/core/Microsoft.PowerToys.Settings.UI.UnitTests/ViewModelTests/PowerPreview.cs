@@ -55,7 +55,7 @@ namespace ViewModelTests
             Func<string, int> SendMockIPCConfigMSG = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
-                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.Properties.EnableSvgPreview);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableSvgPreview);
                 return 0;
             };
 
@@ -73,7 +73,7 @@ namespace ViewModelTests
             Func<string, int> SendMockIPCConfigMSG = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
-                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.Properties.EnableSvgThumbnail);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableSvgThumbnail);
                 return 0;
             };
 
@@ -91,7 +91,7 @@ namespace ViewModelTests
             Func<string, int> SendMockIPCConfigMSG = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
-                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.Properties.EnableMdPreview);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableMdPreview);
                 return 0;
             };
 

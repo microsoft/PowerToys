@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public IntProperty()
         {
-            this.Value = 0;
+            Value = 0;
         }
 
         public IntProperty(int value)

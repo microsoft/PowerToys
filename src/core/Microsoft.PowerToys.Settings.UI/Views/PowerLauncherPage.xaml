@@ -129,7 +129,7 @@
             <TextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-            
+
             <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
                             Width="240"
                             SpinButtonPlacementMode="Compact"
@@ -174,7 +174,7 @@
                     RelativePanel.Below="DescriptionPanel">
                 <Image Source="ms-appx:///Assets/Modules/PowerLauncher.png" />
             </Border>
-            
+
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"

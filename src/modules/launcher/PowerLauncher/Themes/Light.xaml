@@ -22,11 +22,11 @@
     <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" />
     <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" />
-    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33000000" />
+    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#30000000" />
     <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" />
     <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FFd2d2d2" />
     <SolidColorBrush x:Key="ControlTextBrushKey" Color="Black" />
-    <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FF5b5b5b" />
+    <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FF434343" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="Black" />
     <SolidColorBrush x:Key="BorderBrush" Color="Transparent" />
     <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="#FF7a7a7a" />
