@@ -178,15 +178,15 @@
                 
             </StackPanel>
 
-            <TextBlock Name="FancyZones_ZoneHighlightColor_Textblock"
-                x:Uid="FancyZones_ZoneHighlightColor_Textblock"
+            <TextBlock Name="FancyZones_ZoneHighlightColor"
+                x:Uid="FancyZones_ZoneHighlightColor"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
                                  Padding="4,4,8,4"
-                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_ZoneHighlightColor_Textblock}">
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_ZoneHighlightColor}">
                 <Border Width="48"
                         CornerRadius="2"
                         Height="24">
@@ -196,7 +196,7 @@
                 </Border>
                 <muxc:DropDownButton.Flyout>
                     <Flyout>
-                        <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColor"
+                        <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColorPicker"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
                               IsColorSliderVisible="True"
@@ -242,15 +242,15 @@
                 </muxc:DropDownButton.Flyout>
             </muxc:DropDownButton>
 
-            <TextBlock Name="FancyZones_BorderColor_Textblock"
-                x:Uid="FancyZones_BorderColor_Textblock"
+            <TextBlock Name="FancyZones_BorderColor"
+                x:Uid="FancyZones_BorderColor"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
                                  Padding="4,4,8,4"
-                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_BorderColor_Textblock}">
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_BorderColor}">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
                         <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"/>
@@ -258,7 +258,7 @@
                 </Border>
                 <muxc:DropDownButton.Flyout>
                     <Flyout>
-                        <muxc:ColorPicker x:Name="FancyZones_BorderColor"
+                        <muxc:ColorPicker x:Name="FancyZones_BorderColorPicker"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
                               IsColorSliderVisible="True"                             
