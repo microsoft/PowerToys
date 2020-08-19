@@ -362,7 +362,7 @@ namespace Microsoft.Plugin.Program.Programs
             LogoPathFromUri(this.logoUri, theme);
         }
 
-        private string GetScaleIcons(string path, string colorscheme, bool highContrast = false)
+        private bool SetScaleIcons(string path, string colorscheme, bool highContrast = false)
         {
             var extension = Path.GetExtension(path);
             if (extension != null)
@@ -399,16 +399,27 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
 
-                var selected = paths.FirstOrDefault(File.Exists);
-                return selected;
+                var selectedIconPath = paths.FirstOrDefault(File.Exists);
+                if (!string.IsNullOrEmpty(selectedIconPath))
+                {
+                    LogoPath = selectedIconPath;
+                    if (highContrast)
+                    {
+                        LogoType = LogoType.HighContrast;
+                    }
+                    else
+                    {
+                        LogoType = LogoType.Colored;
+                    }
+
+                    return true;
+                }
             }
-            else
-            {
-                return string.Empty;
-            }
+
+            return false;
         }
 
-        private static string GetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
+        private bool SetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
         {
             var extension = Path.GetExtension(path);
             if (extension != null)
@@ -443,82 +454,77 @@ namespace Microsoft.Plugin.Program.Programs
                 }
 
                 var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
-                return selectedIconPath;
+                if (!string.IsNullOrEmpty(selectedIconPath))
+                {
+                    LogoPath = selectedIconPath;
+                    if (highContrast)
+                    {
+                        LogoType = LogoType.HighContrast;
+                    }
+                    else
+                    {
+                        LogoType = LogoType.Colored;
+                    }
+
+                    return true;
+                }
             }
-            else
-            {
-                return string.Empty;
-            }
+
+            return false;
         }
 
         private bool SetColoredIcon(string path, string colorscheme)
         {
-            var coloredScaleIcon = GetScaleIcons(path, colorscheme);
-            if (!string.IsNullOrEmpty(coloredScaleIcon))
+            var isSetColoredScaleIcon = SetScaleIcons(path, colorscheme);
+            if (isSetColoredScaleIcon)
             {
-                LogoPath = coloredScaleIcon;
-                LogoType = LogoType.Colored;
                 return true;
             }
 
-            var coloredTargetIcon = GetTargetSizeIcon(path, colorscheme);
-            if (!string.IsNullOrEmpty(coloredTargetIcon))
+            var isSetColoredTargetIcon = SetTargetSizeIcon(path, colorscheme);
+            if (isSetColoredTargetIcon)
             {
-                LogoPath = coloredTargetIcon;
-                LogoType = LogoType.Colored;
                 return true;
             }
 
-            var highContrastScaleIcon = GetScaleIcons(path, colorscheme, true);
-            if (!string.IsNullOrEmpty(highContrastScaleIcon))
+            var isSetHighContrastScaleIcon = SetScaleIcons(path, colorscheme, true);
+            if (isSetHighContrastScaleIcon)
             {
-                LogoPath = highContrastScaleIcon;
-                LogoType = LogoType.HighContrast;
                 return true;
             }
 
-            var highContrastTargetIcon = GetTargetSizeIcon(path, colorscheme, true);
-            if (!string.IsNullOrEmpty(highContrastTargetIcon))
+            var isSetHighContrastTargetIcon = SetTargetSizeIcon(path, colorscheme, true);
+            if (isSetHighContrastTargetIcon)
             {
-                LogoPath = highContrastTargetIcon;
-                LogoType = LogoType.HighContrast;
                 return true;
             }
 
             return false;
         }
 
-        private bool SetHighContrastIcon(string path, string theme)
+        private bool SetHighContrastIcon(string path, string colorscheme)
         {
-            var highContrastScaleIcon = GetScaleIcons(path, theme, true);
-            if (!string.IsNullOrEmpty(highContrastScaleIcon))
+            var isSetHighContrastScaleIcon = SetScaleIcons(path, colorscheme, true);
+            if (isSetHighContrastScaleIcon)
             {
-                LogoPath = highContrastScaleIcon;
-                LogoType = LogoType.HighContrast;
                 return true;
             }
 
-            var highContrastTargetIcon = GetTargetSizeIcon(path, theme, true);
-            if (!string.IsNullOrEmpty(highContrastTargetIcon))
+            var isSetHighContrastTargetIcon = SetTargetSizeIcon(path, colorscheme, true);
+            if (isSetHighContrastTargetIcon)
             {
-                LogoPath = highContrastTargetIcon;
-                LogoType = LogoType.HighContrast;
                 return true;
             }
 
-            var coloredScaleIcon = GetScaleIcons(path, theme);
-            if (!string.IsNullOrEmpty(coloredScaleIcon))
+            var isSetColoredScaleIcon = SetScaleIcons(path, colorscheme);
+            if (isSetColoredScaleIcon)
             {
-                LogoPath = coloredScaleIcon;
-                LogoType = LogoType.Colored;
                 return true;
             }
 
-            var coloredTargetIcon = GetTargetSizeIcon(path, theme);
-            if (!string.IsNullOrEmpty(coloredTargetIcon))
+            var isSetColoredTargetIcon = SetTargetSizeIcon(path, colorscheme);
+            if (isSetColoredTargetIcon)
             {
-                LogoPath = coloredTargetIcon;
-                LogoType = LogoType.Colored;
                 return true;
             }
 
