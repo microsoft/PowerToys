@@ -288,6 +288,9 @@
   <data name="Appearance_GroupSettings.Text" xml:space="preserve">
     <value>Appearance</value>
   </data>
+  <data name="Fancyzones_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Fancyzones windows</value>
+  </data>
   <data name="FancyZones_Description.Text" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
   </data>
