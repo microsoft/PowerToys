@@ -117,9 +117,12 @@
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"
-            FontSize="24" 
+            FontSize="26" 
             HorizontalAlignment="Center" 
             VerticalAlignment="Center"
-            Foreground="{DynamicResource TextControlPlaceholderForeground}" />
+            Foreground="{DynamicResource TextControlPlaceholderForeground}" 
+            RenderOptions.ClearTypeHint="Enabled"
+            TextOptions.TextRenderingMode="Auto"
+            SnapsToDevicePixels="True"/>
     </Grid>
 </UserControl>
