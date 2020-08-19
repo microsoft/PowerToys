@@ -464,8 +464,8 @@ namespace PowerLauncher.ViewModel
                 _updateToken = currentCancellationToken;
                 var queryText = QueryText.Trim();
 
-                var pluginQueryPair = QueryBuilder.Build(ref queryText, PluginManager.NonGlobalPlugins);
-                if (pluginQueryPair != null)
+                var pluginQueryPairs = QueryBuilder.Build(ref queryText, PluginManager.NonGlobalPlugins);
+                if (pluginQueryPairs != null)
                 {
                     _currentQuery = queryText;
                     Task.Run(
@@ -474,7 +474,7 @@ namespace PowerLauncher.ViewModel
                         Thread.Sleep(20);
 
                         // Contains all the plugins for which this raw query is valid
-                        var plugins = pluginQueryPair.Keys.ToList();
+                        var plugins = pluginQueryPairs.Keys.ToList();
 
                         try
                         {
@@ -483,7 +483,7 @@ namespace PowerLauncher.ViewModel
                             var resultPluginPair = new List<(List<Result>, PluginMetadata)>();
 
                             // To execute a query corresponding to each plugin
-                            foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPair)
+                            foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)
                             {
                                 var plugin = pluginQueryItem.Key;
                                 var query = pluginQueryItem.Value;
@@ -525,7 +525,7 @@ namespace PowerLauncher.ViewModel
                                         if (!plugin.Metadata.Disabled)
                                         {
                                             Query query;
-                                            pluginQueryPair.TryGetValue(plugin, out query);
+                                            pluginQueryPairs.TryGetValue(plugin, out query);
 
                                             var results = PluginManager.QueryForPlugin(plugin, query, true);
                                             currentCancellationToken.ThrowIfCancellationRequested();
@@ -800,10 +800,10 @@ namespace PowerLauncher.ViewModel
 
             // Fix Cold start for plugins
             string s = "m";
-            var pluginQueryPair = QueryBuilder.Build(ref s, PluginManager.NonGlobalPlugins);
+            var pluginQueryPairs = QueryBuilder.Build(ref s, PluginManager.NonGlobalPlugins);
 
             // To execute a query corresponding to each plugin
-            foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPair)
+            foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)
             {
                 var plugin = pluginQueryItem.Key;
                 var query = pluginQueryItem.Value;
