@@ -32,7 +32,8 @@
                        />
         
         </StackPanel>
-        <TextBox x:Name="HotkeyTextBox"
+        <TextBox x:Uid="FancyZones_SettingsPage_ZonesEditorWindow"
+                 x:Name="HotkeyTextBox"
                  Margin="0,5,0,0"
                  IsReadOnly="True"
                  />
