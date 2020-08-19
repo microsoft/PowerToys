@@ -360,6 +360,9 @@
   <data name="GeneralPage_AboutPowerToysHeader.Text" xml:space="preserve">
     <value>About PowerToys</value>
   </data>
+  <data name="PowerToys_Icon.AutomationProperties.Name" xml:space="preserve">
+    <value>PowerToys Icon</value>
+  </data>
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
   </data>
@@ -396,7 +399,7 @@
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
     <value>Enable PowerRename</value>
   </data>
-  <data name="RadioButtons_Name_Theme.Header" xml:space="preserve">
+  <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
     <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
