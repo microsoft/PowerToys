@@ -348,6 +348,9 @@
   <data name="FancyZones_ZoneBehavior_GroupSettings.Text" xml:space="preserve">
     <value>Zone behavior</value>
   </data>
+  <data name="FancyZones_ZoneHighlightColor_Textblock.Text" xml:space="preserve">
+    <value>Zone highlight color</value>
+  </data>
   <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
     <value>Zone highlight color (Default: #0078D7)</value>
   </data>
