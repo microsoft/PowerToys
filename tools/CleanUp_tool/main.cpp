@@ -166,7 +166,4 @@ void ClearRegistry()
     RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\PowerRename");
     RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\DontShowMeThisDialogAgain\\{e16ea82f-6d94-4f30-bb02-d6d911588afd}");
     RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\ImageResizer");
-    //RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers");
-    //RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\%d\\VirtualDesktops");
-    //RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops");
 }
