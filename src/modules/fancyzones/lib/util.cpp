@@ -156,24 +156,90 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
     ::SetWindowPlacement(window, &placement);
 }
 
+static bool no_visible_owner(HWND window) noexcept
+{
+    auto owner = GetWindow(window, GW_OWNER);
+    if (owner == nullptr)
+    {
+        return true; // There is no owner at all
+    }
+    if (!IsWindowVisible(owner))
+    {
+        return true; // Owner is invisible
+    }
+    RECT rect;
+    if (!GetWindowRect(owner, &rect))
+    {
+        return false; // Could not get the rect, return true (and filter out the window) just in case
+    }
+    // Return false (and allow the window to be zonable) if the owner window size is zero
+    // It is enough that the window is zero-sized in one dimension only.
+    return rect.top == rect.bottom || rect.left == rect.right;
+}
+
+static FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window)
+{
+    FancyZonesWindowInfo result;
+    if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window))
+    {
+        return result;
+    }
+    auto style = GetWindowLong(window, GWL_STYLE);
+    auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
+    // WS_POPUP need to have a border or minimize/maximize buttons,
+    // otherwise the window is "not interesting"
+    if ((style & WS_POPUP) == WS_POPUP &&
+        (style & WS_THICKFRAME) == 0 &&
+        (style & WS_MINIMIZEBOX) == 0 &&
+        (style & WS_MAXIMIZEBOX) == 0)
+    {
+        return result;
+    }
+    if ((style & WS_CHILD) == WS_CHILD ||
+        (style & WS_DISABLED) == WS_DISABLED ||
+        (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
+        (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE)
+    {
+        return result;
+    }
+    std::array<char, 256> class_name;
+    GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
+    if (is_system_window(window, class_name.data()))
+    {
+        return result;
+    }
+    auto process_path = get_process_path(window);
+    // Check for Cortana:
+    if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
+        process_path.ends_with(L"SearchUI.exe"))
+    {
+        return result;
+    }
+    result.process_path = std::move(process_path);
+    result.standard_window = true;
+    result.no_visible_owner = no_visible_owner(window);
+    result.zonable = result.standard_window && result.no_visible_owner;
+    return result;
+}
+
 bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
 {
-    auto filtered = get_fancyzones_filtered_window(window);
-    if (!filtered.zonable)
+    auto windowInfo = GetFancyZonesWindowInfo(window);
+    if (!windowInfo.zonable)
     {
         return false;
     }
     // Filter out user specified apps
-    CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
-    if (find_app_name_in_path(filtered.process_path, excludedApps))
+    CharUpperBuffW(windowInfo.process_path.data(), (DWORD)windowInfo.process_path.length());
+    if (find_app_name_in_path(windowInfo.process_path, excludedApps))
     {
         return false;
     }
-    if (find_app_name_in_path(filtered.process_path, { NonLocalizable::PowerToysAppPowerLauncher }))
+    if (find_app_name_in_path(windowInfo.process_path, { NonLocalizable::PowerToysAppPowerLauncher }))
     {
         return false;
     }
-    if (find_app_name_in_path(filtered.process_path, { NonLocalizable::PowerToysAppFZEditor }))
+    if (find_app_name_in_path(windowInfo.process_path, { NonLocalizable::PowerToysAppFZEditor }))
     {
         return false;
     }
