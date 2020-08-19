@@ -18,7 +18,7 @@ namespace Microsoft.Plugin.Shell
 
         public bool RunAsAdministrator { get; set; } = false;
 
-        public Dictionary<string, int> Count { get; set; } = new Dictionary<string, int>();
+        public Dictionary<string, int> Count { get; } = new Dictionary<string, int>();
 
         public void AddCmdHistory(string cmdName)
         {
