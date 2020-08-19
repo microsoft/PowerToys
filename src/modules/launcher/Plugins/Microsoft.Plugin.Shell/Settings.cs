@@ -12,11 +12,11 @@ namespace Microsoft.Plugin.Shell
 
         // not overriding Win+R
         // crutkas we need to earn the right for Win+R override
-        public bool ReplaceWinR { get; set; } = false;
+        public bool ReplaceWinR { get; set; }
 
         public bool LeaveShellOpen { get; set; }
 
-        public bool RunAsAdministrator { get; set; } = false;
+        public bool RunAsAdministrator { get; set; }
 
         public Dictionary<string, int> Count { get; } = new Dictionary<string, int>();
 
