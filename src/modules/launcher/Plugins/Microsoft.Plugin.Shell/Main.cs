@@ -221,7 +221,7 @@ namespace Microsoft.Plugin.Shell
             }
         }
 
-        private bool ExistInPath(string filename)
+        private static bool ExistInPath(string filename)
         {
             if (File.Exists(filename))
             {
