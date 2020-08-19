@@ -212,13 +212,15 @@
 
             </muxc:DropDownButton>
 
-            <TextBlock x:Uid="FancyZones_InActiveColor"
+            <TextBlock Name="FancyZones_InActiveColor"
+                x:Uid="FancyZones_InActiveColor"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
-                                 Padding="4,4,8,4">
+                                 Padding="4,4,8,4"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_InActiveColor}">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
                         <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
