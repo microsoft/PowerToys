@@ -5,12 +5,11 @@
 
 interface IFancyZonesSettings;
 interface IZoneWindow;
-class KeyState;
 
 class WindowMoveHandler
 {
 public:
-    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, KeyState* keyState);
+    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, const std::function<void()>& keyUpdateCallback);
     ~WindowMoveHandler();
 
     bool InMoveSize() const noexcept;

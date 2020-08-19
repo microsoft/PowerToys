@@ -15,7 +15,6 @@
 #include "trace.h"
 #include "VirtualDesktopUtils.h"
 #include "MonitorWorkAreaHandler.h"
-#include "KeyState.h"
 
 #include <lib/SecondaryMouseButtonsHook.h>
 #include <lib/GenericKeyHook.h>
@@ -47,12 +46,11 @@ public:
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
-        m_windowMoveHandler(settings, &m_keyState)
+        m_windowMoveHandler(settings, [this]() {
+            PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        })
     {
         m_settings->SetCallback(this);
-        m_keyState.setCallback([this]() {
-            PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
-        });
     }
 
     // IFancyZones
@@ -245,7 +243,6 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
-    KeyState m_keyState;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.

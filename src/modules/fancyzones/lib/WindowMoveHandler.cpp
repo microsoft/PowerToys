@@ -57,12 +57,13 @@ namespace WindowMoveHandlerUtils
 class WindowMoveHandlerPrivate
 {
 public:
-    WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings, KeyState* keyState) :
+    WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings, const std::function<void()>& keyUpdateCallback) :
         m_settings(settings),
+        m_mouseState(false),
         m_mouseHook(std::bind(&WindowMoveHandlerPrivate::OnMouseDown, this)),
-        m_shiftHook(std::bind(&WindowMoveHandlerPrivate::OnShiftChangeState, this, std::placeholders::_1)),
-        m_ctrlHook(std::bind(&WindowMoveHandlerPrivate::OnCtrlChangeState, this, std::placeholders::_1)),
-        m_keyState(keyState)
+        m_shiftKeyState(keyUpdateCallback),
+        m_ctrlKeyState(keyUpdateCallback),
+        m_keyUpdateCallback(keyUpdateCallback)
     {
     }
 
@@ -74,21 +75,6 @@ public:
     bool InMoveSize() const noexcept
     {
         return m_inMoveSize;
-    }
-
-    void OnMouseDown() noexcept
-    {
-        m_keyState->setMouseState(!m_keyState->mouseState());
-    }
-
-    void OnShiftChangeState(bool state) noexcept
-    {
-        m_keyState->setShiftState(state);
-    }
-
-    void OnCtrlChangeState(bool state) noexcept
-    {
-        m_keyState->setCtrlState(state);
     }
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
@@ -105,18 +91,26 @@ private:
     void SetWindowTransparency(HWND window) noexcept;
     void ResetWindowTransparency() noexcept;
 
+    inline void OnMouseDown() noexcept
+    {
+        m_mouseState = !m_mouseState;
+        m_keyUpdateCallback();
+    }
+
 private:
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
-    KeyState* m_keyState;
-    SecondaryMouseButtonsHook m_mouseHook;
-    ShiftKeyHook m_shiftHook;
-    CtrlKeyHook m_ctrlHook;
 
     HWND m_windowMoveSize{}; // The window that is being moved/sized
     bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
     
+    std::atomic<bool> m_mouseState;
+    SecondaryMouseButtonsHook m_mouseHook;
+    KeyState<VK_LSHIFT, VK_RSHIFT> m_shiftKeyState;
+    KeyState<VK_LCONTROL, VK_RCONTROL> m_ctrlKeyState;
+    std::function<void()> m_keyUpdateCallback;
+
     struct WindowTransparencyProperties
     {
         HWND draggedWindow = nullptr;
@@ -127,8 +121,8 @@ private:
     } m_windowTransparencyProperties;
 };
 
-WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, KeyState* keyState) :
-    pimpl(new WindowMoveHandlerPrivate(settings, keyState)) {}
+WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, const std::function<void()>& keyUpdateCallback) :
+    pimpl(new WindowMoveHandlerPrivate(settings, keyUpdateCallback)) {}
 
 WindowMoveHandler::~WindowMoveHandler()
 {
@@ -192,11 +186,8 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
         m_mouseHook.enable();
     }
 
-    m_shiftHook.enable();
-    m_keyState->setShiftState(GetKeyState(VK_SHIFT) & 0x800);
-
-    m_ctrlHook.enable();
-    m_keyState->setCtrlState(GetKeyState(VK_CONTROL) & 0x800);
+    m_shiftKeyState.enable();
+    m_ctrlKeyState.enable();
 
     // This updates m_dragEnabled depending on if the shift key is being held down
     UpdateDragState();
@@ -284,7 +275,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
 
                 for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
                 {
-                    zoneWindow->MoveSizeUpdate(ptScreen, m_dragEnabled, m_keyState->ctrlState());
+                    zoneWindow->MoveSizeUpdate(ptScreen, m_dragEnabled, m_ctrlKeyState.state());
                 }
             }
         }
@@ -306,8 +297,8 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     }
 
     m_mouseHook.disable();
-    m_shiftHook.disable();
-    m_ctrlHook.disable();
+    m_shiftKeyState.disable();
+    m_ctrlKeyState.disable();
 
     if (m_zoneWindowMoveSize)
     {
@@ -352,7 +343,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     
     m_inMoveSize = false;
     m_dragEnabled = false;
-    m_keyState->setMouseState(false);
+    m_mouseState = false;
     m_windowMoveSize = nullptr;
 
     // Also, hide all windows (regardless of settings)
@@ -403,11 +394,11 @@ void WindowMoveHandlerPrivate::UpdateDragState() noexcept
 {
     if (m_settings->GetSettings()->shiftDrag)
     {
-        m_dragEnabled = (m_keyState->shiftState() ^ m_keyState->mouseState());
+        m_dragEnabled = (m_shiftKeyState.state() ^ m_mouseState);
     }
     else
     {
-        m_dragEnabled = !(m_keyState->shiftState() ^ m_keyState->mouseState());
+        m_dragEnabled = !(m_shiftKeyState.state() ^ m_mouseState);
     }
 }
 

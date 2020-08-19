@@ -1,54 +1,37 @@
 #pragma once
 
-#include <functional>
+#include "GenericKeyHook.h"
 
+template<int... keys>
 class KeyState
 {
 public:
-    KeyState() :
-        m_mouseState(false),
-        m_shiftState(false),
-        m_ctrlState(false)
-    {};
-
-    inline bool mouseState() const noexcept { return m_mouseState; }
-    inline bool shiftState() const noexcept { return m_shiftState; }
-    inline bool ctrlState() const noexcept { return m_ctrlState; }
-
-    inline void setCallback(const std::function<void()>& updateCallback) noexcept
+    KeyState(const std::function<void()>& callback) :
+        m_state(false),
+        m_hook(std::bind(&KeyState::onChangeState, this, std::placeholders::_1)),
+        m_updateCallback(callback)
     {
-        m_updateCallback = updateCallback;
-    }
     
-    inline void setMouseState(bool state) noexcept
-    {
-        if (m_mouseState != state)
-        {
-            m_mouseState = state;
-            if (m_updateCallback)
-            {
-                m_updateCallback();
-            }
-        }
     }
 
-    inline void setShiftState(bool state) noexcept
+    inline bool state() const noexcept { return m_state; }
+
+    inline void enable()
     {
-        if (m_shiftState != state)
-        {
-            m_shiftState = state;
-            if (m_updateCallback)
-            {
-                m_updateCallback();
-            }
-        }
+        m_hook.enable();
+        m_state = (((GetAsyncKeyState(keys) & 0x8000) || ...));
     }
-    
-    inline void setCtrlState(bool state) noexcept
+
+    inline void disable()
     {
-        if (m_ctrlState != state)
+        m_hook.disable();
+    }
+
+    inline void setState(bool state) noexcept
+    {
+        if (m_state != state)
         {
-            m_ctrlState = state;
+            m_state = state;
             if (m_updateCallback)
             {
                 m_updateCallback();
@@ -57,9 +40,13 @@ public:
     }
 
 private:
-    std::atomic<bool> m_mouseState;
-    std::atomic<bool> m_shiftState;
-    std::atomic<bool> m_ctrlState;
+    inline void onChangeState(bool state) noexcept
+    {
+        setState(state);
+    }
 
+private:
+    std::atomic<bool> m_state;
+    GenericKeyHook<keys...> m_hook;
     std::function<void()> m_updateCallback;
 };
