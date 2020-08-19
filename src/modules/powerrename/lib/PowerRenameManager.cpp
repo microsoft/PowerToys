@@ -117,7 +117,7 @@ IFACEMETHODIMP CPowerRenameManager::AddItem(_In_ IPowerRenameItem* pItem)
     {
         CSRWExclusiveAutoLock lock(&m_lockItems);
         int id = 0;
-        pItem->get_id(&id);
+        pItem->getId(&id);
         // Verify the item isn't already added
         if (m_renameItems.find(id) == m_renameItems.end())
         {
@@ -222,7 +222,7 @@ IFACEMETHODIMP CPowerRenameManager::setVisible()
         rit->second->IsItemVisible(m_filter, m_flags, &isVisible);
 
         UINT itemDepth = 0;
-        rit->second->get_depth(&itemDepth);
+        rit->second->getDepth(&itemDepth);
 
         //Make an item visible if it has a least one visible subitem
         if (isVisible)
@@ -276,7 +276,7 @@ IFACEMETHODIMP CPowerRenameManager::GetSelectedItemCount(_Out_ UINT* count)
     {
         IPowerRenameItem* pItem = it.second;
         bool selected = false;
-        if (SUCCEEDED(pItem->get_selected(&selected)) && selected)
+        if (SUCCEEDED(pItem->getSelected(&selected)) && selected)
         {
             (*count)++;
         }
@@ -303,25 +303,25 @@ IFACEMETHODIMP CPowerRenameManager::GetRenameItemCount(_Out_ UINT* count)
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameManager::get_flags(_Out_ DWORD* flags)
+IFACEMETHODIMP CPowerRenameManager::getFlags(_Out_ DWORD* flags)
 {
     _EnsureRegEx();
     *flags = m_flags;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameManager::put_flags(_In_ DWORD flags)
+IFACEMETHODIMP CPowerRenameManager::putFlags(_In_ DWORD flags)
 {
     if (flags != m_flags)
     {
         m_flags = flags;
         _EnsureRegEx();
-        m_spRegEx->put_flags(flags);
+        m_spRegEx->putFlags(flags);
     }
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameManager::get_filter(_Out_ DWORD* filter)
+IFACEMETHODIMP CPowerRenameManager::getFilter(_Out_ DWORD* filter)
 {
     *filter = m_filter;
     return S_OK;
@@ -332,23 +332,23 @@ IFACEMETHODIMP CPowerRenameManager::switchFilter(_In_ int columnNumber)
     switch (m_filter)
     {
     case PowerRenameFilters::None:
-        m_filter = (columnNumber == 0)?PowerRenameFilters::Selected:PowerRenameFilters::ShouldRename;
+        m_filter = (columnNumber == 0) ? PowerRenameFilters::Selected : PowerRenameFilters::ShouldRename;
         break;
     case PowerRenameFilters::Selected:
-        m_filter = (columnNumber == 0)?PowerRenameFilters::FlagsApplicable:PowerRenameFilters::ShouldRename;
+        m_filter = (columnNumber == 0) ? PowerRenameFilters::FlagsApplicable : PowerRenameFilters::ShouldRename;
         break;
     case PowerRenameFilters::FlagsApplicable:
-        m_filter = (columnNumber == 0)?PowerRenameFilters::None:PowerRenameFilters::ShouldRename;
+        m_filter = (columnNumber == 0) ? PowerRenameFilters::None : PowerRenameFilters::ShouldRename;
         break;
     case PowerRenameFilters::ShouldRename:
-        m_filter = (columnNumber == 0)?PowerRenameFilters::Selected:PowerRenameFilters::None;
+        m_filter = (columnNumber == 0) ? PowerRenameFilters::Selected : PowerRenameFilters::None;
         break;
     }
 
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameManager::get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx)
+IFACEMETHODIMP CPowerRenameManager::getRenameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx)
 {
     *ppRegEx = nullptr;
     HRESULT hr = _EnsureRegEx();
@@ -360,14 +360,14 @@ IFACEMETHODIMP CPowerRenameManager::get_renameRegEx(_COM_Outptr_ IPowerRenameReg
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameManager::put_renameRegEx(_In_ IPowerRenameRegEx* pRegEx)
+IFACEMETHODIMP CPowerRenameManager::putRenameRegEx(_In_ IPowerRenameRegEx* pRegEx)
 {
     _ClearRegEx();
     m_spRegEx = pRegEx;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameManager::get_renameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory)
+IFACEMETHODIMP CPowerRenameManager::getRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory)
 {
     *ppItemFactory = nullptr;
     HRESULT hr = E_FAIL;
@@ -380,7 +380,7 @@ IFACEMETHODIMP CPowerRenameManager::get_renameItemFactory(_COM_Outptr_ IPowerRen
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameManager::put_renameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory)
+IFACEMETHODIMP CPowerRenameManager::putRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory)
 {
     m_spItemFactory = pItemFactory;
     return S_OK;
@@ -538,7 +538,7 @@ void CPowerRenameManager::_LogOperationTelemetry()
     GetItemCount(&totalItemCount);
     GetSelectedItemCount(&selectedItemCount);
     GetRenameItemCount(&renameItemCount);
-    get_flags(&flags);
+    getFlags(&flags);
 
 
     // Enumerate extensions used into a map
@@ -549,7 +549,7 @@ void CPowerRenameManager::_LogOperationTelemetry()
         if (SUCCEEDED(GetItemByIndex(i, &spItem)))
         {
             PWSTR originalName;
-            if (SUCCEEDED(spItem->get_originalName(&originalName)))
+            if (SUCCEEDED(spItem->getOriginalName(&originalName)))
             {
                 std::wstring extension = fs::path(originalName).extension().wstring();
                 std::map<std::wstring, int>::iterator it = extensionsMap.find(extension);
@@ -665,14 +665,14 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
             if (WaitForSingleObject(pwtd->startEvent, INFINITE) == WAIT_OBJECT_0)
             {
                 CComPtr<IPowerRenameRegEx> spRenameRegEx;
-                if (SUCCEEDED(pwtd->spsrm->get_renameRegEx(&spRenameRegEx)))
+                if (SUCCEEDED(pwtd->spsrm->getRenameRegEx(&spRenameRegEx)))
                 {
                     // Create IFileOperation interface
                     CComPtr<IFileOperation> spFileOp;
                     if (SUCCEEDED(CoCreateInstance(CLSID_FileOperation, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&spFileOp))))
                     {
                         DWORD flags = 0;
-                        spRenameRegEx->get_flags(&flags);
+                        spRenameRegEx->getFlags(&flags);
 
                         UINT itemCount = 0;
                         pwtd->spsrm->GetItemCount(&itemCount);
@@ -689,7 +689,7 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
                             if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
                             {
                                 UINT depth = 0;
-                                spItem->get_depth(&depth);
+                                spItem->getDepth(&depth);
                                 matrix[depth].push_back(u);
                             }
                         }
@@ -706,10 +706,10 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
                                     if (SUCCEEDED(spItem->ShouldRenameItem(flags, &shouldRename)) && shouldRename)
                                     {
                                         PWSTR newName = nullptr;
-                                        if (SUCCEEDED(spItem->get_newName(&newName)))
+                                        if (SUCCEEDED(spItem->getNewName(&newName)))
                                         {
                                             CComPtr<IShellItem> spShellItem;
-                                            if (SUCCEEDED(spItem->get_shellItem(&spShellItem)))
+                                            if (SUCCEEDED(spItem->getShellItem(&spShellItem)))
                                             {
                                                 spFileOp->RenameItem(spShellItem, newName, nullptr);
                                             }
@@ -814,10 +814,10 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
             if (WaitForSingleObject(pwtd->startEvent, INFINITE) == WAIT_OBJECT_0)
             {
                 CComPtr<IPowerRenameRegEx> spRenameRegEx;
-                if (SUCCEEDED(pwtd->spsrm->get_renameRegEx(&spRenameRegEx)))
+                if (SUCCEEDED(pwtd->spsrm->getRenameRegEx(&spRenameRegEx)))
                 {
                     DWORD flags = 0;
-                    spRenameRegEx->get_flags(&flags);
+                    spRenameRegEx->getFlags(&flags);
 
                     UINT itemCount = 0;
                     unsigned long itemEnumIndex = 1;
@@ -837,18 +837,18 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                         if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
                         {
                             int id = -1;
-                            spItem->get_id(&id);
+                            spItem->getId(&id);
 
                             bool isFolder = false;
                             bool isSubFolderContent = false;
-                            spItem->get_isFolder(&isFolder);
-                            spItem->get_isSubFolderContent(&isSubFolderContent);
+                            spItem->getIsFolder(&isFolder);
+                            spItem->getIsSubFolderContent(&isSubFolderContent);
                             if ((isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
                                 (!isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
                                 (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)))
                             {
                                 // Exclude this item from renaming.  Ensure new name is cleared.
-                                spItem->put_newName(nullptr);
+                                spItem->putNewName(nullptr);
 
                                 // Send the manager thread the item processed message
                                 PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
@@ -857,10 +857,10 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                             }
 
                             PWSTR originalName = nullptr;
-                            if (SUCCEEDED(spItem->get_originalName(&originalName)))
+                            if (SUCCEEDED(spItem->getOriginalName(&originalName)))
                             {
                                 PWSTR currentNewName = nullptr;
-                                spItem->get_newName(&currentNewName);
+                                spItem->getNewName(&currentNewName);
 
                                 wchar_t sourceName[MAX_PATH] = { 0 };
                                 if (flags & NameOnly)
@@ -974,7 +974,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     itemEnumIndex++;
                                 }
 
-                                spItem->put_newName(newNameToUse);
+                                spItem->putNewName(newNameToUse);
 
                                 // Was there a change?
                                 if (lstrcmp(currentNewName, newNameToUse) != 0)
@@ -1048,7 +1048,7 @@ HRESULT CPowerRenameManager::_EnsureRegEx()
             // Get the flags
             if (SUCCEEDED(hr))
             {
-                m_spRegEx->get_flags(&m_flags);
+                m_spRegEx->getFlags(&m_flags);
             }
         }
     }

@@ -19,12 +19,12 @@ public:
     // IPowerRenameRegEx
     IFACEMETHODIMP Advise(_In_ IPowerRenameRegExEvents* regExEvents, _Out_ DWORD* cookie);
     IFACEMETHODIMP UnAdvise(_In_ DWORD cookie);
-    IFACEMETHODIMP get_searchTerm(_Outptr_ PWSTR* searchTerm);
-    IFACEMETHODIMP put_searchTerm(_In_ PCWSTR searchTerm);
-    IFACEMETHODIMP get_replaceTerm(_Outptr_ PWSTR* replaceTerm);
-    IFACEMETHODIMP put_replaceTerm(_In_ PCWSTR replaceTerm);
-    IFACEMETHODIMP get_flags(_Out_ DWORD* flags);
-    IFACEMETHODIMP put_flags(_In_ DWORD flags);
+    IFACEMETHODIMP getSearchTerm(_Outptr_ PWSTR* searchTerm);
+    IFACEMETHODIMP putSearchTerm(_In_ PCWSTR searchTerm);
+    IFACEMETHODIMP getReplaceTerm(_Outptr_ PWSTR* replaceTerm);
+    IFACEMETHODIMP putReplaceTerm(_In_ PCWSTR replaceTerm);
+    IFACEMETHODIMP getFlags(_Out_ DWORD* flags);
+    IFACEMETHODIMP putFlags(_In_ DWORD flags);
     IFACEMETHODIMP Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result);
 
     static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegEx **renameRegEx);

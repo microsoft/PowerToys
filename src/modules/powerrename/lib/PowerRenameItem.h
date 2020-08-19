@@ -14,20 +14,20 @@ public:
     IFACEMETHODIMP_(ULONG) Release();
 
     // IPowerRenameItem
-    IFACEMETHODIMP get_path(_Outptr_ PWSTR* path);
-    IFACEMETHODIMP get_date(_Outptr_ SYSTEMTIME* date);
-    IFACEMETHODIMP get_shellItem(_Outptr_ IShellItem** ppsi);
-    IFACEMETHODIMP get_originalName(_Outptr_ PWSTR* originalName);
-    IFACEMETHODIMP put_newName(_In_opt_ PCWSTR newName);
-    IFACEMETHODIMP get_newName(_Outptr_ PWSTR* newName);
-    IFACEMETHODIMP get_isFolder(_Out_ bool* isFolder);
-    IFACEMETHODIMP get_isSubFolderContent(_Out_ bool* isSubFolderContent);
-    IFACEMETHODIMP get_selected(_Out_ bool* selected);
-    IFACEMETHODIMP put_selected(_In_ bool selected);
-    IFACEMETHODIMP get_id(_Out_ int* id);
-    IFACEMETHODIMP get_iconIndex(_Out_ int* iconIndex);
-    IFACEMETHODIMP get_depth(_Out_ UINT* depth);
-    IFACEMETHODIMP put_depth(_In_ int depth);
+    IFACEMETHODIMP getPath(_Outptr_ PWSTR* path);
+    IFACEMETHODIMP getDate(_Outptr_ SYSTEMTIME* date);
+    IFACEMETHODIMP getShellItem(_Outptr_ IShellItem** ppsi);
+    IFACEMETHODIMP getOriginalName(_Outptr_ PWSTR* originalName);
+    IFACEMETHODIMP putNewName(_In_opt_ PCWSTR newName);
+    IFACEMETHODIMP getNewName(_Outptr_ PWSTR* newName);
+    IFACEMETHODIMP getIsFolder(_Out_ bool* isFolder);
+    IFACEMETHODIMP getIsSubFolderContent(_Out_ bool* isSubFolderContent);
+    IFACEMETHODIMP getSelected(_Out_ bool* selected);
+    IFACEMETHODIMP putSelected(_In_ bool selected);
+    IFACEMETHODIMP getId(_Out_ int* id);
+    IFACEMETHODIMP getIconIndex(_Out_ int* iconIndex);
+    IFACEMETHODIMP getDepth(_Out_ UINT* depth);
+    IFACEMETHODIMP putDepth(_In_ int depth);
     IFACEMETHODIMP Reset();
     IFACEMETHODIMP ShouldRenameItem(_In_ DWORD flags, _Out_ bool* shouldRename);
     IFACEMETHODIMP IsItemVisible(_In_ DWORD filter, _In_ DWORD flags, _Out_ bool* isItemVisible);

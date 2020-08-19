@@ -33,14 +33,14 @@ public:
     IFACEMETHODIMP GetVisibleItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetSelectedItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetRenameItemCount(_Out_ UINT* count);
-    IFACEMETHODIMP get_flags(_Out_ DWORD* flags);
-    IFACEMETHODIMP put_flags(_In_ DWORD flags);
-    IFACEMETHODIMP get_filter(_Out_ DWORD* filter);
+    IFACEMETHODIMP getFlags(_Out_ DWORD* flags);
+    IFACEMETHODIMP putFlags(_In_ DWORD flags);
+    IFACEMETHODIMP getFilter(_Out_ DWORD* filter);
     IFACEMETHODIMP switchFilter(_In_ int columnNumber);
-    IFACEMETHODIMP get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
-    IFACEMETHODIMP put_renameRegEx(_In_ IPowerRenameRegEx* pRegEx);
-    IFACEMETHODIMP get_renameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
-    IFACEMETHODIMP put_renameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
+    IFACEMETHODIMP getRenameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
+    IFACEMETHODIMP putRenameRegEx(_In_ IPowerRenameRegEx* pRegEx);
+    IFACEMETHODIMP getRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
+    IFACEMETHODIMP putRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
 
     // IPowerRenameRegExEvents
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);

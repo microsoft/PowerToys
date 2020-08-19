@@ -166,7 +166,7 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
             if (SUCCEEDED(hr))
             {
                 // Pass the factory to the manager
-                hr = spsrm->put_renameItemFactory(spsrif);
+                hr = spsrm->putRenameItemFactory(spsrif);
                 if (SUCCEEDED(hr))
                 {
                     // Create the rename UI instance and pass the rename manager
