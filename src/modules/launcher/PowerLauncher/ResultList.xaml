@@ -71,7 +71,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
                             <Grid Background="Transparent">
-                                <Border x:Name="HighlightBorder" BorderThickness="0" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
+                                <Border x:Name="HighlightBorder" BorderThickness="0" Background="{DynamicResource SystemChromeLow}" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
                                 <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Grid>
                             <ControlTemplate.Triggers>
@@ -95,6 +95,7 @@
             <Style x:Key="CommandButtonListViewItemContainerStyle"  TargetType="ListViewItem">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="1" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -134,11 +135,10 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ToolTip}" >
-                            <StackPanel Margin="8,2" >
-                                <Border CornerRadius="4" Background="{DynamicResource ToolTipBackgroundBrushKey}" BorderBrush="{DynamicResource ToolTipBorderBrushKey}" BorderThickness="1">
-                                    <ContentPresenter Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" />
-                                </Border>
-                            </StackPanel>
+                            <Grid Margin="8,2" >
+                                <Rectangle Fill="{DynamicResource ToolTipBackgroundBrushKey}" RadiusX="4" RadiusY="4" Stroke="{DynamicResource ToolTipBorderBrushKey}" StrokeThickness="1"/>
+                                <ContentPresenter Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                            </Grid>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -199,18 +199,20 @@
                                         Style="{DynamicResource CollapsableTextblock}"
                                         Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontWeight="Bold" FontSize="12"
                                         Text="{Binding Result.ToolTipData.Title}"
-                                        TextWrapping="Wrap" />
+                                        TextWrapping="Wrap" 
+                                        RenderOptions.ClearTypeHint="Enabled" />
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
                                         Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontSize="12"
                                         Text="{Binding Result.ToolTipData.Text}"                               
-                                        TextWrapping="Wrap" />
+                                        TextWrapping="Wrap" 
+                                        RenderOptions.ClearTypeHint="Enabled" />
                                 </StackPanel>
                             </ToolTip>
                         </Grid.ToolTip>
                         <Image AutomationProperties.Name="{DynamicResource AppIcon}" x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
-                        <TextBlock AutomationProperties.Name="{DynamicResource Title}" x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
-                        <TextBlock AutomationProperties.Name="{DynamicResource Subtitle}" x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
+                        <TextBlock AutomationProperties.Name="{DynamicResource Title}" x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom" RenderOptions.ClearTypeHint="Enabled"/>
+                        <TextBlock AutomationProperties.Name="{DynamicResource Subtitle}" x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top" RenderOptions.ClearTypeHint="Enabled"/>
                         <ListView      
                             AutomationProperties.Name="{DynamicResource ContextMenuItemsCollection}"
                             HorizontalAlignment="Right" 
@@ -239,11 +241,11 @@
                                     <Button AutomationProperties.Name="{DynamicResource ContextMenuItem}" Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <ToolTipService.ToolTip>
                                             <ToolTip >
-                                                <TextBlock AutomationProperties.Name="{DynamicResource ContextMenuItemAdditionalInformation}" Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12"/>
+                                                <TextBlock AutomationProperties.Name="{DynamicResource ContextMenuItemAdditionalInformation}" Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12" RenderOptions.ClearTypeHint="Enabled"/>
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
                                         <Button.Content>
-                                            <TextBlock AutomationProperties.Name="{DynamicResource ContextMenuIcon}" FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>
+                                            <TextBlock AutomationProperties.Name="{DynamicResource ContextMenuIcon}" FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}" RenderOptions.ClearTypeHint="Enabled"/>
                                         </Button.Content>
                                     </Button>
                                 </DataTemplate>
