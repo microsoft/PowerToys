@@ -153,7 +153,7 @@ namespace Wox.Test
         {
             // Arrange
             string searchQuery = "abcdefgh";
-            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "ab" , ID = "plugin1" } };
+            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "ab", ID = "plugin1" } };
             var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = "abcd", ID = "plugin2" } };
 
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
@@ -196,7 +196,6 @@ namespace Wox.Test
             // Assert
             Assert.IsTrue(firstQuery.Terms[0].Equals("cd") && firstQuery.Terms[1].Equals("efgh") && firstQuery.Terms.Length == 2);
             Assert.IsTrue(secondQuery.Terms[0].Equals("efgh") && secondQuery.Terms.Length == 1);
-
         }
     }
 }
