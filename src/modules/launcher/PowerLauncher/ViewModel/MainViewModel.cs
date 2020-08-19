@@ -481,12 +481,15 @@ namespace PowerLauncher.ViewModel
                             currentCancellationToken.ThrowIfCancellationRequested();
 
                             var resultPluginPair = new List<(List<Result>, PluginMetadata)>();
-                            foreach (PluginPair plugin in plugins)
+
+                            // To execute a query corresponding to each plugin
+                            foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPair)
                             {
+                                var plugin = pluginQueryItem.Key;
+                                var query = pluginQueryItem.Value;
+
                                 if (!plugin.Metadata.Disabled)
                                 {
-                                    Query query;
-                                    pluginQueryPair.TryGetValue(plugin, out query);
                                     var results = PluginManager.QueryForPlugin(plugin, query);
                                     resultPluginPair.Add((results, plugin.Metadata));
                                     currentCancellationToken.ThrowIfCancellationRequested();
@@ -798,13 +801,15 @@ namespace PowerLauncher.ViewModel
             // Fix Cold start for plugins
             string s = "m";
             var pluginQueryPair = QueryBuilder.Build(ref s, PluginManager.NonGlobalPlugins);
-            var plugins = pluginQueryPair.Keys.ToList();
-            foreach (PluginPair plugin in plugins)
+
+            // To execute a query corresponding to each plugin
+            foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPair)
             {
+                var plugin = pluginQueryItem.Key;
+                var query = pluginQueryItem.Value;
+
                 if (!plugin.Metadata.Disabled && plugin.Metadata.Name != "Window Walker")
                 {
-                    Query query;
-                    pluginQueryPair.TryGetValue(plugin, out query);
                     _ = PluginManager.QueryForPlugin(plugin, query);
                 }
             }
