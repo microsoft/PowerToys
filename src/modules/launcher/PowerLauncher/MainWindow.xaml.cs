@@ -20,8 +20,8 @@ namespace PowerLauncher
 {
     public partial class MainWindow : IDisposable
     {
-        private Settings _settings;
-        private MainViewModel _viewModel;
+        private readonly Settings _settings;
+        private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed = false;
         private Timer _firstDeleteTimer = new Timer();
@@ -65,7 +65,7 @@ namespace PowerLauncher
         private void BringProcessToForeground()
         {
             // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
-            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, data = { } };
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { Type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, Data = { } };
             WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
 
             // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
@@ -73,13 +73,13 @@ namespace PowerLauncher
             Activate();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs _)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             WindowsInteropHelper.DisableControlBox(this);
             InitializePosition();
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
-            SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
+            SearchBox.QueryTextBox.PreviewKeyDown += Launcher_KeyDown;
             SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
 
             // Set initial language flow direction
@@ -103,10 +103,8 @@ namespace PowerLauncher
             var result = ((FrameworkElement)e.OriginalSource).DataContext;
             if (result != null)
             {
-                var resultVM = result as ResultViewModel;
-
                 // This may be null if the tapped item was one of the context buttons (run as admin etc).
-                if (resultVM != null)
+                if (result is ResultViewModel resultVM)
                 {
                     _viewModel.Results.SelectedItem = resultVM;
                     _viewModel.OpenResultCommand.Execute(null);
@@ -222,7 +220,7 @@ namespace PowerLauncher
             return top;
         }
 
-        private void _launcher_KeyDown(object sender, KeyEventArgs e)
+        private void Launcher_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Tab && Keyboard.IsKeyDown(Key.LeftShift))
             {

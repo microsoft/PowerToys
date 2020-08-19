@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Search.Interop;
 
@@ -54,25 +53,19 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Loop over all records from the database
             foreach (OleDBResult oleDBResult in oleDBResults)
             {
-                if (oleDBResult.FieldData[0] == DBNull.Value || oleDBResult.FieldData[1] == DBNull.Value || oleDBResult.FieldData[2] == DBNull.Value)
+                if (oleDBResult.FieldData[0] == DBNull.Value || oleDBResult.FieldData[1] == DBNull.Value)
                 {
                     continue;
                 }
 
-                uint fileAttributes = (uint)((long)oleDBResult.FieldData[2]);
-                bool isFileHidden = (fileAttributes & _fileAttributeHidden) == _fileAttributeHidden;
-
-                if (DisplayHiddenFiles || !isFileHidden)
+                var uri_path = new Uri((string)oleDBResult.FieldData[0]);
+                var result = new SearchResult
                 {
-                    var uri_path = new Uri((string)oleDBResult.FieldData[0]);
-                    var result = new SearchResult
-                    {
-                        Path = uri_path.LocalPath,
-                        Title = (string)oleDBResult.FieldData[1],
-                    };
+                    Path = uri_path.LocalPath,
+                    Title = (string)oleDBResult.FieldData[1],
+                };
 
-                    results.Add(result);
-                }
+                results.Add(result);
             }
 
             return results;
@@ -108,10 +101,12 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             }
         }
 
-        public static void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
+        public static void InitQueryHelper(out ISearchQueryHelper queryHelper, ISearchManager manager, int maxCount, bool displayHiddenFiles)
         {
-            // This uses the Microsoft.Search.Interop assembly
-            CSearchManager manager = new CSearchManager();
+            if (manager == null)
+            {
+                throw new ArgumentNullException(nameof(manager));
+            }
 
             // SystemIndex catalog is the default catalog in Windows
             ISearchCatalogManager catalogManager = manager.GetCatalog("SystemIndex");
@@ -128,6 +123,12 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
 
+            if (!displayHiddenFiles)
+            {
+                // https://docs.microsoft.com/en-us/windows/win32/search/all-bitwise
+                queryHelper.QueryWhereRestrictions += " AND System.FileAttributes <> SOME BITWISE " + _fileAttributeHidden;
+            }
+
             // To filter based on title for now
             queryHelper.QueryContentProperties = "System.FileName";
 
@@ -135,10 +136,15 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
-        public IEnumerable<SearchResult> Search(string keyword, bool isFullQuery = false, string pattern = "*", int maxCount = 30)
+        public IEnumerable<SearchResult> Search(string keyword, ISearchManager manager, bool isFullQuery = false, string pattern = "*", int maxCount = 30)
         {
+            if (manager == null)
+            {
+                throw new ArgumentNullException(nameof(manager));
+            }
+
             ISearchQueryHelper queryHelper;
-            InitQueryHelper(out queryHelper, maxCount);
+            InitQueryHelper(out queryHelper, manager, maxCount, DisplayHiddenFiles);
             ModifyQueryHelper(ref queryHelper, pattern);
             return ExecuteQuery(queryHelper, keyword, isFullQuery);
         }

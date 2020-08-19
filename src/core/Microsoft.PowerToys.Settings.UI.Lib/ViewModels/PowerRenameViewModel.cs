@@ -2,32 +2,41 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.CompilerServices;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerRenameViewModel : Observable
     {
         private const string ModuleName = "PowerRename";
 
+        public string SettingsConfigFileFolder = string.Empty;
+
         private PowerRenameSettings Settings { get; set; }
 
-        public PowerRenameViewModel()
+        private Func<string, int> SendConfigMSG { get; }
+
+        public PowerRenameViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            // Update Settings file folder:
+            SettingsConfigFileFolder = configFileSubfolder;
+
             try
             {
-                PowerRenameLocalProperties localSettings = SettingsUtils.GetSettings<PowerRenameLocalProperties>(ModuleName, "power-rename-settings.json");
+                PowerRenameLocalProperties localSettings = SettingsUtils.GetSettings<PowerRenameLocalProperties>(GetSettingsSubPath(), "power-rename-settings.json");
                 Settings = new PowerRenameSettings(localSettings);
             }
             catch
             {
                 PowerRenameLocalProperties localSettings = new PowerRenameLocalProperties();
                 Settings = new PowerRenameSettings(localSettings);
-                SettingsUtils.SaveSettings(localSettings.ToJsonString(), ModuleName, "power-rename-settings.json");
+                SettingsUtils.SaveSettings(localSettings.ToJsonString(), GetSettingsSubPath(), "power-rename-settings.json");
             }
+
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
 
             _powerRenameEnabledOnContextMenu = Settings.Properties.ShowIcon.Value;
             _powerRenameEnabledOnContextExtendedMenu = Settings.Properties.ExtendedContextMenuOnly.Value;
@@ -67,17 +76,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _powerRenameEnabled)
                 {
-                    if (ShellPage.DefaultSndMSGCallback != null)
-                    {
+
                         GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
                         generalSettings.Enabled.PowerRename = value;
                         OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
-                        ShellPage.DefaultSndMSGCallback(snd.ToString());
+                        SendConfigMSG(snd.ToString());
 
                         _powerRenameEnabled = value;
                         OnPropertyChanged("IsEnabled");
                         RaisePropertyChanged("GlobalAndMruEnabled");
-                    }
                 }
             }
         }
@@ -181,16 +188,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string GetSettingsSubPath()
+        {
+            return SettingsConfigFileFolder + "\\" + ModuleName;
+        }
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
 
-            if (ShellPage.DefaultSndMSGCallback != null)
+            if (SendConfigMSG != null)
             {
                 SndPowerRenameSettings snd = new SndPowerRenameSettings(Settings);
                 SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
-                ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
+                SendConfigMSG(ipcMessage.ToJsonString());
             }
         }
     }

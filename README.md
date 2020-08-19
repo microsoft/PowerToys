@@ -104,21 +104,8 @@ WinGet install powertoys
 
 ### Other install methods
 
-#### Via Chocolatey (Unofficial)
+There are [community driven install methods](./doc/unofficalInstallMethods.md) such as Chocolatey and Scoop.  If these are your perferred install solutions, this will have the install instructions.
 
-Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org). If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
-
-To install PowerToys, run the following command from the command line / PowerShell:
-
-```powershell
-choco install powertoys
-```
-
-To upgrade PowerToys, run the following command from the command line / PowerShell:
-
-```powershell
-choco upgrade powertoys
-```
 ### Known issues
 
 - Color Picker at times won't work when PT is running elevated - [#5348](https://github.com/microsoft/PowerToys/issues/5348).  We are currently working on a fix now for this.

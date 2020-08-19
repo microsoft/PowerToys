@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using System.Windows.Forms;
@@ -223,6 +224,9 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveBottomRightCorner()
         {
+            WindowsElement zone = session.FindElementByAccessibilityId("Caption");
+            Assert.IsNotNull(zone, "Unable to move zone");
+            new Actions(session).MoveToElement(zone).ClickAndHold().MoveByOffset(creatorWindow.Rect.Width / 2, 0).Release().Perform();
             WindowsElement bottomRightCorner = session.FindElementByAccessibilityId("SEResize");
             WindowsElement topBorder = session.FindElementByAccessibilityId("NResize");
             WindowsElement leftBorder = session.FindElementByAccessibilityId("WResize");
@@ -260,17 +264,13 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context, false);
-            if (session == null)
-                return;
+            Setup(context);
+            Assert.IsNotNull(session);
 
+            EnableModules(false, true, false, false, false, false, false, false);
             ResetSettings();
 
-            if (!isPowerToysLaunched)
-            {
-                LaunchPowerToys();
-            }
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
             OpenCustomLayouts();
         }
 
@@ -278,27 +278,24 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseEditor();
+            ExitPowerToys();
             TearDown();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            if (session == null)
-                return;
-
             //create canvas zone
-            OpenCreatorWindow("Create new custom", "Custom layout creator");
-            session.FindElementByAccessibilityId("newZoneButton").Click();
+            OpenCreatorWindow("Create new custom");
+            creatorWindow.FindElementByAccessibilityId("newZoneButton").Click();
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            if (session == null)
-                return;
-
-            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
+            AppiumWebElement cancelButton = creatorWindow.FindElementByName("Cancel");
+            Assert.IsNotNull(cancelButton);
+            new Actions(session).MoveToElement(cancelButton).Click().Perform();
         }
     }
 }

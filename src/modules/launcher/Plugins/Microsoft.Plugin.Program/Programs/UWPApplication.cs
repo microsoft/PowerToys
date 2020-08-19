@@ -237,7 +237,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             DisplayName = ResourceFromPri(package.FullName, DisplayName);
             Description = ResourceFromPri(package.FullName, Description);
-            this.logoUri = LogoUriFromManifest(manifestApp);
+            logoUri = LogoUriFromManifest(manifestApp);
 
             Enabled = true;
             CanRunElevated = IfApplicationcanRunElevated();
@@ -354,11 +354,11 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                LogoPath = LogoPathFromUri(this.logoUri, "contrast-white");
+                LogoPath = LogoPathFromUri(logoUri, "contrast-white");
             }
             else
             {
-                LogoPath = LogoPathFromUri(this.logoUri, "contrast-black");
+                LogoPath = LogoPathFromUri(logoUri, "contrast-black");
             }
         }
 
