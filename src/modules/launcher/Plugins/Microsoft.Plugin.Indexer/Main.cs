@@ -253,7 +253,6 @@ namespace Microsoft.Plugin.Indexer
             {
                 if (disposing)
                 {
-                    _search.Dispose();
                 }
 
                 disposedValue = true;
