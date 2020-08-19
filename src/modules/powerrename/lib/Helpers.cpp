@@ -196,8 +196,10 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         wchar_t formattedDate[MAX_PATH] = { 0 };
 
         wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
-        if(GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+        if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+        {
             StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
+        }
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%04d"), L"$01", LocalTime.wYear);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YYYY"), replaceTerm);
