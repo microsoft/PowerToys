@@ -42,6 +42,11 @@ namespace Microsoft.Plugin.Shell
 
         public List<Result> Query(Query query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             List<Result> results = new List<Result>();
             string cmd = query.Search;
             if (string.IsNullOrEmpty(cmd))
