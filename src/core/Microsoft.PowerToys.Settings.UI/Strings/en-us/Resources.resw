@@ -309,6 +309,9 @@
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open zones editor</value>
   </data>
+  <data name="FancyZones_SettingsPage_ZonesEditor_Glyph.AutomationProperties.Name" xml:space="preserve">
+    <value>Open zones editor Information</value>
+  </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
     <value>Launch zones editor</value>
   </data>

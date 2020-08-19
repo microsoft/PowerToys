@@ -23,8 +23,9 @@
                        Text="{x:Bind Header, Mode=OneTime}"
                        Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        />
-            
-            <TextBlock x:Name="TitleGlyph" Text="&#xE946;"
+
+            <TextBlock x:Uid="FancyZones_SettingsPage_ZonesEditor_Glyph"
+                       x:Name="TitleGlyph" Text="&#xE946;"
                        FontFamily="Segoe MDL2 Assets"
                        Margin="4,4,0,0"
                        Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
