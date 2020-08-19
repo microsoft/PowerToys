@@ -4,7 +4,6 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
@@ -17,12 +16,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public string SettingsConfigFileFolder = string.Empty;
+        private string _settingsConfigFileFolder = string.Empty;
 
         public PowerPreviewViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
-            SettingsConfigFileFolder = configFileSubfolder;
+            _settingsConfigFileFolder = configFileSubfolder;
 
             try
             {
@@ -37,9 +36,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            this._svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
-            this._svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
-            this._mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
+            _svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
+            _svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
+            _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
         }
 
         private bool _svgRenderIsEnabled = false;
@@ -102,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public string GetSettingsSubPath()
         {
-            return SettingsConfigFileFolder + "\\" + ModuleName;
+            return _settingsConfigFileFolder + "\\" + ModuleName;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)

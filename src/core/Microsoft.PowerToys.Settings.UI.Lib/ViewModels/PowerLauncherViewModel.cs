@@ -57,7 +57,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
             catch
             {
-
             }
         }
 
