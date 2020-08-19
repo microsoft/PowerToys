@@ -71,20 +71,20 @@ namespace Microsoft.Plugin.Shell
 
         private List<Result> GetHistoryCmds(string cmd, Result result)
         {
-            IEnumerable<Result> history = _settings.Count.Where(o => o.Key.Contains(cmd))
+            IEnumerable<Result> history = _settings.Count.Where(o => o.Key.Contains(cmd, StringComparison.CurrentCultureIgnoreCase))
                 .OrderByDescending(o => o.Value)
                 .Select(m =>
                 {
                     if (m.Key == cmd)
                     {
-                        result.SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
+                        result.SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
                         return null;
                     }
 
                     var ret = new Result
                     {
                         Title = m.Key,
-                        SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                        SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                         IcoPath = IconPath,
                         Action = c =>
                         {
@@ -121,7 +121,7 @@ namespace Microsoft.Plugin.Shell
                 .Select(m => new Result
                 {
                     Title = m.Key,
-                    SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                    SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                     IcoPath = IconPath,
                     Action = c =>
                     {
