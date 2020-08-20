@@ -54,8 +54,8 @@ public:
     IFACEMETHODIMP Show(_In_opt_ HWND hwndParent);
     IFACEMETHODIMP Close();
     IFACEMETHODIMP Update();
-    IFACEMETHODIMP get_hwnd(_Out_ HWND* hwnd);
-    IFACEMETHODIMP get_showUI(_Out_ bool* showUI);
+    IFACEMETHODIMP GetHwnd(_Out_ HWND* hwnd);
+    IFACEMETHODIMP GetShowUI(_Out_ bool* showUI);
 
     // IPowerRenameManagerEvents
     IFACEMETHODIMP OnItemAdded(_In_ IPowerRenameItem* renameItem);

@@ -30,7 +30,7 @@ IFACEMETHODIMP CPowerRenameItem::QueryInterface(_In_ REFIID riid, _Outptr_ void*
     return QISearch(this, qit, riid, ppv);
 }
 
-IFACEMETHODIMP CPowerRenameItem::getPath(_Outptr_ PWSTR* path)
+IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
 {
     *path = nullptr;
     CSRWSharedAutoLock lock(&m_lock);
@@ -42,7 +42,7 @@ IFACEMETHODIMP CPowerRenameItem::getPath(_Outptr_ PWSTR* path)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getDate(_Outptr_ SYSTEMTIME* date)
+IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
 {
     CSRWSharedAutoLock lock(&m_lock);
     HRESULT hr = m_isDateParsed ? S_OK : E_FAIL ;
@@ -72,12 +72,12 @@ IFACEMETHODIMP CPowerRenameItem::getDate(_Outptr_ SYSTEMTIME* date)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getShellItem(_Outptr_ IShellItem** ppsi)
+IFACEMETHODIMP CPowerRenameItem::GetShellItem(_Outptr_ IShellItem** ppsi)
 {
     return SHCreateItemFromParsingName(m_path, nullptr, IID_PPV_ARGS(ppsi));
 }
 
-IFACEMETHODIMP CPowerRenameItem::getOriginalName(_Outptr_ PWSTR* originalName)
+IFACEMETHODIMP CPowerRenameItem::GetOriginalName(_Outptr_ PWSTR* originalName)
 {
     CSRWSharedAutoLock lock(&m_lock);
     HRESULT hr = m_originalName ? S_OK : E_FAIL;
@@ -88,7 +88,7 @@ IFACEMETHODIMP CPowerRenameItem::getOriginalName(_Outptr_ PWSTR* originalName)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::putNewName(_In_opt_ PCWSTR newName)
+IFACEMETHODIMP CPowerRenameItem::PutNewName(_In_opt_ PCWSTR newName)
 {
     CSRWSharedAutoLock lock(&m_lock);
     CoTaskMemFree(m_newName);
@@ -101,7 +101,7 @@ IFACEMETHODIMP CPowerRenameItem::putNewName(_In_opt_ PCWSTR newName)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getNewName(_Outptr_ PWSTR* newName)
+IFACEMETHODIMP CPowerRenameItem::GetNewName(_Outptr_ PWSTR* newName)
 {
     CSRWSharedAutoLock lock(&m_lock);
     HRESULT hr = m_newName ? S_OK : E_FAIL;
@@ -112,42 +112,42 @@ IFACEMETHODIMP CPowerRenameItem::getNewName(_Outptr_ PWSTR* newName)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getIsFolder(_Out_ bool* isFolder)
+IFACEMETHODIMP CPowerRenameItem::GetIsFolder(_Out_ bool* isFolder)
 {
     CSRWSharedAutoLock lock(&m_lock);
     *isFolder = m_isFolder;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getIsSubFolderContent(_Out_ bool* isSubFolderContent)
+IFACEMETHODIMP CPowerRenameItem::GetIsSubFolderContent(_Out_ bool* isSubFolderContent)
 {
     CSRWSharedAutoLock lock(&m_lock);
     *isSubFolderContent = m_depth > 0;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getSelected(_Out_ bool* selected)
+IFACEMETHODIMP CPowerRenameItem::GetSelected(_Out_ bool* selected)
 {
     CSRWSharedAutoLock lock(&m_lock);
     *selected = m_selected;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::putSelected(_In_ bool selected)
+IFACEMETHODIMP CPowerRenameItem::PutSelected(_In_ bool selected)
 {
     CSRWSharedAutoLock lock(&m_lock);
     m_selected = selected;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getId(_Out_ int* id)
+IFACEMETHODIMP CPowerRenameItem::GetId(_Out_ int* id)
 {
     CSRWSharedAutoLock lock(&m_lock);
     *id = m_id;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getIconIndex(_Out_ int* iconIndex)
+IFACEMETHODIMP CPowerRenameItem::GetIconIndex(_Out_ int* iconIndex)
 {
     if (m_iconIndex == -1)
     {
@@ -157,13 +157,13 @@ IFACEMETHODIMP CPowerRenameItem::getIconIndex(_Out_ int* iconIndex)
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::getDepth(_Out_ UINT* depth)
+IFACEMETHODIMP CPowerRenameItem::GetDepth(_Out_ UINT* depth)
 {
     *depth = m_depth;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::putDepth(_In_ int depth)
+IFACEMETHODIMP CPowerRenameItem::PutDepth(_In_ int depth)
 {
     m_depth = depth;
     return S_OK;
@@ -191,7 +191,7 @@ IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ DWORD filter, _In_ DWORD fla
         *isItemVisible = true;
         break;
     case PowerRenameFilters::Selected:
-        getSelected(isItemVisible);
+        GetSelected(isItemVisible);
         break;
     case PowerRenameFilters::FlagsApplicable:
         *isItemVisible = !((m_isFolder && (flags & PowerRenameFlags::ExcludeFolders)) || 
