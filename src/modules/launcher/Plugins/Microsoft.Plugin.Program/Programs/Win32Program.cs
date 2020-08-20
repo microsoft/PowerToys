@@ -46,7 +46,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public bool Enabled { get; set; }
 
-        public bool HasArguments { get; set; } = false;
+        public bool HasArguments { get; set; }
 
         public string Arguments { get; set; } = string.Empty;
 

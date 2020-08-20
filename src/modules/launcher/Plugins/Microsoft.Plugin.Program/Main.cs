@@ -25,7 +25,7 @@ namespace Microsoft.Plugin.Program
         private static PluginInitContext _context;
 
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
-        private bool _disposed = false;
+        private bool _disposed;
         private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
         private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
         private static Win32ProgramRepository _win32ProgramRepository;
@@ -87,11 +87,8 @@ namespace Microsoft.Plugin.Program
                 .Select(p => p.Result(query.Search, _context.API));
 
             var result = results1.Concat(results2).Where(r => r != null && r.Score > 0);
-            if (result.Any())
-            {
-                var maxScore = result.Max(x => x.Score);
-                result = result.Where(x => x.Score > Settings.MinScoreThreshold * maxScore);
-            }
+            var maxScore = result.Max(x => x.Score);
+            result = result.Where(x => x.Score > Settings.MinScoreThreshold * maxScore);
 
             return result.ToList();
         }
@@ -173,7 +170,8 @@ namespace Microsoft.Plugin.Program
             catch (Exception)
             {
                 var name = "Plugin: Program";
-                var message = $"Unable to start: {info.FileName}";
+                var message = $"Unable to start: {info?.FileName}";
+
                 _context.API.ShowMsg(name, message, string.Empty);
             }
         }
