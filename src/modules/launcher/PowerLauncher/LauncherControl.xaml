@@ -82,13 +82,10 @@
             <ColumnDefinition Width="72"/>
         </Grid.ColumnDefinitions>
 
-
-
         <!--
             for adding on placeholder, look at the style with 90 votes
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
         -->
-
         <TextBox
             AutomationProperties.Name="{DynamicResource Query}"
             x:Name="QueryTextBox"
