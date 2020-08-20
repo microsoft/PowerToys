@@ -350,7 +350,7 @@ bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
     // that belong to excluded applications list.
     if (IsSplashScreen(window) ||
         (reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0) ||
-        !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+        !FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
         return false;
     }
@@ -482,7 +482,7 @@ void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
             if (GetMonitorInfo(monitor, &destMi))
             {
                 RECT newPosition = FitOnScreen(placement.rcNormalPosition, originMi.rcWork, destMi.rcWork);
-                SizeWindowToRect(window, newPosition);
+                FancyZonesUtils::SizeWindowToRect(window, newPosition);
             }
         }
     }
@@ -642,7 +642,7 @@ void FancyZones::ToggleEditor() noexcept
         std::vector<std::pair<HMONITOR, RECT>> allMonitors;
 
         m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-            allMonitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+                              allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
             } }).wait();
 
         for (auto& [monitor, workArea] : allMonitors)
@@ -1031,7 +1031,7 @@ void FancyZones::UpdateWindowsPositions() noexcept
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
-    if (IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    if (FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
         const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)
@@ -1100,8 +1100,8 @@ bool FancyZones::OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexce
             bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
             if (!moved)
             {
-                RestoreWindowOrigin(window);
-                RestoreWindowSize(window);
+                FancyZonesUtils::RestoreWindowOrigin(window);
+                FancyZonesUtils::RestoreWindowSize(window);
             }
             return true;
         }
@@ -1248,7 +1248,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
-    if (IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    if (FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
         if (m_settings->GetSettings()->moveWindowsBasedOnPosition)
         {
@@ -1335,7 +1335,7 @@ std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
     std::shared_lock readLock(m_lock);
 
     auto monitorInfo = GetRawMonitorData();
-    OrderMonitors(monitorInfo);
+    FancyZonesUtils::OrderMonitors(monitorInfo);
     std::vector<HMONITOR> output;
     std::transform(std::begin(monitorInfo), std::end(monitorInfo), std::back_inserter(output), [](const auto& info) { return info.first; });
     return output;

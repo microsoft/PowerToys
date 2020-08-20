@@ -10,6 +10,8 @@
 
 #include <utility>
 
+using namespace FancyZonesUtils;
+
 namespace
 {
     constexpr int C_MULTIPLIER = 10000;
