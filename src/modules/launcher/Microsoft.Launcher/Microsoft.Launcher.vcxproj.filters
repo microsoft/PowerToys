@@ -8,7 +8,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
-    <ClInclude Include="resource.h">
+    <ClInclude Include="Generated Files\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -21,11 +21,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Microsoft.Launcher.rc">
+    <ResourceCompile Include="Generated Files\Microsoft.Launcher.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Microsoft.Launcher.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
