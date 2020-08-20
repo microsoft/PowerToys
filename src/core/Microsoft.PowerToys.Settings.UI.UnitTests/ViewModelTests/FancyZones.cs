@@ -110,19 +110,20 @@ namespace ViewModelTests
         [TestMethod]
         public void MoveWindowsBasedOnPosition_ShouldSetValue2True_WhenSuccessful()
         {
-            // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel();
-            Assert.IsFalse(viewModel.MoveWindowsBasedOnPosition); // check if value was initialized to false.
-
             // Assert
-            ShellPage.DefaultSndMSGCallback = msg =>
+            Func<string, int> SendMockIPCConfigMSG = msg =>
             {
                 FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
                 Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesMoveWindowsBasedOnPosition.Value);
+                return 0;
             };
 
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(SendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.MoveWindowsBasedOnPosition); // check if value was initialized to false.
+
             // act
-            viewModel.OverrideSnapHotkeys = true;
+            viewModel.MoveWindowsBasedOnPosition = true;
         }
 
         [TestMethod]
