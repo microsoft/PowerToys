@@ -525,7 +525,8 @@ ZoneWindow::ShowZoneWindow() noexcept
 
     SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
 
-    std::thread{ [=]() {
+    std::thread{ [this, strong_this{ get_strong() }]() {
+        auto window = m_window.get();
         AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
         InvalidateRect(window, nullptr, true);
         if (!m_host->InMoveSize())
