@@ -166,7 +166,7 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemByIndex(_In_ UINT index, _COM_
     }
     else if (SUCCEEDED(GetVisibleItemCount(&count)) && index < count)
     {
-        int realIndex = 0;
+        UINT realIndex = 0;
         int visibleIndex = -1;
         for (size_t i = 0; i < m_isVisible.size(); i++)
         {
@@ -176,7 +176,7 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemByIndex(_In_ UINT index, _COM_
             }
             if (visibleIndex == index)
             {
-                realIndex = i;
+                realIndex = static_cast<UINT>(i);
                 break;
             }
         }
@@ -215,11 +215,21 @@ IFACEMETHODIMP CPowerRenameManager::SetVisible()
 {
     CSRWSharedAutoLock lock(&m_lockItems);
     HRESULT hr = E_FAIL;
-    UINT lastVisibleDepth = 0, i = m_isVisible.size() - 1;
+    UINT lastVisibleDepth = 0;
+    size_t i = m_isVisible.size() - 1;
+    PWSTR searchTerm = nullptr;
     for (auto rit = m_renameItems.rbegin(); rit != m_renameItems.rend(); ++rit, --i)
     {
         bool isVisible = false;
-        rit->second->IsItemVisible(m_filter, m_flags, &isVisible);
+        if (m_filter == PowerRenameFilters::ShouldRename && 
+            (FAILED(m_spRegEx->GetSearchTerm(&searchTerm)) || searchTerm && wcslen(searchTerm) == 0))
+        {
+            isVisible = true;
+        }
+        else
+        {
+            rit->second->IsItemVisible(m_filter, m_flags, &isVisible);
+        }
 
         UINT itemDepth = 0;
         rit->second->GetDepth(&itemDepth);
