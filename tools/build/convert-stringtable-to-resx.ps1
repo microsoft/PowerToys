@@ -1,10 +1,10 @@
 # This script is used to move the resources from a string table txt file to a resx file
 
 # File containing only the rows of the string table
-$stringTableFile = args[0]
+$stringTableFile = $args[0]
 
 # Output resx file
-$resxFile = args[1]
+$resxFile = $args[1]
 
 # Temporary text file used by resgen
 $tempFile = "temporaryResourceFile.txt"
