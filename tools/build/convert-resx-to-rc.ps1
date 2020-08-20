@@ -37,16 +37,49 @@ if (!(Test-Path -Path $generatedFilesFolder))
     New-Item @paramNewItem
 }
 
+# Hash table to get the language codes from the code used in the file name
+$languageHashTable = @{ "en" = @("ENU", "ENGLISH", "ENGLISH_US", "English (United States)");
+                        "zh-Hans" =  @("CHS", "CHINESE", "NEUTRAL", "Chinese (Simplified)");
+                        "cs" = @("CSY", "CZECH", "NEUTRAL", "Czech");
+                        "hu" = @("HUN", "HUNGARIAN", "NEUTRAL", "Hungarian");
+                        "pl" = @("PLK", "POLISH", "NEUTRAL", "Polish");
+                        "ro" = @("ROM", "ROMANIAN", "NEUTRAL", "Romanian");
+                        "sk" = @("SKY", "SLOVAK", "NEUTRAL", "Slovak");
+                        "bg" = @("BGR", "BULGARIAN", "NEUTRAL", "Bulgarian");
+                        "ru" = @("RUS", "RUSSIAN", "NEUTRAL", "Russian");
+                        "ca" = @("CAT", "CATALAN", "NEUTRAL", "Catalan");
+                        "de" = @("DEU", "GERMAN", "NEUTRAL", "German");
+                        "es" = @("ESN", "SPANISH", "NEUTRAL", "Spanish");
+                        "fr" = @("FRA", "FRENCH", "NEUTRAL", "French");
+                        "it" = @("ITA", "ITALIAN", "NEUTRAL", "Italian");
+                        "nl" = @("NLD", "DUTCH", "NEUTRAL", "Dutch");
+                        "nb-NO" = @("NOR", "NORWEGIAN", "NORWEGIAN_BOKMAL", "Norwegian Bokmål (Norway)");
+                        "pt-BR" = @("PTB", "PORTUGUESE", "PORTUGUESE_BRAZILIAN", "Portuguese (Brazil)");
+                        "eu-ES" = @("EUQ", "BASQUE", "DEFAULT", "Basque (Basque)");
+                        "tr" = @("TRK", "TURKISH", "NEUTRAL", "Turkish");
+                        "he" = @("HEB", "HEBREW", "NEUTRAL", "Hebrew");
+                        "ar" = @("ARA", "ARABIC", "NEUTRAL", "Arabic")
+                        }
+
+
 # Iterate over all resx files in parent directory
 Get-ChildItem $parentDirectory -Filter *.resx | 
 Foreach-Object {
     # Use resgen to parse resx to txt. More details at https://docs.microsoft.com/en-us/dotnet/framework/tools/resgen-exe-resource-file-generator#converting-between-resource-file-types
     resgen $_.FullName $tempFile
 
+    # Get language code from file name
+    $lang = "en"
+    $tokens = $_.Name -split "\."
+    if ($tokens.Count -eq 3) {
+        $lang = $tokens[1]
+    }
+    $langData = $languageHashTable[$lang]
+
     $newLinesForRCFile = ""
     $newLinesForHeaderFile = ""
     $count = 101
-    foreach ($line in Get-Content $tempFile) {
+    foreach ($line in (Get-Content $tempFile -Encoding unicode)) {
         # Each line of the resgen text file is of the form ResourceName=ResourceValue with no spaces.
         $content = $line -split "=", 2
 
@@ -68,9 +101,16 @@ Foreach-Object {
     # Add string table syntax
     $newLinesForRCFile = "`r`nSTRINGTABLE`r`nBEGIN" + $newLinesForRCFile + "`r`nEND"
 
+    $langStart = "`r`n/////////////////////////////////////////////////////////////////////////////`r`n// " + $langData[3]  + " resources`r`n`r`n"
+    $langStart += "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_" + $langData[0] + ")`r`nLANGUAGE LANG_" + $langData[1] + ", SUBLANG_" + $langData[2] + "`r`n"
+
+    $langEnd = "`r`n`r`n#endif    // " + $langData[3] + " resources`r`n/////////////////////////////////////////////////////////////////////////////`r`n"
+
+    $newLinesForRCFile = $langStart + $newLinesForRCFile + $langEnd
+
     # Initialize the rc file with an auto-generation warning and content from the base rc
     if (!$rcFileUpdated) {
-        Set-Content -Path $generatedFilesFolder\$generatedRCFileName -Value ("// This file was auto-generated. Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.`r`n")
+        Set-Content -Path $generatedFilesFolder\$generatedRCFileName -Value ("// This file was auto-generated. Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.`r`n") -Encoding unicode
         Add-Content -Path $generatedFilesFolder\$generatedRCFileName -Value (Get-Content $parentDirectory\$baseRCFileName)
         $rcFileUpdated = $true
     }

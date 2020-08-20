@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include "ImageResizerExt_i.h"
 #include "dllmain.h"
 

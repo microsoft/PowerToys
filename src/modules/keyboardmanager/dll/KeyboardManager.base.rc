@@ -1,6 +1,6 @@
 #include <windows.h>
-#include "Generated Files/resource.h"
-#include "../../../common/version.h"
+#include "resource.h"
+#include "../../../../common/version.h"
 
 IDS_KEYBOARDMANAGER_ICON    ICON    L"Keyboard.ico"
 
