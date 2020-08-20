@@ -33,7 +33,6 @@ namespace
         {
             return false; // Could not get the rect, return true (and filter out the window) just in case
         }
-        // Return false (and allow the window to be zonable) if the owner window size is zero
         // It is enough that the window is zero-sized in one dimension only.
         return rect.top == rect.bottom || rect.left == rect.right;
     }
@@ -79,7 +78,6 @@ namespace
         result.process_path = std::move(process_path);
         result.standard_window = true;
         result.no_visible_owner = HasNoVisibleOwner(window);
-        result.zonable = result.standard_window && result.no_visible_owner;
         return result;
     }
 }
@@ -230,7 +228,8 @@ namespace FancyZonesUtils
     bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
         auto windowInfo = GetFancyZonesWindowInfo(window);
-        if (!windowInfo.zonable)
+        auto zonable = windowInfo.standard_window && windowInfo.no_visible_owner;
+        if (!zonable)
         {
             return false;
         }

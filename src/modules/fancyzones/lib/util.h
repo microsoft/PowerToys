@@ -7,8 +7,6 @@ namespace FancyZonesUtils
     // Window properties relevant to FancyZones
     struct FancyZonesWindowInfo
     {
-        // If the window is zonable by FancyZones by default - true when both standard_window and no_visible_owner are also true
-        bool zonable = false;
         // True if from the styles the window looks like a standard window
         bool standard_window = false;
         // True if the window is a top-level window that does not have a visible owner
