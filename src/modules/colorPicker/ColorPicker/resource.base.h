@@ -11,6 +11,3 @@
 
 // Non-localizable
 //////////////////////////////
-
-#define IDS_COLORPICKER_NAME             601
-#define IDS_COLORPICKER_SETTINGS_DESC    602
