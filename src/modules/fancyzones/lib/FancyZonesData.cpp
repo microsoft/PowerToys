@@ -16,6 +16,8 @@
 #include <sstream>
 #include <unordered_set>
 
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 // Non-localizable strings
 namespace NonLocalizable
 {
@@ -31,6 +33,8 @@ namespace NonLocalizable
     const wchar_t ActiveZoneSetsTmpFileName[] = L"FancyZonesActiveZoneSets.json";
     const wchar_t AppliedZoneSetsTmpFileName[] = L"FancyZonesAppliedZoneSets.json";
     const wchar_t DeletedCustomZoneSetsTmpFileName[] = L"FancyZonesDeletedCustomZoneSets.json";
+
+    const wchar_t PowerToysIssuesURL[] = L"https://aka.ms/powerToysReportBug";
 }
 
 namespace
@@ -70,7 +74,21 @@ FancyZonesData& FancyZonesDataInstance()
 
 FancyZonesData::FancyZonesData()
 {
-    std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::FancyZonesStr);
+    std::wstring saveFolderPath{};
+    try
+    {
+        saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::FancyZonesStr);
+    }
+    catch (...)
+    {
+        // Not being able to find path to persisted data completely breaks down FancyZones functionality.
+        std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_DATA_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
+        MessageBox(NULL,
+                   errorMessage.c_str(),
+                   GET_RESOURCE_STRING(IDS_FANCYZONES).c_str(),
+                   MB_OK | MB_ICONERROR);
+        exit(1);
+    }
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
     appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
 
