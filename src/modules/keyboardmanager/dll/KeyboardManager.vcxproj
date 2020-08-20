@@ -119,7 +119,7 @@
     <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files\resource.h" />
-    <ClInclude Include="resource.base.h" />
+    <None Include="resource.base.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />

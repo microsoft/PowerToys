@@ -27,9 +27,6 @@
     <ClInclude Include="Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.base.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -59,6 +56,9 @@
     <None Include="packages.config" />
     <None Include="KeyboardManager.base.rc">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
