@@ -5,6 +5,7 @@
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>
 #include <common/settings_helpers.h>
+#include "lib/Generated Files/resource.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

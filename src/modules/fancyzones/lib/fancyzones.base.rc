@@ -1,23 +1,23 @@
 #include <windows.h>
-#include "Generated Files/resource.h"
+#include "../lib/Generated Files/resource.h"
 #include "../../../common/version.h"
 
 1 VERSIONINFO
-FILEVERSION FILE_VERSION
-PRODUCTVERSION PRODUCT_VERSION
-FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+ FILEVERSION FILE_VERSION
+ PRODUCTVERSION PRODUCT_VERSION
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 #ifdef _DEBUG
-FILEFLAGS VS_FF_DEBUG
+ FILEFLAGS VS_FF_DEBUG
 #else
-FILEFLAGS 0x0L
+ FILEFLAGS 0x0L
 #endif
-FILEOS VOS_NT_WINDOWS32
-FILETYPE VFT_DLL
-FILESUBTYPE VFT2_UNKNOWN 
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_DLL
+ FILESUBTYPE VFT2_UNKNOWN
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904b0" // US English (0x0409), Unicode (0x04B0) charset
+        BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", COMPANY_NAME
             VALUE "FileDescription", FILE_DESCRIPTION
@@ -31,6 +31,6 @@ BEGIN
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x409, 1200 // US English (0x0409), Unicode (1200) charset
+        VALUE "Translation", 0x409, 1200
     END
 END

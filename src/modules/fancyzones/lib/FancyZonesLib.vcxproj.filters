@@ -36,7 +36,7 @@
     <ClInclude Include="util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="Generated Files\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="trace.h">
@@ -124,11 +124,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="fancyzones.rc">
-      <Filter>Source Files</Filter>
+    <None Include="packages.config" />
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="fancyzones.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files\fancyzones.rc">
+      <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <EmbeddedResource Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

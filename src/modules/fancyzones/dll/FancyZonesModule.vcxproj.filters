@@ -25,7 +25,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\lib\fancyzones.rc" />
+    <ResourceCompile Include="..\lib\Generated Files\fancyzones.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
