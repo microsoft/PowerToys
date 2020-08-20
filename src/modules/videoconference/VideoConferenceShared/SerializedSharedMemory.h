@@ -11,12 +11,14 @@
 #include <functional>
 #include <array>
 
+#include "boost/beast/core/span.hpp"
+
 // Wrapper class allowing sharing readonly/writable memory with a serialized access via atomic locking.
 // Note that it doesn't protect against a 3rd party concurrently modifying physical file contents.
 class SerializedSharedMemory
 {
 public:
-    using memory_t = std::span<uint8_t>;
+    using memory_t = boost::beast::span <unsigned char>;
 
     static std::optional<SerializedSharedMemory> create(const std::wstring_view object_name,
                                                         const size_t size,
@@ -31,7 +33,7 @@ public:
                                                       const bool read_only) noexcept;
 
     void access(std::function<void(memory_t)> access_routine) noexcept;
-    inline size_t size() const noexcept { return _memory.size_bytes(); }
+    inline size_t size() const noexcept { return _memory.size(); }
 
     ~SerializedSharedMemory() noexcept;
     SerializedSharedMemory(SerializedSharedMemory&&) noexcept;
