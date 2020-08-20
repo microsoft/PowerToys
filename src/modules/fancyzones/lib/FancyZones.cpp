@@ -17,7 +17,6 @@
 #include "MonitorWorkAreaHandler.h"
 
 #include <lib/SecondaryMouseButtonsHook.h>
-#include <lib/GenericKeyHook.h>
 
 enum class DisplayChangeType
 {

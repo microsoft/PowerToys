@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SecondaryMouseButtonsHook.h"
-#include "GenericKeyHook.h"
 
 interface IFancyZonesSettings;
 interface IZoneWindow;
