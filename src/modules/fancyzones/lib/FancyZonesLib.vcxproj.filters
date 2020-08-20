@@ -113,9 +113,6 @@
     <ClCompile Include="MonitorWorkAreaHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GenericKeyHook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FancyZonesData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

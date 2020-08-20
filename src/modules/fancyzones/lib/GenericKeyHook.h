@@ -57,6 +57,3 @@ private:
         return CallNextHookEx(hHook, nCode, wParam, lParam);
     }
 };
-
-typedef GenericKeyHook<VK_LSHIFT, VK_RSHIFT> ShiftKeyHook;
-typedef GenericKeyHook<VK_LCONTROL, VK_RCONTROL> CtrlKeyHook;
