@@ -13,7 +13,6 @@
 #include "lib/SecondaryMouseButtonsHook.h"
 #include "lib/GenericKeyHook.h"
 #include "lib/FancyZonesData.h"
-#include "Generated Files/resource.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 

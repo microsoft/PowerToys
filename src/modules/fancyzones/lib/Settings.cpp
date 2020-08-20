@@ -3,7 +3,6 @@
 #include "lib/Settings.h"
 #include "lib/FancyZones.h"
 #include "trace.h"
-#include "Generated Files/resource.h"
 
 // Non-Localizable strings
 namespace NonLocalizable

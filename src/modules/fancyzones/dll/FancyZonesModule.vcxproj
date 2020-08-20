@@ -124,7 +124,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\lib\Generated Files\fancyzones.rc" />
+    <ResourceCompile Include="..\lib\fancyzones.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

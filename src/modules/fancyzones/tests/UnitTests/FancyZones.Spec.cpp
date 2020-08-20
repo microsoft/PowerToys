@@ -5,7 +5,6 @@
 #include <lib/FancyZones.h>
 #include <lib/FancyZonesData.h>
 #include <lib/Settings.h>
-#include "lib/Generated Files/resource.h"
 
 #include "util.h"
 

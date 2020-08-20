@@ -11,9 +11,6 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h fancyzones.base.rc fancyzones.rc" />
-  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}</ProjectGuid>
@@ -111,8 +108,7 @@
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Generated Files\resource.h" />
-    <None Include="resource.base.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SecondaryMouseButtonsHook.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="trace.h" />
@@ -145,14 +141,10 @@
     <ClCompile Include="ZoneWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fancyzones.base.rc" />
-    <ResourceCompile Include="Generated Files\fancyzones.rc" />
+    <ResourceCompile Include="fancyzones.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
