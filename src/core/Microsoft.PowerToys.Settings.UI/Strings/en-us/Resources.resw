@@ -480,6 +480,9 @@
   <data name="ImageResizer_Width_Property.AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer Width Property</value>
   </data>
+  <data name="ImageResizer_Times_Symbol.AutomationProperties.Name" xml:space="preserve">
+    <value>Times Symbol</value>
+  </data>
   <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
     <value>Add size</value>
   </data>

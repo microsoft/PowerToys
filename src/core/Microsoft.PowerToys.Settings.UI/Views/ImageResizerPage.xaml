@@ -126,7 +126,9 @@
                                             VerticalAlignment="Center"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
-                            <TextBlock Text="&#xE711;"
+                            <TextBlock Name="ImageResizer_Times_Symbol"
+                                       x:Uid="ImageResizer_Times_Symbol"
+                                       Text="&#xE711;"
                                        FontFamily="Segoe MDL2 Assets"
                                        TextAlignment="Center"
                                        VerticalAlignment="Center"
