@@ -147,7 +147,9 @@
                                             IsEnabled="{x:Bind Path=EnableEtraBoxes, Mode=OneWay}"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
-                            <ComboBox SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
+                            <ComboBox Name="ImageResizer_Size_Property"
+                                      x:Uid="ImageResizer_Size_Property"
+                                      SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
                                       Width="120"
                                       Height="34"
                                       VerticalAlignment="Center"

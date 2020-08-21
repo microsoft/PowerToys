@@ -483,6 +483,9 @@
   <data name="ImageResizer_Height_Property.AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer Height Property</value>
   </data>
+  <data name="ImageResizer_Size_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Image Resizer Size Property</value>
+  </data>
   <data name="ImageResizer_Times_Symbol.AutomationProperties.Name" xml:space="preserve">
     <value>Times Symbol</value>
   </data>
