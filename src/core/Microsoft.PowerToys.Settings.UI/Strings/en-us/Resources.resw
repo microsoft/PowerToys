@@ -472,7 +472,7 @@
     <value>Image Size</value>
   </data>
   <data name="ImageResizer_Name.AutomationProperties.Name" xml:space="preserve">
-    <value>Image Resizer Name</value>
+    <value>Image Resizer Configuration Name</value>
   </data>
   <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
     <value>Add size</value>
