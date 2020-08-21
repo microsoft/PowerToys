@@ -165,22 +165,6 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        [Ignore("This method is throwing the follwoing exception in CI. Ignoring temporarily until I understand why. Can't repro locally. System.Data.OleDb.OleDbException : IErrorInfo.GetDescription failed with E_FAIL(0x80004005).")]
-        public void ExecuteQuery_ShouldDisposeAllConnections_AfterFunctionCall()
-        {
-            // Arrange
-            OleDBSearch oleDbSearch = new OleDBSearch();
-            WindowsSearchAPI api = new WindowsSearchAPI(oleDbSearch);
-            var mockSearchManager = GetMockSearchManager();
-
-            // Act
-            api.Search("FilePath", mockSearchManager);
-
-            // Assert
-            Assert.IsTrue(oleDbSearch.HaveAllDisposableItemsBeenDisposed());
-        }
-
-        [Test]
         public void WindowsSearchAPI_ShouldReturnResults_WhenSearchWasExecuted()
         {
             // Arrange

@@ -203,7 +203,9 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept;
+    MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
+    IFACEMETHODIMP_(bool)
+    MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
     CycleActiveZoneSet(DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring)
@@ -457,11 +459,25 @@ ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& in
 }
 
 IFACEMETHODIMP_(bool)
-ZoneWindow::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept
+ZoneWindow::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept
 {
     if (m_activeZoneSet)
     {
-        if (m_activeZoneSet->MoveWindowIntoZoneByDirection(window, m_window.get(), vkCode, cycle))
+        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window.get(), vkCode, cycle))
+        {
+            SaveWindowProcessToZoneIndex(window);
+            return true;
+        }
+    }
+    return false;
+}
+
+IFACEMETHODIMP_(bool)
+ZoneWindow::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept
+{
+    if (m_activeZoneSet)
+    {
+        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window.get(), vkCode, cycle))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -525,7 +541,8 @@ ZoneWindow::ShowZoneWindow() noexcept
 
     SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
 
-    std::thread{ [=]() {
+    std::thread{ [this, strong_this{ get_strong() }]() {
+        auto window = m_window.get();
         AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
         InvalidateRect(window, nullptr, true);
         if (!m_host->InMoveSize())
