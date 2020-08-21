@@ -24,7 +24,7 @@
                        Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        />
 
-            <TextBlock x:Uid="FancyZones_SettingsPage_ZonesEditor_Glyph"
+            <TextBlock x:Uid="SettingsPage_SetShortcut_Glyph"
                        x:Name="TitleGlyph" Text="&#xE946;"
                        FontFamily="Segoe MDL2 Assets"
                        Margin="4,4,0,0"
@@ -32,7 +32,7 @@
                        />
         
         </StackPanel>
-        <TextBox x:Uid="FancyZones_SettingsPage_ZonesEditorWindow"
+        <TextBox x:Uid="SettingsPage_SetShortcut"
                  x:Name="HotkeyTextBox"
                  Margin="0,5,0,0"
                  IsReadOnly="True"
