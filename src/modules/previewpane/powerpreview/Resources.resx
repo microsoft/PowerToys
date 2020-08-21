@@ -126,17 +126,11 @@
   <data name="Icon_Key_Name" xml:space="preserve">
     <value>pt-power-preview</value>
   </data>
-  <data name="Explr_Icons_Prev_Sttngs_Group_Header_Id" xml:space="preserve">
-    <value>EXPLR_ICONS_PREV_STTNGS_GROUP_HEADER_ID</value>
-  </data>
   <data name="Explr_Icons_Prev_Sttngs_Group_Desc" xml:space="preserve">
     <value>Settings Group Header Text</value>
   </data>
   <data name="Explr_Icons_Prev_Sttngs_Group_Text" xml:space="preserve">
     <value>Explorer Icons</value>
-  </data>
-  <data name="Prvpane_File_Prev_Sttngs_Group_Header_Id" xml:space="preserve">
-    <value>PRVPANE_FILE_PREV_STTNGS_GROUP_HEADER_ID</value>
   </data>
   <data name="Prvpane_File_Prev_Sttngs_Group_Desc" xml:space="preserve">
     <value>Settings Group Header Text</value>
@@ -144,17 +138,11 @@
   <data name="Prvpane_File_Prev_Sttngs_Group_Text" xml:space="preserve">
     <value>Preview pane extensions</value>
   </data>
-  <data name="Prevpane_Md_Bool_Toggle_Controll" xml:space="preserve">
-    <value>PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID</value>
-  </data>
   <data name="Prevpane_Md_Settings_Description" xml:space="preserve">
     <value>Markdown Previewer</value>
   </data>
   <data name="Prevpane_Md_Settings_Displayname" xml:space="preserve">
     <value>Markdown Previewer</value>
-  </data>
-  <data name="Prevpane_Svg_Bool_Toggle_Controll" xml:space="preserve">
-    <value>IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL</value>
   </data>
   <data name="Prevpane_Svg_Settings_Description" xml:space="preserve">
     <value>Svg Previewer</value>
@@ -164,9 +152,6 @@
   </data>
   <data name="Svg_Thumbnail_Provider_Settings_Description" xml:space="preserve">
     <value>Svg Thumbnail Provider</value>
-  </data>
-  <data name="Explr_Svg_Bool_Toggle_Controll" xml:space="preserve">
-    <value>EXPLR_SVG_BOOL_TOGGLE_CONTROLL</value>
   </data>
   <data name="Explr_Svg_Settings_Description" xml:space="preserve">
     <value>Render SVG images</value>
