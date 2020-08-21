@@ -7,7 +7,6 @@
 #include <string>
 #include <optional>
 #include <wil/resource.h>
-#include <span>
 #include <functional>
 #include <array>
 
