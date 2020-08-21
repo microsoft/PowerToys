@@ -79,12 +79,12 @@ namespace
             data.zoneIndexSet = {};
             for (auto& value : json.GetNamedArray(NonLocalizable::ZoneIndexSetStr))
             {
-                data.zoneIndexSet.push_back(static_cast<int>(value.GetNumber()));
+                data.zoneIndexSet.push_back(static_cast<size_t>(value.GetNumber()));
             }
         }
         else if (json.HasKey(NonLocalizable::ZoneIndexStr))
         {
-            data.zoneIndexSet = { static_cast<int>(json.GetNamedNumber(NonLocalizable::ZoneIndexStr)) };
+            data.zoneIndexSet = { static_cast<size_t>(json.GetNamedNumber(NonLocalizable::ZoneIndexStr)) };
         }
 
         data.deviceId = json.GetNamedString(NonLocalizable::DeviceIdStr);
@@ -338,9 +338,9 @@ namespace JSONHelpers
         {
             json::JsonObject desktopData;
             json::JsonArray jsonIndexSet;
-            for (int index : data.zoneIndexSet)
+            for (size_t index : data.zoneIndexSet)
             {
-                jsonIndexSet.Append(json::value(index));
+                jsonIndexSet.Append(json::value(static_cast<int>(index)));
             }
 
             desktopData.SetNamedValue(NonLocalizable::ZoneIndexSetStr, jsonIndexSet);
