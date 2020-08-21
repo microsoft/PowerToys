@@ -136,7 +136,9 @@
                                        Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"                                    
                                        Width="25"/>
 
-                            <muxc:NumberBox Value="{x:Bind Path=Height, Mode=TwoWay}" 
+                            <muxc:NumberBox Name="ImageResizer_Height_Property"
+                                            x:Uid="ImageResizer_Height_Property"
+                                            Value="{x:Bind Path=Height, Mode=TwoWay}" 
                                             Width="68"
                                             Height="34"
                                             VerticalAlignment="Center"
