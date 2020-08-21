@@ -160,6 +160,7 @@
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
                             </ComboBox>
                             <Button x:Name="RemoveButton"
+                                    x:Uid="RemoveButton"
                                     Background="Transparent"
                                     FontFamily="Segoe MDL2 Assets"
                                     Height="34"

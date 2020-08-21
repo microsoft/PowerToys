@@ -472,22 +472,25 @@
     <value>Image Size</value>
   </data>
   <data name="ImageResizer_Name.AutomationProperties.Name" xml:space="preserve">
-    <value>Image Resizer Configuration Name</value>
+    <value>Configuration Name</value>
   </data>
   <data name="ImageResizer_Fit_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Image Resizer Fit Property</value>
+    <value>Fit Property</value>
   </data>
   <data name="ImageResizer_Width_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Image Resizer Width Property</value>
+    <value>Width Property</value>
   </data>
   <data name="ImageResizer_Height_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Image Resizer Height Property</value>
+    <value>Height Property</value>
   </data>
   <data name="ImageResizer_Size_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Image Resizer Size Property</value>
+    <value>Size Property</value>
   </data>
   <data name="ImageResizer_Times_Symbol.AutomationProperties.Name" xml:space="preserve">
     <value>Times Symbol</value>
+  </data>
+  <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Remove</value>
   </data>
   <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
     <value>Add size</value>
