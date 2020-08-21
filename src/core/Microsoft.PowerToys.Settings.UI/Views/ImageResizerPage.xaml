@@ -336,7 +336,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/ImageResizer.png" />
+                <Image x:Uid="ImageResizer_Image" Source="ms-appx:///Assets/Modules/ImageResizer.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
