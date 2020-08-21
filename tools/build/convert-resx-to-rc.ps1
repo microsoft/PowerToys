@@ -74,7 +74,13 @@ $rcFileContent = ""
 Get-ChildItem $parentDirectory -Filter *.resx | 
 Foreach-Object {
     # Use resgen to parse resx to txt. More details at https://docs.microsoft.com/en-us/dotnet/framework/tools/resgen-exe-resource-file-generator#converting-between-resource-file-types
-    resgen $_.FullName $tempFile
+    try {
+        resgen $_.FullName $tempFile
+    }
+    catch {
+        echo "resgen failed to convert resx file"
+        exit 0
+    }
 
     # Get language code from file name
     $lang = "en"
