@@ -56,7 +56,8 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <TextBlock x:Uid="ShortcutGuide_PressTime"
+            <TextBlock Name="ShortcutGuide_PressTime"
+                x:Uid="ShortcutGuide_PressTime"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
@@ -68,7 +69,8 @@
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" 
                             SmallChange="50" 
-                            LargeChange="100"/>
+                            LargeChange="100"
+                            AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_PressTime}"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
                 <Slider x:Uid="ShortcutGuide_OverlayOpacity"
