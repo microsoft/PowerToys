@@ -288,6 +288,9 @@
   <data name="Appearance_GroupSettings.Text" xml:space="preserve">
     <value>Appearance</value>
   </data>
+  <data name="Fancyzones_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>FancyZones windows</value>
+  </data>
   <data name="FancyZones_Description.Text" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
   </data>
@@ -308,6 +311,12 @@
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open zones editor</value>
+  </data>
+  <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Set Shortcut</value>
+  </data>
+  <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
+    <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
     <value>Launch zones editor</value>
