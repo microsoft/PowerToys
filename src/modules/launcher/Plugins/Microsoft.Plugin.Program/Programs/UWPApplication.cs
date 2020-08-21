@@ -605,7 +605,6 @@ namespace Microsoft.Plugin.Program.Programs
                 }
 
                 var padding = 8;
-                var cornerRadius = 4;
                 var width = image.Width + (2 * padding);
                 var height = image.Height + (2 * padding);
                 var x = 0;
@@ -619,7 +618,7 @@ namespace Microsoft.Plugin.Program.Programs
                     var brush = new SolidColorBrush(color);
                     var pen = new Pen(brush, 1);
                     var backgroundArea = new Rect(0, 0, width, height);
-                    var rectangleGeometry = new RectangleGeometry(backgroundArea, cornerRadius, cornerRadius);
+                    var rectangleGeometry = new RectangleGeometry(backgroundArea);
                     var rectDrawing = new GeometryDrawing(brush, pen, rectangleGeometry);
                     group.Children.Add(rectDrawing);
 
