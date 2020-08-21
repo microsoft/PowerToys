@@ -754,7 +754,7 @@ namespace FancyZonesUnitTests
                     std::filesystem::remove(m_path);
                 }
 
-                void checkZones(const winrt::com_ptr<IZoneSet>& set, size_t expectedCount, MONITORINFO monitorInfo)
+                void checkZones(const winrt::com_ptr<IZoneSet>& set, ZoneSetLayoutType type, size_t expectedCount, MONITORINFO monitorInfo)
                 {
                     auto zones = set->GetZones();
                     Assert::AreEqual(expectedCount, zones.size());
@@ -771,8 +771,11 @@ namespace FancyZonesUnitTests
                         Assert::IsTrue(zoneRect.left < zoneRect.right, L"rect.left >= rect.right");
                         Assert::IsTrue(zoneRect.top < zoneRect.bottom, L"rect.top >= rect.bottom");
 
-                        Assert::IsTrue(zoneRect.right <= monitorInfo.rcWork.right, L"right border is bigger than monitor work space");
-                        Assert::IsTrue(zoneRect.bottom <= monitorInfo.rcWork.bottom, L"bottom border is bigger than monitor work space");
+                        if (type != ZoneSetLayoutType::Focus)
+                        {
+                            Assert::IsTrue(zoneRect.right <= monitorInfo.rcWork.right, L"right border is bigger than monitor work space");
+                            Assert::IsTrue(zoneRect.bottom <= monitorInfo.rcWork.bottom, L"bottom border is bigger than monitor work space");
+                        }
 
                         zoneId++;
                     }
@@ -793,7 +796,7 @@ namespace FancyZonesUnitTests
                             auto set = MakeZoneSet(m_config);
                             auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
-                            checkZones(set, zoneCount, monitorInfo);
+                            checkZones(set, static_cast<ZoneSetLayoutType>(type), zoneCount, monitorInfo);
                         }
                     }
                 }
@@ -827,7 +830,7 @@ namespace FancyZonesUnitTests
                             auto set = MakeZoneSet(m_config);
                             auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
-                            checkZones(set, zoneCount, monitorInfo);
+                            checkZones(set, static_cast<ZoneSetLayoutType>(type), zoneCount, monitorInfo);
                         }
                     }
                 }
@@ -944,7 +947,7 @@ namespace FancyZonesUnitTests
                             auto set = MakeZoneSet(m_config);
                             auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
-                            checkZones(set, zoneCount, monitorInfo);
+                            checkZones(set, static_cast<ZoneSetLayoutType>(type), zoneCount, monitorInfo);
                         }
                     }
                 }
@@ -1066,7 +1069,7 @@ namespace FancyZonesUnitTests
                         auto set = MakeZoneSet(m_config);
                         auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsTrue(result);
-                        checkZones(set, zoneCount, monitorInfo);
+                        checkZones(set, ZoneSetLayoutType::Custom, zoneCount, monitorInfo);
                     }
                 }
 
@@ -1107,7 +1110,7 @@ namespace FancyZonesUnitTests
                         auto set = MakeZoneSet(m_config);
                         auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsTrue(result);
-                        checkZones(set, zoneCount, monitorInfo);
+                        checkZones(set, ZoneSetLayoutType::Custom, zoneCount, monitorInfo);
                     }
                 }
 

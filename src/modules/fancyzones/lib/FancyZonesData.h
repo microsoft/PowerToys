@@ -27,6 +27,7 @@ namespace FancyZonesUnitTests
     class FancyZonesIFancyZonesCallbackUnitTests;
     class ZoneSetCalculateZonesUnitTests;
     class ZoneWindowUnitTests;
+    class ZoneWindowCreationUnitTests;
 }
 #endif
 
@@ -83,6 +84,7 @@ private:
     friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
     friend class FancyZonesUnitTests::FancyZonesIFancyZonesCallbackUnitTests;
     friend class FancyZonesUnitTests::ZoneWindowUnitTests;
+    friend class FancyZonesUnitTests::ZoneWindowCreationUnitTests;
     friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
 
     inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
