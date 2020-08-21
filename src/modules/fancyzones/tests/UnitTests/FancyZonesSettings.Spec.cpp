@@ -33,6 +33,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.zoneSetChange_moveWindows, actual.zoneSetChange_moveWindows);
         Assert::AreEqual(expected.overrideSnapHotkeys, actual.overrideSnapHotkeys);
         Assert::AreEqual(expected.moveWindowAcrossMonitors, actual.moveWindowAcrossMonitors);
+        Assert::AreEqual(expected.moveWindowsBasedOnPosition, actual.moveWindowsBasedOnPosition);
         Assert::AreEqual(expected.appLastZone_moveWindows, actual.appLastZone_moveWindows);
         Assert::AreEqual(expected.openWindowOnActiveMonitor, actual.openWindowOnActiveMonitor);
         Assert::AreEqual(expected.restoreSize, actual.restoreSize);
@@ -113,6 +114,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
                     values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
@@ -152,6 +154,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
                     values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
@@ -185,6 +188,7 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = m_defaultSettings.zoneSetChange_moveWindows,
                         .overrideSnapHotkeys = m_defaultSettings.overrideSnapHotkeys,
                         .moveWindowAcrossMonitors = m_defaultSettings.moveWindowAcrossMonitors,
+                        .moveWindowsBasedOnPosition = m_defaultSettings.moveWindowsBasedOnPosition,
                         .appLastZone_moveWindows = m_defaultSettings.appLastZone_moveWindows,
                         .openWindowOnActiveMonitor = m_defaultSettings.openWindowOnActiveMonitor,
                         .restoreSize = m_defaultSettings.restoreSize,
@@ -231,6 +235,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
                     values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
@@ -264,6 +269,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
                     values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
@@ -298,6 +304,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
                     values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
@@ -333,6 +340,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
                     values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                    values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
                     values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
@@ -449,6 +457,7 @@ namespace FancyZonesUnitTests
                     .zoneSetChange_moveWindows = true,
                     .overrideSnapHotkeys = false,
                     .moveWindowAcrossMonitors = false,
+                    .moveWindowsBasedOnPosition = false,
                     .appLastZone_moveWindows = false,
                     .openWindowOnActiveMonitor = false,
                     .restoreSize = false,
@@ -473,6 +482,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                 values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
                 values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+                values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
                 values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                 values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
                 values.add_property(L"fancyzones_restoreSize", expected.restoreSize);
@@ -588,6 +598,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
             ptSettings.add_bool_toggle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_moveWindowsBasedOnPosition", IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION, settings.moveWindowsBasedOnPosition);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
@@ -625,7 +636,7 @@ namespace FancyZonesUnitTests
             int expectedSize = 0;
             m_settings->GetConfig(nullptr, &expectedSize);
             Assert::AreNotEqual(0, expectedSize);
-            
+
             int actualBufferSize = expectedSize;
             PWSTR actualBuffer = new wchar_t[actualBufferSize];
 
@@ -641,7 +652,7 @@ namespace FancyZonesUnitTests
 
             int actualBufferSize = size - 1;
             PWSTR actualBuffer = new wchar_t[actualBufferSize];
-            
+
             Assert::IsFalse(m_settings->GetConfig(actualBuffer, &actualBufferSize));
             Assert::AreEqual(size, actualBufferSize);
         }

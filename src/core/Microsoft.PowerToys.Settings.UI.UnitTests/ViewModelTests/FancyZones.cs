@@ -108,6 +108,25 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void MoveWindowsBasedOnPosition_ShouldSetValue2True_WhenSuccessful()
+        {
+            // Assert
+            Func<string, int> SendMockIPCConfigMSG = msg =>
+            {
+                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
+                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesMoveWindowsBasedOnPosition.Value);
+                return 0;
+            };
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(SendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.MoveWindowsBasedOnPosition); // check if value was initialized to false.
+
+            // act
+            viewModel.MoveWindowsBasedOnPosition = true;
+        }
+
+        [TestMethod]
         public void ZoneSetChangeFlashZones_ShouldSetValue2False_WhenSuccessful()
         {
             // Assert

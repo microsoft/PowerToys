@@ -41,6 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
             _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
+            _moveWindowsBasedOnPosition = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value;
             _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
             _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
@@ -84,6 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         private bool _mouseSwitch;
         private bool _overrideSnapHotkeys;
         private bool _moveWindowsAcrossMonitors;
+        private bool _moveWindowsBasedOnPosition;
         private bool _displayChangemoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
@@ -119,7 +121,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
+                    OnPropertyChanged("SnapHotkeysCategoryEnabled");
                 }
+            }
+        }
+
+        public bool SnapHotkeysCategoryEnabled
+        {
+            get
+            {
+                return _isEnabled && _overrideSnapHotkeys;
             }
         }
 
@@ -178,6 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _overrideSnapHotkeys = value;
                     Settings.Properties.FancyzonesOverrideSnapHotkeys.Value = value;
                     RaisePropertyChanged();
+                    OnPropertyChanged("SnapHotkeysCategoryEnabled");
                 }
             }
         }
@@ -195,6 +207,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _moveWindowsAcrossMonitors = value;
                     Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool MoveWindowsBasedOnPosition
+        {
+            get
+            {
+                return _moveWindowsBasedOnPosition;
+            }
+
+            set
+            {
+                if (value != _moveWindowsBasedOnPosition)
+                {
+                    _moveWindowsBasedOnPosition = value;
+                    Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value = value;
                     RaisePropertyChanged();
                 }
             }

@@ -138,7 +138,9 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirection(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
+    MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
+    IFACEMETHODIMP_(bool)
+    MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(bool)
@@ -315,7 +317,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
+ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
 {
     if (m_zones.empty())
     {
@@ -359,6 +361,65 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
         MoveWindowIntoZoneByIndexSet(window, windowZone, { oldIndex + 1 });
     }
     return true;
+}
+
+IFACEMETHODIMP_(bool)
+ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
+{
+    if (m_zones.empty())
+    {
+        return false;
+    }
+
+    auto zoneObjects = GetZones();
+    std::vector<bool> usedZoneIndices(zoneObjects.size(), false);
+    for (size_t idx : GetZoneIndexSetFromWindow(window))
+    {
+        usedZoneIndices[idx] = true;
+    }
+
+    std::vector<RECT> zoneRects;
+    std::vector<size_t> freeZoneIndices;
+
+    for (size_t i = 0; i < zoneObjects.size(); i++)
+    {
+        if (!usedZoneIndices[i])
+        {
+            zoneRects.emplace_back(zoneObjects[i]->GetZoneRect());
+            freeZoneIndices.emplace_back(i);
+        }
+    }
+
+    RECT windowRect, windowZoneRect;
+    if (GetWindowRect(window, &windowRect) && GetWindowRect(windowZone, &windowZoneRect))
+    {
+        // Move to coordinates relative to windowZone
+        windowRect.top -= windowZoneRect.top;
+        windowRect.bottom -= windowZoneRect.top;
+        windowRect.left -= windowZoneRect.left;
+        windowRect.right -= windowZoneRect.left;
+
+        size_t result = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+        if (result < zoneRects.size())
+        {
+            MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+            return true;
+        }
+        else if (cycle)
+        {
+            // Try again from the position off the screen in the opposite direction to vkCode
+            windowRect = PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
+            result = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+
+            if (result < zoneRects.size())
+            {
+                MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 IFACEMETHODIMP_(void)

@@ -319,7 +319,7 @@
     <value>Use a non-primary mouse button to toggle zone activation</value>
   </data>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
-    <value>Move windows between zones across all monitors when snapping with (Win + Arrow)</value>
+    <value>Move windows between zones across all monitors</value>
   </data>
   <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
     <value>Override Windows Snap shortcut (Win + Arrow) to move windows between zones</value>
@@ -665,5 +665,8 @@
   </data>
   <data name="ImageResizer_Formatting_Sizename.Text" xml:space="preserve">
     <value>Size name</value>
+  </data>
+  <data name="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" xml:space="preserve">
+    <value>Move windows based on their position</value>
   </data>
 </root>
