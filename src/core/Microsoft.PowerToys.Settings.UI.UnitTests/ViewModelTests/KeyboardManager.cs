@@ -13,7 +13,8 @@ namespace ViewModelTests
     [TestClass]
     public class KeyboardManager
     {
-        public const string Module = "Keyboard Manager";
+        public const string Module = "Test\\Keyboard Manager";
+        private const string GeneralSettingsFolderName = "Test";
 
         [TestInitialize]
         public void Setup()

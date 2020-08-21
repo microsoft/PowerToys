@@ -15,6 +15,7 @@ namespace ViewModelTests
     public class PowerPreview
     {
         public const string Module = "Test\\File Explorer";
+        private const string GeneralSettingsFolderName = "Test";
 
         [TestInitialize]
         public void Setup()
@@ -23,18 +24,17 @@ namespace ViewModelTests
             GeneralSettings generalSettings = new GeneralSettings();
             PowerPreviewSettings powerpreview = new PowerPreviewSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), GeneralSettingsFolderName);
+            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), Module);
         }
 
         [TestCleanup]
         public void CleanUp()
         {
             // delete folder created.
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
+            if (SettingsUtils.SettingsFolderExists(GeneralSettingsFolderName))
             {
-                DeleteFolder(generalSettings_file_name);
+                DeleteFolder(GeneralSettingsFolderName);
             }
 
             if (SettingsUtils.SettingsFolderExists(Module))

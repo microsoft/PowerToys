@@ -13,7 +13,8 @@ namespace ViewModelTests
     [TestClass]
     public class ColorPicker
     {
-        private const string ModuleName = "ColorPicker";
+        private const string ModuleName = "Test\\ColorPicker";
+        private const string GeneralSettingsFolderName = "Test";
 
         [TestInitialize]
         public void Setup()
@@ -21,17 +22,16 @@ namespace ViewModelTests
             var generalSettings = new GeneralSettings();
             var colorPickerSettings = new ColorPickerSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.Name, ModuleName + ".json");
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), GeneralSettingsFolderName);
+            SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), ModuleName);
         }
 
         [TestCleanup]
         public void CleanUp()
         {
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
+            if (SettingsUtils.SettingsFolderExists(GeneralSettingsFolderName))
             {
-                DeleteFolder(generalSettings_file_name);
+                DeleteFolder(GeneralSettingsFolderName);
             }
 
             if (SettingsUtils.SettingsFolderExists(ModuleName))

@@ -15,7 +15,8 @@ namespace ViewModelTests
     [TestClass]
     public class ImageResizer
     {
-        public const string Module = "ImageResizer";
+        public const string Module = "Test\\ImageResizer";
+        private const string GeneralSettingsFolderName = "Test";
 
         [TestInitialize]
         public void Setup()
@@ -26,18 +27,17 @@ namespace ViewModelTests
             GeneralSettings generalSettings = new GeneralSettings();
             ImageResizerSettings imageResizer = new ImageResizerSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(imageResizer.ToJsonString(), imageResizer.Name);
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), GeneralSettingsFolderName);
+            SettingsUtils.SaveSettings(imageResizer.ToJsonString(), Module);
         }
 
         [TestCleanup]
         public void CleanUp()
         {
             // delete folder created.
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
+            if (SettingsUtils.SettingsFolderExists(GeneralSettingsFolderName))
             {
-                DeleteFolder(generalSettings_file_name);
+                DeleteFolder(GeneralSettingsFolderName);
             }
 
             if (SettingsUtils.SettingsFolderExists(Module))
@@ -141,8 +141,8 @@ namespace ViewModelTests
             viewModel.KeepDateModified = true;
 
             // Assert
-            ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
-            Assert.AreEqual(true, settings.Properties.ImageresizerKeepDateModified.Value);
+            viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            Assert.AreEqual(true, viewModel.KeepDateModified);
         }
 
         [TestMethod]

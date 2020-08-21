@@ -17,6 +17,7 @@ namespace ViewModelTests
     public class FancyZones
     {
         public const string FancyZonesTestFolderName = "Test\\FancyZones";
+        private const string GeneralSettingsFolderName = "Test";
 
         [TestInitialize]
         public void Setup()
@@ -25,7 +26,7 @@ namespace ViewModelTests
             GeneralSettings generalSettings = new GeneralSettings();
             FZConfigProperties fZConfigProperties = new FZConfigProperties();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), GeneralSettingsFolderName);
             SettingsUtils.SaveSettings(fZConfigProperties.ToJsonString(), FancyZonesTestFolderName);
         }
 
@@ -33,10 +34,9 @@ namespace ViewModelTests
         public void CleanUp()
         {
             // delete general settings folder created.
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(string.Empty))
+            if (SettingsUtils.SettingsFolderExists(GeneralSettingsFolderName))
             {
-                DeleteFolder(string.Empty);
+                DeleteFolder(GeneralSettingsFolderName);
             }
 
             // delete fancy zones folder created.

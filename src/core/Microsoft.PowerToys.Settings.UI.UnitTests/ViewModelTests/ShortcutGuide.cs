@@ -15,6 +15,7 @@ namespace ViewModelTests
     public class ShortcutGuide
     {
         public const string ShortCutGuideTestFolderName = "Test\\ShortCutGuide";
+        private const string GeneralSettingsFolderName = "Test";
 
         [TestInitialize]
         public void Setup()
@@ -25,7 +26,7 @@ namespace ViewModelTests
             GeneralSettings generalSettings = new GeneralSettings();
             ShortcutGuideSettings shortcutGuide = new ShortcutGuideSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), GeneralSettingsFolderName);
             SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ShortCutGuideTestFolderName);
         }
 
@@ -34,13 +35,12 @@ namespace ViewModelTests
         {
             // delete folder created.
             // delete general settings folder.
-            string ShortCutGuideTestFolderName = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(string.Empty))
+            if (SettingsUtils.SettingsFolderExists(GeneralSettingsFolderName))
             {
-                DeleteFolder(string.Empty);
+                DeleteFolder(GeneralSettingsFolderName);
             }
 
-            // delete power rename folder.
+            // delete shortcut guide folder.
             if (SettingsUtils.SettingsFolderExists(ShortCutGuideTestFolderName))
             {
                 DeleteFolder(ShortCutGuideTestFolderName);

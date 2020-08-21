@@ -14,7 +14,7 @@ namespace ViewModelTests
     [TestClass]
     public class General
     {
-        public const string generalSettings_file_name = "Test\\GenealSettings";
+        public const string generalSettings_file_name = "Test";
 
         [TestInitialize]
         public void Setup()
