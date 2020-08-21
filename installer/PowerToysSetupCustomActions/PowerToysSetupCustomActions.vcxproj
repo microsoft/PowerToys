@@ -115,14 +115,18 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>inc;telemetry;$(WIX)sdk\$(WixPlatformToolset)\inc;$(SolutionDir)\packages\WiX.3.11.2\tools\sdk\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions); ADDITIONAL;</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
+	  
     </ClCompile>
+	<ClCompile Condition="'$(CIBuild)'=='true'">
+		<AdditionalOptions >/DCIBuild</AdditionalOptions>
+	</ClCompile>
     <Link>
       <AdditionalDependencies>Psapi.lib;Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;Newdev.lib;..\..\$(PlatformShortName)\$(Configuration)\common.lib;..\..\$(PlatformShortName)\$(Configuration)\updating.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WIX)sdk\$(WixPlatformToolset)\lib\x64;$(SolutionDir)\packages\WiX.3.11.2\tools\sdk\vs2017\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

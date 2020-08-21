@@ -672,6 +672,10 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
 
 UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
 {
+#ifdef CIBuild // On pipeline we are using microsoft certification
+    WcaInitialize(hInstall, "CertifyVirtualCameraDriverCA");
+    return WcaFinalize(ERROR_SUCCESS);
+#else
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     LPWSTR certificatePath = NULL;
@@ -749,6 +753,7 @@ LExit:
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
+#endif
 }
 
 
@@ -767,25 +772,15 @@ UINT __stdcall InstallVirtualCameraDriverCA(MSIHANDLE hInstall)
     BOOL requiresReboot;
     DiInstallDriverW(GetConsoleWindow(), driverPath, DIIRFLAG_FORCE_INF, &requiresReboot);
 
-    switch (GetLastError())
-    {
-    case ERROR_ACCESS_DENIED:
-    case ERROR_FILE_NOT_FOUND:
-    case ERROR_INVALID_FLAGS:
-    case ERROR_IN_WOW64:
-    {
-        hr = GetLastError();
-        ExitOnFailure(hr, "Failed to install driver");
-        break;
-    }
-    }
+    hr = GetLastError();
+    ExitOnFailure(hr, "Failed to install driver");
 
 LExit:
 
     if (!SUCCEEDED(hr))
     {
         PMSIHANDLE hRecord = MsiCreateRecord(0);
-        MsiRecordSetString(hRecord, 0, TEXT("Filed to install virtual camera driver"));
+        MsiRecordSetString(hRecord, 0, TEXT("Failed to install virtual camera driver"));
         MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
     }
 

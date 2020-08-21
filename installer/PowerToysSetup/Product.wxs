@@ -89,7 +89,7 @@
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
 <?if $(var.Configuration)="Release with Video Conference" ?>
-      <Custom Action="SetCertifyVirtualCameraDriverParam" After="RegisterPowerToysSchTask" />
+      <Custom Action="SetCertifyVirtualCameraDriverParam" After="RegisterPowerToysSchTask"/>
       <Custom Action="CertifyVirtualCameraDriver" After="SetCertifyVirtualCameraDriverParam" >
         NOT Installed
       </Custom>
