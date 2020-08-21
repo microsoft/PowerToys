@@ -117,7 +117,9 @@
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                             </ComboBox>
 
-                            <muxc:NumberBox Value="{x:Bind Path=Width, Mode=TwoWay}" 
+                            <muxc:NumberBox Name="ImageResizer_Width_Property"
+                                            x:Uid="ImageResizer_Width_Property"
+                                            Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                             Width="68"
                                             Height="34"
                                             SpinButtonPlacementMode="Compact"
