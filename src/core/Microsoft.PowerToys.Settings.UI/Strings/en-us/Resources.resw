@@ -579,6 +579,9 @@
   <data name="About_FileExplorerPreview.Text" xml:space="preserve">
     <value>About File Explorer Preview</value>
   </data>
+  <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>File Explorer Preview</value>
+  </data>
   <data name="About_ImageResizer.Text" xml:space="preserve">
     <value>About Image Resizer</value>
   </data>
