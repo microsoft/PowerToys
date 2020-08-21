@@ -2,6 +2,10 @@
 #include "resource.h"
 #include "../../../../common/version.h"
 
+#define APSTUDIO_READONLY_SYMBOLS
+#include "winres.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
 1 VERSIONINFO
 FILEVERSION FILE_VERSION
 PRODUCTVERSION PRODUCT_VERSION

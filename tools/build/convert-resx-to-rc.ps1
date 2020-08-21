@@ -58,9 +58,17 @@ $languageHashTable = @{ "en" = @("ENU", "ENGLISH", "ENGLISH_US", "English (Unite
                         "eu-ES" = @("EUQ", "BASQUE", "DEFAULT", "Basque (Basque)");
                         "tr" = @("TRK", "TURKISH", "NEUTRAL", "Turkish");
                         "he" = @("HEB", "HEBREW", "NEUTRAL", "Hebrew");
-                        "ar" = @("ARA", "ARABIC", "NEUTRAL", "Arabic")
+                        "ar" = @("ARA", "ARABIC", "NEUTRAL", "Arabic");
+                        "ja" = @("JPN", "JAPANESE", "NEUTRAL", "Japanese");
+                        "ko" = @("KOR", "KOREAN", "NEUTRAL", "Korean");
+                        "sv" = @("SVE", "SWEDISH", "NEUTRAL", "Swedish");
+                        "pt-PT" = @("PTG", "PORTUGUESE", "PORTUGUESE", "Portuguese (Portugal)");
+                        "zh-Hant" = @("CHT", "CHINESE", "CHINESE_TRADITIONAL", "Chinese (Traditional)")
                         }
 
+# Store the content to be written to a buffer
+$headerFileContent = ""
+$rcFileContent = ""
 
 # Iterate over all resx files in parent directory
 Get-ChildItem $parentDirectory -Filter *.resx | 
@@ -110,19 +118,71 @@ Foreach-Object {
 
     # Initialize the rc file with an auto-generation warning and content from the base rc
     if (!$rcFileUpdated) {
-        Set-Content -Path $generatedFilesFolder\$generatedRCFileName -Value ("// This file was auto-generated. Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.`r`n") -Encoding unicode
-        Add-Content -Path $generatedFilesFolder\$generatedRCFileName -Value (Get-Content $parentDirectory\$baseRCFileName)
+        $rcFileContent = "// This file was auto-generated. Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.`r`n"
+        try
+        {
+            $rcFileContent += (Get-Content $parentDirectory\$baseRCFileName -Raw)
+        }
+        catch
+        {
+            echo "Failed to read base rc file."
+            exit 0
+        }
         $rcFileUpdated = $true
     }
 
     # Add in the new string table to the rc file
-    Add-Content -Path $generatedFilesFolder\$generatedRCFileName -Value $newLinesForRCFile
+    $rcFileContent += $newLinesForRCFile
 
     # Resource header file needs to be set only once, with an auto-generation warning, content from the base resource header followed by #define for all the resources
     if (!$headerFileUpdated) {
-        Set-Content -Path $generatedFilesFolder\$generatedHeaderFileName -Value ("// This file was auto-generated. Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.`r`n")
-        Add-Content -Path $generatedFilesFolder\$generatedHeaderFileName -Value (Get-Content $parentDirectory\$baseHeaderFileName)
-        Add-Content -Path $generatedFilesFolder\$generatedHeaderFileName -Value $newLinesForHeaderFile
+        $headerFileContent = "// This file was auto-generated. Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.`r`n"
+        try
+        {
+            $headerFileContent += (Get-Content $parentDirectory\$baseHeaderFileName  -Raw)
+        }
+        catch
+        {
+            echo "Failed to read base header file."
+            exit 0
+        }
+        $headerFileContent += $newLinesForHeaderFile
         $headerFileUpdated = $true
     }
+}
+
+# Write to header file if the content has changed or if the file doesnt exist
+try
+{
+    if (!(Test-Path -Path $generatedFilesFolder\$generatedHeaderFileName) -or (($headerFileContent + "`r`n") -ne (Get-Content $generatedFilesFolder\$generatedHeaderFileName -Raw)))
+    {
+        Set-Content -Path $generatedFilesFolder\$generatedHeaderFileName -Value $headerFileContent
+    }
+    else
+    {
+        echo "Skipping write to generated header file"
+    }
+}
+catch
+{
+    echo "Failed to access generated header file."
+    exit 0
+}
+
+# Write to rc file if the content has changed or if the file doesnt exist
+try
+{
+    if (!(Test-Path -Path $generatedFilesFolder\$generatedRCFileName) -or (($rcFileContent + "`r`n") -ne (Get-Content $generatedFilesFolder\$generatedRCFileName -Raw)))
+    {
+        Set-Content -Path $generatedFilesFolder\$generatedRCFileName -Value $rcFileContent -Encoding unicode
+    }
+    else
+    {    
+        echo "Skipping write to generated rc file"
+    }
+}
+catch
+{
+    echo "Failed to access generated rc file."
+    exit 0
 }
