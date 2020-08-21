@@ -588,6 +588,9 @@
   <data name="About_ColorPicker.Text" xml:space="preserve">
     <value>About Color Picker</value>
   </data>
+  <data name="ColorPicker_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Color Picker</value>
+  </data>
   <data name="About_PowerLauncher.Text" xml:space="preserve">
     <value>About PowerToys Run</value>
   </data>
