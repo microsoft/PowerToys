@@ -22,8 +22,8 @@ namespace Microsoft.Plugin.Shell
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
-        private readonly Settings _settings;
-        private readonly PluginJsonStorage<Settings> _storage;
+        private readonly ShellPluginSettings _settings;
+        private readonly PluginJsonStorage<ShellPluginSettings> _storage;
 
         private string IconPath { get; set; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.Shell
 
         public Main()
         {
-            _storage = new PluginJsonStorage<Settings>();
+            _storage = new PluginJsonStorage<ShellPluginSettings>();
             _settings = _storage.Load();
         }
 
@@ -40,8 +40,14 @@ namespace Microsoft.Plugin.Shell
             _storage.Save();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive, but logging the exception")]
         public List<Result> Query(Query query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             List<Result> results = new List<Result>();
             string cmd = query.Search;
             if (string.IsNullOrEmpty(cmd))
@@ -71,20 +77,20 @@ namespace Microsoft.Plugin.Shell
 
         private List<Result> GetHistoryCmds(string cmd, Result result)
         {
-            IEnumerable<Result> history = _settings.Count.Where(o => o.Key.Contains(cmd))
+            IEnumerable<Result> history = _settings.Count.Where(o => o.Key.Contains(cmd, StringComparison.CurrentCultureIgnoreCase))
                 .OrderByDescending(o => o.Value)
                 .Select(m =>
                 {
                     if (m.Key == cmd)
                     {
-                        result.SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
+                        result.SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
                         return null;
                     }
 
                     var ret = new Result
                     {
                         Title = m.Key,
-                        SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                        SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                         IcoPath = IconPath,
                         Action = c =>
                         {
@@ -121,7 +127,7 @@ namespace Microsoft.Plugin.Shell
                 .Select(m => new Result
                 {
                     Title = m.Key,
-                    SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                    SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                     IcoPath = IconPath,
                     Action = c =>
                     {
@@ -140,13 +146,13 @@ namespace Microsoft.Plugin.Shell
             var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? string.Empty : "runas";
 
             ProcessStartInfo info;
-            if (_settings.Shell == Shell.Cmd)
+            if (_settings.Shell == ExecutionShell.Cmd)
             {
                 var arguments = _settings.LeaveShellOpen ? $"/k \"{command}\"" : $"/c \"{command}\" & pause";
 
                 info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsAdministratorArg);
             }
-            else if (_settings.Shell == Shell.Powershell)
+            else if (_settings.Shell == ExecutionShell.Powershell)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
@@ -160,7 +166,7 @@ namespace Microsoft.Plugin.Shell
 
                 info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsAdministratorArg);
             }
-            else if (_settings.Shell == Shell.RunCommand)
+            else if (_settings.Shell == ExecutionShell.RunCommand)
             {
                 // Open explorer if the path is a file or directory
                 if (Directory.Exists(command) || File.Exists(command))
@@ -221,7 +227,7 @@ namespace Microsoft.Plugin.Shell
             }
         }
 
-        private bool ExistInPath(string filename)
+        private static bool ExistInPath(string filename)
         {
             if (File.Exists(filename))
             {
