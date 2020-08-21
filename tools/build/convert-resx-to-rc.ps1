@@ -87,20 +87,27 @@ Foreach-Object {
     $newLinesForRCFile = ""
     $newLinesForHeaderFile = ""
     $count = 101
-    foreach ($line in (Get-Content $tempFile -Encoding unicode)) {
-        # Each line of the resgen text file is of the form ResourceName=ResourceValue with no spaces.
-        $content = $line -split "=", 2
 
-        # Each resource is named as IDS_ResxResourceName, in uppercase
-        $lineInRCFormat = "IDS_" + $content[0].ToUpper() + " L`"" + $content[1] + "`""
-        $newLinesForRCFile = $newLinesForRCFile + "`r`n`t" + $lineInRCFormat
+    try {        
+        foreach ($line in (Get-Content $tempFile -Encoding unicode)) {
+            # Each line of the resgen text file is of the form ResourceName=ResourceValue with no spaces.
+            $content = $line -split "=", 2
 
-        # Resource header file needs to be updated only for one language
-        if (!$headerFileUpdated) {
-            $lineInHeaderFormat = "#define IDS_" + $content[0].ToUpper() + " " + $count.ToString()
-            $newLinesForHeaderFile = $newLinesForHeaderFile + "`r`n" + $lineInHeaderFormat
-            $count++
+            # Each resource is named as IDS_ResxResourceName, in uppercase
+            $lineInRCFormat = "IDS_" + $content[0].ToUpper() + " L`"" + $content[1] + "`""
+            $newLinesForRCFile = $newLinesForRCFile + "`r`n    " + $lineInRCFormat
+
+            # Resource header file needs to be updated only for one language
+            if (!$headerFileUpdated) {
+                $lineInHeaderFormat = "#define IDS_" + $content[0].ToUpper() + " " + $count.ToString()
+                $newLinesForHeaderFile = $newLinesForHeaderFile + "`r`n" + $lineInHeaderFormat
+                $count++
+            }
         }
+    }
+    catch {
+        echo "Failed to read temporary file."
+        exit 0
     }
 
     # Delete temporary text file used by resgen
@@ -119,12 +126,10 @@ Foreach-Object {
     # Initialize the rc file with an auto-generation warning and content from the base rc
     if (!$rcFileUpdated) {
         $rcFileContent = "// This file was auto-generated. Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.`r`n"
-        try
-        {
+        try {
             $rcFileContent += (Get-Content $parentDirectory\$baseRCFileName -Raw)
         }
-        catch
-        {
+        catch {
             echo "Failed to read base rc file."
             exit 0
         }
@@ -137,12 +142,10 @@ Foreach-Object {
     # Resource header file needs to be set only once, with an auto-generation warning, content from the base resource header followed by #define for all the resources
     if (!$headerFileUpdated) {
         $headerFileContent = "// This file was auto-generated. Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.`r`n"
-        try
-        {
+        try {
             $headerFileContent += (Get-Content $parentDirectory\$baseHeaderFileName  -Raw)
         }
-        catch
-        {
+        catch {
             echo "Failed to read base header file."
             exit 0
         }
@@ -152,37 +155,29 @@ Foreach-Object {
 }
 
 # Write to header file if the content has changed or if the file doesnt exist
-try
-{
-    if (!(Test-Path -Path $generatedFilesFolder\$generatedHeaderFileName) -or (($headerFileContent + "`r`n") -ne (Get-Content $generatedFilesFolder\$generatedHeaderFileName -Raw)))
-    {
+try {
+    if (!(Test-Path -Path $generatedFilesFolder\$generatedHeaderFileName) -or (($headerFileContent + "`r`n") -ne (Get-Content $generatedFilesFolder\$generatedHeaderFileName -Raw))) {
         Set-Content -Path $generatedFilesFolder\$generatedHeaderFileName -Value $headerFileContent
     }
-    else
-    {
+    else {
         echo "Skipping write to generated header file"
     }
 }
-catch
-{
+catch {
     echo "Failed to access generated header file."
     exit 0
 }
 
 # Write to rc file if the content has changed or if the file doesnt exist
-try
-{
-    if (!(Test-Path -Path $generatedFilesFolder\$generatedRCFileName) -or (($rcFileContent + "`r`n") -ne (Get-Content $generatedFilesFolder\$generatedRCFileName -Raw)))
-    {
+try {
+    if (!(Test-Path -Path $generatedFilesFolder\$generatedRCFileName) -or (($rcFileContent + "`r`n") -ne (Get-Content $generatedFilesFolder\$generatedRCFileName -Raw))) {
         Set-Content -Path $generatedFilesFolder\$generatedRCFileName -Value $rcFileContent -Encoding unicode
     }
-    else
-    {    
+    else {    
         echo "Skipping write to generated rc file"
     }
 }
-catch
-{
+catch {
     echo "Failed to access generated rc file."
     exit 0
 }
