@@ -105,7 +105,9 @@
                                      Height="34"
                                      Margin="{StaticResource SmallTopMargin}"/>
 
-                            <ComboBox SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
+                            <ComboBox Name="ImageResizer_Fit_Property"
+                                      x:Uid="ImageResizer_Fit_Property"
+                                      SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
                                       Width="90"
                                       VerticalAlignment="Center"
                                       Height="34"
