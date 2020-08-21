@@ -23,7 +23,7 @@ namespace Wox
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
         private readonly ThemeManager _themeManager;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public event ThemeChangedHandler ThemeChanged;
 

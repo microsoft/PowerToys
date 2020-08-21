@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.Program.Storage
 
         public List<FileSystemWatcherWrapper> FileSystemWatchers { get; set; }
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         // This class contains the list of directories to watch and initializes the File System Watchers
         public Win32ProgramFileSystemWatchers()
