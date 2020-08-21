@@ -97,7 +97,9 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize" >
                         <StackPanel Orientation="Horizontal" Height="48" Padding="0" Spacing="4">
-                            <TextBox Text="{x:Bind Path=Name, Mode=TwoWay}" 
+                            <TextBox Name="ImageResizer_Name"
+                                     x:Uid="ImageResizer_Name"
+                                     Text="{x:Bind Path=Name, Mode=TwoWay}" 
                                      Width="90"
                                      VerticalAlignment="Center"
                                      Height="34"
