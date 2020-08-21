@@ -71,7 +71,7 @@ public:
         {
             InitializeWinhookEventIds();
             Trace::FancyZones::EnableFancyZones(true);
-            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
+            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings, std::bind(&FancyZonesModule::disable, this));
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
             const bool hook_disabled = IsDebuggerPresent();
 #else
