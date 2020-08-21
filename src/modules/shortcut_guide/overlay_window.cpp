@@ -6,7 +6,7 @@
 #include "keyboard_state.h"
 #include "shortcut_guide.h"
 #include "trace.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <common/common.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
