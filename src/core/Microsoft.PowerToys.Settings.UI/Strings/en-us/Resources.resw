@@ -591,6 +591,9 @@
   <data name="About_PowerLauncher.Text" xml:space="preserve">
     <value>About PowerToys Run</value>
   </data>
+  <data name="PowerToys_Run_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>PowerToys Run</value>
+  </data>
   <data name="About_PowerRename.Text" xml:space="preserve">
     <value>About Power Rename</value>
   </data>
