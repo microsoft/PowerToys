@@ -207,7 +207,8 @@
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
             </ComboBox>
 
-            <TextBlock x:Uid="ImageResizer_Encoding"
+            <TextBlock Name="ImageResizer_Encoding"
+                x:Uid="ImageResizer_Encoding"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
@@ -219,6 +220,7 @@
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_Encoding}"
                             />
 
             <ComboBox x:Uid="ImageResizer_PNGInterlacing"
