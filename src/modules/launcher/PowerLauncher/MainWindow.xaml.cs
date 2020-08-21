@@ -23,9 +23,9 @@ namespace PowerLauncher
         private readonly Settings _settings;
         private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
-        private bool _deletePressed = false;
+        private bool _deletePressed;
         private Timer _firstDeleteTimer = new Timer();
-        private bool _coldStateHotkeyPressed = false;
+        private bool _coldStateHotkeyPressed;
 
         public MainWindow(Settings settings, MainViewModel mainVM)
             : this()
@@ -314,7 +314,7 @@ namespace PowerLauncher
             }
         }
 
-        private bool disposedValue = false;
+        private bool disposedValue;
 
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
