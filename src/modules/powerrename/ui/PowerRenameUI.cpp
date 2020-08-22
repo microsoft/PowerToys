@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include "PowerRenameUI.h"
 #include "dpi_aware.h"
 #include <commctrl.h>
@@ -10,12 +10,6 @@
 #include <trace.h>
 
 extern HINSTANCE g_hInst;
-
-int g_rgnMatchModeResIDs[] = {
-    IDS_ENTIREITEMNAME,
-    IDS_NAMEONLY,
-    IDS_EXTENSIONONLY
-};
 
 enum
 {

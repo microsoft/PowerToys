@@ -15,6 +15,16 @@ $baseRCFileName = $args[3]
 # Target file name of the resource rc file, which will be used in code - Example: ProjectName.rc
 $generatedRCFileName = $args[4]
 
+# Optional argument: Initial resource id in the resource header file. By default it is 101
+if ($args.Count -eq 6)
+{
+    $initResourceID = $args[5]
+}
+else
+{    
+    $initResourceID = 101
+}
+
 # Temporary file created used for resgen
 $tempFile = "temporaryResourceFile.txt"
 
@@ -92,7 +102,7 @@ Foreach-Object {
 
     $newLinesForRCFile = ""
     $newLinesForHeaderFile = ""
-    $count = 101
+    $count = $initResourceID
 
     try {        
         foreach ($line in (Get-Content $tempFile -Encoding unicode)) {
