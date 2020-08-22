@@ -9,6 +9,8 @@
 #include <thread>
 #include <trace.h>
 
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 extern HINSTANCE g_hInst;
 
 enum
