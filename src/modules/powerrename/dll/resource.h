@@ -13,7 +13,7 @@
 //////////////////////////////
 
 #define IDS_POWERRENAME                 801
-#define IDI_RENAME                      132
+#define IDI_RENAME                      135
 #define IDS_POWERRENAME_APP_NAME        2101
 #define IDS_SETTINGS_DESCRIPTION        2102
 #define IDS_OVERVIEW_LINK               2103

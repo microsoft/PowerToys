@@ -599,6 +599,9 @@ INT_PTR CPowerRenameUI::_DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CPowerRenameUI::_OnInitDlg()
 {
+    // Load text in the dialog controls
+    _InitDlgText();
+
     m_hwndLV = GetDlgItem(m_hwnd, IDC_LIST_PREVIEW);
 
     m_listview.Init(m_hwndLV);
@@ -650,6 +653,39 @@ void CPowerRenameUI::_OnInitDlg()
     _UpdateCounts();
 
     m_initialized = true;
+}
+
+void UpdateDlgControl(HWND dlg, int item_id, int string_id)
+{
+    HWND control = GetDlgItem(dlg, item_id);
+    SetWindowText(control, GET_RESOURCE_STRING(string_id).c_str());
+}
+
+void CPowerRenameUI::_InitDlgText()
+{
+    // load strings
+    SetWindowText(m_hwnd, GET_RESOURCE_STRING(IDS_APP_TITLE).c_str());
+    UpdateDlgControl(m_hwnd, IDC_CHECK_USEREGEX, IDS_USE_REGEX);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_CASESENSITIVE, IDS_CASE_SENSITIVE);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_MATCHALLOCCURENCES, IDS_MATCH_ALL);
+    UpdateDlgControl(m_hwnd, IDC_TRANSFORM_UPPERCASE, IDS_MAKE_UPPERCASE);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_EXCLUDEFILES, IDS_EXCLUDE_FILES);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_EXCLUDEFOLDERS, IDS_EXCLUDE_FOLDERS);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_EXCLUDESUBFOLDERS, IDS_EXCLUDE_SUBFOLDER);
+    UpdateDlgControl(m_hwnd, IDC_TRANSFORM_LOWERCASE, IDS_MAKE_LOWERCASE);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_ENUMITEMS, IDS_ENUMERATE_ITEMS);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_NAMEONLY, IDS_ITEM_NAME_ONLY);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_EXTENSIONONLY, IDS_ITEM_EXTENSION_ONLY);
+    UpdateDlgControl(m_hwnd, IDC_TRANSFORM_TITLECASE, IDS_MAKE_TITLECASE);
+    UpdateDlgControl(m_hwnd, ID_RENAME, IDS_RENAME_BUTTON);
+    UpdateDlgControl(m_hwnd, ID_ABOUT, IDS_HELP_BUTTON);
+    UpdateDlgControl(m_hwnd, IDCANCEL, IDS_CANCEL_BUTTON);
+    UpdateDlgControl(m_hwnd, IDC_SEARCH_FOR, IDS_SEARCH_FOR);
+    UpdateDlgControl(m_hwnd, IDC_REPLACE_WITH, IDS_REPLACE_WITH);
+    UpdateDlgControl(m_hwnd, IDC_STATUS_MESSAGE, IDS_ITEMS_SELECTED);
+    UpdateDlgControl(m_hwnd, IDC_OPTIONSGROUP, IDS_OPTIONS);
+    UpdateDlgControl(m_hwnd, IDC_PREVIEWGROUP, IDS_PREVIEW);
+    UpdateDlgControl(m_hwnd, IDC_SEARCHREPLACEGROUP, IDS_RENAME_CRITERIA);
 }
 
 void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)

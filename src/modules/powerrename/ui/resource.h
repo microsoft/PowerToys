@@ -14,9 +14,31 @@
 #define IDS_NAMEONLY                    108
 #define IDS_EXTENSIONONLY               109
 #define IDS_COUNTSLABELFMT              111
-#define IDR_MAINFRAME                   128
-#define IDD_MAIN                        129
-#define IDI_RENAME                      132
+#define IDS_USE_REGEX					112
+#define IDS_CASE_SENSITIVE				113
+#define IDS_MATCH_ALL 114
+#define IDS_MAKE_UPPERCASE 115
+#define IDS_EXCLUDE_FILES 116
+#define IDS_EXCLUDE_FOLDERS 117
+#define IDS_EXCLUDE_SUBFOLDER 118
+#define IDS_MAKE_LOWERCASE 119
+#define IDS_ENUMERATE_ITEMS 120
+#define IDS_ITEM_NAME_ONLY 121
+#define IDS_ITEM_EXTENSION_ONLY 122
+#define IDS_MAKE_TITLECASE 123
+#define IDS_RENAME_BUTTON 124
+#define IDS_HELP_BUTTON 125
+#define IDS_CANCEL_BUTTON 126
+#define IDS_SEARCH_FOR 127
+#define IDS_REPLACE_WITH 128
+#define IDS_ITEMS_SELECTED 129
+#define IDS_OPTIONS 130
+#define IDS_PREVIEW 131
+#define IDS_RENAME_CRITERIA 132
+
+#define IDR_MAINFRAME                   133
+#define IDD_MAIN                        134
+#define IDI_RENAME                      135
 #define IDC_EDIT_SEARCHFOR              1002
 #define IDC_EDIT_REPLACEWITH            1003
 #define IDC_LIST_PREVIEW                1004
@@ -33,9 +55,11 @@
 #define IDC_PREVIEWGROUP                1015
 #define IDC_OPTIONSGROUP                1016
 #define IDC_SEARCHREPLACEGROUP          1017
-#define IDC_TRANSFORM_UPPERCASE			    1018
-#define IDC_TRANSFORM_LOWERCASE			    1019
-#define IDC_TRANSFORM_TITLECASE			    1020
+#define IDC_TRANSFORM_UPPERCASE		    1018
+#define IDC_TRANSFORM_LOWERCASE		    1019
+#define IDC_TRANSFORM_TITLECASE		    1020
+#define IDC_SEARCH_FOR					1021
+#define IDC_REPLACE_WITH				1022
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
