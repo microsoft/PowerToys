@@ -25,7 +25,7 @@ namespace Microsoft.Plugin.WindowWalker
 
         public List<Result> Query(Query query)
         {
-            SearchController.Instance.UpdateSearchText(query.RawQuery).Wait();
+            SearchController.Instance.UpdateSearchText(query.Search).Wait();
             OpenWindows.Instance.UpdateOpenWindowsList();
             return _results.Select(x => new Result()
             {
