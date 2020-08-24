@@ -895,13 +895,13 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 PWSTR replaceTerm = nullptr;
                                 SYSTEMTIME LocalTime;
 
-                                if (SUCCEEDED(spRenameRegEx->get_replaceTerm(&replaceTerm)) && isFileAttributesUsed(replaceTerm))
+                                if (SUCCEEDED(spRenameRegEx->GetReplaceTerm(&replaceTerm)) && isFileAttributesUsed(replaceTerm))
                                 {
-                                    if (SUCCEEDED(spItem->get_date(&LocalTime)))
+                                    if (SUCCEEDED(spItem->GetDate(&LocalTime)))
                                     {
                                         if (SUCCEEDED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTerm, LocalTime)))
                                         {
-                                            spRenameRegEx->put_replaceTerm(newReplaceTerm);
+                                            spRenameRegEx->PutReplaceTerm(newReplaceTerm);
                                         }
                                     }
                                 }
@@ -911,7 +911,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 // Call put_newName with null in that case to reset it
                                 spRenameRegEx->Replace(sourceName, &newName);
 
-                                spRenameRegEx->put_replaceTerm(replaceTerm);
+                                spRenameRegEx->PutReplaceTerm(replaceTerm);
 
                                 wchar_t resultName[MAX_PATH] = { 0 };
 

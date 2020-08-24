@@ -81,13 +81,13 @@ namespace PowerRenameManagerTests
             // TODO: Setup match and replace parameters
             wchar_t newReplaceTerm[MAX_PATH] = { 0 };
             CComPtr<IPowerRenameRegEx> renRegEx;
-            Assert::IsTrue(mgr->get_renameRegEx(&renRegEx) == S_OK);
+            Assert::IsTrue(mgr->GetRenameRegEx(&renRegEx) == S_OK);
             renRegEx->PutFlags(flags);
             renRegEx->PutSearchTerm(searchTerm.c_str());
             if (isFileAttributesUsed(replaceTerm.c_str()) && SUCCEEDED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTerm.c_str(), LocalTime)))
             {
                 renRegEx->PutReplaceTerm(newReplaceTerm);
-            }                
+            }
             else
             {
                 renRegEx->PutReplaceTerm(replaceTerm.c_str());
@@ -284,7 +284,7 @@ namespace PowerRenameManagerTests
         {
             rename_pairs renamePairs[] = {
                 { L"foo.FOO", L"foo.bar", false, true, 0 },
-                { L"foo.bar", L"foo.bar_rename", false, false, 0 }
+                { L"foo.bar", L"foo.bar_norename", false, false, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Lowercase | ExtensionOnly);
