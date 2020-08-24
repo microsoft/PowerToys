@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\hasWDK.props" />
+  <Import Project="WDK_VideoConferenceCustomMediaSource.vcxproj" Condition="$(HasWDK)==true" />
+  <Import Project="..\..\..\wdk_skip.vcxproj" Condition="$(HasWDK)==false" />
+  <PropertyGroup Label="Globals">
+    <IntDirSharingDetected>None</IntDirSharingDetected>
+    <ProjectGuid>{43AD9BF7-E765-48FE-9826-71A8F2CB12DD}</ProjectGuid>
+  </PropertyGroup>
+</Project>

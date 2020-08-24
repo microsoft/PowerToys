@@ -132,6 +132,7 @@
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="LowlevelKeyboardEvent.h" />
+    <ClInclude Include="naming.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="processApi.h" />
     <ClInclude Include="RcResource.h" />
@@ -141,6 +142,7 @@
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="timeutil.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
+    <ClInclude Include="user.h" />
     <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="window_helpers.h" />
     <ClInclude Include="icon_helpers.h" />
@@ -171,6 +173,7 @@
     <ClCompile Include="json.cpp" />
     <ClCompile Include="keyboard_layout.cpp" />
     <ClCompile Include="monitors.cpp" />
+    <ClCompile Include="naming.cpp" />
     <ClCompile Include="notifications.cpp" />
     <ClCompile Include="on_thread_executor.cpp" />
     <ClCompile Include="os-detect.cpp" />
@@ -185,6 +188,7 @@
     <ClCompile Include="start_visible.cpp" />
     <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="common.cpp" />
+    <ClCompile Include="user.cpp" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="VersionHelper.cpp" />

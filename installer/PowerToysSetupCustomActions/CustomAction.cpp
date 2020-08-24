@@ -3,6 +3,11 @@
 #include <ProjectTelemetry.h>
 
 #include "../../src/common/updating/updating.h"
+#include <newdev.h>
+
+#include <Windows.h>
+
+#pragma comment (lib, "crypt32.lib")
 
 using namespace std;
 
@@ -16,6 +21,7 @@ TRACELOGGING_DEFINE_PROVIDER(
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 
+static const wchar_t* POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
 static const wchar_t* POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
 
 // Creates a Scheduled Task to run at logon for the current user.
@@ -564,6 +570,8 @@ LExit:
     return WcaFinalize(er);
 }
 
+
+
 UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -656,6 +664,165 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
             }
         }
         CloseHandle(hProcess);
+    }
+
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
+{
+#ifdef CIBuild // On pipeline we are using microsoft certification
+    WcaInitialize(hInstall, "CertifyVirtualCameraDriverCA");
+    return WcaFinalize(ERROR_SUCCESS);
+#else
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    LPWSTR certificatePath = NULL;
+    HCERTSTORE hCertStore = NULL;
+    HANDLE hfile = NULL;
+    DWORD size = INVALID_FILE_SIZE;
+
+    hr = WcaInitialize(hInstall, "CertifyVirtualCameraDriverCA");
+    ExitOnFailure(hr, "Failed to initialize", hr);
+
+    hr = WcaGetProperty(L"CustomActionData", &certificatePath);
+    ExitOnFailure(hr, "Failed to get install preperty", hr);
+
+    hCertStore = CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, NULL, CERT_SYSTEM_STORE_LOCAL_MACHINE, L"AuthRoot");
+    if (!hCertStore)
+    {
+        hr = GetLastError();
+        ExitOnFailure(hr, "Cannot put principal run level: %x", hr);
+    }
+
+    hfile = CreateFile(certificatePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hfile == INVALID_HANDLE_VALUE)
+    {
+        hr = GetLastError();
+        ExitOnFailure(hr, "Certificate file open failed", hr);
+    }
+
+    size = GetFileSize(hfile, NULL);
+    if (size == INVALID_FILE_SIZE)
+    {
+        hr = GetLastError();
+        ExitOnFailure(hr, "Certificate file size not valid", hr);
+    }
+
+    char* pFileContent = (char*)malloc(size);
+
+    DWORD sizeread;
+    if (!ReadFile(hfile, pFileContent, size, &sizeread, NULL))
+    {
+        hr = GetLastError();
+        ExitOnFailure(hr, "Certificate file read failed", hr);
+    }
+
+    if (!CertAddEncodedCertificateToStore(hCertStore,
+        X509_ASN_ENCODING,
+        (const BYTE*)pFileContent,
+        size,
+        CERT_STORE_ADD_ALWAYS,
+        NULL))
+    {
+        hr = GetLastError();
+        ExitOnFailure(hr, "Adding certificate failed", hr);
+    }
+
+    free(pFileContent);
+
+LExit:
+    ReleaseStr(certificatePath);
+    if (hCertStore)
+    {
+        CertCloseStore(hCertStore, 0);
+    }
+    if (hfile)
+    {
+        CloseHandle(hfile);
+    }
+
+    if (!SUCCEEDED(hr))
+    {
+        PMSIHANDLE hRecord = MsiCreateRecord(0);
+        MsiRecordSetString(hRecord, 0, TEXT("Failed to add certificate to store"));
+        MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
+    }
+
+
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+#endif
+}
+
+
+UINT __stdcall InstallVirtualCameraDriverCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "InstallVirtualCameraDriverCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    LPWSTR driverPath = NULL;
+
+    hr = WcaGetProperty(L"CustomActionData", &driverPath);
+    ExitOnFailure(hr, "Failed to get install preperty");
+
+    BOOL requiresReboot;
+    DiInstallDriverW(GetConsoleWindow(), driverPath, DIIRFLAG_FORCE_INF, &requiresReboot);
+
+    hr = GetLastError();
+    ExitOnFailure(hr, "Failed to install driver");
+
+LExit:
+
+    if (!SUCCEEDED(hr))
+    {
+        PMSIHANDLE hRecord = MsiCreateRecord(0);
+        MsiRecordSetString(hRecord, 0, TEXT("Failed to install virtual camera driver"));
+        MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
+    }
+
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall UninstallVirtualCameraDriverCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "UninstallVirtualCameraDriverCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    LPWSTR driverPath = NULL;
+
+    hr = WcaGetProperty(L"CustomActionData", &driverPath);
+    ExitOnFailure(hr, "Failed to get uninstall preperty");
+
+    BOOL requiresReboot;
+    DiUninstallDriverW(GetConsoleWindow(), driverPath, 0, &requiresReboot);
+
+    switch (GetLastError())
+    {
+    case ERROR_ACCESS_DENIED:
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_INVALID_FLAGS:
+    case ERROR_IN_WOW64:
+    {
+        hr = GetLastError();
+        ExitOnFailure(hr, "Failed to uninstall driver");
+        break;
+    }
+    }
+
+LExit:
+
+    if (!SUCCEEDED(hr))
+    {
+        PMSIHANDLE hRecord = MsiCreateRecord(0);
+        MsiRecordSetString(hRecord, 0, TEXT("Filed to iminstall virtual camera driver"));
+        MsiProcessMessage(hInstall, INSTALLMESSAGE(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
     }
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;

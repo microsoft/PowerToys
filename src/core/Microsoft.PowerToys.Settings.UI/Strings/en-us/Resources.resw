@@ -141,6 +141,10 @@
     <value>PowerRename</value>
     <comment>Navigation view item name for PowerRename</comment>
   </data>
+  <data name="Shell_VideoConference.Content" xml:space="preserve">
+    <value>Video Conference</value>
+    <comment>Navigation view item name for Video Conference</comment>
+  </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
     <value>Shortcut Guide</value>
     <comment>Navigation view item name for Shortcut Guide</comment>
@@ -468,6 +472,67 @@
   <data name="ShortcutGuide_Theme.Text" xml:space="preserve">
     <value>Choose Shortcut Guide overlay color</value>
   </data>
+  <data name="VideoConference_Enable.Header" xml:space="preserve">
+    <value>Enable Video Conference</value>
+  </data>
+  <data name="VideoConference_Description.Text" xml:space="preserve">
+    <value>Tool that allows muting/unmuting microphone and camera
+Disabling module or closing PowerToys will unmute microphone and camera</value>
+  </data>
+	<data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
+    <value>Edit camera and microphone mute hotkey</value>
+  </data>
+	<data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
+    <value>Edit microphone mute hotkey</value>
+  </data>
+	<data name="VideoConference_CameraMuteHotkeyControl_Header.Header" xml:space="preserve">
+    <value>Edit camera mute hotkey</value>
+  </data>
+	<data name="VideoConference_SelectedCamera.Header" xml:space="preserve">
+    <value>Selected camera</value>
+  </data>
+	<data name="VideoConference_CameraOverlayImagePathHeader.Text" xml:space="preserve">
+    <value>Camera overlay image</value>
+  </data>
+	<data name="VideoConference_OverlayPosition.Header" xml:space="preserve">
+    <value>Overlay postion</value>
+  </data>
+	<data name="VideoConference_OverlayPosition_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+	<data name="VideoConference_OverlayPosition_TopLeftCorner.Content" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+	<data name="VideoConference_OverlayPosition_TopRightCorner.Content" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+	<data name="VideoConference_OverlayPosition_BottomLeftCorner.Content" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+	<data name="VideoConference_OverlayPosition_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+	<data name="VideoConference_OverlayPosition_BottomRightCorner.Content" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+	<data name="VideoConference_OverlayMonitor.Header" xml:space="preserve">
+    <value>Show overlay on</value>
+  </data>
+	<data name="VideoConference_OverlayMonitor_Main.Content" xml:space="preserve">
+    <value>Main monitor</value>
+  </data>
+	<data name="VideoConference_OverlayMonitor_UnderCursor.Content" xml:space="preserve">
+    <value>Monitor under cursor</value>
+  </data>
+	<data name="VideoConference_OverlayMonitor_ActiveWindow.Content" xml:space="preserve">
+    <value>Active window monitor</value>
+  </data>
+	<data name="VideoConference_OverlayMonitor_All.Content" xml:space="preserve">
+    <value>All monitors</value>
+  </data>
+	<data name="VideoConference_HideOverlayWhenUnmuted.Content" xml:space="preserve">
+    <value>Hide overlay when both camera and microphone are unmuted</value>
+  </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
   </data>
@@ -650,6 +715,9 @@
   </data>
   <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
+  </data>
+  <data name="About_VideoConference.Text" xml:space="preserve">
+    <value>About Video Conference</value>
   </data>
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>

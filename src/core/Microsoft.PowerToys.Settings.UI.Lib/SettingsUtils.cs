@@ -56,6 +56,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             return JsonSerializer.Deserialize<T>(jsonSettingsString);
         }
 
+        public static T GetOrCreateSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+            where T : new()
+        {
+            try
+            {
+                var jsonSettingsString = File.ReadAllText(GetSettingsPath(powertoy, fileName));
+                return JsonSerializer.Deserialize<T>(jsonSettingsString);
+            }
+            catch
+            {
+                var settings = new T();
+                SaveSettings(JsonSerializer.Serialize(settings), powertoy, fileName);
+                return settings;
+            }
+        }
+
         // Save settings to a json file.
         public static void SaveSettings(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {

@@ -265,6 +265,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\core\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VideoConference", "VideoConference", "{05BE6150-D5B3-48F0-AEB9-C44096950C6D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceCustomMediaSource", "src\modules\videoconference\VideoConferenceCustomMediaSource\VideoConferenceCustomMediaSource.vcxproj", "{43AD9BF7-E765-48FE-9826-71A8F2CB12DD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A} = {459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceModule", "src\modules\videoconference\VideoConferenceModule\Video Conference.vcxproj", "{FD2CAFFC-D682-4ED9-A06B-5FC88AE0A193}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceShared", "src\modules\videoconference\VideoConferenceShared\VideoConferenceShared.vcxproj", "{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceVirtualDriver", "src\modules\videoconference\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.vcxproj", "{3098C6BF-E96E-4793-A70E-FB09B741580A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -531,6 +544,24 @@ Global
 		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Debug|x64.Build.0 = Debug|x64
 		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Release|x64.ActiveCfg = Release|x64
 		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Release|x64.Build.0 = Release|x64
+		{43AD9BF7-E765-48FE-9826-71A8F2CB12DD}.Debug|x64.ActiveCfg = Debug|x64
+		{43AD9BF7-E765-48FE-9826-71A8F2CB12DD}.Debug|x64.Build.0 = Debug|x64
+		{43AD9BF7-E765-48FE-9826-71A8F2CB12DD}.Release|x64.ActiveCfg = Release|x64
+		{43AD9BF7-E765-48FE-9826-71A8F2CB12DD}.Release|x64.Build.0 = Release|x64
+		{FD2CAFFC-D682-4ED9-A06B-5FC88AE0A193}.Debug|x64.ActiveCfg = Debug|x64
+		{FD2CAFFC-D682-4ED9-A06B-5FC88AE0A193}.Debug|x64.Build.0 = Debug|x64
+		{FD2CAFFC-D682-4ED9-A06B-5FC88AE0A193}.Release|x64.ActiveCfg = Release|x64
+		{FD2CAFFC-D682-4ED9-A06B-5FC88AE0A193}.Release|x64.Build.0 = Release|x64
+		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}.Debug|x64.ActiveCfg = Debug|x64
+		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}.Debug|x64.Build.0 = Debug|x64
+		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}.Release|x64.ActiveCfg = Release|x64
+		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A}.Release|x64.Build.0 = Release|x64
+		{3098C6BF-E96E-4793-A70E-FB09B741580A}.Debug|x64.ActiveCfg = Debug|x64
+		{3098C6BF-E96E-4793-A70E-FB09B741580A}.Debug|x64.Build.0 = Debug|x64
+		{3098C6BF-E96E-4793-A70E-FB09B741580A}.Debug|x64.Deploy.0 = Debug|x64
+		{3098C6BF-E96E-4793-A70E-FB09B741580A}.Release|x64.ActiveCfg = Release|x64
+		{3098C6BF-E96E-4793-A70E-FB09B741580A}.Release|x64.Build.0 = Release|x64
+		{3098C6BF-E96E-4793-A70E-FB09B741580A}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -607,6 +638,11 @@ Global
 		{03276A39-D4E9-417C-8FFD-200B0EE5E871} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{B81FB7B6-D30E-428F-908A-41422EFC1172} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{0F85E674-34AE-443D-954C-8321EB8B93B1} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
+		{05BE6150-D5B3-48F0-AEB9-C44096950C6D} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{43AD9BF7-E765-48FE-9826-71A8F2CB12DD} = {05BE6150-D5B3-48F0-AEB9-C44096950C6D}
+		{FD2CAFFC-D682-4ED9-A06B-5FC88AE0A193} = {05BE6150-D5B3-48F0-AEB9-C44096950C6D}
+		{459E0768-7EBD-4C41-BBA1-6DB3B3815E0A} = {05BE6150-D5B3-48F0-AEB9-C44096950C6D}
+		{3098C6BF-E96E-4793-A70E-FB09B741580A} = {05BE6150-D5B3-48F0-AEB9-C44096950C6D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
