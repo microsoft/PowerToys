@@ -127,11 +127,8 @@ int runner(bool isProcessElevated)
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuide.dll",
             L"modules/ColorPicker/ColorPicker.dll",
+            L"modules/VideoConference/VideoConferenceModule.dll"
         };
-#ifdef VIDEO_CONFERENCE
-        knownModules.push_back(L"modules/VideoConference/VideoConferenceModule.dll");
-#endif // VIDEO_CONFERENCE
-
 
         for (const auto& moduleSubdir : knownModules)
         {

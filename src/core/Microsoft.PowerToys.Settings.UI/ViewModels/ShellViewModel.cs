@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -40,11 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-#if VIDEO_CONFERENCE
-                return true;
-#else
-                return false;
-#endif
+                return File.Exists("modules/VideoConference/VideoConferenceModule.dll");
             }
         }
 
