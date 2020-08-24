@@ -127,6 +127,7 @@
                       />-->
 
             <TextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
+                       x:Name="PowerLauncher_MaximumNumberOfResults"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
@@ -136,7 +137,8 @@
                             HorizontalAlignment="Left"
                             Minimum="1"
                             Margin="{StaticResource HeaderTextTopMargin}"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=PowerLauncher_MaximumNumberOfResults}"/>
 
             <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch"
                       Margin="{StaticResource SmallTopMargin}"
@@ -172,7 +174,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/PowerLauncher.png" />
+                <Image x:Uid="PowerToys_Run_Image" Source="ms-appx:///Assets/Modules/PowerLauncher.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"

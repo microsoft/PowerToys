@@ -34,7 +34,7 @@ namespace Microsoft.Plugin.Calculator
 
         private string IconPath { get; set; }
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         public List<Result> Query(Query query)
         {

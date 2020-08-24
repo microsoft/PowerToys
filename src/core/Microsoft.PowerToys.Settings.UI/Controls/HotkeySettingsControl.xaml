@@ -23,15 +23,17 @@
                        Text="{x:Bind Header, Mode=OneTime}"
                        Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        />
-            
-            <TextBlock x:Name="TitleGlyph" Text="&#xE946;"
+
+            <TextBlock x:Uid="SettingsPage_SetShortcut_Glyph"
+                       x:Name="TitleGlyph" Text="&#xE946;"
                        FontFamily="Segoe MDL2 Assets"
                        Margin="4,4,0,0"
                        Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        />
         
         </StackPanel>
-        <TextBox x:Name="HotkeyTextBox"
+        <TextBox x:Uid="SettingsPage_SetShortcut"
+                 x:Name="HotkeyTextBox"
                  Margin="0,5,0,0"
                  IsReadOnly="True"
                  />

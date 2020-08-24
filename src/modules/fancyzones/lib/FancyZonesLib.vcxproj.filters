@@ -71,6 +71,8 @@
     </ClInclude>
     <ClInclude Include="Generated Files/resource.h">
       <Filter>Generated Files</Filter>
+    <ClInclude Include="KeyState.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -111,9 +113,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MonitorWorkAreaHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GenericKeyHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesData.cpp">
