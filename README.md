@@ -128,27 +128,44 @@ Between 0.19 and 0.20 releases, we tracked down a lot of performance and memory 
 
 In addition, we'd like to thank everyone who filed a bug, gave feedback or made a pull-request. The PowerToys team is extremely grateful to have the support of an amazing active community.
 
-Here are a few highlights from July
+Here are a few highlights from August
 
-- We shipped [v0.20][github-release-link]!
-- [Martin Chrzan's Color Picker](https://github.com/martinchrzan/) was added in!  With a quick <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>, get the color from your screen
-- File Explorer - Can now render SVG icons thanks to Chris Davis
-- FancyZones - you can now snap to any number of zones in FancyZones holding <kbd>Shift</kbd>+<kbd>Ctrl</kbd> while dragging a window
-- PT Run - keyboard interaction improvements
-- PT Run - freshly installed apps are now being detected
-- PT Run - Lots of perf and bug fixes
-- Keyboard manager - app level shortcuts 
-   - Example: For Outlook, Remap <kbd>Ctrl</kbd>+<kbd>F</kbd> to <kbd>F4</kbd> and now <kbd>Ctrl</kbd>+<kbd>F</kbd> will put up the find window :)
-- Keyboard manager - Now can remap key to shortcut and shortcut to key.
-- Settings - Now has improved OOBE based on the work the Microsoft Garage Interns did during their hackathon
-- PowerRename improvements
+- We shipped [v0.21][github-release-link]!
 
-For [0.21](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F8), we are proactively working on:
+PT Run: 
+- Removed need for space in action keywords.  This means you now can type `>ipconfig`
+- Icon caches fixed and now has colored icons
+- Improved font rendering via ClearType (Shout out to @AnuthaDev doing the heavy lifting here)
+- Result speed improvements
+- URLs are supported 
+- Fixed bugs including calculating bugs
+
+FancyZone:
+- <kbd>Win</kbd>+<kbd>Arrow key</kbd> is directional based on zone rect
+- Fixed bugs
+
+Runner:
+- Fixed toast notifications running elevated from non-admin account
+
+Shortcut Guide:
+- Improved vkey catching which will fix some use cases of it not showing up
+
+Dev quality of life improvements: 
+- Current warning count reduced from 89 to 15 in 0.20.1
+- StyleCop enabled E2E
+- FxCop starting to be added in E2E
+
+Accessability: 
+- Settings, PT Run and KBM undergoing improvements
+
+Localization:
+- Pipeline is being setup and will be doing a full E2E pass on Settings shortly.
+
+For [0.22](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F8), we are proactively working on:
 
 - Stability
 - Quality
 - Localization
-- FancyZones improvements
 
 ### PowerToys 2020 roadmap
 
