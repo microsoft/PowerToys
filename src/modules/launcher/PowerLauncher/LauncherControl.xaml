@@ -91,7 +91,7 @@
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
         -->
 
-        <TextBox
+        <local:TempTextBox
             AutomationProperties.Name="{DynamicResource Query}"
             x:Name="QueryTextBox"
             x:FieldModifier="public"

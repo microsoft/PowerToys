@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Timers;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.PowerLauncher.Telemetry;
@@ -89,6 +90,7 @@ namespace PowerLauncher
             InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
 
             SearchBox.QueryTextBox.Focus();
+            SearchBox.QueryTextBox.Lv = ListBox.SuggestionsList;
 
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
