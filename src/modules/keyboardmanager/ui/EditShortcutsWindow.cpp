@@ -9,7 +9,7 @@
 #include <common/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
-#include <keyboardmanager/dll/resource.h>
+#include <keyboardmanager/dll/Generated Files/resource.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include "common/common.h"
 #include "LoadingAndSavingRemappingHelper.h"

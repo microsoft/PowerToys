@@ -1,12 +1,16 @@
 #include <windows.h>
 #include "resource.h"
-#include "../../../common/version.h"
+#include "../../../../common/version.h"
 
-STRINGTABLE
-BEGIN
-    IDS_COLORPICKER_NAME            L"ColorPicker" 
-    IDS_COLORPICKER_SETTINGS_DESC   L"This feature requires Windows 10 version 1903 or higher"
-END
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
 
 1 VERSIONINFO
 FILEVERSION FILE_VERSION
@@ -40,3 +44,18 @@ BEGIN
         VALUE "Translation", 0x409, 1200 // US English (0x0409), Unicode (1200) charset
     END
 END
+
+//////////////////////////////
+// Non-localizable
+
+STRINGTABLE
+BEGIN
+    IDS_EXPLR_ICONS_PREV_STTNGS_GROUP_HEADER_ID L"EXPLR_ICONS_PREV_STTNGS_GROUP_HEADER_ID"
+    IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_HEADER_ID L"PRVPANE_FILE_PREV_STTNGS_GROUP_HEADER_ID"
+    IDS_PREVPANE_MD_BOOL_TOGGLE_CONTROLL L"PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID"
+    IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL L"IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL"
+    IDS_EXPLR_SVG_BOOL_TOGGLE_CONTROLL L"EXPLR_SVG_BOOL_TOGGLE_CONTROLL"
+END
+
+// Non-localizable
+//////////////////////////////
