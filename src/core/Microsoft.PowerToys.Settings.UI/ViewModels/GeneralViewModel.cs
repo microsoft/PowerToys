@@ -19,6 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private GeneralSettings GeneralSettingsConfigs { get; set; }
 
+        private VideoConferenceSettings VideoConferenceSettings { get; set; }
+
         public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
@@ -43,6 +45,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
+
+            VideoConferenceSettings = SettingsUtils.GetOrCreateSettings<VideoConferenceSettings>("VideoConference");
 
             try
             {
@@ -271,6 +275,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                     }
 
+                    VideoConferenceSettings.Properties.Theme.Value = "dark";
+                    UpdateVideoConferenceConfig();
                     RaisePropertyChanged();
                 }
             }
@@ -297,6 +303,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                     }
 
+                    VideoConferenceSettings.Properties.Theme.Value = "light";
+                    UpdateVideoConferenceConfig();
                     RaisePropertyChanged();
                 }
             }
@@ -323,6 +331,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                     }
 
+                    VideoConferenceSettings.Properties.Theme.Value = "system";
+                    UpdateVideoConferenceConfig();
                     RaisePropertyChanged();
                 }
             }
@@ -344,6 +354,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfigs);
 
             ShellPage.DefaultSndMSGCallback(outsettings.ToString());
+        }
+
+        public void UpdateVideoConferenceConfig()
+        {
+            SndVideoConferenceSettings outsettings = new SndVideoConferenceSettings(VideoConferenceSettings);
+            SndModuleSettings<SndVideoConferenceSettings> ipcMessage = new SndModuleSettings<SndVideoConferenceSettings>(outsettings);
+            ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
         }
 
         // callback function to launch the URL to check for updates.

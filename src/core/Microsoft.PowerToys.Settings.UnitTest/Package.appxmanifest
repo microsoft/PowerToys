@@ -39,8 +39,4 @@
       </uap:VisualElements>
     </Application>
   </Applications>
-  <Capabilities>
-    <Capability Name="internetClientServer" />
-    <Capability Name="privateNetworkClientServer" />
-  </Capabilities>
 </Package>

@@ -47,6 +47,24 @@
     <PlatformTarget>x64</PlatformTarget>
     <OutputPath>..\..\..\..\x64\Release\modules\FileExplorerPreview\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release with Video Conference|AnyCPU'">
+    <OutputPath>bin\Release with Video Conference\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>%24%28SolutionDir%29%24%28Platform%29\%24%28Configuration%29\modules\FileExplorerPreview\SvgThumbnailProvider.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release with Video Conference|x64'">
+    <OutputPath>..\..\..\..\x64\Release with Video Conference\modules\FileExplorerPreview\</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />

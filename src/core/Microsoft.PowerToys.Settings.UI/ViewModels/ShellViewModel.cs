@@ -36,6 +36,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set { Set(ref isBackEnabled, value); }
         }
 
+        public bool IsVideoConferenceBuild
+        {
+            get
+            {
+#if VIDEO_CONFERENCE
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         public WinUI.NavigationViewItem Selected
         {
             get { return selected; }
