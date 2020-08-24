@@ -32,7 +32,7 @@ namespace Microsoft.Plugin.Folder
         private static PluginInitContext _context;
         private IContextMenu _contextMenuLoader;
         private static string warningIconPath;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public void Save()
         {

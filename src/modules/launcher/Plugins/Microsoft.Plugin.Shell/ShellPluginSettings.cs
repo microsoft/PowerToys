@@ -6,19 +6,19 @@ using System.Collections.Generic;
 
 namespace Microsoft.Plugin.Shell
 {
-    public class Settings
+    public class ShellPluginSettings
     {
-        public Shell Shell { get; set; } = Shell.RunCommand;
+        public ExecutionShell Shell { get; set; } = ExecutionShell.RunCommand;
 
         // not overriding Win+R
         // crutkas we need to earn the right for Win+R override
-        public bool ReplaceWinR { get; set; } = false;
+        public bool ReplaceWinR { get; set; }
 
         public bool LeaveShellOpen { get; set; }
 
-        public bool RunAsAdministrator { get; set; } = false;
+        public bool RunAsAdministrator { get; set; }
 
-        public Dictionary<string, int> Count { get; set; } = new Dictionary<string, int>();
+        public Dictionary<string, int> Count { get; } = new Dictionary<string, int>();
 
         public void AddCmdHistory(string cmdName)
         {
@@ -33,7 +33,7 @@ namespace Microsoft.Plugin.Shell
         }
     }
 
-    public enum Shell
+    public enum ExecutionShell
     {
         Cmd = 0,
         Powershell = 1,
