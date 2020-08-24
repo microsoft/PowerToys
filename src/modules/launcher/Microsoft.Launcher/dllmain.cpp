@@ -8,6 +8,11 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+namespace
+{
+	#define POWER_LAUNCHER_PID_SHARED_FILE L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)

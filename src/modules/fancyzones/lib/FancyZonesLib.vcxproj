@@ -119,6 +119,7 @@
     <ClInclude Include="Zone.h" />
     <ClInclude Include="ZoneSet.h" />
     <ClInclude Include="ZoneWindow.h" />
+    <ClInclude Include="ZoneWindowDrawing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FancyZones.cpp" />
@@ -139,6 +140,7 @@
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="ZoneSet.cpp" />
     <ClCompile Include="ZoneWindow.cpp" />
+    <ClCompile Include="ZoneWindowDrawing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="fancyzones.rc" />

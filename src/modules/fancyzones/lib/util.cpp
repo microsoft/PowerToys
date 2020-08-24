@@ -5,6 +5,7 @@
 #include <common/common.h>
 #include <common/dpi_aware.h>
 
+#include <array>
 #include <sstream>
 #include <complex>
 
