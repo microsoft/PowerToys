@@ -10,7 +10,7 @@ using System.Windows.Controls;
 
 namespace PowerLauncher
 {
-    public class TempTextBox : TextBox
+    public class CustomSearchBox : TextBox
     {
         private ListView lv;
 
@@ -23,7 +23,7 @@ namespace PowerLauncher
 
         internal class AutoSuggestTextBoxAutomationPeer : TextBoxAutomationPeer
         {
-            public AutoSuggestTextBoxAutomationPeer(TempTextBox owner)
+            public AutoSuggestTextBoxAutomationPeer(CustomSearchBox owner)
                 : base(owner)
             {
             }
@@ -32,7 +32,7 @@ namespace PowerLauncher
             {
                 List<AutomationPeer> controlledPeers = new List<AutomationPeer>
                 {
-                    UIElementAutomationPeer.CreatePeerForElement(((TempTextBox)Owner).Lv),
+                    UIElementAutomationPeer.CreatePeerForElement(((CustomSearchBox)Owner).Lv),
                 };
                 return controlledPeers;
             }
