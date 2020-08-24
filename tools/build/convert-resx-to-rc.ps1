@@ -102,11 +102,7 @@ Foreach-Object {
 
     $newLinesForRCFile = ""
     $newLinesForHeaderFile = ""
-<<<<<<< HEAD
     $count = $initResourceID
-=======
-    $count = 101
->>>>>>> upstream/master
 
     try {        
         foreach ($line in (Get-Content $tempFile -Encoding unicode)) {
