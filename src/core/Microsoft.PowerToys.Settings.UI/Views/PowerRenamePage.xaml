@@ -75,7 +75,8 @@
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
-            <TextBlock x:Uid="PowerRename_Toggle_MaxDispListNum"
+            <TextBlock Name="PowerRename_Toggle_MaxDispListNum"
+                x:Uid="PowerRename_Toggle_MaxDispListNum"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
@@ -86,7 +87,8 @@
                             Minimum="0"
                             Width="240"
                             Maximum="20"
-                            IsEnabled="{ x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}"/>
+                            IsEnabled="{ x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=PowerRename_Toggle_MaxDispListNum}"/>
 
             <CheckBox x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                           Margin="0, 17, 0, 0" 
@@ -115,7 +117,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/PowerRename.png" />
+                <Image x:Uid="PowerRename_Image" Source="ms-appx:///Assets/Modules/PowerRename.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
