@@ -77,15 +77,6 @@
     <ErrorReport>prompt</ErrorReport>
     <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release with Video Conference|x64' ">
-    <OutputPath>..\..\..\x64\Release with Video Conference\SettingsUI\</OutputPath>
-    <DefineConstants>TRACE;VIDEO_CONFERENCE;NETFX_CORE;WINDOWS_UWP;VIDEO_CONFERENCE;;CODE_ANALYSIS</DefineConstants>
-    <PlatformTarget>x64</PlatformTarget>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>8305;2008</NoWarn>
-    <Optimize>true</Optimize>
-    <EnableGatekeeperAnalysis>false</EnableGatekeeperAnalysis>
-  </PropertyGroup>
   <PropertyGroup>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>

@@ -14,7 +14,6 @@
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Configurations>Debug;Release;Release with Video Conference</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
