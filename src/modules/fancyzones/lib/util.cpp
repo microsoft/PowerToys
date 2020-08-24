@@ -75,9 +75,9 @@ namespace
         {
             return result;
         }
-        result.process_path = std::move(process_path);
-        result.standard_window = true;
-        result.no_visible_owner = HasNoVisibleOwner(window);
+        result.processPath = std::move(process_path);
+        result.standardWindow = true;
+        result.noVisibleOwner = HasNoVisibleOwner(window);
         return result;
     }
 }
@@ -228,22 +228,22 @@ namespace FancyZonesUtils
     bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
         auto windowInfo = GetFancyZonesWindowInfo(window);
-        auto zonable = windowInfo.standard_window && windowInfo.no_visible_owner;
+        auto zonable = windowInfo.standardWindow && windowInfo.noVisibleOwner;
         if (!zonable)
         {
             return false;
         }
         // Filter out user specified apps
-        CharUpperBuffW(windowInfo.process_path.data(), (DWORD)windowInfo.process_path.length());
-        if (find_app_name_in_path(windowInfo.process_path, excludedApps))
+        CharUpperBuffW(windowInfo.processPath.data(), (DWORD)windowInfo.processPath.length());
+        if (find_app_name_in_path(windowInfo.processPath, excludedApps))
         {
             return false;
         }
-        if (find_app_name_in_path(windowInfo.process_path, { NonLocalizable::PowerToysAppPowerLauncher }))
+        if (find_app_name_in_path(windowInfo.processPath, { NonLocalizable::PowerToysAppPowerLauncher }))
         {
             return false;
         }
-        if (find_app_name_in_path(windowInfo.process_path, { NonLocalizable::PowerToysAppFZEditor }))
+        if (find_app_name_in_path(windowInfo.processPath, { NonLocalizable::PowerToysAppFZEditor }))
         {
             return false;
         }

@@ -8,11 +8,11 @@ namespace FancyZonesUtils
     struct FancyZonesWindowInfo
     {
         // True if from the styles the window looks like a standard window
-        bool standard_window = false;
+        bool standardWindow = false;
         // True if the window is a top-level window that does not have a visible owner
-        bool no_visible_owner = false;
+        bool noVisibleOwner = false;
         // Path to the executable owning the window
-        std::wstring process_path;
+        std::wstring processPath;
     };
 
     struct Rect
