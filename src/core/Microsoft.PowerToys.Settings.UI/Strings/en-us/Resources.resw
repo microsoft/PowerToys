@@ -648,6 +648,9 @@
   <data name="About_ShortcutGuide.Text" xml:space="preserve">
     <value>About Shortcut Guide</value>
   </data>
+  <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Shortcut Guide</value>
+  </data>
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
   </data>
