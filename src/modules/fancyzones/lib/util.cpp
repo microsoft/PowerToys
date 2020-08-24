@@ -419,127 +419,127 @@ namespace FancyZonesUtils
 
         return true;
     }
-}
 
-size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept
-{
-    using complex = std::complex<double>;
-    const size_t invalidResult = zoneRects.size();
-    const double inf = 1e100;
-    const double eccentricity = 2.0;
+    size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept
+    {
+        using complex = std::complex<double>;
+        const size_t invalidResult = zoneRects.size();
+        const double inf = 1e100;
+        const double eccentricity = 2.0;
 
-    auto rectCenter = [](RECT rect) {
-        return complex {
-            0.5 * rect.left + 0.5 * rect.right,
-            0.5 * rect.top + 0.5 * rect.bottom
+        auto rectCenter = [](RECT rect) {
+            return complex {
+                0.5 * rect.left + 0.5 * rect.right,
+                0.5 * rect.top + 0.5 * rect.bottom
+            };
         };
-    };
 
-    auto distance = [&](complex arrowDirection, complex zoneDirection) {
-        double result = inf;
+        auto distance = [&](complex arrowDirection, complex zoneDirection) {
+            double result = inf;
 
-        try
-        {
-            double scalarProduct = (arrowDirection * conj(zoneDirection)).real();
-            if (scalarProduct <= 0.0)
+            try
             {
-                return inf;
+                double scalarProduct = (arrowDirection * conj(zoneDirection)).real();
+                if (scalarProduct <= 0.0)
+                {
+                    return inf;
+                }
+
+                // no need to divide by abs(arrowDirection) because it's = 1
+                double cosAngle = scalarProduct / abs(zoneDirection);
+                double tanAngle = abs(tan(acos(cosAngle)));
+
+                if (tanAngle > 10)
+                {
+                    // The angle is too wide
+                    return inf;
+                }
+
+                // find the intersection with the ellipse with given eccentricity and major axis along arrowDirection
+                double intersectY = 2 * eccentricity / (1.0 + eccentricity * eccentricity * tanAngle * tanAngle);
+                double distanceEstimate = scalarProduct / intersectY;
+
+                if (std::isfinite(distanceEstimate))
+                {
+                    result = distanceEstimate;
+                }
+            }
+            catch (...)
+            {
             }
 
-            // no need to divide by abs(arrowDirection) because it's = 1
-            double cosAngle = scalarProduct / abs(zoneDirection);
-            double tanAngle = abs(tan(acos(cosAngle)));
-
-            if (tanAngle > 10)
-            {
-                // The angle is too wide
-                return inf;
-            }
-
-            // find the intersection with the ellipse with given eccentricity and major axis along arrowDirection
-            double intersectY = 2 * eccentricity / (1.0 + eccentricity * eccentricity * tanAngle * tanAngle);
-            double distanceEstimate = scalarProduct / intersectY;
-
-            if (std::isfinite(distanceEstimate))
-            {
-                result = distanceEstimate;
-            }
-        }
-        catch (...)
+            return result;
+        };
+        std::vector<std::pair<size_t, complex>> candidateCenters;
+        for (size_t i = 0; i < zoneRects.size(); i++)
         {
+            auto center = rectCenter(zoneRects[i]);
+
+            // Offset the zone slightly, to differentiate in case there are overlapping zones
+            center += 0.001 * (i + 1);
+
+            candidateCenters.emplace_back(i, center);
         }
 
-        return result;
-    };
-    std::vector<std::pair<size_t, complex>> candidateCenters;
-    for (size_t i = 0; i < zoneRects.size(); i++)
-    {
-        auto center = rectCenter(zoneRects[i]);
+        complex directionVector, windowCenter = rectCenter(windowRect);
 
-        // Offset the zone slightly, to differentiate in case there are overlapping zones
-        center += 0.001 * (i + 1);
-
-        candidateCenters.emplace_back(i, center);
-    }
-
-    complex directionVector, windowCenter = rectCenter(windowRect);
-
-    switch (vkCode)
-    {
-    case VK_UP:
-        directionVector = { 0.0, -1.0 };
-        break;
-    case VK_DOWN:
-        directionVector = { 0.0, 1.0 };
-        break;
-    case VK_LEFT:
-        directionVector = { -1.0, 0.0 };
-        break;
-    case VK_RIGHT:
-        directionVector = { 1.0, 0.0 };
-        break;
-    default:
-        return invalidResult;
-    }
-
-    size_t closestIdx = invalidResult;
-    double smallestDistance = inf;
-
-    for (auto [zoneIdx, zoneCenter] : candidateCenters)
-    {
-        double dist = distance(directionVector, zoneCenter - windowCenter);
-        if (dist < smallestDistance)
+        switch (vkCode)
         {
-            smallestDistance = dist;
-            closestIdx = zoneIdx;
+        case VK_UP:
+            directionVector = { 0.0, -1.0 };
+            break;
+        case VK_DOWN:
+            directionVector = { 0.0, 1.0 };
+            break;
+        case VK_LEFT:
+            directionVector = { -1.0, 0.0 };
+            break;
+        case VK_RIGHT:
+            directionVector = { 1.0, 0.0 };
+            break;
+        default:
+            return invalidResult;
         }
+
+        size_t closestIdx = invalidResult;
+        double smallestDistance = inf;
+
+        for (auto [zoneIdx, zoneCenter] : candidateCenters)
+        {
+            double dist = distance(directionVector, zoneCenter - windowCenter);
+            if (dist < smallestDistance)
+            {
+                smallestDistance = dist;
+                closestIdx = zoneIdx;
+            }
+        }
+
+        return closestIdx;
     }
 
-    return closestIdx;
-}
-
-RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept
-{
-    LONG deltaX = 0, deltaY = 0;
-    switch (vkCode)
+    RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept
     {
-    case VK_UP:
-        deltaY = zoneWindowRect.bottom - zoneWindowRect.top;
-        break;
-    case VK_DOWN:
-        deltaY = zoneWindowRect.top - zoneWindowRect.bottom;
-        break;
-    case VK_LEFT:
-        deltaX = zoneWindowRect.right - zoneWindowRect.left;
-        break;
-    case VK_RIGHT:
-        deltaX = zoneWindowRect.left - zoneWindowRect.right;
+        LONG deltaX = 0, deltaY = 0;
+        switch (vkCode)
+        {
+        case VK_UP:
+            deltaY = zoneWindowRect.bottom - zoneWindowRect.top;
+            break;
+        case VK_DOWN:
+            deltaY = zoneWindowRect.top - zoneWindowRect.bottom;
+            break;
+        case VK_LEFT:
+            deltaX = zoneWindowRect.right - zoneWindowRect.left;
+            break;
+        case VK_RIGHT:
+            deltaX = zoneWindowRect.left - zoneWindowRect.right;
+        }
+
+        windowRect.left += deltaX;
+        windowRect.right += deltaX;
+        windowRect.top += deltaY;
+        windowRect.bottom += deltaY;
+
+        return windowRect;
     }
-
-    windowRect.left += deltaX;
-    windowRect.right += deltaX;
-    windowRect.top += deltaY;
-    windowRect.bottom += deltaY;
-
-    return windowRect;
 }

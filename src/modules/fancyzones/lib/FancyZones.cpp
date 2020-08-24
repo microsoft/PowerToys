@@ -1127,7 +1127,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     }
 
-    auto allMonitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+    auto allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
 
     if (current && allMonitors.size() > 1 && m_settings->GetSettings()->moveWindowAcrossMonitors)
     {
@@ -1181,7 +1181,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             return false;
         }
 
-        size_t chosenIdx = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+        size_t chosenIdx = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
 
         if (chosenIdx < zoneRects.size())
         {
@@ -1222,9 +1222,9 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             return false;
         }
 
-        RECT combinedRect = GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
-        windowRect = PrepareRectForCycling(windowRect, combinedRect, vkCode);
-        chosenIdx = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+        RECT combinedRect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
+        windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, combinedRect, vkCode);
+        chosenIdx = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
         if (chosenIdx < zoneRects.size())
         {
             // Moving to another monitor succeeded

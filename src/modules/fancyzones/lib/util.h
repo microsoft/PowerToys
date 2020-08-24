@@ -189,4 +189,7 @@ namespace FancyZonesUtils
 
     bool IsValidGuid(const std::wstring& str);
     bool IsValidDeviceId(const std::wstring& str);
+
+    RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept;
+    size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
 }

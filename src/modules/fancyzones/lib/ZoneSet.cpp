@@ -401,7 +401,7 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
         windowRect.left -= windowZoneRect.left;
         windowRect.right -= windowZoneRect.left;
 
-        size_t result = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+        size_t result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
         if (result < zoneRects.size())
         {
             MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
@@ -410,8 +410,8 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
         else if (cycle)
         {
             // Try again from the position off the screen in the opposite direction to vkCode
-            windowRect = PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
-            result = ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+            windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
+            result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
 
             if (result < zoneRects.size())
             {
