@@ -90,7 +90,7 @@ namespace
         data.deviceId = json.GetNamedString(NonLocalizable::DeviceIdStr);
         data.zoneSetUuid = json.GetNamedString(NonLocalizable::ZoneSetUuidStr);
 
-        if (!IsValidGuid(data.zoneSetUuid) || !IsValidDeviceId(data.deviceId))
+        if (!FancyZonesUtils::IsValidGuid(data.zoneSetUuid) || !FancyZonesUtils::IsValidDeviceId(data.deviceId))
         {
             return std::nullopt;
         }
@@ -250,7 +250,7 @@ namespace JSONHelpers
             CustomZoneSetJSON result;
 
             result.uuid = customZoneSet.GetNamedString(NonLocalizable::UuidStr);
-            if (!IsValidGuid(result.uuid))
+            if (!FancyZonesUtils::IsValidGuid(result.uuid))
             {
                 return std::nullopt;
             }
@@ -314,7 +314,7 @@ namespace JSONHelpers
             zoneSetData.uuid = zoneSet.GetNamedString(NonLocalizable::UuidStr);
             zoneSetData.type = FancyZonesDataTypes::TypeFromString(std::wstring{ zoneSet.GetNamedString(NonLocalizable::TypeStr) });
 
-            if (!IsValidGuid(zoneSetData.uuid))
+            if (!FancyZonesUtils::IsValidGuid(zoneSetData.uuid))
             {
                 return std::nullopt;
             }
@@ -415,7 +415,7 @@ namespace JSONHelpers
             DeviceInfoJSON result;
 
             result.deviceId = device.GetNamedString(NonLocalizable::DeviceIdStr);
-            if (!IsValidDeviceId(result.deviceId))
+            if (!FancyZonesUtils::IsValidDeviceId(result.deviceId))
             {
                 return std::nullopt;
             }

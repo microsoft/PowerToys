@@ -22,6 +22,8 @@ namespace NonLocalizable
     const wchar_t ToolWindowClassName[] = L"SuperFancyZones_ZoneWindow";
 }
 
+using namespace FancyZonesUtils;
+
 namespace ZoneWindowUtils
 {
     std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId)

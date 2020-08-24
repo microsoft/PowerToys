@@ -172,7 +172,7 @@ bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DW
 
 void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
-    if (!IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+    if (!FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;
     }
@@ -297,7 +297,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
 
 void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
-    if (window != m_windowMoveSize && !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    if (window != m_windowMoveSize && !FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
         return;
     }
@@ -320,9 +320,9 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
             {
                 ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreSizeID);
             }
-            else if (!IsWindowMaximized(window))
+            else if (!FancyZonesUtils::IsWindowMaximized(window))
             {
-                RestoreWindowSize(window);
+                FancyZonesUtils::RestoreWindowSize(window);
             }
         }
 
