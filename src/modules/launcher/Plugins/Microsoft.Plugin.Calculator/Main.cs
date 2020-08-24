@@ -62,12 +62,12 @@ namespace Microsoft.Plugin.Calculator
 
                 if (result.ToString() == "NaN")
                 {
-                    result = Context.API.GetTranslation("wox_plugin_calculator_not_a_number");
+                    result = Properties.Resources.wox_plugin_calculator_not_a_number;
                 }
 
                 if (result is Function)
                 {
-                    result = Context.API.GetTranslation("wox_plugin_calculator_expression_not_complete");
+                    result = Properties.Resources.wox_plugin_calculator_expression_not_complete;
                 }
 
                 if (!string.IsNullOrEmpty(result?.ToString()))
@@ -81,7 +81,7 @@ namespace Microsoft.Plugin.Calculator
                             Title = roundedResult.ToString(CultureInfo.CurrentCulture),
                             IcoPath = IconPath,
                             Score = 300,
-                            SubTitle = Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
+                            SubTitle = Properties.Resources.wox_plugin_calculator_copy_number_to_clipboard,
                             Action = c =>
                             {
                                 var ret = false;
@@ -94,7 +94,7 @@ namespace Microsoft.Plugin.Calculator
                                     }
                                     catch (ExternalException)
                                     {
-                                        MessageBox.Show("Copy failed, please try later");
+                                        MessageBox.Show(Properties.Resources.wox_plugin_calculator_copy_failed);
                                     }
                                 });
                                 thread.SetApartmentState(ApartmentState.STA);
@@ -167,12 +167,12 @@ namespace Microsoft.Plugin.Calculator
 
         public string GetTranslatedPluginTitle()
         {
-            return Context.API.GetTranslation("wox_plugin_calculator_plugin_name");
+            return Properties.Resources.wox_plugin_calculator_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return Context.API.GetTranslation("wox_plugin_calculator_plugin_description");
+            return Properties.Resources.wox_plugin_calculator_plugin_description;
         }
 
         public void Dispose()
