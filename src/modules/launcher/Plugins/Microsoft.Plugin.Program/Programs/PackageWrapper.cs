@@ -17,9 +17,9 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string FamilyName { get; } = string.Empty;
 
-        public bool IsFramework { get; } = false;
+        public bool IsFramework { get; }
 
-        public bool IsDevelopmentMode { get; } = false;
+        public bool IsDevelopmentMode { get; }
 
         public string InstalledLocation { get; } = string.Empty;
 

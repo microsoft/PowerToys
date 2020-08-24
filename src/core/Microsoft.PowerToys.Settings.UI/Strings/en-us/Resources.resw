@@ -288,6 +288,9 @@
   <data name="Appearance_GroupSettings.Text" xml:space="preserve">
     <value>Appearance</value>
   </data>
+  <data name="Fancyzones_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>FancyZones windows</value>
+  </data>
   <data name="FancyZones_Description.Text" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
   </data>
@@ -308,6 +311,12 @@
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open zones editor</value>
+  </data>
+  <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Set Shortcut</value>
+  </data>
+  <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
+    <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
     <value>Launch zones editor</value>
@@ -468,6 +477,36 @@
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
     <value>Enable Image Resizer</value>
   </data>
+  <data name="ImagesSizesListView.AutomationProperties.Name" xml:space="preserve">
+    <value>Image Size</value>
+  </data>
+  <data name="ImageResizer_Configurations.AutomationProperties.Name" xml:space="preserve">
+    <value>Configurations</value>
+  </data>
+  <data name="ImageResizer_Name.AutomationProperties.Name" xml:space="preserve">
+    <value>Configuration Name</value>
+  </data>
+  <data name="ImageResizer_Fit_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Fit Property</value>
+  </data>
+  <data name="ImageResizer_Width_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Width Property</value>
+  </data>
+  <data name="ImageResizer_Height_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Height Property</value>
+  </data>
+  <data name="ImageResizer_Size_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Size Property</value>
+  </data>
+  <data name="ImageResizer_Times_Symbol.AutomationProperties.Name" xml:space="preserve">
+    <value>Times Symbol</value>
+  </data>
+  <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ImageResizer_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Image Resizer</value>
+  </data>
   <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
     <value>Add size</value>
   </data>
@@ -579,6 +618,9 @@
   <data name="About_FileExplorerPreview.Text" xml:space="preserve">
     <value>About File Explorer Preview</value>
   </data>
+  <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>File Explorer Preview</value>
+  </data>
   <data name="About_ImageResizer.Text" xml:space="preserve">
     <value>About Image Resizer</value>
   </data>
@@ -588,14 +630,26 @@
   <data name="About_ColorPicker.Text" xml:space="preserve">
     <value>About Color Picker</value>
   </data>
+  <data name="ColorPicker_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Color Picker</value>
+  </data>
   <data name="About_PowerLauncher.Text" xml:space="preserve">
     <value>About PowerToys Run</value>
+  </data>
+  <data name="PowerToys_Run_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>PowerToys Run</value>
   </data>
   <data name="About_PowerRename.Text" xml:space="preserve">
     <value>About Power Rename</value>
   </data>
+  <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Power Rename</value>
+  </data>
   <data name="About_ShortcutGuide.Text" xml:space="preserve">
     <value>About Shortcut Guide</value>
+  </data>
+  <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Shortcut Guide</value>
   </data>
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
