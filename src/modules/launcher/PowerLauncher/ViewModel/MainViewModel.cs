@@ -42,7 +42,6 @@ namespace PowerLauncher.ViewModel
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
         private readonly object _addResultsLock = new object();
-        private readonly Internationalization _translator = InternationalizationManager.Instance;
         private readonly System.Diagnostics.Stopwatch _hotkeyTimer = new System.Diagnostics.Stopwatch();
 
         private string _queryTextBeforeLeaveResults;
@@ -419,8 +418,8 @@ namespace PowerLauncher.ViewModel
             var results = new List<Result>();
             foreach (var h in _history.Items)
             {
-                var title = _translator.GetTranslation("executeQuery");
-                var time = _translator.GetTranslation("lastExecuteTime");
+                var title = Properties.Resources.executeQuery;
+                var time = Properties.Resources.lastExecuteTime;
                 var result = new Result
                 {
                     Title = string.Format(CultureInfo.InvariantCulture, title, h.Query),
@@ -648,7 +647,7 @@ namespace PowerLauncher.ViewModel
             catch (Exception)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                string errorMsg = string.Format(CultureInfo.InvariantCulture, InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                string errorMsg = string.Format(CultureInfo.InvariantCulture, Properties.Resources.registerHotkeyFailed, hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
