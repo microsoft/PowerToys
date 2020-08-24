@@ -17,7 +17,7 @@ namespace Wox.Plugin.SharedCommands
             if (!dir.Exists)
             {
                 throw new DirectoryNotFoundException(
-                    "Source directory does not exist or could not be found: "
+                    Properties.Resources.directory_not_found_error_message
                     + sourcePath);
             }
 

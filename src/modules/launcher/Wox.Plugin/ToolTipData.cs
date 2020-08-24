@@ -16,7 +16,7 @@ namespace Wox.Plugin
         {
             if (string.IsNullOrEmpty(title))
             {
-                throw new ArgumentException("title cannot be null or empty", "title");
+                throw new ArgumentException(Properties.Resources.tooltip_title_empty_error_message, "title");
             }
 
             Title = title;
