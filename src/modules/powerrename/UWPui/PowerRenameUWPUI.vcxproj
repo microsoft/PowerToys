@@ -11,6 +11,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 ..\dll resource.base.h resource.h PowerRenameExt.base.rc PowerRenameExt.rc" />
+  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{0485F45C-EA7A-4BB5-804B-3E8D14699387}</ProjectGuid>
