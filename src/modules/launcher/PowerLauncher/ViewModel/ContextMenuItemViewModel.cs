@@ -55,5 +55,10 @@ namespace PowerLauncher.ViewModel
             };
             PowerToysTelemetry.Log.WriteEvent(eventData);
         }
+
+        public override string ToString()
+        {
+            return Title;
+        }
     }
 }

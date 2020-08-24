@@ -289,7 +289,7 @@ namespace PowerLauncher
 
         private void UpdateTextBoxToSelectedItem()
         {
-            var itemText = _viewModel?.Results?.SelectedItem?.ToString() ?? null;
+            var itemText = _viewModel?.Results?.SelectedItem?.SearchBoxDisplayText() ?? null;
             if (!string.IsNullOrEmpty(itemText))
             {
                 _viewModel.ChangeQueryText(itemText);
@@ -311,7 +311,7 @@ namespace PowerLauncher
             {
                 SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
                     _viewModel.Results.SelectedIndex,
-                    _viewModel.Results.SelectedItem?.ToString(),
+                    _viewModel.Results.SelectedItem?.SearchBoxDisplayText(),
                     _viewModel.QueryText);
             }
         }
