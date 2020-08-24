@@ -9,6 +9,7 @@ BEGIN
     IDS_SETTING_DESCRIPTION_MOUSESWITCH                        "Use a non-primary mouse button to toggle zone activation"
     IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS              "Override Windows Snap hotkeys (Win + Arrow) to move windows between zones"
     IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS        "Move windows between zones across all monitors when snapping with (Win + Arrow)"
+    IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION     "Move windows based on their position when snapping with (Win + Arrow)"
     IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS          "Keep windows in their zones when the screen resolution changes"
     IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS          "During zone layout changes, windows assigned to a zone will match new size/positions"
     IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES           "Flash zones when the active FancyZones layout changes"

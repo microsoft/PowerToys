@@ -2,15 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows.Input;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ImageResizerViewModel : Observable
     {
@@ -18,7 +16,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private const string ModuleName = "ImageResizer";
 
-        public ImageResizerViewModel()
+        private Func<string, int> SendConfigMSG { get; }
+
+        public ImageResizerViewModel(Func<string, int> ipcMSGCallBackFunc)
         {
             try
             {
@@ -41,6 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 generalSettings = new GeneralSettings();
                 SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
+
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
 
             _isEnabled = generalSettings.Enabled.ImageResizer;
             _advancedSizes = Settings.Properties.ImageresizerSizes.Value;
@@ -84,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
                     generalSettings.Enabled.ImageResizer = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
-                    ShellPage.DefaultSndMSGCallback(snd.ToString());
+                    SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }
             }
@@ -99,10 +102,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                SettingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
+                SavesImageSizes(value);
                 _advancedSizes = value;
-                Settings.Properties.ImageresizerSizes = new ImageResizerSizes(value);
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
                 OnPropertyChanged("Sizes");
             }
         }
@@ -219,30 +220,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public ICommand SaveSizesEventHandler
-        {
-            get
-            {
-                return new RelayCommand(SavesImageSizes);
-            }
-        }
-
-        public ICommand DeleteImageSizeEventHandler
-        {
-            get
-            {
-                return new RelayCommand<int>(DeleteImageSize);
-            }
-        }
-
-        public ICommand AddImageSizeEventHandler
-        {
-            get
-            {
-                return new RelayCommand(AddRow);
-            }
-        }
-
         public void AddRow()
         {
             ObservableCollection<ImageSize> imageSizes = Sizes;
@@ -250,27 +227,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ImageSize newSize = new ImageSize(maxId + 1);
             newSize.PropertyChanged += Size_PropertyChanged;
             imageSizes.Add(newSize);
-            Sizes = imageSizes;
-            OnPropertyChanged("Sizes");
+            _advancedSizes = imageSizes;
+            SavesImageSizes(imageSizes);
         }
 
         public void DeleteImageSize(int id)
         {
-            try
-            {
-                ImageSize size = Sizes.Where<ImageSize>(x => x.Id == id).First();
-                ObservableCollection<ImageSize> imageSizes = Sizes;
-                imageSizes.Remove(size);
-                Sizes = imageSizes;
-                OnPropertyChanged("Sizes");
-            }
-            catch
-            {
-            }
+            ImageSize size = _advancedSizes.Where<ImageSize>(x => x.Id == id).First();
+            ObservableCollection<ImageSize> imageSizes = Sizes;
+            imageSizes.Remove(size);
+
+            _advancedSizes = imageSizes;
+            SavesImageSizes(imageSizes);
         }
 
-        public void SavesImageSizes()
+        public void SavesImageSizes(ObservableCollection<ImageSize> imageSizes)
         {
+            SettingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
+            Settings.Properties.ImageresizerSizes = new ImageResizerSizes(imageSizes);
             SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
 
@@ -361,8 +335,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ImageSize modifiedSize = (ImageSize)sender;
             ObservableCollection<ImageSize> imageSizes = Sizes;
             imageSizes.Where<ImageSize>(x => x.Id == modifiedSize.Id).First().Update(modifiedSize);
-            Sizes = imageSizes;
-            OnPropertyChanged("Sizes");
+            _advancedSizes = imageSizes;
+            SavesImageSizes(imageSizes);
         }
     }
 }

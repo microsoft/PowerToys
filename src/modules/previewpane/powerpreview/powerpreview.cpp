@@ -4,7 +4,7 @@
 #include "powerpreview.h"
 #include "trace.h"
 #include "settings.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 
 // Destroy the powertoy and free memory.
 void PowerPreviewModule::destroy()

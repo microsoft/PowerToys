@@ -5,7 +5,6 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
@@ -20,7 +19,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
-
         public Func<string, int> UpdateUIThemeCallBack { get; }
 
         public Func<string, int> SendConfigMSG { get; }
@@ -29,16 +27,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public Func<string, int> SendCheckForUpdatesConfigMSG { get; }
 
-        public readonly string RunningAsUserDefaultText;
+        public string RunningAsUserDefaultText { get; set; }
 
-        public readonly string RunningAsAdminDefaultText;
+        public string RunningAsAdminDefaultText { get; set; }
 
-        public string SettingsConfigFileFolder = string.Empty;
+        private string _settingsConfigFileFolder = string.Empty;
 
         public GeneralViewModel(string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
-            this.CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
-            this.RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
+            CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
+            RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
 
             try
             {
@@ -72,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme.ToLower());
 
             // Update Settings file folder:
-            SettingsConfigFileFolder = configFileSubfolder;
+            _settingsConfigFileFolder = configFileSubfolder;
 
             switch (GeneralSettingsConfigs.Theme.ToLower())
             {
@@ -341,9 +339,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         }
 
         // callback function to launch the URL to check for updates.
-        private async void CheckForUpdates_Click()
+        private void CheckForUpdates_Click()
         {
-            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(SettingsConfigFileFolder);
+            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
             settings.CustomActionName = "check_for_updates";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
@@ -354,7 +352,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public void Restart_Elevated()
         {
-            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(SettingsConfigFileFolder);
+            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
             settings.CustomActionName = "restart_elevation";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);

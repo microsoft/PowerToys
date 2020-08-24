@@ -3,7 +3,7 @@
 #include <common/settings_objects.h>
 #include <common/common.h>
 #include "trace.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <common/os-detect.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;

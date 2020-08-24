@@ -1,7 +1,7 @@
 #pragma once
 #include <pch.h>
 #include <string>
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <settings_objects.h>
 #include "registry_wrapper_interface.h"
 

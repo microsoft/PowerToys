@@ -11,6 +11,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h ColorPicker.base.rc ColorPicker.rc" />
+  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -101,8 +104,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <None Include="resource.base.h" />
     <ClInclude Include="trace.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Generated Files\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -116,11 +120,15 @@
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
     </ProjectReference>
   </ItemGroup>
-   <ItemGroup>
-    <ResourceCompile Include="ColorPicker.rc" />
+  <ItemGroup>
+    <None Include="ColorPicker.base.rc" />
+    <ResourceCompile Include="Generated Files\ColorPicker.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

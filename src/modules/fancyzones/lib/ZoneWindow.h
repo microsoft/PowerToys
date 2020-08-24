@@ -49,16 +49,17 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @param   window Handle of window which should be assigned to zone.
      * @param   index  Zone index within zone layout.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, int index) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, size_t index) = 0;
     /**
      * Assign window to the zones based on the set of zone indices inside zone layout.
      *
      * @param   window   Handle of window which should be assigned to zone.
      * @param   indexSet The set of zone indices within zone layout.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, const std::vector<int>& indexSet) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, const std::vector<size_t>& indexSet) = 0;
     /**
-     * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow).
+     * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow), based on zone index numbers,
+     * not their on-screen position.
      *
      * @param   window Handle of window which should be assigned to zone.
      * @param   vkCode Pressed arrow key.
@@ -67,7 +68,19 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @returns Boolean which is always true if cycle argument is set, otherwise indicating if there is more
      *          zones left in the zone layout in which window can move.
      */
-    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirection)(HWND window, DWORD vkCode, bool cycle) = 0;
+    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirectionAndIndex)(HWND window, DWORD vkCode, bool cycle) = 0;
+    /**
+     * Assign window to the zone based on direction (using WIN + LEFT/RIGHT/UP/DOWN arrow), based on
+     * their on-screen position.
+     *
+     * @param   window Handle of window which should be assigned to zone.
+     * @param   vkCode Pressed arrow key.
+     * @param   cycle  Whether we should move window to the first zone if we reached last zone in layout.
+     *
+     * @returns Boolean which is always true if cycle argument is set, otherwise indicating if there is more
+     *          zones left in the zone layout in which window can move.
+     */
+    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirectionAndPosition)(HWND window, DWORD vkCode, bool cycle) = 0;
     /**
      * Cycle through active zone layouts (giving hints about each layout).
      *

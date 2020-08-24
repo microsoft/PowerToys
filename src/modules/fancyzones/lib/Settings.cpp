@@ -12,6 +12,7 @@ namespace NonLocalizable
     const wchar_t MouseSwitchID[] = L"fancyzones_mouseSwitch";
     const wchar_t OverrideSnapHotKeysID[] = L"fancyzones_overrideSnapHotkeys";
     const wchar_t MoveWindowAcrossMonitorsID[] = L"fancyzones_moveWindowAcrossMonitors";
+    const wchar_t MoveWindowsBasedOnPositionID[] = L"fancyzones_moveWindowsBasedOnPosition";
     const wchar_t DisplayChangeMoveWindowsID[] = L"fancyzones_displayChange_moveWindows";
     const wchar_t ZoneSetChangeMoveWindowsID[] = L"fancyzones_zoneSetChange_moveWindows";
     const wchar_t AppLastZoneMoveWindowsID[] = L"fancyzones_appLastZone_moveWindows";
@@ -44,7 +45,7 @@ public:
     {
         LoadSettings(name, true);
     }
-    
+
     IFACEMETHODIMP_(void) SetCallback(IFancyZonesCallback* callback) { m_callback = callback; }
     IFACEMETHODIMP_(void) ResetCallback() { m_callback = nullptr; }
     IFACEMETHODIMP_(bool) GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_sizeg) noexcept;
@@ -67,11 +68,13 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[13 /* 14 */] = { // "Turning FLASHING_ZONE option off"
+    } m_configBools[14 /* 15 */] = { // "Turning FLASHING_ZONE option off"
         { NonLocalizable::ShiftDragID, &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { NonLocalizable::MouseSwitchID, &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { NonLocalizable::OverrideSnapHotKeysID, &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
         { NonLocalizable::MoveWindowAcrossMonitorsID, &m_settings.moveWindowAcrossMonitors, IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS },
+        { NonLocalizable::MoveWindowsBasedOnPositionID, &m_settings.moveWindowsBasedOnPosition, IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION },
+
         // "Turning FLASHING_ZONE option off"
         //{ L"fancyzones_zoneSetChange_flashZones", &m_settings.zoneSetChange_flashZones, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES },
         { NonLocalizable::DisplayChangeMoveWindowsID, &m_settings.displayChange_moveWindows, IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS },
@@ -81,7 +84,7 @@ private:
         { NonLocalizable::RestoreSizeID, &m_settings.restoreSize, IDS_SETTING_DESCRIPTION_RESTORESIZE },
         { NonLocalizable::UseCursorPosEditorStartupScreenID, &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
         { NonLocalizable::ShowOnAllMonitorsID, &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS},
-        { NonLocalizable::SpanZonesAcrossMonitorsID, &m_settings.spanZonesAcrossMonitors, IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS },        
+        { NonLocalizable::SpanZonesAcrossMonitorsID, &m_settings.spanZonesAcrossMonitors, IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS },
         { NonLocalizable::MakeDraggedWindowTransparentID, &m_settings.makeDraggedWindowTransparent, IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT},
     };
 
@@ -115,9 +118,9 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
     settings.add_color_picker(NonLocalizable::ZoneHighlightColorID, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHighlightColor);
     settings.add_color_picker(NonLocalizable::ZoneColorID, IDS_SETTING_DESCRIPTION_ZONECOLOR, m_settings.zoneColor);
     settings.add_color_picker(NonLocalizable::ZoneBorderColorID, IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, m_settings.zoneBorderColor);
-    
+
     settings.add_int_spinner(NonLocalizable::ZoneHighlightOpacityID, IDS_SETTINGS_HIGHLIGHT_OPACITY, m_settings.zoneHighlightOpacity, 0, 100, 1);
-    
+
     settings.add_multiline_string(NonLocalizable::ExcludedAppsID, IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, m_settings.excludedApps);
 
     return settings.serialize_to_buffer(buffer, buffer_size);

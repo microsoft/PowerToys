@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +25,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         private const string ProfileFileMutexName = "PowerToys.KeyboardManager.ConfigMutex";
         private const int ProfileFileMutexWaitTimeoutMilliseconds = 1000;
 
-        private readonly FileSystemWatcher watcher;
+        public KeyboardManagerSettings Settings { get; set; }
 
-        private ICommand remapKeyboardCommand;
-        private ICommand editShortcutCommand;
-        public KeyboardManagerSettings settings;
-        private KeyboardManagerProfile profile;
-        private GeneralSettings generalSettings;
+        private ICommand _remapKeyboardCommand;
+        private ICommand _editShortcutCommand;
+        private KeyboardManagerProfile _profile;
+        private GeneralSettings _generalSettings;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -47,28 +45,28 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             if (SettingsUtils.SettingsExists(PowerToyName))
             {
                 // Todo: Be more resilient while reading and saving settings.
-                settings = SettingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
+                Settings = SettingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
 
                 // Load profile.
                 if (!LoadProfile())
                 {
-                    profile = new KeyboardManagerProfile();
+                    _profile = new KeyboardManagerProfile();
                 }
             }
             else
             {
-                settings = new KeyboardManagerSettings(PowerToyName);
-                SettingsUtils.SaveSettings(settings.ToJsonString(), PowerToyName);
+                Settings = new KeyboardManagerSettings(PowerToyName);
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
             }
 
             if (SettingsUtils.SettingsExists())
             {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                _generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
             }
             else
             {
-                generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
+                _generalSettings = new GeneralSettings();
+                SettingsUtils.SaveSettings(_generalSettings.ToJsonString(), string.Empty);
             }
         }
 
@@ -76,16 +74,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return generalSettings.Enabled.KeyboardManager;
+                return _generalSettings.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (generalSettings.Enabled.KeyboardManager != value)
+                if (_generalSettings.Enabled.KeyboardManager != value)
                 {
-                    generalSettings.Enabled.KeyboardManager = value;
+                    _generalSettings.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(_generalSettings);
 
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -97,9 +95,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                if (profile != null)
+                if (_profile != null)
                 {
-                    return profile.RemapKeys.InProcessRemapKeys;
+                    return _profile.RemapKeys.InProcessRemapKeys;
                 }
                 else
                 {
@@ -117,9 +115,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                if (profile != null)
+                if (_profile != null)
                 {
-                    return CombineShortcutLists(profile.RemapShortcuts.GlobalRemapShortcuts, profile.RemapShortcuts.AppSpecificRemapShortcuts);
+                    return CombineShortcutLists(_profile.RemapShortcuts.GlobalRemapShortcuts, _profile.RemapShortcuts.AppSpecificRemapShortcuts);
                 }
                 else
                 {
@@ -128,9 +126,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
-        public ICommand RemapKeyboardCommand => remapKeyboardCommand ?? (remapKeyboardCommand = new RelayCommand(OnRemapKeyboard));
+        public ICommand RemapKeyboardCommand => _remapKeyboardCommand ?? (_remapKeyboardCommand = new RelayCommand(OnRemapKeyboard));
 
-        public ICommand EditShortcutCommand => editShortcutCommand ?? (editShortcutCommand = new RelayCommand(OnEditShortcut));
+        public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
         private async void OnRemapKeyboard()
         {
@@ -175,8 +173,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // update the UI element here.
                         try
                         {
-                            profile = SettingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, settings.Properties.ActiveConfiguration.Value + JsonFileType);
-                            FilterRemapKeysList(profile.RemapKeys.InProcessRemapKeys);
+                            _profile = SettingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, Settings.Properties.ActiveConfiguration.Value + JsonFileType);
+                            FilterRemapKeysList(_profile.RemapKeys.InProcessRemapKeys);
                         }
                         finally
                         {
@@ -198,6 +196,5 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             return success;
         }
-
     }
 }

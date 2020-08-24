@@ -27,6 +27,7 @@ namespace FancyZonesUnitTests
     class FancyZonesIFancyZonesCallbackUnitTests;
     class ZoneSetCalculateZonesUnitTests;
     class ZoneWindowUnitTests;
+    class ZoneWindowCreationUnitTests;
 }
 #endif
 
@@ -64,9 +65,9 @@ public:
 
     bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const std::wstring_view& deviceId) const;
     void UpdateProcessIdToHandleMap(HWND window, const std::wstring_view& deviceId);
-    std::vector<int> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
+    std::vector<size_t> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
     bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
-    bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet);
+    bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<size_t>& zoneIndexSet);
 
     void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
@@ -83,6 +84,7 @@ private:
     friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
     friend class FancyZonesUnitTests::FancyZonesIFancyZonesCallbackUnitTests;
     friend class FancyZonesUnitTests::ZoneWindowUnitTests;
+    friend class FancyZonesUnitTests::ZoneWindowCreationUnitTests;
     friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
 
     inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)

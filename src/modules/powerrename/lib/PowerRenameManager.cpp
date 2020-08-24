@@ -764,10 +764,27 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
                                 }
 
+                                wchar_t newReplaceTerm[MAX_PATH] = { 0 };
+                                PWSTR replaceTerm = nullptr;
+                                SYSTEMTIME LocalTime;
+
+                                if (SUCCEEDED(spRenameRegEx->get_replaceTerm(&replaceTerm)) && isFileAttributesUsed(replaceTerm))
+                                {
+                                    if (SUCCEEDED(spItem->get_date(&LocalTime)))
+                                    {
+                                        if (SUCCEEDED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTerm, LocalTime)))
+                                        {
+                                            spRenameRegEx->put_replaceTerm(newReplaceTerm);
+                                        }
+                                    }
+                                }
+
                                 PWSTR newName = nullptr;
                                 // Failure here means we didn't match anything or had nothing to match
                                 // Call put_newName with null in that case to reset it
                                 spRenameRegEx->Replace(sourceName, &newName);
+
+                                spRenameRegEx->put_replaceTerm(replaceTerm);
 
                                 wchar_t resultName[MAX_PATH] = { 0 };
 
@@ -812,35 +829,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 {
                                     newNameToUse = trimmedName;
                                 }
-                                
-                                bool isDateAttributeUsed = false;
-                                wchar_t datedName[MAX_PATH] = { 0 };
-                                std::wstring patterns[] = { L"$YYYY", L"$SSS", L"$MMM", L"$mmm", L"$FFF", L"$fff", 
-                                    L"$MM", L"$DD", L"$hh", L"$mm", L"$ss" };
-                                size_t patternsLength = ARRAYSIZE(patterns);
-                                SYSTEMTIME LocalTime;
-
-                                if (newNameToUse != nullptr)
-                                {
-                                    for (size_t i = 0; !isDateAttributeUsed && i < patternsLength; i++)
-                                    {
-                                        std::wstring source(newNameToUse);
-                                        if (source.find(patterns[i]) != std::string::npos)
-                                        {
-                                            isDateAttributeUsed = true;
-                                        }
-                                    }
-                                    if (isDateAttributeUsed)
-                                    {
-                                        if (SUCCEEDED(spItem->get_date(&LocalTime)))
-                                        {
-                                            if (SUCCEEDED(GetDatedFileName(datedName, ARRAYSIZE(datedName), newNameToUse, LocalTime)))
-                                            {
-                                                newNameToUse = datedName;
-                                            }
-                                        }
-                                    }
-                                }
                                                                 
                                 wchar_t transformedName[MAX_PATH] = { 0 };
                                 if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
@@ -879,6 +867,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 }
 
                                 CoTaskMemFree(newName);
+                                CoTaskMemFree(replaceTerm);
                                 CoTaskMemFree(currentNewName);
                                 CoTaskMemFree(originalName);
                             }

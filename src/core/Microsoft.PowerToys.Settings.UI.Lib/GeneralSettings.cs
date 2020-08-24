@@ -52,24 +52,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public GeneralSettings()
         {
-            this.Packaged = false;
-            this.Startup = false;
-            this.IsAdmin = false;
-            this.IsElevated = false;
-            this.AutoDownloadUpdates = false;
-            this.Theme = "system";
-            this.SystemTheme = "light";
+            Packaged = false;
+            Startup = false;
+            IsAdmin = false;
+            IsElevated = false;
+            AutoDownloadUpdates = false;
+            Theme = "system";
+            SystemTheme = "light";
             try
             {
-                this.PowertoysVersion = DefaultPowertoysVersion();
+                PowertoysVersion = DefaultPowertoysVersion();
             }
             catch
             {
-                this.PowertoysVersion = "v0.0.0";
+                PowertoysVersion = "v0.0.0";
             }
 
-            this.Enabled = new EnabledModules();
-            this.CustomActionName = string.Empty;
+            Enabled = new EnabledModules();
+            CustomActionName = string.Empty;
         }
 
         // converts the current to a json string.

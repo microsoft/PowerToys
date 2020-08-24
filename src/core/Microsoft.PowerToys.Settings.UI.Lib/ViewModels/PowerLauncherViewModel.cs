@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+
+using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Views;
-
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
@@ -19,34 +18,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly SendCallback callback;
 
-        public PowerLauncherViewModel()
-        {
-            callback = (PowerLauncherSettings settings) =>
-            {
-                // Propagate changes to Power Launcher through IPC
-                ShellPage.DefaultSndMSGCallback(
-                    string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.ModuleName, JsonSerializer.Serialize(settings)));
-            };
-            if (SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
-            {
-                settings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
-            }
-            else
-            {
-                settings = new PowerLauncherSettings();
-                settings.Properties.OpenPowerLauncher.Alt = true;
-                settings.Properties.OpenPowerLauncher.Code = (int)Windows.System.VirtualKey.Space;
-                settings.Properties.MaximumNumberOfResults = 4;
-                callback(settings);
-            }
+        private Func<string, int> SendConfigMSG { get; }
 
-            if (SettingsUtils.SettingsExists())
+        public PowerLauncherViewModel(Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        {
+            try
             {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
+                callback = (PowerLauncherSettings settings) =>
+                {
+                    // Propagate changes to Power Launcher through IPC
+                    SendConfigMSG(
+                        string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.ModuleName, JsonSerializer.Serialize(settings)));
+                };
+                if (SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+                {
+                    settings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                }
+                else
+                {
+                    settings = new PowerLauncherSettings();
+                    settings.Properties.OpenPowerLauncher.Alt = true;
+                    settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
+                    settings.Properties.MaximumNumberOfResults = 4;
+                    callback(settings);
+                }
+
+                if (SettingsUtils.SettingsExists())
+                {
+                    generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
+                }
+                else
+                {
+                    generalSettings = new GeneralSettings();
+                }
+
+                // set the callback functions value to hangle outgoing IPC message.
+                SendConfigMSG = ipcMSGCallBackFunc;
             }
-            else
+            catch
             {
-                generalSettings = new GeneralSettings();
             }
         }
 
@@ -78,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     generalSettings.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
-                    ShellPage.DefaultSndMSGCallback(outgoing.ToString());
+                    SendConfigMSG(outgoing.ToString());
                 }
             }
         }
@@ -163,23 +173,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (settings.Properties.OpenFileLocation != value)
                 {
                     settings.Properties.OpenFileLocation = value;
-                    UpdateSettings();
-                }
-            }
-        }
-
-        public HotkeySettings OpenConsole
-        {
-            get
-            {
-                return settings.Properties.OpenConsole;
-            }
-
-            set
-            {
-                if (settings.Properties.OpenConsole != value)
-                {
-                    settings.Properties.OpenConsole = value;
                     UpdateSettings();
                 }
             }

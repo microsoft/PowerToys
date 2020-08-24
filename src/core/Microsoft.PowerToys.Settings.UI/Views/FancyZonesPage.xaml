@@ -1,4 +1,4 @@
-﻿ <Page
+﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.FancyZonesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,7 +15,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <viewModel:FancyZonesViewModel x:Key="eventViewModel"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
@@ -60,12 +59,14 @@
             <Button Margin="{StaticResource MediumTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
                     Command = "{x:Bind ViewModel.LaunchEditorEventHandler}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                    AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_LaunchEditorButtonControl}">
                 <StackPanel Orientation="Horizontal">
                     <Viewbox Height="12" Width="12">
                         <PathIcon Data="M896 0v896H0V0h896zM768 768V128H128v640h640zM0 1920v-896h1920v896H0zm128-768v640h1664v-640H128zM1024 0h896v896h-896V0zm768 768V128h-640v640h640z"/>
                     </Viewbox>
                     <TextBlock Margin="12,0,0,0"
+                               Name="FancyZones_LaunchEditorButtonControl"
                                x:Uid="FancyZones_LaunchEditorButtonControl"/>
                 </StackPanel>
             </Button>
@@ -101,10 +102,15 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
+            <CheckBox x:Uid="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
+                      Margin="24,12,0,0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
+
             <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                      Margin="24,12,0,0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}"
@@ -173,16 +179,18 @@
                        FontSize="16"
                        Margin="0,16,0,0"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-                
+
             </StackPanel>
 
-            <TextBlock x:Uid="FancyZones_ZoneHighlightColor"
+            <TextBlock Name="FancyZones_ZoneHighlightColor"
+                x:Uid="FancyZones_ZoneHighlightColor"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
-                                 Padding="4,4,8,4">
+                                 Padding="4,4,8,4"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_ZoneHighlightColor}">
                 <Border Width="48"
                         CornerRadius="2"
                         Height="24">
@@ -192,7 +200,7 @@
                 </Border>
                 <muxc:DropDownButton.Flyout>
                     <Flyout>
-                        <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColor"
+                        <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColorPicker"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
                               IsColorSliderVisible="True"
@@ -208,13 +216,15 @@
 
             </muxc:DropDownButton>
 
-            <TextBlock x:Uid="FancyZones_InActiveColor"
+            <TextBlock Name="FancyZones_InActiveColor"
+                x:Uid="FancyZones_InActiveColor"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
-                                 Padding="4,4,8,4">
+                                 Padding="4,4,8,4"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_InActiveColor}">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
                         <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
@@ -236,13 +246,15 @@
                 </muxc:DropDownButton.Flyout>
             </muxc:DropDownButton>
 
-            <TextBlock x:Uid="FancyZones_BorderColor"
+            <TextBlock Name="FancyZones_BorderColor"
+                x:Uid="FancyZones_BorderColor"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
-                                 Padding="4,4,8,4">
+                                 Padding="4,4,8,4"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_BorderColor}">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
                         <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"/>
@@ -250,7 +262,7 @@
                 </Border>
                 <muxc:DropDownButton.Flyout>
                     <Flyout>
-                        <muxc:ColorPicker x:Name="FancyZones_BorderColor"
+                        <muxc:ColorPicker x:Name="FancyZones_BorderColorPicker"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
                               IsColorSliderVisible="True"                             
@@ -303,7 +315,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/FancyZones.png" />
+                <Image x:Uid="Fancyzones_Image" Source="ms-appx:///Assets/Modules/FancyZones.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
