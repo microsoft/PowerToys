@@ -17,7 +17,6 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
             var pluginInitContext = new PluginInitContext() { API = mock.Object };
             var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
             var searchResult = new SearchResult() { Type = ResultType.Folder, FullPath = "C:/DummyFolder" };
@@ -28,8 +27,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_copy_path"), Times.Once());
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuResults[0].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_copy_path);
+            Assert.AreEqual(contextMenuResults[1].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console);
         }
 
         [Test]
@@ -37,7 +36,6 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
             var pluginInitContext = new PluginInitContext() { API = mock.Object };
             var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
             var searchResult = new SearchResult() { Type = ResultType.File, FullPath = "C:/DummyFile.cs" };
@@ -48,9 +46,9 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_open_containing_folder"), Times.Once());
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_copy_path"), Times.Once());
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuResults[0].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[1].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_copy_path);
+            Assert.AreEqual(contextMenuResults[2].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console);
         }
     }
 }
