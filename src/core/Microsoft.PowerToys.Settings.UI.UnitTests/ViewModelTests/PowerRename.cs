@@ -33,7 +33,7 @@ namespace ViewModelTests
             // Create settings file if none exists
             if (!SettingsUtils.SettingsFolderExists(ModuleName))
             {
-                SettingsUtils.SaveSettings(new PowerPreviewSettings().ToJsonString(), ModuleName);
+                SettingsUtils.SaveSettings(new PowerPreviewSettings().ToJsonString(), ModuleName, "power-rename-settings.json");
             }
         }
 
