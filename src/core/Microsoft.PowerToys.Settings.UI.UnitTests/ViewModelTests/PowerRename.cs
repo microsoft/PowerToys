@@ -14,8 +14,12 @@ namespace ViewModelTests
     [TestClass]
     public class PowerRename
     {
+        // This should not be changed. 
+        // Changing it will cause user's to lose their local settings configs.
         public const string ModuleName = "PowerRename";
+
         public const string generalSettings_file_name = "Test\\PowerRename";
+        
         [TestInitialize]
         public void Setup()
         {
@@ -23,7 +27,7 @@ namespace ViewModelTests
             GeneralSettings generalSettings = new GeneralSettings();
             PowerRenameSettings powerRename = new PowerRenameSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
             SettingsUtils.SaveSettings(powerRename.ToJsonString(), generalSettings_file_name, "power-rename-settings.json");
         }
 
@@ -35,6 +39,27 @@ namespace ViewModelTests
             {
                 DeleteFolder(generalSettings_file_name);
             }
+        }
+
+        /// <summary>
+        /// Test if the original settings files were modified.
+        /// </summary>
+        [TestMethod]
+        public void OriginalFilesModificationTest()
+        {
+            // Load Originl Settings Config File
+            PowerRenameLocalProperties originalSettings = SettingsUtils.GetSettings<PowerRenameLocalProperties>(ModuleName, "power-rename-settings.json");
+            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+
+            // Initialise View Model with test Config files
+            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SendMockIPCConfigMSG);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalGeneralSettings.Enabled.PowerRename, viewModel.IsEnabled);
+            Assert.AreEqual(originalSettings.ExtendedContextMenuOnly, viewModel.EnabledOnContextExtendedMenu);
+            Assert.AreEqual(originalSettings.MRUEnabled, viewModel.MRUEnabled);
+            Assert.AreEqual(originalSettings.ShowIcon, viewModel.EnabledOnContextMenu);
         }
 
         [TestMethod]

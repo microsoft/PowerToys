@@ -27,14 +27,14 @@ namespace ViewModelTests
             ImageResizerSettings imageResizer = new ImageResizerSettings();
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(imageResizer.ToJsonString(), imageResizer.Name);
+            SettingsUtils.SaveSettings(imageResizer.ToJsonString(), Module);
         }
 
         [TestCleanup]
         public void CleanUp()
         {
             // delete folder created.
-            string generalSettings_file_name = string.Empty;
+            string generalSettings_file_name = "Test";
             if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
             {
                 DeleteFolder(generalSettings_file_name);
@@ -49,6 +49,31 @@ namespace ViewModelTests
         public void DeleteFolder(string powertoy)
         {
             Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
+        }
+
+        /// <summary>
+        /// Test if the original settings files were modified.
+        /// </summary>
+        [TestMethod]
+        public void OriginalFilesModificationTest()
+        {
+            // Load Originl Settings Config File
+            ImageResizerSettings originalSettings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
+            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+
+            // Initialise View Model with test Config files
+            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalGeneralSettings.Enabled.ImageResizer, viewModel.IsEnabled);
+            Assert.AreEqual(viewModel.GetEncoderIndex(originalSettings.Properties.ImageresizerFallbackEncoder.Value), viewModel.Encoder);
+            Assert.AreEqual(originalSettings.Properties.ImageresizerFileName.Value, viewModel.FileName);
+            Assert.AreEqual(originalSettings.Properties.ImageresizerJpegQualityLevel.Value, viewModel.JPEGQualityLevel);
+            Assert.AreEqual(originalSettings.Properties.ImageresizerKeepDateModified.Value, viewModel.KeepDateModified);
+            Assert.AreEqual(originalSettings.Properties.ImageresizerPngInterlaceOption.Value, viewModel.PngInterlaceOption);
+            Assert.AreEqual(originalSettings.Properties.ImageresizerSizes.Value.Count, viewModel.Sizes.Count);
+            Assert.AreEqual(originalSettings.Properties.ImageresizerTiffCompressOption.Value, viewModel.TiffCompressOption);
         }
 
         [TestMethod]

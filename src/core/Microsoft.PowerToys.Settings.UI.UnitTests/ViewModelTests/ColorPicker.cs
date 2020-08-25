@@ -13,7 +13,11 @@ namespace ViewModelTests
     [TestClass]
     public class ColorPicker
     {
-        private const string ModuleName = "ColorPicker";
+        private const string TestModuleName = "Test\\ColorPicker";
+
+        // This should not be changed. 
+        // Changing it will causes user's to lose their local settings configs.
+        private const string OriginalModuleName = "ColorPicker";
 
         [TestInitialize]
         public void Setup()
@@ -21,23 +25,42 @@ namespace ViewModelTests
             var generalSettings = new GeneralSettings();
             var colorPickerSettings = new ColorPickerSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.Name, ModuleName + ".json");
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
+            SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.Name, TestModuleName + ".json");
         }
 
         [TestCleanup]
         public void CleanUp()
         {
-            string generalSettings_file_name = string.Empty;
+            string generalSettings_file_name = "Test";
             if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
             {
                 DeleteFolder(generalSettings_file_name);
             }
 
-            if (SettingsUtils.SettingsFolderExists(ModuleName))
+            if (SettingsUtils.SettingsFolderExists(TestModuleName))
             {
-                DeleteFolder(ModuleName);
+                DeleteFolder(TestModuleName);
             }
+        }
+
+        /// <summary>
+        /// Test if the original settings files were modified.
+        /// </summary>
+        [TestMethod]
+        public void OriginalFilesModificationTest()
+        {
+            // Load Originl Settings Config File
+            ColorPickerSettings originalSettings = SettingsUtils.GetSettings<ColorPickerSettings>(OriginalModuleName);
+            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+
+            // Initialise View Model with test Config files
+            ColorPickerViewModel viewModel = new ColorPickerViewModel(ColorPickerIsEnabledByDefault_IPC);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalGeneralSettings.Enabled.ColorPicker, viewModel.IsEnabled);
+            Assert.AreEqual(originalSettings.Properties.ActivationShortcut.ToString(), viewModel.ActivationShortcut.ToString());
+            Assert.AreEqual(originalSettings.Properties.ChangeCursor, viewModel.ChangeCursor);
         }
 
         [TestMethod]

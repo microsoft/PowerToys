@@ -16,6 +16,10 @@ namespace ViewModelTests
     {
         public const string ShortCutGuideTestFolderName = "Test\\ShortCutGuide";
 
+        // This should not be changed. 
+        // Changing it will cause user's to lose their local settings configs.
+        public const string ModuleName = "Shortcut Guide";
+
         [TestInitialize]
         public void Setup()
         {
@@ -34,10 +38,9 @@ namespace ViewModelTests
         {
             // delete folder created.
             // delete general settings folder.
-            string ShortCutGuideTestFolderName = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(string.Empty))
+            if (SettingsUtils.SettingsFolderExists("Test"))
             {
-                DeleteFolder(string.Empty);
+                DeleteFolder("Test");
             }
 
             // delete power rename folder.
@@ -50,6 +53,26 @@ namespace ViewModelTests
         public void DeleteFolder(string powertoy)
         {
             Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
+        }
+
+        /// <summary>
+        /// Test if the original settings files were modified.
+        /// </summary>
+        [TestMethod]
+        public void OriginalFilesModificationTest()
+        {
+            // Load Originl Settings Config File
+            ShortcutGuideSettings originalSettings = SettingsUtils.GetSettings<ShortcutGuideSettings>(ModuleName);
+            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+
+            // Initialise View Model with test Config files
+            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalGeneralSettings.Enabled.ShortcutGuide, viewModel.IsEnabled);
+            Assert.AreEqual(originalSettings.Properties.OverlayOpacity.Value, viewModel.OverlayOpacity);
+            Assert.AreEqual(originalSettings.Properties.PressTime.Value, viewModel.PressTime);
         }
 
         [TestMethod]

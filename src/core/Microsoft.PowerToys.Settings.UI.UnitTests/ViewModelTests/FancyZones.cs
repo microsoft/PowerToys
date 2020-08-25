@@ -18,6 +18,10 @@ namespace ViewModelTests
     {
         public const string FancyZonesTestFolderName = "Test\\FancyZones";
 
+        // This should not be changed. 
+        // Changing it will causes user's to lose their local settings configs.
+        public const string OriginalModuleName = "FancyZones";
+
         [TestInitialize]
         public void Setup()
         {
@@ -33,10 +37,10 @@ namespace ViewModelTests
         public void CleanUp()
         {
             // delete general settings folder created.
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(string.Empty))
+            string generalSettings_file_name = "Test";
+            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
             {
-                DeleteFolder(string.Empty);
+                DeleteFolder(generalSettings_file_name);
             }
 
             // delete fancy zones folder created.
@@ -49,6 +53,50 @@ namespace ViewModelTests
         public void DeleteFolder(string powertoy)
         {
             Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
+        }
+
+        /// <summary>
+        /// Test if the original settings files were modified.
+        /// </summary>
+        [TestMethod]
+        public void OriginalFilesModificationTest()
+        {
+            // Load Originl Settings Config File
+            FancyZonesSettings originalSettings = SettingsUtils.GetSettings<FancyZonesSettings>(OriginalModuleName);
+            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+
+            // Initialise View Model with test Config files
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(ColorPickerIsEnabledByDefault_IPC);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalGeneralSettings.Enabled.FancyZones, viewModel.IsEnabled);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesAppLastZoneMoveWindows.Value, viewModel.AppLastZoneMoveWindows);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesBorderColor.Value, viewModel.ZoneBorderColor);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesDisplayChangeMoveWindows.Value, viewModel.DisplayChangeMoveWindows);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesEditorHotkey.Value.ToString(), viewModel.EditorHotkey.ToString());
+            Assert.AreEqual(originalSettings.Properties.FancyzonesExcludedApps.Value, viewModel.ExcludedApps);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesHighlightOpacity.Value, viewModel.HighlightOpacity);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesInActiveColor.Value, viewModel.ZoneInActiveColor);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesMakeDraggedWindowTransparent.Value, viewModel.MakeDraggedWindowsTransparent);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesMouseSwitch.Value, viewModel.MouseSwitch);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value, viewModel.MoveWindowsAcrossMonitors);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value, viewModel.MoveWindowsBasedOnPosition);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value, viewModel.OpenWindowOnActiveMonitor);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesOverrideSnapHotkeys.Value, viewModel.OverrideSnapHotkeys);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesRestoreSize.Value, viewModel.RestoreSize);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesShiftDrag.Value, viewModel.ShiftDrag);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesShowOnAllMonitors.Value, viewModel.ShowOnAllMonitors);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesSpanZonesAcrossMonitors.Value, viewModel.SpanZonesAcrossMonitors);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesZoneHighlightColor.Value, viewModel.ZoneHighlightColor);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesZoneSetChangeMoveWindows.Value, viewModel.ZoneSetChangeMoveWindows);
+            Assert.AreEqual(originalSettings.Properties.UseCursorposEditorStartupscreen.Value, viewModel.UseCursorPosEditorStartupScreen);
+        }
+
+        private int ColorPickerIsEnabledByDefault_IPC(string msg)
+        {
+            OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+            Assert.IsTrue(snd.GeneralSettings.Enabled.ColorPicker);
+            return 0;
         }
 
         [TestMethod]

@@ -39,6 +39,39 @@ namespace ViewModelTests
             Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
         }
 
+        /// <summary>
+        /// Test if the original settings files were modified.
+        /// </summary>
+        [TestMethod]
+        public void OriginalFilesModificationTest()
+        {
+            // Load Originl Settings Config File
+            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+
+            // Initialise View Model with test Config files
+            // Arrange
+            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
+            Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
+            Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
+            GeneralViewModel viewModel = new GeneralViewModel(
+                "GeneralSettings_RunningAsAdminText",
+                "GeneralSettings_RunningAsUserText",
+                false,
+                false,
+                UpdateUIThemeMethod,
+                SendMockIPCConfigMSG,
+                SendRestartAdminIPCMessage,
+                SendCheckForUpdatesIPCMessage,
+                string.Empty);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalGeneralSettings.AutoDownloadUpdates, viewModel.AutoDownloadUpdates);
+            Assert.AreEqual(originalGeneralSettings.Packaged, viewModel.Packaged);
+            Assert.AreEqual(originalGeneralSettings.PowertoysVersion, viewModel.PowerToysVersion);
+            Assert.AreEqual(originalGeneralSettings.RunElevated, viewModel.RunElevated);
+            Assert.AreEqual(originalGeneralSettings.Startup, viewModel.Startup);
+        }
+
         [TestMethod]
         public void IsElevated_ShouldUpdateRunasAdminStatusAttrs_WhenSuccessful()
         {

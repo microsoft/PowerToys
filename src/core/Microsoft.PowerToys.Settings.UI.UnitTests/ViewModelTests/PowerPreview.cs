@@ -14,7 +14,11 @@ namespace ViewModelTests
     [TestClass]
     public class PowerPreview
     {
-        public const string Module = "Test\\File Explorer";
+        public const string TestModuleName = "Test\\File Explorer";
+
+        // This should not be changed. 
+        // Changing it will causes user's to lose their local settings configs.
+        private const string OriginalModuleName = "File Explorer";
 
         [TestInitialize]
         public void Setup()
@@ -23,29 +27,48 @@ namespace ViewModelTests
             GeneralSettings generalSettings = new GeneralSettings();
             PowerPreviewSettings powerpreview = new PowerPreviewSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
+            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), TestModuleName);
         }
 
         [TestCleanup]
         public void CleanUp()
         {
             // delete folder created.
-            string generalSettings_file_name = string.Empty;
+            string generalSettings_file_name = "Test";
             if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
             {
                 DeleteFolder(generalSettings_file_name);
             }
 
-            if (SettingsUtils.SettingsFolderExists(Module))
+            if (SettingsUtils.SettingsFolderExists(TestModuleName))
             {
-                DeleteFolder(Module);
+                DeleteFolder(TestModuleName);
             }
         }
 
         public void DeleteFolder(string powertoy)
         {
             Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
+        }
+
+        /// <summary>
+        /// Test if the original settings files were modified.
+        /// </summary>
+        [TestMethod]
+        public void OriginalFilesModificationTest()
+        {
+            // Load Originl Settings Config File
+            PowerPreviewSettings originalSettings = SettingsUtils.GetSettings<PowerPreviewSettings>(OriginalModuleName);
+
+            // Initialise View Model with test Config files
+            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalSettings.Properties.EnableMdPreview, viewModel.MDRenderIsEnabled);
+            Assert.AreEqual(originalSettings.Properties.EnableSvgPreview, viewModel.SVGRenderIsEnabled);
+            Assert.AreEqual(originalSettings.Properties.EnableSvgThumbnail, viewModel.SVGThumbnailIsEnabled);
         }
 
         [TestMethod]
@@ -60,7 +83,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, TestModuleName);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -78,7 +101,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, TestModuleName);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -96,7 +119,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);;
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, TestModuleName);;
 
             // act
             viewModel.MDRenderIsEnabled = true;

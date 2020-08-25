@@ -5,12 +5,17 @@
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace ViewModelTests
 {
     [TestClass]
     public class PowerLauncherViewModelTest
     {
+        // This should not be changed. 
+        // Changing it will causes user's to lose their local settings configs.
+        public const string OriginalModuleName = "PowerToys Run";
+
         private class SendCallbackMock
         {
             public int TimesSent { get; set; }
@@ -34,6 +39,34 @@ namespace ViewModelTests
             viewModel = new PowerLauncherViewModel(
                 mockSettings,
                 new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));
+        }
+
+        /// <summary>
+        /// Test if the original settings files were modified.
+        /// </summary>
+        [TestMethod]
+        public void OriginalFilesModificationTest()
+        {
+            // Load Originl Settings Config File
+            PowerLauncherSettings originalSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(OriginalModuleName);
+            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+
+            // Initialise View Model with test Config files
+            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
+            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(SendMockIPCConfigMSG, 32);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalGeneralSettings.Enabled.PowerLauncher, viewModel.EnablePowerLauncher);
+            Assert.AreEqual(originalSettings.Properties.ClearInputOnLaunch, viewModel.ClearInputOnLaunch);
+            Assert.AreEqual(originalSettings.Properties.CopyPathLocation.ToString(), viewModel.CopyPathLocation.ToString());
+            Assert.AreEqual(originalSettings.Properties.DisableDriveDetectionWarning, viewModel.DisableDriveDetectionWarning);
+            Assert.AreEqual(originalSettings.Properties.IgnoreHotkeysInFullscreen, viewModel.IgnoreHotkeysInFullScreen);
+            Assert.AreEqual(originalSettings.Properties.MaximumNumberOfResults, viewModel.MaximumNumberOfResults);
+            Assert.AreEqual(originalSettings.Properties.OpenPowerLauncher.ToString(), viewModel.OpenPowerLauncher.ToString());
+            Assert.AreEqual(originalSettings.Properties.OverrideWinkeyR, viewModel.OverrideWinRKey);
+            Assert.AreEqual(originalSettings.Properties.OverrideWinkeyS, viewModel.OverrideWinSKey);
+            Assert.AreEqual(originalSettings.Properties.SearchResultPreference, viewModel.SearchResultPreference);
+            Assert.AreEqual(originalSettings.Properties.SearchTypePreference, viewModel.SearchTypePreference);
         }
 
         [TestMethod]
