@@ -122,6 +122,7 @@ private:
     void _OnSize(_In_ WPARAM wParam);
     void _OnGetMinMaxInfo(_In_ LPARAM lParam);
     void _OnInitDlg();
+    void _InitDlgText();
     void _OnRename();
     void _OnAbout();
     void _OnCloseDlg();
