@@ -12,7 +12,6 @@ using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox;
 using Wox.Core.Plugin;
-using Wox.Core.Resource;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
@@ -100,11 +99,6 @@ namespace PowerLauncher
 
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
-
-                // happlebao todo temp fix for instance code logic
-                // load plugin before change language, because plugin language also needs be changed
-                InternationalizationManager.Instance.Settings = _settings;
-                InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
 
                 // main windows needs initialized before theme change because of blur settings
                 Http.Proxy = _settings.Proxy;
