@@ -90,7 +90,7 @@ namespace PowerLauncher
             InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
 
             SearchBox.QueryTextBox.Focus();
-            SearchBox.QueryTextBox.Lv = ListBox.SuggestionsList;
+            SearchBox.QueryTextBox.ControlledElements.Add(ListBox.SuggestionsList);
 
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;

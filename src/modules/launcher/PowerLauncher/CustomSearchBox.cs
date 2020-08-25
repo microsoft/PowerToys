@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 
@@ -12,9 +13,7 @@ namespace PowerLauncher
 {
     public class CustomSearchBox : TextBox
     {
-        private ListView lv;
-
-        public ListView Lv { get => lv; set => lv = value; }
+        public List<UIElement> ControlledElements { get; } = new List<UIElement>();
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {
@@ -30,10 +29,12 @@ namespace PowerLauncher
 
             protected override List<AutomationPeer> GetControlledPeersCore()
             {
-                List<AutomationPeer> controlledPeers = new List<AutomationPeer>
+                var controlledPeers = new List<AutomationPeer>();
+                foreach (UIElement controlledElement in ((CustomSearchBox)Owner).ControlledElements)
                 {
-                    UIElementAutomationPeer.CreatePeerForElement(((CustomSearchBox)Owner).Lv),
-                };
+                    controlledPeers.Add(UIElementAutomationPeer.CreatePeerForElement(controlledElement));
+                }
+
                 return controlledPeers;
             }
         }
