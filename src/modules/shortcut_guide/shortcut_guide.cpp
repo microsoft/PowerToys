@@ -2,7 +2,6 @@
 #include "shortcut_guide.h"
 #include "target_state.h"
 #include "trace.h"
-#include "resource.h"
 
 #include <common/common.h>
 #include <common/settings_objects.h>

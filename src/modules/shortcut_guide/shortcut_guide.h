@@ -2,7 +2,7 @@
 #include <interface/powertoy_module_interface.h>
 #include "overlay_window.h"
 
-#include "resource.h"
+#include "Generated Files/resource.h"
 
 #include <common/LowlevelKeyboardEvent.h>
 
