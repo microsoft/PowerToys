@@ -54,6 +54,7 @@ namespace PreviewHandlerCommon
                 if (name.Equals(DISPIDAMBIENTDLCONTROL))
                 {
                     result = Convert.ToInt32(
+                        WebBrowserDownloadControlFlags.DLIMAGES |
                         WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE |
                         WebBrowserDownloadControlFlags.FORCEOFFLINE |
                         WebBrowserDownloadControlFlags.NO_CLIENTPULL |
