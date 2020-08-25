@@ -88,7 +88,7 @@
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
         -->
         <TextBox
-            AutomationProperties.Name="{DynamicResource Query}"
+            AutomationProperties.Name="{x:Static p:Resources.Query}"
             x:Name="QueryTextBox"
             x:FieldModifier="public"
             Canvas.ZIndex="0"
@@ -111,7 +111,7 @@
             RenderOptions.ClearTypeHint="Enabled"
          />
         <TextBlock
-            AutomationProperties.Name="{DynamicResource SearchIcon}"
+            AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"
