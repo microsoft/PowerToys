@@ -29,7 +29,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                     {
                         if (!wDSResults.IsClosed && wDSResults.HasRows)
                         {
-                            while (wDSResults.IsClosed && wDSResults.Read())
+                            while (!wDSResults.IsClosed && wDSResults.Read())
                             {
                                 List<object> fieldData = new List<object>(wDSResults.FieldCount);
                                 for (int i = 0; i < wDSResults.FieldCount; i++)
