@@ -4,6 +4,15 @@
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
   </PropertyGroup>
 
+  <!-- Import the kits from the EWDK package -->
+  <Import Project="$(PkgKits)\build\native\Kits.props"/>
+
+  <!-- Fill in UCRT properties based on the EWDK package -->
+  <PropertyGroup>
+    <UniversalCRTSdkDir>$(WindowsSdkDir)</UniversalCRTSdkDir>
+    <UniversalCRTSdkDir_10>$(UniversalCRTSdkDir)</UniversalCRTSdkDir_10>
+  </PropertyGroup>
+  
   <ItemDefinitionGroup>
     <ClCompile>
       <ConformanceMode>false</ConformanceMode>
