@@ -30,7 +30,12 @@ namespace ViewModelTests
             FZConfigProperties fZConfigProperties = new FZConfigProperties();
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(fZConfigProperties.ToJsonString(), FancyZonesTestFolderName);
+
+            // Create settings file if none exists
+            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName))
+            {
+                SettingsUtils.SaveSettings(new FancyZonesSettings().ToJsonString(), OriginalModuleName);
+            }
         }
 
         [TestCleanup]

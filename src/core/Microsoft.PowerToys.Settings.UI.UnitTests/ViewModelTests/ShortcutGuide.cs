@@ -29,8 +29,14 @@ namespace ViewModelTests
             GeneralSettings generalSettings = new GeneralSettings();
             ShortcutGuideSettings shortcutGuide = new ShortcutGuideSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
             SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ShortCutGuideTestFolderName);
+
+            // Create settings file if none exists
+            if (!SettingsUtils.SettingsFolderExists(ModuleName))
+            {
+                SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ModuleName);
+            }
         }
 
         [TestCleanup]

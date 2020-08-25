@@ -29,6 +29,12 @@ namespace ViewModelTests
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
             SettingsUtils.SaveSettings(powerpreview.ToJsonString(), TestModuleName);
+
+            // Create settings file if none exists
+            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName))
+            {
+                SettingsUtils.SaveSettings(new PowerPreviewSettings().ToJsonString(), OriginalModuleName);
+            }
         }
 
         [TestCleanup]

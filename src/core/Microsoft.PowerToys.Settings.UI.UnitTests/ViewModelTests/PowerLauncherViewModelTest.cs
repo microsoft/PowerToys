@@ -33,6 +33,11 @@ namespace ViewModelTests
         [TestInitialize]
         public void Initialize()
         {
+            // Create settings file if none exists
+            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName))
+            {
+                SettingsUtils.SaveSettings(new PowerLauncherSettings().ToJsonString(), OriginalModuleName);
+            }
             mockSettings = new PowerLauncherSettings();
             sendCallbackMock = new SendCallbackMock();
 

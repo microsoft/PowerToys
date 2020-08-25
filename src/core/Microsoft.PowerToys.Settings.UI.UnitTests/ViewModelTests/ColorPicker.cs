@@ -27,6 +27,12 @@ namespace ViewModelTests
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
             SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.Name, TestModuleName + ".json");
+
+            // Create settings file if none exists
+            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName))
+            {
+                SettingsUtils.SaveSettings(new ColorPickerSettings().ToJsonString(), OriginalModuleName);
+            }
         }
 
         [TestCleanup]
