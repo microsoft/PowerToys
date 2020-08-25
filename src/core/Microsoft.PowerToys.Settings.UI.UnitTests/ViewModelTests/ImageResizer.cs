@@ -17,39 +17,6 @@ namespace ViewModelTests
     {
         public const string Module = "ImageResizer";
 
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            // Test base path:
-            // C:\Users\<user name>\AppData\Local\Packages\08e1807b-8b6d-4bfa-adc4-79c64aae8e78_9abkseg265h2m\LocalState\Microsoft\PowerToys\
-            GeneralSettings generalSettings = new GeneralSettings();
-            ImageResizerSettings imageResizer = new ImageResizerSettings();
-
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(imageResizer.ToJsonString(), imageResizer.Name);
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete folder created.
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
-            {
-                DeleteFolder(generalSettings_file_name);
-            }
-
-            if (SettingsUtils.SettingsFolderExists(Module))
-            {
-                DeleteFolder(Module);
-            }
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        }
 
         [TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()

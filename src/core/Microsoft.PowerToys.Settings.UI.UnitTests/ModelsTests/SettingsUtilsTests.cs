@@ -15,24 +15,6 @@ namespace CommonLibTest
     [TestClass]
     public class SettingsUtilsTests
     {
-        public SettingsUtilsTests()
-        {
-            string file_name = "\\test";
-            if (SettingsUtils.SettingsFolderExists(file_name))
-            {
-                DeleteFolder(file_name);
-            }
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            string file_name = "\\test";
-            if (SettingsUtils.SettingsFolderExists(file_name))
-            {
-                DeleteFolder(file_name);
-            }
-        }
 
         [TestMethod]
         public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
@@ -60,12 +42,6 @@ namespace CommonLibTest
 
             BasePTSettingsTest expected_json = JsonSerializer.Deserialize<BasePTSettingsTest>(file_contents_correct_json_content);
 
-            // Act
-            if (SettingsUtils.SettingsFolderExists(file_name))
-            {
-                DeleteFolder(file_name);
-            }
-
             SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
             BasePTSettingsTest actual_json = SettingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
@@ -73,42 +49,42 @@ namespace CommonLibTest
             Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
         }
 
-        [TestMethod]
-        public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
-        {
-            // Arrange
-            string file_name_random = "test\\" + RandomString();
-            string file_name_exists = "test\\exists";
-            string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
+        //[TestMethod]
+        //public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
+        //{
+        //    // Arrange
+        //    string file_name_random = "test\\" + RandomString();
+        //    string file_name_exists = "test\\exists";
+        //    string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
-            // Act
-            bool pathNotFound = SettingsUtils.SettingsFolderExists(file_name_random);
+        //    // Act
+        //    bool pathNotFound = SettingsUtils.SettingsFolderExists(file_name_random);
 
-            SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name_exists);
-            bool pathFound = SettingsUtils.SettingsFolderExists(file_name_exists);
+        //    SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name_exists);
+        //    bool pathFound = SettingsUtils.SettingsFolderExists(file_name_exists);
 
-            // Assert
-            Assert.IsFalse(pathNotFound);
-            Assert.IsTrue(pathFound);
-        }
+        //    // Assert
+        //    Assert.IsFalse(pathNotFound);
+        //    Assert.IsTrue(pathFound);
+        //}
 
-        [TestMethod]
-        public void CreateSettingsFolder_ShouldCreateFolder_WhenSuccessful()
-        {
-            // Arrange
-            string file_name = "test\\" + RandomString();
+        //[TestMethod]
+        //public void CreateSettingsFolder_ShouldCreateFolder_WhenSuccessful()
+        //{
+        //    // Arrange
+        //    string file_name = "test\\" + RandomString();
 
-            // Act
-            SettingsUtils.CreateSettingsFolder(file_name);
+        //    // Act
+        //    SettingsUtils.CreateSettingsFolder(file_name);
 
-            // Assert
-            Assert.IsTrue(SettingsUtils.SettingsFolderExists(file_name));
-        }
+        //    // Assert
+        //    Assert.IsTrue(SettingsUtils.SettingsFolderExists(file_name));
+        //}
 
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        }
+        //public void DeleteFolder(string powertoy)
+        //{
+        //    Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
+        //}
 
         public static string RandomString()
         {

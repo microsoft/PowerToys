@@ -18,39 +18,6 @@ namespace ViewModelTests
     {
         public const string FancyZonesTestFolderName = "Test\\FancyZones";
 
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            GeneralSettings generalSettings = new GeneralSettings();
-            FZConfigProperties fZConfigProperties = new FZConfigProperties();
-
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(fZConfigProperties.ToJsonString(), FancyZonesTestFolderName);
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete general settings folder created.
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(string.Empty))
-            {
-                DeleteFolder(string.Empty);
-            }
-
-            // delete fancy zones folder created.
-            if (SettingsUtils.SettingsFolderExists(FancyZonesTestFolderName))
-            {
-                DeleteFolder(FancyZonesTestFolderName);
-            }
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        }
-
         [TestMethod]
         public void IsEnabled_ShouldDisableModule_WhenSuccessful()
         {

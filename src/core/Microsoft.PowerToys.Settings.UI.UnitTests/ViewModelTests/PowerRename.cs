@@ -16,26 +16,6 @@ namespace ViewModelTests
     {
         public const string ModuleName = "PowerRename";
         public const string generalSettings_file_name = "Test\\PowerRename";
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            GeneralSettings generalSettings = new GeneralSettings();
-            PowerRenameSettings powerRename = new PowerRenameSettings();
-
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(powerRename.ToJsonString(), generalSettings_file_name, "power-rename-settings.json");
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete folder created.
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
-            {
-                DeleteFolder(generalSettings_file_name);
-            }
-        }
 
         [TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()
@@ -191,11 +171,6 @@ namespace ViewModelTests
 
             // act
             viewModel.MaxDispListNum = 20;
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
         }
     }
 }

@@ -16,29 +16,6 @@ namespace ViewModelTests
     {
         public const string generalSettings_file_name = "Test\\GenealSettings";
 
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            GeneralSettings generalSettings = new GeneralSettings();
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), generalSettings_file_name);
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete folder created.
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
-            {
-                DeleteFolder(generalSettings_file_name);
-            }
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        }
-
         [TestMethod]
         public void IsElevated_ShouldUpdateRunasAdminStatusAttrs_WhenSuccessful()
         {

@@ -16,38 +16,6 @@ namespace ViewModelTests
     {
         public const string Module = "Test\\File Explorer";
 
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            GeneralSettings generalSettings = new GeneralSettings();
-            PowerPreviewSettings powerpreview = new PowerPreviewSettings();
-
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete folder created.
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
-            {
-                DeleteFolder(generalSettings_file_name);
-            }
-
-            if (SettingsUtils.SettingsFolderExists(Module))
-            {
-                DeleteFolder(Module);
-            }
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        }
-
         [TestMethod]
         public void SVGRenderIsEnabled_ShouldPrevHandler_WhenSuccessful()
         {
