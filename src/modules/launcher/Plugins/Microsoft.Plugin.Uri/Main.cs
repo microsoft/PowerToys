@@ -56,7 +56,7 @@ namespace Microsoft.Plugin.Uri
                 results.Add(new Result
                 {
                     Title = uriResultString,
-                    SubTitle = Context.API.GetTranslation("Microsoft_plugin_uri_website"),
+                    SubTitle = Properties.Resources.Microsoft_plugin_uri_website,
                     IcoPath = _uriSettings.ShowBrowserIcon
                         ? BrowserIconPath
                         : DefaultIconPath,

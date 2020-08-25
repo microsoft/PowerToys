@@ -67,12 +67,12 @@ namespace Microsoft.Plugin.WindowWalker
 
         public string GetTranslatedPluginTitle()
         {
-            return Context.API.GetTranslation("wox_plugin_windowwalker_plugin_name");
+            return Properties.Resources.wox_plugin_windowwalker_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return Context.API.GetTranslation("wox_plugin_windowwalker_plugin_description");
+            return Properties.Resources.wox_plugin_windowwalker_plugin_description;
         }
 
         private static void SearchResultUpdated(object sender, SearchController.SearchResultUpdateEventArgs e)
