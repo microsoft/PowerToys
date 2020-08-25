@@ -6,39 +6,12 @@
 #include <memory>
 #include <vector>
 
-// Returns RECT with positions of the minimize/maximize buttons of the given window.
-// Does not always work, since some apps draw custom toolbars.
-std::optional<RECT> get_button_pos(HWND hwnd);
 // Gets position of given window.
 std::optional<RECT> get_window_pos(HWND hwnd);
-// Gets mouse position.
-std::optional<POINT> get_mouse_pos();
 
-// Test if window can be zoned by FancyZones
-struct FancyZonesFilter
-{
-    bool zonable = false; // If the window is zonable by FancyZones by default - true when both standard_window and no_visible_owner are also true
-    bool standard_window = false; // True if from the styles the window looks like a standard window
-    bool no_visible_owner = false; // True if the window is a top-level window that does not have a visible owner
-    std::wstring process_path; // Path to the executable owning the window
-};
-FancyZonesFilter get_fancyzones_filtered_window(HWND window);
+// Check if window is part of the shell or the taskbar.
+bool is_system_window(HWND hwnd, const char* class_name);
 
-// Gets active foreground window, filtering out all "non standard" windows like the taskbar, etc.
-struct ShortcutGuideFilter
-{
-    HWND hwnd = nullptr; // Handle to the top-level foreground window or nullptr if there is no such window
-    bool snappable = false; // True, if the window can react to Windows Snap keys
-};
-ShortcutGuideFilter get_shortcutguide_filtered_window();
-
-// Calculate sizes
-int width(const RECT& rect);
-int height(const RECT& rect);
-// Compare rects
-bool operator<(const RECT& lhs, const RECT& rhs);
-// Moves and/or resizes small_rect to fit inside big_rect.
-RECT keep_rect_inside_rect(const RECT& small_rect, const RECT& big_rect);
 // Initializes and runs windows message loop
 int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_seconds = {});
 
@@ -123,5 +96,3 @@ struct overloaded : Ts...
 };
 template<class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
-
-#define POWER_LAUNCHER_PID_SHARED_FILE L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"

@@ -5,6 +5,7 @@
 #include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
 #include "ZoneWindow.h"
+#include "ZoneWindowDrawing.h"
 #include "trace.h"
 #include "util.h"
 #include "Settings.h"
@@ -18,9 +19,10 @@
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const wchar_t SegoeUiFont[] = L"Segoe ui";
     const wchar_t ToolWindowClassName[] = L"SuperFancyZones_ZoneWindow";
 }
+
+using namespace FancyZonesUtils;
 
 namespace ZoneWindowUtils
 {
@@ -55,135 +57,6 @@ namespace ZoneWindowUtils
         result += virtualDesktopId;
 
         return result;
-    }
-}
-
-namespace ZoneWindowDrawUtils
-{
-    struct ColorSetting
-    {
-        BYTE fillAlpha{};
-        COLORREF fill{};
-        BYTE borderAlpha{};
-        COLORREF border{};
-        int thickness{};
-    };
-
-    void DrawBackdrop(wil::unique_hdc& hdc, RECT const& clientRect) noexcept
-    {
-        FillRectARGB(hdc, &clientRect, 0, RGB(0, 0, 0), false);
-    }
-
-    void DrawIndex(wil::unique_hdc& hdc, Rect rect, size_t index)
-    {
-        Gdiplus::Graphics g(hdc.get());
-
-        Gdiplus::FontFamily fontFamily(NonLocalizable::SegoeUiFont);
-        Gdiplus::Font font(&fontFamily, 80, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
-        Gdiplus::SolidBrush solidBrush(Gdiplus::Color(255, 0, 0, 0));
-
-        std::wstring text = std::to_wstring(index);
-
-        g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
-        Gdiplus::StringFormat stringFormat = new Gdiplus::StringFormat();
-        stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
-        stringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-        Gdiplus::RectF gdiRect(static_cast<Gdiplus::REAL>(rect.left()),
-                               static_cast<Gdiplus::REAL>(rect.top()),
-                               static_cast<Gdiplus::REAL>(rect.width()),
-                               static_cast<Gdiplus::REAL>(rect.height()));
-
-        g.DrawString(text.c_str(), -1, &font, gdiRect, &stringFormat, &solidBrush);
-    }
-
-    void DrawZone(wil::unique_hdc& hdc, ColorSetting const& colorSetting, winrt::com_ptr<IZone> zone, const std::vector<winrt::com_ptr<IZone>>& zones, bool flashMode) noexcept
-    {
-        RECT zoneRect = zone->GetZoneRect();
-
-        Gdiplus::Graphics g(hdc.get());
-        Gdiplus::Color fillColor(colorSetting.fillAlpha, GetRValue(colorSetting.fill), GetGValue(colorSetting.fill), GetBValue(colorSetting.fill));
-        Gdiplus::Color borderColor(colorSetting.borderAlpha, GetRValue(colorSetting.border), GetGValue(colorSetting.border), GetBValue(colorSetting.border));
-
-        Gdiplus::Rect rectangle(zoneRect.left, zoneRect.top, zoneRect.right - zoneRect.left - 1, zoneRect.bottom - zoneRect.top - 1);
-
-        Gdiplus::Pen pen(borderColor, static_cast<Gdiplus::REAL>(colorSetting.thickness));
-        g.FillRectangle(new Gdiplus::SolidBrush(fillColor), rectangle);
-        g.DrawRectangle(&pen, rectangle);
-
-        if (!flashMode)
-        {
-            DrawIndex(hdc, zoneRect, zone->Id());
-        }
-    }
-
-    void DrawActiveZoneSet(wil::unique_hdc& hdc,
-                           COLORREF zoneColor,
-                           COLORREF zoneBorderColor,
-                           COLORREF highlightColor,
-                           int zoneOpacity,
-                           const std::vector<winrt::com_ptr<IZone>>& zones,
-                           const std::vector<size_t>& highlightZones,
-                           bool flashMode,
-                           bool drawHints) noexcept
-    {
-        //                                 { fillAlpha, fill, borderAlpha, border, thickness }
-        ColorSetting const colorHints{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 255, RGB(104, 118, 138), -2 };
-        ColorSetting colorViewer{ OpacitySettingToAlpha(zoneOpacity), 0, 255, RGB(40, 50, 60), -2 };
-        ColorSetting colorHighlight{ OpacitySettingToAlpha(zoneOpacity), 0, 255, 0, -2 };
-        ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
-
-        std::vector<bool> isHighlighted(zones.size(), false);
-        for (size_t x : highlightZones)
-        {
-            isHighlighted[x] = true;
-        }
-
-        // First draw the inactive zones
-        for (auto iter = zones.begin(); iter != zones.end(); iter++)
-        {
-            size_t zoneId = iter - zones.begin();
-            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
-            if (!zone)
-            {
-                continue;
-            }
-
-            if (!isHighlighted[zoneId])
-            {
-                if (flashMode)
-                {
-                    DrawZone(hdc, colorFlash, zone, zones, flashMode);
-                }
-                else if (drawHints)
-                {
-                    DrawZone(hdc, colorHints, zone, zones, flashMode);
-                }
-                {
-                    colorViewer.fill = zoneColor;
-                    colorViewer.border = zoneBorderColor;
-                    DrawZone(hdc, colorViewer, zone, zones, flashMode);
-                }
-            }
-        }
-
-        // Draw the active zones on top of the inactive zones
-        for (auto iter = zones.begin(); iter != zones.end(); iter++)
-        {
-            size_t zoneId = iter - zones.begin();
-            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
-            if (!zone)
-            {
-                continue;
-            }
-
-            if (isHighlighted[zoneId])
-            {
-                colorHighlight.fill = highlightColor;
-                colorHighlight.border = zoneBorderColor;
-                DrawZone(hdc, colorHighlight, zone, zones, flashMode);
-            }
-        }
     }
 }
 
@@ -716,11 +589,11 @@ void ZoneWindow::OnPaint(wil::unique_hdc& hdc) noexcept
     HPAINTBUFFER bufferedPaint = BeginBufferedPaint(hdc.get(), &clientRect, BPBF_TOPDOWNDIB, nullptr, &hdcMem);
     if (bufferedPaint)
     {
-        ZoneWindowDrawUtils::DrawBackdrop(hdcMem, clientRect);
+        ZoneWindowDrawing::DrawBackdrop(hdcMem, clientRect);
 
         if (m_activeZoneSet && m_host)
         {
-            ZoneWindowDrawUtils::DrawActiveZoneSet(hdcMem,
+            ZoneWindowDrawing::DrawActiveZoneSet(hdcMem,
                                                    m_host->GetZoneColor(),
                                                    m_host->GetZoneBorderColor(),
                                                    m_host->GetZoneHighlightColor(),

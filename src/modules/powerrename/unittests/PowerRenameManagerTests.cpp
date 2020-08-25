@@ -68,31 +68,30 @@ namespace PowerRenameManagerTests
                                                      &item);
 
                 int itemId = 0;
-                Assert::IsTrue(item->get_id(&itemId) == S_OK);
+                Assert::IsTrue(item->GetId(&itemId) == S_OK);
                 mgr->AddItem(item);
 
                 // Verify the item we added is the same from the event
                 Assert::IsTrue(mockMgrEvents->m_itemAdded != nullptr && mockMgrEvents->m_itemAdded == item);
                 int eventItemId = 0;
-                Assert::IsTrue(mockMgrEvents->m_itemAdded->get_id(&eventItemId) == S_OK);
+                Assert::IsTrue(mockMgrEvents->m_itemAdded->GetId(&eventItemId) == S_OK);
                 Assert::IsTrue(itemId == eventItemId);
             }
 
             // TODO: Setup match and replace parameters
             wchar_t newReplaceTerm[MAX_PATH] = { 0 };
             CComPtr<IPowerRenameRegEx> renRegEx;
-            Assert::IsTrue(mgr->get_renameRegEx(&renRegEx) == S_OK);
-            renRegEx->put_flags(flags);
-            renRegEx->put_searchTerm(searchTerm.c_str());
+            Assert::IsTrue(mgr->GetRenameRegEx(&renRegEx) == S_OK);
+            renRegEx->PutFlags(flags);
+            renRegEx->PutSearchTerm(searchTerm.c_str());
             if (isFileAttributesUsed(replaceTerm.c_str()) && SUCCEEDED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTerm.c_str(), LocalTime)))
             {
-                renRegEx->put_replaceTerm(newReplaceTerm);
-            }                
+                renRegEx->PutReplaceTerm(newReplaceTerm);
+            }
             else
             {
-                renRegEx->put_replaceTerm(replaceTerm.c_str());
+                renRegEx->PutReplaceTerm(replaceTerm.c_str());
             }
-
             Sleep(1000);
 
             // Perform the rename
@@ -146,13 +145,13 @@ namespace PowerRenameManagerTests
             CComPtr<IPowerRenameItem> item;
             CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, &item);
             int itemId = 0;
-            Assert::IsTrue(item->get_id(&itemId) == S_OK);
+            Assert::IsTrue(item->GetId(&itemId) == S_OK);
             mgr->AddItem(item);
 
             // Verify the item we added is the same from the event
             Assert::IsTrue(mockMgrEvents->m_itemAdded != nullptr && mockMgrEvents->m_itemAdded == item);
             int eventItemId = 0;
-            Assert::IsTrue(mockMgrEvents->m_itemAdded->get_id(&eventItemId) == S_OK);
+            Assert::IsTrue(mockMgrEvents->m_itemAdded->GetId(&eventItemId) == S_OK);
             Assert::IsTrue(itemId == eventItemId);
             Assert::IsTrue(mgr->Shutdown() == S_OK);
 
@@ -285,7 +284,7 @@ namespace PowerRenameManagerTests
         {
             rename_pairs renamePairs[] = {
                 { L"foo.FOO", L"foo.bar", false, true, 0 },
-                { L"foo.bar", L"foo.bar_rename", false, false, 0 }
+                { L"foo.bar", L"foo.bar_norename", false, false, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Lowercase | ExtensionOnly);

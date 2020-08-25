@@ -20,6 +20,7 @@ public:
     void SetItemCount(_In_ UINT itemCount);
     void OnKeyDown(_In_ IPowerRenameManager* psrm, _In_ LV_KEYDOWN* lvKeyDown);
     void OnClickList(_In_ IPowerRenameManager* psrm, NM_LISTVIEW* pnmListView);
+    void OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ int pnmListView);
     void GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi);
     void OnSize();
     HWND GetHWND() { return m_hwndLV; }
@@ -28,7 +29,9 @@ private:
     void _UpdateColumns();
     void _UpdateColumnSizes();
     void _UpdateHeaderCheckState(_In_ bool check);
+    void _UpdateHeaderFilterState(_In_ DWORD filter);
 
+    UINT m_itemCount = 0;
     HWND m_hwndLV = nullptr;
 };
 
@@ -51,8 +54,8 @@ public:
     IFACEMETHODIMP Show(_In_opt_ HWND hwndParent);
     IFACEMETHODIMP Close();
     IFACEMETHODIMP Update();
-    IFACEMETHODIMP get_hwnd(_Out_ HWND* hwnd);
-    IFACEMETHODIMP get_showUI(_Out_ bool* showUI);
+    IFACEMETHODIMP GetHwnd(_Out_ HWND* hwnd);
+    IFACEMETHODIMP GetShowUI(_Out_ bool* showUI);
 
     // IPowerRenameManagerEvents
     IFACEMETHODIMP OnItemAdded(_In_ IPowerRenameItem* renameItem);
@@ -122,6 +125,7 @@ private:
     void _OnSize(_In_ WPARAM wParam);
     void _OnGetMinMaxInfo(_In_ LPARAM lParam);
     void _OnInitDlg();
+    void _InitDlgText();
     void _OnRename();
     void _OnAbout();
     void _OnCloseDlg();

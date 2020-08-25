@@ -14,6 +14,7 @@
 
 using namespace JSONHelpers;
 using namespace FancyZonesDataTypes;
+using namespace FancyZonesUtils;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests

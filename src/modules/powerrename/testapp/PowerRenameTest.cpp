@@ -43,7 +43,7 @@ int APIENTRY wWinMain(
             if (SUCCEEDED(CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&spsrif))))
             {
                 // Pass the factory to the manager
-                if (SUCCEEDED(spsrm->put_renameItemFactory(spsrif)))
+                if (SUCCEEDED(spsrm->PutRenameItemFactory(spsrif)))
                 {
                     // Create the rename UI instance and pass the manager
                     CComPtr<IPowerRenameUI> spsrui;

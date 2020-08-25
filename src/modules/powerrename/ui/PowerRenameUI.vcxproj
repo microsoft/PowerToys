@@ -11,6 +11,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h PowerRenameUI.base.rc PowerRenameUI.rc 1001" />
+  </Target>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0E072714-D127-460B-AFAD-B4C40B412798}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -164,8 +167,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="PowerRenameUI.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="pch.h" />
+    <None Include="resource.base.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -175,13 +179,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PowerRenameUI.rc" />
+    <ResourceCompile Include="Generated Files/PowerRenameUI.rc" />
+    <None Include="PowerRenameUI.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Rename.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
