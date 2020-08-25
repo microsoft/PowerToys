@@ -57,7 +57,7 @@ namespace Microsoft.Plugin.Indexer
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_copy_path"),
+                    Title = Properties.Resources.Microsoft_plugin_indexer_copy_path,
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
@@ -82,7 +82,7 @@ namespace Microsoft.Plugin.Indexer
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_open_in_console"),
+                    Title = Properties.Resources.Microsoft_plugin_indexer_open_in_console,
                     Glyph = "\xE756",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
@@ -117,12 +117,12 @@ namespace Microsoft.Plugin.Indexer
 
         // Function to add the context menu item to run as admin
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log the exeption message")]
-        private ContextMenuResult CreateRunAsAdminContextMenu(SearchResult record)
+        private static ContextMenuResult CreateRunAsAdminContextMenu(SearchResult record)
         {
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = _context.API.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"),
+                Title = Properties.Resources.Microsoft_plugin_indexer_run_as_administrator,
                 Glyph = "\xE7EF",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
@@ -164,7 +164,7 @@ namespace Microsoft.Plugin.Indexer
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = _context.API.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"),
+                Title = Properties.Resources.Microsoft_plugin_indexer_open_containing_folder,
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
