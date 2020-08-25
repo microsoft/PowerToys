@@ -83,14 +83,14 @@ namespace Microsoft.Plugin.Shell
                 {
                     if (m.Key == cmd)
                     {
-                        result.SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
+                        result.SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value);
                         return null;
                     }
 
                     var ret = new Result
                     {
                         Title = m.Key,
-                        SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                        SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value),
                         IcoPath = IconPath,
                         Action = c =>
                         {
@@ -109,7 +109,7 @@ namespace Microsoft.Plugin.Shell
             {
                 Title = cmd,
                 Score = 5000,
-                SubTitle = "Shell: " + _context.API.GetTranslation("wox_plugin_cmd_execute_through_shell"),
+                SubTitle = "Shell: " + Properties.Resources.wox_plugin_cmd_execute_through_shell,
                 IcoPath = IconPath,
                 Action = c =>
                 {
@@ -127,7 +127,7 @@ namespace Microsoft.Plugin.Shell
                 .Select(m => new Result
                 {
                     Title = m.Key,
-                    SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, _context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                    SubTitle = "Shell: " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value),
                     IcoPath = IconPath,
                     Action = c =>
                     {
@@ -284,17 +284,17 @@ namespace Microsoft.Plugin.Shell
 
         public Control CreateSettingPanel()
         {
-            return new CMDSetting(_settings);
+            throw new NotImplementedException();
         }
 
         public string GetTranslatedPluginTitle()
         {
-            return _context.API.GetTranslation("wox_plugin_cmd_plugin_name");
+            return Properties.Resources.wox_plugin_cmd_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return _context.API.GetTranslation("wox_plugin_cmd_plugin_description");
+            return Properties.Resources.wox_plugin_cmd_plugin_description;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
@@ -304,7 +304,7 @@ namespace Microsoft.Plugin.Shell
                 new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
+                    Title = Properties.Resources.wox_plugin_cmd_run_as_administrator,
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,

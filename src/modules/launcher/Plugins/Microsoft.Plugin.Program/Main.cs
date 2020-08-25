@@ -111,12 +111,12 @@ namespace Microsoft.Plugin.Program
 
         public string GetTranslatedPluginTitle()
         {
-            return _context.API.GetTranslation("wox_plugin_program_plugin_name");
+            return Properties.Resources.wox_plugin_program_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return _context.API.GetTranslation("wox_plugin_program_plugin_description");
+            return Properties.Resources.wox_plugin_program_plugin_description;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)

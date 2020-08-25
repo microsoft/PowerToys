@@ -130,23 +130,23 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Function to set the subtitle based on the Type of application
-        private string SetSubtitle(IPublicAPI api)
+        private string SetSubtitle()
         {
             if (AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
             {
-                return api.GetTranslation("powertoys_run_plugin_program_win32_application");
+                return Properties.Resources.powertoys_run_plugin_program_win32_application;
             }
             else if (AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
-                return api.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application");
+                return Properties.Resources.powertoys_run_plugin_program_internet_shortcut_application;
             }
             else if (AppType == (uint)ApplicationTypes.WEB_APPLICATION)
             {
-                return api.GetTranslation("powertoys_run_plugin_program_web_application");
+                return Properties.Resources.powertoys_run_plugin_program_web_application;
             }
             else if (AppType == (uint)ApplicationTypes.RUN_COMMAND)
             {
-                return api.GetTranslation("powertoys_run_plugin_program_run_command");
+                return Properties.Resources.powertoys_run_plugin_program_run_command;
             }
             else
             {
@@ -200,7 +200,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = SetSubtitle(api),
+                SubTitle = SetSubtitle(),
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -223,8 +223,8 @@ namespace Microsoft.Plugin.Program.Programs
             result.Title = Name;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
-            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), FullPath);
+            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
+            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, FullPath);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
@@ -245,7 +245,7 @@ namespace Microsoft.Plugin.Program.Programs
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
+                    Title = Properties.Resources.wox_plugin_program_run_as_administrator,
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
@@ -271,7 +271,7 @@ namespace Microsoft.Plugin.Program.Programs
                 new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                    Title = Properties.Resources.wox_plugin_program_open_containing_folder,
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
@@ -287,7 +287,7 @@ namespace Microsoft.Plugin.Program.Programs
                 new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = api.GetTranslation("wox_plugin_program_open_in_console"),
+                    Title = Properties.Resources.wox_plugin_program_open_in_console,
                     Glyph = "\xE756",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
