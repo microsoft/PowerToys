@@ -4,6 +4,16 @@
 
 #include "common.h"
 
+namespace
+{
+    bool operator<(const RECT& lhs, const RECT& rhs)
+    {
+        auto lhs_tuple = std::make_tuple(lhs.left, lhs.right, lhs.top, lhs.bottom);
+        auto rhs_tuple = std::make_tuple(rhs.left, rhs.right, rhs.top, rhs.bottom);
+        return lhs_tuple < rhs_tuple;
+    }
+}
+
 bool operator==(const ScreenSize& lhs, const ScreenSize& rhs)
 {
     auto lhs_tuple = std::make_tuple(lhs.rect.left, lhs.rect.right, lhs.rect.top, lhs.rect.bottom);
