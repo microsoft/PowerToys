@@ -18,7 +18,6 @@ using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
 using PowerLauncher.Storage;
 using Wox.Core.Plugin;
-using Wox.Core.Resource;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;

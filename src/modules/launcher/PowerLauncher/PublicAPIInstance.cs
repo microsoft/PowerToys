@@ -10,7 +10,6 @@ using System.Windows;
 using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox.Core.Plugin;
-using Wox.Core.Resource;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
