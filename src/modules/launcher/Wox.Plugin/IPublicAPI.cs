@@ -69,14 +69,6 @@ namespace Wox.Plugin
         void InstallPlugin(string path);
 
         /// <summary>
-        /// Get translation of current language
-        /// You need to implement IPluginI18n if you want to support multiple languages for your plugin
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        string GetTranslation(string key);
-
-        /// <summary>
         /// Get all loaded plugins
         /// </summary>
         /// <returns></returns>

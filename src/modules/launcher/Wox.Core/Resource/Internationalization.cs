@@ -162,20 +162,6 @@ namespace Wox.Core.Resource
             return AvailableLanguages.GetAvailableLanguages();
         }
 
-        public string GetTranslation(string key)
-        {
-            var translation = Application.Current.TryFindResource(key);
-            if (translation is string)
-            {
-                return translation.ToString();
-            }
-            else
-            {
-                Log.Error($"|Internationalization.GetTranslation|No Translation for key {key}");
-                return $"No Translation for key {key}";
-            }
-        }
-
         private void UpdatePluginMetadataTranslations()
         {
             foreach (var p in PluginManager.GetPluginsForInterface<IPluginI18n>())

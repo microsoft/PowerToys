@@ -83,11 +83,6 @@ namespace Wox
             Application.Current.Dispatcher.Invoke(() => PluginManager.InstallPlugin(path));
         }
 
-        public string GetTranslation(string key)
-        {
-            return InternationalizationManager.Instance.GetTranslation(key);
-        }
-
         public List<PluginPair> GetAllPlugins()
         {
             return PluginManager.AllPlugins.ToList();
