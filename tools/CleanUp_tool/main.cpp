@@ -162,8 +162,8 @@ void RemoveSettingsFolder()
 
 void ClearRegistry()
 {
-    RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\SuperFancyZones");
-    RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\PowerRename");
-    RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\DontShowMeThisDialogAgain\\{e16ea82f-6d94-4f30-bb02-d6d911588afd}");
-    RegDeleteKeyW(HKEY_CURRENT_USER, L"Software\\Microsoft\\ImageResizer");
+    RegDeleteTreeW(HKEY_CURRENT_USER, L"Software\\SuperFancyZones");
+    RegDeleteTreeW(HKEY_CURRENT_USER, L"Software\\Microsoft\\PowerRename");
+    RegDeleteTreeW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\DontShowMeThisDialogAgain\\{e16ea82f-6d94-4f30-bb02-d6d911588afd}");
+    RegDeleteTreeW(HKEY_CURRENT_USER, L"Software\\Microsoft\\ImageResizer");
 }
