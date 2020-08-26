@@ -122,11 +122,9 @@ We currently support the matrix below.
 
 ### July 2020 Update
 
-Our goals for 0.20 release cycle were to focus on adding in a few new features along with a heavy focus on stability / quality fixes. Martin Chrzan helped contribute a new utility that was in our 2021 plans, a screen wide color picker!  Chris Davis also helped contribute a SVG icon support for File Explorer!
+Our goals for 0.21 release cycle was to focus on stability, localization and quality of life improvements for both the development team and our end users. 
 
-Between 0.19 and 0.20 releases, we tracked down a lot of performance and memory issues with PowerToys Run as well. The most important ones got added to 0.19.1 and 0.19.2 releases. If you find something not working correctly, please make us aware.
-
-In addition, we'd like to thank everyone who filed a bug, gave feedback or made a pull-request. The PowerToys team is extremely grateful to have the support of an amazing active community.
+One of the longer term goal items we have made progress on is the Out of Box experience / initial onboarding experience (OOBE) improvements. @Niels9001 created a wicked awesome proof of concept of what the OOBE experience could be.  We are pretty stoked about this since it handles one an important item, critical shortcut default adjustments.
 
 Here are a few highlights from August
 
@@ -150,6 +148,9 @@ Runner:
 Shortcut Guide:
 - Improved vkey catching which will fix some use cases of it not showing up
 
+SVG in File Explorer:
+- Embedded image tags will now render in Explorer
+
 Dev quality of life improvements: 
 - Current warning count reduced from 89 to 15 in 0.20.1
 - StyleCop enabled E2E
@@ -166,10 +167,11 @@ For [0.22](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+
 - Stability
 - Quality
 - Localization
+- OOBE
 
-### PowerToys 2020 roadmap
+### PowerToys 2020 & 2021 roadmap
 
-Our roadmap for all the [goals and utilities for 2020 detailed over here in the wiki][v1].
+Our roadmap for all the [goals and utilities for 2020 detailed over here in the wiki][roadmap].
 
 ## Developer Guidance
 
@@ -200,5 +202,5 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
-[v1]: https://github.com/microsoft/PowerToys/wiki/Version-1.0-Strategy
+[roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
