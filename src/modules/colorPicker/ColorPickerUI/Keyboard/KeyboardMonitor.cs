@@ -62,8 +62,7 @@ namespace ColorPicker.Keyboard
 
         private void Hook_KeyboardPressed(object sender, GlobalKeyboardHookEventArgs e)
         {
-            List<string> currentlyPressedKeys = new List<string>();
-
+            var currentlyPressedKeys = new List<string>();
             var virtualCode = e.KeyboardData.VirtualCode;
 
             // ESC pressed
