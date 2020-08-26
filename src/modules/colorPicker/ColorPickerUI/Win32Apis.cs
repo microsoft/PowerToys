@@ -17,6 +17,17 @@ namespace ColorPicker
         public const int LlkhfAltdown = KfAltdown >> 8;
         public const int MonitorinfofPrimary = 0x00000001;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        public const int VK_SHIFT = 0x10;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        public const int VK_CONTROL = 0x11;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        public const int VK_MENU = 0x12;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        public const int VK_LWIN = 0x5B;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        public const int VK_RWIN = 0x5C;
+
         public delegate bool MonitorEnumProc(
             IntPtr monitor, IntPtr hdc, IntPtr lprcMonitor, IntPtr lParam);
 
@@ -52,6 +63,9 @@ namespace ColorPicker
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        internal static extern short GetAsyncKeyState(int vKey);
 
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
         internal static extern bool SystemParametersInfo(int uiAction, int uiParam, IntPtr pvParam, int fWinIni);
