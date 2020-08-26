@@ -113,6 +113,7 @@ build:
             - 'modules\PowerRename\PowerRenameExt.dll'
             - 'modules\ShortcutGuide\ShortcutGuide.dll'
             - 'modules\VideoConference\VideoConferenceModule.dll'
+            - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.dll'
             - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceCustomMediaSource.dll'
             - 'Notifications.dll'
             - 'os-detection.dll'
