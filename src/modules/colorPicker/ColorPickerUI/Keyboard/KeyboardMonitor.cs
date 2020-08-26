@@ -84,10 +84,7 @@ namespace ColorPicker.Keyboard
 
             if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown || e.KeyboardState == GlobalKeyboardHook.KeyboardState.SysKeyDown)
             {
-                if (!currentlyPressedKeys.Contains(name))
-                {
-                    currentlyPressedKeys.Add(name);
-                }
+                currentlyPressedKeys.Add(name);
             }
 
             currentlyPressedKeys.Sort();
