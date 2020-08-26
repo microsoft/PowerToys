@@ -59,8 +59,8 @@ namespace ColorPicker.Settings
                             if (!_settingsUtils.SettingsExists(ColorPickerModuleName))
                             {
                                 Logger.LogInfo("ColorPicker settings.json was missing, creating a new one");
-                                var defaultColorPickerSettings = new ColorPickerSettings(_settingsUtils);
-                                defaultColorPickerSettings.Save();
+                                var defaultColorPickerSettings = new ColorPickerSettings();
+                                defaultColorPickerSettings.Save(_settingsUtils);
                             }
 
                             var settings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);

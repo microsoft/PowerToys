@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 }
                 else
                 {
-                    settings = new PowerLauncherSettings(_settingsUtils);
+                    settings = new PowerLauncherSettings();
                     settings.Properties.OpenPowerLauncher.Alt = true;
                     settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
                     settings.Properties.MaximumNumberOfResults = 4;

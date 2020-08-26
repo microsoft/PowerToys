@@ -16,17 +16,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("properties")]
         public ColorPickerProperties Properties { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
-
-        public ColorPickerSettings(ISettingsUtils settingsUtils)
+        public ColorPickerSettings()
         {
             Properties = new ColorPickerProperties();
             Version = "1";
             Name = ModuleName;
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
         }
 
-        public virtual void Save()
+        public virtual void Save(ISettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = new JsonSerializerOptions
@@ -34,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 WriteIndented = true,
             };
 
-            _settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
+            settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }
     }
 }

@@ -25,13 +25,11 @@ namespace ViewModelTests
         private PowerLauncherViewModel viewModel;
         private PowerLauncherSettings mockSettings;
         private SendCallbackMock sendCallbackMock;
-
         [TestInitialize]
         public void Initialize()
         {
-            mockSettings = new PowerLauncherSettings(new Mock<ISettingsUtils>().Object);
+            mockSettings = new PowerLauncherSettings();
             sendCallbackMock = new SendCallbackMock();
-
             viewModel = new PowerLauncherViewModel(
                 mockSettings,
                 new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));

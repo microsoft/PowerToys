@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
             else
             {
-                _colorPickerSettings = new ColorPickerSettings(_settingsUtils);
+                _colorPickerSettings = new ColorPickerSettings();
             }
 
             if (_settingsUtils.SettingsExists())
