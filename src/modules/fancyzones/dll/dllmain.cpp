@@ -52,7 +52,6 @@ public:
     // These are the settings shown on the settings page along with their current values.
     virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override
     {
-        OutputDebugString(L"Get configuration.\n");
         return m_settings->GetConfig(buffer, buffer_size);
     }
 
@@ -60,7 +59,6 @@ public:
     // This is called when the user hits Save on the settings page.
     virtual void set_config(PCWSTR config) override
     {
-        OutputDebugString(L"Set configuration.\n");
         m_settings->SetConfig(config);
     }
 
