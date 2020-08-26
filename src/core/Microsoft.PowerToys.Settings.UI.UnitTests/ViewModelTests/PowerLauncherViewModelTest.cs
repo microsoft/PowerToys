@@ -38,6 +38,10 @@ namespace ViewModelTests
             {
                 SettingsUtils.SaveSettings(new PowerLauncherSettings().ToJsonString(), OriginalModuleName);
             }
+            if (!SettingsUtils.SettingsFolderExists("settings.json"))
+            {
+                SettingsUtils.SaveSettings(new GeneralSettings().ToJsonString());
+            }
             mockSettings = new PowerLauncherSettings();
             sendCallbackMock = new SendCallbackMock();
 

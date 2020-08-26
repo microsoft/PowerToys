@@ -34,6 +34,10 @@ namespace ViewModelTests
             {
                 SettingsUtils.SaveSettings(new ImageResizerSettings().ToJsonString(), Module);
             }
+            if (!SettingsUtils.SettingsFolderExists("settings.json"))
+            {
+                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            }
         }
 
         [TestCleanup]

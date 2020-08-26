@@ -36,6 +36,10 @@ namespace ViewModelTests
             {
                 SettingsUtils.SaveSettings(new FancyZonesSettings().ToJsonString(), OriginalModuleName);
             }
+            if (!SettingsUtils.SettingsFolderExists("settings.json"))
+            {
+                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            }
         }
 
         [TestCleanup]

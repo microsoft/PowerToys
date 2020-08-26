@@ -37,6 +37,10 @@ namespace ViewModelTests
             {
                 SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ModuleName);
             }
+            if (!SettingsUtils.SettingsFolderExists("settings.json"))
+            {
+                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            }
         }
 
         [TestCleanup]
