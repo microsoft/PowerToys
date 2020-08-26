@@ -109,13 +109,14 @@ Foreach-Object {
             # Each line of the resgen text file is of the form ResourceName=ResourceValue with no spaces.
             $content = $line -split "=", 2
 
+            $culture = [System.Globalization.CultureInfo]::GetCultureInfo('en-US')
             # Each resource is named as IDS_ResxResourceName, in uppercase
-            $lineInRCFormat = "IDS_" + $content[0].ToUpper() + " L`"" + $content[1] + "`""
+            $lineInRCFormat = "IDS_" + $content[0].ToUpper($culture) + " L`"" + $content[1] + "`""
             $newLinesForRCFile = $newLinesForRCFile + "`r`n    " + $lineInRCFormat
 
             # Resource header file needs to be updated only for one language
             if (!$headerFileUpdated) {
-                $lineInHeaderFormat = "#define IDS_" + $content[0].ToUpper() + " " + $count.ToString()
+                $lineInHeaderFormat = "#define IDS_" + $content[0].ToUpper($culture) + " " + $count.ToString()
                 $newLinesForHeaderFile = $newLinesForHeaderFile + "`r`n" + $lineInHeaderFormat
                 $count++
             }
