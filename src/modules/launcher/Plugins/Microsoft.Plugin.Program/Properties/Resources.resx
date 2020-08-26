@@ -153,4 +153,10 @@
   <data name="powertoys_run_plugin_program_file_path" xml:space="preserve">
     <value>Path</value>
   </data>
+  <data name="powertoys_run_plugin_program_start_failed" xml:space="preserve">
+    <value>Unable to start</value>
+  </data>
+  <data name="powertoys_run_plugin_program_uwp_failed" xml:space="preserve">
+    <value>Can't start UWP</value>
+  </data>
 </root>

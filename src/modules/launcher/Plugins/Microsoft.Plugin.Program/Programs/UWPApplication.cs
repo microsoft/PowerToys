@@ -208,8 +208,8 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception)
                 {
-                    var name = "Plugin: Program";
-                    var message = $"Can't start UWP: {DisplayName}";
+                    var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
+                    var message = $"{Properties.Resources.powertoys_run_plugin_program_uwp_failed}: {DisplayName}";
                     api.ShowMsg(name, message, string.Empty);
                 }
             }).ConfigureAwait(false);

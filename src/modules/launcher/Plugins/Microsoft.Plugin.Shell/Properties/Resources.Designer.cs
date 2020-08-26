@@ -70,6 +70,24 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error running the command.
+        /// </summary>
+        public static string wox_plugin_cmd_command_failed {
+            get {
+                return ResourceManager.GetString("wox_plugin_cmd_command_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command not found.
+        /// </summary>
+        public static string wox_plugin_cmd_command_not_found {
+            get {
+                return ResourceManager.GetString("wox_plugin_cmd_command_not_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to execute command through command shell.
         /// </summary>
         public static string wox_plugin_cmd_execute_through_shell {

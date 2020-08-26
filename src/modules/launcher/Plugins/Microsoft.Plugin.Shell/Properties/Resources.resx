@@ -132,4 +132,10 @@
   <data name="wox_plugin_cmd_run_as_administrator" xml:space="preserve">
     <value>Run as administrator (Ctrl+Shift+Enter)</value>
   </data>
+  <data name="wox_plugin_cmd_command_failed" xml:space="preserve">
+    <value>Error running the command</value>
+  </data>
+  <data name="wox_plugin_cmd_command_not_found" xml:space="preserve">
+    <value>Command not found</value>
+  </data>
 </root>

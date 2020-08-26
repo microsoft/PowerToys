@@ -106,6 +106,24 @@ namespace Microsoft.Plugin.Program.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to start.
+        /// </summary>
+        public static string powertoys_run_plugin_program_start_failed {
+            get {
+                return ResourceManager.GetString("powertoys_run_plugin_program_start_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t start UWP.
+        /// </summary>
+        public static string powertoys_run_plugin_program_uwp_failed {
+            get {
+                return ResourceManager.GetString("powertoys_run_plugin_program_uwp_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Web application.
         /// </summary>
         public static string powertoys_run_plugin_program_web_application {
