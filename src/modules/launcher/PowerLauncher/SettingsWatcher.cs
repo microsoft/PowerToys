@@ -102,14 +102,18 @@ namespace PowerLauncher
                     if (retryCount > MaxRetries)
                     {
                         retry = false;
+                        Log.Exception($"|SettingsWatcher.OverloadSettings| IO Exception, {e.Message}", e);
                     }
 
                     Thread.Sleep(1000);
-                    Debug.WriteLine(e.Message);
                 }
                 catch (JsonException e)
                 {
-                    Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserialize PowerToys settings, {e.Message}", e);
+                    if (retryCount > MaxRetries)
+                    {
+                        retry = false;
+                        Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserialize PowerToys settings, {e.Message}", e);
+                    }
                 }
             }
 
