@@ -11,6 +11,7 @@ using ColorPicker.Settings;
 using ColorPicker.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Telemetry;
+using static ColorPicker.Win32Apis;
 
 namespace ColorPicker.Keyboard
 {
@@ -62,23 +63,21 @@ namespace ColorPicker.Keyboard
 
         private void Hook_KeyboardPressed(object sender, GlobalKeyboardHookEventArgs e)
         {
+            _currentlyPressedKeys.Clear();
+
             var virtualCode = e.KeyboardData.VirtualCode;
 
             // ESC pressed
             if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
             {
-                _currentlyPressedKeys.Clear();
                 _appStateHandler.HideColorPicker();
                 PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
             }
 
             var name = Helper.GetKeyName((uint)virtualCode);
 
-            // we got modifier with additional info such as "Ctrl (left)" - get rid of parenthesess
-            if (name.IndexOf("(", StringComparison.OrdinalIgnoreCase) > 0 && name.Length > 1)
-            {
-                name = name.Substring(0, name.IndexOf("(", StringComparison.OrdinalIgnoreCase)).Trim();
-            }
+            // Check pressed modifier keys
+            AddModifierKeys();
 
             if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown || e.KeyboardState == GlobalKeyboardHook.KeyboardState.SysKeyDown)
             {
@@ -87,20 +86,12 @@ namespace ColorPicker.Keyboard
                     _currentlyPressedKeys.Add(name);
                 }
             }
-            else if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyUp || e.KeyboardState == GlobalKeyboardHook.KeyboardState.SysKeyUp)
-            {
-                if (_currentlyPressedKeys.Contains(name))
-                {
-                    _currentlyPressedKeys.Remove(name);
-                }
-            }
 
             _currentlyPressedKeys.Sort();
 
             if (ArraysAreSame(_currentlyPressedKeys, _activationKeys))
             {
                 _appStateHandler.ShowColorPicker();
-                _currentlyPressedKeys.Clear();
             }
         }
 
@@ -120,6 +111,29 @@ namespace ColorPicker.Keyboard
             }
 
             return true;
+        }
+
+        private void AddModifierKeys()
+        {
+            if ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0)
+            {
+                _currentlyPressedKeys.Add("Shift");
+            }
+
+            if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0)
+            {
+                _currentlyPressedKeys.Add("Ctrl");
+            }
+
+            if ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0)
+            {
+                _currentlyPressedKeys.Add("Alt");
+            }
+
+            if ((GetAsyncKeyState(VK_LWIN) & 0x8000) != 0 || (GetAsyncKeyState(VK_RWIN) & 0x8000) != 0)
+            {
+                _currentlyPressedKeys.Add("Win");
+            }
         }
     }
 }
