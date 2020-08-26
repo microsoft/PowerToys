@@ -109,7 +109,7 @@ namespace PowerLauncher
                 }
                 catch (JsonException e)
                 {
-                    Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserealize PowerToys settings, {e.Message}", e);
+                    Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserialize PowerToys settings, {e.Message}", e);
                 }
             }
 
