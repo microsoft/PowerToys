@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Wox.Core.Plugin;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.UserSettings;
@@ -18,6 +19,8 @@ namespace PowerLauncher
     // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
     public class SettingsWatcher : BaseModel
     {
+        private readonly ISettingsUtils _settingsUtils;
+
         private const int MaxRetries = 10;
         private static readonly object _watcherSyncObject = new object();
         private readonly FileSystemWatcher _watcher;
@@ -25,6 +28,7 @@ namespace PowerLauncher
 
         public SettingsWatcher(Settings settings)
         {
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
             _settings = settings;
 
             // Set up watcher
@@ -44,7 +48,7 @@ namespace PowerLauncher
                 try
                 {
                     retryCount++;
-                    if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+                    if (!_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
                     {
                         Debug.WriteLine("PT Run settings.json was missing, creating a new one");
 
@@ -52,7 +56,7 @@ namespace PowerLauncher
                         defaultSettings.Save();
                     }
 
-                    var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                    var overloadSettings = _settingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
                     if (_settings.Hotkey != openPowerlauncher)

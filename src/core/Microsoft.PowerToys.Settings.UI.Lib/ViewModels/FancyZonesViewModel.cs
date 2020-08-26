@@ -5,12 +5,15 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
+        private readonly SettingsUtils _settingsUtils;
+
         private const string ModuleName = "FancyZones";
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
@@ -24,15 +27,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public FancyZonesViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             settingsConfigFileFolder = configFileSubfolder;
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
 
             try
             {
-                Settings = SettingsUtils.GetSettings<FancyZonesSettings>(GetSettingsSubPath());
+                Settings = _settingsUtils.GetSettings<FancyZonesSettings>(GetSettingsSubPath());
             }
             catch
             {
                 Settings = new FancyZonesSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
+                _settingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
             LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
@@ -69,12 +73,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             GeneralSettings generalSettings;
             try
             {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
             }
             catch
             {
                 generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
+                _settingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
 
             _isEnabled = generalSettings.Enabled.FancyZones;
@@ -115,7 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                    GeneralSettings generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
                     generalSettings.Enabled.FancyZones = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
 

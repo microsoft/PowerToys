@@ -15,6 +15,7 @@ namespace ColorPicker.Settings
     [Export(typeof(IUserSettings))]
     public class UserSettings : IUserSettings
     {
+        private readonly ISettingsUtils _settingsUtils;
         private const string ColorPickerModuleName = "ColorPicker";
         private const string DefaultActivationShortcut = "Ctrl + Break";
         private const int MaxNumberOfRetry = 5;
@@ -25,6 +26,7 @@ namespace ColorPicker.Settings
         [ImportingConstructor]
         public UserSettings()
         {
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);
@@ -54,14 +56,14 @@ namespace ColorPicker.Settings
                         {
                             retryCount++;
 
-                            if (!SettingsUtils.SettingsExists(ColorPickerModuleName))
+                            if (!_settingsUtils.SettingsExists(ColorPickerModuleName))
                             {
                                 Logger.LogInfo("ColorPicker settings.json was missing, creating a new one");
                                 var defaultColorPickerSettings = new ColorPickerSettings();
                                 defaultColorPickerSettings.Save();
                             }
 
-                            var settings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
+                            var settings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
                             if (settings != null)
                             {
                                 ChangeCursor.Value = settings.Properties.ChangeCursor;

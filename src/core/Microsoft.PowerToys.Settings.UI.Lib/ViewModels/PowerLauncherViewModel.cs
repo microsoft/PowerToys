@@ -6,11 +6,14 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
+        private readonly SettingsUtils _settingsUtils;
+
         private PowerLauncherSettings settings;
         private GeneralSettings generalSettings;
 
@@ -22,6 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public PowerLauncherViewModel(Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+
             try
             {
                 callback = (PowerLauncherSettings settings) =>
@@ -30,9 +35,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     SendConfigMSG(
                         string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.ModuleName, JsonSerializer.Serialize(settings)));
                 };
-                if (SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+                if (_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
                 {
-                    settings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                    settings = _settingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
                 }
                 else
                 {
@@ -43,9 +48,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     callback(settings);
                 }
 
-                if (SettingsUtils.SettingsExists())
+                if (_settingsUtils.SettingsExists())
                 {
-                    generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
+                    generalSettings = _settingsUtils.GetSettings<GeneralSettings>();
                 }
                 else
                 {

@@ -5,11 +5,13 @@
 using System;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
+        private readonly SettingsUtils _settingsUtils;
         private ColorPickerSettings _colorPickerSettings;
         private bool _isEnabled;
 
@@ -17,18 +19,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public ColorPickerViewModel(Func<string, int> ipcMSGCallBackFunc)
         {
-            if (SettingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            if (_settingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
-                _colorPickerSettings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
+                _colorPickerSettings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
             }
             else
             {
                 _colorPickerSettings = new ColorPickerSettings();
             }
 
-            if (SettingsUtils.SettingsExists())
+            if (_settingsUtils.SettingsExists())
             {
-                var generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
+                var generalSettings = _settingsUtils.GetSettings<GeneralSettings>();
                 _isEnabled = generalSettings.Enabled.ColorPicker;
             }
 
@@ -51,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
 
                     // grab the latest version of settings
-                    var generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
+                    var generalSettings = _settingsUtils.GetSettings<GeneralSettings>();
                     generalSettings.Enabled.ColorPicker = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
                     SendConfigMSG(outgoing.ToString());

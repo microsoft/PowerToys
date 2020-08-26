@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
@@ -14,11 +15,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("properties")]
         public ColorPickerProperties Properties { get; set; }
 
+        private readonly SettingsUtils _settingsUtils;
+
         public ColorPickerSettings()
         {
             Properties = new ColorPickerProperties();
             Version = "1";
             Name = ModuleName;
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
         }
 
         public virtual void Save()
@@ -29,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 WriteIndented = true,
             };
 
-            SettingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
+            _settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }
     }
 }

@@ -5,11 +5,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerPreviewViewModel : Observable
     {
+        private readonly SettingsUtils _settingsUtils;
+
         private const string ModuleName = "File Explorer";
 
         private PowerPreviewSettings Settings { get; set; }
@@ -22,15 +25,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
 
             try
             {
-                Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(GetSettingsSubPath());
+                Settings = _settingsUtils.GetSettings<PowerPreviewSettings>(GetSettingsSubPath());
             }
             catch
             {
                 Settings = new PowerPreviewSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
+                _settingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
             // set the callback functions value to hangle outgoing IPC message.

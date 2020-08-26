@@ -7,8 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace CommonLibTest
 {
@@ -16,18 +18,46 @@ namespace CommonLibTest
     public class SettingsUtilsTests
     {
 
+        /// <summary>
+        /// This method mocks an IO provider to validate tests wich required saving to a file, and then reading the contents of that file, or verifying it exists
+        /// </summary>
+        /// <returns></returns>
+        Mock<IIOProvider> GetMockIOProviderForSaveLoadExists( )
+        {
+            string savePath = string.Empty;
+            string saveContent = string.Empty;
+            var mockIOProvider = new Mock<IIOProvider>();
+            mockIOProvider.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
+                          .Callback<string, string>((path, content) =>
+                          {
+                              savePath = path;
+                              saveContent = content;
+                          });
+            mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
+                          .Returns(() => saveContent);
+
+            mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
+                          .Returns(true);
+            mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => !x.Equals(savePath, StringComparison.Ordinal))))
+                          .Returns(false);
+
+            return mockIOProvider;
+        }
+
         [TestMethod]
         public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
         {
             // Arrange
+            var mockIOProvider = GetMockIOProviderForSaveLoadExists();
+            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
             string file_name = "\\test";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
             BasePTSettingsTest expected_json = JsonSerializer.Deserialize<BasePTSettingsTest>(file_contents_correct_json_content);
 
             // Act
-            SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
-            BasePTSettingsTest actual_json = SettingsUtils.GetSettings<BasePTSettingsTest>(file_name);
+            settingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
+            BasePTSettingsTest actual_json = settingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
             // Assert
             Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
@@ -37,54 +67,40 @@ namespace CommonLibTest
         public void SaveSettings_ShouldCreateFile_WhenFilePathIsNotFound()
         {
             // Arrange
+            var mockIOProvider = GetMockIOProviderForSaveLoadExists();
+            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
             string file_name = "test\\Test Folder";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
             BasePTSettingsTest expected_json = JsonSerializer.Deserialize<BasePTSettingsTest>(file_contents_correct_json_content);
 
-            SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
-            BasePTSettingsTest actual_json = SettingsUtils.GetSettings<BasePTSettingsTest>(file_name);
+            settingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
+            BasePTSettingsTest actual_json = settingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
             // Assert
             Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
         }
 
-        //[TestMethod]
-        //public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
-        //{
-        //    // Arrange
-        //    string file_name_random = "test\\" + RandomString();
-        //    string file_name_exists = "test\\exists";
-        //    string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
+        [TestMethod]
+        public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
+        {
+            // Arrange
+            var mockIOProvider = GetMockIOProviderForSaveLoadExists();
+            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
+            string file_name_random = "test\\" + RandomString();
+            string file_name_exists = "test\\exists";
+            string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
-        //    // Act
-        //    bool pathNotFound = SettingsUtils.SettingsFolderExists(file_name_random);
+            // Act
+            bool pathNotFound = settingsUtils.SettingsExists(file_name_random);
 
-        //    SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name_exists);
-        //    bool pathFound = SettingsUtils.SettingsFolderExists(file_name_exists);
+            settingsUtils.SaveSettings(file_contents_correct_json_content, file_name_exists);
+            bool pathFound = settingsUtils.SettingsExists(file_name_exists);
 
-        //    // Assert
-        //    Assert.IsFalse(pathNotFound);
-        //    Assert.IsTrue(pathFound);
-        //}
-
-        //[TestMethod]
-        //public void CreateSettingsFolder_ShouldCreateFolder_WhenSuccessful()
-        //{
-        //    // Arrange
-        //    string file_name = "test\\" + RandomString();
-
-        //    // Act
-        //    SettingsUtils.CreateSettingsFolder(file_name);
-
-        //    // Assert
-        //    Assert.IsTrue(SettingsUtils.SettingsFolderExists(file_name));
-        //}
-
-        //public void DeleteFolder(string powertoy)
-        //{
-        //    Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        //}
+            // Assert
+            Assert.IsFalse(pathNotFound);
+            Assert.IsTrue(pathFound);
+        }
 
         public static string RandomString()
         {
