@@ -33,6 +33,13 @@ namespace ViewModelTests
         [TestInitialize]
         public void Initialize()
         {
+            mockSettings = new PowerLauncherSettings();
+            sendCallbackMock = new SendCallbackMock();
+
+            viewModel = new PowerLauncherViewModel(
+                mockSettings,
+                new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));
+
             // Create settings file if none exists
             if (!SettingsUtils.SettingsFolderExists(OriginalModuleName))
             {
@@ -42,12 +49,6 @@ namespace ViewModelTests
             {
                 SettingsUtils.SaveSettings(new GeneralSettings().ToJsonString());
             }
-            mockSettings = new PowerLauncherSettings();
-            sendCallbackMock = new SendCallbackMock();
-
-            viewModel = new PowerLauncherViewModel(
-                mockSettings,
-                new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));
         }
 
         /// <summary>
