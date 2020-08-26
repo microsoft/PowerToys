@@ -37,50 +37,6 @@ namespace
         // It is enough that the window is zero-sized in one dimension only.
         return rect.top == rect.bottom || rect.left == rect.right;
     }
-
-    FancyZonesUtils::FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window)
-    {
-        FancyZonesUtils::FancyZonesWindowInfo result;
-        if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window))
-        {
-            return result;
-        }
-        auto style = GetWindowLong(window, GWL_STYLE);
-        auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
-        // WS_POPUP need to have a border or minimize/maximize buttons,
-        // otherwise the window is "not interesting"
-        if ((style & WS_POPUP) == WS_POPUP &&
-            (style & WS_THICKFRAME) == 0 &&
-            (style & WS_MINIMIZEBOX) == 0 &&
-            (style & WS_MAXIMIZEBOX) == 0)
-        {
-            return result;
-        }
-        if ((style & WS_CHILD) == WS_CHILD ||
-            (style & WS_DISABLED) == WS_DISABLED ||
-            (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
-            (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE)
-        {
-            return result;
-        }
-        std::array<char, 256> class_name;
-        GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
-        if (is_system_window(window, class_name.data()))
-        {
-            return result;
-        }
-        auto process_path = get_process_path(window);
-        // Check for Cortana:
-        if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
-            process_path.ends_with(L"SearchUI.exe"))
-        {
-            return result;
-        }
-        result.processPath = std::move(process_path);
-        result.standardWindow = true;
-        result.noVisibleOwner = HasNoVisibleOwner(window);
-        return result;
-    }
 }
 
 namespace FancyZonesUtils
@@ -226,10 +182,56 @@ namespace FancyZonesUtils
         ::SetWindowPlacement(window, &placement);
     }
 
-    bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
+    FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window)
+    {
+        FancyZonesWindowInfo result;
+        if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window))
+        {
+            return result;
+        }
+        auto style = GetWindowLong(window, GWL_STYLE);
+        auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
+        // WS_POPUP need to have a border or minimize/maximize buttons,
+        // otherwise the window is "not interesting"
+        if ((style & WS_POPUP) == WS_POPUP &&
+            (style & WS_THICKFRAME) == 0 &&
+            (style & WS_MINIMIZEBOX) == 0 &&
+            (style & WS_MAXIMIZEBOX) == 0)
+        {
+            return result;
+        }
+        if ((style & WS_CHILD) == WS_CHILD ||
+            (style & WS_DISABLED) == WS_DISABLED ||
+            (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
+            (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE)
+        {
+            return result;
+        }
+        std::array<char, 256> class_name;
+        GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
+        if (is_system_window(window, class_name.data()))
+        {
+            return result;
+        }
+        auto process_path = get_process_path(window);
+        // Check for Cortana:
+        if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
+            process_path.ends_with(L"SearchUI.exe"))
+        {
+            return result;
+        }
+        result.processPath = std::move(process_path);
+        result.standardWindow = true;
+        result.noVisibleOwner = HasNoVisibleOwner(window);
+        return result;
+    }
+
+    bool IsInterestingWindow(HWND window,
+                             const std::vector<std::wstring>& excludedApps,
+                             NewlyCreatedWindow newlyCreatedWindow) noexcept
     {
         auto windowInfo = GetFancyZonesWindowInfo(window);
-        auto zonable = windowInfo.standardWindow && windowInfo.noVisibleOwner;
+        auto zonable = windowInfo.standardWindow && (windowInfo.noVisibleOwner || newlyCreatedWindow == NewlyCreatedWindow::No);
         if (!zonable)
         {
             return false;

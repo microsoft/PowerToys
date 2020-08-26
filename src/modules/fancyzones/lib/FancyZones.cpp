@@ -346,11 +346,12 @@ FancyZones::VirtualDesktopInitialize() noexcept
 
 bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
 {
+    using namespace FancyZonesUtils;
     // Avoid processing splash screens, already stamped (zoned) windows, or those windows
     // that belong to excluded applications list.
     if (IsSplashScreen(window) ||
         (reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0) ||
-        !FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+        !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray, NewlyCreatedWindow::Yes))
     {
         return false;
     }
