@@ -52,7 +52,7 @@ namespace PowerLauncher
                     {
                         Debug.WriteLine("PT Run settings.json was missing, creating a new one");
 
-                        var defaultSettings = new PowerLauncherSettings();
+                        var defaultSettings = new PowerLauncherSettings(_settingsUtils);
                         defaultSettings.Save();
                     }
 

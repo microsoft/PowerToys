@@ -5,6 +5,7 @@
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -28,7 +29,7 @@ namespace ViewModelTests
         [TestInitialize]
         public void Initialize()
         {
-            mockSettings = new PowerLauncherSettings();
+            mockSettings = new PowerLauncherSettings(new Mock<ISettingsUtils>().Object);
             sendCallbackMock = new SendCallbackMock();
 
             viewModel = new PowerLauncherViewModel(

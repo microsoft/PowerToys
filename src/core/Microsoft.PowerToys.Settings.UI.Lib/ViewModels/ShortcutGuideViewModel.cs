@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
-        private readonly SettingsUtils _settingsUtils;
+        private readonly ISettingsUtils _settingsUtils;
 
         private ShortcutGuideSettings Settings { get; set; }
 
@@ -21,11 +21,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public ShortcutGuideViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public ShortcutGuideViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             try
             {

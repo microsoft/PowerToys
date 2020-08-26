@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
@@ -15,14 +16,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("properties")]
         public ColorPickerProperties Properties { get; set; }
 
-        private readonly SettingsUtils _settingsUtils;
+        private readonly ISettingsUtils _settingsUtils;
 
-        public ColorPickerSettings()
+        public ColorPickerSettings(ISettingsUtils settingsUtils)
         {
             Properties = new ColorPickerProperties();
             Version = "1";
             Name = ModuleName;
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
         }
 
         public virtual void Save()

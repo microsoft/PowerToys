@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
@@ -10,18 +11,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerLauncherSettings : BasePTModuleSettings
     {
-        private readonly SettingsUtils _settingsUtils;
+        private readonly ISettingsUtils _settingsUtils;
         public const string ModuleName = "PowerToys Run";
 
         [JsonPropertyName("properties")]
         public PowerLauncherProperties Properties { get; set; }
 
-        public PowerLauncherSettings()
+        public PowerLauncherSettings(ISettingsUtils settingsUtils)
         {
             Properties = new PowerLauncherProperties();
             Version = "1";
             Name = ModuleName;
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
         }
 
         public virtual void Save()

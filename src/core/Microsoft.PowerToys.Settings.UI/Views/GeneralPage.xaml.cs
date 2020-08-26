@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.ApplicationModel.Resources;
 using Windows.UI.Xaml;
@@ -29,8 +31,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Load string resources
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+            var settingsUtils = new SettingsUtils(new SystemIOProvider());
 
             ViewModel = new GeneralViewModel(
+                settingsUtils,
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
                 loader.GetString("GeneralSettings_RunningAsUserText"),
                 ShellPage.IsElevated,

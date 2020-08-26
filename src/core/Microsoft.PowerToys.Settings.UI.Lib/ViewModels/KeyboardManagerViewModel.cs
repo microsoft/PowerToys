@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class KeyboardManagerViewModel : Observable
     {
-        private readonly SettingsUtils _settingsUtils;
+        private readonly ISettingsUtils _settingsUtils;
 
         private const string PowerToyName = "Keyboard Manager";
         private const string RemapKeyboardActionName = "RemapKeyboard";
@@ -38,13 +38,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
             FilterRemapKeysList = filterRemapKeysList;
 
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             if (_settingsUtils.SettingsExists(PowerToyName))
             {

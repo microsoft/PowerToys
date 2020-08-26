@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class GeneralViewModel : Observable
     {
-        private readonly SettingsUtils _settingsUtils;
+        private readonly ISettingsUtils _settingsUtils;
 
         private GeneralSettings GeneralSettingsConfigs { get; set; }
 
@@ -35,11 +35,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        public GeneralViewModel(ISettingsUtils settingsUtils, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             try
             {

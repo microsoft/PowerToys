@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -18,38 +19,14 @@ namespace CommonLibTest
     public class SettingsUtilsTests
     {
 
-        /// <summary>
-        /// This method mocks an IO provider to validate tests wich required saving to a file, and then reading the contents of that file, or verifying it exists
-        /// </summary>
-        /// <returns></returns>
-        Mock<IIOProvider> GetMockIOProviderForSaveLoadExists( )
-        {
-            string savePath = string.Empty;
-            string saveContent = string.Empty;
-            var mockIOProvider = new Mock<IIOProvider>();
-            mockIOProvider.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
-                          .Callback<string, string>((path, content) =>
-                          {
-                              savePath = path;
-                              saveContent = content;
-                          });
-            mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
-                          .Returns(() => saveContent);
-
-            mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
-                          .Returns(true);
-            mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => !x.Equals(savePath, StringComparison.Ordinal))))
-                          .Returns(false);
-
-            return mockIOProvider;
-        }
 
         [TestMethod]
         public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
         {
             // Arrange
-            var mockIOProvider = GetMockIOProviderForSaveLoadExists();
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var settingsUtils = new SettingsUtils(mockIOProvider.Object);
+            
             string file_name = "\\test";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
@@ -67,7 +44,7 @@ namespace CommonLibTest
         public void SaveSettings_ShouldCreateFile_WhenFilePathIsNotFound()
         {
             // Arrange
-            var mockIOProvider = GetMockIOProviderForSaveLoadExists();
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var settingsUtils = new SettingsUtils(mockIOProvider.Object);
             string file_name = "test\\Test Folder";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
@@ -85,7 +62,7 @@ namespace CommonLibTest
         public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
         {
             // Arrange
-            var mockIOProvider = GetMockIOProviderForSaveLoadExists();
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var settingsUtils = new SettingsUtils(mockIOProvider.Object);
             string file_name_random = "test\\" + RandomString();
             string file_name_exists = "test\\exists";

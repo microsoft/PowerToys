@@ -7,7 +7,9 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -29,7 +31,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
 
             // Act
             viewModel.IsEnabled = true;
@@ -48,7 +50,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(1, viewModel.ThemeIndex);
 
             // Act
@@ -68,7 +70,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(900, viewModel.PressTime);
 
             // Act
@@ -90,7 +92,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(90, viewModel.OverlayOpacity);
 
             // Act

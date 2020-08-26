@@ -11,22 +11,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
-        private readonly SettingsUtils _settingsUtils;
+        private readonly ISettingsUtils _settingsUtils;
         private ColorPickerSettings _colorPickerSettings;
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ColorPickerViewModel(Func<string, int> ipcMSGCallBackFunc)
+        public ColorPickerViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc)
         {
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             if (_settingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
                 _colorPickerSettings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
             }
             else
             {
-                _colorPickerSettings = new ColorPickerSettings();
+                _colorPickerSettings = new ColorPickerSettings(_settingsUtils);
             }
 
             if (_settingsUtils.SettingsExists())

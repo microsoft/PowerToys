@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
-        private readonly SettingsUtils _settingsUtils;
+        private readonly ISettingsUtils _settingsUtils;
 
         private const string ModuleName = "FancyZones";
 
@@ -24,10 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string settingsConfigFileFolder = string.Empty;
 
-        public FancyZonesViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             settingsConfigFileFolder = configFileSubfolder;
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             try
             {

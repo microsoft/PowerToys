@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
-        private readonly SettingsUtils _settingsUtils;
+        private readonly ISettingsUtils _settingsUtils;
 
         private PowerLauncherSettings settings;
         private GeneralSettings generalSettings;
@@ -23,9 +23,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             try
             {
@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 }
                 else
                 {
-                    settings = new PowerLauncherSettings();
+                    settings = new PowerLauncherSettings(_settingsUtils);
                     settings.Properties.OpenPowerLauncher.Alt = true;
                     settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
                     settings.Properties.MaximumNumberOfResults = 4;

@@ -7,7 +7,9 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -28,7 +30,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -46,7 +48,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -64,7 +66,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);;
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, Module);;
 
             // act
             viewModel.MDRenderIsEnabled = true;

@@ -9,6 +9,7 @@ using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -19,20 +20,10 @@ namespace ViewModelTests
     {
         public const string Module = "ImageResizer";
 
-
-        //Stubs out empty values for imageresizersettings and general settings as needed by the imageresizer viewmodel
-        private Mock<ISettingsUtils> GetStubSettingsUtils()
-        {
-            var settingsUtils = new Mock<ISettingsUtils>();
-            settingsUtils.Setup(x => x.GetSettings<GeneralSettings>(It.IsAny<string>(), It.IsAny<string>())).Returns(new GeneralSettings());
-            settingsUtils.Setup(x => x.GetSettings<ImageResizerSettings>(It.IsAny<string>(), It.IsAny<string>())).Returns(new ImageResizerSettings());
-            return settingsUtils;
-        }
-
         [TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()
         {
-            var mockSettingsUtils = GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
 
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -53,7 +44,7 @@ namespace ViewModelTests
         public void JPEGQualityLevel_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
 
@@ -69,7 +60,7 @@ namespace ViewModelTests
         public void PngInterlaceOption_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
 
@@ -85,7 +76,7 @@ namespace ViewModelTests
         public void TiffCompressOption_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
 
@@ -101,7 +92,7 @@ namespace ViewModelTests
         public void FileName_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
             string expectedValue = "%1 (%3)";
@@ -118,7 +109,7 @@ namespace ViewModelTests
         public void KeepDateModified_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var settingUtils = new Mock<ISettingsUtils>();
+            var settingUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
 
             var expectedSettingsString = new ImageResizerSettings() { Properties = new ImageResizerProperties() { ImageresizerKeepDateModified = new BoolProperty() { Value = true } } }.ToJsonString();
             settingUtils.Setup(x => x.SaveSettings(
@@ -127,8 +118,6 @@ namespace ViewModelTests
                                         It.IsAny<string>()))
                                      .Verifiable();
 
-            settingUtils.Setup(x => x.GetSettings<GeneralSettings>(It.IsAny<string>(), It.IsAny<string>())).Returns(new GeneralSettings());
-            settingUtils.Setup(x => x.GetSettings<ImageResizerSettings>(It.IsAny<string>(), It.IsAny<string>())).Returns(new ImageResizerSettings());
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(settingUtils.Object, SendMockIPCConfigMSG);
 
@@ -143,7 +132,7 @@ namespace ViewModelTests
         public void Encoder_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
 
@@ -160,7 +149,7 @@ namespace ViewModelTests
         public void AddRow_ShouldAddEmptyImageSize_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
             int sizeOfOriginalArray = viewModel.Sizes.Count;
@@ -176,7 +165,7 @@ namespace ViewModelTests
         public void DeleteImageSize_ShouldDeleteImageSize_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
             int sizeOfOriginalArray = viewModel.Sizes.Count;
