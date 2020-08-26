@@ -216,4 +216,16 @@
   <data name="Span_Across_Zones_Warning" xml:space="preserve">
     <value>The 'Allow zones to span across monitors' option requires all monitors to have the same DPI scaling to work properly.</value>
   </data>
+  <data name="FancyZones_Data_Error" xml:space="preserve">
+    <value>Cannot find path to FancyZones persisted data. Please report the bug to</value>
+  </data>
+  <data name="FancyZones_Editor_Launch_Error" xml:space="preserve">
+    <value>Canno launch FancyZones editor. Please report the bug to</value>
+  </data>
+  <data name="FancyZones_Settings_Load_Error" xml:space="preserve">
+    <value>Cannot load FancyZones settings. Default settings will be used.</value>
+  </data>
+  <data name="FancyZones_Settings_Save_Error" xml:space="preserve">
+    <value>Cannot save FancyZones settings. Please retry again later, if problem persists report the bug to</value>
+  </data>
 </root>
