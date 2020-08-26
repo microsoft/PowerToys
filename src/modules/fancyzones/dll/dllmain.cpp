@@ -15,6 +15,11 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+namespace NonLocalizable
+{
+    const wchar_t PowerToysIssuesURL[] = L"https://aka.ms/powerToysReportBug";
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
@@ -47,6 +52,7 @@ public:
     // These are the settings shown on the settings page along with their current values.
     virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override
     {
+        OutputDebugString(L"Get configuration.\n");
         return m_settings->GetConfig(buffer, buffer_size);
     }
 
@@ -54,6 +60,7 @@ public:
     // This is called when the user hits Save on the settings page.
     virtual void set_config(PCWSTR config) override
     {
+        OutputDebugString(L"Set configuration.\n");
         m_settings->SetConfig(config);
     }
 
@@ -67,6 +74,10 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        if (disableCore)
+        {
+            return;
+        }
         if (!m_app)
         {
             InitializeWinhookEventIds();
@@ -129,7 +140,7 @@ public:
     // Returns if the powertoy is enabled
     virtual bool is_enabled() override
     {
-        return (m_app != nullptr);
+        return !disableCore && m_app != nullptr;
     }
 
     // Destroy the powertoy and free memory
@@ -143,7 +154,20 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
-        FancyZonesDataInstance().LoadFancyZonesData();
+        try
+        {
+            FancyZonesDataInstance().LoadFancyZonesData();
+        }
+        catch (...)
+        {
+            // Not being able to find path to persisted data completely breaks down FancyZones functionality.
+            std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_DATA_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
+            MessageBox(NULL,
+                       errorMessage.c_str(),
+                       GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+                       MB_OK | MB_ICONERROR);
+            disableCore = true;
+        }
         s_instance = this;
     }
 
@@ -196,6 +220,8 @@ private:
 
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
     HWINEVENTHOOK m_objectLocationWinEventHook;
+
+    bool disableCore{ false };
 
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {

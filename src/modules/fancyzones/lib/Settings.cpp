@@ -161,7 +161,7 @@ IFACEMETHODIMP_(void) FancyZonesSettings::CallCustomAction(PCWSTR action) noexce
         std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_EDITOR_LAUNCH_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
         MessageBox(NULL,
                    errorMessage.c_str(),
-                   GET_RESOURCE_STRING(IDS_FANCYZONES).c_str(),
+                   GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
                    MB_OK);
     }
 }
@@ -235,7 +235,7 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
         // Failure to load settings does not break FancyZones functionality. Display error message and continue with default settings.
         MessageBox(NULL,
                    GET_RESOURCE_STRING(IDS_FANCYZONES_SETTINGS_LOAD_ERROR).c_str(),
-                   GET_RESOURCE_STRING(IDS_FANCYZONES).c_str(),
+                   GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
                    MB_OK);
     }
 }
@@ -266,7 +266,7 @@ void FancyZonesSettings::SaveSettings() noexcept
         std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_SETTINGS_LOAD_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
         MessageBox(NULL,
                    errorMessage.c_str(),
-                   GET_RESOURCE_STRING(IDS_FANCYZONES).c_str(),
+                   GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
                    MB_OK);
     }
 }

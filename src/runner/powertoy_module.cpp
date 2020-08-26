@@ -20,7 +20,7 @@ PowertoyModule load_powertoy(const std::wstring_view filename)
     if (!module)
     {
         FreeLibrary(handle);
-        winrt::throw_last_error();
+        winrt::throw_hresult(winrt::hresult(E_POINTER));
     }
     return PowertoyModule(module, handle);
 }
