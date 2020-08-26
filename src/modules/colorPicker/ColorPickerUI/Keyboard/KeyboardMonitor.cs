@@ -70,6 +70,7 @@ namespace ColorPicker.Keyboard
             {
                 _appStateHandler.HideColorPicker();
                 PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
+                return;
             }
 
             var name = Helper.GetKeyName((uint)virtualCode);
