@@ -61,6 +61,15 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fail to set text in clipboard.
+        /// </summary>
+        public static string Microsoft_plugin_indexer_clipboard_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_indexer_clipboard_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy path (Ctrl+C).
         /// </summary>
         public static string Microsoft_plugin_indexer_copy_path {
@@ -84,6 +93,24 @@ namespace Microsoft.Plugin.Indexer.Properties {
         public static string Microsoft_plugin_indexer_drivedetectionwarning {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_indexer_drivedetectionwarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t open this file.
+        /// </summary>
+        public static string Microsoft_plugin_indexer_file_open_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_indexer_file_open_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fail to open folder at.
+        /// </summary>
+        public static string Microsoft_plugin_indexer_folder_open_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_indexer_folder_open_failed", resourceCulture);
             }
         }
         
@@ -124,11 +151,38 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Returns files and folders.
+        /// </summary>
+        public static string Microsoft_plugin_indexer_plugin_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_indexer_plugin_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Indexer Plugin.
+        /// </summary>
+        public static string Microsoft_plugin_indexer_plugin_name {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_indexer_plugin_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Run as administrator (Ctrl+Shift+Enter).
         /// </summary>
         public static string Microsoft_plugin_indexer_run_as_administrator {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_indexer_run_as_administrator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search.
+        /// </summary>
+        public static string Microsoft_plugin_indexer_subtitle_header {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_indexer_subtitle_header", resourceCulture);
             }
         }
     }

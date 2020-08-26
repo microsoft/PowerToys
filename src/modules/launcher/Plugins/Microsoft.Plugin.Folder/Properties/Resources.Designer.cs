@@ -79,6 +79,15 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fail to open file at.
+        /// </summary>
+        public static string Microsoft_plugin_folder_file_open_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_folder_file_open_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open.
         /// </summary>
         public static string Microsoft_plugin_folder_open {

@@ -150,4 +150,7 @@
   <data name="Microsoft_plugin_folder_start_failed" xml:space="preserve">
     <value>Could not start </value>
   </data>
+  <data name="Microsoft_plugin_folder_file_open_failed" xml:space="preserve">
+    <value>Fail to open file at</value>
+  </data>
 </root>
