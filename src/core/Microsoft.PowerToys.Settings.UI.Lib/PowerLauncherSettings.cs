@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
             catch (FileNotFoundException)
             {
-                Version = "1";
+                Version = "1.0";
             }
 
             Properties = new PowerLauncherProperties();

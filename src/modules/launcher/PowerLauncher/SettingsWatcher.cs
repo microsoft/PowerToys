@@ -5,13 +5,17 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Newtonsoft.Json;
 using Wox.Core.Plugin;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher
 {
@@ -46,8 +50,7 @@ namespace PowerLauncher
                     retryCount++;
                     if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
                     {
-                        Debug.WriteLine("PT Run settings.json was missing, creating a new one");
-
+                        Log.Info("|SettingsWatcher.OverloadSettings|PT Run settings.json was missing, creating a new one");
                         var defaultSettings = new PowerLauncherSettings();
                         defaultSettings.Save();
                     }
@@ -103,6 +106,10 @@ namespace PowerLauncher
 
                     Thread.Sleep(1000);
                     Debug.WriteLine(e.Message);
+                }
+                catch (JsonException e)
+                {
+                    Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserealize PowerToys settings, {e.Message}", e);
                 }
             }
 

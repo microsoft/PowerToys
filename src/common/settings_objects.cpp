@@ -351,7 +351,6 @@ namespace PowerToysSettings
 
     void PowerToyValues::save_to_settings_file()
     {
-        set_version();
         PTSettingsHelper::save_module_settings(_name, m_json);
     }
 
