@@ -79,6 +79,15 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
+        public static string Microsoft_plugin_folder_open {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_folder_open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open containing folder (Ctrl+Shift+E).
         /// </summary>
         public static string Microsoft_plugin_folder_open_containing_folder {
@@ -88,11 +97,29 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Folder: Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*..
+        /// </summary>
+        public static string Microsoft_plugin_folder_open_current_folder_subtitle {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_folder_open_current_folder_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open path in console (Ctrl+Shift+C).
         /// </summary>
         public static string Microsoft_plugin_folder_open_in_console {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_folder_open_in_console", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not start .
+        /// </summary>
+        public static string Microsoft_plugin_folder_start_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_folder_start_failed", resourceCulture);
             }
         }
         

@@ -303,7 +303,7 @@ namespace Microsoft.Plugin.Folder
             var result = new Result
             {
                 Title = Path.GetFileName(filePath),
-                SubTitle = "Folder: " + filePath,
+                SubTitle = Properties.Resources.wox_plugin_folder_plugin_name + ": " + filePath,
                 IcoPath = filePath,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
@@ -314,7 +314,7 @@ namespace Microsoft.Plugin.Folder
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Could not start " + filePath);
+                        MessageBox.Show(ex.Message, Properties.Resources.Microsoft_plugin_folder_start_failed + filePath);
                     }
 
                     return true;
@@ -326,7 +326,7 @@ namespace Microsoft.Plugin.Folder
 
         private static Result CreateOpenCurrentFolderResult(string search)
         {
-            var firstResult = "Open " + search;
+            var firstResult = Properties.Resources.Microsoft_plugin_folder_open + " " + search;
 
             var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
             var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
@@ -341,7 +341,7 @@ namespace Microsoft.Plugin.Folder
             {
                 Title = firstResult,
                 QueryTextDisplay = search,
-                SubTitle = $"Folder: Use > to search within the directory. Use * to search for file extensions. Or use both >*.",
+                SubTitle = Properties.Resources.Microsoft_plugin_folder_open_current_folder_subtitle,
                 IcoPath = search,
                 Score = 500,
                 Action = c =>

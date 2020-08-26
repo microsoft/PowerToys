@@ -141,4 +141,13 @@
   <data name="Microsoft_plugin_folder_clipboard_failed" xml:space="preserve">
     <value>Fail to set text in clipboard</value>
   </data>
+  <data name="Microsoft_plugin_folder_open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Microsoft_plugin_folder_open_current_folder_subtitle" xml:space="preserve">
+    <value>Folder: Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*.</value>
+  </data>
+  <data name="Microsoft_plugin_folder_start_failed" xml:space="preserve">
+    <value>Could not start </value>
+  </data>
 </root>
