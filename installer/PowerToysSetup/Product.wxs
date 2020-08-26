@@ -70,7 +70,8 @@
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
     <Property Id="WixShellExecTarget" Value="[#action_runner.exe]" />
-    
+    <Property Id="SKIPDOTNETINSTALL" Value="0"/>
+        
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
     </Property>
@@ -96,7 +97,7 @@
       </Custom>
       
       <Custom Action="InstallDotNet" After="InstallFinalize">
-        NOT Installed
+        NOT Installed and (SKIPDOTNETINSTALL = 0)
       </Custom>
 
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
