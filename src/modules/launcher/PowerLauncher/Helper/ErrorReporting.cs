@@ -12,7 +12,7 @@ namespace PowerLauncher.Helper
 {
     public static class ErrorReporting
     {
-        private static void Report(Exception e, bool waitForClose)
+        public static void Report(Exception e, bool waitForClose)
         {
             if (e != null)
             {
