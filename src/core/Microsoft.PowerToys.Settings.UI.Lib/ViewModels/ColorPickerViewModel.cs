@@ -21,9 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             settingsConfigFileFolder = configFileSubfolder;
 
-            if (SettingsUtils.SettingsExists(GetSettingsSubPath()))
+            if (SettingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
-                _colorPickerSettings = SettingsUtils.GetSettings<ColorPickerSettings>(GetSettingsSubPath());
+                _colorPickerSettings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
             }
             else
             {
@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             if (SettingsUtils.SettingsExists())
             {
-                var generalSettings = SettingsUtils.GetSettings<GeneralSettings>(settingsConfigFileFolder);
+                var generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
                 _isEnabled = generalSettings.Enabled.ColorPicker;
             }
 
@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
 
                     // grab the latest version of settings
-                    var generalSettings = SettingsUtils.GetSettings<GeneralSettings>(settingsConfigFileFolder);
+                    var generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
                     generalSettings.Enabled.ColorPicker = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
                     SendConfigMSG(outgoing.ToString());
@@ -117,15 +117,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
-        public string GetSettingsSubPath()
-        {
-            return settingsConfigFileFolder + "\\" + ColorPickerSettings.ModuleName;
-        }
-
         private void NotifySettingsChanged()
         {
             SendConfigMSG(
-                   string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", GetSettingsSubPath(), JsonSerializer.Serialize(_colorPickerSettings)));
+                   string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", ColorPickerSettings.ModuleName, JsonSerializer.Serialize(_colorPickerSettings)));
         }
     }
 }

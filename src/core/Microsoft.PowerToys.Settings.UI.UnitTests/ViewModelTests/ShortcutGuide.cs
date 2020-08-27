@@ -33,7 +33,7 @@ namespace ViewModelTests
             SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ShortCutGuideTestFolderName);
 
             // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(ModuleName))
+            if (!SettingsUtils.SettingsFolderExists(ModuleName+"\\settings.json"))
             {
                 SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ModuleName);
             }
