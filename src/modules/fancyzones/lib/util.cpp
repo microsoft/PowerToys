@@ -37,6 +37,25 @@ namespace
         // It is enough that the window is zero-sized in one dimension only.
         return rect.top == rect.bottom || rect.left == rect.right;
     }
+
+    bool IsZonableByProcessPath(const std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
+    {
+        // Filter out user specified apps
+        CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
+        if (find_app_name_in_path(processPath, excludedApps))
+        {
+            return false;
+        }
+        if (find_app_name_in_path(processPath, { NonLocalizable::PowerToysAppPowerLauncher }))
+        {
+            return false;
+        }
+        if (find_app_name_in_path(processPath, { NonLocalizable::PowerToysAppFZEditor }))
+        {
+            return false;
+        }
+        return true;
+    }
 }
 
 namespace FancyZonesUtils
@@ -226,31 +245,28 @@ namespace FancyZonesUtils
         return result;
     }
 
-    bool IsInterestingWindow(HWND window,
-                             const std::vector<std::wstring>& excludedApps,
-                             NewlyCreatedWindow newlyCreatedWindow) noexcept
+    bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
         auto windowInfo = GetFancyZonesWindowInfo(window);
-        auto zonable = windowInfo.standardWindow && (windowInfo.noVisibleOwner || newlyCreatedWindow == NewlyCreatedWindow::No);
+        auto zonable = windowInfo.standardWindow && windowInfo.noVisibleOwner;
         if (!zonable)
         {
             return false;
         }
-        // Filter out user specified apps
-        CharUpperBuffW(windowInfo.processPath.data(), (DWORD)windowInfo.processPath.length());
-        if (find_app_name_in_path(windowInfo.processPath, excludedApps))
+
+        return IsZonableByProcessPath(windowInfo.processPath, excludedApps);
+    }
+
+    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
+    {
+        auto windowInfo = GetFancyZonesWindowInfo(window);
+
+        if (!windowInfo.standardWindow)
         {
             return false;
         }
-        if (find_app_name_in_path(windowInfo.processPath, { NonLocalizable::PowerToysAppPowerLauncher }))
-        {
-            return false;
-        }
-        if (find_app_name_in_path(windowInfo.processPath, { NonLocalizable::PowerToysAppFZEditor }))
-        {
-            return false;
-        }
-        return true;
+
+        return IsZonableByProcessPath(windowInfo.processPath, excludedApps);
     }
 
     bool IsWindowMaximized(HWND window) noexcept

@@ -351,7 +351,7 @@ bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
     // that belong to excluded applications list.
     if (IsSplashScreen(window) ||
         (reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0) ||
-        !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray, NewlyCreatedWindow::Yes))
+        !IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray))
     {
         return false;
     }
@@ -1032,7 +1032,7 @@ void FancyZones::UpdateWindowsPositions() noexcept
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
-    if (FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    if (FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
     {
         const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)
@@ -1249,7 +1249,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
-    if (FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    if (FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
     {
         if (m_settings->GetSettings()->moveWindowsBasedOnPosition)
         {

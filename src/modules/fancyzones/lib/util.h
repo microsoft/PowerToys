@@ -188,9 +188,9 @@ namespace FancyZonesUtils
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
     FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window);
-    bool IsInterestingWindow(HWND window,
-                             const std::vector<std::wstring>& excludedApps,
-                             NewlyCreatedWindow newlyCreatedWindow = NewlyCreatedWindow::No) noexcept;
+    bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
+    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
+
     bool IsWindowMaximized(HWND window) noexcept;
     void SaveWindowSizeAndOrigin(HWND window) noexcept;
     void RestoreWindowSize(HWND window) noexcept;
