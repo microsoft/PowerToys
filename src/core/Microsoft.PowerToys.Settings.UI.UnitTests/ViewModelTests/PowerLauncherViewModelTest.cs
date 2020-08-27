@@ -41,7 +41,7 @@ namespace ViewModelTests
                 new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));
 
             // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName))
+            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName + "\\settings.json"))
             {
                 SettingsUtils.SaveSettings(new PowerLauncherSettings().ToJsonString(), OriginalModuleName);
             }
