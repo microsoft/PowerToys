@@ -91,11 +91,11 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 #### 0.18 users for updating via notifications
 
-- We adjusted how upgrading works in 0.20.  In 0.19 we accounted for this upcoming change but if you are going from 0.18 to 0.20, please directly use the installer file.
+- We adjusted how upgrading works in 0.20.  In 0.19 we accounted for this upcoming change but if you are going from 0.18 to 0.21, please directly use the installer file.
 
 ### Via GitHub with EXE [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.20.1-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.21.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -130,8 +130,8 @@ Our goals for 0.21 release cycle was to focus on stability, localization and qua
 
 One of the longer term goal items we have made progress on is the Out of Box experience / initial onboarding experience (OOBE) improvements. @Niels9001 created a wicked awesome proof of concept of what the OOBE experience could be.  We are pretty stoked about this since it handles one an important item, critical shortcut default adjustments.
 
-#### Upcoming PowerToys utility - Video conference global muting:
-Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
+#### Upcoming PowerToys utility - Video conference muting:
+Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer and what application has focus.
 
 The utility will mute not just your audio but your video as well with a single keystroke.  You can do audio, video both.  We knew this would impact our roadmap and goals but felt extremely strong that this is the right decision. We're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
 
@@ -145,6 +145,7 @@ To use:
 #### Highlights from August
 
 - We shipped [v0.21][github-release-link]!
+- Shipped Video conference muting
 
 **PT Run:**
 - Removed need for space in action keywords.  This means you now can type `>ipconfig`
@@ -170,23 +171,25 @@ To use:
 **Color Picker:**
 - Fixed bug where it would launch via false positive keystrokes
 
-**Dev quality of life improvements:**
-- Current warning count reduced from 89 to 15 in 0.20.1
-- StyleCop enabled E2E
-- FxCop starting to be added in E2E
-
 **Accessability:**
 - Settings, PT Run and KBM undergoing improvements
 
 **Localization:**
 - Pipeline is now setup and will be doing a full E2E pass on all utilities shortly.
 
+**Dev quality of life improvements:**
+- Continued warning count reduction. This release ~80 removed
+- StyleCop enabled E2E
+- FxCop starting to be added in E2E
+
+### What is being planned for 0.22
+
 For [0.22](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F8), we are proactively working on:
 
 - Stability
-- Improve interactions with elevated windows and keeping most of the PT utilities non-elevated so we still have a 'shell' like experience
 - Localization
-- OOBE
+- Improve interactions with elevated windows and keeping most of the PT utilities non-elevated so we still have a 'shell' like experience
+- OOBE work
 
 ### PowerToys roadmap
 
