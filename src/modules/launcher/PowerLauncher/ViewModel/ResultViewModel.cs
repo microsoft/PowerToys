@@ -70,25 +70,30 @@ namespace PowerLauncher.ViewModel
 
         public void ActivateContextButtons(ActivationType activationType)
         {
-            // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
-            if (ContextMenuItems.Count > 0)
-            {
-                AreContextButtonsActive = true;
-            }
-            else
-            {
-                AreContextButtonsActive = false;
-            }
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                    new Action(
+                    () =>
+                    {
+                        // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
+                        if (ContextMenuItems.Count > 0)
+                        {
+                            AreContextButtonsActive = true;
+                        }
+                        else
+                        {
+                            AreContextButtonsActive = false;
+                        }
 
-            if (activationType == ActivationType.Selection)
-            {
-                IsSelected = true;
-                EnableContextMenuAcceleratorKeys();
-            }
-            else if (activationType == ActivationType.Hover)
-            {
-                IsHovered = true;
-            }
+                        if (activationType == ActivationType.Selection)
+                        {
+                            IsSelected = true;
+                            EnableContextMenuAcceleratorKeys();
+                        }
+                        else if (activationType == ActivationType.Hover)
+                        {
+                            IsHovered = true;
+                        }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
         }
 
         private void DeactivateContextButtonsHoverAction(object sender)
@@ -103,25 +108,30 @@ namespace PowerLauncher.ViewModel
 
         public void DeactivateContextButtons(ActivationType activationType)
         {
-            if (activationType == ActivationType.Selection)
-            {
-                IsSelected = false;
-                DisableContextMenuAcceleratorkeys();
-            }
-            else if (activationType == ActivationType.Hover)
-            {
-                IsHovered = false;
-            }
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                   new Action(
+                   () =>
+                   {
+                       if (activationType == ActivationType.Selection)
+                       {
+                           IsSelected = false;
+                           DisableContextMenuAcceleratorkeys();
+                       }
+                       else if (activationType == ActivationType.Hover)
+                       {
+                           IsHovered = false;
+                       }
 
-            // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
-            if (ContextMenuItems?.Count > 0)
-            {
-                AreContextButtonsActive = IsSelected || IsHovered;
-            }
-            else
-            {
-                AreContextButtonsActive = false;
-            }
+                       // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
+                       if (ContextMenuItems?.Count > 0)
+                       {
+                           AreContextButtonsActive = IsSelected || IsHovered;
+                       }
+                       else
+                       {
+                           AreContextButtonsActive = false;
+                       }
+                   }), System.Windows.Threading.DispatcherPriority.Normal);
         }
 
         public void LoadContextMenu()
@@ -204,7 +214,12 @@ namespace PowerLauncher.ViewModel
         {
             if (ContextMenuSelectedIndex == (ContextMenuItems.Count - 1))
             {
-                ContextMenuSelectedIndex = NoSelectionIndex;
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                       new Action(
+                       () =>
+                       {
+                           ContextMenuSelectedIndex = NoSelectionIndex;
+                       }), System.Windows.Threading.DispatcherPriority.Normal);
                 return false;
             }
 
@@ -220,13 +235,23 @@ namespace PowerLauncher.ViewModel
                 return false;
             }
 
-            ContextMenuSelectedIndex--;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                   new Action(
+                   () =>
+                   {
+                       ContextMenuSelectedIndex--;
+                   }), System.Windows.Threading.DispatcherPriority.Normal);
             return true;
         }
 
         public void SelectLastContextButton()
         {
-            ContextMenuSelectedIndex = ContextMenuItems.Count - 1;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                      new Action(
+                      () =>
+                      {
+                          ContextMenuSelectedIndex = ContextMenuItems.Count - 1;
+                      }), System.Windows.Threading.DispatcherPriority.Normal);
         }
 
         public bool HasSelectedContextButton()

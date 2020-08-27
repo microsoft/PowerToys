@@ -12,7 +12,7 @@ namespace PowerLauncher.Helper
 {
     public static class ErrorReporting
     {
-        private static void Report(Exception e)
+        private static void Report(Exception e, bool waitForClose)
         {
             if (e != null)
             {
@@ -20,20 +20,31 @@ namespace PowerLauncher.Helper
                 logger.Fatal(ExceptionFormatter.FormatException(e));
 
                 var reportWindow = new ReportWindow(e);
-                reportWindow.Show();
+
+                if (waitForClose)
+                {
+                    reportWindow.ShowDialog();
+                }
+                else
+                {
+                    reportWindow.Show();
+                }
             }
         }
 
         public static void UnhandledExceptionHandle(object sender, UnhandledExceptionEventArgs e)
         {
             // handle non-ui thread exceptions
-            Report((Exception)e?.ExceptionObject);
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                Report((Exception)e?.ExceptionObject, true);
+            });
         }
 
         public static void DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             // handle ui thread exceptions
-            Report(e?.Exception);
+            Report(e?.Exception, false);
 
             // prevent application exist, so the user can copy prompted error info
             e.Handled = true;
