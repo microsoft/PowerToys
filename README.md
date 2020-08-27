@@ -177,9 +177,9 @@ For [0.22](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+
 - Localization
 - OOBE
 
-### PowerToys 2020 & 2021 roadmap
+### PowerToys roadmap
 
-Our roadmap for all the [goals and utilities for 2020 detailed over here in the wiki][roadmap].
+Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on..
 
 ## Developer Guidance
 
