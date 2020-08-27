@@ -79,6 +79,10 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 <br/>
 <br/>
 
+### Video Conference Mute
+
+[<img align="left" src="./doc/images/overview/ShortcutGuide_small.png" />](https://aka.ms/PowerToysOverview_VideoConference)  [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) CLINT TO PUT TEXT IN, UPDATE IMAGE
+
 ## Installing and running Microsoft PowerToys
 
 #### Requirements
@@ -130,6 +134,13 @@ One of the longer term goal items we have made progress on is the Out of Box exp
 Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
 
 The utility will mute not just your audio but your video as well with a single keystroke.  You can do audio, video both.  We knew this would impact our roadmap and goals but felt extremely strong that this is the right decision. We're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
+
+To use:
+
+- Set your camera to the PowerToys Video driver in the target application
+- <kbd>Win</kbd>+<kbd>N</kbd> to toggle both Audio and Video at the same time
+- **CLINT:**<kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> to toggle Video
+- **CLINT:**<kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> to toggle Audio
 
 #### Highlights from August
 
