@@ -120,17 +120,22 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### July 2020 Update
+### August 2020 Update
 
 Our goals for 0.21 release cycle was to focus on stability, localization and quality of life improvements for both the development team and our end users. 
 
 One of the longer term goal items we have made progress on is the Out of Box experience / initial onboarding experience (OOBE) improvements. @Niels9001 created a wicked awesome proof of concept of what the OOBE experience could be.  We are pretty stoked about this since it handles one an important item, critical shortcut default adjustments.
 
-Here are a few highlights from August
+#### Upcoming PowerToys utility - Video conference global muting:
+Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
+
+The utility will mute not just your audio but your video as well with a single keystroke.  You can do audio, video both.  We knew this would impact our roadmap and goals but felt extremely strong that this is the right decision. We're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
+
+#### Highlights from August
 
 - We shipped [v0.21][github-release-link]!
 
-PT Run: 
+**PT Run:**
 - Removed need for space in action keywords.  This means you now can type `>ipconfig`
 - Icon caches fixed and now has colored icons
 - Improved font rendering via ClearType (Shout out to @AnuthaDev doing the heavy lifting here)
@@ -138,34 +143,37 @@ PT Run:
 - URLs are supported 
 - Fixed bugs including calculating bugs
 
-FancyZone:
+**FancyZone:**
 - <kbd>Win</kbd>+<kbd>Arrow key</kbd> is directional based on zone rect
 - Fixed bugs
 
-Runner:
+**Runner:**
 - Fixed toast notifications running elevated from non-admin account
 
-Shortcut Guide:
+**Shortcut Guide:**
 - Improved vkey catching which will fix some use cases of it not showing up
 
-SVG in File Explorer:
+**SVG in File Explorer:**
 - Embedded image tags will now render in Explorer
 
-Dev quality of life improvements: 
+**Color Picker:**
+- Fixed bug where it would launch via false positive keystrokes
+
+**Dev quality of life improvements:**
 - Current warning count reduced from 89 to 15 in 0.20.1
 - StyleCop enabled E2E
 - FxCop starting to be added in E2E
 
-Accessability: 
+**Accessability:**
 - Settings, PT Run and KBM undergoing improvements
 
-Localization:
-- Pipeline is being setup and will be doing a full E2E pass on Settings shortly.
+**Localization:**
+- Pipeline is now setup and will be doing a full E2E pass on all utilities shortly.
 
 For [0.22](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F8), we are proactively working on:
 
 - Stability
-- Quality
+- Improve interactions with elevated windows and keeping most of the PT utilities non-elevated so we still have a 'shell' like experience
 - Localization
 - OOBE
 
