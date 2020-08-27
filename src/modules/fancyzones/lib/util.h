@@ -15,12 +15,6 @@ namespace FancyZonesUtils
         std::wstring processPath;
     };
 
-    enum class NewlyCreatedWindow
-    {
-        No = 0,
-        Yes
-    };
-
     struct Rect
     {
         Rect() {}
