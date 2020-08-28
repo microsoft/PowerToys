@@ -139,8 +139,8 @@ To use:
 
 - Set your camera to the PowerToys Video driver in the target application
 - <kbd>Win</kbd>+<kbd>N</kbd> to toggle both Audio and Video at the same time
-- **CLINT:**<kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> to toggle Video
-- **CLINT:**<kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> to toggle Audio
+- <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd> to toggle video
+- <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> to toggle microphone
 
 #### Highlights from August
 
