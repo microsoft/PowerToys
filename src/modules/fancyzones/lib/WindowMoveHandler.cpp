@@ -291,7 +291,13 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
         // We'll get here if the user presses/releases shift while dragging.
         // Restart the drag on the ZoneWindow that m_windowMoveSize is on
         MoveSizeStart(m_windowMoveSize, monitor, ptScreen, zoneWindowMap);
-        MoveSizeUpdate(monitor, ptScreen, zoneWindowMap);
+
+        // m_dragEnabled could get set to false if we're moving an elevated window.
+        // In that case do not proceed.
+        if (m_dragEnabled)
+        {
+            MoveSizeUpdate(monitor, ptScreen, zoneWindowMap);
+        }
     }
 }
 
