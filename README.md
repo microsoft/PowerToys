@@ -74,10 +74,12 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 <br/>
 <br/>
 <br/>
+<br/>
 
 ### Video Conference Mute
 
 [<img align="left" src="./doc/images/overview/ShortcutGuide_small.png" />](https://aka.ms/PowerToysOverview_VideoConference)  [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) is a quick and easy way to do an global "mute" of both your microphone and webcam via <kbd>Win</kbd>+<kbd>N</kbd>. Just set your webcam in the target application to the PowerToys VideoConference camera.
+<br/>
 <br/>
 <br/>
 <br/>
