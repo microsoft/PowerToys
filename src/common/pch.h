@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <Windows.h>

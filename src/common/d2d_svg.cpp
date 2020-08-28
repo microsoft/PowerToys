@@ -34,10 +34,10 @@ D2DSVG& D2DSVG::resize(int x, int y, int width, int height, float fill, float ma
     transform = transform * D2D1::Matrix3x2F::Translation((width - svg_width) / 2.0f, (height - svg_height) / 2.0f);
     float h_scale = fill * height / svg_height;
     float v_scale = fill * width / svg_width;
-    used_scale = min(h_scale, v_scale);
+    used_scale = std::min(h_scale, v_scale);
     if (max_scale > 0)
     {
-        used_scale = min(used_scale, max_scale);
+        used_scale = std::min(used_scale, max_scale);
     }
     transform = transform * D2D1::Matrix3x2F::Scale(used_scale, used_scale, D2D1::Point2F(width / 2.0f, height / 2.0f));
     transform = transform * D2D1::Matrix3x2F::Translation((float)x, (float)y);

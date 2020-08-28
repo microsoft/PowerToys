@@ -124,7 +124,7 @@ namespace ZoneWindowDrawing
         ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
 
         std::vector<bool> isHighlighted(zones.size(), false);
-        for (int x : highlightZones)
+        for (size_t x : highlightZones)
         {
             isHighlighted[x] = true;
         }

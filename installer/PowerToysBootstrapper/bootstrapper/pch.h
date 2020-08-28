@@ -11,3 +11,5 @@
 #include <Msi.h>
 
 #include <unordered_set>
+#include <tuple>
+#include <sstream>
