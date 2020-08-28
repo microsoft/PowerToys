@@ -356,20 +356,15 @@ namespace PowerLauncher
                 }
 
                 // (this.FindResource("IntroStoryboard") as Storyboard).Begin();
-                Application.Current.Dispatcher.BeginInvoke(
-                    new Action(
-                    () =>
-                {
-                    SearchBox.QueryTextBox.Focus();
-                    Keyboard.Focus(SearchBox.QueryTextBox);
-
-                    if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
-                    {
-                        SearchBox.QueryTextBox.SelectAll();
-                    }
-                }), System.Windows.Threading.DispatcherPriority.Normal);
+                SearchBox.QueryTextBox.Focus();
+                Keyboard.Focus(SearchBox.QueryTextBox);
 
                 _settings.ActivateTimes++;
+
+                if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                {
+                    SearchBox.QueryTextBox.SelectAll();
+                }
 
                 // Log the time taken from pressing the hotkey till launcher is visible as separate events depending on if it's the first hotkey invoke or second
                 if (!_coldStateHotkeyPressed)
