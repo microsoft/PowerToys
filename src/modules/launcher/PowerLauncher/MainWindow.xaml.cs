@@ -318,20 +318,21 @@ namespace PowerLauncher
 
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            var textBox = (TextBox)sender;
+            var text = textBox.Text;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                SearchBox.AutoCompleteTextBlock.Text = string.Empty;
+            }
+
             if (_isTextSetProgrammatically)
             {
-                var textBox = (TextBox)sender;
                 textBox.SelectionStart = textBox.Text.Length;
                 _isTextSetProgrammatically = false;
             }
             else
             {
-                var text = ((TextBox)sender).Text;
-                if (string.IsNullOrEmpty(text))
-                {
-                    SearchBox.AutoCompleteTextBlock.Text = string.Empty;
-                }
-
                 _viewModel.QueryText = text;
                 _viewModel.Query();
             }
