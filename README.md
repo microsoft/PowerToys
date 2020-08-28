@@ -129,7 +129,7 @@ We currently support the matrix below.
 
 Our goals for 0.21 release cycle was to focus on stability, localization and quality of life improvements for both the development team and our end users. 
 
-One of the longer term goal items we have made progress on is the Out of Box experience / initial onboarding experience (OOBE) improvements. @Niels9001 created a wicked awesome proof of concept of what the OOBE experience could be.  We are pretty stoked about this since it handles one an important item, critical shortcut default adjustments.
+One of the longer term goal items we have made progress on is the Out of Box experience / initial onboarding experience (OOBE) improvements.[@Niels9001](https://github.com/niels9001/) created a [wicked awesome proof of concept of what the OOBE experience could be](https://github.com/microsoft/PowerToys/issues/1285#issuecomment-679268558).  We are pretty stoked about this since it handles one an important item, critical shortcut default adjustments.
 
 #### New PowerToys utility - Video conference muting:
 Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer and what application has focus.
