@@ -2,11 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Windows;
-using Mages.Core;
 using Microsoft.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
 using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper;
