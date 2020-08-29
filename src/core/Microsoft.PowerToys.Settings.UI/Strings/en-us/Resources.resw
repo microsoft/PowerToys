@@ -245,7 +245,7 @@
   <data name="PowerLauncher_SearchTypePreference_ExecutableName" xml:space="preserve">
     <value>Executable name</value>
   </data>
-  <data name="PowerLauncher_MaximumNumberOfResults.Text" xml:space="preserve">
+  <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
     <value>Maximum number of results</value>
   </data>
   <data name="PowerLauncher_Shortcuts.Text" xml:space="preserve">
@@ -343,7 +343,7 @@
     <value>Move newly created windows to their last known zone</value>
   </data>
   <data name="FancyZones_OpenWindowOnActiveMonitor.Content" xml:space="preserve">
-    <value>Move newly created windows to the current active monitor [EXPERIMENTAL]</value>
+    <value>Move newly created windows to the current active monitor (EXPERIMENTAL)</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
     <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
@@ -417,7 +417,7 @@
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
     <value>Appear only in extended context menu (Shift + Right-click)</value>
   </data>
-  <data name="PowerRename_Toggle_MaxDispListNum.Text" xml:space="preserve">
+  <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
   </data>
   <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Content" xml:space="preserve">
@@ -453,7 +453,7 @@
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
   </data>
-  <data name="ShortcutGuide_PressTime.Text" xml:space="preserve">
+  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
     <value>Press duration before showing (ms)</value>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
@@ -513,7 +513,7 @@
   <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
     <value>Save sizes</value>
   </data>
-  <data name="ImageResizer_Encoding.Text" xml:space="preserve">
+  <data name="ImageResizer_Encoding.Header" xml:space="preserve">
     <value>JPEG quality level</value>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
