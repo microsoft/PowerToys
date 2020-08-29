@@ -9,7 +9,7 @@
     d:DesignWidth="720">
     <UserControl.Resources>
         <Style x:Key="QueryTextBoxStyle" TargetType="{x:Type TextBox}">
-            <Setter Property="Background" Value="{DynamicResource SystemChromeLow}" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}"/>
             <Setter Property="CaretBrush" Value="{DynamicResource ControlTextBrushKey}"/>
@@ -102,11 +102,12 @@
             x:Name="AutoCompleteTextBlock"
             x:FieldModifier="public"
             Opacity="0.6"            
-            Canvas.ZIndex="0" 
+            Canvas.ZIndex="-1" 
             Margin="24, 0, 14, 0"
             VerticalAlignment="Center"
             FontSize="24"
             Foreground="{DynamicResource TextControlPlaceholderForeground}"
+            Background="{DynamicResource SystemChromeLow}"
             RenderOptions.ClearTypeHint="Enabled"
          />
         <TextBlock
