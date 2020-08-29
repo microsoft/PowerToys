@@ -23,11 +23,19 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{2f10207d-d8d1-4a42-8027-8ca597b3cb23}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\lib\fancyzones.rc" />
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{a4241930-ecae-44e2-be82-25eff2499fcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{8d479404-964b-4eb1-8fe8-554be3e68c9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\lib\fancyzones.rc">
+      <Filter>Generated Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

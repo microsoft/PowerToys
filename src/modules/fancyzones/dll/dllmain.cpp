@@ -6,7 +6,7 @@
 #include <interface/powertoy_module_interface.h>
 #include <lib/ZoneSet.h>
 
-#include <lib/resource.h>
+#include <lib/Generated Files/resource.h>
 #include <lib/trace.h>
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>

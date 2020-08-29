@@ -11,7 +11,7 @@ namespace Wox.Core.Plugin
 {
     public static class QueryBuilder
     {
-        public static Query Build(string text, Dictionary<string, PluginPair> nonGlobalPlugins)
+        public static Dictionary<PluginPair, Query> Build(ref string text, Dictionary<string, PluginPair> nonGlobalPlugins)
         {
             // replace multiple white spaces with one white space
             var terms = text.Split(new[] { Query.TermSeparator }, StringSplitOptions.RemoveEmptyEntries);
@@ -20,36 +20,54 @@ namespace Wox.Core.Plugin
                 return null;
             }
 
+            // This Dictionary contains the corresponding query for each plugin
+            Dictionary<PluginPair, Query> pluginQueryPair = new Dictionary<PluginPair, Query>();
+
             var rawQuery = string.Join(Query.TermSeparator, terms);
-            string actionKeyword, search;
+
+            // This is the query on removing extra spaces which would be executed by global Plugins
+            text = rawQuery;
+
             string possibleActionKeyword = terms[0];
-            List<string> actionParameters;
-            if (nonGlobalPlugins.TryGetValue(possibleActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
-            { // use non global plugin for query
-                actionKeyword = possibleActionKeyword;
-                actionParameters = terms.Skip(1).ToList();
-                search = actionParameters.Count > 0 ? rawQuery.Substring(actionKeyword.Length + 1) : string.Empty;
-            }
-            else
-            { // non action keyword
-                actionKeyword = string.Empty;
-                actionParameters = terms.ToList();
-                search = rawQuery;
-            }
 
-            var query = new Query
+            foreach (string pluginActionKeyword in nonGlobalPlugins.Keys)
             {
-                Terms = terms,
-                RawQuery = rawQuery,
-                ActionKeyword = actionKeyword,
-                Search = search,
+                if (possibleActionKeyword.StartsWith(pluginActionKeyword))
+                {
+                    if (nonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
+                    {
+                        // The search string is the raw query excluding the action keyword
+                        string search = rawQuery.Substring(pluginActionKeyword.Length).Trim();
 
-                // Obsolete value initialisation
-                ActionName = actionKeyword,
-                ActionParameters = actionParameters,
-            };
+                        // To set the terms of the query after removing the action keyword
+                        if (possibleActionKeyword.Length > pluginActionKeyword.Length)
+                        {
+                            // If the first term contains the action keyword, then set the remaining string to be the first term
+                            terms[0] = possibleActionKeyword.Substring(pluginActionKeyword.Length);
+                        }
+                        else
+                        {
+                            // If the first term is the action keyword, then skip it.
+                            terms = terms.Skip(1).ToArray();
+                        }
 
-            return query;
+                        // A new query is constructed for each plugin as they have different action keywords
+                        var query = new Query(rawQuery, search, terms, pluginActionKeyword);
+
+                        pluginQueryPair.TryAdd(pluginPair, query);
+                    }
+                }
+            }
+
+            var globalplugins = PluginManager.GlobalPlugins;
+
+            foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
+            {
+                var query = new Query(rawQuery, rawQuery, terms, string.Empty);
+                pluginQueryPair.Add(globalPlugin, query);
+            }
+
+            return pluginQueryPair;
         }
     }
 }

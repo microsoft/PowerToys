@@ -3,7 +3,7 @@
 #include <common/common.h>
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <common\settings_objects.h>
 #include <common\os-detect.h>
 
@@ -19,6 +19,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         Trace::RegisterProvider();
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
+        break;
     case DLL_PROCESS_DETACH:
         Trace::UnregisterProvider();
         break;

@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -53,9 +54,15 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string LogoPath { get; set; }
 
+        public LogoType LogoType { get; set; }
+
         public UWP Package { get; set; }
 
         private string logoUri;
+
+        private const string ContrastWhite = "contrast-white";
+
+        private const string ContrastBlack = "contrast-black";
 
         // Function to calculate the score of a result
         private int Score(string query)
@@ -352,23 +359,186 @@ namespace Microsoft.Plugin.Program.Programs
 
         public void UpdatePath(Theme theme)
         {
-            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
-            {
-                LogoPath = LogoPathFromUri(logoUri, "contrast-white");
-            }
-            else
-            {
-                LogoPath = LogoPathFromUri(logoUri, "contrast-black");
-            }
+            LogoPathFromUri(this.logoUri, theme);
         }
 
-        internal string LogoPathFromUri(string uri, string theme)
+        private bool SetScaleIcons(string path, string colorscheme, bool highContrast = false)
+        {
+            var extension = Path.GetExtension(path);
+            if (extension != null)
+            {
+                var end = path.Length - extension.Length;
+                var prefix = path.Substring(0, end);
+                var paths = new List<string> { };
+                var scaleFactors = new Dictionary<PackageVersion, List<int>>
+                    {
+                        // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
+                        { PackageVersion.Windows10, new List<int> { 100, 125, 150, 200, 400 } },
+                        { PackageVersion.Windows81, new List<int> { 100, 120, 140, 160, 180 } },
+                        { PackageVersion.Windows8, new List<int> { 100 } },
+                    };
+
+                if (!highContrast)
+                {
+                    paths.Add(path);
+                }
+
+                if (scaleFactors.ContainsKey(Package.Version))
+                {
+                    foreach (var factor in scaleFactors[Package.Version])
+                    {
+                        if (highContrast)
+                        {
+                            paths.Add($"{prefix}.scale-{factor}_{colorscheme}{extension}");
+                            paths.Add($"{prefix}.{colorscheme}_scale-{factor}{extension}");
+                        }
+                        else
+                        {
+                            paths.Add($"{prefix}.scale-{factor}{extension}");
+                        }
+                    }
+                }
+
+                var selectedIconPath = paths.FirstOrDefault(File.Exists);
+                if (!string.IsNullOrEmpty(selectedIconPath))
+                {
+                    LogoPath = selectedIconPath;
+                    if (highContrast)
+                    {
+                        LogoType = LogoType.HighContrast;
+                    }
+                    else
+                    {
+                        LogoType = LogoType.Colored;
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool SetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
+        {
+            var extension = Path.GetExtension(path);
+            if (extension != null)
+            {
+                var end = path.Length - extension.Length;
+                var prefix = path.Substring(0, end);
+                var paths = new List<string> { };
+                int appIconSize = 36;
+                var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 }.AsParallel();
+                var pathFactorPairs = new Dictionary<string, int>();
+
+                foreach (var factor in targetSizes)
+                {
+                    if (highContrast)
+                    {
+                        string suffixThemePath = $"{prefix}.targetsize-{factor}_{colorscheme}{extension}";
+                        string prefixThemePath = $"{prefix}.{colorscheme}_targetsize-{factor}{extension}";
+                        paths.Add(suffixThemePath);
+                        paths.Add(prefixThemePath);
+                        pathFactorPairs.Add(suffixThemePath, factor);
+                        pathFactorPairs.Add(prefixThemePath, factor);
+                    }
+                    else
+                    {
+                        string simplePath = $"{prefix}.targetsize-{factor}{extension}";
+                        string altformUnPlatedPath = $"{prefix}.targetsize-{factor}_altform-unplated{extension}";
+                        paths.Add(simplePath);
+                        paths.Add(altformUnPlatedPath);
+                        pathFactorPairs.Add(simplePath, factor);
+                        pathFactorPairs.Add(altformUnPlatedPath, factor);
+                    }
+                }
+
+                var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
+                if (!string.IsNullOrEmpty(selectedIconPath))
+                {
+                    LogoPath = selectedIconPath;
+                    if (highContrast)
+                    {
+                        LogoType = LogoType.HighContrast;
+                    }
+                    else
+                    {
+                        LogoType = LogoType.Colored;
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool SetColoredIcon(string path, string colorscheme)
+        {
+            var isSetColoredScaleIcon = SetScaleIcons(path, colorscheme);
+            if (isSetColoredScaleIcon)
+            {
+                return true;
+            }
+
+            var isSetColoredTargetIcon = SetTargetSizeIcon(path, colorscheme);
+            if (isSetColoredTargetIcon)
+            {
+                return true;
+            }
+
+            var isSetHighContrastScaleIcon = SetScaleIcons(path, colorscheme, true);
+            if (isSetHighContrastScaleIcon)
+            {
+                return true;
+            }
+
+            var isSetHighContrastTargetIcon = SetTargetSizeIcon(path, colorscheme, true);
+            if (isSetHighContrastTargetIcon)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool SetHighContrastIcon(string path, string colorscheme)
+        {
+            var isSetHighContrastScaleIcon = SetScaleIcons(path, colorscheme, true);
+            if (isSetHighContrastScaleIcon)
+            {
+                return true;
+            }
+
+            var isSetHighContrastTargetIcon = SetTargetSizeIcon(path, colorscheme, true);
+            if (isSetHighContrastTargetIcon)
+            {
+                return true;
+            }
+
+            var isSetColoredScaleIcon = SetScaleIcons(path, colorscheme);
+            if (isSetColoredScaleIcon)
+            {
+                return true;
+            }
+
+            var isSetColoredTargetIcon = SetTargetSizeIcon(path, colorscheme);
+            if (isSetColoredTargetIcon)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        internal void LogoPathFromUri(string uri, Theme theme)
         {
             // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
             // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
             // windows 8.1 https://msdn.microsoft.com/en-us/library/windows/apps/hh965372.aspx#target_size
             // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
             string path;
+            bool isLogoUriSet;
             if (uri.Contains("\\", StringComparison.Ordinal))
             {
                 path = Path.Combine(Package.Location, uri);
@@ -379,87 +549,112 @@ namespace Microsoft.Plugin.Program.Programs
                 path = Path.Combine(Package.Location, "Assets", uri);
             }
 
-            var extension = Path.GetExtension(path);
-            if (extension != null)
+            if (theme == Theme.HighContrastBlack || theme == Theme.HighContrastOne || theme == Theme.HighContrastTwo)
             {
-                var end = path.Length - extension.Length;
-                var prefix = path.Substring(0, end);
-                var paths = new List<string> { path };
-
-                var scaleFactors = new Dictionary<PackageVersion, List<int>>
-                    {
-                        // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
-                        { PackageVersion.Windows10, new List<int> { 100, 125, 150, 200, 400 } },
-                        { PackageVersion.Windows81, new List<int> { 100, 120, 140, 160, 180 } },
-                        { PackageVersion.Windows8, new List<int> { 100 } },
-                    };
-
-                if (scaleFactors.ContainsKey(Package.Version))
-                {
-                    foreach (var factor in scaleFactors[Package.Version])
-                    {
-                        paths.Add($"{prefix}.scale-{factor}{extension}");
-                        paths.Add($"{prefix}.scale-{factor}_{theme}{extension}");
-                        paths.Add($"{prefix}.{theme}_scale-{factor}{extension}");
-                    }
-                }
-
-                paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.OrdinalIgnoreCase)).ToList();
-                var selected = paths.FirstOrDefault(File.Exists);
-                if (!string.IsNullOrEmpty(selected))
-                {
-                    return selected;
-                }
-                else
-                {
-                    int appIconSize = 36;
-                    var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 }.AsParallel();
-                    Dictionary<string, int> pathFactorPairs = new Dictionary<string, int>();
-
-                    foreach (var factor in targetSizes)
-                    {
-                        string simplePath = $"{prefix}.targetsize-{factor}{extension}";
-                        string suffixThemePath = $"{prefix}.targetsize-{factor}_{theme}{extension}";
-                        string prefixThemePath = $"{prefix}.{theme}_targetsize-{factor}{extension}";
-
-                        paths.Add(simplePath);
-                        paths.Add(suffixThemePath);
-                        paths.Add(prefixThemePath);
-
-                        pathFactorPairs.Add(simplePath, factor);
-                        pathFactorPairs.Add(suffixThemePath, factor);
-                        pathFactorPairs.Add(prefixThemePath, factor);
-                    }
-
-                    paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.OrdinalIgnoreCase)).ToList();
-                    var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
-                    if (!string.IsNullOrEmpty(selectedIconPath))
-                    {
-                        return selectedIconPath;
-                    }
-                    else
-                    {
-                        ProgramLogger.LogException(
-                            $"|UWP|LogoPathFromUri|{Package.Location}" +
-                            $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
-                        return string.Empty;
-                    }
-                }
+                isLogoUriSet = SetHighContrastIcon(path, ContrastBlack);
+            }
+            else if (theme == Theme.HighContrastWhite)
+            {
+                isLogoUriSet = SetHighContrastIcon(path, ContrastWhite);
+            }
+            else if (theme == Theme.Light)
+            {
+                isLogoUriSet = SetColoredIcon(path, ContrastWhite);
             }
             else
             {
+                isLogoUriSet = SetColoredIcon(path, ContrastBlack);
+            }
+
+            if (!isLogoUriSet)
+            {
+                LogoPath = string.Empty;
+                LogoType = LogoType.Error;
                 ProgramLogger.LogException(
-                    $"|UWP|LogoPathFromUri|{Package.Location}" +
-                                                $"|Unable to find extension from {uri} for {UserModelId} " +
-                                                $"in package location {Package.Location}", new FileNotFoundException());
-                return string.Empty;
+                            $"|UWP|LogoPathFromUri|{Package.Location}" +
+                            $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
             }
         }
 
         public ImageSource Logo()
         {
-            var logo = ImageFromPath(LogoPath);
-            return logo;
+            if (LogoType == LogoType.Colored)
+            {
+                var logo = ImageFromPath(LogoPath);
+                var platedImage = PlatedImage(logo);
+                return platedImage;
+            }
+            else
+            {
+                return ImageFromPath(LogoPath);
+            }
+        }
+
+        private ImageSource PlatedImage(BitmapImage image)
+        {
+            if (!string.IsNullOrEmpty(BackgroundColor))
+            {
+                string currentBackgroundColor;
+                if (BackgroundColor == "transparent")
+                {
+                    currentBackgroundColor = SystemParameters.WindowGlassBrush.ToString(CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    currentBackgroundColor = BackgroundColor;
+                }
+
+                var padding = 8;
+                var width = image.Width + (2 * padding);
+                var height = image.Height + (2 * padding);
+                var x = 0;
+                var y = 0;
+
+                var group = new DrawingGroup();
+                var converted = ColorConverter.ConvertFromString(currentBackgroundColor);
+                if (converted != null)
+                {
+                    var color = (Color)converted;
+                    var brush = new SolidColorBrush(color);
+                    var pen = new Pen(brush, 1);
+                    var backgroundArea = new Rect(0, 0, width, height);
+                    var rectangleGeometry = new RectangleGeometry(backgroundArea);
+                    var rectDrawing = new GeometryDrawing(brush, pen, rectangleGeometry);
+                    group.Children.Add(rectDrawing);
+
+                    var imageArea = new Rect(x + padding, y + padding, image.Width, image.Height);
+                    var imageDrawing = new ImageDrawing(image, imageArea);
+                    group.Children.Add(imageDrawing);
+
+                    // http://stackoverflow.com/questions/6676072/get-system-drawing-bitmap-of-a-wpf-area-using-visualbrush
+                    var visual = new DrawingVisual();
+                    var context = visual.RenderOpen();
+                    context.DrawDrawing(group);
+                    context.Close();
+                    const int dpiScale100 = 96;
+                    var bitmap = new RenderTargetBitmap(
+                        Convert.ToInt32(width),
+                        Convert.ToInt32(height),
+                        dpiScale100,
+                        dpiScale100,
+                        PixelFormats.Pbgra32);
+                    bitmap.Render(visual);
+                    return bitmap;
+                }
+                else
+                {
+                    ProgramLogger.LogException(
+                        $"|UWP|PlatedImage|{Package.Location}|Unable to convert background string {BackgroundColor} " +
+                                                $"to color for {Package.Location}", new InvalidOperationException());
+
+                    return new BitmapImage(new Uri(Constant.ErrorIcon));
+                }
+            }
+            else
+            {
+                // todo use windows theme as background
+                return image;
+            }
         }
 
         private BitmapImage ImageFromPath(string path)
@@ -481,8 +676,7 @@ namespace Microsoft.Plugin.Program.Programs
             else
             {
                 ProgramLogger.LogException(
-                    $"|UWP|ImageFromPath|{path}" +
-                                                $"|Unable to get logo for {UserModelId} from {path} and" +
+                    $"|UWP|ImageFromPath|{path}|Unable to get logo for {UserModelId} from {path} and" +
                                                 $" located in {Package.Location}", new FileNotFoundException());
                 return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
             }
@@ -492,5 +686,12 @@ namespace Microsoft.Plugin.Program.Programs
         {
             return $"{DisplayName}: {Description}";
         }
+    }
+
+    public enum LogoType
+    {
+        Error,
+        Colored,
+        HighContrast,
     }
 }

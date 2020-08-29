@@ -5,7 +5,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.Lib.ViewModels"
     xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Lib"
@@ -13,7 +13,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <viewModel:KeyboardManagerViewModel x:Key="eventViewModel"/>
         <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
         <DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
             <StackPanel

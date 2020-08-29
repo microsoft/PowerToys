@@ -105,7 +105,7 @@ namespace FancyZonesDataTypes
 
         std::wstring zoneSetUuid;
         std::wstring deviceId;
-        std::vector<int> zoneIndexSet;
+        std::vector<size_t> zoneIndexSet;
     };
 
     struct DeviceInfoData

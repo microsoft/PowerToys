@@ -8,8 +8,8 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Generated Files\resource.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -19,13 +19,25 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{513da898-667d-48e4-bf15-74cf06f07ee1}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Microsoft.Launcher.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{c90b18da-7f8b-4543-89e6-f968a62c7a25}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Microsoft.Launcher.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files\Microsoft.Launcher.rc">
+      <Filter>Generated Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

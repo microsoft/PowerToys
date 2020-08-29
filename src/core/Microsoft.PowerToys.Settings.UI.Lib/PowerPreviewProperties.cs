@@ -18,13 +18,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool EnableSvgPreview
         {
-            get => this.enableSvgPreview;
+            get => enableSvgPreview;
             set
             {
-                if (value != this.enableSvgPreview)
+                if (value != enableSvgPreview)
                 {
                     LogTelemetryEvent(value);
-                    this.enableSvgPreview = value;
+                    enableSvgPreview = value;
                 }
             }
         }
@@ -35,13 +35,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool EnableSvgThumbnail
         {
-            get => this.enableSvgThumbnail;
+            get => enableSvgThumbnail;
             set
             {
-                if (value != this.enableSvgThumbnail)
+                if (value != enableSvgThumbnail)
                 {
                     LogTelemetryEvent(value);
-                    this.enableSvgThumbnail = value;
+                    enableSvgThumbnail = value;
                 }
             }
         }
@@ -52,13 +52,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool EnableMdPreview
         {
-            get => this.enableMdPreview;
+            get => enableMdPreview;
             set
             {
-                if (value != this.enableMdPreview)
+                if (value != enableMdPreview)
                 {
                     LogTelemetryEvent(value);
-                    this.enableMdPreview = value;
+                    enableMdPreview = value;
                 }
             }
         }

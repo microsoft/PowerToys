@@ -4,6 +4,9 @@
 #include "keyboardmanager/common/KeyboardManagerConstants.h"
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "ShortcutControl.h"
+#include "common/common.h"
+#include "keyboardmanager/dll/Generated Files/resource.h"
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
@@ -15,7 +18,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
 {
     typeKey = Button();
     typeKey.as<Button>().Width(KeyboardManagerConstants::RemapTableDropDownWidth);
-    typeKey.as<Button>().Content(winrt::box_value(L"Type"));
+    typeKey.as<Button>().Content(winrt::box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
 
     singleKeyRemapControlLayout = StackPanel();
     singleKeyRemapControlLayout.as<StackPanel>().Margin({ 0, 0, 0, 10 });
@@ -176,7 +179,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
 
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectRemapKeyBox.XamlRoot(xamlRoot);
-    detectRemapKeyBox.Title(box_value(L"Press a key on selected keyboard:"));
+    detectRemapKeyBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPEKEY_TITLE)));
     detectRemapKeyBox.IsPrimaryButtonEnabled(false);
     detectRemapKeyBox.IsSecondaryButtonEnabled(false);
 
@@ -228,7 +231,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     };
 
     TextBlock primaryButtonText;
-    primaryButtonText.Text(L"OK");
+    primaryButtonText.Text(GET_RESOURCE_STRING(IDS_OK_BUTTON));
 
     Button primaryButton;
     primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -255,7 +258,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         });
 
     TextBlock cancelButtonText;
-    cancelButtonText.Text(L"Cancel");
+    cancelButtonText.Text(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
 
     Button cancelButton;
     cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -294,7 +297,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
 
     // Header textblock
     TextBlock text;
-    text.Text(L"Key Pressed:");
+    text.Text(GET_RESOURCE_STRING(IDS_TYPEKEY_HEADER));
     text.Margin({ 0, 0, 0, 10 });
     stackPanel.Children().Append(text);
 
@@ -304,13 +307,13 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     stackPanel.Children().Append(keyStackPanel);
 
     TextBlock holdEscInfo;
-    holdEscInfo.Text(L"Hold Esc to discard");
+    holdEscInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDESC));
     holdEscInfo.FontSize(12);
     holdEscInfo.Margin({ 0, 20, 0, 0 });
     stackPanel.Children().Append(holdEscInfo);
 
     TextBlock holdEnterInfo;
-    holdEnterInfo.Text(L"Hold Enter to continue");
+    holdEnterInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDENTER));
     holdEnterInfo.FontSize(12);
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);

@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public DoubleProperty()
         {
-            this.Value = 0.0;
+            Value = 0.0;
         }
 
         public DoubleProperty(double value)

@@ -6,6 +6,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
 {
+    using namespace FancyZonesUtils;
+
     void TestMonitorSetPermutations(const std::vector<std::pair<HMONITOR, RECT>>& monitorInfo)
     {
         auto monitorInfoPermutation = monitorInfo;

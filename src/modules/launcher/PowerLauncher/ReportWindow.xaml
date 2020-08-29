@@ -5,19 +5,69 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              WindowStartupLocation="CenterScreen"
+             Background="{DynamicResource SystemChromeLow}"
              Icon="Images/app_error.dark.png"
              Topmost="True"
              ResizeMode="NoResize"
-             Width="600"
-             Height="455"
+             Width="760"
+             Height="560"
              Title="{DynamicResource reportWindow_wox_got_an_error}"
              d:DesignHeight="300" d:DesignWidth="600" x:ClassModifier="internal">
-    <RichTextBox x:Name="ErrorTextbox" 
-                 IsDocumentEnabled="True"
-                 VerticalScrollBarVisibility="Auto" 
-                 HorizontalScrollBarVisibility="Auto" 
-                 FontSize="14" 
-                 Margin="10"
-                 BorderThickness="0"/>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/ModernScrollBarStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="64"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Text="Something went wrong."
+                   FontFamily="Segoe UI Light"
+                   FontSize="32"
+                   Foreground="{DynamicResource ControlTextBrushKey}"/>
 
+            <TextBlock FontSize="14"
+                       Grid.Row="1"
+                       TextWrapping="Wrap"
+                      
+                       Foreground="{DynamicResource ControlTextBrushKey}">
+                <Run Text="Please file a bug in the"/>
+                <Hyperlink x:Name="RepositoryHyperlink" Click="RepositoryHyperlink_Click"  FontWeight="SemiBold" NavigateUri="https://aka.ms/powerToysReportBug">PowerToys GitHub repository</Hyperlink><Run Text="."/>
+                <Run Text="Make sure to upload the log file and to include the error message."/>
+            </TextBlock>
+  
+            <TextBox Background="Transparent"
+                 BorderThickness="0"
+                 Grid.Row="2"
+                 x:Name="LogFilePathBox"
+                 Margin="0,16,0,0"
+                 FontSize="14"
+                 FontFamily="Consolas"
+                 Foreground="{DynamicResource ControlTextBrushKey}"
+                 IsReadOnly="True"
+                 TextWrapping="Wrap">
+            </TextBox>
+
+       
+        
+        <RichTextBox x:Name="ErrorTextbox" 
+                     Grid.Row="3"
+                     BorderBrush="{DynamicResource ScrollBarThumbBackground}"
+                     BorderThickness="1"
+                     Background="Transparent"
+                     IsDocumentEnabled="True"
+                     Foreground="{DynamicResource ControlTextBrushKey}"
+                     VerticalAlignment="Stretch"
+                     FontFamily="Consolas"
+                     VerticalScrollBarVisibility="Auto" 
+                     HorizontalScrollBarVisibility="Auto" 
+                     FontSize="14"/>
+    </Grid>
 </Window>

@@ -12,6 +12,6 @@ namespace Microsoft.Plugin.Indexer
 
         public int MaxSearchCount { get; set; } = 30;
 
-        public bool UseLocationAsWorkingDir { get; set; } = false;
+        public bool UseLocationAsWorkingDir { get; set; }
     }
 }

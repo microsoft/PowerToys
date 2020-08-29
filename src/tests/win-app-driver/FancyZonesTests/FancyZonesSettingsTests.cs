@@ -12,6 +12,7 @@ using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
+    [Ignore]
     [TestClass]
     public class FancyZonesSettingsTests : PowerToysSession
     {
@@ -39,7 +40,7 @@ namespace PowerToysTests
         {
             try
             {
-                JObject settings = JObject.Parse(File.ReadAllText(_settingsPath));
+                JObject settings = JObject.Parse(File.ReadAllText(_fancyZonesSettingsPath));
                 return settings["properties"].ToObject<JObject>();
             }
             catch (Newtonsoft.Json.JsonReaderException)
@@ -307,14 +308,15 @@ namespace PowerToysTests
             Assert.AreNotEqual(toggleValues[1], GetPropertyValue<bool>(savedProps, "fancyzones_mouseSwitch"));
             Assert.AreNotEqual(toggleValues[2], GetPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
             Assert.AreNotEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowAcrossMonitors"));
-            Assert.AreNotEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
-            Assert.AreNotEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
-            Assert.AreNotEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
-            Assert.AreNotEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
-            Assert.AreNotEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_multi_monitor_mode"));
-            Assert.AreNotEqual(toggleValues[11], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
+            Assert.AreNotEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowsBasedOnPosition"));
+            Assert.AreNotEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreNotEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
+            Assert.AreNotEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            Assert.AreNotEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
+            Assert.AreNotEqual(toggleValues[11], GetPropertyValue<bool>(savedProps, "fancyzones_multi_monitor_mode"));
+            Assert.AreNotEqual(toggleValues[12], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
         }
 
         /*
@@ -348,14 +350,15 @@ namespace PowerToysTests
             Assert.AreEqual(toggleValues[1], GetPropertyValue<bool>(savedProps, "fancyzones_mouseSwitch"));
             Assert.AreEqual(toggleValues[2], GetPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
             Assert.AreEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowAcrossMonitors"));
-            Assert.AreEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
-            Assert.AreEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
-            Assert.AreEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
-            Assert.AreEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
-            Assert.AreEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
-            Assert.AreEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_span_zones_across_monitors"));
-            Assert.AreEqual(toggleValues[11], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
+            Assert.AreEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowsBasedOnPosition"));
+            Assert.AreEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
+            Assert.AreEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            Assert.AreEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
+            Assert.AreEqual(toggleValues[11], GetPropertyValue<bool>(savedProps, "fancyzones_span_zones_across_monitors"));
+            Assert.AreEqual(toggleValues[12], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
         }
 
         [TestMethod]
@@ -717,8 +720,7 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
-            if (session == null)
-                return;
+            Assert.IsNotNull(session);
 
             Init();
         }
@@ -741,6 +743,7 @@ namespace PowerToysTests
                 //element couldn't be located
             }
 
+            ExitPowerToys();
             TearDown();
         }
 
@@ -752,7 +755,7 @@ namespace PowerToysTests
 
             try
             {
-                _initialSettingsJson = JObject.Parse(_initialSettings);
+                _initialSettingsJson = JObject.Parse(_initialFancyZonesSettings);
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {

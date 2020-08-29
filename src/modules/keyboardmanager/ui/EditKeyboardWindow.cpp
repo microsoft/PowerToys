@@ -10,10 +10,12 @@
 #include <common/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
-#include <keyboardmanager/dll/resource.h>
+#include <keyboardmanager/dll/Generated Files/resource.h>
 #include "../common/shared_constants.h"
 #include "keyboardmanager/common/KeyboardManagerState.h"
+#include "common/common.h"
 #include "LoadingAndSavingRemappingHelper.h"
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
 
@@ -36,13 +38,13 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
 {
     ContentDialog confirmationDialog;
     confirmationDialog.XamlRoot(root);
-    confirmationDialog.Title(box_value(L"The following keys are unassigned and you won't be able to use them:"));
+    confirmationDialog.Title(box_value(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_ORPHANEDDIALOGTITLE)));
     confirmationDialog.Content(nullptr);
     confirmationDialog.IsPrimaryButtonEnabled(true);
     confirmationDialog.DefaultButton(ContentDialogButton::Primary);
-    confirmationDialog.PrimaryButtonText(winrt::hstring(L"Continue Anyway"));
+    confirmationDialog.PrimaryButtonText(winrt::hstring(GET_RESOURCE_STRING(IDS_CONTINUE_BUTTON)));
     confirmationDialog.IsSecondaryButtonEnabled(true);
-    confirmationDialog.SecondaryButtonText(winrt::hstring(L"Cancel"));
+    confirmationDialog.SecondaryButtonText(winrt::hstring(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON)));
 
     TextBlock orphanKeysBlock;
     std::wstring orphanKeyString;
@@ -67,7 +69,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 
     if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
     {
-        if (!co_await Dialog::PartialRemappingConfirmationDialog(root, L"Some of the keys could not be remapped. Do you want to continue anyway?"))
+        if (!co_await Dialog::PartialRemappingConfirmationDialog(root, GET_RESOURCE_STRING(IDS_EDITKEYBOARD_PARTIALCONFIRMATIONDIALOGTITLE)))
         {
             co_return;
         }
@@ -108,7 +110,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
             LR_DEFAULTCOLOR);
         if (RegisterClassEx(&windowClass) == NULL)
         {
-            MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
+            MessageBox(NULL, GET_RESOURCE_STRING(IDS_REGISTERCLASSFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_REGISTERCLASSFAILED_ERRORTITLE).c_str(), NULL);
             return;
         }
 
@@ -126,7 +128,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
-        L"Remap keys",
+        GET_RESOURCE_STRING(IDS_EDITKEYBOARD_WINDOWNAME).c_str(),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
         (desktopRect.right / 2) - (windowWidth / 2),
         (desktopRect.bottom / 2) - (windowHeight / 2),
@@ -138,7 +140,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         NULL);
     if (_hWndEditKeyboardWindow == NULL)
     {
-        MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
+        MessageBox(NULL, GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORMESSAGE).c_str(), GET_RESOURCE_STRING(IDS_CREATEWINDOWFAILED_ERRORTITLE).c_str(), NULL);
         return;
     }
     // Ensures the window is in foreground on first startup. If this is not done, the window appears behind because the thread is not on the foreground.
@@ -168,14 +170,14 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Header text
     TextBlock headerText;
-    headerText.Text(L"Remap keys");
+    headerText.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_WINDOWNAME));
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 0, 0 });
     header.SetAlignLeftWithPanel(headerText, true);
 
     // Header Cancel button
     Button cancelButton;
-    cancelButton.Content(winrt::box_value(L"Cancel"));
+    cancelButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON)));
     cancelButton.Margin({ 10, 0, 0, 0 });
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
@@ -184,13 +186,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     //  Text block for information about remap key section.
     TextBlock keyRemapInfoHeader;
-    keyRemapInfoHeader.Text(L"Select the key you want to change (Key) and then the key or shortcut you want it to become (Mapped To).");
+    keyRemapInfoHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_INFO));
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     keyRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
     keyRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock keyRemapInfoExample;
-    keyRemapInfoExample.Text(L"For example, if you want to press A and get \"Ctrl+C\", key \"A\" would be your \"Key\" column and the shortcut \"Ctrl+C\" would be your \"Mapped To\" column.");
+    keyRemapInfoExample.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_INFOEXAMPLE));
     keyRemapInfoExample.Margin({ 10, 0, 0, 20 });
     keyRemapInfoExample.FontStyle(Text::FontStyle::Italic);
     keyRemapInfoExample.TextWrapping(TextWrapping::Wrap);
@@ -217,13 +219,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
-    originalKeyRemapHeader.Text(L"Key:");
+    originalKeyRemapHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_SOURCEHEADER));
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
-    newKeyRemapHeader.Text(L"Mapped To:");
+    newKeyRemapHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_TARGETHEADER));
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
@@ -261,7 +263,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Main Header Apply button
     Button applyButton;
-    applyButton.Content(winrt::box_value(L"OK"));
+    applyButton.Content(winrt::box_value(GET_RESOURCE_STRING(IDS_OK_BUTTON)));
     applyButton.Style(AccentButtonStyle());
     applyButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
     cancelButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);

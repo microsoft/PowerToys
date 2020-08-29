@@ -2,7 +2,7 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
 #include <common/shared_constants.h>
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <keyboardmanager/ui/EditKeyboardWindow.h>
 #include <keyboardmanager/ui/EditShortcutsWindow.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>

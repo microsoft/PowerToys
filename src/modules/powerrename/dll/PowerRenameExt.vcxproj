@@ -19,6 +19,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h PowerRenameExt.base.rc PowerRenameExt.rc" />
+  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B25AC7A5-FB9F-4789-B392-D5C85E948670}</ProjectGuid>
@@ -174,13 +177,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CLSID.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="PowerRenameExt.h" />
     <ClInclude Include="pch.h" />
+    <None Include="resource.base.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PowerRenameExt.rc" />
+    <ResourceCompile Include="Generated Files/PowerRenameExt.rc" />
+    <None Include="PowerRenameExt.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -203,6 +208,9 @@
     <ProjectReference Include="..\ui\PowerRenameUI.vcxproj">
       <Project>{0e072714-d127-460b-afad-b4c40b412798}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -169,56 +169,105 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
     return hr;
 }
 
+bool isFileAttributesUsed(_In_ PCWSTR source) 
+{
+    bool used = false;
+    std::wstring patterns[] = { L"(([^\\$]|^)(\\$\\$)*)\\$Y", L"(([^\\$]|^)(\\$\\$)*)\\$M", L"(([^\\$]|^)(\\$\\$)*)\\$D", 
+        L"(([^\\$]|^)(\\$\\$)*)\\$h", L"(([^\\$]|^)(\\$\\$)*)\\$m", L"(([^\\$]|^)(\\$\\$)*)\\$s", L"(([^\\$]|^)(\\$\\$)*)\\$f" };
+    size_t patternsLength = ARRAYSIZE(patterns);
+    for (size_t i = 0; !used && i < patternsLength; i++)
+    {
+        if (std::regex_search(source, std::wregex(patterns[i])))
+        {
+            used = true;
+        }
+    }
+    return used;
+}
+
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME LocalTime)
 {
+    std::locale::global(std::locale(""));
     HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
     if (SUCCEEDED(hr))
     {
-        std::wregex pattern(L"\\$YYYY");
         std::wstring res(source);
-        wchar_t replaceTerm[MAX_PATH] = {0};
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%d"),LocalTime.wYear);
-        res = regex_replace(res, pattern, replaceTerm);
+        wchar_t replaceTerm[MAX_PATH] = { 0 };
+        wchar_t formattedDate[MAX_PATH] = { 0 };
 
-        pattern = L"\\$SSS";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
-        res = regex_replace(res, pattern, replaceTerm);
+        wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+        if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+        {
+            StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
+        }
 
-        pattern = L"\\$MMM";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
-        res = regex_replace(res, pattern, replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%04d"), L"$01", LocalTime.wYear);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YYYY"), replaceTerm);
 
-        pattern = L"\\$mmm";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
-        res = regex_replace(res, pattern, replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", (LocalTime.wYear % 100));
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YY"), replaceTerm);
 
-        pattern = L"\\$fff";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
-        res = regex_replace(res, pattern, replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", (LocalTime.wYear % 10));
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y"), replaceTerm);
+        
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"MMMM", formattedDate, MAX_PATH, NULL);
+        formattedDate[0] = towupper(formattedDate[0]);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMMM"), replaceTerm);
+        
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"MMM", formattedDate, MAX_PATH, NULL);
+        formattedDate[0] = towupper(formattedDate[0]);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMM"), replaceTerm);
+                
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMonth);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MM"), replaceTerm);
 
-        pattern = L"\\$FFF";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
-        res = regex_replace(res, pattern, replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMonth);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$M"), replaceTerm);
 
-        pattern = L"\\$MM" ;
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wMonth);
-        res = regex_replace(res, pattern, replaceTerm);
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"dddd", formattedDate, MAX_PATH, NULL);
+        formattedDate[0] = towupper(formattedDate[0]);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD"), replaceTerm);
+        
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"ddd", formattedDate, MAX_PATH, NULL);
+        formattedDate[0] = towupper(formattedDate[0]);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD"), replaceTerm);
 
-        pattern = L"\\$DD";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wDay);
-        res = regex_replace(res, pattern, replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wDay);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DD"), replaceTerm);
 
-        pattern = L"\\$hh";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wHour);
-        res = regex_replace(res, pattern, replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wDay);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D"), replaceTerm);
 
-        pattern = L"\\$mm";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wMinute);
-        res = regex_replace(res, pattern, replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wHour);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$hh"), replaceTerm);
 
-        pattern = L"\\$ss";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wSecond);
-        res = regex_replace(res, pattern, replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wHour);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$h"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMinute);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$mm"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMinute);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$m"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wSecond);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ss"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wSecond);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$s"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%03d"), L"$01", LocalTime.wMilliseconds);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$fff"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMilliseconds/10);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ff"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMilliseconds/100);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$f"), replaceTerm);
 
         hr = StringCchCopy(result, cchMax, res.c_str());
     }
@@ -258,21 +307,21 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
         while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
         {
             CComPtr<IPowerRenameItemFactory> spsrif;
-            hr = psrm->get_renameItemFactory(&spsrif);
+            hr = psrm->GetRenameItemFactory(&spsrif);
             if (SUCCEEDED(hr))
             {
                 CComPtr<IPowerRenameItem> spNewItem;
                 hr = spsrif->Create(spsi, &spNewItem);
                 if (SUCCEEDED(hr))
                 {
-                    spNewItem->put_depth(depth);
+                    spNewItem->PutDepth(depth);
                     hr = psrm->AddItem(spNewItem);
                 }
 
                 if (SUCCEEDED(hr))
                 {
                     bool isFolder = false;
-                    if (SUCCEEDED(spNewItem->get_isFolder(&isFolder)) && isFolder)
+                    if (SUCCEEDED(spNewItem->GetIsFolder(&isFolder)) && isFolder)
                     {
                         // Bind to the IShellItem for the IEnumShellItems interface
                         CComPtr<IEnumShellItems> spesiNext;

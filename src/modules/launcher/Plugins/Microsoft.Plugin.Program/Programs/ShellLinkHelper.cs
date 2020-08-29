@@ -128,7 +128,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Contains the arguments to the app
         public string Arguments { get; set; } = string.Empty;
 
-        public bool HasArguments { get; set; } = false;
+        public bool HasArguments { get; set; }
 
         // Retrieve the target path using Shell Link
         public string RetrieveTargetPath(string path)

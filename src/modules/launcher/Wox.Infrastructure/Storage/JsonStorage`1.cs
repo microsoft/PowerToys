@@ -118,10 +118,17 @@ namespace Wox.Infrastructure.Storage
 
         public void Save()
         {
-            string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
-            File.WriteAllText(FilePath, serialized);
-            _storageHelper.Close();
-            Log.Info($"|JsonStorage.Save|Saving cached data| <{FilePath}>");
+            try
+            {
+                string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
+                File.WriteAllText(FilePath, serialized);
+                _storageHelper.Close();
+                Log.Info($"|JsonStorage.Save|Saving cached data| <{FilePath}>");
+            }
+            catch (IOException e)
+            {
+                Log.Error($"|JsonStorage.Save|Error in saving data| <{FilePath}>", e.Message);
+            }
         }
     }
 }

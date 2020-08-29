@@ -244,7 +244,7 @@ void FancyZonesData::UpdateProcessIdToHandleMap(HWND window, const std::wstring_
     }
 }
 
-std::vector<int> FancyZonesData::GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
+std::vector<size_t> FancyZonesData::GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
 {
     std::scoped_lock lock{ dataLock };
     auto processPath = get_process_path(window);
@@ -319,7 +319,7 @@ bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& dev
     return false;
 }
 
-bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet)
+bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<size_t>& zoneIndexSet)
 {
     std::scoped_lock lock{ dataLock };
 

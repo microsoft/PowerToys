@@ -20,6 +20,7 @@ package_sources:
   nuget:
     feeds:
       'Nuget': 'https://api.nuget.org/v3/index.json'
+      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
       'PipelineBuildSupplement': 'https://msazure.pkgs.visualstudio.com/_packaging/PipelineBuildSupplement/nuget/v3/index.json'
 
 restore:
@@ -33,6 +34,9 @@ restore:
     - !!defaultcommand
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
+    - !!defaultcommand
+      name: 'Restore Localization packages'
+      command: '.pipelines\restore-localization.cmd'
 
 
 build:
@@ -145,6 +149,15 @@ build:
             - 'PowerToysSetup-*.exe'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
+    # Localize the files after the build procedure to avoid existing localized files from getting overwritten. To be moved before the Build PowerToys step once the lcl files have been checked in. Tracked at https://github.com/microsoft/PowerToys/issues/6046
+    - !!buildcommand
+      name: 'Localize Power Toys'
+      command: '.pipelines\build-localization.cmd'
+      artifacts:
+        - from: 'out\loc'
+          to: 'loc'
+          include:
+            - '**/*'
 
 
 #package:

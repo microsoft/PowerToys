@@ -3,7 +3,7 @@
 #define ID_RESIZE_PICTURES 0
 #define RESIZE_PICTURES_VERBW L"resize"
 #include "pch.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include "ImageResizerExt_i.h"
 
 #if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)

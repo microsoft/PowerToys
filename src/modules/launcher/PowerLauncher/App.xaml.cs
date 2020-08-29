@@ -30,7 +30,7 @@ namespace PowerLauncher
         private readonly Alphabet _alphabet = new Alphabet();
 
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
-        private static bool _disposed = false;
+        private static bool _disposed;
         private static int _powerToysPid;
         private Settings _settings;
         private MainViewModel _mainVM;

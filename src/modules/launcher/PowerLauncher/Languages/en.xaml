@@ -130,7 +130,7 @@
     <system:String x:Key="reportWindow_sending">Sending</system:String>
     <system:String x:Key="reportWindow_report_succeed">Report sent successfully</system:String>
     <system:String x:Key="reportWindow_report_failed">Failed to send report</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">PT Run got an error</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PowerToys Run ran into an issue</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">New Wox release {0} is now available</system:String>

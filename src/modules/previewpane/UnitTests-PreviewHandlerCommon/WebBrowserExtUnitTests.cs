@@ -46,7 +46,6 @@ namespace UnitTests_PreviewHandlerCommon
             var actualFlags = (int)extendedSite.InvokeMember(DISPIDAMBIENTDLCONTROL, BindingFlags.InvokeMethod, null, null, null, null, null, null);
 
             // Assert
-            Assert.IsTrue((actualFlags & (int)WebBrowserDownloadControlFlags.DLIMAGES) == 0);
             Assert.IsTrue((actualFlags & (int)WebBrowserDownloadControlFlags.VIDEOS) == 0);
             Assert.IsTrue((actualFlags & (int)WebBrowserDownloadControlFlags.BGSOUNDS) == 0);
             Assert.IsTrue((actualFlags & (int)WebBrowserDownloadControlFlags.DOWNLOADONLY) == 0);

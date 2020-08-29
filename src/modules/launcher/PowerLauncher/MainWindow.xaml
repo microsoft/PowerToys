@@ -10,6 +10,8 @@
         Topmost="True"
         SizeToContent="Height"
         ResizeMode="NoResize"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.ClearTypeHint="Enabled"
         WindowStyle="None"
         WindowStartupLocation="Manual"
         AllowDrop="True"
@@ -24,6 +26,7 @@
         Deactivated="OnDeactivated"
         IsVisibleChanged="OnVisibilityChanged"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Window.Resources>
         <CubicEase x:Key="CubicEaseOut" EasingMode="EaseOut"/>
@@ -52,17 +55,15 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border 
+        <Grid 
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
-            Margin="24,24,24,24"  
-            BorderThickness="1" 
-            CornerRadius="4"
-            Background="{DynamicResource SystemChromeLow}"
-            BorderBrush="{DynamicResource BorderBrush}">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
-            </Border.Effect>
+            Margin="24,24,24,24">
+            <Rectangle Fill="{DynamicResource SystemChromeLow}" RadiusX="4" RadiusY="4" Stroke="{DynamicResource BorderBrush}" StrokeThickness="1">
+                <Rectangle.Effect>
+                    <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
+                </Rectangle.Effect>
+            </Rectangle>
             <local:LauncherControl 
                 x:Name="SearchBox">
                 <!--<local:LauncherControl.RenderTransform>
@@ -72,29 +73,28 @@
                 <!--<Border.RenderTransform>
                     <TranslateTransform />
                 </Border.RenderTransform>-->
-        </Border>
-        <Border 
+        </Grid>
+        <Grid 
             x:Name="ListBoxBorder"
-            Grid.Row="1" 
-            Margin="24,-8,24,24" 
-            BorderThickness="1"
-            CornerRadius="4" 
-            Visibility="{Binding Results.Visibility}"
-            Background="{DynamicResource SystemChromeLow}"
-            BorderBrush="{DynamicResource BorderBrush}">
+            Grid.Row="1"
+            Margin="24,-8,24,24"
+            Visibility="{Binding Results.Visibility}">
             <!--<Border.RenderTransform>
                 <TranslateTransform />
             </Border.RenderTransform>-->
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
-            </Border.Effect>
+            <Rectangle RadiusX="4" RadiusY="4" Fill="{DynamicResource SystemChromeLow}" Stroke="{DynamicResource BorderBrush}" StrokeThickness="1">
+                <Rectangle.Effect>
+                    <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
+                </Rectangle.Effect>
+            </Rectangle>
             <local:ResultList x:Name="ListBox" 
                 PreviewMouseDown="ListBox_PreviewMouseDown" >
                 <!--<local:ResultList.RenderTransform>
                     <TranslateTransform />
                 </local:ResultList.RenderTransform>-->
             </local:ResultList>
-        </Border>
+            <Rectangle RadiusX="4" RadiusY="4" Stroke="{DynamicResource SystemChromeLow}" StrokeThickness="1" />
+        </Grid>
     </Grid> 
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />

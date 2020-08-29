@@ -16,12 +16,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public string SettingsConfigFileFolder = string.Empty;
+        private string _settingsConfigFileFolder = string.Empty;
 
         public ShortcutGuideViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
-            SettingsConfigFileFolder = configFileSubfolder;
+            _settingsConfigFileFolder = configFileSubfolder;
 
             try
             {
@@ -48,9 +48,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            this._isEnabled = generalSettings.Enabled.ShortcutGuide;
-            this._pressTime = Settings.Properties.PressTime.Value;
-            this._opacity = Settings.Properties.OverlayOpacity.Value;
+            _isEnabled = generalSettings.Enabled.ShortcutGuide;
+            _pressTime = Settings.Properties.PressTime.Value;
+            _opacity = Settings.Properties.OverlayOpacity.Value;
 
             string theme = Settings.Properties.Theme.Value;
 
@@ -172,7 +172,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public string GetSettingsSubPath()
         {
-            return SettingsConfigFileFolder + "\\" + ModuleName;
+            return _settingsConfigFileFolder + "\\" + ModuleName;
         }
 
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)

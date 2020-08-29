@@ -73,8 +73,7 @@ steps:
     maximumCpuCount: true
 
 
-# Running VSTest@2 step seperatly for .netframework and .netcore.
-# .NetCore assemblies
+# directly not doing WinAppDriver testing
 - task: VSTest@2
   displayName: 'Run .Net Core Tests'
   inputs:
@@ -82,9 +81,9 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      #**\Microsoft.Plugin.Program.UnitTests.dll
-      #**\Microsoft.Plugin.Uri.UnitTests.dll
-      #**\Wox.Test.dll
+      **\Microsoft.Plugin.Program.UnitTests.dll
+      **\Microsoft.Plugin.Uri.UnitTests.dll
+      **\Wox.Test.dll
       **\*Microsoft.PowerToys.Settings.UI.UnitTests.dll
       !**\obj\**
 # .NetFramework assemblies

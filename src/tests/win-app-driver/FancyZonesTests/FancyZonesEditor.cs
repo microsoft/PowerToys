@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using System;
@@ -8,6 +9,7 @@ namespace PowerToysTests
     public class FancyZonesEditor : PowerToysSession
     {
         protected static WindowsElement editorWindow;
+        protected static AppiumWebElement creatorWindow;
 
         protected static void ResetSettings()
         {
@@ -15,22 +17,24 @@ namespace PowerToysTests
             ResetDefaultZoneSettings(true);
         }
 
-        protected static void OpenEditor()
+        protected static bool OpenEditor()
         {
             try
             {
                 new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
-                WaitSeconds(2);
+                
                 //editorWindow = WaitElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-                editorWindow = WaitElementByName("FancyZones Editor");
-                //may not find editor by name in 0.16.1
-                //editorWindow = WaitElementByAccessibilityId("MainWindow1");
+                editorWindow = session.FindElementByName("FancyZones Editor");
                 Assert.IsNotNull(editorWindow, "Couldn't find editor window");
+                
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+
+            return false;
         }
 
         protected static void CloseEditor()
@@ -78,15 +82,13 @@ namespace PowerToysTests
             }
         }
 
-        protected static void OpenCreatorWindow(string tabName, string creatorWindowName, string buttonId = "EditCustomButton")
+        protected static void OpenCreatorWindow(string tabName, string buttonId = "EditCustomButton")
         {
             try
             {
-                string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
-                WaitElementByXPath(elementXPath).Click();
-                WaitElementByAccessibilityId(buttonId).Click();
-
-                WindowsElement creatorWindow = WaitElementByName(creatorWindowName);
+                editorWindow.FindElementByName(tabName).Click();
+                editorWindow.FindElementByAccessibilityId(buttonId).Click();
+                creatorWindow = editorWindow.FindElementByXPath("//Window");
                 Assert.IsNotNull(creatorWindow, "Creator window didn't open");
             }
             catch (Exception ex)

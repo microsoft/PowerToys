@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerRenamePage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             ViewModel = new PowerRenameViewModel(ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;

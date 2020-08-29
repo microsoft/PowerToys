@@ -5,6 +5,7 @@
 #include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
 #include "ZoneWindow.h"
+#include "ZoneWindowDrawing.h"
 #include "trace.h"
 #include "util.h"
 #include "Settings.h"
@@ -18,9 +19,10 @@
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const wchar_t SegoeUiFont[] = L"Segoe ui";
     const wchar_t ToolWindowClassName[] = L"SuperFancyZones_ZoneWindow";
 }
+
+using namespace FancyZonesUtils;
 
 namespace ZoneWindowUtils
 {
@@ -58,135 +60,6 @@ namespace ZoneWindowUtils
     }
 }
 
-namespace ZoneWindowDrawUtils
-{
-    struct ColorSetting
-    {
-        BYTE fillAlpha{};
-        COLORREF fill{};
-        BYTE borderAlpha{};
-        COLORREF border{};
-        int thickness{};
-    };
-
-    void DrawBackdrop(wil::unique_hdc& hdc, RECT const& clientRect) noexcept
-    {
-        FillRectARGB(hdc, &clientRect, 0, RGB(0, 0, 0), false);
-    }
-
-    void DrawIndex(wil::unique_hdc& hdc, Rect rect, size_t index)
-    {
-        Gdiplus::Graphics g(hdc.get());
-
-        Gdiplus::FontFamily fontFamily(NonLocalizable::SegoeUiFont);
-        Gdiplus::Font font(&fontFamily, 80, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
-        Gdiplus::SolidBrush solidBrush(Gdiplus::Color(255, 0, 0, 0));
-
-        std::wstring text = std::to_wstring(index);
-
-        g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
-        Gdiplus::StringFormat stringFormat = new Gdiplus::StringFormat();
-        stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
-        stringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-        Gdiplus::RectF gdiRect(static_cast<Gdiplus::REAL>(rect.left()),
-                               static_cast<Gdiplus::REAL>(rect.top()),
-                               static_cast<Gdiplus::REAL>(rect.width()),
-                               static_cast<Gdiplus::REAL>(rect.height()));
-
-        g.DrawString(text.c_str(), -1, &font, gdiRect, &stringFormat, &solidBrush);
-    }
-
-    void DrawZone(wil::unique_hdc& hdc, ColorSetting const& colorSetting, winrt::com_ptr<IZone> zone, const std::vector<winrt::com_ptr<IZone>>& zones, bool flashMode) noexcept
-    {
-        RECT zoneRect = zone->GetZoneRect();
-
-        Gdiplus::Graphics g(hdc.get());
-        Gdiplus::Color fillColor(colorSetting.fillAlpha, GetRValue(colorSetting.fill), GetGValue(colorSetting.fill), GetBValue(colorSetting.fill));
-        Gdiplus::Color borderColor(colorSetting.borderAlpha, GetRValue(colorSetting.border), GetGValue(colorSetting.border), GetBValue(colorSetting.border));
-
-        Gdiplus::Rect rectangle(zoneRect.left, zoneRect.top, zoneRect.right - zoneRect.left - 1, zoneRect.bottom - zoneRect.top - 1);
-
-        Gdiplus::Pen pen(borderColor, static_cast<Gdiplus::REAL>(colorSetting.thickness));
-        g.FillRectangle(new Gdiplus::SolidBrush(fillColor), rectangle);
-        g.DrawRectangle(&pen, rectangle);
-
-        if (!flashMode)
-        {
-            DrawIndex(hdc, zoneRect, zone->Id());
-        }
-    }
-
-    void DrawActiveZoneSet(wil::unique_hdc& hdc,
-                           COLORREF zoneColor,
-                           COLORREF zoneBorderColor,
-                           COLORREF highlightColor,
-                           int zoneOpacity,
-                           const std::vector<winrt::com_ptr<IZone>>& zones,
-                           const std::vector<int>& highlightZones,
-                           bool flashMode,
-                           bool drawHints) noexcept
-    {
-        //                                 { fillAlpha, fill, borderAlpha, border, thickness }
-        ColorSetting const colorHints{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 255, RGB(104, 118, 138), -2 };
-        ColorSetting colorViewer{ OpacitySettingToAlpha(zoneOpacity), 0, 255, RGB(40, 50, 60), -2 };
-        ColorSetting colorHighlight{ OpacitySettingToAlpha(zoneOpacity), 0, 255, 0, -2 };
-        ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
-
-        std::vector<bool> isHighlighted(zones.size(), false);
-        for (int x : highlightZones)
-        {
-            isHighlighted[x] = true;
-        }
-
-        // First draw the inactive zones
-        for (auto iter = zones.begin(); iter != zones.end(); iter++)
-        {
-            int zoneId = static_cast<int>(iter - zones.begin());
-            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
-            if (!zone)
-            {
-                continue;
-            }
-
-            if (!isHighlighted[zoneId])
-            {
-                if (flashMode)
-                {
-                    DrawZone(hdc, colorFlash, zone, zones, flashMode);
-                }
-                else if (drawHints)
-                {
-                    DrawZone(hdc, colorHints, zone, zones, flashMode);
-                }
-                {
-                    colorViewer.fill = zoneColor;
-                    colorViewer.border = zoneBorderColor;
-                    DrawZone(hdc, colorViewer, zone, zones, flashMode);
-                }
-            }
-        }
-
-        // Draw the active zones on top of the inactive zones
-        for (auto iter = zones.begin(); iter != zones.end(); iter++)
-        {
-            int zoneId = static_cast<int>(iter - zones.begin());
-            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
-            if (!zone)
-            {
-                continue;
-            }
-
-            if (isHighlighted[zoneId])
-            {
-                colorHighlight.fill = highlightColor;
-                colorHighlight.border = zoneBorderColor;
-                DrawZone(hdc, colorHighlight, zone, zones, flashMode);
-            }
-        }
-    }
-}
-
 struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
 {
 public:
@@ -199,11 +72,13 @@ public:
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
+    MoveWindowIntoZoneByIndex(HWND window, size_t index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept;
+    MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
+    IFACEMETHODIMP_(bool)
+    MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
     CycleActiveZoneSet(DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring)
@@ -231,7 +106,7 @@ private:
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
     void OnPaint(wil::unique_hdc& hdc) noexcept;
     void OnKeyUp(WPARAM wparam) noexcept;
-    std::vector<int> ZonesFromPoint(POINT pt) noexcept;
+    std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
     void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
     void FlashZones() noexcept;
 
@@ -244,8 +119,8 @@ private:
     bool m_flashMode{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
-    std::vector<int> m_initialHighlightZone;
-    std::vector<int> m_highlightZone;
+    std::vector<size_t> m_initialHighlightZone;
+    std::vector<size_t> m_highlightZone;
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
     static const UINT m_showAnimationDuration = 200; // ms
@@ -358,14 +233,14 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
             }
             else
             {
-                std::vector<int> newHighlightZone;
+                std::vector<size_t> newHighlightZone;
                 std::set_union(begin(highlightZone), end(highlightZone), begin(m_initialHighlightZone), end(m_initialHighlightZone), std::back_inserter(newHighlightZone));
 
                 RECT boundingRect;
                 bool boundingRectEmpty = true;
                 auto zones = m_activeZoneSet->GetZones();
 
-                for (int zoneId : newHighlightZone)
+                for (size_t zoneId : newHighlightZone)
                 {
                     RECT rect = zones[zoneId]->GetZoneRect();
                     if (boundingRectEmpty)
@@ -392,7 +267,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
                         if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
                             boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
                         {
-                            highlightZone.push_back(static_cast<int>(zoneId));
+                            highlightZone.push_back(zoneId);
                         }
                     }
                 }
@@ -432,7 +307,11 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
         MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
         m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), m_highlightZone);
 
-        SaveWindowProcessToZoneIndex(window);
+        auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
+        if (windowInfo.noVisibleOwner)
+        {
+            SaveWindowProcessToZoneIndex(window);
+        }
     }
     Trace::ZoneWindow::MoveSizeEnd(m_activeZoneSet);
 
@@ -442,13 +321,13 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
 }
 
 IFACEMETHODIMP_(void)
-ZoneWindow::MoveWindowIntoZoneByIndex(HWND window, int index) noexcept
+ZoneWindow::MoveWindowIntoZoneByIndex(HWND window, size_t index) noexcept
 {
     MoveWindowIntoZoneByIndexSet(window, { index });
 }
 
 IFACEMETHODIMP_(void)
-ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept
+ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet) noexcept
 {
     if (m_activeZoneSet)
     {
@@ -457,11 +336,29 @@ ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& in
 }
 
 IFACEMETHODIMP_(bool)
-ZoneWindow::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept
+ZoneWindow::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept
 {
     if (m_activeZoneSet)
     {
-        if (m_activeZoneSet->MoveWindowIntoZoneByDirection(window, m_window.get(), vkCode, cycle))
+        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window.get(), vkCode, cycle))
+        {
+            auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
+            if (windowInfo.noVisibleOwner)
+            {
+                SaveWindowProcessToZoneIndex(window);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+IFACEMETHODIMP_(bool)
+ZoneWindow::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept
+{
+    if (m_activeZoneSet)
+    {
+        if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window.get(), vkCode, cycle))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -525,7 +422,8 @@ ZoneWindow::ShowZoneWindow() noexcept
 
     SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
 
-    std::thread{ [=]() {
+    std::thread{ [this, strong_this{ get_strong() }]() {
+        auto window = m_window.get();
         AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
         InvalidateRect(window, nullptr, true);
         if (!m_host->InMoveSize())
@@ -699,11 +597,11 @@ void ZoneWindow::OnPaint(wil::unique_hdc& hdc) noexcept
     HPAINTBUFFER bufferedPaint = BeginBufferedPaint(hdc.get(), &clientRect, BPBF_TOPDOWNDIB, nullptr, &hdcMem);
     if (bufferedPaint)
     {
-        ZoneWindowDrawUtils::DrawBackdrop(hdcMem, clientRect);
+        ZoneWindowDrawing::DrawBackdrop(hdcMem, clientRect);
 
         if (m_activeZoneSet && m_host)
         {
-            ZoneWindowDrawUtils::DrawActiveZoneSet(hdcMem,
+            ZoneWindowDrawing::DrawActiveZoneSet(hdcMem,
                                                    m_host->GetZoneColor(),
                                                    m_host->GetZoneBorderColor(),
                                                    m_host->GetZoneHighlightColor(),
@@ -730,7 +628,7 @@ void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept
     }
 }
 
-std::vector<int> ZoneWindow::ZonesFromPoint(POINT pt) noexcept
+std::vector<size_t> ZoneWindow::ZonesFromPoint(POINT pt) noexcept
 {
     if (m_activeZoneSet)
     {

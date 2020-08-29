@@ -25,6 +25,7 @@
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     
     <!-- crutkas TODO: added for fallback, may need to be removed for WinUI3 -->
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>

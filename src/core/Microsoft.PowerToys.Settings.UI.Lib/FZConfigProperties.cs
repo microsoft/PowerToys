@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             FancyzonesOverrideSnapHotkeys = new BoolProperty();
             FancyzonesMouseSwitch = new BoolProperty();
             FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
+            FancyzonesMoveWindowsBasedOnPosition = new BoolProperty();
             FancyzonesDisplayChangeMoveWindows = new BoolProperty();
             FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
             FancyzonesAppLastZoneMoveWindows = new BoolProperty();
@@ -45,6 +46,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         [JsonPropertyName("fancyzones_moveWindowAcrossMonitors")]
         public BoolProperty FancyzonesMoveWindowsAcrossMonitors { get; set; }
+
+        [JsonPropertyName("fancyzones_moveWindowsBasedOnPosition")]
+        public BoolProperty FancyzonesMoveWindowsBasedOnPosition { get; set; }
 
         [JsonPropertyName("fancyzones_displayChange_moveWindows")]
         public BoolProperty FancyzonesDisplayChangeMoveWindows { get; set; }

@@ -22,6 +22,7 @@ struct Settings
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;
     bool moveWindowAcrossMonitors = false;
+    bool moveWindowsBasedOnPosition = false;
     bool appLastZone_moveWindows = false;
     bool openWindowOnActiveMonitor = false;
     bool restoreSize = false;

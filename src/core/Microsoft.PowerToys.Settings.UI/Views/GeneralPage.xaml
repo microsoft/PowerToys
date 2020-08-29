@@ -82,8 +82,12 @@
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme"
-                               Margin="{StaticResource SmallTopMargin}">
+            <!-- Replaced the Radiobuttons parent control with a StackPanel to mitigate the Tab and Arrow key related keyboard navigation issues due to XAML Islands
+            Tracking issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
+            <TextBlock Name="RadioButtons_Name_Theme" 
+                       x:Uid="RadioButtons_Name_Theme"
+                       Margin="{StaticResource SmallTopMargin}"/>
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
                              Content="Dark"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
@@ -95,7 +99,7 @@
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"
                              Content="System default"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
-            </muxc:RadioButtons>
+            </StackPanel>
 
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_RunAtStartUp"  
                           Margin="{StaticResource SmallTopMargin}" 
@@ -105,7 +109,9 @@
 
             <TextBlock x:Uid="General_Updates"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
-            <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}">
+            <StackPanel Orientation="Horizontal" 
+                        Margin="{StaticResource SmallTopMargin}"
+                        AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
                 <TextBlock Text="Version: " x:Uid="General_Version"  />
                 <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
                     <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
@@ -146,7 +152,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/PT.png" />
+                <Image x:Uid="PowerToys_Icon" Source="ms-appx:///Assets/Modules/PT.png"/>
             </Border>
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"

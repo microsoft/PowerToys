@@ -76,7 +76,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/PowerPreview.png" />
+                <Image x:Uid="FileExplorerPreview_Image" Source="https://aka.ms/powerToysPowerPreviewSettingImage" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
@@ -86,7 +86,7 @@
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FileExplorerAddOns">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
             </StackPanel>

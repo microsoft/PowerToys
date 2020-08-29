@@ -23,9 +23,9 @@ namespace PowerLauncher
         private readonly Settings _settings;
         private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
-        private bool _deletePressed = false;
+        private bool _deletePressed;
         private Timer _firstDeleteTimer = new Timer();
-        private bool _coldStateHotkeyPressed = false;
+        private bool _coldStateHotkeyPressed;
 
         public MainWindow(Settings settings, MainViewModel mainVM)
             : this()
@@ -314,24 +314,25 @@ namespace PowerLauncher
             }
         }
 
-        private bool disposedValue = false;
+        private bool disposedValue;
 
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            var textBox = (TextBox)sender;
+            var text = textBox.Text;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                SearchBox.AutoCompleteTextBlock.Text = string.Empty;
+            }
+
             if (_isTextSetProgrammatically)
             {
-                var textBox = (TextBox)sender;
                 textBox.SelectionStart = textBox.Text.Length;
                 _isTextSetProgrammatically = false;
             }
             else
             {
-                var text = ((TextBox)sender).Text;
-                if (string.IsNullOrEmpty(text))
-                {
-                    SearchBox.AutoCompleteTextBlock.Text = string.Empty;
-                }
-
                 _viewModel.QueryText = text;
                 _viewModel.Query();
             }

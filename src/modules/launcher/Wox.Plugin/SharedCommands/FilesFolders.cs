@@ -46,7 +46,9 @@ namespace Wox.Plugin.SharedCommands
                     Copy(subdir.FullName, temppath);
                 }
             }
+#pragma warning disable CS0168 // Variable is declared but never used. Due to #if debug vs release statement
             catch (Exception e)
+#pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
                 throw e;
@@ -76,7 +78,9 @@ namespace Wox.Plugin.SharedCommands
 
                 return true;
             }
+#pragma warning disable CS0168 // Variable is declared but never used. Due to #if debug vs release statement
             catch (Exception e)
+#pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
                 throw e;
@@ -96,7 +100,9 @@ namespace Wox.Plugin.SharedCommands
                     Directory.Delete(path, true);
                 }
             }
+#pragma warning disable CS0168 // Variable is declared but never used. Due to #if debug vs release statement
             catch (Exception e)
+#pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
                 throw e;

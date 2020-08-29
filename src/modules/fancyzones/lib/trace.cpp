@@ -36,6 +36,7 @@
 #define MoveWindowsOnZoneSetChangeKey "MoveWindowsOnZoneSetChange"
 #define OverrideSnapHotKeysKey "OverrideSnapHotKeys"
 #define MoveWindowAcrossMonitorsKey "MoveWindowAcrossMonitors"
+#define MoveWindowsBasedOnPositionKey "MoveWindowsBasedOnPosition"
 #define MoveWindowsToLastZoneOnAppOpeningKey "MoveWindowsToLastZoneOnAppOpening"
 #define OpenWindowOnActiveMonitorKey "OpenWindowOnActiveMonitor"
 #define RestoreSizeKey "RestoreSize"
@@ -215,13 +216,13 @@ void Trace::FancyZones::EditorLaunched(int value) noexcept
 void Trace::SettingsChanged(const Settings& settings) noexcept
 {
     const auto& editorHotkey = settings.editorHotkey;
-    std::wstring hotkeyStr = L"alt:" + std::to_wstring(editorHotkey.alt_pressed()) 
-        + L", ctrl:" + std::to_wstring(editorHotkey.ctrl_pressed()) 
-        + L", shift:" + std::to_wstring(editorHotkey.shift_pressed()) 
-        + L", win:" + std::to_wstring(editorHotkey.win_pressed()) 
-        + L", code:" + std::to_wstring(editorHotkey.get_code()) 
+    std::wstring hotkeyStr = L"alt:" + std::to_wstring(editorHotkey.alt_pressed())
+        + L", ctrl:" + std::to_wstring(editorHotkey.ctrl_pressed())
+        + L", shift:" + std::to_wstring(editorHotkey.shift_pressed())
+        + L", win:" + std::to_wstring(editorHotkey.win_pressed())
+        + L", code:" + std::to_wstring(editorHotkey.get_code())
         + L", keyFromCode:" + editorHotkey.get_key();
-    
+
     TraceLoggingWrite(
         g_hProvider,
         EventSettingsChangedKey,
@@ -234,6 +235,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.zoneSetChange_moveWindows, MoveWindowsOnZoneSetChangeKey),
         TraceLoggingBoolean(settings.overrideSnapHotkeys, OverrideSnapHotKeysKey),
         TraceLoggingBoolean(settings.moveWindowAcrossMonitors, MoveWindowAcrossMonitorsKey),
+        TraceLoggingBoolean(settings.moveWindowsBasedOnPosition, MoveWindowsBasedOnPositionKey),
         TraceLoggingBoolean(settings.appLastZone_moveWindows, MoveWindowsToLastZoneOnAppOpeningKey),
         TraceLoggingBoolean(settings.openWindowOnActiveMonitor, OpenWindowOnActiveMonitorKey),
         TraceLoggingBoolean(settings.restoreSize, RestoreSizeKey),

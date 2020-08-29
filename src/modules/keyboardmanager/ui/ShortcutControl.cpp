@@ -3,6 +3,9 @@
 #include "KeyDropDownControl.h"
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "keyboardmanager/common/Helpers.h"
+#include "common/common.h"
+#include "keyboardmanager/dll/Generated Files/resource.h"
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 //Both static members are initialized to null
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
@@ -20,7 +23,7 @@ ShortcutControl::ShortcutControl(Grid table, const int colIndex, TextBox targetA
     shortcutDropDownStackPanel.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     shortcutDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
-    typeShortcut.as<Button>().Content(winrt::box_value(L"Type"));
+    typeShortcut.as<Button>().Content(winrt::box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
     typeShortcut.as<Button>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     typeShortcut.as<Button>().Click([&, table, colIndex, isHybridControl, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
@@ -210,7 +213,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
-    detectShortcutBox.Title(box_value(L"Press the keys in shortcut:"));
+    detectShortcutBox.Title(box_value(GET_RESOURCE_STRING(IDS_TYPESHORTCUT_TITLE)));
     detectShortcutBox.IsPrimaryButtonEnabled(false);
     detectShortcutBox.IsSecondaryButtonEnabled(false);
 
@@ -280,7 +283,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     };
 
     TextBlock primaryButtonText;
-    primaryButtonText.Text(L"OK");
+    primaryButtonText.Text(GET_RESOURCE_STRING(IDS_OK_BUTTON));
 
     Button primaryButton;
     primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -309,7 +312,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
         });
 
     TextBlock cancelButtonText;
-    cancelButtonText.Text(L"Cancel");
+    cancelButtonText.Text(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
 
     Button cancelButton;
     cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -364,7 +367,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     // Header textblock
     TextBlock text;
-    text.Text(L"Keys Pressed:");
+    text.Text(GET_RESOURCE_STRING(IDS_TYPESHORTCUT_HEADER));
     text.Margin({ 0, 0, 0, 10 });
     stackPanel.Children().Append(text);
 
@@ -381,13 +384,13 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     stackPanel.Children().Append(keyStackPanel2);
 
     TextBlock holdEscInfo;
-    holdEscInfo.Text(L"Hold Esc to discard");
+    holdEscInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDESC));
     holdEscInfo.FontSize(12);
     holdEscInfo.Margin({ 0, 20, 0, 0 });
     stackPanel.Children().Append(holdEscInfo);
 
     TextBlock holdEnterInfo;
-    holdEnterInfo.Text(L"Hold Enter to continue");
+    holdEnterInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDENTER));
     holdEnterInfo.FontSize(12);
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);

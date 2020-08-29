@@ -3,7 +3,10 @@
 #include <sstream>
 #include "../common/shared_constants.h"
 #include <shlwapi.h>
+#include "../../common/common.h"
+#include "keyboardmanager/dll/Generated Files/resource.h"
 #include "../common/keyboard_layout.h"
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
 
@@ -137,43 +140,41 @@ namespace KeyboardManagerHelper
         switch (errorType)
         {
         case ErrorType::NoError:
-            return L"Remapping successful";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_REMAPSUCCESSFUL).c_str();
         case ErrorType::SameKeyPreviouslyMapped:
-            return L"Cannot remap a key more than once for the same target app";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAMEKEYPREVIOUSLYMAPPED).c_str();
         case ErrorType::MapToSameKey:
-            return L"Cannot remap a key to itself";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPPEDTOSAMEKEY).c_str();
         case ErrorType::ConflictingModifierKey:
-            return L"Cannot remap this key as it conflicts with another remapped key";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERKEY).c_str();
         case ErrorType::SameShortcutPreviouslyMapped:
-            return L"Cannot remap a shortcut more than once for the same target app";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAMESHORTCUTPREVIOUSLYMAPPED).c_str();
         case ErrorType::MapToSameShortcut:
-            return L"Cannot remap a shortcut to itself";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPTOSAMESHORTCUT).c_str();
         case ErrorType::ConflictingModifierShortcut:
-            return L"Cannot remap this shortcut as it conflicts with another remapped shortcut";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERSHORTCUT).c_str();
         case ErrorType::WinL:
-            return L"Cannot remap from/to Win L";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_WINL).c_str();
         case ErrorType::CtrlAltDel:
-            return L"Cannot remap from/to Ctrl Alt Del";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CTRLALTDEL).c_str();
         case ErrorType::RemapUnsuccessful:
-            return L"Some remappings were not applied";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_REMAPUNSUCCESSFUL).c_str();
         case ErrorType::SaveFailed:
-            return L"Failed to save the remappings";
-        case ErrorType::MissingKey:
-            return L"Incomplete remapping";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SAVEFAILED).c_str();
         case ErrorType::ShortcutStartWithModifier:
-            return L"Shortcut must start with a modifier key";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTSTARTWITHMODIFIER).c_str();
         case ErrorType::ShortcutCannotHaveRepeatedModifier:
-            return L"Shortcut cannot contain a repeated modifier";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTNOREPEATEDMODIFIER).c_str();
         case ErrorType::ShortcutAtleast2Keys:
-            return L"Shortcut must have atleast 2 keys";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTATLEAST2KEYS).c_str();
         case ErrorType::ShortcutOneActionKey:
-            return L"Shortcut must contain an action key";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTONEACTIONKEY).c_str();
         case ErrorType::ShortcutNotMoreThanOneActionKey:
-            return L"Shortcut cannot have more than one action key";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTMAXONEACTIONKEY).c_str();
         case ErrorType::ShortcutMaxShortcutSizeOneActionKey:
-            return L"Shortcuts can only have up to 2 modifier keys";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAXSHORTCUTSIZE).c_str();
         default:
-            return L"Unexpected error";
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_DEFAULT).c_str();
         }
     }
 

@@ -6,11 +6,11 @@ namespace Microsoft.Plugin.Indexer.DriveDetection
 {
     public class IndexerDriveDetection
     {
-        private bool IsEnhancedModeEnabled { get; set; } = false;
+        private bool IsEnhancedModeEnabled { get; set; }
 
         private readonly IRegistryWrapper _registryHelper;
 
-        public bool IsDriveDetectionWarningCheckBoxSelected { get; set; } = false;
+        public bool IsDriveDetectionWarningCheckBoxSelected { get; set; }
 
         public IndexerDriveDetection(IRegistryWrapper registryHelper)
         {
