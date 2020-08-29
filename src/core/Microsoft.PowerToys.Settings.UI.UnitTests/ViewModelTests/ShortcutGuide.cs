@@ -31,16 +31,6 @@ namespace ViewModelTests
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
             SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ShortCutGuideTestFolderName);
-
-            // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(ModuleName+"\\settings.json"))
-            {
-                SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ModuleName);
-            }
-            if (!SettingsUtils.SettingsFolderExists("settings.json"))
-            {
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            }
         }
 
         [TestCleanup]
@@ -71,6 +61,8 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
+            SettingsUtils.IsTestMode = true;
+
             // Load Originl Settings Config File
             ShortcutGuideSettings originalSettings = SettingsUtils.GetSettings<ShortcutGuideSettings>(ModuleName);
             GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();

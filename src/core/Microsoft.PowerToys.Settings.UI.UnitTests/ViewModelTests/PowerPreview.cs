@@ -29,16 +29,6 @@ namespace ViewModelTests
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
             SettingsUtils.SaveSettings(powerpreview.ToJsonString(), TestModuleName);
-
-            // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName + "\\settings.json"))
-            {
-                SettingsUtils.SaveSettings(new PowerPreviewSettings().ToJsonString(), OriginalModuleName);
-            }
-            if (!SettingsUtils.SettingsFolderExists("settings.json"))
-            {
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            }
         }
 
         [TestCleanup]
@@ -68,6 +58,8 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
+            SettingsUtils.IsTestMode = true;
+
             // Load Originl Settings Config File
             PowerPreviewSettings originalSettings = SettingsUtils.GetSettings<PowerPreviewSettings>(OriginalModuleName);
 

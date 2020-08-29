@@ -28,15 +28,6 @@ namespace ViewModelTests
             SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
             SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), TestModuleName, TestModuleName + ".json");
 
-            // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName))
-            {
-                SettingsUtils.SaveSettings(new ColorPickerSettings().ToJsonString(), colorPickerSettings.Name);
-            }
-            if (!SettingsUtils.SettingsFolderExists("settings.json"))
-            {
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            }
         }
 
         [TestCleanup]
@@ -60,6 +51,8 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
+            SettingsUtils.IsTestMode = true;
+
             // Load Originl Settings Config File
             ColorPickerSettings originalSettings = SettingsUtils.GetSettings<ColorPickerSettings>(OriginalModuleName);
             GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
@@ -76,6 +69,8 @@ namespace ViewModelTests
         [TestMethod]
         public void ColorPickerIsEnabledByDefault()
         {
+            SettingsUtils.IsTestMode = true;
+
             var viewModel = new ColorPickerViewModel(ColorPickerIsEnabledByDefault_IPC);
 
             Assert.IsTrue(viewModel.IsEnabled);

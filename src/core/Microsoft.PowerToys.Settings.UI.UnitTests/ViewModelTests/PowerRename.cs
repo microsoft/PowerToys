@@ -29,16 +29,6 @@ namespace ViewModelTests
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
             SettingsUtils.SaveSettings(powerRename.ToJsonString(), generalSettings_file_name, "power-rename-settings.json");
-
-            // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(ModuleName))
-            {
-                SettingsUtils.SaveSettings(new PowerPreviewSettings().ToJsonString(), ModuleName, "power-rename-settings.json");
-            }
-            if (!SettingsUtils.SettingsFolderExists("settings.json"))
-            {
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            }
         }
 
         [TestCleanup]
@@ -57,6 +47,8 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
+            SettingsUtils.IsTestMode = true;
+
             // Load Originl Settings Config File
             PowerRenameLocalProperties originalSettings = SettingsUtils.GetSettings<PowerRenameLocalProperties>(ModuleName, "power-rename-settings.json");
             GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();

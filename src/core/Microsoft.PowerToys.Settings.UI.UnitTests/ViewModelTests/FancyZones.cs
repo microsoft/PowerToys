@@ -30,16 +30,6 @@ namespace ViewModelTests
             FZConfigProperties fZConfigProperties = new FZConfigProperties();
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-
-            // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName))
-            {
-                SettingsUtils.SaveSettings(new FancyZonesSettings().ToJsonString(), OriginalModuleName);
-            }
-            if (!SettingsUtils.SettingsFolderExists("settings.json"))
-            {
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            }
         }
 
         [TestCleanup]
@@ -70,6 +60,8 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
+            SettingsUtils.IsTestMode = true;
+
             // Load Originl Settings Config File
             FancyZonesSettings originalSettings = SettingsUtils.GetSettings<FancyZonesSettings>(OriginalModuleName);
             GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();

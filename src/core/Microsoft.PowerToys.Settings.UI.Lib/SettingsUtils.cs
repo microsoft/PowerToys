@@ -13,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         private const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";
 
+        public static bool IsTestMode { get; set; } = false;
+
         public static bool SettingsFolderExists(string powertoy)
         {
             return Directory.Exists(Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
@@ -78,7 +80,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public static string LocalApplicationDataFolder()
         {
-            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (IsTestMode)
+            {
+                return "..\\..\\..\\..\\src\\core\\Microsoft.PowerToys.Settings.UI.UnitTests\\TestFiles";
+            }
+            else
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            }
         }
     }
 }

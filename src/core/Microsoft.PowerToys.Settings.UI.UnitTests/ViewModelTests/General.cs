@@ -22,12 +22,6 @@ namespace ViewModelTests
             // initialize creation of test settings file.
             GeneralSettings generalSettings = new GeneralSettings();
             SettingsUtils.SaveSettings(generalSettings.ToJsonString(), generalSettings_file_name);
-
-            // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(string.Empty))
-            {
-                SettingsUtils.SaveSettings(new GeneralSettings().ToJsonString(), string.Empty);
-            }
         }
 
         [TestCleanup]
@@ -51,6 +45,8 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
+            SettingsUtils.IsTestMode = true;
+
             // Load Originl Settings Config File
             GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
 

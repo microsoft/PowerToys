@@ -28,16 +28,6 @@ namespace ViewModelTests
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
             SettingsUtils.SaveSettings(imageResizer.ToJsonString(), Module);
-
-            // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(Module))
-            {
-                SettingsUtils.SaveSettings(new ImageResizerSettings().ToJsonString(), Module);
-            }
-            if (!SettingsUtils.SettingsFolderExists("settings.json"))
-            {
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            }
         }
 
         [TestCleanup]
@@ -67,6 +57,8 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
+            SettingsUtils.IsTestMode = true;
+
             // Load Originl Settings Config File
             ImageResizerSettings originalSettings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
             GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();

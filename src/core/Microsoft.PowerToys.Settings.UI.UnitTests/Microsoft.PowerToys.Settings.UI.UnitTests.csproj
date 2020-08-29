@@ -26,4 +26,9 @@
     <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TestFiles\Microsoft\PowerToys\PowerToys Run\Logs\" />
+    <Folder Include="TestFiles\Microsoft\PowerToys\PowerToys Run\Plugins\" />
+  </ItemGroup>
+
 </Project>

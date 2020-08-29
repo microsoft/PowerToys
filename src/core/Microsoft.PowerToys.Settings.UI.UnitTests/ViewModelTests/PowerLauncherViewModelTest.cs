@@ -39,16 +39,6 @@ namespace ViewModelTests
             viewModel = new PowerLauncherViewModel(
                 mockSettings,
                 new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));
-
-            // Create settings file if none exists
-            if (!SettingsUtils.SettingsFolderExists(OriginalModuleName + "\\settings.json"))
-            {
-                SettingsUtils.SaveSettings(new PowerLauncherSettings().ToJsonString(), OriginalModuleName);
-            }
-            if (!SettingsUtils.SettingsFolderExists("settings.json"))
-            {
-                SettingsUtils.SaveSettings(new GeneralSettings().ToJsonString());
-            }
         }
 
         /// <summary>
@@ -57,6 +47,8 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
+            SettingsUtils.IsTestMode = true;
+
             // Load Originl Settings Config File
             PowerLauncherSettings originalSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(OriginalModuleName);
             GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
