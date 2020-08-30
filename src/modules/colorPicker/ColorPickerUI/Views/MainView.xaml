@@ -20,13 +20,12 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <Border Grid.RowSpan="2" Grid.ColumnSpan="2" Grid.Column="1" Background="#202020" BorderThickness="1" BorderBrush="Black" />
-            <Border Background="{Binding ColorBrush}" BorderBrush="Black" Grid.Column="1" BorderThickness="1" Grid.RowSpan="2" x:Name="ColorBorder"/>
+            <Border BorderBrush="#505050" Grid.Column="2" Margin="0,1,1,1" Grid.RowSpan="2" BorderThickness="3,0,3,0" Background="#202020" CornerRadius="0" />
+            <Border Background="{Binding ColorBrush}" BorderBrush="Black" Grid.Column="1" BorderThickness="1" Grid.RowSpan="2" x:Name="ColorBorder" CornerRadius="2,0,0,2"/>
+            <Border Grid.RowSpan="2" Grid.ColumnSpan="2" Grid.Column="1" Background="Transparent" BorderThickness="1" BorderBrush="Black" CornerRadius="2"/>
+            
             <TextBlock Margin="7,5,5,5" Foreground="White" Grid.Row="0" Grid.Column="2" Text="{Binding HexColor}"/>
             <TextBlock Margin="7,0,0,0" Foreground="White" Grid.Row="1" Grid.Column="2" Text="{Binding RgbColor}"/>
-
-
-            <Border BorderBrush="#505050" Grid.Column="2" Margin="0,1,1,1" Grid.RowSpan="2" BorderThickness="3,0,3,0" />
         </Grid>
     </Grid>
 </UserControl>
