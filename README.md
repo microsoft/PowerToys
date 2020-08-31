@@ -151,7 +151,7 @@ For a more information, head over to the [Video conference mute overview][vidCon
 #### Highlights from August
 
 - We shipped [v0.21][github-release-link]!
-- [Video conference muting first public release]][vidConfOverview]
+- [Video conference muting first public release][vidConfOverview]
 
 **PT Run:**
 - Removed need for space in action keywords.  This means you now can type `>ipconfig`
