@@ -69,7 +69,10 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     {
                         if (VersionCheckCallback != null && message.Length > 0)
                         {
-                            VersionCheckCallback(message);
+                            Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                            {
+                                VersionCheckCallback(message);
+                            }));
                         }
                         else
                         {
