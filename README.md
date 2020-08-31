@@ -156,7 +156,7 @@ For a more information, head over to the [Video conference mute overview][vidCon
 **PT Run:**
 - Removed need for space in action keywords.  This means you now can type `>ipconfig`
 - Icon caches fixed and now has colored icons
-- Improved font rendering via ClearType (Shout out to [@AnuthaDev](https://github.com/AnuthaDev] doing the heavy lifting here)
+- Improved font rendering via ClearType (Shout out to [@AnuthaDev](https://github.com/AnuthaDev) doing the heavy lifting here)
 - Result speed improvements
 - URLs are supported 
 - Fixed bugs including calculating bugs
