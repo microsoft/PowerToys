@@ -76,10 +76,11 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 <br/>
 <br/>
 
-### Video Conference Mute
+### Video Conference Mute (Experiential)
 
 [<img align="left" src="./doc/images/overview/ShortcutGuide_small.png" />](https://aka.ms/PowerToysOverview_VideoConference)  [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) is a quick and easy way to do an global "mute" of both your microphone and webcam via <kbd>Win</kbd>+<kbd>N</kbd>. Just set your webcam in the target application to the PowerToys VideoConference camera.
-<br/>
+
+This is in the pre-release version of PowerToys installer.
 <br/>
 <br/>
 <br/>
@@ -131,10 +132,12 @@ Our goals for 0.21 release cycle was to focus on stability, localization and qua
 
 One of the longer term goal items we have made progress on is the Out of Box experience / initial onboarding experience (OOBE) improvements.[@Niels9001](https://github.com/niels9001/) created a [wicked awesome proof of concept of what the OOBE experience could be](https://github.com/microsoft/PowerToys/issues/1285#issuecomment-679268558).  We are pretty stoked about this since it handles one an important item, critical shortcut default adjustments.
 
-#### New PowerToys utility - Video conference muting:
+#### New experiential PowerToys utility - Video conference muting:
 Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer and what application has focus.
 
 The utility will mute not just your audio but your video as well with a single keystroke.  You can do audio, video both.  We knew this would impact our roadmap and goals but felt extremely strong that this is the right decision. We're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
+
+We know we have some issues and we have a [master tracking issue - #6246](https://github.com/microsoft/PowerToys/issues/6246).  Due to these known issues, we're only putting this in a pre-release installer for PowerToys.
 
 To use:
 
@@ -143,15 +146,17 @@ To use:
 - <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd> to toggle video
 - <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> to toggle microphone
 
+For a more information, head over to the [Video conference mute overview][vidConfOverview]
+
 #### Highlights from August
 
 - We shipped [v0.21][github-release-link]!
-- Shipped Video conference muting
+- [Video conference muting first public release]][vidConfOverview]
 
 **PT Run:**
 - Removed need for space in action keywords.  This means you now can type `>ipconfig`
 - Icon caches fixed and now has colored icons
-- Improved font rendering via ClearType (Shout out to @AnuthaDev doing the heavy lifting here)
+- Improved font rendering via ClearType (Shout out to [@AnuthaDev](https://github.com/AnuthaDev] doing the heavy lifting here)
 - Result speed improvements
 - URLs are supported 
 - Fixed bugs including calculating bugs
@@ -227,3 +232,4 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
+[vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
