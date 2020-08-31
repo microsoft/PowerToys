@@ -77,7 +77,10 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    result.emplace(check_for_updates());
+                    json::JsonObject json;
+                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(check_for_updates()));
+
+                    result.emplace(json.Stringify());
                 }
             }
             catch (...)
