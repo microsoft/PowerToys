@@ -148,7 +148,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
             ShowDesktopTouch,
         }
 
-
         /// <summary>
         /// Show Window Enums
         /// </summary>
