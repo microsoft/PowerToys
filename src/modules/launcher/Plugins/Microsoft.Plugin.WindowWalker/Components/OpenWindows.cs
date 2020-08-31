@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             windows.Clear();
             InteropAndHelpers.CallBackPtr callbackptr = new InteropAndHelpers.CallBackPtr(WindowEnumerationCallBack);
-            InteropAndHelpers.EnumWindows(callbackptr, 0);
+            _ = InteropAndHelpers.EnumWindows(callbackptr, 0);
         }
 
         /// <summary>
