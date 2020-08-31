@@ -647,6 +647,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// The following are the extended window styles
         /// </summary>
         [Flags]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are specific in the win32 libraries.  See https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles")]
         public enum ExtendedWindowStyles : uint
         {
             /// <summary>
