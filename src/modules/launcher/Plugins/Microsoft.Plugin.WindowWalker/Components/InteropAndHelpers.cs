@@ -148,9 +148,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
             ShowDesktopTouch,
         }
 
+
         /// <summary>
         /// Show Window Enums
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "This is defined in the ShowWindow win32 method. See https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow")]
         public enum ShowWindowCommands
         {
             /// <summary>
