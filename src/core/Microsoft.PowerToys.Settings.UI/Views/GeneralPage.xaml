@@ -116,9 +116,9 @@
                 <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
                     <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
                 </HyperlinkButton>
-                <TextBlock Text="{x:Bind ViewModel.VersionCheckResult, Mode=OneWay}"
+                <TextBlock Text="{x:Bind ViewModel.LatestAvailableVersion, Mode=OneWay}"
                            Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                           Margin="8,0,0,0" />
+                           Margin="16,0,0,0" />
             </StackPanel>
 
 

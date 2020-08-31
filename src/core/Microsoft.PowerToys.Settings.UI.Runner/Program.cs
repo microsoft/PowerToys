@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         public static int PowerToysPID { get; set; }
 
-        public static Action<string> VersionCheckCallback { get; set; }
+        public static Action<string> IPCMessageReceivedCallback { get; set; }
 
         [STAThread]
         public static void Main(string[] args)
@@ -67,16 +67,12 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
                     ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], (string message) =>
                     {
-                        if (VersionCheckCallback != null && message.Length > 0)
+                        if (IPCMessageReceivedCallback != null && message.Length > 0)
                         {
                             Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
                             {
-                                VersionCheckCallback(message);
+                                IPCMessageReceivedCallback(message);
                             }));
-                        }
-                        else
-                        {
-                            MessageBox.Show("no handler for the message", string.Empty, MessageBoxButton.OK);
                         }
                     });
                     ipcmanager.Start();

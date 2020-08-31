@@ -106,7 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         private bool _isSystemThemeRadioButtonChecked = false;
         private bool _autoDownloadUpdates = false;
 
-        private string _versionCheckResult = string.Empty;
+        private string _latestAvailableVersion = string.Empty;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -330,31 +330,28 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
-        public string VersionCheckResult
+        // Temp string. Appears when a user clicks "Check for updates" button and shows latest version available on the Github.
+        public string LatestAvailableVersion
         {
             get
             {
-                return _versionCheckResult;
+                return _latestAvailableVersion;
             }
 
             set
             {
-                if (_versionCheckResult != value)
+                if (_latestAvailableVersion != value)
                 {
-                    _versionCheckResult = value;
+                    _latestAvailableVersion = value;
                     RaisePropertyChanged();
                 }
             }
         }
 
-        public void SetLatestVersion(string version)
-        {
-            VersionCheckResult = version;
-        }
-
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
-            // Notify UI of property change  OnPropertyChanged(propertyName);
+            // Notify UI of property change
+            OnPropertyChanged(propertyName);
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfigs);
 
             SendConfigMSG(outsettings.ToString());

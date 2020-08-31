@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.ApplicationModel.Resources;
+using Windows.Data.Json;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -40,7 +42,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendRestartAdminIPCMessage,
                 ShellPage.SendCheckForUpdatesIPCMessage);
 
-            ShellPage.VersionCheckCallback = ViewModel.SetLatestVersion;
+            ShellPage.ShellHandler.IPCResponseHandleList.Add((JsonObject json) =>
+            {
+                string version = json.GetNamedString("version");
+                if (version != string.Empty)
+                {
+                    ViewModel.LatestAvailableVersion = "Latest available version: " + version;
+                }
+            });
 
             DataContext = ViewModel;
         }
