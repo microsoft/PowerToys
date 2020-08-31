@@ -20,6 +20,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Some flags for interop calls to SetWindowPosition
         /// </summary>
         [Flags]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These are defined in win32 libraries.  See https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowpos")]
         public enum SetWindowPosFlags : uint
         {
             /// <summary>
