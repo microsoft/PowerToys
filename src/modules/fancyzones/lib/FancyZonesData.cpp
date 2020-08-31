@@ -95,11 +95,23 @@ std::optional<FancyZonesDataTypes::CustomZoneSetData> FancyZonesData::FindCustom
 
 void FancyZonesData::AddDevice(const std::wstring& deviceId)
 {
+    using namespace FancyZonesDataTypes;
+
     std::scoped_lock lock{ dataLock };
     if (!deviceInfoMap.contains(deviceId))
     {
         // Creates default entry in map when ZoneWindow is created
-        deviceInfoMap[deviceId] = FancyZonesDataTypes::DeviceInfoData{ FancyZonesDataTypes::ZoneSetData{ NonLocalizable::NullStr, FancyZonesDataTypes::ZoneSetLayoutType::Blank } };
+        GUID guid;
+        auto result{ CoCreateGuid(&guid) };
+        wil::unique_cotaskmem_string guidString;
+        if (result == S_OK && SUCCEEDED(StringFromCLSID(guid, &guidString)))
+        {
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ guidString.get(), ZoneSetLayoutType::PriorityGrid }, true, 16, 3 };
+        }
+        else
+        {
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ NonLocalizable::NullStr, ZoneSetLayoutType::Blank } };
+        }
     }
 }
 
