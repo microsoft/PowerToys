@@ -56,6 +56,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     Program.GetTwoWayIPCManager().Send(msg);
                 });
 
+                Program.VersionCheckCallback = ShellPage.VersionCheckCallback;
+
                 shellPage.SetElevationStatus(Program.IsElevated);
                 shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();

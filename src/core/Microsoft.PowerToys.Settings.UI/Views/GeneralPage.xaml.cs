@@ -40,6 +40,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendRestartAdminIPCMessage,
                 ShellPage.SendCheckForUpdatesIPCMessage);
 
+            ShellPage.VersionCheckCallback = ViewModel.SetLatestVersion;
+
             DataContext = ViewModel;
         }
 

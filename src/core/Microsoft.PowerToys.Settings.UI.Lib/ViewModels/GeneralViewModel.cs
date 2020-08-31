@@ -106,6 +106,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         private bool _isSystemThemeRadioButtonChecked = false;
         private bool _autoDownloadUpdates = false;
 
+        private string _versionCheckResult = string.Empty;
+
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
         {
@@ -328,11 +330,31 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
+        public string VersionCheckResult
+        {
+            get
+            {
+                return _versionCheckResult;
+            }
+
+            set
+            {
+                if (_versionCheckResult != value)
+                {
+                    _versionCheckResult = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public void SetLatestVersion(string version)
+        {
+            VersionCheckResult = version;
+        }
+
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
-            // Notify UI of property change
-            OnPropertyChanged(propertyName);
-
+            // Notify UI of property change  OnPropertyChanged(propertyName);
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfigs);
 
             SendConfigMSG(outsettings.ToString());

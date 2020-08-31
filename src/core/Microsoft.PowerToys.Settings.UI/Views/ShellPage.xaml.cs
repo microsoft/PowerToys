@@ -47,6 +47,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static bool IsUserAnAdmin { get; set; }
 
+        public static System.Action<string> VersionCheckCallback { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
         /// Shell page constructor.

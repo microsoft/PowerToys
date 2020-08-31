@@ -27,6 +27,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         public static int PowerToysPID { get; set; }
 
+        public static Action<string> VersionCheckCallback { get; set; }
+
         [STAThread]
         public static void Main(string[] args)
         {
@@ -63,7 +65,17 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                         Environment.Exit(0);
                     });
 
-                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);
+                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], (string message) =>
+                    {
+                        if (VersionCheckCallback != null && message.Length > 0)
+                        {
+                            VersionCheckCallback(message);
+                        }
+                        else
+                        {
+                            MessageBox.Show("no handler for the message", string.Empty, MessageBoxButton.OK);
+                        }
+                    });
                     ipcmanager.Start();
                     app.Run();
                 }
