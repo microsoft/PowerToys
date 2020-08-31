@@ -11,7 +11,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// <summary>
     /// Class housing fuzzy matching methods
     /// </summary>
-    public class FuzzyMatching
+    public static class FuzzyMatching
     {
         /// <summary>
         /// Finds the best match (the one with the most
