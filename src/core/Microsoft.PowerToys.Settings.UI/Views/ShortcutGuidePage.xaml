@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -61,7 +61,7 @@
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <NumberBox Minimum="100"
+            <muxc:NumberBox Minimum="100"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource HeaderTextTopMargin}"
@@ -98,14 +98,14 @@
                 x:Uid="ShortcutGuide_Theme"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-            <RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+            <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
                                Margin="{StaticResource HeaderTextTopMargin}"
                                AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_Theme}">
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark" />
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" />
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"/>
-            </RadioButtons>
+            </muxc:RadioButtons>
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
