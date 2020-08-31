@@ -66,6 +66,10 @@
   
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
   <ItemGroup>
