@@ -50,7 +50,7 @@ namespace PowerLauncher
                     retryCount++;
                     if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
                     {
-                        Log.Info("|SettingsWatcher.OverloadSettings|PT Run settings.json was missing, creating a new one");
+                        Log.Info("|SettingsWatcher.OverloadSettings| PT Run settings.json was missing, creating a new one");
                         var defaultSettings = new PowerLauncherSettings();
                         defaultSettings.Save();
                     }
