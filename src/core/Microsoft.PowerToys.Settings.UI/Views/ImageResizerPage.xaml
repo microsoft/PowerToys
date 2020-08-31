@@ -7,7 +7,6 @@
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.Lib.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -117,7 +116,7 @@
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                             </ComboBox>
 
-                            <muxc:NumberBox Name="ImageResizer_Width_Property"
+                            <NumberBox Name="ImageResizer_Width_Property"
                                             x:Uid="ImageResizer_Width_Property"
                                             Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                             Width="68"
@@ -136,7 +135,7 @@
                                        Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"                                    
                                        Width="25"/>
 
-                            <muxc:NumberBox Name="ImageResizer_Height_Property"
+                            <NumberBox Name="ImageResizer_Height_Property"
                                             x:Uid="ImageResizer_Height_Property"
                                             Value="{x:Bind Path=Height, Mode=TwoWay}" 
                                             Width="68"
@@ -212,7 +211,7 @@
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <muxc:NumberBox Minimum="0"
+            <NumberBox Minimum="0"
                             Maximum="100"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
                             Width="240"

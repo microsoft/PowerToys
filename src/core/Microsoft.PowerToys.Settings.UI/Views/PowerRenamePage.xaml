@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -80,7 +79,7 @@
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <muxc:NumberBox SpinButtonPlacementMode="Compact"
+            <NumberBox SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource HeaderTextTopMargin}"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaxDispListNum}"
