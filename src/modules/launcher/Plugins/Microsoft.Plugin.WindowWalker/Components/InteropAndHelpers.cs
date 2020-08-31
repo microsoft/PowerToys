@@ -426,7 +426,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Required pointless variables that we don't use in making a windows show
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
+        public struct RECT : IEquatable<RECT>
         {
             public int Left;
             public int Top;
