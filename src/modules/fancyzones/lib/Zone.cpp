@@ -11,6 +11,16 @@
 
 #include "common/monitors.h"
 
+namespace
+{
+    bool ValidateZoneRect(const RECT& rect)
+    {
+        int width  = rect.right - rect.left;
+        int height = rect.bottom - rect.top;
+        return rect.left >= 0 && rect.right >= 0 && rect.top >= 0 && rect.bottom >= 0 && width >= 0 && height >= 0;
+    }
+}
+
 struct Zone : winrt::implements<Zone, IZone>
 {
 public:
@@ -122,5 +132,12 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
 
 winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect) noexcept
 {
-    return winrt::make_self<Zone>(zoneRect);
+    if (ValidateZoneRect(zoneRect))
+    {
+        return winrt::make_self<Zone>(zoneRect);
+    }
+    else
+    {
+        return nullptr;
+    }
 }
