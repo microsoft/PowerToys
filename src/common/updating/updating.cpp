@@ -238,16 +238,17 @@ namespace updating
         }
     }
 
-    std::future<void> check_new_version_available()
+    std::future<std::wstring> check_new_version_available()
     {
         const auto new_version = co_await get_new_github_version_info_async();
         if (!new_version)
         {
             updating::notifications::show_unavailable();
-            co_return;
+            co_return VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
         }
 
         updating::notifications::show_available(new_version.value());
+        co_return new_version->version_string;
     }
 
     std::future<std::wstring> download_update()

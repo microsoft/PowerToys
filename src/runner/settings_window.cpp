@@ -48,8 +48,9 @@ json::JsonObject get_all_settings()
     return result;
 }
 
-void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
+std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
 {
+    std::optional<std::wstring> result;
     for (const auto& powertoy_element : powertoys_configs)
     {
         const std::wstring name{ powertoy_element.Key().c_str() };
@@ -76,9 +77,7 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
                 }
                 else if (action == L"check_for_updates")
                 {
-                    std::thread{ [] {
-                        check_for_updates();
-                    } }.detach();
+                    result.emplace(check_for_updates());
                 }
             }
             catch (...)
@@ -90,6 +89,8 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
             const auto element = powertoy_element.Value().Stringify();
             modules().at(name)->call_custom_action(element.c_str());
         }
+
+        return result;
     }
 }
 
@@ -146,7 +147,11 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         }
         else if (name == L"action")
         {
-            dispatch_json_action_to_module(value.GetObjectW());
+            auto result = dispatch_json_action_to_module(value.GetObjectW());
+            if (result.has_value())
+            {
+                current_settings_ipc->send(result.value());
+            }
         }
     }
     return;
