@@ -106,7 +106,8 @@ void FancyZonesData::AddDevice(const std::wstring& deviceId)
         wil::unique_cotaskmem_string guidString;
         if (result == S_OK && SUCCEEDED(StringFromCLSID(guid, &guidString)))
         {
-            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ guidString.get(), ZoneSetLayoutType::PriorityGrid }, true, 16, 3 };
+            DeviceInfoData defaultDeviceInfoData{ ZoneSetData{ guidString.get(), ZoneSetLayoutType::PriorityGrid }, true, 16, 3 };
+            deviceInfoMap[deviceId] = std::move(defaultDeviceInfoData);
         }
         else
         {
@@ -130,11 +131,7 @@ void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstr
     }
 
     // Clone information from source device if destination device is uninitialized (Blank).
-    auto& destInfo = deviceInfoMap[destination];
-    if (destInfo.activeZoneSet.type == FancyZonesDataTypes::ZoneSetLayoutType::Blank)
-    {
-        destInfo = deviceInfoMap[source];
-    }
+    deviceInfoMap[destination] = deviceInfoMap[source];
 }
 
 void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
