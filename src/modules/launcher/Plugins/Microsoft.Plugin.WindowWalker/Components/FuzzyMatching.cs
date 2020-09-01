@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,6 +25,16 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>returns the index location of each of the letters of the matches</returns>
         public static List<int> FindBestFuzzyMatch(string text, string searchText)
         {
+            if (searchText == null)
+            {
+                throw new ArgumentNullException(nameof(searchText));
+            }
+
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             searchText = searchText.ToLower();
             text = text.ToLower();
 
