@@ -494,44 +494,44 @@ Disabling module or closing PowerToys will unmute microphone and camera</value>
 	<data name="VideoConference_CameraOverlayImagePathHeader.Text" xml:space="preserve">
     <value>Camera overlay image</value>
   </data>
-	<data name="VideoConference_OverlayPosition.Header" xml:space="preserve">
-    <value>Overlay postion</value>
+	<data name="VideoConference_ToolbarPosition.Header" xml:space="preserve">
+    <value>Toolbar postion</value>
   </data>
-	<data name="VideoConference_OverlayPosition_TopCenter.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarPosition_TopCenter.Content" xml:space="preserve">
     <value>Top center</value>
   </data>
-	<data name="VideoConference_OverlayPosition_TopLeftCorner.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
     <value>Top left corner</value>
   </data>
-	<data name="VideoConference_OverlayPosition_TopRightCorner.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
     <value>Top right corner</value>
   </data>
-	<data name="VideoConference_OverlayPosition_BottomLeftCorner.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
     <value>Bottom left corner</value>
   </data>
-	<data name="VideoConference_OverlayPosition_BottomCenter.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
     <value>Bottom center</value>
   </data>
-	<data name="VideoConference_OverlayPosition_BottomRightCorner.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
     <value>Bottom right corner</value>
   </data>
-	<data name="VideoConference_OverlayMonitor.Header" xml:space="preserve">
-    <value>Show overlay on</value>
+	<data name="VideoConference_ToolbarMonitor.Header" xml:space="preserve">
+    <value>Show toolbar on</value>
   </data>
-	<data name="VideoConference_OverlayMonitor_Main.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarMonitor_Main.Content" xml:space="preserve">
     <value>Main monitor</value>
   </data>
-	<data name="VideoConference_OverlayMonitor_UnderCursor.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarMonitor_UnderCursor.Content" xml:space="preserve">
     <value>Monitor under cursor</value>
   </data>
-	<data name="VideoConference_OverlayMonitor_ActiveWindow.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarMonitor_ActiveWindow.Content" xml:space="preserve">
     <value>Active window monitor</value>
   </data>
-	<data name="VideoConference_OverlayMonitor_All.Content" xml:space="preserve">
+	<data name="VideoConference_ToolbarMonitor_All.Content" xml:space="preserve">
     <value>All monitors</value>
   </data>
-	<data name="VideoConference_HideOverlayWhenUnmuted.Content" xml:space="preserve">
-    <value>Hide overlay when both camera and microphone are unmuted</value>
+	<data name="VideoConference_HideToolbarWhenUnmuted.Content" xml:space="preserve">
+    <value>Hide toolbar when both camera and microphone are unmuted</value>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>

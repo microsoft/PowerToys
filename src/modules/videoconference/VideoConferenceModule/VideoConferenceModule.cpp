@@ -17,7 +17,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 VideoConferenceModule* instance = nullptr;
 
-Overlay VideoConferenceModule::overlay;
+Toolbar VideoConferenceModule::toolbar;
 
 CVolumeNotification* VideoConferenceModule::volumeNotification;
 
@@ -25,8 +25,8 @@ PowerToysSettings::HotkeyObject VideoConferenceModule::cameraAndMicrophoneMuteHo
 PowerToysSettings::HotkeyObject VideoConferenceModule::microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 65);
 PowerToysSettings::HotkeyObject VideoConferenceModule::cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 79);
 
-std::wstring VideoConferenceModule::overlayPositionString;
-std::wstring VideoConferenceModule::overlayMonitorString;
+std::wstring VideoConferenceModule::toolbarPositionString;
+std::wstring VideoConferenceModule::toolbarMonitorString;
 
 std::wstring VideoConferenceModule::selectedCamera;
 std::wstring VideoConferenceModule::imageOverlayPath;
@@ -71,7 +71,7 @@ void VideoConferenceModule::reverseMicrophoneMute()
                 {
                     if (microphoneEndpoint->SetMute(!currentMute, NULL) == S_OK)
                     {
-                        //overlay.setMicrophoneMute(!currentMute);
+                        //toolbar.setMicrophoneMute(!currentMute);
                     }
                 }
 
@@ -170,10 +170,10 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             if (isHotkeyPressed(kbd->vkCode, cameraAndMicrophoneMuteHotkey))
             {
                 reverseMicrophoneMute();
-                if (overlay.getCameraMute() != overlay.getMicrophoneMute())
+                if (toolbar.getCameraMute() != toolbar.getMicrophoneMute())
                 {
                     reverseVirtualCameraMuteState();
-                    overlay.setCameraMute(getVirtualCameraMuteState());
+                    toolbar.setCameraMute(getVirtualCameraMuteState());
                 }
             }
             else if (isHotkeyPressed(kbd->vkCode, microphoneMuteHotkey))
@@ -183,7 +183,7 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             else if (isHotkeyPressed(kbd->vkCode, cameraMuteHotkey))
             {
                 reverseVirtualCameraMuteState();
-                overlay.setCameraMute(getVirtualCameraMuteState());
+                toolbar.setCameraMute(getVirtualCameraMuteState());
             }
         }
     }
@@ -205,23 +205,23 @@ VideoConferenceModule::VideoConferenceModule()
     sendSourceCameraNameUpdate();
     sendOverlayImageUpdate();
 
-    overlay.showOverlay(overlayPositionString, overlayMonitorString);
+    toolbar.show(toolbarPositionString, toolbarMonitorString);
 }
 
 inline VideoConferenceModule::~VideoConferenceModule()
 {
-    if (overlay.getCameraMute())
+    if (toolbar.getCameraMute())
     {
         reverseVirtualCameraMuteState();
-        overlay.setCameraMute(getVirtualCameraMuteState());
+        toolbar.setCameraMute(getVirtualCameraMuteState());
     }
 
-    if (overlay.getMicrophoneMute())
+    if (toolbar.getMicrophoneMute())
     {
         reverseMicrophoneMute();
     }
 
-    overlay.hideOverlay();
+    toolbar.hide();
 }
 
 const wchar_t* VideoConferenceModule::get_name()
@@ -256,13 +256,13 @@ void VideoConferenceModule::set_config(const wchar_t* config)
             {
                 cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
             }
-            if (const auto val = values.get_string_value(L"overlay_position"))
+            if (const auto val = values.get_string_value(L"toolbar_position"))
             {
-                overlayPositionString = val.value();
+                toolbarPositionString = val.value();
             }
-            if (const auto val = values.get_string_value(L"overlay_monitor"))
+            if (const auto val = values.get_string_value(L"toolbar_monitor"))
             {
-                overlayMonitorString = val.value();
+                toolbarMonitorString = val.value();
             }
             if (const auto val = values.get_string_value(L"selected_camera"); val && val != selectedCamera)
             {
@@ -276,14 +276,14 @@ void VideoConferenceModule::set_config(const wchar_t* config)
             }
             if (const auto val = values.get_string_value(L"theme"))
             {
-                Overlay::setTheme(val.value());
+                Toolbar::setTheme(val.value());
             }
-            if (const auto val = values.get_bool_value(L"hide_overlay_when_unmuted"))
+            if (const auto val = values.get_bool_value(L"hide_toolbar_when_unmuted"))
             {
-                Overlay::setHideOverlayWhenUnmuted(val.value());
+                Toolbar::setHideToolbarWhenUnmuted(val.value());
             }
 
-            overlay.showOverlay(overlayPositionString, overlayMonitorString);
+            toolbar.show(toolbarPositionString, toolbarMonitorString);
         }
     }
     catch (...)
@@ -310,13 +310,13 @@ void VideoConferenceModule::init_settings()
         {
             cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
         }
-        if (const auto val = settings.get_string_value(L"overlay_position"))
+        if (const auto val = settings.get_string_value(L"toolbar_position"))
         {
-            overlayPositionString = val.value();
+            toolbarPositionString = val.value();
         }
-        if (const auto val = settings.get_string_value(L"overlay_monitor"))
+        if (const auto val = settings.get_string_value(L"toolbar_monitor"))
         {
-            overlayMonitorString = val.value();
+            toolbarMonitorString = val.value();
         }
         if (const auto val = settings.get_string_value(L"selected_camera"))
         {
@@ -328,11 +328,11 @@ void VideoConferenceModule::init_settings()
         }
         if (const auto val = settings.get_string_value(L"theme"))
         {
-            Overlay::setTheme(val.value());
+            Toolbar::setTheme(val.value());
         }
-        if (const auto val = settings.get_bool_value(L"hide_overlay_when_unmuted"))
+        if (const auto val = settings.get_bool_value(L"hide_toolbar_when_unmuted"))
         {
-            Overlay::setHideOverlayWhenUnmuted(val.value());
+            Toolbar::setHideToolbarWhenUnmuted(val.value());
         }
     }
     catch (std::exception&)
@@ -345,10 +345,10 @@ void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
-        overlay.setMicrophoneMute(getMicrophoneMuteState());
-        overlay.setCameraMute(getVirtualCameraMuteState());
+        toolbar.setMicrophoneMute(getMicrophoneMuteState());
+        toolbar.setCameraMute(getVirtualCameraMuteState());
 
-        overlay.showOverlay(overlayPositionString, overlayMonitorString);
+        toolbar.show(toolbarPositionString, toolbarMonitorString);
 
         _enabled = true;
 
@@ -375,18 +375,18 @@ void VideoConferenceModule::disable()
             }
         }
 
-        if (overlay.getCameraMute())
+        if (toolbar.getCameraMute())
         {
             reverseVirtualCameraMuteState();
-            overlay.setCameraMute(getVirtualCameraMuteState());
+            toolbar.setCameraMute(getVirtualCameraMuteState());
         }
 
-        if (overlay.getMicrophoneMute())
+        if (toolbar.getMicrophoneMute())
         {
             reverseMicrophoneMute();
         }
 
-        overlay.hideOverlay();
+        toolbar.hide();
 
         _enabled = false;
     }

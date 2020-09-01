@@ -5,7 +5,7 @@
 
 #include "common/monitors.h"
 
-struct OverlayImages
+struct ToolbarImages
 {
     Gdiplus::Image* camOnMicOn = nullptr;
     Gdiplus::Image* camOffMicOn = nullptr;
@@ -15,13 +15,13 @@ struct OverlayImages
     Gdiplus::Image* camUnusedMicOff = nullptr;
 };
 
-class Overlay
+class Toolbar
 {
 public:
-    Overlay();
+    Toolbar();
 
-    static void showOverlay(std::wstring position, std::wstring monitorString);
-    static void hideOverlay();
+    static void show(std::wstring position, std::wstring monitorString);
+    static void hide();
 
     bool static getCameraMute();
     void static setCameraMute(bool mute);
@@ -29,7 +29,7 @@ public:
     void static setMicrophoneMute(bool mute);
 
     void static setTheme(std::wstring theme);
-    void static setHideOverlayWhenUnmuted(bool hide);
+    void static setHideToolbarWhenUnmuted(bool hide);
 
 private:
     static LRESULT CALLBACK WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -37,8 +37,8 @@ private:
     // Window callback can't be non-static so this members can't as well
     static std::vector<HWND> hwnds;
 
-    static OverlayImages darkImages;
-    static OverlayImages lightImages;
+    static ToolbarImages darkImages;
+    static ToolbarImages lightImages;
 
     static bool valueUpdated;
     static bool cameraMuted;
@@ -47,7 +47,7 @@ private:
 
     static std::wstring theme;
 
-    static bool hideOverlayWhenUnmuted;
+    static bool HideToolbarWhenUnmuted;
 
     static unsigned __int64 lastTimeCamOrMicMuteStateChanged;
 

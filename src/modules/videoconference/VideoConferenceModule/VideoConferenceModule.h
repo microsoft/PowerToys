@@ -7,7 +7,7 @@
 
 #include "common/settings_objects.h"
 
-#include "Overlay.h"
+#include "Toolbar.h"
 #include "CVolumeNotification.h"
 
 #include <SerializedSharedMemory.h>
@@ -53,7 +53,7 @@ private:
     std::optional<SerializedSharedMemory> _imageOverlayChannel;
     std::optional<SerializedSharedMemory> _settingsUpdateChannel;
 
-    static Overlay overlay;
+    static Toolbar toolbar;
 
     static CVolumeNotification* volumeNotification;
 
@@ -61,8 +61,8 @@ private:
     static PowerToysSettings::HotkeyObject microphoneMuteHotkey;
     static PowerToysSettings::HotkeyObject cameraMuteHotkey;
 
-    static std::wstring overlayPositionString;
-    static std::wstring overlayMonitorString;
+    static std::wstring toolbarPositionString;
+    static std::wstring toolbarMonitorString;
 
     static std::wstring selectedCamera;
     static std::wstring imageOverlayPath;

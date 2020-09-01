@@ -104,30 +104,30 @@
                         HorizontalAlignment="Left" />
             </StackPanel>
 
-            <ComboBox x:Uid="VideoConference_OverlayPosition" 
+            <ComboBox x:Uid="VideoConference_ToolbarPosition" 
                       MinWidth="240"
                       Margin="{StaticResource MediumTopMargin}"
-                      SelectedIndex="{ Binding Mode=TwoWay, Path=OverlayPostionIndex}"
+                      SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarPostionIndex}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                <ComboBoxItem x:Uid="VideoConference_OverlayPosition_TopLeftCorner"/>
-                <ComboBoxItem x:Uid="VideoConference_OverlayPosition_TopCenter"/>
-                <ComboBoxItem x:Uid="VideoConference_OverlayPosition_TopRightCorner"/>
-                <ComboBoxItem x:Uid="VideoConference_OverlayPosition_BottomLeftCorner"/>
-                <ComboBoxItem x:Uid="VideoConference_OverlayPosition_BottomCenter"/>
-                <ComboBoxItem x:Uid="VideoConference_OverlayPosition_BottomRightCorner"/>
+                <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopLeftCorner"/>
+                <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopCenter"/>
+                <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_TopRightCorner"/>
+                <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomLeftCorner"/>
+                <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomCenter"/>
+                <ComboBoxItem x:Uid="VideoConference_ToolbarPosition_BottomRightCorner"/>
             </ComboBox>
 
-            <ComboBox x:Uid="VideoConference_OverlayMonitor" 
+            <ComboBox x:Uid="VideoConference_ToolbarMonitor" 
                       MinWidth="240"
                       Margin="{StaticResource MediumTopMargin}"
-                      SelectedIndex="{ Binding Mode=TwoWay, Path=OverlayMonitorIndex}"
+                      SelectedIndex="{ Binding Mode=TwoWay, Path=ToolbarMonitorIndex}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                <ComboBoxItem x:Uid="VideoConference_OverlayMonitor_Main"/>
-                <ComboBoxItem x:Uid="VideoConference_OverlayMonitor_All"/>
+                <ComboBoxItem x:Uid="VideoConference_ToolbarMonitor_Main"/>
+                <ComboBoxItem x:Uid="VideoConference_ToolbarMonitor_All"/>
             </ComboBox>
 
-            <CheckBox x:Uid="VideoConference_HideOverlayWhenUnmuted"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.HideOverlayWhenUnmuted}"
+            <CheckBox x:Uid="VideoConference_HideToolbarWhenUnmuted"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.HideToolbarWhenUnmuted}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       />

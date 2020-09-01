@@ -77,38 +77,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.SelectOverlayImage = new ButtonClickCommand(SelectOverlayImageAction);
             this.ClearOverlayImage = new ButtonClickCommand(ClearOverlayImageAction);
 
-            this._hideOverlayWhenUnmuted = Settings.Properties.HideOverlayWhenUnmuted.Value;
+            this._hideToolbarWhenUnmuted = Settings.Properties.HideToolbarWhenUnmuted.Value;
 
-            switch (Settings.Properties.OverlayPosition.Value)
+            switch (Settings.Properties.ToolbarPosition.Value)
             {
                 case "Top left corner":
-                    _overlayPositionIndex = 0;
+                    _toolbarPositionIndex = 0;
                     break;
                 case "Top center":
-                    _overlayPositionIndex = 1;
+                    _toolbarPositionIndex = 1;
                     break;
                 case "Top right corner":
-                    _overlayPositionIndex = 2;
+                    _toolbarPositionIndex = 2;
                     break;
                 case "Bottom left corner":
-                    _overlayPositionIndex = 3;
+                    _toolbarPositionIndex = 3;
                     break;
                 case "Bottom center":
-                    _overlayPositionIndex = 4;
+                    _toolbarPositionIndex = 4;
                     break;
                 case "Bottom right corner":
-                    _overlayPositionIndex = 5;
+                    _toolbarPositionIndex = 5;
                     break;
             }
 
-            switch (Settings.Properties.OverlayMonitor.Value)
+            switch (Settings.Properties.ToolbarMonitor.Value)
             {
                 case "Main monitor":
-                    _overlayMonitorIndex = 0;
+                    _toolbarMonitorIndex = 0;
                     break;
 
                 case "All monitors":
-                    _overlayMonitorIndex = 1;
+                    _toolbarMonitorIndex = 1;
                     break;
             }
         }
@@ -120,13 +120,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private bool _isEnabled = false;
-        private int _overlayPositionIndex;
-        private int _overlayMonitorIndex;
+        private int _toolbarPositionIndex;
+        private int _toolbarMonitorIndex;
         private HotkeySettings _cameraAndMicrophoneMuteHotkey;
         private HotkeySettings _mirophoneMuteHotkey;
         private HotkeySettings _cameraMuteHotkey;
         private int _selectedCameraIndex = -1;
-        private bool _hideOverlayWhenUnmuted;
+        private bool _hideToolbarWhenUnmuted;
 
         public List<string> CameraNames { get; }
 
@@ -270,47 +270,47 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int OverlayPostionIndex
+        public int ToolbarPostionIndex
         {
             get
             {
-                return _overlayPositionIndex;
+                return _toolbarPositionIndex;
             }
 
             set
             {
-                if (_overlayPositionIndex != value)
+                if (_toolbarPositionIndex != value)
                 {
-                    _overlayPositionIndex = value;
-                    switch (_overlayPositionIndex)
+                    _toolbarPositionIndex = value;
+                    switch (_toolbarPositionIndex)
                     {
                         case 0:
-                            Settings.Properties.OverlayPosition.Value = "Top left corner";
+                            Settings.Properties.ToolbarPosition.Value = "Top left corner";
                             RaisePropertyChanged();
                             break;
 
                         case 1:
-                            Settings.Properties.OverlayPosition.Value = "Top center";
+                            Settings.Properties.ToolbarPosition.Value = "Top center";
                             RaisePropertyChanged();
                             break;
 
                         case 2:
-                            Settings.Properties.OverlayPosition.Value = "Top right corner";
+                            Settings.Properties.ToolbarPosition.Value = "Top right corner";
                             RaisePropertyChanged();
                             break;
 
                         case 3:
-                            Settings.Properties.OverlayPosition.Value = "Bottom left corner";
+                            Settings.Properties.ToolbarPosition.Value = "Bottom left corner";
                             RaisePropertyChanged();
                             break;
 
                         case 4:
-                            Settings.Properties.OverlayPosition.Value = "Bottom center";
+                            Settings.Properties.ToolbarPosition.Value = "Bottom center";
                             RaisePropertyChanged();
                             break;
 
                         case 5:
-                            Settings.Properties.OverlayPosition.Value = "Bottom right corner";
+                            Settings.Properties.ToolbarPosition.Value = "Bottom right corner";
                             RaisePropertyChanged();
                             break;
                     }
@@ -318,27 +318,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int OverlayMonitorIndex
+        public int ToolbarMonitorIndex
         {
             get
             {
-                return _overlayMonitorIndex;
+                return _toolbarMonitorIndex;
             }
 
             set
             {
-                if (_overlayMonitorIndex != value)
+                if (_toolbarMonitorIndex != value)
                 {
-                    _overlayMonitorIndex = value;
-                    switch (_overlayMonitorIndex)
+                    _toolbarMonitorIndex = value;
+                    switch (_toolbarMonitorIndex)
                     {
                         case 0:
-                            Settings.Properties.OverlayMonitor.Value = "Main monitor";
+                            Settings.Properties.ToolbarMonitor.Value = "Main monitor";
                             RaisePropertyChanged();
                             break;
 
                         case 1:
-                            Settings.Properties.OverlayMonitor.Value = "All monitors";
+                            Settings.Properties.ToolbarMonitor.Value = "All monitors";
                             RaisePropertyChanged();
                             break;
                     }
@@ -346,19 +346,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool HideOverlayWhenUnmuted
+        public bool HideToolbarWhenUnmuted
         {
             get
             {
-                return _hideOverlayWhenUnmuted;
+                return _hideToolbarWhenUnmuted;
             }
 
             set
             {
-                if (value != _hideOverlayWhenUnmuted)
+                if (value != _hideToolbarWhenUnmuted)
                 {
-                    _hideOverlayWhenUnmuted = value;
-                    Settings.Properties.HideOverlayWhenUnmuted.Value = value;
+                    _hideToolbarWhenUnmuted = value;
+                    Settings.Properties.HideToolbarWhenUnmuted.Value = value;
                     RaisePropertyChanged();
                 }
             }

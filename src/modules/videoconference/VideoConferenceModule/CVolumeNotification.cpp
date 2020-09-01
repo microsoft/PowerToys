@@ -33,7 +33,7 @@ STDMETHODIMP_(HRESULT __stdcall) CVolumeNotification::QueryInterface(REFIID IID,
 
 STDMETHODIMP_(HRESULT __stdcall) CVolumeNotification::OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA NotificationData)
 {
-    Overlay::setMicrophoneMute(NotificationData->bMuted);
+    Toolbar::setMicrophoneMute(NotificationData->bMuted);
 
     return S_OK;
 }

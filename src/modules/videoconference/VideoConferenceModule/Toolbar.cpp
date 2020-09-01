@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Overlay.h"
+#include "Toolbar.h"
 
 #include <windowsx.h>
 
@@ -7,29 +7,29 @@
 
 #include "VideoConferenceModule.h"
 
-OverlayImages Overlay::darkImages;
-OverlayImages Overlay::lightImages;
+ToolbarImages Toolbar::darkImages;
+ToolbarImages Toolbar::lightImages;
 
-bool Overlay::valueUpdated = false;
-bool Overlay::cameraMuted = false;
-bool Overlay::cameraInUse = false;
-bool Overlay::microphoneMuted = false;
+bool Toolbar::valueUpdated = false;
+bool Toolbar::cameraMuted = false;
+bool Toolbar::cameraInUse = false;
+bool Toolbar::microphoneMuted = false;
 
-std::wstring Overlay::theme = L"system";
+std::wstring Toolbar::theme = L"system";
 
-bool Overlay::hideOverlayWhenUnmuted = true;
+bool Toolbar::HideToolbarWhenUnmuted = true;
 
-std::vector<HWND> Overlay::hwnds;
+std::vector<HWND> Toolbar::hwnds;
 
-UINT_PTR Overlay::nTimerId;
+UINT_PTR Toolbar::nTimerId;
 
-unsigned __int64 Overlay::lastTimeCamOrMicMuteStateChanged;
+unsigned __int64 Toolbar::lastTimeCamOrMicMuteStateChanged;
 
 const int REFRESH_RATE = 100;
 const int OVERLAY_SHOW_TIME = 500;
 const int BORDER_OFFSET = 12;
 
-Overlay::Overlay()
+Toolbar::Toolbar()
 {
     darkImages.camOnMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-On Dark.png");
     darkImages.camOffMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-Off Dark.png");
@@ -46,7 +46,7 @@ Overlay::Overlay()
     lightImages.camUnusedMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-NotInUse Light.png");
 }
 
-LRESULT Overlay::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
@@ -79,7 +79,7 @@ LRESULT Overlay::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
         Gdiplus::Graphics graphic(hdc);
 
-        OverlayImages* themeImages = &darkImages;
+        ToolbarImages* themeImages = &darkImages;
 
         if (theme == L"light" || (theme == L"system" && !WindowsColors::is_dark_mode()))
         {
@@ -134,7 +134,7 @@ LRESULT Overlay::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         InvalidateRect(hwnd, NULL, NULL);
         using namespace std::chrono;
 
-        if (cameraInUse || microphoneMuted || !hideOverlayWhenUnmuted)
+        if (cameraInUse || microphoneMuted || !HideToolbarWhenUnmuted)
         {
             ShowWindow(hwnd, SW_SHOW);
         }
@@ -163,7 +163,7 @@ LRESULT Overlay::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-void Overlay::showOverlay(std::wstring position, std::wstring monitorString)
+void Toolbar::show(std::wstring position, std::wstring monitorString)
 {
     valueUpdated = false;
     for (auto& hwnd : hwnds)
@@ -263,7 +263,7 @@ void Overlay::showOverlay(std::wstring position, std::wstring monitorString)
     }
 }
 
-void Overlay::hideOverlay()
+void Toolbar::hide()
 {
     for (auto& hwnd : hwnds)
     {
@@ -272,24 +272,24 @@ void Overlay::hideOverlay()
     hwnds.clear();
 }
 
-bool Overlay::getCameraMute()
+bool Toolbar::getCameraMute()
 {
     return cameraMuted;
 }
 
-void Overlay::setCameraMute(bool mute)
+void Toolbar::setCameraMute(bool mute)
 {
     valueUpdated = true;
     lastTimeCamOrMicMuteStateChanged = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     cameraMuted = mute;
 }
 
-bool Overlay::getMicrophoneMute()
+bool Toolbar::getMicrophoneMute()
 {
     return microphoneMuted;
 }
 
-void Overlay::setMicrophoneMute(bool mute)
+void Toolbar::setMicrophoneMute(bool mute)
 {
     if (mute != microphoneMuted)
     {
@@ -300,12 +300,12 @@ void Overlay::setMicrophoneMute(bool mute)
     microphoneMuted = mute;
 }
 
-void Overlay::setHideOverlayWhenUnmuted(bool hide)
+void Toolbar::setHideToolbarWhenUnmuted(bool hide)
 {
-    hideOverlayWhenUnmuted = hide;
+    HideToolbarWhenUnmuted = hide;
 }
 
-void Overlay::setTheme(std::wstring theme)
+void Toolbar::setTheme(std::wstring theme)
 {
-    Overlay::theme = theme;
+    Toolbar::theme = theme;
 }

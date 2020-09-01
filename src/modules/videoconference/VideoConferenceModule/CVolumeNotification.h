@@ -3,7 +3,7 @@
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
 
-#include "Overlay.h"
+#include "Toolbar.h"
 
 class CVolumeNotification : public IAudioEndpointVolumeCallback
 {

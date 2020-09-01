@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             Theme = new StringProperty("light");
 
-            this.HideOverlayWhenUnmuted = new BoolProperty(true);
+            this.HideToolbarWhenUnmuted = new BoolProperty(true);
         }
 
         [JsonPropertyName("mute_camera_and_microphone_hotkey")]
@@ -61,11 +61,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("selected_camera")]
         public StringProperty SelectedCamera { get; set; } = string.Empty;
 
-        [JsonPropertyName("overlay_position")]
-        public StringProperty OverlayPosition { get; set; } = "Top right corner";
+        [JsonPropertyName("toolbar_position")]
+        public StringProperty ToolbarPosition { get; set; } = "Top right corner";
 
-        [JsonPropertyName("overlay_monitor")]
-        public StringProperty OverlayMonitor { get; set; } = "Main monitor";
+        [JsonPropertyName("toolbar_monitor")]
+        public StringProperty ToolbarMonitor { get; set; } = "Main monitor";
 
         [JsonPropertyName("camera_overlay_image_path")]
         public StringProperty CameraOverlayImagePath { get; set; } = string.Empty;
@@ -73,8 +73,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("theme")]
         public StringProperty Theme { get; set; }
 
-        [JsonPropertyName("hide_overlay_when_unmuted")]
-        public BoolProperty HideOverlayWhenUnmuted { get; set; }
+        [JsonPropertyName("hide_toolbar_when_unmuted")]
+        public BoolProperty HideToolbarWhenUnmuted { get; set; }
 
         // converts the current to a json string.
         public string ToJsonString()
