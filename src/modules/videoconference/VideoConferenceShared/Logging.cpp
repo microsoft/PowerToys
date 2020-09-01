@@ -9,7 +9,8 @@
 
 #include <mfapi.h>
 
-std::mutex logMutex;
+static std::mutex logMutex;
+constexpr inline size_t maxLogSizeMegabytes = 10;
 
 void LogToFile(std::string what, const bool verbose)
 {
@@ -31,11 +32,16 @@ void LogToFile(std::string what, const bool verbose)
     std::strftime(iter, sizeof(prefix) - (prefix - iter), "[%d.%m %H:%M:%S] ", &tm);
 
     std::lock_guard lock{ logMutex };
-
-    std::ofstream myfile;
-
     std::wstring logFilePath = tempPath;
     logFilePath += L"\\PowerToysVideoConference.log";
+    const size_t logSizeMBs = std::filesystem::file_size(logFilePath) >> 20;
+    if (logSizeMBs > maxLogSizeMegabytes)
+    {
+        std::error_code _;
+        // Truncate the log file to zero
+        std::filesystem::resize_file(logFilePath, 0, _);
+    }
+    std::ofstream myfile;
     myfile.open(logFilePath, std::fstream::app);
 
     static const auto newLaunch = [&] {
