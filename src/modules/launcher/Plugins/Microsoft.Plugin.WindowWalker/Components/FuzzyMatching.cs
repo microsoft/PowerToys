@@ -87,6 +87,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "matches does not waste space with the current implementation, however this could probably be optimized to store the indices of matches instead of boolean values.  Currently there are no unit tests for this, but we could refactor if memory/perf becomes an issue. ")]
         public static List<List<int>> GetAllMatchIndexes(bool[,] matches)
         {
+            if (matches == null)
+            {
+                throw new ArgumentNullException(nameof(matches));
+            }
+
             List<List<int>> results = new List<List<int>>();
 
             for (int secondIndex = 0; secondIndex < matches.GetLength(1); secondIndex++)
