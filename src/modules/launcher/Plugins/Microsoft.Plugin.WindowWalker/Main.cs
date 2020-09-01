@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.WindowWalker.Components;
@@ -25,6 +26,11 @@ namespace Microsoft.Plugin.WindowWalker
 
         public List<Result> Query(Query query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             SearchController.Instance.UpdateSearchText(query.RawQuery).Wait();
             OpenWindows.Instance.UpdateOpenWindowsList();
             return _results.Select(x => new Result()
