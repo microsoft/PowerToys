@@ -28,10 +28,24 @@ void Trace::SettingsChanged() noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::MuteMic() noexcept
+void Trace::MicrophoneMuted() noexcept
 {
+    TraceLoggingWrite(
+        g_hProvider,
+        "VideoConference_MicrophoneMuted",
+        TraceLoggingBoolean(true, "MicrophoneMuted"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::MuteCamera() noexcept
+void Trace::CameraMuted() noexcept
 {
+    TraceLoggingWrite(
+        g_hProvider,
+        "VideoConference_CameraMuted",
+        TraceLoggingBoolean(true, "CameraMuted"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

@@ -12,6 +12,7 @@
 #include <CameraStateUpdateChannels.h>
 
 #include "logging.h"
+#include "trace.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -71,7 +72,10 @@ void VideoConferenceModule::reverseMicrophoneMute()
                 {
                     if (microphoneEndpoint->SetMute(!currentMute, NULL) == S_OK)
                     {
-                        //toolbar.setMicrophoneMute(!currentMute);
+                        if (!currentMute)
+                        {
+                            Trace::MicrophoneMuted();
+                        }
                     }
                 }
 
@@ -120,14 +124,22 @@ bool VideoConferenceModule::getMicrophoneMuteState()
 
 void VideoConferenceModule::reverseVirtualCameraMuteState()
 {
+    bool camera_muted = false;
     if (!instance->_settingsUpdateChannel.has_value())
     {
         return;
     }
-    instance->_settingsUpdateChannel->access([](auto settingsMemory) {
+
+    instance->_settingsUpdateChannel->access([&camera_muted](auto settingsMemory) {
         auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory._data);
         settings->useOverlayImage = !settings->useOverlayImage;
+        camera_muted = settings->useOverlayImage;
     });
+
+    if (camera_muted)
+    {
+        Trace::CameraMuted();
+    }
 }
 
 bool VideoConferenceModule::getVirtualCameraMuteState()
