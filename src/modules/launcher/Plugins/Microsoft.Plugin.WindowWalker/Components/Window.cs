@@ -393,7 +393,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="hwnd">The handle to the window</param>
         /// <returns>The process ID</returns>
-        private uint GetProcessIDFromWindowHandle(IntPtr hwnd)
+        private static uint GetProcessIDFromWindowHandle(IntPtr hwnd)
         {
             InteropAndHelpers.GetWindowThreadProcessId(hwnd, out uint processId);
             return processId;
