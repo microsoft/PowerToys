@@ -55,7 +55,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 if (sizeOfTitle++ > 0)
                 {
                     StringBuilder titleBuffer = new StringBuilder(sizeOfTitle);
-                    InteropAndHelpers.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
+                    var hr = InteropAndHelpers.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
+                    if (hr >= 0)
+                    {
+                        return string.Empty;
+                    }
+
                     return titleBuffer.ToString();
                 }
                 else
@@ -123,7 +128,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                                     return true;
                                 }
                             });
-                            InteropAndHelpers.EnumChildWindows(Hwnd, callbackptr, 0);
+                            _ = InteropAndHelpers.EnumChildWindows(Hwnd, callbackptr, 0);
                         }).Start();
                     }
 
@@ -140,7 +145,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
             get
             {
                 StringBuilder windowClassName = new StringBuilder(300);
-                InteropAndHelpers.GetClassName(Hwnd, windowClassName, windowClassName.MaxCapacity);
+                var hr = InteropAndHelpers.GetClassName(Hwnd, windowClassName, windowClassName.MaxCapacity);
+
+                if (hr >= 0)
+                {
+                    return string.Empty;
+                }
 
                 return windowClassName.ToString();
             }
@@ -155,7 +165,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
             {
                 lock (_processIdsToIconsCache)
                 {
-                    InteropAndHelpers.GetWindowThreadProcessId(Hwnd, out uint processId);
+                    var hr = InteropAndHelpers.GetWindowThreadProcessId(Hwnd, out uint processId);
+
+                    if (hr >= 0)
+                    {
+                        AddFailedImage(processId);
+                    }
 
                     if (!_processIdsToIconsCache.ContainsKey(processId))
                     {
@@ -170,14 +185,19 @@ namespace Microsoft.Plugin.WindowWalker.Components
                         }
                         catch
                         {
-                            BitmapImage failedImage = new BitmapImage(new Uri(@"Images\failedIcon.jpg", UriKind.Relative));
-                            _processIdsToIconsCache.Add(processId, failedImage);
+                            AddFailedImage(processId);
                         }
                     }
 
                     return _processIdsToIconsCache[processId];
                 }
             }
+        }
+
+        private static void AddFailedImage(uint processId)
+        {
+            BitmapImage failedImage = new BitmapImage(new Uri(@"Images\failedIcon.jpg", UriKind.Relative));
+            _processIdsToIconsCache.Add(processId, failedImage);
         }
 
         /// <summary>
@@ -268,7 +288,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             int isCloaked = 0;
             const int DWMWA_CLOAKED = 14;
-            InteropAndHelpers.DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out isCloaked, sizeof(int));
+            _ = InteropAndHelpers.DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out isCloaked, sizeof(int));
             return isCloaked != 0;
         }
 
@@ -395,7 +415,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>The process ID</returns>
         private static uint GetProcessIDFromWindowHandle(IntPtr hwnd)
         {
-            InteropAndHelpers.GetWindowThreadProcessId(hwnd, out uint processId);
+            _ = InteropAndHelpers.GetWindowThreadProcessId(hwnd, out uint processId);
             return processId;
         }
     }

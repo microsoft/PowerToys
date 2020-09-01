@@ -20,7 +20,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             int renderPolicy = (int)InteropAndHelpers.DwmNCRenderingPolicy.Enabled;
 
-            InteropAndHelpers.DwmSetWindowAttribute(
+            _ = InteropAndHelpers.DwmSetWindowAttribute(
                 hwnd,
                 12,
                 ref renderPolicy,
@@ -34,7 +34,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="windowToSpare">the window which should not be transparent but is not the target window</param>
         public static void ActivateLivePreview(IntPtr targetWindow, IntPtr windowToSpare)
         {
-            InteropAndHelpers.DwmpActivateLivePreview(
+            _ = InteropAndHelpers.DwmpActivateLivePreview(
                     true,
                     targetWindow,
                     windowToSpare,
@@ -47,7 +47,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         public static void DeactivateLivePreview()
         {
-            InteropAndHelpers.DwmpActivateLivePreview(
+            _ = InteropAndHelpers.DwmpActivateLivePreview(
                     false,
                     IntPtr.Zero,
                     IntPtr.Zero,
