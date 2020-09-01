@@ -853,10 +853,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
         [DllImport("psapi.dll")]
-        public static extern uint GetProcessImageFileName(IntPtr hProcess, [Out] StringBuilder lpImageFileName, [In][MarshalAs(UnmanagedType.U4)] int nSize);
+        public static extern uint GetProcessImageFileName(IntPtr hProcess, [Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder lpImageFileName, [In][MarshalAs(UnmanagedType.U4)] int nSize);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr GetProp(IntPtr hWnd, string lpString);
+        public static extern IntPtr GetProp(IntPtr hWnd, [MarshalAs(UnmanagedType.LPWStr)] string lpString);
 
         [DllImport("kernel32.dll")]
         public static extern IntPtr OpenProcess(ProcessAccessFlags dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
@@ -871,7 +871,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
 
         [DllImport("user32.dll")]
-        public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+        public static extern int GetClassName(IntPtr hWnd, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder lpClassName, int nMaxCount);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
