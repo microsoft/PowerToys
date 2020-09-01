@@ -12,7 +12,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// <summary>
     /// Interop calls with helper layers
     /// </summary>
-    internal class InteropAndHelpers
+    internal class NativeMethods
     {
         public delegate bool CallBackPtr(IntPtr hwnd, IntPtr lParam);
 

@@ -74,8 +74,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public void UpdateOpenWindowsList()
         {
             windows.Clear();
-            InteropAndHelpers.CallBackPtr callbackptr = new InteropAndHelpers.CallBackPtr(WindowEnumerationCallBack);
-            _ = InteropAndHelpers.EnumWindows(callbackptr, 0);
+            NativeMethods.CallBackPtr callbackptr = new NativeMethods.CallBackPtr(WindowEnumerationCallBack);
+            _ = NativeMethods.EnumWindows(callbackptr, 0);
         }
 
         /// <summary>
