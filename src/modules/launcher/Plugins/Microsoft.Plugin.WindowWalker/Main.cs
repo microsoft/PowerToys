@@ -20,7 +20,7 @@ namespace Microsoft.Plugin.WindowWalker
 
         static Main()
         {
-            SearchController.Instance.OnSearchResultUpdate += SearchResultUpdated;
+            SearchController.Instance.OnSearchResultUpdateEventHandler += SearchResultUpdated;
             OpenWindows.Instance.UpdateOpenWindowsList();
         }
 

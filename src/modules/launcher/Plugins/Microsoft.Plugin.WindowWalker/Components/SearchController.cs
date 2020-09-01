@@ -35,12 +35,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Delegate handler for open windows updates
         /// </summary>
-        public delegate void SearchResultUpdateHandler(object sender, SearchResultUpdateEventArgs e);
+        public delegate void SearchResultUpdateEventHandler(object sender, SearchResultUpdateEventArgs e);
 
         /// <summary>
         /// Event raised when there is an update to the list of open windows
         /// </summary>
-        public event SearchResultUpdateHandler OnSearchResultUpdate;
+        public event SearchResultUpdateEventHandler OnSearchResultUpdateEventHandler;
 
         /// <summary>
         /// Gets or sets the current search text
@@ -129,7 +129,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 searchMatches = await FuzzySearchOpenWindowsAsync(snapshotOfOpenWindows).ConfigureAwait(false);
             }
 
-            OnSearchResultUpdate?.Invoke(this, new SearchResultUpdateEventArgs());
+            OnSearchResultUpdateEventHandler?.Invoke(this, new SearchResultUpdateEventArgs());
         }
 
         /// <summary>

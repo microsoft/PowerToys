@@ -16,12 +16,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Delegate handler for open windows updates
         /// </summary>
-        public delegate void OpenWindowsUpdateHandler(object sender, SearchController.SearchResultUpdateEventArgs e);
+        public delegate void OpenWindowsUpdateEventHandler(object sender, SearchController.SearchResultUpdateEventArgs e);
 
         /// <summary>
         /// Event raised when there is an update to the list of open windows
         /// </summary>
-        public event OpenWindowsUpdateHandler OnOpenWindowsUpdateEventHandler;
+        public event OpenWindowsUpdateEventHandler OnOpenWindowsUpdateEventHandler;
 
         /// <summary>
         /// List of all the open windows
