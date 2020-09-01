@@ -119,7 +119,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             List<Window> snapshotOfOpenWindows = OpenWindows.Instance.Windows;
 
-            if (SearchText == string.Empty)
+            if (string.IsNullOrWhiteSpace(SearchText))
             {
                 searchMatches = new List<SearchResult>();
             }
