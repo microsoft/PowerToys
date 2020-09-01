@@ -5,6 +5,7 @@
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.Plugin.WindowWalker.Components
@@ -35,8 +36,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 throw new ArgumentNullException(nameof(text));
             }
 
-            searchText = searchText.ToLower();
-            text = text.ToLower();
+            searchText = searchText.ToLower(CultureInfo.CurrentCulture);
+            text = text.ToLower(CultureInfo.CurrentCulture);
 
             // Create a grid to march matches like
             // eg.
