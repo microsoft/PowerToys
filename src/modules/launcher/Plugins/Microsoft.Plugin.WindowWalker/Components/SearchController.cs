@@ -97,7 +97,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public async Task UpdateSearchText(string searchText)
         {
             SearchText = searchText;
-            await SyncOpenWindowsWithModelAsync();
+            await SyncOpenWindowsWithModelAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="e">event arg</param>
         public async void OpenWindowsUpdateHandler(object sender, SearchResultUpdateEventArgs e)
         {
-            await SyncOpenWindowsWithModelAsync();
+            await SyncOpenWindowsWithModelAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
             else
             {
-                searchMatches = await FuzzySearchOpenWindowsAsync(snapshotOfOpenWindows);
+                searchMatches = await FuzzySearchOpenWindowsAsync(snapshotOfOpenWindows).ConfigureAwait(false);
             }
 
             OnSearchResultUpdate?.Invoke(this, new SearchResultUpdateEventArgs());
