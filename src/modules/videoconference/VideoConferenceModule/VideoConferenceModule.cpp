@@ -18,19 +18,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 VideoConferenceModule* instance = nullptr;
 
-Toolbar VideoConferenceModule::toolbar;
-
-CVolumeNotification* VideoConferenceModule::volumeNotification;
-
-PowerToysSettings::HotkeyObject VideoConferenceModule::cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, 78);
-PowerToysSettings::HotkeyObject VideoConferenceModule::microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 65);
-PowerToysSettings::HotkeyObject VideoConferenceModule::cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 79);
-
-std::wstring VideoConferenceModule::toolbarPositionString;
-std::wstring VideoConferenceModule::toolbarMonitorString;
-
-std::wstring VideoConferenceModule::selectedCamera;
-std::wstring VideoConferenceModule::imageOverlayPath;
+VideoConferenceModule::Settings VideoConferenceModule::settings;
 
 HHOOK VideoConferenceModule::hook_handle;
 
@@ -64,8 +52,8 @@ void VideoConferenceModule::reverseMicrophoneMute()
             IAudioEndpointVolume* microphoneEndpoint = NULL;
             if (defaultDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_INPROC_SERVER, NULL, (LPVOID*)&microphoneEndpoint) == S_OK)
             {
-                volumeNotification = new CVolumeNotification();
-                microphoneEndpoint->RegisterControlChangeNotify(volumeNotification);
+                settings.volumeNotification = new CVolumeNotification();
+                microphoneEndpoint->RegisterControlChangeNotify(settings.volumeNotification);
 
                 BOOL currentMute;
                 if (microphoneEndpoint->GetMute(&currentMute) == S_OK)
@@ -108,14 +96,14 @@ bool VideoConferenceModule::getMicrophoneMuteState()
             IAudioEndpointVolume* endpointVolume = NULL;
             if (defaultDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_INPROC_SERVER, NULL, (LPVOID*)&endpointVolume) == S_OK)
             {
-                volumeNotification = new CVolumeNotification();
-                hr = endpointVolume->RegisterControlChangeNotify(volumeNotification);
+                settings.volumeNotification = new CVolumeNotification();
+                hr = endpointVolume->RegisterControlChangeNotify(settings.volumeNotification);
                 defaultDevice->Release();
                 defaultDevice = NULL;
 
                 endpointVolume->GetMute(&currentMute);
 
-                volumeNotification->Release();
+                settings.volumeNotification->Release();
             }
         }
     }
@@ -179,23 +167,23 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
         case WM_KEYDOWN:
             KBDLLHOOKSTRUCT* kbd = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
 
-            if (isHotkeyPressed(kbd->vkCode, cameraAndMicrophoneMuteHotkey))
+            if (isHotkeyPressed(kbd->vkCode, settings.cameraAndMicrophoneMuteHotkey))
             {
                 reverseMicrophoneMute();
-                if (toolbar.getCameraMute() != toolbar.getMicrophoneMute())
+                if (settings.toolbar.getCameraMute() != settings.toolbar.getMicrophoneMute())
                 {
                     reverseVirtualCameraMuteState();
-                    toolbar.setCameraMute(getVirtualCameraMuteState());
+                    settings.toolbar.setCameraMute(getVirtualCameraMuteState());
                 }
             }
-            else if (isHotkeyPressed(kbd->vkCode, microphoneMuteHotkey))
+            else if (isHotkeyPressed(kbd->vkCode, settings.microphoneMuteHotkey))
             {
                 reverseMicrophoneMute();
             }
-            else if (isHotkeyPressed(kbd->vkCode, cameraMuteHotkey))
+            else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
             {
                 reverseVirtualCameraMuteState();
-                toolbar.setCameraMute(getVirtualCameraMuteState());
+                settings.toolbar.setCameraMute(getVirtualCameraMuteState());
             }
         }
     }
@@ -217,23 +205,23 @@ VideoConferenceModule::VideoConferenceModule()
     sendSourceCameraNameUpdate();
     sendOverlayImageUpdate();
 
-    toolbar.show(toolbarPositionString, toolbarMonitorString);
+    settings.toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
 }
 
 inline VideoConferenceModule::~VideoConferenceModule()
 {
-    if (toolbar.getCameraMute())
+    if (settings.toolbar.getCameraMute())
     {
         reverseVirtualCameraMuteState();
-        toolbar.setCameraMute(getVirtualCameraMuteState());
+        settings.toolbar.setCameraMute(getVirtualCameraMuteState());
     }
 
-    if (toolbar.getMicrophoneMute())
+    if (settings.toolbar.getMicrophoneMute())
     {
         reverseMicrophoneMute();
     }
 
-    toolbar.hide();
+    settings.toolbar.hide();
 }
 
 const wchar_t* VideoConferenceModule::get_name()
@@ -258,32 +246,32 @@ void VideoConferenceModule::set_config(const wchar_t* config)
         {
             if (const auto val = values.get_json(L"mute_camera_and_microphone_hotkey"))
             {
-                cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+                settings.cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
             }
             if (const auto val = values.get_json(L"mute_microphone_hotkey"))
             {
-                microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+                settings.microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
             }
             if (const auto val = values.get_json(L"mute_camera_hotkey"))
             {
-                cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+                settings.cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
             }
             if (const auto val = values.get_string_value(L"toolbar_position"))
             {
-                toolbarPositionString = val.value();
+                settings.toolbarPositionString = val.value();
             }
             if (const auto val = values.get_string_value(L"toolbar_monitor"))
             {
-                toolbarMonitorString = val.value();
+                settings.toolbarMonitorString = val.value();
             }
-            if (const auto val = values.get_string_value(L"selected_camera"); val && val != selectedCamera)
+            if (const auto val = values.get_string_value(L"selected_camera"); val && val != settings.selectedCamera)
             {
-                selectedCamera = val.value();
+                settings.selectedCamera = val.value();
                 sendSourceCameraNameUpdate();
             }
-            if (const auto val = values.get_string_value(L"camera_overlay_image_path"); val && val != imageOverlayPath)
+            if (const auto val = values.get_string_value(L"camera_overlay_image_path"); val && val != settings.imageOverlayPath)
             {
-                imageOverlayPath = val.value();
+                settings.imageOverlayPath = val.value();
                 sendOverlayImageUpdate();
             }
             if (const auto val = values.get_string_value(L"theme"))
@@ -295,7 +283,7 @@ void VideoConferenceModule::set_config(const wchar_t* config)
                 Toolbar::setHideToolbarWhenUnmuted(val.value());
             }
 
-            toolbar.show(toolbarPositionString, toolbarMonitorString);
+            settings.toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
         }
     }
     catch (...)
@@ -308,41 +296,41 @@ void VideoConferenceModule::init_settings()
 {
     try
     {
-        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(L"Video Conference");
+        PowerToysSettings::PowerToyValues powerToysSettings = PowerToysSettings::PowerToyValues::load_from_settings_file(L"Video Conference");
 
-        if (const auto val = settings.get_json(L"mute_camera_and_microphone_hotkey"))
+        if (const auto val = powerToysSettings.get_json(L"mute_camera_and_microphone_hotkey"))
         {
-            cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            settings.cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
         }
-        if (const auto val = settings.get_json(L"mute_microphone_hotkey"))
+        if (const auto val = powerToysSettings.get_json(L"mute_microphone_hotkey"))
         {
-            microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            settings.microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
         }
-        if (const auto val = settings.get_json(L"mute_camera_hotkey"))
+        if (const auto val = powerToysSettings.get_json(L"mute_camera_hotkey"))
         {
-            cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            settings.cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
         }
-        if (const auto val = settings.get_string_value(L"toolbar_position"))
+        if (const auto val = powerToysSettings.get_string_value(L"toolbar_position"))
         {
-            toolbarPositionString = val.value();
+            settings.toolbarPositionString = val.value();
         }
-        if (const auto val = settings.get_string_value(L"toolbar_monitor"))
+        if (const auto val = powerToysSettings.get_string_value(L"toolbar_monitor"))
         {
-            toolbarMonitorString = val.value();
+            settings.toolbarMonitorString = val.value();
         }
-        if (const auto val = settings.get_string_value(L"selected_camera"))
+        if (const auto val = powerToysSettings.get_string_value(L"selected_camera"))
         {
-            selectedCamera = val.value();
+            settings.selectedCamera = val.value();
         }
-        if (const auto val = settings.get_string_value(L"camera_overlay_image_path"))
+        if (const auto val = powerToysSettings.get_string_value(L"camera_overlay_image_path"))
         {
-            imageOverlayPath = val.value();
+            settings.imageOverlayPath = val.value();
         }
-        if (const auto val = settings.get_string_value(L"theme"))
+        if (const auto val = powerToysSettings.get_string_value(L"theme"))
         {
             Toolbar::setTheme(val.value());
         }
-        if (const auto val = settings.get_bool_value(L"hide_toolbar_when_unmuted"))
+        if (const auto val = powerToysSettings.get_bool_value(L"hide_toolbar_when_unmuted"))
         {
             Toolbar::setHideToolbarWhenUnmuted(val.value());
         }
@@ -357,10 +345,10 @@ void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
-        toolbar.setMicrophoneMute(getMicrophoneMuteState());
-        toolbar.setCameraMute(getVirtualCameraMuteState());
+        settings.toolbar.setMicrophoneMute(getMicrophoneMuteState());
+        settings.toolbar.setCameraMute(getVirtualCameraMuteState());
 
-        toolbar.show(toolbarPositionString, toolbarMonitorString);
+        settings.toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
 
         _enabled = true;
 
@@ -387,18 +375,18 @@ void VideoConferenceModule::disable()
             }
         }
 
-        if (toolbar.getCameraMute())
+        if (settings.toolbar.getCameraMute())
         {
             reverseVirtualCameraMuteState();
-            toolbar.setCameraMute(getVirtualCameraMuteState());
+            settings.toolbar.setCameraMute(getVirtualCameraMuteState());
         }
 
-        if (toolbar.getMicrophoneMute())
+        if (settings.toolbar.getMicrophoneMute())
         {
             reverseMicrophoneMute();
         }
 
-        toolbar.hide();
+        settings.toolbar.hide();
 
         _enabled = false;
     }
@@ -417,14 +405,14 @@ void VideoConferenceModule::destroy()
 
 void VideoConferenceModule::sendSourceCameraNameUpdate()
 {
-    if (!_settingsUpdateChannel.has_value() || selectedCamera.empty())
+    if (!_settingsUpdateChannel.has_value() || settings.selectedCamera.empty())
     {
         return;
     }
     _settingsUpdateChannel->access([](auto memory) {
         auto updatesChannel = reinterpret_cast<CameraSettingsUpdateChannel*>(memory._data);
         updatesChannel->sourceCameraName.emplace();
-        std::copy(begin(selectedCamera), end(selectedCamera), begin(*updatesChannel->sourceCameraName));
+        std::copy(begin(settings.selectedCamera), end(settings.selectedCamera), begin(*updatesChannel->sourceCameraName));
     });
 }
 
@@ -445,7 +433,7 @@ void VideoConferenceModule::sendOverlayImageUpdate()
     blankImagePath += L"\\modules\\VideoConference\\black.bmp";
 
     _imageOverlayChannel = SerializedSharedMemory::create_readonly(CameraOverlayImageChannel::endpoint(),
-                                                                   imageOverlayPath != L"" ? imageOverlayPath : blankImagePath);
+                                                                   settings.imageOverlayPath != L"" ? settings.imageOverlayPath : blankImagePath);
 
     const size_t imageSize = _imageOverlayChannel->size();
     _settingsUpdateChannel->access([imageSize](auto memory) {

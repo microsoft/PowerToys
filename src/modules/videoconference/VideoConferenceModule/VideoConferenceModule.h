@@ -53,17 +53,21 @@ private:
     std::optional<SerializedSharedMemory> _imageOverlayChannel;
     std::optional<SerializedSharedMemory> _settingsUpdateChannel;
 
-    static Toolbar toolbar;
+    struct Settings
+    {
+        Toolbar toolbar;
 
-    static CVolumeNotification* volumeNotification;
+        CVolumeNotification* volumeNotification = nullptr;
 
-    static PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey;
-    static PowerToysSettings::HotkeyObject microphoneMuteHotkey;
-    static PowerToysSettings::HotkeyObject cameraMuteHotkey;
+        PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, 78);
+        PowerToysSettings::HotkeyObject microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 65);
+        PowerToysSettings::HotkeyObject cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 79);
 
-    static std::wstring toolbarPositionString;
-    static std::wstring toolbarMonitorString;
+        std::wstring toolbarPositionString;
+        std::wstring toolbarMonitorString;
 
-    static std::wstring selectedCamera;
-    static std::wstring imageOverlayPath;
+        std::wstring selectedCamera;
+        std::wstring imageOverlayPath;
+    };
+    static Settings settings;
 };
