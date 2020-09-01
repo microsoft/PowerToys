@@ -24,6 +24,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="text">The text to search inside of</param>
         /// <param name="searchText">the text to search for</param>
         /// <returns>returns the index location of each of the letters of the matches</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "matches does not waste space with the current implementation, however this could probably be optimized to store the indices of matches instead of boolean values.  Currently there are no unit tests for this, but we could refactor if memory/perf becomes an issue. ")]
         public static List<int> FindBestFuzzyMatch(string text, string searchText)
         {
             if (searchText == null)
@@ -83,6 +84,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// a two dimensional array with the first dimension the text and the second
         /// one the search string and each cell marked as an intersection between the two</param>
         /// <returns>a list of the possible combinations that match the search text</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "matches does not waste space with the current implementation, however this could probably be optimized to store the indices of matches instead of boolean values.  Currently there are no unit tests for this, but we could refactor if memory/perf becomes an issue. ")]
         public static List<List<int>> GetAllMatchIndexes(bool[,] matches)
         {
             List<List<int>> results = new List<List<int>>();
