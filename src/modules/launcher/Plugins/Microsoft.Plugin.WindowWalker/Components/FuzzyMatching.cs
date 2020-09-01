@@ -128,6 +128,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>an integer representing the score</returns>
         public static int CalculateScoreForMatches(List<int> matches)
         {
+            if (matches == null)
+            {
+                throw new ArgumentNullException(nameof(matches));
+            }
+
             var score = 0;
 
             for (int currentIndex = 1; currentIndex < matches.Count; currentIndex++)
