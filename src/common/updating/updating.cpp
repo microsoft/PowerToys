@@ -25,6 +25,7 @@ namespace
     const wchar_t POWERTOYS_EXE_COMPONENT[] = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
     const wchar_t DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH[] = L"delete_previous_powertoys_confirm";
     const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
+    const wchar_t ALL_RELEASES_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases";
     const wchar_t MSIX_PACKAGE_NAME[] = L"Microsoft.PowerToys";
     const wchar_t MSIX_PACKAGE_PUBLISHER[] = L"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
 
@@ -101,55 +102,107 @@ namespace updating
         return false;
     }
 
-    std::future<std::optional<new_version_download_info>> get_new_github_version_info_async()
+    using winrt::Windows::Foundation::Uri;
+
+    std::optional<std::pair<Uri, std::wstring>> extract_installer_asset_download_info(const json::JsonObject& release_object)
     {
         try
         {
-            http::HttpClient client;
-            const auto body = co_await client.request(winrt::Windows::Foundation::Uri{ LATEST_RELEASE_ENDPOINT });
-            auto json_body = json::JsonValue::Parse(body).GetObjectW();
-            auto new_version = json_body.GetNamedString(L"tag_name");
-            winrt::Windows::Foundation::Uri release_page_uri{ json_body.GetNamedString(L"html_url") };
-
-            VersionHelper github_version(winrt::to_string(new_version));
-            VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
-
-            if (github_version > current_version)
+            const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
+            constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
+            // Desc-sorted by its priority
+            const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
+            for (const auto asset_extension : asset_extensions)
             {
-                const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
-                constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
-                // Desc-sorted by its priority
-                const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
-                for (const auto asset_extension : asset_extensions)
+                for (auto asset_elem : release_object.GetNamedArray(L"assets"))
                 {
-                    for (auto asset_elem : json_body.GetNamedArray(L"assets"))
-                    {
-                        auto asset{ asset_elem.GetObjectW() };
-                        std::wstring filename_lower = asset.GetNamedString(L"name", {}).c_str();
-                        std::transform(begin(filename_lower), end(filename_lower), begin(filename_lower), ::towlower);
+                    auto asset{ asset_elem.GetObjectW() };
+                    std::wstring filename_lower = asset.GetNamedString(L"name", {}).c_str();
+                    std::transform(begin(filename_lower), end(filename_lower), begin(filename_lower), ::towlower);
 
-                        const bool extension_matched = filename_lower.ends_with(asset_extension);
-                        const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
-                        const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
-                        if (extension_matched && architecture_matched && filename_matched)
-                        {
-                            winrt::Windows::Foundation::Uri msi_download_url{ asset.GetNamedString(L"browser_download_url") };
-                            co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str(), std::move(msi_download_url), std::move(filename_lower) };
-                        }
+                    const bool extension_matched = filename_lower.ends_with(asset_extension);
+                    const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
+                    const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
+                    const bool asset_matched = extension_matched && architecture_matched && filename_matched;
+                    if (extension_matched && architecture_matched && filename_matched)
+                    {
+                        return std::make_pair(Uri{ asset.GetNamedString(L"browser_download_url") }, std::move(filename_lower));
                     }
                 }
-            }
-            else
-            {
-                co_return std::nullopt;
             }
         }
         catch (...)
         {
-            co_return std::nullopt;
         }
+        return std::nullopt;
     }
 
+    std::optional<VersionHelper> extract_version_from_relase_object(const json::JsonObject& release_object)
+    {
+        try
+        {
+            return VersionHelper{ winrt::to_string(release_object.GetNamedString(L"tag_name")) };
+        }
+        catch (...)
+        {
+        }
+        return std::nullopt;
+    }
+
+    std::future<std::optional<new_version_download_info>> get_new_github_version_info_async(const bool prerelease)
+    {
+        try
+        {
+            http::HttpClient client;
+            json::JsonObject release_object;
+            const VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+            VersionHelper github_version = current_version;
+            if (prerelease)
+            {
+                const auto body = co_await client.request(Uri{ ALL_RELEASES_ENDPOINT });
+                for (const auto& json : json::JsonValue::Parse(body).GetArray())
+                {
+                    auto potential_release_object = json.GetObjectW();
+                    const bool is_prerelease = potential_release_object.GetNamedBoolean(L"prerelease", false);
+                    auto extracted_version = extract_version_from_relase_object(potential_release_object);
+                    if (!is_prerelease || !extracted_version || *extracted_version <= github_version)
+                    {
+                        continue;
+                    }
+                    github_version = std::move(*extracted_version);
+                    release_object = std::move(potential_release_object);
+                }
+            }
+            else
+            {
+                const auto body = co_await client.request(Uri{ LATEST_RELEASE_ENDPOINT });
+                release_object = json::JsonValue::Parse(body).GetObjectW();
+                auto extracted_version = extract_version_from_relase_object(release_object);
+                if (!extracted_version)
+                {
+                    co_return std::nullopt;
+                }
+                github_version = std::move(*extracted_version);
+            }
+
+            if (github_version > current_version)
+            {
+                Uri release_page_url{ release_object.GetNamedString(L"html_url") };
+                auto installer_download_url = extract_installer_asset_download_info(release_object);
+                if (installer_download_url.has_value())
+                {
+                    co_return new_version_download_info{ std::move(release_page_url),
+                                                         std::move(github_version),
+                                                         std::move(installer_download_url->first),
+                                                         std::move(installer_download_url->second) };
+                }
+            }
+        }
+        catch (...)
+        {
+        }
+        co_return std::nullopt;
+    }
     std::future<bool> uninstall_previous_msix_version_async()
     {
         winrt::Windows::Management::Deployment::PackageManager package_manager;
