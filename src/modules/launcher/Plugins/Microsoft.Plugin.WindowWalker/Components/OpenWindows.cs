@@ -21,11 +21,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Event raised when there is an update to the list of open windows
         /// </summary>
-        public event OpenWindowsUpdateHandler OnOpenWindowsUpdate
-        {
-            add { }
-            remove { }
-        }
+        public event OpenWindowsUpdateHandler OnOpenWindowsUpdate;
 
         /// <summary>
         /// List of all the open windows
