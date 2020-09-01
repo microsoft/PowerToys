@@ -569,6 +569,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Same as the RECT struct above
         /// </summary>
+        [Serializable]
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
         {
