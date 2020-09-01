@@ -156,9 +156,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
         }
 
+
         /// <summary>
         /// Gets represents the Window Icon for the specified window
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Supressing to get fxcop enabled. Unsure of what exceptions were originally being thrown and don't want to change program behavior")]
         public ImageSource WindowIcon
         {
             get
