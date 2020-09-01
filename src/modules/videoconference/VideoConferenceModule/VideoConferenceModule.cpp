@@ -18,7 +18,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 VideoConferenceModule* instance = nullptr;
 
-VideoConferenceModule::Settings VideoConferenceModule::settings;
+VideoConferenceSettings VideoConferenceModule::settings;
 
 HHOOK VideoConferenceModule::hook_handle;
 

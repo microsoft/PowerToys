@@ -14,6 +14,23 @@
 
 extern class VideoConferenceModule* instance;
 
+struct VideoConferenceSettings
+{
+    Toolbar toolbar;
+
+    CVolumeNotification* volumeNotification = nullptr;
+
+    PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, 78);
+    PowerToysSettings::HotkeyObject microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 65);
+    PowerToysSettings::HotkeyObject cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 79);
+
+    std::wstring toolbarPositionString;
+    std::wstring toolbarMonitorString;
+
+    std::wstring selectedCamera;
+    std::wstring imageOverlayPath;
+};
+
 class VideoConferenceModule : public PowertoyModuleIface
 {
 public:
@@ -53,21 +70,5 @@ private:
     std::optional<SerializedSharedMemory> _imageOverlayChannel;
     std::optional<SerializedSharedMemory> _settingsUpdateChannel;
 
-    struct Settings
-    {
-        Toolbar toolbar;
-
-        CVolumeNotification* volumeNotification = nullptr;
-
-        PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, 78);
-        PowerToysSettings::HotkeyObject microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 65);
-        PowerToysSettings::HotkeyObject cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 79);
-
-        std::wstring toolbarPositionString;
-        std::wstring toolbarMonitorString;
-
-        std::wstring selectedCamera;
-        std::wstring imageOverlayPath;
-    };
-    static Settings settings;
+    static VideoConferenceSettings settings;
 };

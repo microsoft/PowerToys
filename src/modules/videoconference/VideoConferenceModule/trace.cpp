@@ -18,11 +18,16 @@ void Trace::UnregisterProvider() noexcept
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::SettingsChanged() noexcept
+void Trace::SettingsChanged(const struct VideoConferenceSettings& settings) noexcept
 {
+    bool CustomOverlayImage = (settings.imageOverlayPath.length() > 0);
+
     TraceLoggingWrite(
         g_hProvider,
         "VideoConference_SettingsChanged",
+        TraceLoggingWideString(settings.toolbarPositionString.c_str(), "ToolbarPosition"),
+        TraceLoggingWideString(settings.toolbarMonitorString.c_str(), "ToolbarMonitorSelection"),
+        TraceLoggingBool(CustomOverlayImage, "CustomImageOverlayUsed"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
