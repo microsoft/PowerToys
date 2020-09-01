@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -111,7 +112,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                         }
                     }
 
-                    if (_handlesToProcessCache[hwnd].ToLower() == "applicationframehost.exe")
+                    if (_handlesToProcessCache[hwnd].ToUpperInvariant() == "APPLICATIONFRAMEHOST.EXE")
                     {
                         new Task(() =>
                         {
@@ -155,7 +156,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 return windowClassName.ToString();
             }
         }
-
 
         /// <summary>
         /// Gets represents the Window Icon for the specified window
@@ -333,7 +333,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             // 1) There is a weird flashing behavior when trying
             //    to use ShowWindow for switching tabs in IE
             // 2) SetForegroundWindow fails on minimized windows
-            if (ProcessName.ToLower().Equals("iexplore.exe") || !Minimized)
+            if (ProcessName.ToUpperInvariant().Equals("IEXPLORE.EXE", StringComparison.Ordinal) || !Minimized)
             {
                 InteropAndHelpers.SetForegroundWindow(Hwnd);
             }
@@ -351,7 +351,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>The title of the window</returns>
         public override string ToString()
         {
-            return Title + " (" + ProcessName.ToUpper() + ")";
+            return Title + " (" + ProcessName.ToUpper(CultureInfo.CurrentCulture) + ")";
         }
 
         /// <summary>

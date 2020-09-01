@@ -5,6 +5,7 @@
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -53,7 +54,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             set
             {
-                searchText = value.ToLower().Trim();
+                searchText = value.ToLower(CultureInfo.CurrentCulture).Trim();
             }
         }
 
