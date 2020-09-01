@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private SearchController()
         {
             searchText = string.Empty;
-            OpenWindows.Instance.OnOpenWindowsUpdate += OpenWindowsUpdateHandler;
+            OpenWindows.Instance.OnOpenWindowsUpdateEventHandler += OpenWindowsUpdateHandler;
         }
 
         /// <summary>
