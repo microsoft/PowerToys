@@ -250,7 +250,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD (TestHexToRGB_invalid)
         {
             const auto expected = RGB(255, 255, 255);
-            const auto actual = HexToRGB(L"#FF");
+            const auto actual = HexToRGB(L"zzz");
             Assert::AreEqual(expected, actual);
         }
     };
