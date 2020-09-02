@@ -13,14 +13,14 @@ inline constexpr std::basic_string_view<CharT> default_trim_arg()
 template <typename CharT>
 inline std::basic_string_view<CharT> left_trim(std::basic_string_view<CharT> s, const std::basic_string_view<CharT> chars_to_trim = default_trim_arg<CharT>())
 {
-    s.remove_prefix(std::min(s.find_first_not_of(chars_to_trim), size(s)));
+    s.remove_prefix(std::min<size_t>(s.find_first_not_of(chars_to_trim), size(s)));
     return s;
 }
 
 template<typename CharT>
 inline std::basic_string_view<CharT> right_trim(std::basic_string_view<CharT> s, const std::basic_string_view<CharT> chars_to_trim = default_trim_arg<CharT>())
 {
-    s.remove_suffix(std::min(size(s) - s.find_last_not_of(chars_to_trim) - 1, size(s)));
+    s.remove_suffix(std::min<size_t>(size(s) - s.find_last_not_of(chars_to_trim) - 1, size(s)));
     return s;
 }
 
