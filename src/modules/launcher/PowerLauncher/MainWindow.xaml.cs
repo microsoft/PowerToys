@@ -15,6 +15,7 @@ using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using Log = Wox.Infrastructure.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
 
 namespace PowerLauncher
@@ -302,7 +303,20 @@ namespace PowerLauncher
             _viewModel.Results.SelectedItem = (ResultViewModel)listview.SelectedItem;
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
-                listview.ScrollIntoView(e.AddedItems[0]);
+                try
+                {
+                    listview.ScrollIntoView(e.AddedItems[0]);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    // Due to virtualization being enabled for the listview, the layout system updates elements in a deferred manner using an algorithm that balances performance and concurrency.
+                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for it's parent control.
+                    // To mitigate this we use the UpdateLayout function, which forces layout update to ensure that the parent element contains the latest properties.
+                    // However, it has a performance impact and is therefore not called each time.
+                    Log.Exception("MainWindow", "The parent element layout is not updated yet", ex, "SuggestionsList_SelectionChanged");
+                    listview.UpdateLayout();
+                    listview.ScrollIntoView(e.AddedItems[0]);
+                }
             }
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
