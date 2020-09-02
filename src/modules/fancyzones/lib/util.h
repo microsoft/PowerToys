@@ -96,6 +96,32 @@ namespace FancyZonesUtils
             SRCCOPY);
     }
 
+    inline COLORREF HexToRGB(const std::wstring& hex)
+    {
+        std::wstring color = hex;
+        if (hex.size() == 7)
+        {
+            color = hex.substr(1);
+        }
+        else if (hex.size() == 9)
+        {
+            color = hex.substr(3);
+        }
+
+        try
+        {
+            const auto tmp = std::stol(color, nullptr, 16);
+            const auto nR = (tmp & 0xFF0000) >> 16;
+            const auto nG = (tmp & 0xFF00) >> 8;
+            const auto nB = (tmp & 0xFF);
+            return RGB(nR, nG, nB);
+        }
+        catch (const std::exception&)
+        {
+            return RGB(255, 255, 255);
+        }
+    }
+    
     inline void ParseDeviceId(PCWSTR deviceId, PWSTR parsedId, size_t size)
     {
         // We're interested in the unique part between the first and last #'s
