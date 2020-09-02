@@ -218,6 +218,9 @@
   <data name="KeyboardManager_TargetAppIcon.AutomationProperties.Name" xml:space="preserve">
     <value>For Target Application</value>
   </data>
+  <data name="KeyboardManager_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Keyboard Manager</value>
+  </data>
   <data name="ColorPicker_Description.Text" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
   </data>
