@@ -15,7 +15,8 @@
     <Page.Resources>
         <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
         <DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
-            <StackPanel Name="KeyboardManager_RemappedKeysListItem" 
+            <StackPanel 
+                Name="KeyboardManager_RemappedKeysListItem" 
                 x:Uid="KeyboardManager_RemappedKeysListItem"
                 Orientation="Horizontal"
                 Height="56">
@@ -83,7 +84,9 @@
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:Name="ShortcutKeysListViewTemplate" x:DataType="Lib:AppSpecificKeysDataModel">
-            <StackPanel
+            <StackPanel 
+                Name="KeyboardManager_RemappedShortcutsListItem" 
+                x:Uid="KeyboardManager_RemappedShortcutsListItem"
                 Orientation="Horizontal"
                 Height="56">
                 <ItemsControl
