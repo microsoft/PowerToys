@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:PowerLauncher"
     mc:Ignorable="d" 
     d:DesignHeight="300"
     d:DesignWidth="720">
@@ -86,7 +87,7 @@
             for adding on placeholder, look at the style with 90 votes
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
         -->
-        <TextBox
+        <local:CustomSearchBox
             AutomationProperties.Name="{DynamicResource Query}"
             x:Name="QueryTextBox"
             x:FieldModifier="public"

@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Timers;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.PowerLauncher.Telemetry;
@@ -89,6 +90,7 @@ namespace PowerLauncher
             InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
 
             SearchBox.QueryTextBox.Focus();
+            SearchBox.QueryTextBox.ControlledElements.Add(ListBox.SuggestionsList);
 
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
@@ -287,7 +289,7 @@ namespace PowerLauncher
 
         private void UpdateTextBoxToSelectedItem()
         {
-            var itemText = _viewModel?.Results?.SelectedItem?.ToString() ?? null;
+            var itemText = _viewModel?.Results?.SelectedItem?.SearchBoxDisplayText() ?? null;
             if (!string.IsNullOrEmpty(itemText))
             {
                 _viewModel.ChangeQueryText(itemText);
@@ -309,7 +311,7 @@ namespace PowerLauncher
             {
                 SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
                     _viewModel.Results.SelectedIndex,
-                    _viewModel.Results.SelectedItem?.ToString(),
+                    _viewModel.Results.SelectedItem?.SearchBoxDisplayText(),
                     _viewModel.QueryText);
             }
         }
