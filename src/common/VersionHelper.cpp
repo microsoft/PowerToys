@@ -9,7 +9,7 @@
 VersionHelper::VersionHelper(std::string str)
 {
     // Remove whitespaces chars and a leading 'v'
-    str = left_trim(trim(str), "v");
+    str = left_trim<char>(trim<char>(str), "v");
     // Replace '.' with spaces
     replace_chars(str, ".", ' ');
 
