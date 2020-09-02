@@ -89,17 +89,23 @@
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
 <?if $(var.HasWDK)="true" ?>
-        <Custom Action="SetCertifyVirtualCameraDriverParam" After="RegisterPowerToysSchTask"/>
+        <Custom Action="SetCertifyVirtualCameraDriverParam" After="RegisterPowerToysSchTask" >
+          WINDOWSBUILDNUMBER >= 18362
+        </Custom>
         <Custom Action="CertifyVirtualCameraDriver" After="SetCertifyVirtualCameraDriverParam" >
-        	NOT Installed
+        	NOT Installed and WINDOWSBUILDNUMBER >= 18362
         </Custom>
-        <Custom Action="SetInstallVirtualCameraDriverParam" After="CertifyVirtualCameraDriver" />
+        <Custom Action="SetInstallVirtualCameraDriverParam" After="CertifyVirtualCameraDriver" >
+          WINDOWSBUILDNUMBER >= 18362
+        </Custom>
         <Custom Action="InstallVirtualCameraDriver" After="SetInstallVirtualCameraDriverParam" >
-        	NOT Installed
+        	NOT Installed and WINDOWSBUILDNUMBER >= 18362
         </Custom>
-        <Custom Action="SetUninstallVirtualCameraDriverParam" Before="UninstallVirtualCameraDriver" />
+        <Custom Action="SetUninstallVirtualCameraDriverParam" Before="UninstallVirtualCameraDriver" >
+          WINDOWSBUILDNUMBER >= 18362
+        </Custom>        
         <Custom Action="UninstallVirtualCameraDriver" Before="RemoveFiles">
-        	Installed
+        	Installed and WINDOWSBUILDNUMBER >= 18362
         </Custom>
 <?endif?>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
@@ -674,6 +680,7 @@
 <?if $(var.HasWDK)="true" ?>
     <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
+      <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceModule.dll" KeyPath="yes" />
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\black.bmp" />
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\videoconferencevirtualdriver.cat" />
@@ -685,6 +692,7 @@
     </DirectoryRef>
     <DirectoryRef Id="VideoConferenceIconsFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons">
      <Component Id="Module_VideoConferenceIcons" Guid="5996527a-40fc-432e-b34c-abc0b4bd3887" Win64="yes">
+      <Condition>WINDOWSBUILDNUMBER >= 18362</Condition>
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Dark.png" />
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-NotInUse Light.png" />
       <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\Icons\Off-Off Dark.png" />
@@ -881,10 +889,8 @@
       <ComponentRef Id="vcredist_dlls" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
-<?if $(var.HasWDK)="true" ?>
       <ComponentRef Id="Module_VideoConference" />
       <ComponentRef Id="Module_VideoConferenceIcons" />
-<?endif?>
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
