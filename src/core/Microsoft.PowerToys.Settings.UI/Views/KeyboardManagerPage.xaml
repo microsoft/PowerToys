@@ -14,6 +14,9 @@
 
     <Page.Resources>
         <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
+        <Style TargetType="ListViewItem" x:Name="KeysListViewContainerStyle">
+            <Setter Property="IsTabStop" Value="False"/>
+        </Style>
         <DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
             <StackPanel
                 Orientation="Horizontal"
@@ -252,6 +255,7 @@
                       IsSwipeEnabled="False"
                       Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
                       IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
+                      ItemContainerStyle="{StaticResource KeysListViewContainerStyle}"
                       />
 
             <!--<AppBarButton x:Uid="KeyboardManager_RemapKeyboardButton"
@@ -297,6 +301,7 @@
                       ScrollViewer.HorizontalScrollMode="Enabled"
                       ScrollViewer.HorizontalScrollBarVisibility="Visible"
                       ScrollViewer.IsHorizontalRailEnabled="True"
+                      ItemContainerStyle="{StaticResource KeysListViewContainerStyle}"
                       />
 
             <!--<AppBarButton x:Uid="KeyboardManager_RemapShortcutsButton"
