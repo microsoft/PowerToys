@@ -1,30 +1,32 @@
 #include "pch.h"
 #include "VersionHelper.h"
 
+#include "string_utils.h"
+
 #include <algorithm>
 #include <sstream>
 
 VersionHelper::VersionHelper(std::string str)
 {
-    std::replace(str.begin(), str.end(), '.', ' ');
-    std::replace(str.begin(), str.end(), 'v', ' ');
-    std::stringstream ss;
+    // Remove whitespaces chars and a leading 'v'
+    str = left_trim<char>(trim<char>(str), "v");
+    // Replace '.' with spaces
+    replace_chars(str, ".", ' ');
 
-    ss << str;
-
-    std::string temp;
-    ss >> temp;
-    std::stringstream(temp) >> major;
-    ss >> temp;
-    std::stringstream(temp) >> minor;
-    ss >> temp;
-    std::stringstream(temp) >> revision;
+    std::istringstream ss{ str };
+    ss >> major;
+    ss >> minor;
+    ss >> revision;
+    if (ss.fail() || !ss.eof())
+    {
+        throw std::logic_error("VersionHelper: couldn't parse the supplied version string");
+    }
 }
 
-VersionHelper::VersionHelper(int major, int minor, int revision) :
-    major(major),
-    minor(minor),
-    revision(revision)
+VersionHelper::VersionHelper(const size_t major, const size_t minor, const size_t revision) :
+    major{ major },
+    minor{ minor },
+    revision{ revision }
 {
 }
 
