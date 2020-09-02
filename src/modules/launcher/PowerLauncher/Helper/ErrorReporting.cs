@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Windows;
 using System.Windows.Threading;
 using NLog;
 using Wox.Infrastructure;
@@ -34,11 +36,10 @@ namespace PowerLauncher.Helper
 
         public static void ShowMessageBox(Exception e)
         {
-            if (e != null)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                var reportWindow = new ReportWindow(e);
-                reportWindow.ShowDialog();
-            }
+                MessageBox.Show("Powertoys Run settings have been reset due to an internal error");
+            });
         }
 
         public static void UnhandledExceptionHandle(object sender, UnhandledExceptionEventArgs e)
