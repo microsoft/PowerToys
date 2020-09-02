@@ -180,7 +180,7 @@ For a more information, head over to the [Video conference mute overview][vidCon
 **Color Picker:**
 - Fixed bug where it would launch via false positive keystrokes
 
-**Accessability:**
+**Accessibility:**
 - Settings, PT Run and KBM undergoing improvements
 
 **Localization:**
@@ -191,7 +191,7 @@ For a more information, head over to the [Video conference mute overview][vidCon
 - StyleCop enabled E2E
 - FxCop starting to be added in E2E
 
-### What is being planned for 0.22
+### What is being planned for 0.23
 
 For [0.22](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F8), we are proactively working on:
 
