@@ -200,6 +200,9 @@
   <data name="RemapKeysList.AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
   </data>
+  <data name="RemapShortcutsList.AutomationProperties.Name" xml:space="preserve">
+    <value>Current Shortcut Remappings</value>
+  </data>
   <data name="KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" xml:space="preserve">
     <value>Key Remapping</value>
   </data>

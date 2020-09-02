@@ -285,6 +285,7 @@
                     />
 
             <ListView x:Name="RemapShortcutsList"
+                      x:Uid="RemapShortcutsList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
                       ItemsSource="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay}"
                       ItemTemplate="{StaticResource ShortcutKeysListViewTemplate}"
