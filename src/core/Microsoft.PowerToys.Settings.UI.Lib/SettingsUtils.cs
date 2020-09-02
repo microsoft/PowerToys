@@ -13,6 +13,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         private const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";
 
+        public static void DeleteSettings(string powertoy, string fileName = DefaultFileName)
+        {
+            File.Delete(GetSettingsPath(powertoy, fileName));
+        }
+
         public static bool SettingsFolderExists(string powertoy)
         {
             return Directory.Exists(Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
@@ -44,11 +49,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public static bool SettingsExists(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             return File.Exists(GetSettingsPath(powertoy, fileName));
-        }
-
-        public static void DeleteSettings(string powertoy, string fileName = DefaultFileName)
-        {
-             File.Delete(GetSettingsPath(powertoy, fileName));
         }
 
         /// <summary>

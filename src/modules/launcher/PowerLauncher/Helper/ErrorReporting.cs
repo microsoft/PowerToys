@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
 using NLog;
@@ -38,7 +39,7 @@ namespace PowerLauncher.Helper
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                MessageBox.Show("Powertoys Run settings have been reset due to an internal error");
+                MessageBox.Show(string.Format(CultureInfo.InvariantCulture, "{0} \n {1}", "Powertoys Run settings have been reset due to an internal error", e.Message));
             });
         }
 
