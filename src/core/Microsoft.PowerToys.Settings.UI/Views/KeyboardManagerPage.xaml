@@ -47,7 +47,9 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Glyph="&#xE72A;"
+                <FontIcon Name="KeyboardManager_RemappingIcon"
+                          x:Uid="KeyboardManager_RemappingIcon"
+                          Glyph="&#xE72A;"
                           Grid.Column="1"
                           FontSize="14"
                           VerticalAlignment="Center" 
@@ -116,7 +118,9 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Glyph="&#xE72A;"
+                <FontIcon Name="KeyboardManager_ShortcutRemappingIcon"
+                          x:Uid="KeyboardManager_ShortcutRemappingIcon"
+                          Glyph="&#xE72A;"
                           Grid.Column="1"
                           FontSize="14"
                           VerticalAlignment="Center" 
@@ -150,7 +154,9 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Glyph="&#xE72A;"
+                <FontIcon Name="KeyboardManager_TargetAppIcon"
+                          x:Uid="KeyboardManager_TargetAppIcon"
+                          Glyph="&#xE72A;"
                           Grid.Column="3"
                           FontSize="14"
                           VerticalAlignment="Center" 
