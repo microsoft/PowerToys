@@ -12,6 +12,8 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.VisualBasic;
+using Newtonsoft.Json;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -106,6 +108,21 @@ namespace Microsoft.Plugin.Folder
             return results;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and instead inform the user of the error")]
+        private static bool OpenFileOrFolder(string program, string path)
+        {
+            try
+            {
+                Process.Start(program, path);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Could not start " + path);
+            }
+
+            return true;
+        }
+
         private static bool IsDriveOrSharedFolder(string search)
         {
             if (search == null)
@@ -143,8 +160,7 @@ namespace Microsoft.Plugin.Folder
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path },
                 Action = c =>
                 {
-                    Process.Start(_fileExplorerProgramName, path);
-                    return true;
+                    return OpenFileOrFolder(_fileExplorerProgramName, path);
                 },
             };
         }
@@ -297,7 +313,6 @@ namespace Microsoft.Plugin.Folder
             };
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and instead inform the user of the error")]
         private static Result CreateFileResult(string filePath, Query query)
         {
             var result = new Result
@@ -305,21 +320,12 @@ namespace Microsoft.Plugin.Folder
                 Title = Path.GetFileName(filePath),
                 SubTitle = "Folder: " + filePath,
                 IcoPath = filePath,
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath },
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
                 {
-                    try
-                    {
-                        Process.Start(_fileExplorerProgramName, filePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Could not start " + filePath);
-                    }
-
-                    return true;
+                    return OpenFileOrFolder(_fileExplorerProgramName, filePath);
                 },
-                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath },
             };
             return result;
         }
@@ -347,8 +353,7 @@ namespace Microsoft.Plugin.Folder
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = search },
                 Action = c =>
                 {
-                    Process.Start(_fileExplorerProgramName, sanitizedPath);
-                    return true;
+                    return OpenFileOrFolder(_fileExplorerProgramName, search);
                 },
             };
         }
