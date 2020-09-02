@@ -132,25 +132,6 @@ Our goals for 0.21 release cycle was to focus on stability, localization and qua
 
 One of the longer term goal items we have made progress on is the Out of Box experience / initial onboarding experience (OOBE) improvements.[@Niels9001](https://github.com/niels9001/) created a [wicked awesome proof of concept of what the OOBE experience could be](https://github.com/microsoft/PowerToys/issues/1285#issuecomment-679268558).  We are pretty stoked about this since it handles one an important item, critical shortcut default adjustments.
 
-#### New experiential PowerToys utility - Video conference muting:
-
-**Note:** This is only included in the [pre-release version of PowerToys installer][github-prerelease-link]. This PowerToy requires Windows 10 1903 (build 18362) or later.
-
-Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer and what application has focus.
-
-The utility will mute not just your audio but your video as well with a single keystroke.  You can do audio, video both.  We knew this would impact our roadmap and goals but felt extremely strong that this is the right decision. We're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
-
-We know we have some issues and we have a [master tracking issue - #6246](https://github.com/microsoft/PowerToys/issues/6246).  Due to these known issues, we're only putting this in the [pre-release version of PowerToys installer][github-prerelease-link].
-
-To use:
-
-- Set your camera to the PowerToys Video driver in the target application
-- <kbd>Win</kbd>+<kbd>N</kbd> to toggle both Audio and Video at the same time
-- <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd> to toggle video
-- <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> to toggle microphone
-
-For a more information, head over to the [Video conference mute overview][vidConfOverview]
-
 #### Highlights from August
 
 - We shipped [v0.21][github-release-link]!
@@ -190,6 +171,25 @@ For a more information, head over to the [Video conference mute overview][vidCon
 - Continued warning count reduction. This release ~80 removed
 - StyleCop enabled E2E
 - FxCop starting to be added in E2E
+
+#### New experiential PowerToys utility - Video conference muting:
+
+**Note:** This is only included in the [pre-release version of PowerToys installer][github-prerelease-link]. This PowerToy requires Windows 10 1903 (build 18362) or later.
+
+Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer and what application has focus.
+
+The utility will mute not just your audio but your video as well with a single keystroke.  You can do audio, video both.  We knew this would impact our roadmap and goals but felt extremely strong that this is the right decision. We're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
+
+We know we have some issues and we have a [master tracking issue - #6246](https://github.com/microsoft/PowerToys/issues/6246).
+
+To use:
+
+- Set your camera to the PowerToys Video driver in the target application
+- <kbd>Win</kbd>+<kbd>N</kbd> to toggle both Audio and Video at the same time
+- <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd> to toggle video
+- <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> to toggle microphone
+
+For a more information, head over to the [Video conference mute overview][vidConfOverview]
 
 ### What is being planned for 0.23
 
