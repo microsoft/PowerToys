@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
@@ -401,6 +402,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
+                value = ToRGBHex(value);
                 if (!value.Equals(_zoneHighlightColor))
                 {
                     _zoneHighlightColor = value;
@@ -419,6 +421,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
+                value = ToRGBHex(value);
                 if (!value.Equals(_zoneBorderColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneBorderColor = value;
@@ -437,6 +440,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
+                value = ToRGBHex(value);
                 if (!value.Equals(_zoneInActiveColor))
                 {
                     _zoneInActiveColor = value;
@@ -523,6 +527,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 SndModuleSettings<SndFancyZonesSettings> ipcMessage = new SndModuleSettings<SndFancyZonesSettings>(outsettings);
                 SendConfigMSG(ipcMessage.ToJsonString());
             }
+        }
+
+        private string ToRGBHex(string color)
+        {
+            int argb = int.Parse(color.Replace("#", string.Empty), System.Globalization.NumberStyles.HexNumber);
+            Color clr = Color.FromArgb(argb);
+            return "#" + clr.R.ToString("X2") + clr.G.ToString("X2") + clr.B.ToString("X2");
         }
     }
 }
