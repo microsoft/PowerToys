@@ -180,7 +180,7 @@ Back in the June timeframe, we started prototyping an idea. With COVID-19, we're
 
 The utility will mute not just your audio but your video as well with a single keystroke.  You can do audio, video both.  We knew this would impact our roadmap and goals but felt extremely strong that this is the right decision. We're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
 
-We know we have some issues and we have a [master tracking issue - #6246](https://github.com/microsoft/PowerToys/issues/6246).
+We know we have some issues and we have a [master tracking issue - #6246](https://github.com/microsoft/PowerToys/issues/6246). We know a certain laptops currently the video forwarding does not work and are proactively working on fixing this.
 
 To use:
 
