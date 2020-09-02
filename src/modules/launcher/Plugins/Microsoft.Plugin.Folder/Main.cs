@@ -297,7 +297,7 @@ namespace Microsoft.Plugin.Folder
             };
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alve and instead inform the user of the error")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and instead inform the user of the error")]
         private static Result CreateFileResult(string filePath, Query query)
         {
             var result = new Result
@@ -344,6 +344,7 @@ namespace Microsoft.Plugin.Folder
                 SubTitle = $"Folder: Use > to search within the directory. Use * to search for file extensions. Or use both >*.",
                 IcoPath = search,
                 Score = 500,
+                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = search },
                 Action = c =>
                 {
                     Process.Start(_fileExplorerProgramName, sanitizedPath);
