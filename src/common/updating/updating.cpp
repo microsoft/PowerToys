@@ -173,16 +173,13 @@ namespace updating
                     release_object = std::move(potential_release_object);
                 }
             }
-            else
+            const auto body = co_await client.request(Uri{ LATEST_RELEASE_ENDPOINT });
+            auto potential_release_object = json::JsonValue::Parse(body).GetObjectW();
+            auto extracted_version = extract_version_from_relase_object(potential_release_object);
+            if (extracted_version && *extracted_version > github_version)
             {
-                const auto body = co_await client.request(Uri{ LATEST_RELEASE_ENDPOINT });
-                release_object = json::JsonValue::Parse(body).GetObjectW();
-                auto extracted_version = extract_version_from_relase_object(release_object);
-                if (!extracted_version)
-                {
-                    co_return std::nullopt;
-                }
                 github_version = std::move(*extracted_version);
+                release_object = std::move(potential_release_object);
             }
 
             if (github_version > current_version)
