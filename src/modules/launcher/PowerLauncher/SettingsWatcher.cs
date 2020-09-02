@@ -39,7 +39,7 @@ namespace PowerLauncher
             OverloadSettings();
         }
 
-        public void CreateSettingsIfNotExists()
+        public static void CreateSettingsIfNotExists()
         {
             if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
             {
@@ -121,7 +121,11 @@ namespace PowerLauncher
                     {
                         retry = false;
                         Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserialize PowerToys settings, Creating new settings as file could be corrupted {e.Message}", e);
-                        ErrorReporting.Report(e, false);
+
+                        // Settings.json could possibly be corrupted. To mitigate this we delete the
+                        // current file and replace it with a correct json value.
+                        SettingsUtils.DeleteSettings(PowerLauncherSettings.ModuleName);
+                        CreateSettingsIfNotExists();
                     }
                     else
                     {

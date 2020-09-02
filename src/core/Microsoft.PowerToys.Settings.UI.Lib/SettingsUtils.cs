@@ -46,6 +46,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             return File.Exists(GetSettingsPath(powertoy, fileName));
         }
 
+        public static void DeleteSettings(string powertoy, string fileName = DefaultFileName)
+        {
+             File.Delete(GetSettingsPath(powertoy, fileName));
+        }
+
         /// <summary>
         /// Get a Deserialized object of the json settings string.
         /// </summary>

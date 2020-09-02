@@ -12,7 +12,7 @@ namespace PowerLauncher.Helper
 {
     public static class ErrorReporting
     {
-        public static void Report(Exception e, bool waitForClose)
+        private static void Report(Exception e, bool waitForClose)
         {
             if (e != null)
             {
@@ -29,6 +29,15 @@ namespace PowerLauncher.Helper
                 {
                     reportWindow.Show();
                 }
+            }
+        }
+
+        public static void ShowMessageBox(Exception e)
+        {
+            if (e != null)
+            {
+                var reportWindow = new ReportWindow(e);
+                reportWindow.ShowDialog();
             }
         }
 
