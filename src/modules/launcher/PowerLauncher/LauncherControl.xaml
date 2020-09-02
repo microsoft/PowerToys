@@ -5,12 +5,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:p="clr-namespace:PowerLauncher.Properties"
+    xmlns:local="clr-namespace:PowerLauncher"
     mc:Ignorable="d" 
     d:DesignHeight="300"
     d:DesignWidth="720">
     <UserControl.Resources>
         <Style x:Key="QueryTextBoxStyle" TargetType="{x:Type TextBox}">
-            <Setter Property="Background" Value="{DynamicResource SystemChromeLow}" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}"/>
             <Setter Property="CaretBrush" Value="{DynamicResource ControlTextBrushKey}"/>
@@ -87,7 +88,7 @@
             for adding on placeholder, look at the style with 90 votes
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
         -->
-        <TextBox
+        <local:CustomSearchBox
             AutomationProperties.Name="{x:Static p:Resources.Query}"
             x:Name="QueryTextBox"
             x:FieldModifier="public"
@@ -103,11 +104,12 @@
             x:Name="AutoCompleteTextBlock"
             x:FieldModifier="public"
             Opacity="0.6"            
-            Canvas.ZIndex="0" 
+            Canvas.ZIndex="-1" 
             Margin="24, 0, 14, 0"
             VerticalAlignment="Center"
             FontSize="24"
             Foreground="{DynamicResource TextControlPlaceholderForeground}"
+            Background="{DynamicResource SystemChromeLow}"
             RenderOptions.ClearTypeHint="Enabled"
          />
         <TextBlock

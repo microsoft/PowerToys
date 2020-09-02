@@ -19,6 +19,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         Trace::RegisterProvider();
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
+        break;
     case DLL_PROCESS_DETACH:
         Trace::UnregisterProvider();
         break;

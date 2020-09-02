@@ -145,7 +145,7 @@ namespace Wox.Plugin
 
         public override string ToString()
         {
-            return Title + SubTitle;
+            return string.Format("{0} : {1}", Title, SubTitle);
         }
 
         public Result()

@@ -307,7 +307,11 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
         MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
         m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), m_highlightZone);
 
-        SaveWindowProcessToZoneIndex(window);
+        auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
+        if (windowInfo.noVisibleOwner)
+        {
+            SaveWindowProcessToZoneIndex(window);
+        }
     }
     Trace::ZoneWindow::MoveSizeEnd(m_activeZoneSet);
 
@@ -338,7 +342,11 @@ ZoneWindow::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, boo
     {
         if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window.get(), vkCode, cycle))
         {
-            SaveWindowProcessToZoneIndex(window);
+            auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
+            if (windowInfo.noVisibleOwner)
+            {
+                SaveWindowProcessToZoneIndex(window);
+            }
             return true;
         }
     }

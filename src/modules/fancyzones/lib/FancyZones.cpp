@@ -135,35 +135,17 @@ public:
     IFACEMETHODIMP_(COLORREF)
     GetZoneColor() noexcept
     {
-        // Skip the leading # and convert to long
-        const auto color = m_settings->GetSettings()->zoneColor;
-        const auto tmp = std::stol(color.substr(1), nullptr, 16);
-        const auto nR = (tmp & 0xFF0000) >> 16;
-        const auto nG = (tmp & 0xFF00) >> 8;
-        const auto nB = (tmp & 0xFF);
-        return RGB(nR, nG, nB);
+        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneColor));
     }
     IFACEMETHODIMP_(COLORREF)
     GetZoneBorderColor() noexcept
     {
-        // Skip the leading # and convert to long
-        const auto color = m_settings->GetSettings()->zoneBorderColor;
-        const auto tmp = std::stol(color.substr(1), nullptr, 16);
-        const auto nR = (tmp & 0xFF0000) >> 16;
-        const auto nG = (tmp & 0xFF00) >> 8;
-        const auto nB = (tmp & 0xFF);
-        return RGB(nR, nG, nB);
+        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneBorderColor));
     }
     IFACEMETHODIMP_(COLORREF)
     GetZoneHighlightColor() noexcept
     {
-        // Skip the leading # and convert to long
-        const auto color = m_settings->GetSettings()->zoneHighlightColor;
-        const auto tmp = std::stol(color.substr(1), nullptr, 16);
-        const auto nR = (tmp & 0xFF0000) >> 16;
-        const auto nG = (tmp & 0xFF00) >> 8;
-        const auto nB = (tmp & 0xFF);
-        return RGB(nR, nG, nB);
+        return (FancyZonesUtils::HexToRGB(m_settings->GetSettings()->zoneHighlightColor));
     }
     IFACEMETHODIMP_(int)
     GetZoneHighlightOpacity() noexcept
@@ -346,11 +328,12 @@ FancyZones::VirtualDesktopInitialize() noexcept
 
 bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
 {
+    using namespace FancyZonesUtils;
     // Avoid processing splash screens, already stamped (zoned) windows, or those windows
     // that belong to excluded applications list.
     if (IsSplashScreen(window) ||
         (reinterpret_cast<size_t>(::GetProp(window, ZonedWindowProperties::PropertyMultipleZoneID)) != 0) ||
-        !FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+        !IsCandidateForLastKnownZone(window, m_settings->GetSettings()->excludedAppsArray))
     {
         return false;
     }
@@ -1031,7 +1014,7 @@ void FancyZones::UpdateWindowsPositions() noexcept
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
-    if (FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    if (FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
     {
         const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)
@@ -1248,7 +1231,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
-    if (FancyZonesUtils::IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    if (FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
     {
         if (m_settings->GetSettings()->moveWindowsBasedOnPosition)
         {

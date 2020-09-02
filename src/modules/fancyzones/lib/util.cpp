@@ -38,48 +38,23 @@ namespace
         return rect.top == rect.bottom || rect.left == rect.right;
     }
 
-    FancyZonesUtils::FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window)
+    bool IsZonableByProcessPath(const std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
     {
-        FancyZonesUtils::FancyZonesWindowInfo result;
-        if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window))
+        // Filter out user specified apps
+        CharUpperBuffW(const_cast<std::wstring&>(processPath).data(), (DWORD)processPath.length());
+        if (find_app_name_in_path(processPath, excludedApps))
         {
-            return result;
+            return false;
         }
-        auto style = GetWindowLong(window, GWL_STYLE);
-        auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
-        // WS_POPUP need to have a border or minimize/maximize buttons,
-        // otherwise the window is "not interesting"
-        if ((style & WS_POPUP) == WS_POPUP &&
-            (style & WS_THICKFRAME) == 0 &&
-            (style & WS_MINIMIZEBOX) == 0 &&
-            (style & WS_MAXIMIZEBOX) == 0)
+        if (find_app_name_in_path(processPath, { NonLocalizable::PowerToysAppPowerLauncher }))
         {
-            return result;
+            return false;
         }
-        if ((style & WS_CHILD) == WS_CHILD ||
-            (style & WS_DISABLED) == WS_DISABLED ||
-            (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
-            (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE)
+        if (find_app_name_in_path(processPath, { NonLocalizable::PowerToysAppFZEditor }))
         {
-            return result;
+            return false;
         }
-        std::array<char, 256> class_name;
-        GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
-        if (is_system_window(window, class_name.data()))
-        {
-            return result;
-        }
-        auto process_path = get_process_path(window);
-        // Check for Cortana:
-        if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
-            process_path.ends_with(L"SearchUI.exe"))
-        {
-            return result;
-        }
-        result.processPath = std::move(process_path);
-        result.standardWindow = true;
-        result.noVisibleOwner = HasNoVisibleOwner(window);
-        return result;
+        return true;
     }
 }
 
@@ -226,7 +201,51 @@ namespace FancyZonesUtils
         ::SetWindowPlacement(window, &placement);
     }
 
-    bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
+    FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window)
+    {
+        FancyZonesWindowInfo result;
+        if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window))
+        {
+            return result;
+        }
+        auto style = GetWindowLong(window, GWL_STYLE);
+        auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
+        // WS_POPUP need to have a border or minimize/maximize buttons,
+        // otherwise the window is "not interesting"
+        if ((style & WS_POPUP) == WS_POPUP &&
+            (style & WS_THICKFRAME) == 0 &&
+            (style & WS_MINIMIZEBOX) == 0 &&
+            (style & WS_MAXIMIZEBOX) == 0)
+        {
+            return result;
+        }
+        if ((style & WS_CHILD) == WS_CHILD ||
+            (style & WS_DISABLED) == WS_DISABLED ||
+            (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
+            (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE)
+        {
+            return result;
+        }
+        std::array<char, 256> class_name;
+        GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
+        if (is_system_window(window, class_name.data()))
+        {
+            return result;
+        }
+        auto process_path = get_process_path(window);
+        // Check for Cortana:
+        if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
+            process_path.ends_with(L"SearchUI.exe"))
+        {
+            return result;
+        }
+        result.processPath = std::move(process_path);
+        result.standardWindow = true;
+        result.noVisibleOwner = HasNoVisibleOwner(window);
+        return result;
+    }
+
+    bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
         auto windowInfo = GetFancyZonesWindowInfo(window);
         auto zonable = windowInfo.standardWindow && windowInfo.noVisibleOwner;
@@ -234,21 +253,20 @@ namespace FancyZonesUtils
         {
             return false;
         }
-        // Filter out user specified apps
-        CharUpperBuffW(windowInfo.processPath.data(), (DWORD)windowInfo.processPath.length());
-        if (find_app_name_in_path(windowInfo.processPath, excludedApps))
+
+        return IsZonableByProcessPath(windowInfo.processPath, excludedApps);
+    }
+
+    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
+    {
+        auto windowInfo = GetFancyZonesWindowInfo(window);
+
+        if (!windowInfo.standardWindow)
         {
             return false;
         }
-        if (find_app_name_in_path(windowInfo.processPath, { NonLocalizable::PowerToysAppPowerLauncher }))
-        {
-            return false;
-        }
-        if (find_app_name_in_path(windowInfo.processPath, { NonLocalizable::PowerToysAppFZEditor }))
-        {
-            return false;
-        }
-        return true;
+
+        return IsZonableByProcessPath(windowInfo.processPath, excludedApps);
     }
 
     bool IsWindowMaximized(HWND window) noexcept
