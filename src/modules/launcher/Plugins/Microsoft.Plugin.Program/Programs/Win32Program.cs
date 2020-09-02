@@ -444,6 +444,9 @@ namespace Microsoft.Plugin.Program.Programs
                             }
                         }
                     }
+                    else
+                    {
+                    }
                 }
 
                 return program;
@@ -619,12 +622,12 @@ namespace Microsoft.Plugin.Program.Programs
             var paths = listToAdd.Distinct().ToArray();
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
-            var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(ExeProgram);
+            var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs3 = from p in paths.AsParallel()
                             let e = Extension(p)
                             where e != ShortcutExtension && e != ExeExtension
                             select CreateWin32Program(p);
-            return programs1.Concat(programs2).Concat(programs3);
+            return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
         }
 
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
