@@ -15,7 +15,8 @@
     <Page.Resources>
         <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
         <DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
-            <StackPanel
+            <StackPanel Name="KeyboardManager_RemappedKeysListItem" 
+                x:Uid="KeyboardManager_RemappedKeysListItem"
                 Orientation="Horizontal"
                 Height="56">
                 <ItemsControl
@@ -238,6 +239,7 @@
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
             <ListView x:Name="RemapKeysList"
+                      x:Uid="RemapKeysList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
                       ItemsSource="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"

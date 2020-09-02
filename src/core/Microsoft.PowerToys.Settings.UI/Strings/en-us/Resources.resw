@@ -197,6 +197,12 @@
     <value>Remap shortcuts</value>
     <comment>Keyboard Manager remap shortcuts header</comment>
   </data>
+  <data name="RemapKeysList.AutomationProperties.Name" xml:space="preserve">
+    <value>Current Key Remappings</value>
+  </data>
+  <data name="KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" xml:space="preserve">
+    <value>Key Remapping</value>
+  </data>
   <data name="ColorPicker_Description.Text" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
   </data>
