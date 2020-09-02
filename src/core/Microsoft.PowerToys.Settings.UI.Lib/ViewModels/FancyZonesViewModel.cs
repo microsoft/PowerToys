@@ -531,9 +531,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string ToRGBHex(string color)
         {
-            int argb = int.Parse(color.Replace("#", string.Empty), System.Globalization.NumberStyles.HexNumber);
-            Color clr = Color.FromArgb(argb);
-            return "#" + clr.R.ToString("X2") + clr.G.ToString("X2") + clr.B.ToString("X2");
+            try
+            {
+                int argb = int.Parse(color.Replace("#", string.Empty), System.Globalization.NumberStyles.HexNumber);
+                Color clr = Color.FromArgb(argb);
+                return "#" + clr.R.ToString("X2") + clr.G.ToString("X2") + clr.B.ToString("X2");
+            }
+            catch (Exception)
+            {
+                return "#FFFFFF";
+            }
         }
     }
 }
