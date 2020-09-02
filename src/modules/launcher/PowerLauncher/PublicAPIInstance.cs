@@ -10,7 +10,6 @@ using System.Windows;
 using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox.Core.Plugin;
-using Wox.Core.Resource;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
@@ -81,11 +80,6 @@ namespace Wox
         public void InstallPlugin(string path)
         {
             Application.Current.Dispatcher.Invoke(() => PluginManager.InstallPlugin(path));
-        }
-
-        public string GetTranslation(string key)
-        {
-            return InternationalizationManager.Instance.GetTranslation(key);
         }
 
         public List<PluginPair> GetAllPlugins()
