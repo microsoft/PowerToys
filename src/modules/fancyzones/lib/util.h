@@ -97,7 +97,7 @@ namespace FancyZonesUtils
             SRCCOPY);
     }
 
-    inline COLORREF HexToRGB(std::wstring_view hex)
+    inline COLORREF HexToRGB(std::wstring_view hex, const COLORREF fallbackColor = RGB(255, 255, 255))
     {
         hex = left_trim<wchar_t>(trim<wchar_t>(hex), L"#");
         
@@ -111,7 +111,7 @@ namespace FancyZonesUtils
         }
         catch (const std::exception&)
         {
-            return RGB(255, 255, 255);
+            return fallbackColor;
         }
     }
     
