@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
@@ -117,7 +118,8 @@ namespace Microsoft.Plugin.Folder
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Could not start " + path);
+                string messageBoxTitle = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_OpenFileOrFolder_error_message, path);
+                MessageBox.Show(ex.Message, messageBoxTitle);
             }
 
             return true;
@@ -154,7 +156,7 @@ namespace Microsoft.Plugin.Folder
             {
                 Title = title,
                 IcoPath = path,
-                SubTitle = "Folder: " + subtitle,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, subtitle),
                 QueryTextDisplay = path,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path },
@@ -318,7 +320,7 @@ namespace Microsoft.Plugin.Folder
             var result = new Result
             {
                 Title = Path.GetFileName(filePath),
-                SubTitle = "Folder: " + filePath,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, filePath),
                 IcoPath = filePath,
                 ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath },
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
@@ -332,8 +334,7 @@ namespace Microsoft.Plugin.Folder
 
         private static Result CreateOpenCurrentFolderResult(string search)
         {
-            var firstResult = "Open " + search;
-
+            var firstResult = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_first_result_title, search);
             var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
             var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
 
@@ -347,7 +348,7 @@ namespace Microsoft.Plugin.Folder
             {
                 Title = firstResult,
                 QueryTextDisplay = search,
-                SubTitle = $"Folder: Use > to search within the directory. Use * to search for file extensions. Or use both >*.",
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle),
                 IcoPath = search,
                 Score = 500,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = search },
