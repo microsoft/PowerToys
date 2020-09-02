@@ -43,7 +43,7 @@ namespace Microsoft.Plugin.Folder
 
         public Control CreateSettingPanel()
         {
-            return new FileSystemSettings(_context.API, _settings);
+            throw new NotImplementedException();
         }
 
         public void Init(PluginInitContext context)
@@ -306,9 +306,9 @@ namespace Microsoft.Plugin.Folder
         {
             return new Result
             {
-                Title = _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_title"),
+                Title = Properties.Resources.Microsoft_plugin_folder_truncation_warning_title,
                 QueryTextDisplay = search,
-                SubTitle = string.Format(CultureInfo.InvariantCulture, _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_subtitle"), postTruncationCount, preTruncationCount),
+                SubTitle = string.Format(CultureInfo.InvariantCulture, Properties.Resources.Microsoft_plugin_folder_truncation_warning_subtitle, postTruncationCount, preTruncationCount),
                 IcoPath = warningIconPath,
             };
         }
@@ -360,12 +360,12 @@ namespace Microsoft.Plugin.Folder
 
         public string GetTranslatedPluginTitle()
         {
-            return _context.API.GetTranslation("wox_plugin_folder_plugin_name");
+            return Properties.Resources.wox_plugin_folder_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return _context.API.GetTranslation("wox_plugin_folder_plugin_description");
+            return Properties.Resources.wox_plugin_folder_plugin_description;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)

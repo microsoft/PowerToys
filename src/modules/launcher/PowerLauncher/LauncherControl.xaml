@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:local="clr-namespace:PowerLauncher"
     mc:Ignorable="d" 
     d:DesignHeight="300"
@@ -88,7 +89,7 @@
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
         -->
         <local:CustomSearchBox
-            AutomationProperties.Name="{DynamicResource Query}"
+            AutomationProperties.Name="{x:Static p:Resources.Query}"
             x:Name="QueryTextBox"
             x:FieldModifier="public"
             Canvas.ZIndex="0"
@@ -96,7 +97,7 @@
             VerticalAlignment="Center"
             FontSize="24"
             Style="{StaticResource QueryTextBoxStyle}"
-            Tag="{DynamicResource startTyping}"
+            Tag="{x:Static p:Resources.startTyping}"
             RenderOptions.ClearTypeHint="Enabled"
             />
         <TextBlock
@@ -112,7 +113,7 @@
             RenderOptions.ClearTypeHint="Enabled"
          />
         <TextBlock
-            AutomationProperties.Name="{DynamicResource SearchIcon}"
+            AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"
