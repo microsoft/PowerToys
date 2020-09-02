@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gdiplus.h"
+#include <common/string_utils.h>
 
 namespace FancyZonesUtils
 {
@@ -96,18 +97,10 @@ namespace FancyZonesUtils
             SRCCOPY);
     }
 
-    inline COLORREF HexToRGB(const std::wstring& hex)
+    inline COLORREF HexToRGB(std::wstring_view hex)
     {
-        std::wstring color = hex;
-        if (hex.size() == 7)
-        {
-            color = hex.substr(1);
-        }
-        else if (hex.size() == 9)
-        {
-            color = hex.substr(3);
-        }
-
+        hex = left_trim<wchar_t>(trim<wchar_t>(hex), L"#");
+        
         try
         {
             const long long tmp = std::stoll(hex.data(), nullptr, 16);
