@@ -144,7 +144,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/README.md">
+            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_VideoConference">
                 <TextBlock x:Uid="Module_overview"/>
             </HyperlinkButton>
             
