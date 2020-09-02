@@ -110,10 +110,10 @@ namespace FancyZonesUtils
 
         try
         {
-            const auto tmp = std::stol(color, nullptr, 16);
-            const auto nR = (tmp & 0xFF0000) >> 16;
-            const auto nG = (tmp & 0xFF00) >> 8;
-            const auto nB = (tmp & 0xFF);
+            const long long tmp = std::stoll(hex.data(), nullptr, 16);
+            const BYTE nR = (tmp & 0xFF0000) >> 16;
+            const BYTE nG = (tmp & 0xFF00) >> 8;
+            const BYTE nB = (tmp & 0xFF);
             return RGB(nR, nG, nB);
         }
         catch (const std::exception&)
