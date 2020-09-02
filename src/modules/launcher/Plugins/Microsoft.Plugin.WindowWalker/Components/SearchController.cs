@@ -89,7 +89,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private SearchController()
         {
             searchText = string.Empty;
-            OpenWindows.Instance.OnOpenWindowsUpdateEventHandler += OpenWindowsUpdateHandler;
         }
 
         /// <summary>
@@ -98,16 +97,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public async Task UpdateSearchText(string searchText)
         {
             SearchText = searchText;
-            await SyncOpenWindowsWithModelAsync().ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Event handler called when the OpenWindows list changes
-        /// </summary>
-        /// <param name="sender">sending item</param>
-        /// <param name="e">event arg</param>
-        public async void OpenWindowsUpdateHandler(object sender, SearchResultUpdateEventArgs e)
-        {
             await SyncOpenWindowsWithModelAsync().ConfigureAwait(false);
         }
 

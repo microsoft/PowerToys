@@ -19,11 +19,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         public delegate void OpenWindowsUpdateEventHandler(object sender, SearchController.SearchResultUpdateEventArgs e);
 
         /// <summary>
-        /// Event raised when there is an update to the list of open windows
-        /// </summary>
-        public event OpenWindowsUpdateEventHandler OnOpenWindowsUpdateEventHandler;
-
-        /// <summary>
         /// List of all the open windows
         /// </summary>
         private readonly List<Window> windows = new List<Window>();

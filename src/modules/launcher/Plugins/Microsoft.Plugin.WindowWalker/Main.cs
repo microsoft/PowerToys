@@ -31,8 +31,9 @@ namespace Microsoft.Plugin.WindowWalker
                 throw new ArgumentNullException(nameof(query));
             }
 
-            SearchController.Instance.UpdateSearchText(query.RawQuery).Wait();
             OpenWindows.Instance.UpdateOpenWindowsList();
+            SearchController.Instance.UpdateSearchText(query.RawQuery).Wait();
+
             return _results.Select(x => new Result()
             {
                 Title = x.Result.Title,
