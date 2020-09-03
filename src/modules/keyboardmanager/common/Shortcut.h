@@ -1,17 +1,12 @@
 #pragma once
-#include "Helpers.h"
-#include "../common/keyboard_layout.h"
-#include "../common/shared_constants.h"
-#include <interface/lowlevel_keyboard_event_data.h>
-
-// Enum type to store different states of the win key
-enum class ModifierKey
+#include "ModifierKey.h"
+#include <variant>
+class InputInterface;
+class LayoutMap;
+namespace KeyboardManagerHelper
 {
-    Disabled,
-    Left,
-    Right,
-    Both
-};
+    enum class ErrorType;
+}
 
 class Shortcut
 {
@@ -30,16 +25,10 @@ public:
     }
 
     // Constructor to initialize Shortcut from it's virtual key code string representation.
-    Shortcut(const std::wstring& shortcutVK) :
-        winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
-    {
-        auto keys = KeyboardManagerHelper::splitwstring(shortcutVK, ';');
-        for (auto it : keys)
-        {
-            auto vkKeyCode = std::stoul(it);
-            SetKey(vkKeyCode);
-        }
-    }
+    Shortcut(const std::wstring& shortcutVK);
+
+    // Constructor to initialize shortcut from a list of keys
+    Shortcut(const std::vector<DWORD>& keys);
 
     // == operator
     inline bool operator==(const Shortcut& sc) const
@@ -167,10 +156,10 @@ public:
     void SetKeyCodes(const std::vector<DWORD>& keys);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
-    bool CheckModifiersKeyboardState() const;
+    bool CheckModifiersKeyboardState(InputInterface& ii) const;
 
     // Function to check if any keys are pressed down except those in the shortcut
-    bool IsKeyboardStateClearExceptShortcut() const;
+    bool IsKeyboardStateClearExceptShortcut(InputInterface& ii) const;
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
@@ -181,3 +170,7 @@ public:
     // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
     KeyboardManagerHelper::ErrorType IsShortcutIllegal() const;
 };
+
+using RemapBufferItem = std::vector<std::variant<DWORD, Shortcut>>;
+using RemapBufferRow = std::pair<RemapBufferItem, std::wstring>;
+using RemapBuffer = std::vector<RemapBufferRow>;

@@ -24,7 +24,7 @@ KeyTimedEvent KeyDelay::NextEvent()
     return ev;
 }
 
-bool KeyDelay::CheckIfMillisHaveElapsed(DWORD first, DWORD last, DWORD duration)
+bool KeyDelay::CheckIfMillisHaveElapsed(DWORD64 first, DWORD64 last, DWORD64 duration)
 {
     if (first < last && first <= first + duration)
     {
@@ -32,8 +32,8 @@ bool KeyDelay::CheckIfMillisHaveElapsed(DWORD first, DWORD last, DWORD duration)
     }
     else
     {
-        first += ULONG_MAX / 2;
-        last += ULONG_MAX / 2;
+        first += ULLONG_MAX / 2;
+        last += ULLONG_MAX / 2;
         return first + duration < last;
     }
 }
@@ -99,7 +99,7 @@ bool KeyDelay::HandleOnHold(std::unique_lock<std::mutex>& cvLock)
         }
     }
 
-    if (CheckIfMillisHaveElapsed(_initialHoldKeyDown, GetTickCount(), LONG_PRESS_DELAY_MILLIS))
+    if (CheckIfMillisHaveElapsed(_initialHoldKeyDown, GetTickCount64(), LONG_PRESS_DELAY_MILLIS))
     {
         if (_onLongPressDetected != nullptr)
         {

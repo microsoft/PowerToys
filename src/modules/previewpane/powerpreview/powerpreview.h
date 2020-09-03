@@ -16,7 +16,8 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     std::wstring m_moduleName;
-    std::vector<FileExplorerPreviewSettings *> m_previewHandlers;
+    std::vector<FileExplorerPreviewSettings*> m_previewHandlers;
+    std::vector<FileExplorerPreviewSettings*> m_thumbnailProviders;
 
 public:
     PowerPreviewModule() :
@@ -38,22 +39,26 @@ public:
                   GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
                   L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
                   L"Markdown Preview Handler",
-                  new RegistryWrapper())
-            })
+                  new RegistryWrapper()) }),
+        m_thumbnailProviders(
+            { // TODO: MOVE THIS SVG Thumbnail Provider settings object.
+              new FileExplorerPreviewSettings(
+                  true,
+                  L"svg-thumbnail-toggle-setting",
+                  GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+                  L"{36B27788-A8BB-4698-A756-DF9F11F64F84}",
+                  L"SVG Thumbnail Provider",
+                  new RegistryWrapper()) })
     {
         init_settings();
     };
 
     virtual void destroy();
     virtual const wchar_t* get_name();
-    virtual const wchar_t** get_events();
     virtual bool get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_size);
     virtual void set_config(const wchar_t* config);
     virtual void enable();
     virtual void disable();
     virtual bool is_enabled();
     virtual void init_settings();
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data);
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
 };

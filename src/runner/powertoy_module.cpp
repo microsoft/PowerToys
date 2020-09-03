@@ -7,9 +7,9 @@ std::map<std::wstring, PowertoyModule>& modules()
     return modules;
 }
 
-PowertoyModule load_powertoy(const std::wstring& filename)
+PowertoyModule load_powertoy(const std::wstring_view filename)
 {
-    auto handle = winrt::check_pointer(LoadLibraryW(filename.c_str()));
+    auto handle = winrt::check_pointer(LoadLibraryW(filename.data()));
     auto create = reinterpret_cast<powertoy_create_func>(GetProcAddress(handle, "powertoy_create"));
     if (!create)
     {
@@ -22,7 +22,6 @@ PowertoyModule load_powertoy(const std::wstring& filename)
         FreeLibrary(handle);
         winrt::throw_last_error();
     }
-    module->register_system_menu_helper(&SystemMenuHelperInstance());
     return PowertoyModule(module, handle);
 }
 
@@ -42,17 +41,5 @@ PowertoyModule::PowertoyModule(PowertoyModuleIface* module, HMODULE handle) :
     if (!module)
     {
         throw std::runtime_error("Module not initialized");
-    }
-    auto want_signals = module->get_events();
-    if (want_signals)
-    {
-        for (; *want_signals; ++want_signals)
-        {
-            powertoys_events().register_receiver(*want_signals, module);
-        }
-    }
-    if (SystemMenuHelperInstance().HasCustomConfig(module))
-    {
-        powertoys_events().register_system_menu_action(module);
     }
 }

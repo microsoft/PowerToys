@@ -36,7 +36,9 @@
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Generated Files/resource.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -45,11 +47,28 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{aa4b6713-589d-42ef-804d-3a045833f83f}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="shortcut_guide.rc" />
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{d7932c11-20ad-4625-adbc-0780ea5e308d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{41a2f27e-76b5-4799-94c3-90a33a71786b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shortcut_guide.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files/shortcut_guide.rc">
+      <Filter>Generated Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

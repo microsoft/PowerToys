@@ -1,9 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Xml;
 using Microsoft.Win32;
 
 namespace Wox.Infrastructure.Exception
@@ -15,7 +18,7 @@ namespace Wox.Infrastructure.Exception
             return CreateExceptionReport(exception);
         }
 
-        //todo log /display line by line 
+        // todo log /display line by line
         private static string CreateExceptionReport(System.Exception ex)
         {
             var sb = new StringBuilder();
@@ -37,6 +40,7 @@ namespace Wox.Infrastructure.Exception
                     exsb.Append("   Source: ");
                     exsb.AppendLine(ex.Source);
                 }
+
                 if (ex.TargetSite != null)
                 {
                     exsb.Append("   TargetAssembly: ");
@@ -46,6 +50,7 @@ namespace Wox.Infrastructure.Exception
                     exsb.Append("   TargetSite: ");
                     exsb.AppendLine(ex.TargetSite.ToString());
                 }
+
                 exsb.AppendLine(ex.StackTrace);
                 exlist.Add(exsb);
 
@@ -56,6 +61,7 @@ namespace Wox.Infrastructure.Exception
             {
                 sb.AppendLine(result);
             }
+
             sb.AppendLine("```");
             sb.AppendLine();
 
@@ -90,13 +96,12 @@ namespace Wox.Infrastructure.Exception
                 else if (string.IsNullOrEmpty(ass.Location))
                 {
                     sb.Append("location is null or empty");
-                    
                 }
                 else
                 {
-                sb.Append(ass.Location);
-                    
+                    sb.Append(ass.Location);
                 }
+
                 sb.AppendLine(")");
             }
 
@@ -116,60 +121,79 @@ namespace Wox.Infrastructure.Exception
                         if (versionKeyName.StartsWith("v"))
                         {
                             RegistryKey versionKey = ndpKey.OpenSubKey(versionKeyName);
-                            string name = (string)versionKey.GetValue("Version", "");
-                            string sp = versionKey.GetValue("SP", "").ToString();
-                            string install = versionKey.GetValue("Install", "").ToString();
-                            if (install != "")
-                                if (sp != "" && install == "1")
+                            string name = (string)versionKey.GetValue("Version", string.Empty);
+                            string sp = versionKey.GetValue("SP", string.Empty).ToString();
+                            string install = versionKey.GetValue("Install", string.Empty).ToString();
+                            if (install != string.Empty)
+                            {
+                                if (sp != string.Empty && install == "1")
+                                {
                                     result.Add(string.Format("{0} {1} SP{2}", versionKeyName, name, sp));
+                                }
                                 else
+                                {
                                     result.Add(string.Format("{0} {1}", versionKeyName, name));
+                                }
+                            }
 
-                            if (name != "")
+                            if (name != string.Empty)
                             {
                                 continue;
                             }
+
                             foreach (string subKeyName in versionKey.GetSubKeyNames())
                             {
                                 RegistryKey subKey = versionKey.OpenSubKey(subKeyName);
-                                name = (string)subKey.GetValue("Version", "");
-                                if (name != "")
-                                    sp = subKey.GetValue("SP", "").ToString();
-                                install = subKey.GetValue("Install", "").ToString();
-                                if (install != "")
+                                name = (string)subKey.GetValue("Version", string.Empty);
+                                if (name != string.Empty)
                                 {
-                                    if (sp != "" && install == "1")
-                                        result.Add(string.Format("{0} {1} {2} SP{3}", versionKeyName, subKeyName, name, sp));
-                                    else if (install == "1")
-                                        result.Add(string.Format("{0} {1} {2}", versionKeyName, subKeyName, name));
+                                    sp = subKey.GetValue("SP", string.Empty).ToString();
                                 }
 
+                                install = subKey.GetValue("Install", string.Empty).ToString();
+                                if (install != string.Empty)
+                                {
+                                    if (sp != string.Empty && install == "1")
+                                    {
+                                        result.Add(string.Format("{0} {1} {2} SP{3}", versionKeyName, subKeyName, name, sp));
+                                    }
+                                    else if (install == "1")
+                                    {
+                                        result.Add(string.Format("{0} {1} {2}", versionKeyName, subKeyName, name));
+                                    }
+                                }
                             }
-
                         }
                     }
                 }
+
                 using (RegistryKey ndpKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\"))
                 {
                     int releaseKey = (int)ndpKey.GetValue("Release");
                     {
                         if (releaseKey == 378389)
+                        {
                             result.Add("v4.5");
+                        }
 
                         if (releaseKey == 378675)
+                        {
                             result.Add("v4.5.1 installed with Windows 8.1");
+                        }
 
                         if (releaseKey == 378758)
+                        {
                             result.Add("4.5.1 installed on Windows 8, Windows 7 SP1, or Windows Vista SP2");
+                        }
                     }
                 }
+
                 return result;
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 return new List<string>();
             }
-
         }
     }
 }

@@ -1,13 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
@@ -19,16 +19,19 @@ namespace Wox.Core.Plugin
     /// </summary>
     internal abstract class JsonRPCPlugin : IPlugin, IContextMenu
     {
-        protected PluginInitContext context;
+        protected PluginInitContext Context { get; set; }
+
         public const string JsonRPC = "JsonRPC";
 
         /// <summary>
-        /// The language this JsonRPCPlugin support
+        /// Gets or sets the language this JsonRPCPlugin support
         /// </summary>
         public abstract string SupportedLanguage { get; set; }
 
         protected abstract string ExecuteQuery(Query query);
+
         protected abstract string ExecuteCallback(JsonRPCRequestModel rpcRequest);
+
         protected abstract string ExecuteContextMenu(Result selectedResult);
 
         public List<Result> Query(Query query)
@@ -50,10 +53,10 @@ namespace Wox.Core.Plugin
             string output = ExecuteContextMenu(selectedResult);
             try
             {
-                //This should not hit. If it does it's because Wox shares the same interface for querying context menu items as well as search results. In this case please file a bug.
-                //To my knowledge we aren't supporting this JSonRPC commands in Launcher, and am not able to repro this, but I will leave this here for the time being in case I'm proven wrong. 
-                //We should remove this, or identify and test officially supported use cases and Deserialize this properly. 
-                //return DeserializedResult(output);
+                // This should not hit. If it does it's because Wox shares the same interface for querying context menu items as well as search results. In this case please file a bug.
+                // To my knowledge we aren't supporting this JSonRPC commands in Launcher, and am not able to repro this, but I will leave this here for the time being in case I'm proven wrong.
+                // We should remove this, or identify and test officially supported use cases and Deserialize this properly.
+                // return DeserializedResult(output);
                 throw new NotImplementedException();
             }
             catch (Exception e)
@@ -65,21 +68,27 @@ namespace Wox.Core.Plugin
 
         private List<Result> DeserializedResult(string output)
         {
-            if (!String.IsNullOrEmpty(output))
+            if (!string.IsNullOrEmpty(output))
             {
                 List<Result> results = new List<Result>();
 
                 JsonRPCQueryResponseModel queryResponseModel = JsonConvert.DeserializeObject<JsonRPCQueryResponseModel>(output);
-                if (queryResponseModel.Result == null) return null;
+                if (queryResponseModel.Result == null)
+                {
+                    return null;
+                }
 
                 foreach (JsonRPCResult result in queryResponseModel.Result)
                 {
                     JsonRPCResult result1 = result;
                     result.Action = c =>
                     {
-                        if (result1.JsonRPCAction == null) return false;
+                        if (result1.JsonRPCAction == null)
+                        {
+                            return false;
+                        }
 
-                        if (!String.IsNullOrEmpty(result1.JsonRPCAction.Method))
+                        if (!string.IsNullOrEmpty(result1.JsonRPCAction.Method))
                         {
                             if (result1.JsonRPCAction.Method.StartsWith("Wox."))
                             {
@@ -90,17 +99,19 @@ namespace Wox.Core.Plugin
                                 string actionResponse = ExecuteCallback(result1.JsonRPCAction);
                                 JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionResponse);
                                 if (jsonRpcRequestModel != null
-                                    && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
+                                    && !string.IsNullOrEmpty(jsonRpcRequestModel.Method)
                                     && jsonRpcRequestModel.Method.StartsWith("Wox."))
                                 {
                                     ExecuteWoxAPI(jsonRpcRequestModel.Method.Substring(4), jsonRpcRequestModel.Parameters);
                                 }
                             }
                         }
+
                         return !result1.JsonRPCAction.DontHideAfterAction;
                     };
                     results.Add(result);
                 }
+
                 return results;
             }
             else
@@ -120,7 +131,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception)
                 {
-#if (DEBUG)
+#if DEBUG
                     {
                         throw;
                     }
@@ -132,18 +143,21 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Execute external program and return the output
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
+        /// <param name="fileName">file to execute</param>
+        /// <param name="arguments">args to pass in to that exe</param>
+        /// <returns>results</returns>
         protected string Execute(string fileName, string arguments)
         {
-            ProcessStartInfo start = new ProcessStartInfo();
-            start.FileName = fileName;
-            start.Arguments = arguments;
-            start.UseShellExecute = false;
-            start.CreateNoWindow = true;
-            start.RedirectStandardOutput = true;
-            start.RedirectStandardError = true;
+            ProcessStartInfo start = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
             return Execute(start);
         }
 
@@ -202,7 +216,7 @@ namespace Wox.Core.Plugin
 
         public void Init(PluginInitContext ctx)
         {
-            context = ctx;
+            Context = ctx;
         }
     }
 }

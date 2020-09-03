@@ -1,31 +1,69 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Wox.Plugin
 {
-
     public class Result
     {
-
+        private string _title;
+        private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
-        public string Title { get; set; }
+
+        public string Title
+        {
+            get
+            {
+                return _title;
+            }
+
+            set
+            {
+                _title = value.Replace("\n", " ");
+            }
+        }
+
         public string SubTitle { get; set; }
 
         public string Glyph { get; set; }
 
         public string FontFamily { get; set; }
 
+        public Visibility ToolTipVisibility { get; set; } = Visibility.Collapsed;
+
+        public ToolTipData ToolTipData
+        {
+            get
+            {
+                return _toolTipData;
+            }
+
+            set
+            {
+                _toolTipData = value;
+                ToolTipVisibility = Visibility.Visible;
+            }
+        }
+
         /// <summary>
-        /// The text that will get displayed in the Search text box, when this item is selected in the result list.
+        /// Gets or sets the text that will get displayed in the Search text box, when this item is selected in the result list.
         /// </summary>
         public string QueryTextDisplay { get; set; }
 
         public string IcoPath
         {
-            get { return _icoPath; }
+            get
+            {
+                return _icoPath;
+            }
+
             set
             {
                 if (!string.IsNullOrEmpty(PluginDirectory) && !Path.IsPathRooted(value))
@@ -41,37 +79,40 @@ namespace Wox.Plugin
 
         public delegate ImageSource IconDelegate();
 
-        public IconDelegate Icon;
-
+        public IconDelegate Icon { get; set; }
 
         /// <summary>
-        /// return true to hide wox after select result
+        /// Gets or sets return true to hide wox after select result
         /// </summary>
         public Func<ActionContext, bool> Action { get; set; }
 
         public int Score { get; set; }
 
         /// <summary>
-        /// A list of indexes for the characters to be highlighted in Title
+        /// Gets or sets a list of indexes for the characters to be highlighted in Title
         /// </summary>
         public IList<int> TitleHighlightData { get; set; }
 
         /// <summary>
-        /// A list of indexes for the characters to be highlighted in SubTitle
+        /// Gets or sets a list of indexes for the characters to be highlighted in SubTitle
         /// </summary>
         public IList<int> SubTitleHighlightData { get; set; }
 
         /// <summary>
-        /// Only results that originQuery match with current query will be displayed in the panel
+        /// Gets or sets only results that originQuery match with current query will be displayed in the panel
         /// </summary>
         internal Query OriginQuery { get; set; }
 
         /// <summary>
-        /// Plugin directory
+        /// Gets or sets plugin directory
         /// </summary>
         public string PluginDirectory
         {
-            get { return _pluginDirectory; }
+            get
+            {
+                return _pluginDirectory;
+            }
+
             set
             {
                 _pluginDirectory = value;
@@ -104,32 +145,20 @@ namespace Wox.Plugin
 
         public override string ToString()
         {
-            return Title + SubTitle;
+            return string.Format("{0} : {1}", Title, SubTitle);
         }
 
-        [Obsolete("Use IContextMenu instead")]
-        /// <summary>
-        /// Context menus associate with this result
-        /// </summary>
-        public List<Result> ContextMenu { get; set; }
-
-        [Obsolete("Use Object initializers instead")]
-        public Result(string Title, string IcoPath, string SubTitle = null)
+        public Result()
         {
-            this.Title = Title;
-            this.IcoPath = IcoPath;
-            this.SubTitle = SubTitle;
         }
 
-        public Result() { }
-
         /// <summary>
-        /// Additional data associate with this result
+        /// Gets or sets additional data associate with this result
         /// </summary>
         public object ContextData { get; set; }
 
         /// <summary>
-        /// Plugin ID that generated this result
+        /// Gets plugin ID that generated this result
         /// </summary>
         public string PluginID { get; internal set; }
     }

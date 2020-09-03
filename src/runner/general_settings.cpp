@@ -114,7 +114,7 @@ GeneralSettings get_general_settings()
     return settings;
 }
 
-void apply_general_settings(const json::JsonObject& general_configs)
+void apply_general_settings(const json::JsonObject& general_configs, bool save)
 {
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
@@ -195,9 +195,12 @@ void apply_general_settings(const json::JsonObject& general_configs)
         settings_theme = general_configs.GetNamedString(L"theme");
     }
 
-    GeneralSettings save_settings = get_general_settings();
-    PTSettingsHelper::save_general_settings(save_settings.to_json());
-    Trace::SettingsChanged(save_settings);
+    if (save)
+    {
+        GeneralSettings save_settings = get_general_settings();
+        PTSettingsHelper::save_general_settings(save_settings.to_json());
+        Trace::SettingsChanged(save_settings);
+    }
 }
 
 void start_initial_powertoys()

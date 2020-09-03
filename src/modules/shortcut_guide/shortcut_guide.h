@@ -1,9 +1,10 @@
 #pragma once
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
 #include "overlay_window.h"
 
-#include "resource.h"
+#include "Generated Files/resource.h"
+
+#include <common/LowlevelKeyboardEvent.h>
 
 // We support only one instance of the overlay
 extern class OverlayWindow* instance;
@@ -14,8 +15,8 @@ class OverlayWindow : public PowertoyModuleIface
 {
 public:
     OverlayWindow();
+
     virtual const wchar_t* get_name() override;
-    virtual const wchar_t** get_events() override;
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override;
 
     virtual void set_config(const wchar_t* config) override;
@@ -23,21 +24,16 @@ public:
     virtual void disable() override;
     virtual bool is_enabled() override;
 
-    // PowerToys interface method, not used
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override;
-
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
-
     void on_held();
     void on_held_press(DWORD vkCode);
     void quick_hide();
     void was_hidden();
 
-    // Method called from LowLevelKeyboardProc
     intptr_t signal_event(LowlevelKeyboardEvent* event);
 
     virtual void destroy() override;
+
+    bool overlay_visible() const;
 
 private:
     std::wstring app_name;

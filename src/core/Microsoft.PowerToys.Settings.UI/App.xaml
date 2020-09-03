@@ -2,7 +2,8 @@
     x:Class="Microsoft.PowerToys.Settings.UI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:xaml="using:Microsoft.Toolkit.Win32.UI.XamlHost">
+    xmlns:xaml="using:Microsoft.Toolkit.Win32.UI.XamlHost"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -15,6 +16,14 @@
                 <ResourceDictionary Source="/Styles/Page.xaml"/>
                 <ResourceDictionary Source="/Styles/Button.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <converters:ModuleEnabledToForegroundConverter x:Key="ModuleEnabledToForegroundConverter"/>
+
+
+            <SolidColorBrush x:Key="DarkForegroundDisabledBrush">#66FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="DarkForegroundBrush">#FFFFFFFF</SolidColorBrush>
+
+            <SolidColorBrush x:Key="LightForegroundDisabledBrush">#66000000</SolidColorBrush>
+            <SolidColorBrush x:Key="LightForegroundBrush">#FF000000</SolidColorBrush>
         </ResourceDictionary>
     </Application.Resources>
 </xaml:XamlApplication>

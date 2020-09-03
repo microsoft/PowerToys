@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using FancyZonesEditor.Models;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {
@@ -21,6 +25,11 @@ namespace FancyZonesEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            RunnerHelper.WaitForPowerToysRunner(Settings.PowerToysPID, () =>
+            {
+                Environment.Exit(0);
+            });
+
             LayoutModel foundModel = null;
 
             foreach (LayoutModel model in ZoneSettings.DefaultModels)

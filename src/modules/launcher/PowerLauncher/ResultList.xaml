@@ -5,15 +5,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
-    mc:Ignorable="d"    
+    xmlns:p="clr-namespace:PowerLauncher.Properties"
+    mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="720">
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <!--<ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Styles/UWPScrollBarStyle.xaml" />
-            </ResourceDictionary.MergedDictionaries>-->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/ModernScrollBarStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <Style x:Key="FocusVisual">
@@ -30,6 +31,7 @@
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}"/>
                 <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Focusable" Value="False"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="Padding" Value="1"/>
@@ -70,13 +72,13 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
                             <Grid Background="Transparent">
-                                <Border x:Name="HighlightBorder" BorderThickness="0" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
+                                <Border x:Name="HighlightBorder" BorderThickness="0" Background="{DynamicResource SystemChromeLow}" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
                                 <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <!-- Setting the opacity of the highlight border to improve the contrast of the AccentColorbrush when selected. In UWP we could call a different brush, in WPF we need to play with the opacity of the WindowGlassBrush-->
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.1" />
+                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="1" />
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
@@ -88,11 +90,13 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+                <Setter Property="Focusable" Value="False" />
             </Style>
 
             <Style x:Key="CommandButtonListViewItemContainerStyle"  TargetType="ListViewItem">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="1" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -113,6 +117,33 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <Style x:Key="CollapsableTextblock" TargetType="TextBlock">
+                <Style.Triggers>
+                    <Trigger Property="Text" Value="">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style TargetType="{x:Type ToolTip}" >
+                <Setter Property="OverridesDefaultStyle" Value="true" />
+                <Setter Property="HasDropShadow" Value="True" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Placement" Value="Bottom" />
+                <Setter Property="VerticalOffset" Value="0" />
+                <Setter Property="Padding" Value="8" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToolTip}" >
+                            <Grid Margin="8,2" >
+                                <Rectangle Fill="{DynamicResource ToolTipBackgroundBrushKey}" RadiusX="4" RadiusY="4" Stroke="{DynamicResource ToolTipBorderBrushKey}" StrokeThickness="1"/>
+                                <ContentPresenter Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -123,22 +154,28 @@
             Background="Transparent"
             BorderThickness="0"
             MaxHeight="{Binding Results.MaxHeight}"
-            MinHeight="{Binding Results.MinHeight}"          
             Margin="0"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             Padding="0, 0"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"       
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"       
+            ScrollViewer.VerticalScrollBarVisibility="Auto"       
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}">
+            ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}"
+            AutomationProperties.Name="{x:Static p:Resources.Results}">
             
             <!--AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"-->
             <!--Style="{StaticResource ListViewNoAnimations}"-->
             <ListView.ItemTemplate>
-                <DataTemplate >
-                    <Grid Height="72" Width="642" Background="Transparent" >
+                <DataTemplate>
+                    <Grid 
+                        Height="72" 
+                        Width="642" 
+                        Background="Transparent"
+                        ToolTipService.BetweenShowDelay="0"
+                        ToolTipService.InitialShowDelay="1000"
+                        >
                         <Behaviors:Interaction.Triggers>
                             <Behaviors:EventTrigger EventName="MouseEnter">
                                 <Behaviors:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
@@ -156,10 +193,29 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
-                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
-                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" Margin="0,2,0,0" VerticalAlignment="Top"/>
-                        <ListView                                  
+                        <Grid.ToolTip>
+                            <ToolTip Visibility="{Binding Result.ToolTipVisibility}">
+                                <StackPanel Margin="8,6">
+                                    <TextBlock 
+                                        Style="{DynamicResource CollapsableTextblock}"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontWeight="Bold" FontSize="12"
+                                        Text="{Binding Result.ToolTipData.Title}"
+                                        TextWrapping="Wrap" 
+                                        RenderOptions.ClearTypeHint="Enabled" />
+                                    <TextBlock 
+                                        Style="{DynamicResource CollapsableTextblock}"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontSize="12"
+                                        Text="{Binding Result.ToolTipData.Text}"                               
+                                        TextWrapping="Wrap" 
+                                        RenderOptions.ClearTypeHint="Enabled" />
+                                </StackPanel>
+                            </ToolTip>
+                        </Grid.ToolTip>
+                        <Image AutomationProperties.Name="{x:Static p:Resources.AppIcon}" x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
+                        <TextBlock AutomationProperties.Name="{x:Static p:Resources.Title}" x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom" RenderOptions.ClearTypeHint="Enabled"/>
+                        <TextBlock AutomationProperties.Name="{x:Static p:Resources.Subtitle}" x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top" RenderOptions.ClearTypeHint="Enabled"/>
+                        <ListView      
+                            AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemsCollection}"
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center"                                  
                             Background="Transparent"
@@ -170,10 +226,10 @@
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                             ItemsSource="{Binding ContextMenuItems}" 
                             SelectionMode="Single"
+                            Margin="0,0,-8,0"
                             SelectedIndex="{Binding ContextMenuSelectedIndex}"
                             Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
                             ItemContainerStyle="{StaticResource CommandButtonListViewItemContainerStyle}">
-                            <!-- Right margin is now set to 24 to cater for the scrollbar. If we fix the weird width issue we can put it back to 0 (or 8 if there's no spacing by default) -->
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal"
@@ -183,12 +239,14 @@
                             </ItemsControl.ItemsPanel>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
+                                    <Button AutomationProperties.Name="{x:Static p:Resources.ContextMenuItem}" Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <ToolTipService.ToolTip>
-                                            <TextBlock Text="{Binding Title}"/>
+                                            <ToolTip >
+                                                <TextBlock AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}" Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12" RenderOptions.ClearTypeHint="Enabled"/>
+                                            </ToolTip>
                                         </ToolTipService.ToolTip>
                                         <Button.Content>
-                                            <TextBlock FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>
+                                            <TextBlock AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}" FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}" RenderOptions.ClearTypeHint="Enabled"/>
                                         </Button.Content>
                                     </Button>
                                 </DataTemplate>

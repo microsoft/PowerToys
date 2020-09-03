@@ -14,6 +14,9 @@ namespace PowerPreviewSettings
     // Relative(HKLM/HKCU) sub key path of Preview Handlers list in registry.
     static LPCWSTR preview_handlers_subkey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
 
+    // Relative HKCR sub key path of SVG thumbnail provider in registry
+    static LPCWSTR svg_thumbnail_provider_subkey = L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}";
+
     // Base Settings Class Implementation
     FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper) :
         m_toggleSettingEnabled(toggleSettingEnabled),
@@ -126,5 +129,17 @@ namespace PowerPreviewSettings
     {
         // Delete the registry key to disable preview.
         return this->m_registryWrapper->DeleteRegistryValue(HKEY_CURRENT_USER, preview_handlers_subkey, this->GetCLSID());
+    }
+
+    LONG FileExplorerPreviewSettings::EnableThumbnailProvider()
+    {
+        // Add registry value to enable thumbnail provider.
+        return this->m_registryWrapper->SetRegistryValue(HKEY_CURRENT_USER, svg_thumbnail_provider_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
+    }
+
+    LONG FileExplorerPreviewSettings::DisableThumbnailProvider()
+    {
+        // Delete the registry key to disable thumbnail provider.
+        return this->m_registryWrapper->DeleteRegistryValue(HKEY_CURRENT_USER, svg_thumbnail_provider_subkey, this->GetCLSID());
     }
 }

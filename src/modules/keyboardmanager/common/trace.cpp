@@ -30,23 +30,40 @@ void Trace::EnableKeyboardManager(const bool enabled) noexcept
 }
 
 // Log number of key remaps when the user uses Edit Keyboard and saves settings
-void Trace::KeyRemapCount(const DWORD count) noexcept
+void Trace::KeyRemapCount(const DWORD keyToKeyCount, const DWORD keyToShortcutCount) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
         "KeyboardManager_KeyRemapCount",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(count, "KeyRemapCount"));
+        TraceLoggingValue(keyToKeyCount + keyToShortcutCount, "KeyRemapCount"),
+        TraceLoggingValue(keyToKeyCount, "KeyToKeyRemapCount"),
+        TraceLoggingValue(keyToShortcutCount, "KeyToShortcutRemapCount"));
 }
 
 // Log number of os level shortcut remaps when the user uses Edit Shortcuts and saves settings
-void Trace::OSLevelShortcutRemapCount(const DWORD count) noexcept
+void Trace::OSLevelShortcutRemapCount(const DWORD shortcutToShortcutCount, const DWORD shortcutToKeyCount) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
         "KeyboardManager_OSLevelShortcutRemapCount",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(count, "OSLevelShortcutRemapCount"));
+        TraceLoggingValue(shortcutToShortcutCount + shortcutToKeyCount, "OSLevelShortcutRemapCount"),
+        TraceLoggingValue(shortcutToShortcutCount, "OSLevelShortcutToShortcutRemapCount"),
+        TraceLoggingValue(shortcutToKeyCount, "OSLevelShortcutToKeyRemapCount"));
+}
+
+// Log number of app specific shortcut remaps when the user uses Edit Shortcuts and saves settings
+void Trace::AppSpecificShortcutRemapCount(const DWORD shortcutToShortcutCount, const DWORD shortcutToKeyCount) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "KeyboardManager_AppSpecificShortcutRemapCount",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingValue(shortcutToShortcutCount + shortcutToKeyCount, "AppSpecificShortcutRemapCount"),
+        TraceLoggingValue(shortcutToShortcutCount, "AppSpecificShortcutToShortcutRemapCount"),
+        TraceLoggingValue(shortcutToKeyCount, "AppSpecificShortcutToKeyRemapCount"));
 }

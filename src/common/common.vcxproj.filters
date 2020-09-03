@@ -111,6 +111,36 @@
     <ClInclude Include="two_way_pipe_message_ipc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="os-detect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RestartManagement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="debug_control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RcResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="appMutex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="processApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="comUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LowlevelKeyboardEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinHookEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="string_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
@@ -178,6 +208,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="os-detect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RestartManagement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RcResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="comUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

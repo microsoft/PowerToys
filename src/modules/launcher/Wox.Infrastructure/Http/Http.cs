@@ -1,4 +1,8 @@
-﻿using System.IO;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -23,6 +27,7 @@ namespace Wox.Infrastructure.Http
         }
 
         public static HttpProxy Proxy { private get; set; }
+
         public static IWebProxy WebProxy()
         {
             if (Proxy != null && Proxy.Enabled && !string.IsNullOrEmpty(Proxy.Server))
@@ -36,7 +41,7 @@ namespace Wox.Infrastructure.Http
                 {
                     var webProxy = new WebProxy(Proxy.Server, Proxy.Port)
                     {
-                        Credentials = new NetworkCredential(Proxy.UserName, Proxy.Password)
+                        Credentials = new NetworkCredential(Proxy.UserName, Proxy.Password),
                     };
                     return webProxy;
                 }

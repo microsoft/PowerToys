@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -7,28 +11,37 @@ namespace Wox.Core.Resource
 {
     public static class FontHelper
     {
-        static FontWeightConverter fontWeightConverter = new FontWeightConverter();
+        private static readonly FontWeightConverter _fontWeightConverter = new FontWeightConverter();
+
         public static FontWeight GetFontWeightFromInvariantStringOrNormal(string value)
         {
-            if (value == null) return FontWeights.Normal;
+            if (value == null)
+            {
+                return FontWeights.Normal;
+            }
 
             try
             {
-                return (FontWeight) fontWeightConverter.ConvertFromInvariantString(value);
+                return (FontWeight)_fontWeightConverter.ConvertFromInvariantString(value);
             }
-            catch {
+            catch
+            {
                 return FontWeights.Normal;
             }
         }
 
-        static FontStyleConverter fontStyleConverter = new FontStyleConverter();
+        private static readonly FontStyleConverter _fontStyleConverter = new FontStyleConverter();
+
         public static FontStyle GetFontStyleFromInvariantStringOrNormal(string value)
         {
-            if (value == null) return FontStyles.Normal;
+            if (value == null)
+            {
+                return FontStyles.Normal;
+            }
 
             try
             {
-                return (FontStyle)fontStyleConverter.ConvertFromInvariantString(value);
+                return (FontStyle)_fontStyleConverter.ConvertFromInvariantString(value);
             }
             catch
             {
@@ -36,13 +49,18 @@ namespace Wox.Core.Resource
             }
         }
 
-        static FontStretchConverter fontStretchConverter = new FontStretchConverter();
+        private static readonly FontStretchConverter _fontStretchConverter = new FontStretchConverter();
+
         public static FontStretch GetFontStretchFromInvariantStringOrNormal(string value)
         {
-            if (value == null) return FontStretches.Normal;
+            if (value == null)
+            {
+                return FontStretches.Normal;
+            }
+
             try
             {
-                return (FontStretch)fontStretchConverter.ConvertFromInvariantString(value);
+                return (FontStretch)_fontStretchConverter.ConvertFromInvariantString(value);
             }
             catch
             {
@@ -54,9 +72,9 @@ namespace Wox.Core.Resource
         {
             return family.FamilyTypefaces.OrderBy(o =>
             {
-                return Math.Abs(o.Stretch.ToOpenTypeStretch() - FontStretches.Normal.ToOpenTypeStretch()) * 100 +
+                return (Math.Abs(o.Stretch.ToOpenTypeStretch() - FontStretches.Normal.ToOpenTypeStretch()) * 100) +
                     Math.Abs(o.Weight.ToOpenTypeWeight() - FontWeights.Normal.ToOpenTypeWeight()) +
-                    (o.Style == FontStyles.Normal ? 0 : o.Style == FontStyles.Oblique ? 1 : 2) * 1000;
+                    ((o.Style == FontStyles.Normal ? 0 : o.Style == FontStyles.Oblique ? 1 : 2) * 1000);
             }).FirstOrDefault() ?? family.FamilyTypefaces.FirstOrDefault();
         }
 
@@ -68,6 +86,5 @@ namespace Wox.Core.Resource
             return family.FamilyTypefaces.FirstOrDefault(o => o.Style == styleObj && o.Weight == weightObj && o.Stretch == stretchObj)
                 ?? family.ChooseRegularFamilyTypeface();
         }
-
     }
 }

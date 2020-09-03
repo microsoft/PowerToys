@@ -1,22 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-
-    public class ImageresizerCustomSizeProperty
+    public class ImageResizerCustomSizeProperty
     {
         [JsonPropertyName("value")]
         public ImageSize Value { get; set; }
 
-        public ImageresizerCustomSizeProperty()
+        public ImageResizerCustomSizeProperty()
         {
-            this.Value = new ImageSize();
+            Value = new ImageSize();
         }
 
-        public ImageresizerCustomSizeProperty(ImageSize value)
+        public ImageResizerCustomSizeProperty(ImageSize value)
         {
             Value = value;
         }

@@ -15,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
     // Interaction logic for MainWindow.xaml.
     public partial class MainWindow : Window
     {
+        private bool isOpen = true;
+
         public MainWindow()
         {
             var bootTime = new System.Diagnostics.Stopwatch();
@@ -48,10 +50,27 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     System.Windows.Application.Current.Shutdown(); // close application
                 });
 
+                // send IPC Message
+                shellPage.SetCheckForUpdatesMessageCallback(msg =>
+                {
+                    Program.GetTwoWayIPCManager().Send(msg);
+                });
+
                 shellPage.SetElevationStatus(Program.IsElevated);
                 shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();
             }
+
+            // If the window is open, explicity force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
+            if (isOpen)
+            {
+                Show();
+            }
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            isOpen = false;
         }
     }
 }

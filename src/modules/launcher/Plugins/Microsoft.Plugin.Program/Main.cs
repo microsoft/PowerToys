@@ -1,162 +1,133 @@
-using Microsoft.PowerToys.Settings.UI.Lib;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Windows.Controls;
+using Microsoft.Plugin.Program.Programs;
+using Microsoft.Plugin.Program.Storage;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using Microsoft.Plugin.Program.Views;
-
 using Stopwatch = Wox.Infrastructure.Stopwatch;
-
 
 namespace Microsoft.Plugin.Program
 {
-    public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
     {
-        private static readonly object IndexLock = new object();
-        internal static Programs.Win32[] _win32s { get; set; }
-        internal static Programs.UWP.Application[] _uwps { get; set; }
-        internal static Settings _settings { get; set; }
-
-        FileSystemWatcher _watcher = null;
-        System.Timers.Timer _timer = null;
-
-        private static bool IsStartupIndexProgramsRequired => _settings.LastIndexTime.AddDays(3) < DateTime.Today;
+        internal static ProgramPluginSettings Settings { get; set; }
 
         private static PluginInitContext _context;
-
-        private static BinaryStorage<Programs.Win32[]> _win32Storage;
-        private static BinaryStorage<Programs.UWP.Application[]> _uwpStorage;
-        private readonly PluginJsonStorage<Settings> _settingsStorage;
+        private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
+        private bool _disposed;
+        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
+        private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
+        private static Win32ProgramRepository _win32ProgramRepository;
 
         public Main()
         {
-            _settingsStorage = new PluginJsonStorage<Settings>();
-            _settings = _settingsStorage.Load();
+            _settingsStorage = new PluginJsonStorage<ProgramPluginSettings>();
+            Settings = _settingsStorage.Load();
 
-            Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
-            {
-                _win32Storage = new BinaryStorage<Programs.Win32[]>("Win32");
-                _win32s = _win32Storage.TryLoad(new Programs.Win32[] { });
-                _uwpStorage = new BinaryStorage<Programs.UWP.Application[]>("UWP");
-                _uwps = _uwpStorage.TryLoad(new Programs.UWP.Application[] { });
-            });
-            Log.Info($"|Microsoft.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
-            Log.Info($"|Microsoft.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
+            // This helper class initializes the file system watchers based on the locations to watch
+            _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
+
+            // Initialize the Win32ProgramRepository with the settings object
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32Program>>("Win32"), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
 
             var a = Task.Run(() =>
             {
-                if (IsStartupIndexProgramsRequired || !_win32s.Any())
-                    Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", IndexWin32Programs);
+                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _win32ProgramRepository.IndexPrograms);
             });
 
             var b = Task.Run(() =>
             {
-                if (IsStartupIndexProgramsRequired || !_uwps.Any())
-                    Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", IndexUWPPrograms);
+                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _packageRepository.IndexPrograms);
             });
 
             Task.WaitAll(a, b);
 
-            _settings.LastIndexTime = DateTime.Today;
-
-            InitializeFileWatchers();
-            InitializeTimer();
+            Settings.LastIndexTime = DateTime.Today;
         }
 
         public void Save()
         {
             _settingsStorage.Save();
-            _win32Storage.Save(_win32s);
-            _uwpStorage.Save(_uwps);
         }
 
         public List<Result> Query(Query query)
         {
-            Programs.Win32[] win32;
-            Programs.UWP.Application[] uwps;
+            var results1 = _win32ProgramRepository.AsParallel()
+                .Where(p => p.Enabled)
+                .Select(p => p.Result(query.Search, _context.API));
 
-            lock (IndexLock)
+            var results2 = _packageRepository.AsParallel()
+                .Where(p => p.Enabled)
+                .Select(p => p.Result(query.Search, _context.API));
+
+            var result = results1.Concat(results2).Where(r => r != null && r.Score > 0);
+            if (result.Any())
             {
-                // just take the reference inside the lock to eliminate query time issues.
-                win32 = _win32s;
-                uwps = _uwps;
+                var maxScore = result.Max(x => x.Score);
+                result = result.Where(x => x.Score > Settings.MinScoreThreshold * maxScore);
             }
 
-            var results1 = win32.AsParallel()
-                .Where(p => p.Enabled)
-                .Select(p => p.Result(query.Search, _context.API));
-
-            var results2 = uwps.AsParallel()
-                .Where(p => p.Enabled)
-                .Select(p => p.Result(query.Search, _context.API));
-
-            var result = results1.Concat(results2).Where(r => r != null && r.Score > 0).ToList();
-            return result;
+            return result.ToList();
         }
 
         public void Init(PluginInitContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _context.API.ThemeChanged += OnThemeChanged;
+
+            UpdateUWPIconPath(_context.API.GetCurrentTheme());
         }
 
-        public static void IndexWin32Programs()
+        public void OnThemeChanged(Theme currentTheme, Theme newTheme)
         {
-            var win32S = Programs.Win32.All(_settings);
-            lock (IndexLock)
+            UpdateUWPIconPath(newTheme);
+        }
+
+        public void UpdateUWPIconPath(Theme theme)
+        {
+            foreach (UWPApplication app in _packageRepository)
             {
-                _win32s = win32S;
+                app.UpdatePath(theme);
             }
         }
 
-        public static void IndexUWPPrograms()
+        public void IndexPrograms()
         {
-            var windows10 = new Version(10, 0);
-            var support = Environment.OSVersion.Version.Major >= windows10.Major;
-
-            var applications = support ? Programs.UWP.All() : new Programs.UWP.Application[] { };
-            lock (IndexLock)
-            {
-                _uwps = applications;
-            }
-        }
-
-        public static void IndexPrograms()
-        {
-            var t1 = Task.Run(() => IndexWin32Programs());
-            var t2 = Task.Run(() => IndexUWPPrograms());
+            var t1 = Task.Run(() => _win32ProgramRepository.IndexPrograms());
+            var t2 = Task.Run(() => _packageRepository.IndexPrograms());
 
             Task.WaitAll(t1, t2);
 
-            _settings.LastIndexTime = DateTime.Today;
-        }
-
-        public Control CreateSettingPanel()
-        {
-            return new ProgramSetting(_context, _settings, _win32s, _uwps);
+            Settings.LastIndexTime = DateTime.Today;
         }
 
         public string GetTranslatedPluginTitle()
         {
-            return _context.API.GetTranslation("wox_plugin_program_plugin_name");
+            return Properties.Resources.wox_plugin_program_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return _context.API.GetTranslation("wox_plugin_program_plugin_description");
+            return Properties.Resources.wox_plugin_program_plugin_description;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
+            if (selectedResult == null)
+            {
+                throw new ArgumentNullException(nameof(selectedResult));
+            }
+
             var menuOptions = new List<ContextMenuResult>();
-            var program = selectedResult.ContextData as Programs.IProgram;
-            if (program != null)
+            if (selectedResult.ContextData is Programs.IProgram program)
             {
                 menuOptions = program.ContextMenus(_context.API);
             }
@@ -164,16 +135,27 @@ namespace Microsoft.Plugin.Program
             return menuOptions;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and show the user a warning message")]
         public static void StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
             try
             {
+                if (runProcess == null)
+                {
+                    throw new ArgumentNullException(nameof(runProcess));
+                }
+
+                if (info == null)
+                {
+                    throw new ArgumentNullException(nameof(info));
+                }
+
                 runProcess(info);
             }
             catch (Exception)
             {
                 var name = "Plugin: Program";
-                var message = $"Unable to start: {info.FileName}";
+                var message = $"Unable to start: {info?.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
             }
         }
@@ -183,55 +165,23 @@ namespace Microsoft.Plugin.Program
             IndexPrograms();
         }
 
-        public void UpdateSettings(PowerLauncherSettings settings)
+        public void Dispose()
         {
-        }
-        void InitializeFileWatchers()
-        {
-            // Create a new FileSystemWatcher and set its properties.
-            _watcher = new FileSystemWatcher();
-            var resolvedPath = Environment.ExpandEnvironmentVariables("%ProgramFiles%");
-            _watcher.Path = resolvedPath;
-
-            //Filter to create and deletes of 'microsoft.system.package.metadata' directories. 
-            _watcher.NotifyFilter = NotifyFilters.DirectoryName | NotifyFilters.FileName;
-            _watcher.IncludeSubdirectories = true;
-
-            // Add event handlers.
-            _watcher.Created += OnChanged;
-            _watcher.Deleted += OnChanged;
-
-            // Begin watching.
-            _watcher.EnableRaisingEvents = true;
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
-        void InitializeTimer()
+        protected virtual void Dispose(bool disposing)
         {
-            //multiple file writes occur on install / uninstall.  Adding a delay before actually indexing.
-            var delayInterval = 5000; 
-            _timer = new System.Timers.Timer(delayInterval);
-            _timer.Enabled = true;
-            _timer.AutoReset = false;
-            _timer.Elapsed += FileWatchElapsedTimer;
-            _timer.Stop();
-        }
-
-        //When a watched directory changes then reset the timer.
-        private void OnChanged(object source, FileSystemEventArgs e)
-        {
-            Log.Debug($"|Microsoft.Plugin.Program.Main|Directory Changed: {e.FullPath} {e.ChangeType} - Resetting timer.");
-            _timer.Stop();
-            _timer.Start();
-        }
-
-        private void FileWatchElapsedTimer(object sender, ElapsedEventArgs e)
-        {
-            Task.Run(() =>
+            if (!_disposed)
             {
-                Log.Debug($"|Microsoft.Plugin.Program.Main| ReIndexing UWP Programs");
-                IndexUWPPrograms();
-                Log.Debug($"|Microsoft.Plugin.Program.Main| Done ReIndexing");
-            });
+                if (disposing)
+                {
+                    _context.API.ThemeChanged -= OnThemeChanged;
+                    _win32ProgramRepositoryHelper.Dispose();
+                    _disposed = true;
+                }
+            }
         }
     }
 }

@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.WindowWalker.Components;
 using Wox.Plugin;
@@ -8,7 +12,9 @@ namespace Microsoft.Plugin.WindowWalker
     public class Main : IPlugin, IPluginI18n
     {
         private static List<SearchResult> _results = new List<SearchResult>();
-        private static string IcoPath = "Images/windowwalker.png";
+
+        private string IconPath { get; set; }
+
         private PluginInitContext Context { get; set; }
 
         static Main()
@@ -24,30 +30,49 @@ namespace Microsoft.Plugin.WindowWalker
             return _results.Select(x => new Result()
             {
                 Title = x.Result.Title,
-                IcoPath = IcoPath,
+                IcoPath = IconPath,
                 SubTitle = "Running: " + x.Result.ProcessName,
                 Action = c =>
                 {
                     x.Result.SwitchToWindow();
                     return true;
-                }
-            }
-            ).ToList();
+                },
+            }).ToList();
         }
 
         public void Init(PluginInitContext context)
         {
             Context = context;
+            Context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(Context.API.GetCurrentTheme());
+        }
+
+        // Todo : Update with theme based IconPath
+        private void UpdateIconPath(Theme theme)
+        {
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
+                IconPath = "Images/windowwalker.light.png";
+            }
+            else
+            {
+                IconPath = "Images/windowwalker.dark.png";
+            }
+        }
+
+        private void OnThemeChanged(Theme currentTheme, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
         }
 
         public string GetTranslatedPluginTitle()
         {
-            return Context.API.GetTranslation("wox_plugin_windowwalker_plugin_name");
+            return Properties.Resources.wox_plugin_windowwalker_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return Context.API.GetTranslation("wox_plugin_windowwalker_plugin_description");
+            return Properties.Resources.wox_plugin_windowwalker_plugin_description;
         }
 
         private static void SearchResultUpdated(object sender, SearchController.SearchResultUpdateEventArgs e)

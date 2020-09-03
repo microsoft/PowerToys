@@ -1,54 +1,49 @@
 #pragma once
-#include <keyboardmanager/common/KeyboardManagerState.h>
 #include "KeyDropDownControl.h"
+#include <keyboardmanager/common/Shortcut.h>
+
+class KeyboardManagerState;
+namespace winrt::Windows::UI::Xaml
+{
+    struct XamlRoot;
+    namespace Controls
+    {
+        struct StackPanel;
+        struct Grid;
+    }
+}
 
 class SingleKeyRemapControl
 {
 private:
-    // Drop down to display the selected remap key
-    KeyDropDownControl singleKeyRemapDropDown;
-
     // Button to type the remap key
-    Button typeKey;
+    winrt::Windows::Foundation::IInspectable typeKey;
 
     // StackPanel to parent the above controls
-    StackPanel singleKeyRemapControlLayout;
+    winrt::Windows::Foundation::IInspectable singleKeyRemapControlLayout;
+
+    // Stack panel for the drop downs to display the selected shortcut for the hybrid case
+    winrt::Windows::Foundation::IInspectable hybridDropDownStackPanel;
 
 public:
+    // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
+    std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
     // Handle to the current Edit Keyboard Window
     static HWND EditKeyboardWindowHandle;
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
     // Stores the current list of remappings
-    static std::vector<std::vector<DWORD>> singleKeyRemapBuffer;
+    static RemapBuffer singleKeyRemapBuffer;
 
-    SingleKeyRemapControl(Grid table, const int colIndex) :
-        singleKeyRemapDropDown(false)
-    {
-        typeKey.Content(winrt::box_value(L"Type Key"));
-        typeKey.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
-        typeKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-            keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated, EditKeyboardWindowHandle);
-            // Using the XamlRoot of the typeKey to get the root of the XAML host
-            createDetectKeyWindow(sender, sender.as<Button>().XamlRoot(), singleKeyRemapBuffer, *keyboardManagerState);
-        });
-
-        singleKeyRemapControlLayout.Margin({ 0, 0, 0, 10 });
-        singleKeyRemapControlLayout.Spacing(10);
-
-        singleKeyRemapControlLayout.Children().Append(typeKey);
-        singleKeyRemapControlLayout.Children().Append(singleKeyRemapDropDown.GetComboBox());
-        // Set selection handler for the drop down
-        singleKeyRemapDropDown.SetSelectionHandler(table, singleKeyRemapControlLayout, colIndex, singleKeyRemapBuffer);
-        singleKeyRemapControlLayout.UpdateLayout();
-    }
+    // constructor
+    SingleKeyRemapControl(Grid table, const int colIndex);
 
     // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-    static void AddNewControlKeyRemapRow(Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey = NULL, const DWORD newKey = NULL);
+    static void AddNewControlKeyRemapRow(winrt::Windows::UI::Xaml::Controls::Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey = NULL, const std::variant<DWORD, Shortcut> newKey = NULL);
 
     // Function to return the stack panel element of the SingleKeyRemapControl. This is the externally visible UI element which can be used to add it to other layouts
-    StackPanel getSingleKeyRemapControl();
+    winrt::Windows::UI::Xaml::Controls::StackPanel getSingleKeyRemapControl();
 
     // Function to create the detect remap keys UI window
-    void createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState);
+    void createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState);
 };

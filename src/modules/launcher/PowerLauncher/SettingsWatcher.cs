@@ -1,38 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Wox.Plugin;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Wox.Infrastructure.UserSettings;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using System;
 using System.Diagnostics;
-using System.Threading;
-using Wox.Infrastructure.Hotkey;
-using System.Windows.Input;
-using Wox.Core.Plugin;
 using System.IO;
+using System.Threading;
+using System.Windows.Input;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Wox.Core.Plugin;
+using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.UserSettings;
+using Wox.Plugin;
 
 namespace PowerLauncher
 {
     // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
     public class SettingsWatcher : BaseModel
     {
-        private static int MAX_RETRIES = 10;
-        private FileSystemWatcher _watcher;
-        private Settings _settings;
+        private const int MaxRetries = 10;
+        private static readonly object _watcherSyncObject = new object();
+        private readonly FileSystemWatcher _watcher;
+        private readonly Settings _settings;
+
         public SettingsWatcher(Settings settings)
         {
             _settings = settings;
+
             // Set up watcher
-            try
-            {
-                _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e.Message);
-            }
+            _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();
@@ -40,19 +36,28 @@ namespace PowerLauncher
 
         public void OverloadSettings()
         {
-            Monitor.Enter(_watcher);
+            Monitor.Enter(_watcherSyncObject);
             var retry = true;
-            for (int i = 0; retry && i < MAX_RETRIES; i++)
+            var retryCount = 0;
+            while (retry)
             {
-                retry = false;
                 try
                 {
-                    var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.POWERTOYNAME);
+                    retryCount++;
+                    if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+                    {
+                        Debug.WriteLine("PT Run settings.json was missing, creating a new one");
 
-                    var openPowerlauncher = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
+                        var defaultSettings = new PowerLauncherSettings();
+                        defaultSettings.Save();
+                    }
+
+                    var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+
+                    var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
                     if (_settings.Hotkey != openPowerlauncher)
                     {
-                        _settings.Hotkey = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
+                        _settings.Hotkey = openPowerlauncher;
                     }
 
                     var shell = PluginManager.AllPlugins.Find(pp => pp.Metadata.Name == "Shell");
@@ -62,32 +67,53 @@ namespace PowerLauncher
                         shellSettings.UpdateSettings(overloadSettings);
                     }
 
-                    if (_settings.MaxResultsToShow != overloadSettings.properties.maximum_number_of_results)
+                    if (_settings.MaxResultsToShow != overloadSettings.Properties.MaximumNumberOfResults)
                     {
-                        _settings.MaxResultsToShow = overloadSettings.properties.maximum_number_of_results;
+                        _settings.MaxResultsToShow = overloadSettings.Properties.MaximumNumberOfResults;
                     }
 
-                    if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.properties.ignore_hotkeys_in_fullscreen)
+                    if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.Properties.IgnoreHotkeysInFullscreen)
                     {
-                        _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
+                        _settings.IgnoreHotkeysOnFullscreen = overloadSettings.Properties.IgnoreHotkeysInFullscreen;
                     }
+
+                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer Plugin", StringComparison.OrdinalIgnoreCase));
+                    if (indexer != null)
+                    {
+                        var indexerSettings = indexer.Plugin as ISettingProvider;
+                        indexerSettings.UpdateSettings(overloadSettings);
+                    }
+
+                    if (_settings.ClearInputOnLaunch != overloadSettings.Properties.ClearInputOnLaunch)
+                    {
+                        _settings.ClearInputOnLaunch = overloadSettings.Properties.ClearInputOnLaunch;
+                    }
+
+                    retry = false;
                 }
-                catch (Exception e)
+
+                // the settings application can hold a lock on the settings.json file which will result in a IOException.
+                // This should be changed to properly synch with the settings app instead of retrying.
+                catch (IOException e)
                 {
-                    retry = true;
+                    if (retryCount > MaxRetries)
+                    {
+                        retry = false;
+                    }
+
                     Thread.Sleep(1000);
                     Debug.WriteLine(e.Message);
                 }
             }
-            Monitor.Exit(_watcher);
+
+            Monitor.Exit(_watcherSyncObject);
         }
 
-        private string ConvertHotkey(HotkeySettings hotkey)
+        private static string ConvertHotkey(HotkeySettings hotkey)
         {
             Key key = KeyInterop.KeyFromVirtualKey(hotkey.Code);
             HotkeyModel model = new HotkeyModel(hotkey.Alt, hotkey.Shift, hotkey.Win, hotkey.Ctrl, key);
             return model.ToString();
         }
-
     }
 }

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include "PowerRenameUI.h"
 #include "dpi_aware.h"
 #include <commctrl.h>
@@ -9,13 +9,9 @@
 #include <thread>
 #include <trace.h>
 
-extern HINSTANCE g_hInst;
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-int g_rgnMatchModeResIDs[] = {
-    IDS_ENTIREITEMNAME,
-    IDS_NAMEONLY,
-    IDS_EXTENSIONONLY
-};
+extern HINSTANCE g_hInst;
 
 enum
 {
@@ -39,7 +35,10 @@ FlagCheckboxMap g_flagCheckboxMap[] = {
     { MatchAllOccurences, IDC_CHECK_MATCHALLOCCURENCES },
     { ExcludeFolders, IDC_CHECK_EXCLUDEFOLDERS },
     { NameOnly, IDC_CHECK_NAMEONLY },
-    { ExtensionOnly, IDC_CHECK_EXTENSIONONLY }
+    { ExtensionOnly, IDC_CHECK_EXTENSIONONLY },
+    { Uppercase, IDC_TRANSFORM_UPPERCASE },
+    { Lowercase, IDC_TRANSFORM_LOWERCASE },
+    { Titlecase, IDC_TRANSFORM_TITLECASE }
 };
 
 struct RepositionMap
@@ -151,13 +150,13 @@ IFACEMETHODIMP CPowerRenameUI::Update()
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameUI::get_hwnd(_Out_ HWND* hwnd)
+IFACEMETHODIMP CPowerRenameUI::GetHwnd(_Out_ HWND* hwnd)
 {
     *hwnd = m_hwnd;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameUI::get_showUI(_Out_ bool* showUI)
+IFACEMETHODIMP CPowerRenameUI::GetShowUI(_Out_ bool* showUI)
 {
     // Let callers know that it is OK to show UI (ex: progress dialog, error dialog and conflict dialog UI)
     *showUI = true;
@@ -172,12 +171,13 @@ IFACEMETHODIMP CPowerRenameUI::OnItemAdded(_In_ IPowerRenameItem*)
 
 IFACEMETHODIMP CPowerRenameUI::OnUpdate(_In_ IPowerRenameItem*)
 {
-    UINT itemCount = 0;
+    UINT visibleItemCount = 0;
     if (m_spsrm)
     {
-        m_spsrm->GetItemCount(&itemCount);
+        m_spsrm->GetVisibleItemCount(&visibleItemCount);
     }
-    m_listview.RedrawItems(0, itemCount);
+    m_listview.SetItemCount(visibleItemCount);
+    m_listview.RedrawItems(0, visibleItemCount);
     _UpdateCounts();
     return S_OK;
 }
@@ -382,7 +382,7 @@ void CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
         m_disableCountUpdate = false;
 
         UINT itemCount = 0;
-        m_spsrm->GetItemCount(&itemCount);
+        m_spsrm->GetVisibleItemCount(&itemCount);
         m_listview.SetItemCount(itemCount);
 
         _UpdateCounts();
@@ -397,14 +397,14 @@ HRESULT CPowerRenameUI::_ReadSettings()
     if (CSettingsInstance().GetPersistState())
     {
         flags = CSettingsInstance().GetFlags();
-        m_spsrm->put_flags(flags);
+        m_spsrm->PutFlags(flags);
 
         SetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, CSettingsInstance().GetSearchText().c_str());
         SetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, CSettingsInstance().GetReplaceText().c_str());
     }
     else
     {
-        m_spsrm->get_flags(&flags);
+        m_spsrm->GetFlags(&flags);
     }
 
     _SetCheckboxesFromFlags(flags);
@@ -418,7 +418,7 @@ HRESULT CPowerRenameUI::_WriteSettings()
     if (CSettingsInstance().GetPersistState())
     {
         DWORD flags = 0;
-        m_spsrm->get_flags(&flags);
+        m_spsrm->GetFlags(&flags);
         CSettingsInstance().SetFlags(flags);
 
         wchar_t buffer[CSettings::MAX_INPUT_STRING_LEN];
@@ -498,7 +498,7 @@ void CPowerRenameUI::_OnAbout()
     SHELLEXECUTEINFO info = { 0 };
     info.cbSize = sizeof(SHELLEXECUTEINFO);
     info.lpVerb = L"open";
-    info.lpFile = L"https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename";
+    info.lpFile = L"https://aka.ms/PowerToysOverview_PowerRename";
     info.nShow = SW_SHOWDEFAULT;
 
     ShellExecuteEx(&info);
@@ -596,6 +596,9 @@ INT_PTR CPowerRenameUI::_DlgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CPowerRenameUI::_OnInitDlg()
 {
+    // Load text in the dialog controls
+    _InitDlgText();
+
     m_hwndLV = GetDlgItem(m_hwnd, IDC_LIST_PREVIEW);
 
     m_listview.Init(m_hwndLV);
@@ -649,6 +652,39 @@ void CPowerRenameUI::_OnInitDlg()
     m_initialized = true;
 }
 
+void UpdateDlgControl(HWND dlg, int item_id, int string_id)
+{
+    HWND control = GetDlgItem(dlg, item_id);
+    SetWindowText(control, GET_RESOURCE_STRING(string_id).c_str());
+}
+
+void CPowerRenameUI::_InitDlgText()
+{
+    // load strings
+    SetWindowText(m_hwnd, GET_RESOURCE_STRING(IDS_APP_TITLE).c_str());
+    UpdateDlgControl(m_hwnd, IDC_CHECK_USEREGEX, IDS_USE_REGEX);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_CASESENSITIVE, IDS_CASE_SENSITIVE);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_MATCHALLOCCURENCES, IDS_MATCH_ALL);
+    UpdateDlgControl(m_hwnd, IDC_TRANSFORM_UPPERCASE, IDS_MAKE_UPPERCASE);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_EXCLUDEFILES, IDS_EXCLUDE_FILES);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_EXCLUDEFOLDERS, IDS_EXCLUDE_FOLDERS);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_EXCLUDESUBFOLDERS, IDS_EXCLUDE_SUBFOLDER);
+    UpdateDlgControl(m_hwnd, IDC_TRANSFORM_LOWERCASE, IDS_MAKE_LOWERCASE);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_ENUMITEMS, IDS_ENUMERATE_ITEMS);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_NAMEONLY, IDS_ITEM_NAME_ONLY);
+    UpdateDlgControl(m_hwnd, IDC_CHECK_EXTENSIONONLY, IDS_ITEM_EXTENSION_ONLY);
+    UpdateDlgControl(m_hwnd, IDC_TRANSFORM_TITLECASE, IDS_MAKE_TITLECASE);
+    UpdateDlgControl(m_hwnd, ID_RENAME, IDS_RENAME_BUTTON);
+    UpdateDlgControl(m_hwnd, ID_ABOUT, IDS_HELP_BUTTON);
+    UpdateDlgControl(m_hwnd, IDCANCEL, IDS_CANCEL_BUTTON);
+    UpdateDlgControl(m_hwnd, IDC_SEARCH_FOR, IDS_SEARCH_FOR);
+    UpdateDlgControl(m_hwnd, IDC_REPLACE_WITH, IDS_REPLACE_WITH);
+    UpdateDlgControl(m_hwnd, IDC_STATUS_MESSAGE, IDS_ITEMS_SELECTED);
+    UpdateDlgControl(m_hwnd, IDC_OPTIONSGROUP, IDS_OPTIONS);
+    UpdateDlgControl(m_hwnd, IDC_PREVIEWGROUP, IDS_PREVIEW);
+    UpdateDlgControl(m_hwnd, IDC_SEARCHREPLACEGROUP, IDS_RENAME_CRITERIA);
+}
+
 void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
 {
     switch (LOWORD(wParam))
@@ -683,6 +719,9 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
     case IDC_CHECK_USEREGEX:
     case IDC_CHECK_EXTENSIONONLY:
     case IDC_CHECK_NAMEONLY:
+    case IDC_TRANSFORM_UPPERCASE:
+    case IDC_TRANSFORM_LOWERCASE:
+    case IDC_TRANSFORM_TITLECASE:
         if (BN_CLICKED == HIWORD(wParam))
         {
             _ValidateFlagCheckbox(LOWORD(wParam));
@@ -698,12 +737,18 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
     LPNMHDR pnmdr = (LPNMHDR)lParam;
     LPNMLISTVIEW pnmlv = (LPNMLISTVIEW)pnmdr;
     NMLVEMPTYMARKUP* pnmMarkup = NULL;
-
+    
     if (pnmdr)
     {
         BOOL checked = FALSE;
         switch (pnmdr->code)
         {
+        case LVN_COLUMNCLICK:
+            if (m_spsrm)
+            {
+                m_listview.OnColumnClick(m_spsrm, ((LPNMLISTVIEW)lParam)->iSubItem);
+            }
+            break;
         case HDN_ITEMSTATEICONCLICK:
             if (m_spsrm)
             {
@@ -848,16 +893,16 @@ void CPowerRenameUI::_OnSearchReplaceChanged()
 {
     // Pass updated search and replace terms to the IPowerRenameRegEx handler
     CComPtr<IPowerRenameRegEx> spRegEx;
-    if (m_spsrm && SUCCEEDED(m_spsrm->get_renameRegEx(&spRegEx)))
+    if (m_spsrm && SUCCEEDED(m_spsrm->GetRenameRegEx(&spRegEx)))
     {
         wchar_t buffer[CSettings::MAX_INPUT_STRING_LEN];
         buffer[0] = L'\0';
         GetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer, ARRAYSIZE(buffer));
-        spRegEx->put_searchTerm(buffer);
+        spRegEx->PutSearchTerm(buffer);
 
         buffer[0] = L'\0';
         GetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, buffer, ARRAYSIZE(buffer));
-        spRegEx->put_replaceTerm(buffer);
+        spRegEx->PutReplaceTerm(buffer);
     }
 }
 
@@ -875,7 +920,7 @@ DWORD CPowerRenameUI::_GetFlagsFromCheckboxes()
     // Ensure we update flags
     if (m_spsrm)
     {
-        m_spsrm->put_flags(flags);
+        m_spsrm->PutFlags(flags);
     }
 
     return flags;
@@ -891,7 +936,31 @@ void CPowerRenameUI::_SetCheckboxesFromFlags(_In_ DWORD flags)
 
 void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
 {
-    if (checkBoxId == IDC_CHECK_NAMEONLY)
+    if (checkBoxId == IDC_TRANSFORM_UPPERCASE )
+    {
+        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE)) == BST_CHECKED)
+        {
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE), FALSE);
+        }
+    }
+    else if (checkBoxId == IDC_TRANSFORM_LOWERCASE)
+    {
+        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE)) == BST_CHECKED)
+        {
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE), FALSE);
+        }
+    }
+    else if (checkBoxId == IDC_TRANSFORM_TITLECASE)
+    {
+        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE)) == BST_CHECKED)
+        {
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
+        }
+    }
+    else if (checkBoxId == IDC_CHECK_NAMEONLY)
     {
         if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_CHECK_NAMEONLY)) == BST_CHECKED)
         {
@@ -1022,31 +1091,37 @@ void CPowerRenameListView::ToggleAll(_In_ IPowerRenameManager* psrm, _In_ bool s
 {
     if (m_hwndLV)
     {
-        UINT itemCount = 0;
+        UINT visibleItemCount = 0, itemCount = 0;
         psrm->GetItemCount(&itemCount);
         for (UINT i = 0; i < itemCount; i++)
         {
             CComPtr<IPowerRenameItem> spItem;
             if (SUCCEEDED(psrm->GetItemByIndex(i, &spItem)))
             {
-                spItem->put_selected(selected);
+                spItem->PutSelected(selected);
             }
         }
 
-        RedrawItems(0, itemCount);
+        psrm->GetVisibleItemCount(&visibleItemCount);
+        SetItemCount(visibleItemCount);
+        RedrawItems(0, visibleItemCount);
     }
 }
 
 void CPowerRenameListView::ToggleItem(_In_ IPowerRenameManager* psrm, _In_ int item)
 {
     CComPtr<IPowerRenameItem> spItem;
-    if (SUCCEEDED(psrm->GetItemByIndex(item, &spItem)))
+    if (SUCCEEDED(psrm->GetVisibleItemByIndex(item, &spItem)))
     {
         bool selected = false;
-        spItem->get_selected(&selected);
-        spItem->put_selected(!selected);
+        spItem->GetSelected(&selected);
+        spItem->PutSelected(!selected);
 
-        RedrawItems(item, item);
+        
+        UINT visibleItemCount = 0;
+        psrm->GetVisibleItemCount(&visibleItemCount);
+        SetItemCount(visibleItemCount);
+        RedrawItems(0, visibleItemCount);
     }
 }
 
@@ -1084,18 +1159,19 @@ void CPowerRenameListView::UpdateItemCheckState(_In_ IPowerRenameManager* psrm, 
     if (psrm && m_hwndLV && (iItem > -1))
     {
         CComPtr<IPowerRenameItem> spItem;
-        if (SUCCEEDED(psrm->GetItemByIndex(iItem, &spItem)))
+        if (SUCCEEDED(psrm->GetVisibleItemByIndex(iItem, &spItem)))
         {
             bool checked = ListView_GetCheckState(m_hwndLV, iItem);
-            spItem->put_selected(checked);
+            spItem->PutSelected(checked);
 
             UINT uSelected = (checked) ? LVIS_SELECTED : 0;
             ListView_SetItemState(m_hwndLV, iItem, uSelected, LVIS_SELECTED);
 
             // Update the rename column if necessary
-            int id = 0;
-            spItem->get_id(&id);
-            RedrawItems(id, id);
+            UINT visibleItemCount = 0;
+            psrm->GetVisibleItemCount(&visibleItemCount);
+            SetItemCount(visibleItemCount);
+            RedrawItems(0, visibleItemCount);
         }
 
         // Get the total number of list items and compare it to what is selected
@@ -1112,7 +1188,7 @@ void CPowerRenameListView::UpdateItemCheckState(_In_ IPowerRenameManager* psrm, 
 void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi)
 {
     UINT count = 0;
-    psrm->GetItemCount(&count);
+    psrm->GetVisibleItemCount(&count);
     if (plvdi->item.iItem < 0 || plvdi->item.iItem > static_cast<int>(count))
     {
         // Invalid index
@@ -1120,11 +1196,11 @@ void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout
     }
 
     CComPtr<IPowerRenameItem> renameItem;
-    if (SUCCEEDED(psrm->GetItemByIndex((int)plvdi->item.iItem, &renameItem)))
+    if (SUCCEEDED(psrm->GetVisibleItemByIndex((int)plvdi->item.iItem, &renameItem)))
     {
         if (plvdi->item.mask & LVIF_IMAGE)
         {
-            renameItem->get_iconIndex(&plvdi->item.iImage);
+            renameItem->GetIconIndex(&plvdi->item.iImage);
         }
 
         if (plvdi->item.mask & LVIF_STATE)
@@ -1132,7 +1208,7 @@ void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout
             plvdi->item.stateMask = LVIS_STATEIMAGEMASK;
 
             bool isSelected = false;
-            renameItem->get_selected(&isSelected);
+            renameItem->GetSelected(&isSelected);
             if (isSelected)
             {
                 // Turn check box on
@@ -1148,14 +1224,14 @@ void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout
         if (plvdi->item.mask & LVIF_PARAM)
         {
             int id = 0;
-            renameItem->get_id(&id);
+            renameItem->GetId(&id);
             plvdi->item.lParam = static_cast<LPARAM>(id);
         }
 
         if (plvdi->item.mask & LVIF_INDENT)
         {
             UINT depth = 0;
-            renameItem->get_depth(&depth);
+            renameItem->GetDepth(&depth);
             plvdi->item.iIndent = static_cast<int>(depth);
         }
 
@@ -1164,16 +1240,16 @@ void CPowerRenameListView::GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout
             PWSTR subItemText = nullptr;
             if (plvdi->item.iSubItem == COL_ORIGINAL_NAME)
             {
-                renameItem->get_originalName(&subItemText);
+                renameItem->GetOriginalName(&subItemText);
             }
             else if (plvdi->item.iSubItem == COL_NEW_NAME)
             {
                 DWORD flags = 0;
-                psrm->get_flags(&flags);
+                psrm->GetFlags(&flags);
                 bool shouldRename = false;
                 if (SUCCEEDED(renameItem->ShouldRenameItem(flags, &shouldRename)) && shouldRename)
                 {
-                    renameItem->get_newName(&subItemText);
+                    renameItem->GetNewName(&subItemText);
                 }
             }
 
@@ -1199,7 +1275,11 @@ void CPowerRenameListView::RedrawItems(_In_ int first, _In_ int last)
 
 void CPowerRenameListView::SetItemCount(_In_ UINT itemCount)
 {
-    ListView_SetItemCount(m_hwndLV, itemCount);
+    if (m_itemCount != itemCount)
+    {
+        m_itemCount = itemCount;
+        ListView_SetItemCount(m_hwndLV, itemCount);
+    }
 }
 
 void CPowerRenameListView::_UpdateColumns()
@@ -1282,3 +1362,72 @@ void CPowerRenameListView::_UpdateHeaderCheckState(_In_ bool check)
         Header_SetItem(hwndHeader, 0, &hdi);
     }
 }
+
+void CPowerRenameListView::_UpdateHeaderFilterState(_In_ DWORD filter)
+{
+    // Get a handle to the header of the columns
+    HWND hwndHeader = ListView_GetHeader(m_hwndLV);
+    if (hwndHeader)
+    {
+        wchar_t bufferOriginal[MAX_PATH] = { 0 };
+        bufferOriginal[0] = L'\0';
+
+        // Retrieve the existing header first so we
+        // don't trash the text already there
+        HDITEM hdiOriginal = { 0 };
+        hdiOriginal.mask = HDI_FORMAT | HDI_TEXT;
+        hdiOriginal.pszText = bufferOriginal;
+        hdiOriginal.cchTextMax = ARRAYSIZE(bufferOriginal);
+
+        Header_GetItem(hwndHeader, 0, &hdiOriginal);
+
+        if (filter == PowerRenameFilters::Selected || filter == PowerRenameFilters::FlagsApplicable)
+        {
+            hdiOriginal.fmt |= HDF_SORTDOWN;
+        }
+        else
+        {
+            hdiOriginal.fmt &= ~HDF_SORTDOWN;
+        }
+
+        Header_SetItem(hwndHeader, 0, &hdiOriginal);
+
+        wchar_t bufferRename[MAX_PATH] = { 0 };
+        bufferRename[0] = L'\0';
+
+        // Retrieve the existing header first so we
+        // don't trash the text already there
+        HDITEM hdiRename = { 0 };
+        hdiRename.mask = HDI_FORMAT | HDI_TEXT;
+        hdiRename.pszText = bufferRename;
+        hdiRename.cchTextMax = ARRAYSIZE(bufferRename);
+
+        Header_GetItem(hwndHeader, 1, &hdiRename);
+
+        if (filter == PowerRenameFilters::ShouldRename)
+        {
+            hdiRename.fmt |= HDF_SORTDOWN;
+        }
+        else
+        {
+            hdiRename.fmt &= ~HDF_SORTDOWN;
+        }
+
+        Header_SetItem(hwndHeader, 1, &hdiRename);
+
+    }
+}
+
+void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ int columnNumber)
+{
+    DWORD filter = PowerRenameFilters::None;
+    psrm->SwitchFilter(columnNumber);
+    UINT visibleItemCount = 0;
+    psrm->GetVisibleItemCount(&visibleItemCount);
+    SetItemCount(visibleItemCount);
+    RedrawItems(0, visibleItemCount);
+
+    psrm->GetFilter(&filter);
+    _UpdateHeaderFilterState(filter);
+}
+    

@@ -1,8 +1,8 @@
 ---
-name: Bug report
+name: 🐛 Bug report
 about: Report errors or unexpected behavior
 title: ''
-labels: ''
+labels: Issue-Bug
 assignees: ''
 
 ---
@@ -12,26 +12,27 @@ assignees: ''
 Instead, send dumps/traces to secure@microsoft.com, referencing this GitHub issue.
 -->
 
-# Environment
+## ℹ Computer information
 
-```
-Windows build number: [run "ver" at a command prompt]
-PowerToys version: 
-PowerToy module for which you are reporting the bug (if applicable):
-```
+- PowerToys version: 
+- PowerToy Utility:
+- Running PowerToys as Admin:
+- Windows build number: [run "winver"]
 
-# Steps to reproduce
+## 📝 Provide detailed reproduction steps (if any)
 
-<!-- A description of how to trigger this bug. -->
+1. …
+2. …
+3. …
 
-# Expected behavior
+### ✔️ Expected result
 
-<!-- A description of what you're expecting, possibly containing screenshots or reference material. -->
+_What is the expected result of the above steps?_
 
-# Actual behavior
+### ❌ Actual result
 
-<!-- What's actually happening? -->
+_What is the actual result of the above steps?_
 
-# Screenshots
+## 📷 Screenshots
 
-<!-- If applicable, add screenshots to help explain your problem. -->
+_Are there any useful screenshots? WinKey+Shift+S and then just paste them directly into the form_

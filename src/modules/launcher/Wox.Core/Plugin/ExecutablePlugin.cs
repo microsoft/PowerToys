@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Diagnostics;
 using Wox.Plugin;
 
@@ -7,6 +10,7 @@ namespace Wox.Core.Plugin
     internal class ExecutablePlugin : JsonRPCPlugin
     {
         private readonly ProcessStartInfo _startInfo;
+
         public override string SupportedLanguage { get; set; } = AllowedLanguage.Executable;
 
         public ExecutablePlugin(string filename)
@@ -17,7 +21,7 @@ namespace Wox.Core.Plugin
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
             };
         }
 
@@ -40,8 +44,10 @@ namespace Wox.Core.Plugin
             return Execute(_startInfo);
         }
 
-        protected override string ExecuteContextMenu(Result selectedResult) {
-            JsonRPCServerRequestModel request = new JsonRPCServerRequestModel {
+        protected override string ExecuteContextMenu(Result selectedResult)
+        {
+            JsonRPCServerRequestModel request = new JsonRPCServerRequestModel
+            {
                 Method = "contextmenu",
                 Parameters = new object[] { selectedResult.ContextData },
             };

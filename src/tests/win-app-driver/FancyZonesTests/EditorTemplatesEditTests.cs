@@ -1,7 +1,7 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
@@ -11,13 +11,19 @@ namespace PowerToysTests
     {
         private void ChangeLayout()
         {
-            new Actions(session).MoveToElement(session.FindElementByAccessibilityId("PART_TitleBar")).MoveByOffset(0, -50).Click().Perform();
+            new Actions(session).MoveToElement(creatorWindow.FindElementByAccessibilityId("PART_TitleBar")).MoveByOffset(0, -50).Click().Perform();
         }
 
-        private void CancelTest()
+        private void Cancel(AppiumWebElement creatorWindow)
         {
-            WindowsElement cancelButton = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]/Window/Button[@Name=\"Cancel\"]");
+            AppiumWebElement cancelButton = creatorWindow.FindElementByName("Cancel");
+            Assert.IsNotNull(cancelButton);
             new Actions(session).MoveToElement(cancelButton).Click().Perform();
+        }
+
+        private void CancelTest(AppiumWebElement creatorWindow)
+        {
+            Cancel(creatorWindow);
             WaitSeconds(1);
 
             Assert.AreEqual(_defaultZoneSettings, File.ReadAllText(_zoneSettingsPath), "Settings were changed");
@@ -25,7 +31,7 @@ namespace PowerToysTests
 
         private void SaveTest()
         {
-            new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
+            new Actions(session).MoveToElement(creatorWindow.FindElementByName("Save and apply")).Click().Perform();
             WaitSeconds(1);
 
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
@@ -36,70 +42,70 @@ namespace PowerToysTests
         [TestMethod]
         public void EditFocusCancel()
         {
-            OpenCreatorWindow("Focus", "Custom layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Focus", "EditTemplateButton");
             ZoneCountTest(3, 0);
 
-            session.FindElementByAccessibilityId("newZoneButton").Click();
+            creatorWindow.FindElementByAccessibilityId("newZoneButton").Click();
             ZoneCountTest(4, 0);
 
-            CancelTest();
+            CancelTest(creatorWindow);
         }
 
         [TestMethod]
         public void EditColumnsCancel()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             ZoneCountTest(0, 3);
 
             ChangeLayout();
             ZoneCountTest(0, 4);
 
-            CancelTest();
+            CancelTest(creatorWindow);
         }
 
         [TestMethod]
         public void EditRowsCancel()
         {
-            OpenCreatorWindow("Rows", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Rows", "EditTemplateButton");
             ZoneCountTest(0, 3);
 
             ChangeLayout();
             ZoneCountTest(0, 4);
 
-            CancelTest();
+            CancelTest(creatorWindow);
         }
 
         [TestMethod]
         public void EditGridCancel()
         {
-            OpenCreatorWindow("Grid", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Grid", "EditTemplateButton");
             ZoneCountTest(0, 3);
 
             ChangeLayout();
             ZoneCountTest(0, 4);
 
-            CancelTest();
+            CancelTest(creatorWindow);
         }
 
         [TestMethod]
         public void EditPriorityGridCancel()
         {
-            OpenCreatorWindow("Priority Grid", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Priority Grid", "EditTemplateButton");
             ZoneCountTest(0, 3);
 
             ChangeLayout();
             ZoneCountTest(0, 4);
 
-            CancelTest();
+            CancelTest(creatorWindow);
         }
 
         [TestMethod]
         public void EditFocusSave()
         {
-            OpenCreatorWindow("Focus", "Custom layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Focus", "EditTemplateButton");
             ZoneCountTest(3, 0);
 
-            session.FindElementByAccessibilityId("newZoneButton").Click();
+            creatorWindow.FindElementByAccessibilityId("newZoneButton").Click();
             ZoneCountTest(4, 0);
 
             SaveTest();
@@ -108,7 +114,7 @@ namespace PowerToysTests
         [TestMethod]
         public void EditColumnsSave()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             ZoneCountTest(0, 3);
 
             ChangeLayout();
@@ -120,7 +126,7 @@ namespace PowerToysTests
         [TestMethod]
         public void EditRowsSave()
         {
-            OpenCreatorWindow("Rows", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Rows", "EditTemplateButton");
             ZoneCountTest(0, 3);
 
             ChangeLayout();
@@ -132,7 +138,7 @@ namespace PowerToysTests
         [TestMethod]
         public void EditGridSave()
         {
-            OpenCreatorWindow("Grid", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Grid", "EditTemplateButton");
             ZoneCountTest(0, 3);
 
             ChangeLayout();
@@ -144,7 +150,7 @@ namespace PowerToysTests
         [TestMethod]
         public void EditPriorityGridSave()
         {
-            OpenCreatorWindow("Priority Grid", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Priority Grid", "EditTemplateButton");
             ZoneCountTest(0, 3);
 
             ChangeLayout();
@@ -156,26 +162,26 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context, false);
+            Setup(context);
+            Assert.IsNotNull(session);
+            EnableModules(false, true, false, false, false, false, false, false);
+
             ResetDefaultFancyZonesSettings(false);
-            ResetDefaultZoneSettings(true);
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
             CloseSettings();
+            ExitPowerToys();
             TearDown();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            if (!isPowerToysLaunched)
-            {
-                LaunchPowerToys();
-            }
-            OpenEditor();
+            ResetDefaultZoneSettings(true);
+            Assert.IsTrue(OpenEditor());
             OpenTemplates();
         }
 
@@ -190,12 +196,10 @@ namespace PowerToysTests
                     editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
                 }
             }
-            catch(OpenQA.Selenium.WebDriverException)
+            catch (OpenQA.Selenium.WebDriverException)
             {
-                //editor has already closed
+                //editor was already closed
             }
-
-            ResetDefaultZoneSettings(false);
         }
     }
 }

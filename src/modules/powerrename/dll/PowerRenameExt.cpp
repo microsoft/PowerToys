@@ -8,7 +8,7 @@
 #include <Helpers.h>
 #include <icon_helpers.h>
 #include <Settings.h>
-#include "resource.h"
+#include "Generated Files/resource.h"
 
 extern HINSTANCE g_hInst;
 
@@ -65,6 +65,10 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
 
     // Check if we should only be on the extended context menu
     if (CSettingsInstance().GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
+        return E_FAIL;
+
+    // Check if at least one of the selected items is actually renamable.
+    if (!DataObjectContainsRenamableItem(m_spdo))
         return E_FAIL;
 
     HRESULT hr = E_UNEXPECTED;
@@ -162,7 +166,7 @@ DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
             if (SUCCEEDED(hr))
             {
                 // Pass the factory to the manager
-                hr = spsrm->put_renameItemFactory(spsrif);
+                hr = spsrm->PutRenameItemFactory(spsrif);
                 if (SUCCEEDED(hr))
                 {
                     // Create the rename UI instance and pass the rename manager

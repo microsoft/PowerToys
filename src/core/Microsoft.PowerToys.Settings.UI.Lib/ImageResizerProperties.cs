@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             ImageresizerTiffCompressOption = new IntProperty();
             ImageresizerFileName = new StringProperty("%1 (%2)");
 
-            ImageresizerSizes = new ImageresizerSizes(new ObservableCollection<ImageSize>()
+            ImageresizerSizes = new ImageResizerSizes(new ObservableCollection<ImageSize>()
             {
                 new ImageSize(0, "Small", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
                 new ImageSize(1, "Medium", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
@@ -32,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             ImageresizerKeepDateModified = new BoolProperty();
             ImageresizerFallbackEncoder = new StringProperty(new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057").ToString());
-            ImageresizerCustomSize = new ImageresizerCustomSizeProperty(new ImageSize(4, "custom", ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel));
+            ImageresizerCustomSize = new ImageResizerCustomSizeProperty(new ImageSize(4, "custom", ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel));
         }
 
         [JsonPropertyName("imageresizer_selectedSizeIndex")]
@@ -60,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public StringProperty ImageresizerFileName { get; set; }
 
         [JsonPropertyName("imageresizer_sizes")]
-        public ImageresizerSizes ImageresizerSizes { get; set; }
+        public ImageResizerSizes ImageresizerSizes { get; set; }
 
         [JsonPropertyName("imageresizer_keepDateModified")]
         public BoolProperty ImageresizerKeepDateModified { get; set; }
@@ -69,7 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public StringProperty ImageresizerFallbackEncoder { get; set; }
 
         [JsonPropertyName("imageresizer_customSize")]
-        public ImageresizerCustomSizeProperty ImageresizerCustomSize { get; set; }
+        public ImageResizerCustomSizeProperty ImageresizerCustomSize { get; set; }
 
         public string ToJsonString()
         {

@@ -1,13 +1,20 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Documents;
-using Wox.Helper;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using PowerLauncher.Helper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 
 namespace PowerLauncher
@@ -17,6 +24,12 @@ namespace PowerLauncher
         public ReportWindow(Exception exception)
         {
             InitializeComponent();
+            BitmapImage image = GetImageFromPath(ImageLoader.ErrorIconPath);
+            if (image != null)
+            {
+                Icon = image;
+            }
+
             ErrorTextbox.Document.Blocks.FirstBlock.Margin = new Thickness(0);
             SetException(exception);
         }
@@ -27,37 +40,49 @@ namespace PowerLauncher
             var directory = new DirectoryInfo(path);
             var log = directory.GetFiles().OrderByDescending(f => f.LastWriteTime).First();
 
-            var paragraph = Hyperlink("Please open new issue in: ", Constant.Issue);
-            paragraph.Inlines.Add($"1. upload log file: {log.FullName}\n");
-            paragraph.Inlines.Add($"2. copy below exception message");
-            ErrorTextbox.Document.Blocks.Add(paragraph);
+            LogFilePathBox.Text = log.FullName;
 
             StringBuilder content = new StringBuilder();
             content.AppendLine(ErrorReporting.RuntimeInfo());
             content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             content.AppendLine("Exception:");
             content.AppendLine(exception.ToString());
-            paragraph = new Paragraph();
+            var paragraph = new Paragraph();
             paragraph.Inlines.Add(content.ToString());
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
 
-        private Paragraph Hyperlink(string textBeforeUrl, string url)
+        // Function to get the Bitmap Image from the path
+        private static BitmapImage GetImageFromPath(string path)
         {
-            var paragraph = new Paragraph();
-            paragraph.Margin = new Thickness(0);
+            if (File.Exists(path))
+            {
+                MemoryStream memoryStream = new MemoryStream();
 
-            var link = new Hyperlink { IsEnabled = true };
-            link.Inlines.Add(url);
-            link.NavigateUri = new Uri(url);
-            link.RequestNavigate += (s, e) => Process.Start(e.Uri.ToString());
-            link.Click += (s, e) => Process.Start(url);
+                byte[] fileBytes = File.ReadAllBytes(path);
+                memoryStream.Write(fileBytes, 0, fileBytes.Length);
+                memoryStream.Position = 0;
 
-            paragraph.Inlines.Add(textBeforeUrl);
-            paragraph.Inlines.Add(link);
-            paragraph.Inlines.Add("\n");
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.StreamSource = memoryStream;
+                image.EndInit();
+                return image;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
-            return paragraph;
+        private void RepositoryHyperlink_Click(object sender, RoutedEventArgs e)
+        {
+            var ps = new ProcessStartInfo((sender as Hyperlink).NavigateUri.ToString())
+            {
+                UseShellExecute = true,
+                Verb = "open",
+            };
+            Process.Start(ps);
         }
     }
 }

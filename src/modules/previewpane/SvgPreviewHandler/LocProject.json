@@ -1,0 +1,14 @@
+{
+    "Projects": [
+        {
+            "LanguageSet": "Azure_Languages",
+            "LocItems": [
+                {
+                    "SourceFile": "src\\modules\\previewpane\\SvgPreviewHandler\\Resource.resx",
+                    "CopyOption": "LangIDOnName",
+                    "OutputPath": "src\\modules\\previewpane\\SvgPreviewHandler"
+                }
+            ]
+        }
+    ]
+}

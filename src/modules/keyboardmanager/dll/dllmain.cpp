@@ -1,10 +1,8 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include <common/shared_constants.h>
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <keyboardmanager/ui/EditKeyboardWindow.h>
 #include <keyboardmanager/ui/EditShortcutsWindow.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
@@ -12,8 +10,11 @@
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/settings_helpers.h>
+#include <common/debug_control.h>
 #include <keyboardmanager/common/trace.h>
+#include <keyboardmanager/common/Helpers.h>
 #include "KeyboardEventHandlers.h"
+#include "Input.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -56,6 +57,9 @@ private:
     // Variable which stores all the state information to be shared between the UI and back-end
     KeyboardManagerState keyboardManagerState;
 
+    // Object of class which implements InputInterface. Required for calling library functions while enabling testing
+    Input inputHandler;
+
 public:
     // Constructor
     KeyboardManager()
@@ -84,47 +88,128 @@ public:
                 if (configFile)
                 {
                     auto jsonData = *configFile;
-                    auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
-                    auto remapShortcutsData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName);
-                    keyboardManagerState.ClearSingleKeyRemaps();
 
-                    if (remapKeysData)
+                    // Load single key remaps
+                    try
                     {
-                        auto inProcessRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
-                        for (const auto& it : inProcessRemapKeys)
+                        auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+                        keyboardManagerState.ClearSingleKeyRemaps();
+
+                        if (remapKeysData)
                         {
-                            try
+                            auto inProcessRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+                            for (const auto& it : inProcessRemapKeys)
                             {
-                                auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
-                                auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
-                                keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
-                            }
-                            catch (...)
-                            {
-                                // Improper Key Data JSON. Try the next remap.
+                                try
+                                {
+                                    auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                    auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+
+                                    // If remapped to a shortcut
+                                    if (std::wstring(newRemapKey).find(L";") != std::string::npos)
+                                    {
+                                        keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
+                                    }
+
+                                    // If remapped to a key
+                                    else
+                                    {
+                                        keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                                    }
+                                }
+                                catch (...)
+                                {
+                                    // Improper Key Data JSON. Try the next remap.
+                                }
                             }
                         }
                     }
-
-                    keyboardManagerState.ClearOSLevelShortcuts();
-                    if (remapShortcutsData)
+                    catch (...)
                     {
-                        auto globalRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName);
-                        for (const auto& it : globalRemapShortcuts)
+                        // Improper JSON format for single key remaps. Skip to next remap type
+                    }
+
+                    // Load shortcut remaps
+                    try
+                    {
+                        auto remapShortcutsData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName);
+                        keyboardManagerState.ClearOSLevelShortcuts();
+                        keyboardManagerState.ClearAppSpecificShortcuts();
+                        if (remapShortcutsData)
                         {
+                            // Load os level shortcut remaps
                             try
                             {
-                                auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
-                                auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
-                                Shortcut originalSC(originalKeys.c_str());
-                                Shortcut newRemapSC(newRemapKeys.c_str());
-                                keyboardManagerState.AddOSLevelShortcut(originalSC, newRemapSC);
+                                auto globalRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName);
+                                for (const auto& it : globalRemapShortcuts)
+                                {
+                                    try
+                                    {
+                                        auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                        auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+
+                                        // If remapped to a shortcut
+                                        if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
+                                        {
+                                            keyboardManagerState.AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str()));
+                                        }
+
+                                        // If remapped to a key
+                                        else
+                                        {
+                                            keyboardManagerState.AddOSLevelShortcut(Shortcut(originalKeys.c_str()), std::stoul(newRemapKeys.c_str()));
+                                        }
+                                    }
+                                    catch (...)
+                                    {
+                                        // Improper Key Data JSON. Try the next shortcut.
+                                    }
+                                }
                             }
                             catch (...)
                             {
-                                // Improper Key Data JSON. Try the next shortcut.
+                                // Improper JSON format for os level shortcut remaps. Skip to next remap type
+                            }
+
+                            // Load app specific shortcut remaps
+                            try
+                            {
+                                auto appSpecificRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName);
+                                for (const auto& it : appSpecificRemapShortcuts)
+                                {
+                                    try
+                                    {
+                                        auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                        auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                                        auto targetApp = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetAppSettingName);
+
+                                        // If remapped to a shortcut
+                                        if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
+                                        {
+                                            keyboardManagerState.AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str()));
+                                        }
+
+                                        // If remapped to a key
+                                        else
+                                        {
+                                            keyboardManagerState.AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str()), std::stoul(newRemapKeys.c_str()));
+                                        }
+                                    }
+                                    catch (...)
+                                    {
+                                        // Improper Key Data JSON. Try the next shortcut.
+                                    }
+                                }
+                            }
+                            catch (...)
+                            {
+                                // Improper JSON format for os level shortcut remaps. Skip to next remap type
                             }
                         }
+                    }
+                    catch (...)
+                    {
+                        // Improper JSON format for shortcut remaps. Skip to next remap type
                     }
                 }
             }
@@ -133,17 +218,6 @@ public:
         {
             // Unable to load inital config.
         }
-    }
-
-    // This function is used to add the hardcoded mappings
-    void init_map()
-    {
-        ////App-specific shortcut remappings
-        //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
-        //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
-        //keyboardManagerState.appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
-        //keyboardManagerState.appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
-        //keyboardManagerState.appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
     }
 
     // Destroy the powertoy and free memory
@@ -159,16 +233,6 @@ public:
         return app_name.c_str();
     }
 
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be returned for empty
-    // list.
-    virtual const wchar_t** get_events() override
-    {
-        static const wchar_t* events[] = { ll_keyboard, nullptr };
-
-        return events;
-    }
-
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
@@ -177,7 +241,7 @@ public:
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(IDS_SETTINGS_DESCRIPTION);
-        settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/keyboardmanager/README.md");
+        settings.set_overview_link(L"https://aka.ms/PowerToysOverview_KeyboardManager");
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -263,16 +327,6 @@ public:
         return m_enabled;
     }
 
-    // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        return 0;
-    }
-
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
-
     // Hook procedure definition
     static LRESULT CALLBACK hook_proc(int nCode, WPARAM wParam, LPARAM lParam)
     {
@@ -286,7 +340,7 @@ public:
                 // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
                 if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
                 {
-                    KeyboardEventHandlers::SetNumLockToPreviousState();
+                    KeyboardEventHandlers::SetNumLockToPreviousState(keyboardmanager_object_ptr->inputHandler);
                 }
                 return 1;
             }
@@ -294,11 +348,9 @@ public:
         return CallNextHookEx(hook_handle_copy, nCode, wParam, lParam);
     }
 
-    // Prevent system-wide input lagging while paused in the debugger
-    //#define DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED
     void start_lowlevel_keyboard_hook()
     {
-#if defined(_DEBUG) && defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
         if (IsDebuggerPresent())
         {
             return;
@@ -346,8 +398,19 @@ public:
             return 0;
         }
 
+        // If the Detect Shortcut Window from Remap Keys is currently activated, then suppress the keyboard event
+        KeyboardManagerHelper::KeyboardHookDecision remapKeyShortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, true);
+        if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
+        {
+            return 1;
+        }
+        else if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+        {
+            return 0;
+        }
+
         // Remap a key
-        intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(data, keyboardManagerState);
+        intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, keyboardManagerState);
 
         // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
         if (SingleKeyRemapResult == 1)
@@ -356,7 +419,7 @@ public:
         }
 
         // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
-        KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data);
+        KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, false);
         if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
         {
             return 1;
@@ -367,29 +430,19 @@ public:
         }
 
         //// Remap a key to behave like a modifier instead of a toggle
-        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(data, keyboardManagerState);
+        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
 
-        //// Handle an app-specific shortcut remapping
-        //intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(data, keyboardManagerState);
+        // Handle an app-specific shortcut remapping
+        intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, keyboardManagerState);
 
-        //// If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
-        //if (AppSpecificShortcutRemapResult == 1)
-        //{
-        //    return 1;
-        //}
-
-        // Handle an os-level shortcut remapping
-        intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(data, keyboardManagerState);
-
-        // If any of the supported types of remappings took place, then suppress the key event
-        if ((SingleKeyRemapResult + OSLevelShortcutRemapResult) > 0)
+        // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
+        if (AppSpecificShortcutRemapResult == 1)
         {
             return 1;
         }
-        else
-        {
-            return 0;
-        }
+
+        // Handle an os-level shortcut remapping
+        return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, keyboardManagerState);
     }
 };
 

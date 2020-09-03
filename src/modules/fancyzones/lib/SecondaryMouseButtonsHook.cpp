@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "SecondaryMouseButtonsHook.h"
+#include <common/debug_control.h>
 
 #pragma region public
 
@@ -9,11 +10,16 @@ std::function<void()> SecondaryMouseButtonsHook::callback = {};
 SecondaryMouseButtonsHook::SecondaryMouseButtonsHook(std::function<void()> extCallback)
 {
     callback = std::move(extCallback);
-    hHook = SetWindowsHookEx(WH_MOUSE_LL, SecondaryMouseButtonsProc, GetModuleHandle(NULL), 0);
 }
 
 void SecondaryMouseButtonsHook::enable()
 {
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
+    if (IsDebuggerPresent())
+    {
+        return;
+    }
+#endif
     if (!hHook)
     {
         hHook = SetWindowsHookEx(WH_MOUSE_LL, SecondaryMouseButtonsProc, GetModuleHandle(NULL), 0);

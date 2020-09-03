@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -17,7 +17,7 @@ namespace PowerToysTests
             OpenSettings();
 
             //check settings window opened
-            WindowsElement settingsWindow = WaitElementByName("PowerToys Settings");
+            WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
             Assert.IsNotNull(settingsWindow);
 
             isSettingsOpened = true;
@@ -28,19 +28,20 @@ namespace PowerToysTests
         {
             //open tray
             trayButton.Click();
+            WaitSeconds(1);
             isTrayOpened = true;
 
             //open PowerToys context menu
-            WindowsElement pt = session.FindElementByName("PowerToys");
+            AppiumWebElement pt = PowerToysTrayButton();
             Assert.IsNotNull(pt);
 
             new Actions(session).MoveToElement(pt).ContextClick().Perform();
-            
+
             //open settings
-            WaitElementByXPath("//MenuItem[@Name=\"Settings\"]").Click();
-            
+            session.FindElementByXPath("//MenuItem[@Name=\"Settings\"]").Click();
+
             //check settings window opened
-            WindowsElement settingsWindow = WaitElementByName("PowerToys Settings");
+            WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
             Assert.IsNotNull(settingsWindow);
 
             isSettingsOpened = true;
@@ -52,24 +53,21 @@ namespace PowerToysTests
             //open PowerToys context menu
             trayButton.Click();
             isTrayOpened = true;
+            WaitSeconds(1);
 
-            WindowsElement notificationOverflow = session.FindElementByName("Notification Overflow");
-            AppiumWebElement overflowArea = notificationOverflow.FindElementByName("Overflow Notification Area");
-            AppiumWebElement powerToys = overflowArea.FindElementByName("PowerToys");
+            AppiumWebElement powerToys = PowerToysTrayButton();
             Assert.IsNotNull(powerToys);
 
             new Actions(session).MoveToElement(powerToys).ContextClick().Perform();
-            
+
             //exit
-            WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
-            
+            session.FindElementByAccessibilityId("40001").Click();
+
             //check PowerToys exited
             powerToys = null;
             try
             {
-                notificationOverflow = session.FindElementByName("Notification Overflow");
-                overflowArea = notificationOverflow.FindElementByName("Overflow Notification Area");
-                powerToys = overflowArea.FindElementByName("PowerToys");
+                powerToys = PowerToysTrayButton();
             }
             catch (OpenQA.Selenium.WebDriverException)
             {
@@ -84,11 +82,18 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
+            Assert.IsNotNull(session);
+
+            if (!isPowerToysLaunched)
+            {
+                LaunchPowerToys();
+            }
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            ExitPowerToys();
             TearDown();
         }
 
@@ -106,7 +111,7 @@ namespace PowerToysTests
             {
                 CloseSettings();
             }
-            
+
             if (isTrayOpened)
             {
                 trayButton.Click();

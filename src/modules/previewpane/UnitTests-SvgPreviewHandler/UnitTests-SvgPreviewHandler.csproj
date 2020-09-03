@@ -1,12 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\..\installer\Version.props" />
+  <Import Project="..\..\..\Version.props" />
   <!-- We don't have GenerateAssemblyInfo task until we use .net core, so we generate it with WriteLinesToFile -->
   <PropertyGroup>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyDescription>PowerToys UnitTests-SvgPreviewHandler</AssemblyDescription>
+    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
+    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
@@ -22,11 +24,11 @@
       <HeaderLines Include="using System.Runtime.CompilerServices%3b" />
       <HeaderLines Include="using System.Runtime.InteropServices%3b" />
       <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyDescription(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyDescription(&quot;$(AssemblyDescription)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyTitle)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyProduct)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: ComVisible(false)]" />
@@ -42,7 +44,7 @@
     <ProjectGuid>{060D75DA-2D1C-48E6-A4A1-6F0718B64661}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UnitTests_SvgPreviewHandler</RootNamespace>
+    <RootNamespace>SvgPreviewHandlerUnitTests</RootNamespace>
     <AssemblyName>UnitTests-SvgPreviewHandler</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -77,6 +79,12 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -92,14 +100,19 @@
     <Compile Include="SvgPreviewHandlerHelperTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>3.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Moq">
-      <Version>4.13.1</Version>
+      <Version>4.14.5</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>2.1.1</Version>
+      <Version>2.1.2</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>2.1.1</Version>
+      <Version>2.1.2</Version>
     </PackageReference>
     <PackageReference Include="System.Threading.Tasks.Extensions">
       <Version>4.5.4</Version>
@@ -115,6 +128,21 @@
       <Name>SvgPreviewHandler</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
+    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
+      <Link>StyleCop.json</Link>
+    </AdditionalFiles>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

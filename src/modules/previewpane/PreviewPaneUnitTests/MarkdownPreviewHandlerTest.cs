@@ -1,10 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Drawing;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Xml.Linq;
-using Markdig;
 using MarkdownPreviewHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PreviewHandlerCommon;
@@ -17,8 +16,8 @@ namespace PreviewPaneUnitTests
         [TestMethod]
         public void MarkdownPreviewHandlerControl__AddsBrowserToForm_WhenDoPreviewIsCalled()
         {
-            // Arrange 
-            using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl()) 
+            // Arrange
+            using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
             {
                 // Act
                 markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithExternalImage.txt");
@@ -32,8 +31,8 @@ namespace PreviewPaneUnitTests
         [TestMethod]
         public void MarkdownPreviewHandlerControl__AddsInfoBarToFormIfExternalImageLinkPresent_WhenDoPreviewIsCalled()
         {
-            // Arrange 
-            using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl()) 
+            // Arrange
+            using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
             {
                 // Act
                 markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithExternalImage.txt");
@@ -47,7 +46,7 @@ namespace PreviewPaneUnitTests
         [TestMethod]
         public void MarkdownPreviewHandlerControl__AddsInfoBarToFormIfHTMLImageTagIsPresent_WhenDoPreviewIsCalled()
         {
-            // Arrange 
+            // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
             {
                 // Act
@@ -62,8 +61,8 @@ namespace PreviewPaneUnitTests
         [TestMethod]
         public void MarkdownPreviewHandlerControl__DoesNotAddInfoBarToFormIfExternalImageLinkNotPresent_WhenDoPreviewIsCalled()
         {
-            // Arrange 
-            using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl()) 
+            // Arrange
+            using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
             {
                 // Act
                 markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithScript.txt");
@@ -77,7 +76,7 @@ namespace PreviewPaneUnitTests
         [TestMethod]
         public void MarkdownPreviewHandlerControl__UpdatesWebBrowserSettings_WhenDoPreviewIsCalled()
         {
-            // Arrange 
+            // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
             {
                 // Act
@@ -91,13 +90,13 @@ namespace PreviewPaneUnitTests
                 Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).ScriptErrorsSuppressed, true);
                 Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).ScrollBarsEnabled, true);
                 Assert.AreEqual(((WebBrowser)markdownPreviewHandlerControl.Controls[0]).AllowNavigation, false);
-            } 
+            }
         }
 
         [TestMethod]
         public void MarkdownPreviewHandlerControl__UpdateInfobarSettings_WhenDoPreviewIsCalled()
         {
-            // Arrange 
+            // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
             {
                 // Act

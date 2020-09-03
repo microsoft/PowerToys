@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -14,41 +15,51 @@ namespace PowerToysTests
     {
         protected const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
         protected const string AppPath = "C:\\Program Files\\PowerToys\\PowerToys.exe";
-        
+
         protected static WindowsDriver<WindowsElement> session;
         protected static bool isPowerToysLaunched = false;
+
         protected static WindowsElement trayButton;
+        protected static WindowsElement settingsWindow;
 
+        protected static string _commonSettingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys");
         protected static string _settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones");
-        protected static string _settingsPath = _settingsFolderPath + "\\settings.json"; 
+        protected static string _fancyZonesSettingsPath = _settingsFolderPath + "\\settings.json";
         protected static string _zoneSettingsPath = _settingsFolderPath + "\\zones-settings.json";
+        protected static string _appHistoryPath = _settingsFolderPath + "\\app-zone-history.json";
+        protected static string _commonSettingsPath = _commonSettingsFolderPath + "\\settings.json";
 
-        protected static string _initialSettings = "";
+        protected static string _initialFancyZonesSettings = "";
         protected static string _initialZoneSettings = "";
+        protected static string _initialAppHistorySettings = "";
+        protected static string _initialCommonSettings = "";
 
-        protected const string _defaultSettings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_mouseSwitch\":{\"value\":false},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_moveWindowAcrossMonitors\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
-        protected const string _defaultZoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
-            
+        protected const string _defaultFancyZonesSettings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_mouseSwitch\":{\"value\":false},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_moveWindowAcrossMonitors\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
+        protected const string _defaultZoneSettings = "{\"devices\":[],\"custom-zone-sets\":[]}";
 
-        public static void Setup(TestContext context, bool isLaunchRequired = true)
+
+        public static void Setup(TestContext context)
         {
-            ReadUserSettings(); //read settings before running tests to restore them after
-
             if (session == null)
             {
+                ReadUserSettings(); //read settings before running tests to restore them after
+
                 // Create a new Desktop session to use PowerToys.
                 AppiumOptions appiumOptions = new AppiumOptions();
                 appiumOptions.PlatformName = "Windows";
                 appiumOptions.AddAdditionalCapability("app", "Root");
-                session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appiumOptions);
-                Assert.IsNotNull(session);
-
-                trayButton = session.FindElementByAccessibilityId("1502");
-
-                isPowerToysLaunched = CheckPowerToysLaunched();
-                if (!isPowerToysLaunched && isLaunchRequired)
+                try
                 {
-                    LaunchPowerToys();
+                    session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appiumOptions);
+                    session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+
+                    trayButton = session.FindElementByAccessibilityId("1502");
+
+                    isPowerToysLaunched = CheckPowerToysLaunched();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
             }
         }
@@ -59,6 +70,9 @@ namespace PowerToysTests
 
             if (session != null)
             {
+                trayButton = null;
+                settingsWindow = null;
+
                 session.Quit();
                 session = null;
             }
@@ -69,74 +83,37 @@ namespace PowerToysTests
             Thread.Sleep(TimeSpan.FromSeconds(seconds));
         }
 
-        //Trying to find element by XPath
-        protected static WindowsElement WaitElementByName(string name, double maxTime = 10)
-        {
-            WindowsElement result = null;
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
-            {
-                try
-                {
-                    result = session.FindElementByName(name);
-                }
-                catch { }
-                return result;
-            }
-            return null;
-        }
-
-        //Trying to find element by XPath
-        protected static WindowsElement WaitElementByXPath(string xPath, double maxTime = 10)
-        {
-            WindowsElement result = null;
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
-            {
-                try
-                {
-                    result = session.FindElementByXPath(xPath);
-                }
-                catch { }
-                return result;
-            }
-            return null;
-        }
-
-        //Trying to find element by AccessibilityId
-        protected static WindowsElement WaitElementByAccessibilityId(string accessibilityId, double maxTime = 10)
-        {
-            WindowsElement result = null;
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
-            {
-                try
-                {
-                    result = session.FindElementByAccessibilityId(accessibilityId);
-                }
-                catch { }
-                return result;
-            }
-            return null;
-        }
-
         public static void OpenSettings()
         {
             trayButton.Click();
-            session.FindElementByXPath("//Button[@Name=\"PowerToys\"]").Click();
-            trayButton.Click();
+
+            try
+            {
+                PowerToysTrayButton().Click();
+                settingsWindow = session.FindElementByName("PowerToys Settings");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            trayButton.Click(); //close
+            Assert.IsNotNull(settingsWindow);
         }
 
         public static void OpenFancyZonesSettings()
         {
-            WindowsElement fzNavigationButton = WaitElementByXPath("//Button[@Name=\"FancyZones\"]");
-            Assert.IsNotNull(fzNavigationButton);
+            try
+            {
+                AppiumWebElement fzNavigationButton = settingsWindow.FindElementByName("FancyZones");
+                Assert.IsNotNull(fzNavigationButton);
 
-            fzNavigationButton.Click();
-            fzNavigationButton.Click();
+                fzNavigationButton.Click();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public static void CloseSettings()
@@ -146,26 +123,36 @@ namespace PowerToysTests
                 WindowsElement settings = session.FindElementByName("PowerToys Settings");
                 if (settings != null)
                 {
-                    settings.SendKeys(Keys.Alt + Keys.F4);
+                    settings.Click();
+                    settings.FindElementByName("Close").Click();
+                    //settings.SendKeys(Keys.Alt + Keys.F4);
                 }
             }
-            catch(Exception)
+            catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
         }
 
-        private static bool CheckPowerToysLaunched()        
+        protected static AppiumWebElement PowerToysTrayButton()
         {
-            trayButton.Click();
+            WindowsElement notificationOverflow = session.FindElementByName("Notification Overflow");
+            AppiumWebElement overflowArea = notificationOverflow.FindElementByName("Overflow Notification Area");
+            AppiumWebElement powerToys = overflowArea.FindElementByXPath("//Button[contains(@Name, \"PowerToys\")]");
+            return powerToys;
+        }
+
+        private static bool CheckPowerToysLaunched()
+        {
             bool isLaunched = false;
+            trayButton.Click();
 
             try
             {
-                WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
+                AppiumWebElement pt = PowerToysTrayButton();
                 isLaunched = (pt != null);
             }
-            catch(OpenQA.Selenium.WebDriverException)
+            catch (OpenQA.Selenium.WebDriverException)
             {
                 //PowerToys not found
             }
@@ -176,20 +163,18 @@ namespace PowerToysTests
 
         public static void LaunchPowerToys()
         {
+            AppiumOptions opts = new AppiumOptions();
+            opts.AddAdditionalCapability("app", AppPath);
+
             try
             {
-                AppiumOptions opts = new AppiumOptions();
-                opts.PlatformName = "Windows";
-                opts.AddAdditionalCapability("app", AppPath);
-
                 WindowsDriver<WindowsElement> driver = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
                 Assert.IsNotNull(driver);
                 driver.LaunchApp();
             }
-            catch (OpenQA.Selenium.WebDriverException ex)
+            catch (WebDriverException)
             {
-                Console.WriteLine("Exception on PowerToys launch:" + ex.Message);
-                //exception could be thrown even if app launched successfully
+                //exception is expected since WinApDriver tries to find main app window 
             }
 
             isPowerToysLaunched = true;
@@ -199,18 +184,46 @@ namespace PowerToysTests
         {
             trayButton.Click();
 
-            WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
-            Assert.IsNotNull(pt, "Couldn't find \'PowerToys\' button");
-            new Actions(session).MoveToElement(pt).ContextClick().Perform();
-            
-            WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+            try
+            {
+                AppiumWebElement pt = PowerToysTrayButton();
+                Assert.IsNotNull(pt, "Could not exit PowerToys");
+
+                new Actions(session).MoveToElement(pt).ContextClick().Perform();
+                session.FindElementByAccessibilityId("40001").Click();
+                //WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+
+                isPowerToysLaunched = false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
             trayButton.Click(); //close tray
-            isPowerToysLaunched = false;
+        }
+
+        public static void EnableModules(bool colorPicker, bool fancyZones, bool fileExplorer, bool imageResizer, bool keyboardManager, bool powerRename, bool powerRun, bool shortcutGuide, bool relaunch = false)
+        {
+            JObject json = JObject.Parse(_initialCommonSettings);
+            JObject enabled = new JObject();
+            enabled["ColorPicker"] = colorPicker;
+            enabled["FancyZones"] = fancyZones;
+            enabled["File Explorer"] = fileExplorer;
+            enabled["Image Resizer"] = imageResizer;
+            enabled["Keyboard Manager"] = keyboardManager;
+            enabled["PowerRename"] = powerRename;
+            enabled["PowerToys Run"] = powerRun;
+            enabled["Shortcut Guide"] = shortcutGuide;
+
+            json["enabled"] = enabled;
+
+            ResetSettings(_commonSettingsFolderPath, _commonSettingsPath, json.ToString(), relaunch);
         }
 
         public static void ResetDefaultFancyZonesSettings(bool relaunch)
         {
-            ResetSettings(_settingsFolderPath, _settingsPath, _defaultSettings, relaunch);
+            ResetSettings(_settingsFolderPath, _fancyZonesSettingsPath, _defaultFancyZonesSettings, relaunch);
         }
 
         public static void ResetDefaultZoneSettings(bool relaunch)
@@ -226,11 +239,7 @@ namespace PowerToysTests
             }
             File.WriteAllText(filePath, data);
 
-            if (isPowerToysLaunched)
-            {
-                ExitPowerToys();
-            }
-
+            ExitPowerToys();
             if (relaunch)
             {
                 LaunchPowerToys();
@@ -241,32 +250,63 @@ namespace PowerToysTests
         {
             try
             {
-                _initialSettings = File.ReadAllText(_settingsPath);
+                if (_initialCommonSettings.Length == 0)
+                {
+                    _initialCommonSettings = File.ReadAllText(_commonSettingsPath);
+                }
             }
             catch (Exception)
-            {
-                //failed to read settings
-            }
+            { }
 
             try
             {
-                _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
+                if (_initialFancyZonesSettings.Length == 0)
+                {
+                    _initialFancyZonesSettings = File.ReadAllText(_fancyZonesSettingsPath);
+                }
             }
             catch (Exception)
+            { }
+
+            try
             {
-                //failed to read settings
+                if (_initialZoneSettings.Length == 0)
+                {
+                    _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
+                }
             }
+            catch (Exception)
+            { }
+
+            try
+            {
+                if (_initialAppHistorySettings.Length == 0)
+                {
+                    _initialAppHistorySettings = File.ReadAllText(_appHistoryPath);
+                }
+            }
+            catch (Exception)
+            { }
         }
 
         private static void RestoreUserSettings()
         {
-            if (_initialSettings.Length > 0)
+            if (_initialCommonSettings.Length > 0)
             {
-                File.WriteAllText(_settingsPath, _initialSettings);
+                File.WriteAllText(_commonSettingsPath, _initialCommonSettings);
             }
             else
             {
-                File.Delete(_settingsPath);
+                File.Delete(_commonSettingsPath);
+            }
+
+            if (_initialFancyZonesSettings.Length > 0)
+            {
+                File.WriteAllText(_fancyZonesSettingsPath, _initialFancyZonesSettings);
+            }
+            else
+            {
+                File.Delete(_fancyZonesSettingsPath);
             }
 
             if (_initialZoneSettings.Length > 0)
@@ -276,6 +316,15 @@ namespace PowerToysTests
             else
             {
                 File.Delete(_zoneSettingsPath);
+            }
+
+            if (_initialAppHistorySettings.Length > 0)
+            {
+                File.WriteAllText(_appHistoryPath, _initialAppHistorySettings);
+            }
+            else
+            {
+                File.Delete(_appHistoryPath);
             }
         }
     }

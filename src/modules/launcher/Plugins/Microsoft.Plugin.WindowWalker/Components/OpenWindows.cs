@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
+// See the LICENSE file in the project root for more information.
 
+// Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
@@ -22,7 +21,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Event raised when there is an update to the list of open windows
         /// </summary>
-        public event OpenWindowsUpdateHandler OnOpenWindowsUpdate;
+        public event OpenWindowsUpdateHandler OnOpenWindowsUpdate
+        {
+            add { }
+            remove { }
+        }
 
         /// <summary>
         /// List of all the open windows
@@ -91,7 +94,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             Window newWindow = new Window(hwnd);
 
             if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
-                (!newWindow.IsToolWindow || newWindow.IsAppWindow ) && !newWindow.TaskListDeleted &&
+                (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
                 newWindow.ClassName != "Windows.UI.Core.CoreWindow")
             {
                 windows.Add(newWindow);

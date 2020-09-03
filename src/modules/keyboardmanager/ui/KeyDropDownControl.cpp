@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "KeyDropDownControl.h"
 #include "keyboardmanager/common/Helpers.h"
+#include <keyboardmanager/common/KeyboardManagerState.h>
+#include "BufferValidationHelpers.h"
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -8,28 +10,32 @@ KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
 // Function to set properties apart from the SelectionChanged event handler
 void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
 {
+    dropDown = ComboBox();
+    warningFlyout = Flyout();
+    warningMessage = TextBlock();
+
     if (!isShortcut)
     {
-        dropDown.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
+        dropDown.as<ComboBox>().Width(KeyboardManagerConstants::RemapTableDropDownWidth);
     }
     else
     {
-        dropDown.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+        dropDown.as<ComboBox>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     }
-    dropDown.MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
+    dropDown.as<ComboBox>().MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
-    dropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut)));
+    dropDown.as<ComboBox>().ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut)));
     // drop down open handler - to reload the items with the latest layout
-    dropDown.DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
+    dropDown.as<ComboBox>().DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut);
     });
 
     // Attach flyout to the drop down
-    warningFlyout.Content(warningMessage);
-    dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
+    warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
+    dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
 }
 
 // Function to check if the layout has changed and accordingly update the drop down list
@@ -48,7 +54,7 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
 }
 
 // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel singleKeyControl, int colIndex, RemapBuffer& singleKeyRemapBuffer)
 {
     // drop down selection handler
     auto onSelectionChange = [&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender) {
@@ -59,50 +65,12 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
         bool indexFound = table.Children().IndexOf(singleKeyControl, controlIndex);
         if (indexFound)
         {
-            KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
             int rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
-            // Check if the element was not found or the index exceeds the known keys
-            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
-            {
-                // Check if the value being set is the same as the other column
-                if (singleKeyRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)] == keyCodeList[selectedKeyIndex])
-                {
-                    errorType = KeyboardManagerHelper::ErrorType::MapToSameKey;
-                }
 
-                if (errorType == KeyboardManagerHelper::ErrorType::NoError && colIndex == 0)
-                {
-                    // Check if the key is already remapped to something else
-                    for (int i = 0; i < singleKeyRemapBuffer.size(); i++)
-                    {
-                        if (i != rowIndex)
-                        {
-                            KeyboardManagerHelper::ErrorType result = KeyboardManagerHelper::DoKeysOverlap(singleKeyRemapBuffer[i][colIndex], keyCodeList[selectedKeyIndex]);
-                            if (result != KeyboardManagerHelper::ErrorType::NoError)
-                            {
-                                errorType = result;
-                                break;
-                            }
-                        }
-                    }
-                }
+            // Validate current remap selection
+            KeyboardManagerHelper::ErrorType errorType = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(rowIndex, colIndex, selectedKeyIndex, keyCodeList, singleKeyRemapBuffer);
 
-                // If there is no error, set the buffer
-                if (errorType == KeyboardManagerHelper::ErrorType::NoError)
-                {
-                    singleKeyRemapBuffer[rowIndex][colIndex] = keyCodeList[selectedKeyIndex];
-                }
-                else
-                {
-                    singleKeyRemapBuffer[rowIndex][colIndex] = NULL;
-                }
-            }
-            else
-            {
-                // Reset to null if the key is not found
-                singleKeyRemapBuffer[rowIndex][colIndex] = NULL;
-            }
-
+            // If there is an error set the warning flyout
             if (errorType != KeyboardManagerHelper::ErrorType::NoError)
             {
                 SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(errorType));
@@ -111,12 +79,12 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
     };
 
     // Rather than on every selection change (which gets triggered on searching as well) we set the handler only when the drop down is closed
-    dropDown.DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
+    dropDown.as<ComboBox>().DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
         onSelectionChange(sender);
     });
 
     // We check if the selection changed was triggered while the drop down was closed. This is required to handle Type key, initial loading of remaps and if the user just types in the combo box without opening it
-    dropDown.SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+    dropDown.as<ComboBox>().SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         if (!currentDropDown.IsDropDownOpen())
         {
@@ -125,177 +93,127 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
     });
 }
 
-// Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
+std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateShortcutSelection(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
-    auto onSelectionChange = [&, table, shortcutControl, colIndex, parent](winrt::Windows::Foundation::IInspectable const& sender) {
-        ComboBox currentDropDown = sender.as<ComboBox>();
-        int selectedKeyIndex = currentDropDown.SelectedIndex();
-        uint32_t dropDownIndex = -1;
-        bool dropDownFound = parent.Children().IndexOf(currentDropDown, dropDownIndex);
-        // Get row index of the single key control
-        uint32_t controlIndex;
-        bool controlIindexFound = table.Children().IndexOf(shortcutControl, controlIndex);
-        KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
-        bool IsDeleteDropDownRequired = false;
+    ComboBox currentDropDown = dropDown.as<ComboBox>();
+    int selectedKeyIndex = currentDropDown.SelectedIndex();
+    uint32_t dropDownIndex = -1;
+    bool dropDownFound = parent.Children().IndexOf(currentDropDown, dropDownIndex);
+    // Get row index of the single key control
+    uint32_t controlIndex;
+    bool controlIindexFound = table.Children().IndexOf(shortcutControl, controlIndex);
+    int rowIndex = -1;
+    std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> validationResult = std::make_pair(KeyboardManagerHelper::ErrorType::NoError, BufferValidationHelpers::DropDownAction::NoAction);
 
-        if (controlIindexFound)
+    if (controlIindexFound)
+    {
+        if (isSingleKeyWindow)
         {
-            int rowIndex = (controlIndex - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
-            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex && dropDownFound)
+            rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
+        }
+        else
+        {
+            rowIndex = (controlIndex - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
+        }
+
+        std::vector<int32_t> selectedIndices = GetSelectedIndicesFromStackPanel(parent);
+
+        std::wstring appName;
+        if (targetApp != nullptr)
+        {
+            appName = targetApp.Text().c_str();
+        }
+
+        // Validate shortcut element
+        validationResult = BufferValidationHelpers::ValidateShortcutBufferElement(rowIndex, colIndex, dropDownIndex, selectedIndices, appName, isHybridControl, keyCodeList, shortcutRemapBuffer, dropDownFound);
+
+        // Add or clear unused drop downs
+        if (validationResult.second == BufferValidationHelpers::DropDownAction::AddDropDown)
+        {
+            AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
+        }
+        else if (validationResult.second == BufferValidationHelpers::DropDownAction::ClearUnusedDropDowns)
+        {
+            // remove all the drop downs after the current index
+            int elementsToBeRemoved = parent.Children().Size() - dropDownIndex - 1;
+            for (int i = 0; i < elementsToBeRemoved; i++)
             {
-                // If only 1 drop down and action key is chosen: Warn that a modifier must be chosen
-                if (parent.Children().Size() == 1 && !KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]))
+                parent.Children().RemoveAtEnd();
+                keyDropDownControlObjects.erase(keyDropDownControlObjects.end() - 1);
+            }
+            parent.UpdateLayout();
+        }
+
+        if (validationResult.first != KeyboardManagerHelper::ErrorType::NoError)
+        {
+            SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(validationResult.first));
+        }
+
+        // Handle None case if there are no other errors
+        else if (validationResult.second == BufferValidationHelpers::DropDownAction::DeleteDropDown)
+        {
+            parent.Children().RemoveAt(dropDownIndex);
+            // delete drop down control object from the vector so that it can be destructed
+            keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
+            parent.UpdateLayout();
+        }
+    }
+
+    return std::make_pair(validationResult.first, rowIndex);
+}
+
+// Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutControl, StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox& targetApp, bool isHybridControl, bool isSingleKeyWindow)
+{
+    auto onSelectionChange = [&, table, shortcutControl, colIndex, parent, targetApp, isHybridControl, isSingleKeyWindow](winrt::Windows::Foundation::IInspectable const& sender) {
+        std::pair<KeyboardManagerHelper::ErrorType, int> validationResult = ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
+
+        // Check if the drop down row index was identified from the return value of validateSelection
+        if (validationResult.second != -1)
+        {
+            // If an error occurred
+            if (validationResult.first != KeyboardManagerHelper::ErrorType::NoError)
+            {
+                // Validate all the drop downs
+                ValidateShortcutFromDropDownList(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
+            }
+
+            // Reset the buffer based on the new selected drop down items. Use static key code list since the KeyDropDownControl object might be deleted
+            std::vector selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(GetSelectedIndicesFromStackPanel(parent), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
+            if (!isHybridControl)
+            {
+                std::get<Shortcut>(shortcutRemapBuffer[validationResult.second].first[colIndex]).SetKeyCodes(selectedKeyCodes);
+            }
+            else
+            {
+                // If exactly one key is selected consider it to be a key remap
+                if (selectedKeyCodes.size() == 1)
                 {
-                    // warn and reset the drop down
-                    errorType = KeyboardManagerHelper::ErrorType::ShortcutStartWithModifier;
+                    shortcutRemapBuffer[validationResult.second].first[colIndex] = selectedKeyCodes[0];
                 }
-                // If it is the last drop down
-                else if (dropDownIndex == parent.Children().Size() - 1)
-                {
-                    // If last drop down and a modifier is selected: add a new drop down (max of 5 drop downs should be enforced)
-                    if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() < KeyboardManagerConstants::MaxShortcutSize)
-                    {
-                        // If it matched any of the previous modifiers then reset that drop down
-                        if (CheckRepeatedModifier(parent, dropDownIndex, selectedKeyIndex, keyCodeList))
-                        {
-                            // warn and reset the drop down
-                            errorType = KeyboardManagerHelper::ErrorType::ShortcutCannotHaveRepeatedModifier;
-                        }
-                        // If not, add a new drop down
-                        else
-                        {
-                            AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
-                        }
-                    }
-                    // If last drop down and a modifier is selected but there are already max drop downs: warn the user
-                    else if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() >= KeyboardManagerConstants::MaxShortcutSize)
-                    {
-                        // warn and reset the drop down
-                        errorType = KeyboardManagerHelper::ErrorType::ShortcutMaxShortcutSizeOneActionKey;
-                    }
-                    // If None is selected but it's the last index: warn
-                    else if (keyCodeList[selectedKeyIndex] == 0)
-                    {
-                        // warn and reset the drop down
-                        errorType = KeyboardManagerHelper::ErrorType::ShortcutOneActionKey;
-                    }
-                    // If none of the above, then the action key will be set
-                }
-                // If it is the not the last drop down
                 else
                 {
-                    if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]))
-                    {
-                        // If it matched any of the previous modifiers then reset that drop down
-                        if (CheckRepeatedModifier(parent, dropDownIndex, selectedKeyIndex, keyCodeList))
-                        {
-                            // warn and reset the drop down
-                            errorType = KeyboardManagerHelper::ErrorType::ShortcutCannotHaveRepeatedModifier;
-                        }
-                        // If not, the modifier key will be set
-                    }
-                    // If None is selected and there are more than 2 drop downs
-                    else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() > KeyboardManagerConstants::MinShortcutSize)
-                    {
-                        // set delete drop down flag
-                        IsDeleteDropDownRequired = true;
-                        // do not delete the drop down now since there may be some other error which would cause the drop down to be invalid after removal
-                    }
-                    else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() <= KeyboardManagerConstants::MinShortcutSize)
-                    {
-                        // warn and reset the drop down
-                        errorType = KeyboardManagerHelper::ErrorType::ShortcutAtleast2Keys;
-                    }
-                    // If the user tries to set an action key check if all drop down menus after this are empty if it is not the first key
-                    else if (dropDownIndex != 0)
-                    {
-                        bool isClear = true;
-                        for (int i = dropDownIndex + 1; i < (int)parent.Children().Size(); i++)
-                        {
-                            ComboBox ItDropDown = parent.Children().GetAt(i).as<ComboBox>();
-                            if (ItDropDown.SelectedIndex() != -1)
-                            {
-                                isClear = false;
-                                break;
-                            }
-                        }
-
-                        if (isClear)
-                        {
-                            // remove all the drop down
-                            int elementsToBeRemoved = parent.Children().Size() - dropDownIndex - 1;
-                            for (int i = 0; i < elementsToBeRemoved; i++)
-                            {
-                                parent.Children().RemoveAtEnd();
-                                keyDropDownControlObjects.erase(keyDropDownControlObjects.end() - 1);
-                            }
-                            parent.UpdateLayout();
-                        }
-                        else
-                        {
-                            // warn and reset the drop down
-                            errorType = KeyboardManagerHelper::ErrorType::ShortcutNotMoreThanOneActionKey;
-                        }
-                    }
-                    // If there an action key is chosen on the first drop down and there are more than one drop down menus
-                    else
-                    {
-                        // warn and reset the drop down
-                        errorType = KeyboardManagerHelper::ErrorType::ShortcutStartWithModifier;
-                    }
+                    Shortcut tempShortcut;
+                    tempShortcut.SetKeyCodes(selectedKeyCodes);
+                    // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
+                    shortcutRemapBuffer[validationResult.second].first[colIndex] = tempShortcut;
                 }
             }
-
-            // After validating the shortcut, now for errors like remap to same shortcut, remap shortcut more than once, Win L and Ctrl Alt Del
-            if (errorType == KeyboardManagerHelper::ErrorType::NoError)
+            if (targetApp != nullptr)
             {
-                Shortcut tempShortcut;
-                tempShortcut.SetKeyCodes(GetKeysFromStackPanel(parent));
-                // Check if the value being set is the same as the other column
-                if (shortcutRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)] == tempShortcut && shortcutRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)].IsValidShortcut() && tempShortcut.IsValidShortcut())
+                std::wstring newText = targetApp.Text().c_str();
+                std::wstring lowercaseDefAppName = KeyboardManagerConstants::DefaultAppName;
+                std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
+                std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
+                if (newText == lowercaseDefAppName)
                 {
-                    errorType = KeyboardManagerHelper::ErrorType::MapToSameShortcut;
+                    shortcutRemapBuffer[validationResult.second].second = L"";
                 }
-
-                if (errorType == KeyboardManagerHelper::ErrorType::NoError && colIndex == 0)
+                else
                 {
-                    // Check if the key is already remapped to something else
-                    for (int i = 0; i < shortcutRemapBuffer.size(); i++)
-                    {
-                        if (i != rowIndex)
-                        {
-                            KeyboardManagerHelper::ErrorType result = Shortcut::DoKeysOverlap(shortcutRemapBuffer[i][colIndex], tempShortcut);
-                            if (result != KeyboardManagerHelper::ErrorType::NoError)
-                            {
-                                errorType = result;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (errorType == KeyboardManagerHelper::ErrorType::NoError)
-                {
-                    errorType = tempShortcut.IsShortcutIllegal();
+                    shortcutRemapBuffer[validationResult.second].second = targetApp.Text().c_str();
                 }
             }
-
-            if (errorType != KeyboardManagerHelper::ErrorType::NoError)
-            {
-                SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(errorType));
-            }
-
-            // Handle None case if there are no other errors
-            else if (IsDeleteDropDownRequired)
-            {
-                parent.Children().RemoveAt(dropDownIndex);
-                // delete drop down control object from the vector so that it can be destructed
-                keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
-                parent.UpdateLayout();
-            }
-            // Reset the buffer based on the new selected drop down items
-            shortcutRemapBuffer[rowIndex][colIndex].SetKeyCodes(GetKeysFromStackPanel(parent));
         }
 
         // If the user searches for a key the selection handler gets invoked however if they click away it reverts back to the previous state. This can result in dangling references to added drop downs which were then reset.
@@ -312,12 +230,12 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
     };
 
     // Rather than on every selection change (which gets triggered on searching as well) we set the handler only when the drop down is closed
-    dropDown.DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
+    dropDown.as<ComboBox>().DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
         onSelectionChange(sender);
     });
 
     // We check if the selection changed was triggered while the drop down was closed. This is required to handle Type key, initial loading of remaps and if the user just types in the combo box without opening it
-    dropDown.SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+    dropDown.as<ComboBox>().SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         if (!currentDropDown.IsDropDownOpen())
         {
@@ -329,73 +247,101 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
 // Function to set the selected index of the drop down
 void KeyDropDownControl::SetSelectedIndex(int32_t index)
 {
-    dropDown.SelectedIndex(index);
+    dropDown.as<ComboBox>().SelectedIndex(index);
 }
 
 // Function to return the combo box element of the drop down
 ComboBox KeyDropDownControl::GetComboBox()
 {
-    return dropDown;
+    return dropDown.as<ComboBox>();
 }
 
 // Function to add a drop down to the shortcut stack panel
-void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
+void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
     keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true))));
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
-    keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
+    keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
     parent.UpdateLayout();
 }
 
 // Function to get the list of key codes from the shortcut combo box stack panel
-std::vector<DWORD> KeyDropDownControl::GetKeysFromStackPanel(StackPanel parent)
+std::vector<int32_t> KeyDropDownControl::GetSelectedIndicesFromStackPanel(StackPanel parent)
 {
-    std::vector<DWORD> keys;
-    std::vector<DWORD> keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(true);
+    std::vector<int32_t> selectedIndices;
+
+    // Get selected indices for each drop down
     for (int i = 0; i < (int)parent.Children().Size(); i++)
     {
-        ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
-        int selectedKeyIndex = currentDropDown.SelectedIndex();
-        if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
-        {
-            // If None is not the selected key
-            if (keyCodeList[selectedKeyIndex] != 0)
-            {
-                keys.push_back(keyCodeList[selectedKeyIndex]);
-            }
-        }
+        ComboBox ItDropDown = parent.Children().GetAt(i).as<ComboBox>();
+        selectedIndices.push_back(ItDropDown.SelectedIndex());
     }
 
-    return keys;
+    return selectedIndices;
 }
 
-// Function to check if a modifier has been repeated in the previous drop downs
-bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, uint32_t dropDownIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList)
+// Function for validating the selection of shortcuts for all the associated drop downs
+void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
-    // check if modifier has already been added before in a previous drop down
-    std::vector<DWORD> currentKeys = GetKeysFromStackPanel(parent);
-    bool matchPreviousModifier = false;
-    for (int i = 0; i < currentKeys.size(); i++)
+    // Iterate over all drop downs from left to right in that row/col and validate if there is an error in any of the drop downs. After this the state should be error-free (if it is a valid shortcut)
+    for (int i = 0; i < keyDropDownControlObjects.size(); i++)
     {
-        // Skip the current drop down
-        if (i != dropDownIndex)
+        // Check for errors only if the current selection is a valid shortcut
+        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(keyDropDownControlObjects[i]->GetSelectedIndicesFromStackPanel(parent), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
+        std::variant<DWORD, Shortcut> currentShortcut;
+        if (selectedKeyCodes.size() == 1 && isHybridControl)
         {
-            // If the key type for the newly added key matches any of the existing keys in the shortcut
-            if (KeyboardManagerHelper::GetKeyType(keyCodeList[selectedKeyIndex]) == KeyboardManagerHelper::GetKeyType(currentKeys[i]))
-            {
-                matchPreviousModifier = true;
-                break;
-            }
+            currentShortcut = selectedKeyCodes[0];
+        }
+        else
+        {
+            Shortcut temp;
+            temp.SetKeyCodes(selectedKeyCodes);
+            currentShortcut = temp;
+        }
+
+        // If the key/shortcut is valid and that drop down is not empty
+        if (((currentShortcut.index() == 0 && std::get<DWORD>(currentShortcut) != NULL) || (currentShortcut.index() == 1 && std::get<Shortcut>(currentShortcut).IsValidShortcut())) && keyDropDownControlObjects[i]->GetComboBox().SelectedIndex() != -1)
+        {
+            keyDropDownControlObjects[i]->ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
         }
     }
-
-    return matchPreviousModifier;
 }
 
 // Function to set the warning message
 void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring message)
 {
     currentDropDown.SelectedIndex(-1);
-    warningMessage.Text(message);
-    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown);
+    warningMessage.as<TextBlock>().Text(message);
+    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>());
+}
+
+// Function to add a shortcut to the UI control as combo boxes
+void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
+{
+    // Delete the existing drop down menus
+    parent.Children().Clear();
+    // Remove references to the old drop down objects to destroy them
+    keyDropDownControlObjects.clear();
+
+    std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
+    std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
+    if (shortcutKeyCodes.size() != 0)
+    {
+        KeyDropDownControl::AddDropDown(table, controlLayout, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
+        for (int i = 0; i < shortcutKeyCodes.size(); i++)
+        {
+            // New drop down gets added automatically when the SelectedIndex is set
+            if (i < (int)parent.Children().Size())
+            {
+                ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
+                auto it = std::find(keyCodeList.begin(), keyCodeList.end(), shortcutKeyCodes[i]);
+                if (it != keyCodeList.end())
+                {
+                    currentDropDown.SelectedIndex((int32_t)std::distance(keyCodeList.begin(), it));
+                }
+            }
+        }
+    }
+    parent.UpdateLayout();
 }

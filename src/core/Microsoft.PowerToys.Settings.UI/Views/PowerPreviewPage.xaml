@@ -7,27 +7,27 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="PowerPreviewView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -42,36 +42,54 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical" 
-                    x:Name="PowerPreviewSettingsView">
-            <TextBlock x:Uid="FileExplorerPreview_Description"
-                       TextWrapping="Wrap"/>
+                    x:Name="PowerPreviewView">
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
-                          Margin="{StaticResource MediumTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
+
+            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}" />
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
                           Margin="{StaticResource SmallTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}" />
 
         </StackPanel>
-        <StackPanel x:Name="SidePanel"
-                    Orientation="Vertical"
+        <RelativePanel x:Name="SidePanel" 
                     HorizontalAlignment="Left"
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
-
-            <TextBlock x:Uid="About_FileExplorerPreview"
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_FileExplorerPreview" x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="FileExplorerPreview_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane">
-                <TextBlock x:Uid="Module_overview" />
-            </HyperlinkButton>
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image x:Uid="FileExplorerPreview_Image" Source="https://aka.ms/powerToysPowerPreviewSettingImage" />
+            </Border>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
-        </StackPanel>
+            <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FileExplorerAddOns">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>

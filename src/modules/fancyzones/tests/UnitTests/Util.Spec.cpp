@@ -6,6 +6,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
 {
+    using namespace FancyZonesUtils;
+
     void TestMonitorSetPermutations(const std::vector<std::pair<HMONITOR, RECT>>& monitorInfo)
     {
         auto monitorInfoPermutation = monitorInfo;
@@ -229,6 +231,27 @@ namespace FancyZonesUnitTests
                 OrderMonitors(monitorInfoCopy);
                 CustomAssert::AreEqual(firstTime, monitorInfoCopy);
             } while (next_permutation(monitorInfoPermutation.begin(), monitorInfoPermutation.end(), [](auto x, auto y) { return x.first < y.first; }));
+        }
+    
+        TEST_METHOD(TestHexToRGB_rgb)
+        {
+            const auto expected = RGB(163, 246, 255);
+            const auto actual = HexToRGB(L"#A3F6FF");
+            Assert::AreEqual(expected, actual);
+        }
+
+        TEST_METHOD (TestHexToRGB_argb)
+        {
+            const auto expected = RGB(163, 246, 255);
+            const auto actual = HexToRGB(L"#FFA3F6FF");
+            Assert::AreEqual(expected, actual);
+        }
+
+        TEST_METHOD (TestHexToRGB_invalid)
+        {
+            const auto expected = RGB(255, 255, 255);
+            const auto actual = HexToRGB(L"zzz");
+            Assert::AreEqual(expected, actual);
         }
     };
 }

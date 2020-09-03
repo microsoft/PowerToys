@@ -1,16 +1,24 @@
 #pragma once
-#include "Helpers.h"
+#include <mutex>
+#include "KeyboardManagerConstants.h"
 #include "../common/keyboard_layout.h"
+#include "../common/LowlevelKeyboardEvent.h"
+#include <functional>
+#include <variant>
 #include "Shortcut.h"
 #include "RemapShortcut.h"
-#include "KeyDelay.h"
-#include "KeyboardManagerConstants.h"
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <mutex>
-#include <winrt/Windows.UI.Xaml.Controls.h>
-#include <../common/settings_helpers.h>
 
-using namespace winrt::Windows::UI::Xaml::Controls;
+class KeyDelay;
+
+namespace KeyboardManagerHelper
+{
+    enum class KeyboardHookDecision;
+}
+
+namespace winrt::Windows::UI::Xaml::Controls
+{
+    struct StackPanel;
+}
 
 // Enum type to store different states of the UI
 enum class KeyboardManagerUIState
@@ -19,6 +27,8 @@ enum class KeyboardManagerUIState
     Deactivated,
     // If set to this value then the detect key window is currently active and it requires a hook
     DetectSingleKeyRemapWindowActivated,
+    // If set to this value then the detect shortcut window in edit keyboard window is currently active and it requires a hook
+    DetectShortcutWindowInEditKeyboardWindowActivated,
     // If set to this value then the edit keyboard window is currently active and remaps should not be applied
     EditKeyboardWindowActivated,
     // If set to this value then the detect shortcut window is currently active and it requires a hook
@@ -52,14 +62,14 @@ private:
     std::mutex detectedRemapKey_mutex;
 
     // Stores the UI element which is to be updated based on the remap key entered.
-    StackPanel currentSingleKeyUI;
+    winrt::Windows::Foundation::IInspectable currentSingleKeyUI;
     std::mutex currentSingleKeyUI_mutex;
 
     // Stores the UI element which is to be updated based on the shortcut entered (each stackpanel represents a row of keys)
-    StackPanel currentShortcutUI1;
-    StackPanel currentShortcutUI2;
+    winrt::Windows::Foundation::IInspectable currentShortcutUI1;
+    winrt::Windows::Foundation::IInspectable currentShortcutUI2;
     std::mutex currentShortcutUI_mutex;
-    
+
     // Stores the current configuration name.
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
     std::mutex currentConfig_mutex;
@@ -71,14 +81,17 @@ private:
     std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
     std::mutex keyDelays_mutex;
 
+    // Stores the activated target application in app-specfic shortcut
+    std::wstring activatedAppSpecificShortcutTarget;
+
     // Display a key by appending a border Control as a child of the panel.
-    void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);
+    void AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
 
 public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
-    std::unordered_map<DWORD, DWORD> singleKeyReMap;
+    std::unordered_map<DWORD, std::variant<DWORD, Shortcut>> singleKeyReMap;
     std::mutex singleKeyReMap_mutex;
 
     // Stores keys which need to be changed from toggle behavior to modifier behavior. Eg. Caps Lock
@@ -87,10 +100,12 @@ public:
 
     // Stores the os level shortcut remappings
     std::map<Shortcut, RemapShortcut> osLevelShortcutReMap;
+    std::vector<Shortcut> osLevelShortcutReMapSortedKeys;
     std::mutex osLevelShortcutReMap_mutex;
 
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
     std::map<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificShortcutReMap;
+    std::map<std::wstring, std::vector<Shortcut>> appSpecificShortcutReMapSortedKeys;
     std::mutex appSpecificShortcutReMap_mutex;
 
     // Stores the keyboard layout
@@ -120,17 +135,23 @@ public:
     // Function to clear the Keys remapping table
     void ClearSingleKeyRemaps();
 
-    // Function to add a new single key remapping
-    bool AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey);
+    // Function to clear the App specific shortcut remapping table
+    void ClearAppSpecificShortcuts();
+
+    // Function to add a new single key to key remapping
+    bool AddSingleKeyRemap(const DWORD& originalKey, const std::variant<DWORD, Shortcut>& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
-    bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
+    bool AddOSLevelShortcut(const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC);
+
+    // Function to add a new App specific level shortcut remapping
+    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-    void ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2);
+    void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);
 
     // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
-    void ConfigureDetectSingleKeyRemapUI(const StackPanel& textBlock);
+    void ConfigureDetectSingleKeyRemapUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock);
 
     // Function to update the detect shortcut UI based on the entered keys
     void UpdateDetectShortcutUI();
@@ -148,7 +169,7 @@ public:
     KeyboardManagerHelper::KeyboardHookDecision DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data);
 
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
-    KeyboardManagerHelper::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
+    KeyboardManagerHelper::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey);
 
     // Add a KeyDelay object to get delayed key presses events for a given virtual key
     // NOTE: this will throw an exception if a virtual key is registered twice.
@@ -184,4 +205,10 @@ public:
 
     // Gets the Current Active Configuration Name.
     std::wstring GetCurrentConfigName();
+
+    // Sets the activated target application in app-specfic shortcut
+    void SetActivatedApp(const std::wstring& appName);
+
+    // Gets the activated target application in app-specfic shortcut
+    std::wstring GetActivatedApp();
 };

@@ -1,12 +1,5 @@
 #pragma once
 #include <unknwn.h> // To enable support for non-WinRT interfaces, unknwn.h must be included before any C++/WinRT headers.
-#include <winrt/Windows.System.h>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.UI.Xaml.Hosting.h>
-#include <winrt/Windows.UI.Xaml.Markup.h>
-#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
-#include <windowsx.h>
 
 // This class is used for handling XAML Island operations
 class XamlBridge

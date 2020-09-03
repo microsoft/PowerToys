@@ -9,6 +9,7 @@ struct UpdateState
 {
     std::optional<std::time_t> github_update_last_checked_date;
     bool pending_update = false;
+    std::wstring pending_installer_filename;
 
     // To prevent concurrent modification of the file, we enforce this interface, which locks the file while
     // the state_modifier is active.

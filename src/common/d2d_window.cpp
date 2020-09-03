@@ -3,7 +3,8 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-D2DWindow::D2DWindow()
+D2DWindow::D2DWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> _pre_wnd_proc) :
+    pre_wnd_proc(std::move(_pre_wnd_proc))
 {
     static const WCHAR* class_name = L"PToyD2DPopup";
     WNDCLASS wc = {};
@@ -36,6 +37,7 @@ void D2DWindow::show(UINT x, UINT y, UINT width, UINT height)
     }
     base_resize(width, height);
     render_empty();
+    hidden = false;
     on_show();
     SetWindowPos(hwnd, HWND_TOPMOST, x, y, width, height, 0);
     ShowWindow(hwnd, SW_SHOWNORMAL);
@@ -44,6 +46,7 @@ void D2DWindow::show(UINT x, UINT y, UINT width, UINT height)
 
 void D2DWindow::hide()
 {
+    hidden = true;
     ShowWindow(hwnd, SW_HIDE);
     on_hide();
 }
@@ -185,6 +188,11 @@ D2DWindow* D2DWindow::this_from_hwnd(HWND window)
 
 LRESULT __stdcall D2DWindow::d2d_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
+    auto self = this_from_hwnd(window);
+    if (self && self->pre_wnd_proc.has_value())
+    {
+        (*self->pre_wnd_proc)(window, message, wparam, lparam);
+    }
     switch (message)
     {
     case WM_NCCREATE:
@@ -195,11 +203,12 @@ LRESULT __stdcall D2DWindow::d2d_window_proc(HWND window, UINT message, WPARAM w
     }
     case WM_MOVE:
     case WM_SIZE:
-        this_from_hwnd(window)->base_resize((unsigned)lparam & 0xFFFF, (unsigned)lparam >> 16);
-        // Fall through to call 'base_render()'
+        self->base_resize((unsigned)lparam & 0xFFFF, (unsigned)lparam >> 16);
+        [[fallthrough]];
     case WM_PAINT:
-        this_from_hwnd(window)->base_render();
+        self->base_render();
         return 0;
+
     default:
         return DefWindowProc(window, message, wparam, lparam);
     }

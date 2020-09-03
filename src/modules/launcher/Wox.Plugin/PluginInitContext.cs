@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace Wox.Plugin
 {
@@ -7,7 +9,7 @@ namespace Wox.Plugin
         public PluginMetadata CurrentPluginMetadata { get; internal set; }
 
         /// <summary>
-        /// Public APIs for plugin invocation
+        /// Gets or sets public APIs for plugin invocation
         /// </summary>
         public IPublicAPI API { get; set; }
     }

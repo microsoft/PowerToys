@@ -14,11 +14,18 @@ namespace FancyZonesEditor.Models
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
+        // Localizable strings
+        private const string ErrorPersistingCanvasLayout = "Error persisting canvas layout";
+
+        // Non-localizable strings
+        private const string ModelTypeID = "canvas";
+
         public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight)
             : base(uuid, name, type)
         {
             lastWorkAreaWidth = workAreaWidth;
             lastWorkAreaHeight = workAreaHeight;
+            IsScaled = false;
 
             if (ShouldScaleLayout())
             {
@@ -33,6 +40,12 @@ namespace FancyZonesEditor.Models
         public CanvasLayoutModel(string name, LayoutType type)
         : base(name, type)
         {
+            IsScaled = false;
+        }
+
+        public CanvasLayoutModel(string name)
+        : base(name)
+        {
         }
 
         // Zones - the list of all zones in this layout, described as independent rectangles
@@ -42,12 +55,14 @@ namespace FancyZonesEditor.Models
 
         private int lastWorkAreaHeight = (int)Settings.WorkArea.Height;
 
+        public bool IsScaled { get; private set; }
+
         // RemoveZoneAt
         //  Removes the specified index from the Zones list, and fires a property changed notification for the Zones property
         public void RemoveZoneAt(int index)
         {
             Zones.RemoveAt(index);
-            FirePropertyChanged("Zones");
+            UpdateLayout();
         }
 
         // AddZone
@@ -55,7 +70,12 @@ namespace FancyZonesEditor.Models
         public void AddZone(Int32Rect zone)
         {
             Zones.Add(zone);
-            FirePropertyChanged("Zones");
+            UpdateLayout();
+        }
+
+        private void UpdateLayout()
+        {
+            FirePropertyChanged();
         }
 
         // Clone
@@ -63,7 +83,7 @@ namespace FancyZonesEditor.Models
         //  Clones the data from this CanvasLayoutModel to a new CanvasLayoutModel
         public override LayoutModel Clone()
         {
-            CanvasLayoutModel layout = new CanvasLayoutModel(Name, Type);
+            CanvasLayoutModel layout = new CanvasLayoutModel(Name);
 
             foreach (Int32Rect zone in Zones)
             {
@@ -107,6 +127,7 @@ namespace FancyZonesEditor.Models
 
             lastWorkAreaHeight = (int)Settings.WorkArea.Height;
             lastWorkAreaWidth = (int)Settings.WorkArea.Width;
+            IsScaled = true;
         }
 
         private struct Zone
@@ -168,7 +189,7 @@ namespace FancyZonesEditor.Models
             {
                 Uuid = "{" + Guid.ToString().ToUpper() + "}",
                 Name = Name,
-                Type = "canvas",
+                Type = ModelTypeID,
                 Info = layoutInfo,
             };
 
@@ -184,7 +205,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                ShowExceptionMessageBox("Error persisting canvas layout", ex);
+                ShowExceptionMessageBox(ErrorPersistingCanvasLayout, ex);
             }
         }
     }

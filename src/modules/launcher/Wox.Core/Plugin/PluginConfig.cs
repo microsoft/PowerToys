@@ -1,16 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
-using System.Threading.Tasks;
+using System.Linq;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin
 {
-
     internal abstract class PluginConfig
     {
         private const string PluginConfigName = "plugin.json";
@@ -19,8 +20,8 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Parse plugin metadata in giving directories
         /// </summary>
-        /// <param name="pluginDirectories"></param>
-        /// <returns></returns>
+        /// <param name="pluginDirectories">directories with plugins</param>
+        /// <returns>List with plugin meta data</returns>
         public static List<PluginMetadata> Parse(string[] pluginDirectories)
         {
             PluginMetadatas.Clear();
@@ -70,8 +71,10 @@ namespace Wox.Core.Plugin
             {
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
+
                 // for plugins which doesn't has ActionKeywords key
                 metadata.ActionKeywords = metadata.ActionKeywords ?? new List<string> { metadata.ActionKeyword };
+
                 // for plugin still use old ActionKeyword
                 metadata.ActionKeyword = metadata.ActionKeywords?[0];
             }
@@ -80,7 +83,6 @@ namespace Wox.Core.Plugin
                 Log.Exception($"|PluginConfig.GetPluginMetadata|invalid json for config <{configPath}>", e);
                 return null;
             }
-
 
             if (!AllowedLanguage.IsAllowed(metadata.Language))
             {

@@ -1,6 +1,4 @@
 #pragma once
-#include "powertoys_events.h"
-#include "system_menu_helper.h"
 #include <interface/powertoy_module_interface.h>
 #include <string>
 #include <memory>
@@ -16,8 +14,6 @@ struct PowertoyModuleDeleter
     {
         if (module)
         {
-            powertoys_events().unregister_system_menu_action(module);
-            powertoys_events().unregister_receiver(module);
             module->destroy();
         }
     }
@@ -49,5 +45,5 @@ private:
     std::unique_ptr<PowertoyModuleIface, PowertoyModuleDeleter> module;
 };
 
-PowertoyModule load_powertoy(const std::wstring& filename);
+PowertoyModule load_powertoy(const std::wstring_view filename);
 std::map<std::wstring, PowertoyModule>& modules();

@@ -9,35 +9,36 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"        
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <viewModel:FancyZonesViewModel x:Key="eventViewModel"/>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid x:Name="MainView" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="FZView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -51,135 +52,155 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" x:Name="FZSettingsView">
-            <TextBlock x:Uid="FancyZones_Description"
-                       TextWrapping="Wrap"/>
-
-            <ToggleSwitch x:Uid="FancyZones_EnableToggleControl_HeaderText"
-                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                          Margin="{StaticResource MediumTopMargin}" />
-
+        <StackPanel x:Name="FZView" Orientation="Vertical">
+            <ToggleSwitch x:Name="FancyZones_EnableToggleControl_HeaderText"
+                            x:Uid="FancyZones_EnableToggleControl_HeaderText"
+                            IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
             <Button Margin="{StaticResource MediumTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
-                    Command = "{Binding LaunchEditorEventHandler, Source={StaticResource eventViewModel}}"
-                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
+                    Command = "{x:Bind ViewModel.LaunchEditorEventHandler}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                    AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_LaunchEditorButtonControl}">
                 <StackPanel Orientation="Horizontal">
                     <Viewbox Height="12" Width="12">
-                    <PathIcon Data="M896 0v896H0V0h896zM768 768V128H128v640h640zM0 1920v-896h1920v896H0zm128-768v640h1664v-640H128zM1024 0h896v896h-896V0zm768 768V128h-640v640h640z"/>
+                        <PathIcon Data="M896 0v896H0V0h896zM768 768V128H128v640h640zM0 1920v-896h1920v896H0zm128-768v640h1664v-640H128zM1024 0h896v896h-896V0zm768 768V128h-640v640h640z"/>
                     </Viewbox>
-                    <TextBlock Margin="12,0,0,0" x:Uid="FancyZones_LaunchEditorButtonControl"/>
+                    <TextBlock Margin="12,0,0,0"
+                               Name="FancyZones_LaunchEditorButtonControl"
+                               x:Uid="FancyZones_LaunchEditorButtonControl"/>
                 </StackPanel>
             </Button>
 
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       />
-
-            <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}">
-                <TextBlock x:Uid="FancyZones_HotkeyEditorControl"
-                           Text="Editor Hotkeys"/>
-                <Viewbox Height="14" Width="14" Margin="5,2,0,0" >
-                    <PathIcon
-                        x:Uid="FancyZones_HotkeyEditorControl_Icon"
-                        VerticalAlignment="Center"
-                        Data="M960 1920q-133 0-255-34t-230-96-194-150-150-195-97-229T0 960q0-133 34-255t96-230 150-194 195-150 229-97T960 0q133 0 255 34t230 96 194 150 150 195 97 229 34 256q0 133-34 255t-96 230-150 194-195 150-229 97-256 34zm0-1792q-115 0-221 30t-198 84-169 130-130 168-84 199-30 221q0 114 30 220t84 199 130 169 168 130 199 84 221 30q114 0 220-30t199-84 169-130 130-168 84-199 30-221q0-114-30-220t-84-199-130-169-168-130-199-84-221-30zm-64 640h128v640H896V768zm0-256h128v128H896V512z"/>
-                </Viewbox>
-            </StackPanel>
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl 
-                x:Uid="FancyZones_HotkeyEditorControl_TextBox"
                 Width="240"
+                x:Uid="FancyZones_HotkeyEditorControl"
                 HorizontalAlignment="Left"
-                Margin="0,5,0,0"
+                Margin="{StaticResource SmallTopMargin}"
                 HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
-                IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                Keys="Win, Ctrl, Alt, Shift"
+                Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                 />
 
             <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
-                      IsChecked="{ Binding Mode=TwoWay, Path=ShiftDrag}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       />
 
             <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header"
-                      IsChecked="{ Binding Mode=TwoWay, Path=MouseSwitch}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       />
 
             <CheckBox x:Uid="FancyZones_OverrideSnapHotkeysCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=OverrideSnapHotkeys}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
+                      Margin="24,12,0,0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=MoveWindowsAcrossMonitors}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}"
+                      Margin="24,12,0,0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=DisplayChangeMoveWindows}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       />
 
             <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows"
-                      IsChecked="{ Binding Mode=TwoWay, Path=ZoneSetChangeMoveWindows}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows"
-                      IsChecked="{ Binding Mode=TwoWay, Path=AppLastZoneMoveWindows}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor"
+                      IsChecked="{ Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_RestoreSize"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
-                      IsChecked="{ Binding Mode=TwoWay, Path=UseCursorPosEditorStartupScreen}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=ShowOnAllMonitors}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=MakeDraggedWindowsTransparent}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <TextBlock x:Uid="Appearance_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}" Spacing="12">
-            <Slider x:Uid="FancyZones_HighlightOpacity"
+                <Slider x:Uid="FancyZones_HighlightOpacity"
                     Minimum="0"
                     Maximum="100"
                     Width="240"
                     IsThumbToolTipEnabled="False"
-                    Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
+                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}"
                     HorizontalAlignment="Left"
-                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-                <TextBlock Text="{ Binding Mode=OneWay, Path=HighlightOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }" 
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           Margin="0,21,0,0"/>
-            </StackPanel>
-            
-            <TextBlock x:Uid="FancyZones_ZoneHighlightColor" 
-                       Style="{StaticResource BodyTextBlockStyle}"
-                       Margin="{StaticResource SmallTopMargin}" />
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
-                <Border Width="48" CornerRadius="2" Height="24">
+                <TextBlock
+                       Text="{x:Bind Mode=OneWay, Path=ViewModel.HighlightOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
+                       VerticalAlignment="Center"
+                       FontWeight="SemiBold"
+                       FontSize="16"
+                       Margin="0,16,0,0"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            </StackPanel>
+
+            <TextBlock Name="FancyZones_ZoneHighlightColor"
+                x:Uid="FancyZones_ZoneHighlightColor"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <muxc:DropDownButton Margin="0,4,0,0"
+                                 IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
+                                 Padding="4,4,8,4"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_ZoneHighlightColor}">
+                <Border Width="48"
+                        CornerRadius="2"
+                        Height="24">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay}"/>
+                        <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}"/>
                     </Border.Background>
                 </Border>
                 <muxc:DropDownButton.Flyout>
                     <Flyout>
-                    <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColor"
+                        <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColorPicker"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
                               IsColorSliderVisible="True"
@@ -188,22 +209,25 @@
                               IsAlphaEnabled="False"
                               IsAlphaSliderVisible="False"
                               IsAlphaTextInputVisible="False"
-                              Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay}"
+                              Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}"
                               />
                     </Flyout>
                 </muxc:DropDownButton.Flyout>
-            
+
             </muxc:DropDownButton>
-            
 
-            <TextBlock x:Uid="FancyZones_InActiveColor" 
-                       Style="{StaticResource BodyTextBlockStyle}"
-                       Margin="{StaticResource SmallTopMargin}" />
+            <TextBlock Name="FancyZones_InActiveColor"
+                x:Uid="FancyZones_InActiveColor"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
+            <muxc:DropDownButton Margin="0,4,0,0"
+                                 IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
+                                 Padding="4,4,8,4"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_InActiveColor}">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"/>
+                        <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
                     </Border.Background>
                 </Border>
                 <muxc:DropDownButton.Flyout>
@@ -217,26 +241,28 @@
                               IsAlphaEnabled="False"
                               IsAlphaSliderVisible="False"
                               IsAlphaTextInputVisible="False"
-                              Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"/>
+                              Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
                     </Flyout>
                 </muxc:DropDownButton.Flyout>
             </muxc:DropDownButton>
-            
-            
-            <TextBlock x:Uid="FancyZones_BorderColor" 
-                       Style="{StaticResource BodyTextBlockStyle}"
-                       Margin="{StaticResource SmallTopMargin}" />
 
+            <TextBlock Name="FancyZones_BorderColor"
+                x:Uid="FancyZones_BorderColor"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
+            <muxc:DropDownButton Margin="0,4,0,0"
+                                 IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
+                                 Padding="4,4,8,4"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_BorderColor}">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"/>
+                        <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"/>
                     </Border.Background>
                 </Border>
                 <muxc:DropDownButton.Flyout>
                     <Flyout>
-                        <muxc:ColorPicker x:Name="FancyZones_BorderColor"
+                        <muxc:ColorPicker x:Name="FancyZones_BorderColorPicker"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
                               IsColorSliderVisible="True"                             
@@ -245,55 +271,64 @@
                               IsAlphaEnabled="False"
                               IsAlphaSliderVisible="False"
                               IsAlphaTextInputVisible="False"
-                              Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                              Color="{x:Bind  Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"
+                              IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
                     </Flyout>
                 </muxc:DropDownButton.Flyout>
             </muxc:DropDownButton>
 
             <TextBlock x:Uid="FancyZones_ExcludeApps"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
-                     Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
-                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps}"
+                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                      Width="380"
                      Height="160"
                      HorizontalAlignment="Left"
+                     ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                     ScrollViewer.VerticalScrollMode="Enabled"
+                     ScrollViewer.IsVerticalRailEnabled="True"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"/>
-
         </StackPanel>
 
-        <StackPanel x:Name="SidePanel"
-                    Orientation="Vertical"
+        <RelativePanel x:Name="SidePanel" 
                     HorizontalAlignment="Left"
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
-
-            <TextBlock x:Uid="About_FancyZones"
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_FancyZones"
+                           x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="FancyZones_Description"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
 
-            <Image MaxWidth="240" Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image x:Uid="Fancyzones_Image" Source="ms-appx:///Assets/Modules/FancyZones.png" />
+            </Border>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md">
-                <TextBlock x:Uid="Module_overview" />
-            </HyperlinkButton>
-
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
-
-            <!--
-            <TextBlock Text="Contributors"
-                           Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            -->
-        </StackPanel>
+            <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>

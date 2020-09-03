@@ -1,4 +1,7 @@
-using System.Diagnostics;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.IO;
 using System.Runtime.CompilerServices;
 using NLog;
@@ -49,8 +52,6 @@ namespace Wox.Infrastructure.Logger
             return valid;
         }
 
-        
-
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Exception(string className, string message, System.Exception exception, [CallerMemberName] string methodName = "")
         {
@@ -59,8 +60,7 @@ namespace Wox.Infrastructure.Logger
             ExceptionInternal(classNameWithMethod, message, exception);
         }
 
-        private static string CheckClassAndMessageAndReturnFullClassWithMethod(string className, string message,
-            string methodName)
+        private static string CheckClassAndMessageAndReturnFullClassWithMethod(string className, string message, string methodName)
         {
             if (string.IsNullOrWhiteSpace(className))
             {
@@ -99,7 +99,8 @@ namespace Wox.Infrastructure.Logger
                 logger.Error($"Exception target site:\n <{e.TargetSite}>");
                 logger.Error($"Exception HResult:\n <{e.HResult}>");
                 e = e.InnerException;
-            } while (e != null);
+            }
+            while (e != null);
 
             logger.Error("-------------------------- End exception --------------------------");
         }

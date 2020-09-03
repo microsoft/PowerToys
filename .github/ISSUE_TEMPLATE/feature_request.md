@@ -1,21 +1,16 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: "⭐ Feature request"
+about: Propose something new.
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-# Summary of the new feature/enhancement
+## 📝 Provide a description of the new feature
 
-<!-- 
-A clear and concise description of what the problem is that the new feature would solve.
-Describe why and how a user would use this new functionality (if applicable).
--->
+_What is the expected behavior of the proposed feature?  What is the scenario this would be used?_
 
-# Proposed technical implementation details (optional)
+---
 
-<!-- 
-A clear and concise description of what you want to happen.
--->
+If you'd like to see this feature implemented, add a 👍 reaction to this post.

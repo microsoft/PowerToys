@@ -14,16 +14,16 @@ using Moq;
 using PreviewHandlerCommon;
 using SvgPreviewHandler;
 
-namespace UnitTests_SvgPreviewHandler
+namespace SvgPreviewHandlerUnitTests
 {
     [TestClass]
     public class SvgPreviewControlTests
     {
         [TestMethod]
-        public void SvgPreviewControl_ShouldAddExtendedBrowserControl_WhenDoPreviewCalled()
+        public void SvgPreviewControlShouldAddExtendedBrowserControlWhenDoPreviewCalled()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 // Act
                 svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
@@ -35,10 +35,10 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldSetDocumentStream_WhenDoPreviewCalled()
+        public void SvgPreviewControlShouldSetDocumentStreamWhenDoPreviewCalled()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 // Act
                 svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
@@ -49,7 +49,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldDisableWebBrowserContextMenu_WhenDoPreviewCalled()
+        public void SvgPreviewControlShouldDisableWebBrowserContextMenuWhenDoPreviewCalled()
         {
             // Arrange
             using (var svgPreviewControl = new SvgPreviewControl())
@@ -63,10 +63,10 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldFillDockForWebBrowser_WhenDoPreviewCalled()
+        public void SvgPreviewControlShouldFillDockForWebBrowserWhenDoPreviewCalled()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 // Act
                 svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
@@ -77,10 +77,10 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldSetScriptErrorsSuppressedProperty_WhenDoPreviewCalled()
+        public void SvgPreviewControlShouldSetScriptErrorsSuppressedPropertyWhenDoPreviewCalled()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 // Act
                 svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
@@ -91,10 +91,10 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldSetScrollBarsEnabledProperty_WhenDoPreviewCalled()
+        public void SvgPreviewControlShouldSetScrollBarsEnabledPropertyWhenDoPreviewCalled()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 // Act
                 svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
@@ -105,7 +105,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldDisableAllowNavigation_WhenDoPreviewCalled()
+        public void SvgPreviewControlShouldDisableAllowNavigationWhenDoPreviewCalled()
         {
             // Arrange
             using (var svgPreviewControl = new SvgPreviewControl())
@@ -119,7 +119,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldAddValidInfoBar_IfSvgPreviewThrows()
+        public void SvgPreviewControlShouldAddValidInfoBarIfSvgPreviewThrows()
         {
             // Arrange
             using (var svgPreviewControl = new SvgPreviewControl())
@@ -146,7 +146,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfSvgPreviewThrows()
+        public void SvgPreviewControlInfoBarWidthShouldAdjustWithParentControlWidthChangesIfSvgPreviewThrows()
         {
             // Arrange
             using (var svgPreviewControl = new SvgPreviewControl())
@@ -172,10 +172,10 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldAddTextBox_IfBlockedElementsArePresent()
+        public void SvgPreviewControlShouldAddTextBoxIfBlockedElementsArePresent()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 var svgBuilder = new StringBuilder();
                 svgBuilder.AppendLine("<svg width =\"200\" height=\"200\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
@@ -193,10 +193,10 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_ShouldNotAddTextBox_IfNoBlockedElementsArePresent()
+        public void SvgPreviewControlShouldNotAddTextBoxIfNoBlockedElementsArePresent()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 var svgBuilder = new StringBuilder();
                 svgBuilder.AppendLine("<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">");
@@ -214,7 +214,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfBlockedElementsArePresent()
+        public void SvgPreviewControlInfoBarWidthShouldAdjustWithParentControlWidthChangesIfBlockedElementsArePresent()
         {
             // Arrange
             using (var svgPreviewControl = new SvgPreviewControl())
@@ -239,7 +239,7 @@ namespace UnitTests_SvgPreviewHandler
             }
         }
 
-        private IStream GetMockStream(string streamData)
+        private static IStream GetMockStream(string streamData)
         {
             var mockStream = new Mock<IStream>();
             var streamBytes = Encoding.UTF8.GetBytes(streamData);

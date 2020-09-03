@@ -1,6 +1,6 @@
 #include "pch.h"
-
 #include "XamlBridge.h"
+#include <windowsx.h>
 
 bool XamlBridge::FilterMessage(const MSG* msg)
 {

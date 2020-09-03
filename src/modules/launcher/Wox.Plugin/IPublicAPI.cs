@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Collections.Generic;
 
 namespace Wox.Plugin
@@ -9,36 +12,14 @@ namespace Wox.Plugin
     public interface IPublicAPI
     {
         /// <summary>
-        /// Push result to query box
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="plugin"></param>
-        /// <param name="results"></param>
-        [Obsolete("This method will be removed in Wox 1.3")]
-        void PushResults(Query query, PluginMetadata plugin, List<Result> results);
-
-        /// <summary>
         /// Change Wox query
         /// </summary>
         /// <param name="query">query text</param>
         /// <param name="requery">
-        /// force requery By default, Wox will not fire query if your query is same with existing one. 
+        /// force requery By default, Wox will not fire query if your query is same with existing one.
         /// Set this to true to force Wox requerying
         /// </param>
         void ChangeQuery(string query, bool requery = false);
-
-        /// <summary>
-        /// Just change the query text, this won't raise search
-        /// </summary>
-        /// <param name="query"></param>
-        [Obsolete]
-        void ChangeQueryText(string query, bool selectAll = false);
-
-        /// <summary>
-        /// Close Wox
-        /// </summary>
-        [Obsolete]
-        void CloseApp();
 
         /// <summary>
         /// Restart Wox
@@ -46,16 +27,14 @@ namespace Wox.Plugin
         void RestartApp();
 
         /// <summary>
-        /// Hide Wox
+        /// Get current theme
         /// </summary>
-        [Obsolete]
-        void HideApp();
+        Theme GetCurrentTheme();
 
         /// <summary>
-        /// Show Wox
+        /// Theme change event
         /// </summary>
-        [Obsolete]
-        void ShowApp();
+        event ThemeChangedHandler ThemeChanged;
 
         /// <summary>
         /// Save all Wox settings
@@ -63,7 +42,7 @@ namespace Wox.Plugin
         void SaveAppAllSettings();
 
         /// <summary>
-        /// Reloads any Plugins that have the 
+        /// Reloads any Plugins that have the
         /// IReloadable implemented. It refreshes
         /// Plugin's in memory data with new content
         /// added by user.
@@ -84,41 +63,15 @@ namespace Wox.Plugin
         void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true);
 
         /// <summary>
-        /// Show loading animation
-        /// </summary>
-        [Obsolete("automatically start")]
-        void StartLoadingBar();
-
-        /// <summary>
-        /// Stop loading animation
-        /// </summary>
-        [Obsolete("automatically stop")]
-        void StopLoadingBar();
-
-        /// <summary>
         /// Install Wox plugin
         /// </summary>
         /// <param name="path">Plugin path (ends with .wox)</param>
         void InstallPlugin(string path);
 
         /// <summary>
-        /// Get translation of current language
-        /// You need to implement IPluginI18n if you want to support multiple languages for your plugin
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        string GetTranslation(string key);
-
-        /// <summary>
-        /// Get all loaded plugins 
+        /// Get all loaded plugins
         /// </summary>
         /// <returns></returns>
         List<PluginPair> GetAllPlugins();
-
-        /// <summary>
-        /// Fired after global keyboard events
-        /// if you want to hook something like Ctrl+R, you should use this event
-        /// </summary>
-        event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
     }
 }

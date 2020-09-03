@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:local="clr-namespace:PowerLauncher"
     mc:Ignorable="d" 
     d:DesignHeight="300"
@@ -25,7 +26,18 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
                         <Grid>
-                            <TextBlock Margin="15, 1, 0, 0" Text="{TemplateBinding Tag}">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" SnapsToDevicePixels="True">
+                                <ScrollViewer x:Name="PART_ContentHost" Background="{TemplateBinding Background}" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+                                    <ScrollViewer.ContentTemplate>
+                                        <DataTemplate>
+                                            <Grid Background="{Binding Background, ElementName=PART_ContentHost}" RenderOptions.ClearTypeHint="Enabled" TextOptions.TextFormattingMode="Display">
+                                                <ContentPresenter Content="{Binding Path=Content, ElementName=PART_ContentHost}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ScrollViewer.ContentTemplate>
+                                </ScrollViewer>
+                            </Border>
+                            <TextBlock Margin="14, 0, 0, 0" Text="{TemplateBinding Tag}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
                                         <Setter Property="Foreground" Value="Transparent"/>
@@ -37,9 +49,6 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                            <Border x:Name="border" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" SnapsToDevicePixels="True">
-                                <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
-                            </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="false">
@@ -72,26 +81,15 @@
         <!--Background="{ThemeResource BackdropAcrylicBrush}"-->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="64"/>
+            <ColumnDefinition Width="72"/>
         </Grid.ColumnDefinitions>
-
-        <TextBlock
-            x:Name="AutoCompleteTextBlock"
-            x:FieldModifier="public"
-            Opacity="0.6"            
-            Canvas.ZIndex="0"
-            Margin="24, 0, 0, 0"
-            VerticalAlignment="Center"
-            FontSize="24"
-            Foreground="{DynamicResource TextControlPlaceholderForeground}"
-         />
 
         <!--
             for adding on placeholder, look at the style with 90 votes
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
         -->
-
-        <TextBox
+        <local:CustomSearchBox
+            AutomationProperties.Name="{x:Static p:Resources.Query}"
             x:Name="QueryTextBox"
             x:FieldModifier="public"
             Canvas.ZIndex="0"
@@ -99,16 +97,32 @@
             VerticalAlignment="Center"
             FontSize="24"
             Style="{StaticResource QueryTextBoxStyle}"
-            Tag="Start typing..."
+            Tag="{x:Static p:Resources.startTyping}"
+            RenderOptions.ClearTypeHint="Enabled"
             />
-
         <TextBlock
+            x:Name="AutoCompleteTextBlock"
+            x:FieldModifier="public"
+            Opacity="0.6"            
+            Canvas.ZIndex="-1" 
+            Margin="24, 0, 14, 0"
+            VerticalAlignment="Center"
+            FontSize="24"
+            Foreground="{DynamicResource TextControlPlaceholderForeground}"
+            Background="{DynamicResource SystemChromeLow}"
+            RenderOptions.ClearTypeHint="Enabled"
+         />
+        <TextBlock
+            AutomationProperties.Name="{x:Static p:Resources.SearchIcon}"
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"
-            FontSize="24" 
+            FontSize="26" 
             HorizontalAlignment="Center" 
             VerticalAlignment="Center"
-            Foreground="{DynamicResource TextControlPlaceholderForeground}" />
+            Foreground="{DynamicResource TextControlPlaceholderForeground}" 
+            RenderOptions.ClearTypeHint="Enabled"
+            TextOptions.TextRenderingMode="Auto"
+            SnapsToDevicePixels="True"/>
     </Grid>
 </UserControl>

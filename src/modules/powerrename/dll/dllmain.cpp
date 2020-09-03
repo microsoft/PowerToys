@@ -5,7 +5,7 @@
 #include <trace.h>
 #include <common/settings_objects.h>
 #include <common/common.h>
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <atomic>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
@@ -183,13 +183,6 @@ public:
         return m_enabled;
     }
 
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be returned for empty list.
-    virtual PCWSTR* get_events() override
-    {
-        return nullptr;
-    }
-
     // Return JSON with the configuration options.
     // These are the settings shown on the settings page along with their current values.
     virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override
@@ -265,15 +258,6 @@ public:
     virtual void call_custom_action(const wchar_t* action) override
     {
     }
-
-    // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        return 0;
-    }
-
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
 
     // Destroy the powertoy and free memory
     virtual void destroy() override

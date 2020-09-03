@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
+// See the LICENSE file in the project root for more information.
 
+// Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 namespace Microsoft.Plugin.WindowWalker.Components
 {
     /// <summary>
@@ -34,8 +35,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Initializes a new instance of the <see cref="SearchString"/> class.
         /// Constructor
         /// </summary>
-        /// <param name="searchText"></param>
-        /// <param name="searchType"></param>
+        /// <param name="searchText">text from search</param>
+        /// <param name="searchType">type of search</param>
         public SearchString(string searchText, SearchResult.SearchType searchType)
         {
             SearchText = searchText;

@@ -3,12 +3,19 @@
 #include "util.h"
 #include "lib/ZoneSet.h"
 #include "Settings.h"
+#include "FancyZonesData.h"
+#include "FancyZonesDataTypes.h"
 
 #include <common/dpi_aware.h>
+
+#include <utility>
+
+using namespace FancyZonesUtils;
 
 namespace
 {
     constexpr int C_MULTIPLIER = 10000;
+    constexpr int MAX_ZONE_COUNT = 50;
 
     /*
       struct GridLayoutInfo {
@@ -20,81 +27,81 @@ namespace
       };
     */
 
-    auto l = JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Minimal{ .rows = 1, .columns = 1 });
+    auto l = FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = 1, .columns = 1 });
     // PriorityGrid layout is unique for zoneCount <= 11. For zoneCount > 11 PriorityGrid is same as Grid
-    JSONHelpers::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
+    FancyZonesDataTypes::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
         /* 1 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 1,
             .rowsPercents = { 10000 },
             .columnsPercents = { 10000 },
             .cellChildMap = { { 0 } } }),
         /* 2 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 2,
             .rowsPercents = { 10000 },
             .columnsPercents = { 6667, 3333 },
             .cellChildMap = { { 0, 1 } } }),
         /* 3 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 3,
             .rowsPercents = { 10000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 } } }),
         /* 4 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 2,
             .columns = 3,
             .rowsPercents = { 5000, 5000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 } } }),
         /* 5 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 2,
             .columns = 3,
             .rowsPercents = { 5000, 5000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 } } }),
         /* 6 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 3,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 }, { 4, 1, 5 } } }),
         /* 7 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 3,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 }, { 5, 1, 6 } } }),
         /* 8 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 2, 7 } } }),
         /* 9 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 7, 8 } } }),
         /* 10 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 5, 6 }, { 7, 1, 8, 9 } } }),
         /* 11 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
@@ -119,39 +126,41 @@ public:
 
     IFACEMETHODIMP_(GUID)
     Id() noexcept { return m_config.Id; }
-    IFACEMETHODIMP_(JSONHelpers::ZoneSetLayoutType)
+    IFACEMETHODIMP_(FancyZonesDataTypes::ZoneSetLayoutType)
     LayoutType() noexcept { return m_config.LayoutType; }
     IFACEMETHODIMP AddZone(winrt::com_ptr<IZone> zone) noexcept;
-    IFACEMETHODIMP_(std::vector<int>)
+    IFACEMETHODIMP_(std::vector<size_t>)
     ZonesFromPoint(POINT pt) noexcept;
-    IFACEMETHODIMP_(std::vector<int>)
+    IFACEMETHODIMP_(std::vector<size_t>)
     GetZoneIndexSetFromWindow(HWND window) noexcept;
     IFACEMETHODIMP_(std::vector<winrt::com_ptr<IZone>>)
     GetZones() noexcept { return m_zones; }
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndex(HWND window, HWND zoneWindow, int index) noexcept;
+    MoveWindowIntoZoneByIndex(HWND window, HWND zoneWindow, size_t index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<size_t>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirection(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
+    MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
+    IFACEMETHODIMP_(bool)
+    MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(bool)
-    CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noexcept;
+    CalculateZones(RECT workArea, int zoneCount, int spacing) noexcept;
     IFACEMETHODIMP_(bool)
     IsZoneEmpty(int zoneIndex) noexcept;
 
 private:
     bool CalculateFocusLayout(Rect workArea, int zoneCount) noexcept;
-    bool CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
-    bool CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
+    bool CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
+    bool CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
     bool CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept;
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
-    bool CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo gridLayoutInfo, int spacing);
+    bool CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing);
     void StampWindow(HWND window, size_t bitmask) noexcept;
 
     std::vector<winrt::com_ptr<IZone>> m_zones;
-    std::map<HWND, std::vector<int>> m_windowIndexSet;
+    std::map<HWND, std::vector<size_t>> m_windowIndexSet;
     ZoneSetConfig m_config;
 };
 
@@ -165,12 +174,12 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
     return S_OK;
 }
 
-IFACEMETHODIMP_(std::vector<int>)
+IFACEMETHODIMP_(std::vector<size_t>)
 ZoneSet::ZonesFromPoint(POINT pt) noexcept
 {
     const int SENSITIVITY_RADIUS = 20;
-    std::vector<int> capturedZones;
-    std::vector<int> strictlyCapturedZones;
+    std::vector<size_t> capturedZones;
+    std::vector<size_t> strictlyCapturedZones;
     for (size_t i = 0; i < m_zones.size(); i++)
     {
         auto zone = m_zones[i];
@@ -180,13 +189,13 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
             if (newZoneRect.left - SENSITIVITY_RADIUS <= pt.x && pt.x <= newZoneRect.right + SENSITIVITY_RADIUS &&
                 newZoneRect.top - SENSITIVITY_RADIUS <= pt.y && pt.y <= newZoneRect.bottom + SENSITIVITY_RADIUS)
             {
-                capturedZones.emplace_back(static_cast<int>(i));
+                capturedZones.emplace_back(i);
             }
             
             if (newZoneRect.left <= pt.x && pt.x < newZoneRect.right &&
                 newZoneRect.top <= pt.y && pt.y < newZoneRect.bottom)
             {
-                strictlyCapturedZones.emplace_back(static_cast<int>(i));
+                strictlyCapturedZones.emplace_back(i);
             }
         }
     }
@@ -208,8 +217,8 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
         {
             auto rectI = m_zones[capturedZones[i]]->GetZoneRect();
             auto rectJ = m_zones[capturedZones[j]]->GetZoneRect();
-            if (max(rectI.top, rectJ.top) < min(rectI.bottom, rectJ.bottom) &&
-                max(rectI.left, rectJ.left) < min(rectI.right, rectJ.right))
+            if (max(rectI.top, rectJ.top) + SENSITIVITY_RADIUS < min(rectI.bottom, rectJ.bottom) &&
+                max(rectI.left, rectJ.left) + SENSITIVITY_RADIUS < min(rectI.right, rectJ.right))
             {
                 overlap = true;
                 i = capturedZones.size() - 1;
@@ -240,7 +249,7 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
     return capturedZones;
 }
 
-std::vector<int> ZoneSet::GetZoneIndexSetFromWindow(HWND window) noexcept
+std::vector<size_t> ZoneSet::GetZoneIndexSetFromWindow(HWND window) noexcept
 {
     auto it = m_windowIndexSet.find(window);
     if (it == m_windowIndexSet.end())
@@ -254,13 +263,13 @@ std::vector<int> ZoneSet::GetZoneIndexSetFromWindow(HWND window) noexcept
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index) noexcept
+ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, size_t index) noexcept
 {
     MoveWindowIntoZoneByIndexSet(window, windowZone, { index });
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet) noexcept
+ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<size_t>& indexSet) noexcept
 {
     if (m_zones.empty())
     {
@@ -274,9 +283,9 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
     auto& storedIndexSet = m_windowIndexSet[window];
     storedIndexSet = {};
 
-    for (int index : indexSet)
+    for (size_t index : indexSet)
     {
-        if (index < static_cast<int>(m_zones.size()))
+        if (index < m_zones.size())
         {
             RECT newSize = m_zones.at(index)->ComputeActualZoneRect(window, windowZone);
             if (!sizeEmpty)
@@ -303,13 +312,14 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
 
     if (!sizeEmpty)
     {
+        SaveWindowSizeAndOrigin(window);
         SizeWindowToRect(window, size);
         StampWindow(window, bitmask);
     }
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
+ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
 {
     if (m_zones.empty())
     {
@@ -317,7 +327,7 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
     }
 
     auto indexSet = GetZoneIndexSetFromWindow(window);
-    int numZones = static_cast<int>(m_zones.size());
+    size_t numZones = m_zones.size();
 
     // The window was not assigned to any zone here
     if (indexSet.size() == 0)
@@ -326,7 +336,7 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
         return true;
     }
 
-    int oldIndex = indexSet[0];
+    size_t oldIndex = indexSet[0];
 
     // We reached the edge
     if ((vkCode == VK_LEFT && oldIndex == 0) || (vkCode == VK_RIGHT && oldIndex == numZones - 1))
@@ -355,6 +365,65 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
     return true;
 }
 
+IFACEMETHODIMP_(bool)
+ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
+{
+    if (m_zones.empty())
+    {
+        return false;
+    }
+
+    auto zoneObjects = GetZones();
+    std::vector<bool> usedZoneIndices(zoneObjects.size(), false);
+    for (size_t idx : GetZoneIndexSetFromWindow(window))
+    {
+        usedZoneIndices[idx] = true;
+    }
+
+    std::vector<RECT> zoneRects;
+    std::vector<size_t> freeZoneIndices;
+
+    for (size_t i = 0; i < zoneObjects.size(); i++)
+    {
+        if (!usedZoneIndices[i])
+        {
+            zoneRects.emplace_back(zoneObjects[i]->GetZoneRect());
+            freeZoneIndices.emplace_back(i);
+        }
+    }
+
+    RECT windowRect, windowZoneRect;
+    if (GetWindowRect(window, &windowRect) && GetWindowRect(windowZone, &windowZoneRect))
+    {
+        // Move to coordinates relative to windowZone
+        windowRect.top -= windowZoneRect.top;
+        windowRect.bottom -= windowZoneRect.top;
+        windowRect.left -= windowZoneRect.left;
+        windowRect.right -= windowZoneRect.left;
+
+        size_t result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+        if (result < zoneRects.size())
+        {
+            MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+            return true;
+        }
+        else if (cycle)
+        {
+            // Try again from the position off the screen in the opposite direction to vkCode
+            windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
+            result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+
+            if (result < zoneRects.size())
+            {
+                MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 IFACEMETHODIMP_(void)
 ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept
 {
@@ -363,9 +432,9 @@ ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient)
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noexcept
+ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
 {
-    Rect const workArea(monitorInfo.rcWork);
+    Rect workArea(workAreaRect);
     //invalid work area
     if (workArea.width() == 0 || workArea.height() == 0)
     {
@@ -373,7 +442,7 @@ ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noe
     }
 
     //invalid zoneCount, may cause division by zero
-    if (zoneCount <= 0 && m_config.LayoutType != JSONHelpers::ZoneSetLayoutType::Custom)
+    if (zoneCount <= 0 && m_config.LayoutType != FancyZonesDataTypes::ZoneSetLayoutType::Custom)
     {
         return false;
     }
@@ -381,18 +450,18 @@ ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noe
     bool success = true;
     switch (m_config.LayoutType)
     {
-    case JSONHelpers::ZoneSetLayoutType::Focus:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Focus:
         success = CalculateFocusLayout(workArea, zoneCount);
         break;
-    case JSONHelpers::ZoneSetLayoutType::Columns:
-    case JSONHelpers::ZoneSetLayoutType::Rows:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Columns:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Rows:
         success = CalculateColumnsAndRowsLayout(workArea, m_config.LayoutType, zoneCount, spacing);
         break;
-    case JSONHelpers::ZoneSetLayoutType::Grid:
-    case JSONHelpers::ZoneSetLayoutType::PriorityGrid:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Grid:
+    case FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid:
         success = CalculateGridLayout(workArea, m_config.LayoutType, zoneCount, spacing);
         break;
-    case JSONHelpers::ZoneSetLayoutType::Custom:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Custom:
         success = CalculateCustomLayout(workArea, spacing);
         break;
     }
@@ -417,15 +486,15 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 {
     bool success = true;
 
-    long left{ long(workArea.width() * 0.1) };
-    long top{ long(workArea.height() * 0.1) };
-    long right{ long(workArea.width() * 0.6) };
-    long bottom{ long(workArea.height() * 0.6) };
+    long left{ 100 };
+    long top{ 100 };
+    long right{ left + long(workArea.width() * 0.4) };
+    long bottom{ top + long(workArea.height() * 0.4) };
 
     RECT focusZoneRect{ left, top, right, bottom };
 
-    long focusRectXIncrement = (zoneCount <= 1) ? 0 : (int)(workArea.width() * 0.2) / (zoneCount - 1);
-    long focusRectYIncrement = (zoneCount <= 1) ? 0 : (int)(workArea.height() * 0.2) / (zoneCount - 1);
+    long focusRectXIncrement = (zoneCount <= 1) ? 0 : 50;
+    long focusRectYIncrement = (zoneCount <= 1) ? 0 : 50;
 
     if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
     {
@@ -444,14 +513,14 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
     return success;
 }
 
-bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
+bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
 {
     bool success = true;
 
     long totalWidth;
     long totalHeight;
 
-    if (type == JSONHelpers::ZoneSetLayoutType::Columns)
+    if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
     {
         totalWidth = workArea.width() - (spacing * (zoneCount + 1));
         totalHeight = workArea.height() - (spacing * 2);
@@ -471,7 +540,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
     // like this to make the sum of all zones' sizes exactly total{Width|Height}.
     for (int zone = 0; zone < zoneCount; zone++)
     {
-        if (type == JSONHelpers::ZoneSetLayoutType::Columns)
+        if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
             right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
             bottom = totalHeight + spacing;
@@ -490,7 +559,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
         RECT focusZoneRect{ left, top, right, bottom };
         AddZone(MakeZone(focusZoneRect));
 
-        if (type == JSONHelpers::ZoneSetLayoutType::Columns)
+        if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
             left = right + spacing;
         }
@@ -503,10 +572,10 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
     return success;
 }
 
-bool ZoneSet::CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
+bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
 {
-    const auto count = sizeof(predefinedPriorityGridLayouts) / sizeof(JSONHelpers::GridLayoutInfo);
-    if (type == JSONHelpers::ZoneSetLayoutType::PriorityGrid && zoneCount < count)
+    const auto count = sizeof(predefinedPriorityGridLayouts) / sizeof(FancyZonesDataTypes::GridLayoutInfo);
+    if (type == FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid && zoneCount < count)
     {
         return CalculateUniquePriorityGridLayout(workArea, zoneCount, spacing);
     }
@@ -527,7 +596,7 @@ bool ZoneSet::CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType 
         columns++;
     }
 
-    JSONHelpers::GridLayoutInfo gridLayoutInfo(JSONHelpers::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
+    FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
 
     // Note: The expressions below are NOT equal to C_MULTIPLIER / {rows|columns} and are done
     // like this to make the sum of all percents exactly C_MULTIPLIER
@@ -577,7 +646,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     {
         const std::wstring guid = guidStr.get();
 
-        const auto zoneSetSearchResult = JSONHelpers::FancyZonesDataInstance().FindCustomZoneSet(guid);
+        const auto zoneSetSearchResult = FancyZonesDataInstance().FindCustomZoneSet(guid);
 
         if (!zoneSetSearchResult.has_value())
         {
@@ -585,9 +654,9 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
         }
 
         const auto& zoneSet = *zoneSetSearchResult;
-        if (zoneSet.type == JSONHelpers::CustomLayoutType::Canvas && std::holds_alternative<JSONHelpers::CanvasLayoutInfo>(zoneSet.info))
+        if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info))
         {
-            const auto& zoneSetInfo = std::get<JSONHelpers::CanvasLayoutInfo>(zoneSet.info);
+            const auto& zoneSetInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info);
             for (const auto& zone : zoneSetInfo.zones)
             {
                 int x = zone.x;
@@ -608,9 +677,9 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 
             return true;
         }
-        else if (zoneSet.type == JSONHelpers::CustomLayoutType::Grid && std::holds_alternative<JSONHelpers::GridLayoutInfo>(zoneSet.info))
+        else if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Grid && std::holds_alternative<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info))
         {
-            const auto& info = std::get<JSONHelpers::GridLayoutInfo>(zoneSet.info);
+            const auto& info = std::get<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info);
             return CalculateGridZones(workArea, info, spacing);
         }
     }
@@ -618,7 +687,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     return false;
 }
 
-bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo gridLayoutInfo, int spacing)
+bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing)
 {
     bool success = true;
 
@@ -693,10 +762,11 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
 
 void ZoneSet::StampWindow(HWND window, size_t bitmask) noexcept
 {
-    SetProp(window, MULTI_ZONE_STAMP, reinterpret_cast<HANDLE>(bitmask));
+    SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, reinterpret_cast<HANDLE>(bitmask));
 }
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept
 {
     return winrt::make_self<ZoneSet>(config);
 }
+

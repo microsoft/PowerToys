@@ -2,17 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SvgPreviewHandler.Utilities;
 using System.Text;
+using Common.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTests_SvgPreviewHandler
+namespace SvgPreviewHandlerUnitTests
 {
     [TestClass]
     public class SvgPreviewHandlerHelperTests
     {
         [TestMethod]
-        public void CheckBlockedElements_ShouldReturnTrue_IfABlockedElementIsPresent()
+        public void CheckBlockedElementsShouldReturnTrueIfABlockedElementIsPresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -29,7 +29,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShouldReturnTrue_IfBlockedElementsIsPresentInNestedLevel()
+        public void CheckBlockedElementsShouldReturnTrueIfBlockedElementsIsPresentInNestedLevel()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -48,7 +48,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShouldReturnTrue_IfMultipleBlockedElementsArePresent()
+        public void CheckBlockedElementsShouldReturnTrueIfMultipleBlockedElementsArePresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -66,7 +66,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShouldReturnFalse_IfNoBlockedElementsArePresent()
+        public void CheckBlockedElementsShouldReturnFalseIfNoBlockedElementsArePresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -87,7 +87,7 @@ namespace UnitTests_SvgPreviewHandler
         [DataRow("")]
         [DataRow("  ")]
         [DataRow(null)]
-        public void CheckBlockedElements_ShouldReturnFalse_IfSvgDataIsNullOrWhiteSpaces(string svgData)
+        public void CheckBlockedElementsShouldReturnFalseIfSvgDataIsNullOrWhiteSpaces(string svgData)
         {
             // Arrange
             bool foundFilteredElement;

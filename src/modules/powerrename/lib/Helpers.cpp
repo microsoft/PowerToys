@@ -1,6 +1,296 @@
 #include "pch.h"
 #include "Helpers.h"
+#include <regex>
 #include <ShlGuid.h>
+#include <cstring>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
+{
+    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;
+    if (SUCCEEDED(hr))
+    {
+        PWSTR newName = nullptr;
+        hr = SHStrDup(source, &newName);
+        if (SUCCEEDED(hr))
+        {
+            size_t firstValidIndex = 0, lastValidIndex = wcslen(newName) - 1;
+            while (firstValidIndex <= lastValidIndex && iswspace(newName[firstValidIndex]))
+            {
+                firstValidIndex++;
+            }
+            while (firstValidIndex <= lastValidIndex && (iswspace(newName[lastValidIndex]) || newName[lastValidIndex] == L'.'))
+            {
+                lastValidIndex--;
+            }
+            newName[lastValidIndex + 1] = '\0';
+
+            hr = StringCchCopy(result, cchMax, newName + firstValidIndex);
+        }
+        CoTaskMemFree(newName);
+    }
+
+    return hr;
+}
+
+HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags)
+{
+    std::locale::global(std::locale(""));
+    HRESULT hr = (source && wcslen(source) > 0 && flags) ? S_OK : E_INVALIDARG;
+    if (SUCCEEDED(hr))
+    {
+        if (flags & Uppercase)
+        {
+            if (flags & NameOnly)
+            {
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+            }
+            else if (flags & ExtensionOnly)
+            {
+                std::wstring extension = fs::path(source).extension().wstring();
+                if (!extension.empty())
+                {
+                    std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
+                    hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                }
+                else
+                {
+                    hr = StringCchCopy(result, cchMax, source);
+                    if (SUCCEEDED(hr))
+                    {
+                        std::transform(result, result + wcslen(result), result, ::towupper);
+                    }
+                }
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
+                {
+                    std::transform(result, result + wcslen(result), result, ::towupper);
+                }
+            }
+        }
+        else if (flags & Lowercase)
+        {
+            if (flags & NameOnly)
+            {
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+            }
+            else if (flags & ExtensionOnly)
+            {
+                std::wstring extension = fs::path(source).extension().wstring();
+                if (!extension.empty())
+                {
+                    std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+                    hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                }
+                else
+                {
+                    hr = StringCchCopy(result, cchMax, source);
+                    if (SUCCEEDED(hr))
+                    {
+                        std::transform(result, result + wcslen(result), result, ::towlower);
+                    }
+                }
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
+                {
+                    std::transform(result, result + wcslen(result), result, ::towlower);
+                }
+            }
+        }
+        else if (flags & Titlecase)
+        {
+            if (!(flags & ExtensionOnly))
+            {
+                std::vector<std::wstring> exceptions = { L"a", L"an", L"to", L"the", L"at", L"by", L"for", L"in", L"of", L"on", L"up", L"and", L"as", L"but", L"or", L"nor" };
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::wstring extension = fs::path(source).extension().wstring();
+
+                size_t stemLength = stem.length();
+                bool isFirstWord = true;
+
+                while (stemLength > 0 && (iswspace(stem[stemLength - 1]) || iswpunct(stem[stemLength - 1])))
+                {
+                    stemLength--;
+                }
+
+                for (size_t i = 0; i < stemLength; i++)
+                {
+                    if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
+                    {
+                        if (iswspace(stem[i]) || iswpunct(stem[i]))
+                        {
+                            continue;
+                        }
+                        size_t wordLength = 0;
+                        while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
+                        {
+                            wordLength++;
+                        }
+                        if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
+                        {
+                            stem[i] = towupper(stem[i]);
+                            isFirstWord = false;
+                        }
+                        else
+                        {
+                            stem[i] = towlower(stem[i]);
+                        }
+                    }
+                    else
+                    {
+                        stem[i] = towlower(stem[i]);
+                    }
+                }
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+            }
+        }
+        else
+        {
+            hr = StringCchCopy(result, cchMax, source);
+        }
+    }
+
+    return hr;
+}
+
+bool isFileAttributesUsed(_In_ PCWSTR source) 
+{
+    bool used = false;
+    std::wstring patterns[] = { L"(([^\\$]|^)(\\$\\$)*)\\$Y", L"(([^\\$]|^)(\\$\\$)*)\\$M", L"(([^\\$]|^)(\\$\\$)*)\\$D", 
+        L"(([^\\$]|^)(\\$\\$)*)\\$h", L"(([^\\$]|^)(\\$\\$)*)\\$m", L"(([^\\$]|^)(\\$\\$)*)\\$s", L"(([^\\$]|^)(\\$\\$)*)\\$f" };
+    size_t patternsLength = ARRAYSIZE(patterns);
+    for (size_t i = 0; !used && i < patternsLength; i++)
+    {
+        if (std::regex_search(source, std::wregex(patterns[i])))
+        {
+            used = true;
+        }
+    }
+    return used;
+}
+
+HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME LocalTime)
+{
+    std::locale::global(std::locale(""));
+    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
+    if (SUCCEEDED(hr))
+    {
+        std::wstring res(source);
+        wchar_t replaceTerm[MAX_PATH] = { 0 };
+        wchar_t formattedDate[MAX_PATH] = { 0 };
+
+        wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+        if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+        {
+            StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
+        }
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%04d"), L"$01", LocalTime.wYear);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YYYY"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", (LocalTime.wYear % 100));
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YY"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", (LocalTime.wYear % 10));
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y"), replaceTerm);
+        
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"MMMM", formattedDate, MAX_PATH, NULL);
+        formattedDate[0] = towupper(formattedDate[0]);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMMM"), replaceTerm);
+        
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"MMM", formattedDate, MAX_PATH, NULL);
+        formattedDate[0] = towupper(formattedDate[0]);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMM"), replaceTerm);
+                
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMonth);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MM"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMonth);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$M"), replaceTerm);
+
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"dddd", formattedDate, MAX_PATH, NULL);
+        formattedDate[0] = towupper(formattedDate[0]);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD"), replaceTerm);
+        
+        GetDateFormatEx(localeName, NULL, &LocalTime, L"ddd", formattedDate, MAX_PATH, NULL);
+        formattedDate[0] = towupper(formattedDate[0]);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wDay);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DD"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wDay);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wHour);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$hh"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wHour);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$h"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMinute);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$mm"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMinute);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$m"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wSecond);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ss"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wSecond);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$s"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%03d"), L"$01", LocalTime.wMilliseconds);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$fff"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMilliseconds/10);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ff"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMilliseconds/100);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$f"), replaceTerm);
+
+        hr = StringCchCopy(result, cchMax, res.c_str());
+    }
+
+    return hr;
+}
+
+HRESULT _GetShellItemArrayFromDataOject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
+{
+    *items = nullptr;
+    CComPtr<IDataObject> dataObj;
+    HRESULT hr;
+    if (SUCCEEDED(dataSource->QueryInterface(IID_PPV_ARGS(&dataObj))))
+    {
+        hr = SHCreateShellItemArrayFromDataObject(dataObj, IID_PPV_ARGS(items));
+    }
+    else
+    {
+        hr = dataSource->QueryInterface(IID_PPV_ARGS(items));
+    }
+
+    return hr;
+}
 
 HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
 {
@@ -17,21 +307,21 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
         while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
         {
             CComPtr<IPowerRenameItemFactory> spsrif;
-            hr = psrm->get_renameItemFactory(&spsrif);
+            hr = psrm->GetRenameItemFactory(&spsrif);
             if (SUCCEEDED(hr))
             {
                 CComPtr<IPowerRenameItem> spNewItem;
                 hr = spsrif->Create(spsi, &spNewItem);
                 if (SUCCEEDED(hr))
                 {
-                    spNewItem->put_depth(depth);
+                    spNewItem->PutDepth(depth);
                     hr = psrm->AddItem(spNewItem);
                 }
 
                 if (SUCCEEDED(hr))
                 {
                     bool isFolder = false;
-                    if (SUCCEEDED(spNewItem->get_isFolder(&isFolder)) && isFolder)
+                    if (SUCCEEDED(spNewItem->GetIsFolder(&isFolder)) && isFolder)
                     {
                         // Bind to the IShellItem for the IEnumShellItems interface
                         CComPtr<IEnumShellItems> spesiNext;
@@ -56,16 +346,7 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
 HRESULT EnumerateDataObject(_In_ IUnknown* dataSource, _In_ IPowerRenameManager* psrm)
 {
     CComPtr<IShellItemArray> spsia;
-    IDataObject* dataObj{};
-    HRESULT hr;
-    if (SUCCEEDED(dataSource->QueryInterface(IID_IDataObject, reinterpret_cast<void**>(&dataObj))))
-    {
-        hr = SHCreateShellItemArrayFromDataObject(dataObj, IID_PPV_ARGS(&spsia));
-    }
-    else
-    {
-        hr = dataSource->QueryInterface(IID_IShellItemArray, reinterpret_cast<void**>(&spsia));
-    }
+    HRESULT hr = _GetShellItemArrayFromDataOject(dataSource, &spsia);
     if (SUCCEEDED(hr))
     {
         CComPtr<IEnumShellItems> spesi;
@@ -240,4 +521,32 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
     }
 
     return fRet;
+}
+
+// Iterate through the data source and checks if at least 1 item has SFGAO_CANRENAME.
+// We do not enumerate child items - only the items the user selected.
+bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)
+{
+    bool hasRenamable = false;
+    CComPtr<IShellItemArray> spsia;
+    if (SUCCEEDED(_GetShellItemArrayFromDataOject(dataSource, &spsia)))
+    {
+        CComPtr<IEnumShellItems> spesi;
+        if (SUCCEEDED(spsia->EnumItems(&spesi)))
+        {
+            ULONG celtFetched;
+            CComPtr<IShellItem> spsi;
+            while ((S_OK == spesi->Next(1, &spsi, &celtFetched)))
+            {
+                SFGAOF attrs;
+                if (SUCCEEDED(spsi->GetAttributes(SFGAO_CANRENAME, &attrs)) &&
+                    attrs & SFGAO_CANRENAME)
+                {
+                    hasRenamable = true;
+                    break;
+                }
+            }
+        }
+    }
+    return hasRenamable;
 }

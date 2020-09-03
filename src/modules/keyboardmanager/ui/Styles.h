@@ -1,6 +1,7 @@
 #pragma once
-#include <winrt/Windows.UI.Xaml.h>
+namespace winrt::Windows::UI::Xaml
+{
+    struct Style;
+}
 
-using namespace winrt::Windows::UI::Xaml;
-
-Style AccentButtonStyle();
+winrt::Windows::UI::Xaml::Style AccentButtonStyle();

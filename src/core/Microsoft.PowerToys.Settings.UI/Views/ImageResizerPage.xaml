@@ -1,40 +1,41 @@
-﻿<Page
+﻿  <Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ImageResizerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"    
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Lib"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.Lib.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <viewModel:ImageResizerViewModel x:Key="ViewModel"/>
+        <!--<viewModel:ImageResizerViewModel x:Key="ViewModel"/>-->
     </Page.Resources>
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="ImageResizerView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -49,22 +50,18 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" x:Name="ImageResizerView">
 
-            <TextBlock x:Uid="ImageResizer_Description"
-                       TextWrapping="Wrap"/>
-
             <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
-                          Margin="{StaticResource MediumTopMargin}"
-                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
 
             <TextBlock x:Uid="ImageResizer_CustomSizes"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
-
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ListView x:Name="ImagesSizesListView" 
-                      ItemsSource="{Binding Sizes, Mode=TwoWay, Source={StaticResource ViewModel}}"
+                      x:Uid="ImagesSizesListView"
+                      ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
                       Padding="0"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
-                      Margin="0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       SelectionMode="None">
 
                 <ListView.ItemContainerStyle>
@@ -99,14 +96,18 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize" >
-                        <StackPanel Orientation="Horizontal" Height="48" Padding="0" Spacing="4">
-                            <TextBox Text="{x:Bind Path=Name, Mode=TwoWay}" 
+                        <StackPanel Name="ImageResizer_Configurations" x:Uid="ImageResizer_Configurations" Orientation="Horizontal" Height="48" Padding="0" Spacing="4">
+                            <TextBox Name="ImageResizer_Name"
+                                     x:Uid="ImageResizer_Name"
+                                     Text="{x:Bind Path=Name, Mode=TwoWay}" 
                                      Width="90"
                                      VerticalAlignment="Center"
                                      Height="34"
                                      Margin="{StaticResource SmallTopMargin}"/>
 
-                            <ComboBox SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
+                            <ComboBox Name="ImageResizer_Fit_Property"
+                                      x:Uid="ImageResizer_Fit_Property"
+                                      SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
                                       Width="90"
                                       VerticalAlignment="Center"
                                       Height="34"
@@ -116,28 +117,39 @@
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                             </ComboBox>
 
-                            <muxc:NumberBox Value="{x:Bind Path=Width, Mode=TwoWay}" 
+                            <muxc:NumberBox Name="ImageResizer_Width_Property"
+                                            x:Uid="ImageResizer_Width_Property"
+                                            Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                             Width="68"
                                             Height="34"
                                             SpinButtonPlacementMode="Compact"
                                             VerticalAlignment="Center"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
-                            <TextBlock Text="&#xE711;"
+                            <TextBlock Name="ImageResizer_Times_Symbol"
+                                       x:Uid="ImageResizer_Times_Symbol"
+                                       Text="&#xE711;"
                                        FontFamily="Segoe MDL2 Assets"
                                        TextAlignment="Center"
                                        VerticalAlignment="Center"
                                        Margin="{StaticResource SmallTopMargin}" 
+                                       Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"                                    
                                        Width="25"/>
 
-                            <muxc:NumberBox Value="{x:Bind Path=Height, Mode=TwoWay}" 
+                            <muxc:NumberBox Name="ImageResizer_Height_Property"
+                                            x:Uid="ImageResizer_Height_Property"
+                                            Value="{x:Bind Path=Height, Mode=TwoWay}" 
                                             Width="68"
                                             Height="34"
                                             VerticalAlignment="Center"
                                             SpinButtonPlacementMode="Compact"
+                                            Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"
+                                            IsEnabled="{x:Bind Path=EnableEtraBoxes, Mode=OneWay}"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
-                            <ComboBox SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
+                            <ComboBox Name="ImageResizer_Size_Property"
+                                      x:Uid="ImageResizer_Size_Property"
+                                      SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
                                       Width="120"
                                       Height="34"
                                       VerticalAlignment="Center"
@@ -147,16 +159,18 @@
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
                             </ComboBox>
-                            <Button x:Name="RemoveButton" 
-                                          Background="Transparent" 
-                                          Command = "{Binding DeleteImageSizeEventHandler, Source={StaticResource ViewModel}}"
-                                          CommandParameter="{Binding Id}"                                          
-                                          FontFamily="Segoe MDL2 Assets"
-                                          Height="34"
-                                          Width="34"
-                                          Content="&#xE74D;"
-                                          VerticalAlignment="Center"
-                                          Margin="{StaticResource SmallTopMargin}" UseLayoutRounding="False"/>
+                            <Button x:Name="RemoveButton"
+                                    x:Uid="RemoveButton"
+                                    Background="Transparent"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Height="34"
+                                    Width="34"
+                                    Content="&#xE74D;"
+                                    VerticalAlignment="Center"
+                                    Margin="{StaticResource SmallTopMargin}" 
+                                    UseLayoutRounding="False"
+                                    Click="DeleteCustomSize"
+                                    CommandParameter="{Binding Id}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -168,21 +182,23 @@
                               x:Name="AddSizeButton"
                               Width="560"
                               Style="{StaticResource AddItemAppBarButtonStyle}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" 
-                             x:Uid="ImageResizer_AddSizeButton"
+                              IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" 
+                              x:Uid="ImageResizer_AddSizeButton"
+                              Click="AddSizeButton_Click"
                               Margin="{StaticResource AddItemButtonMargin}"
-                              Command = "{Binding AddImageSizeEventHandler, Source={StaticResource ViewModel}}"
+                              
                           />
             </StackPanel>
 
-            <TextBlock Text="Encoding" 
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <TextBlock x:Uid="Encoding"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <ComboBox Header="Fallback encoder"
-                          SelectedIndex="{Binding Path=Encoder, Mode=TwoWay, Source={StaticResource ViewModel}}"
+            <ComboBox x:Uid="ImageResizer_FallBackEncoderText"
+                          SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
                           Width="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
@@ -191,32 +207,37 @@
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
             </ComboBox>
 
+            <TextBlock Name="ImageResizer_Encoding"
+                x:Uid="ImageResizer_Encoding"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <muxc:NumberBox Header="JPEG Quality level"
-                            Minimum="0"
+            <muxc:NumberBox Minimum="0"
                             Maximum="100"
-                            Value="{ Binding Mode=TwoWay, Path=JPEGQualityLevel, Source={StaticResource ViewModel}}"
+                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
                             Width="240"
+                            Margin="{StaticResource HeaderTextTopMargin}"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" 
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                            AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_Encoding}"
+                            />
 
-            <ComboBox Header="PNG interlacing"
-                          SelectedIndex="{ Binding Mode=TwoWay, Path=PngInterlaceOption, Source={StaticResource ViewModel}}"
+            <ComboBox x:Uid="ImageResizer_PNGInterlacing"
+                          SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}"
                           Width="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="Default"/>
                 <ComboBoxItem x:Uid="On"/>
                 <ComboBoxItem x:Uid="Off"/>
             </ComboBox>
 
-            <ComboBox Header="TIFF Compression"
-                          SelectedIndex="{ Binding Mode=TwoWay, Path=TiffCompressOption, Source={StaticResource ViewModel}}"
+            <ComboBox x:Uid="ImageResizer_TIFFCompression"
+                          SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}"
                           Width="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None"/>
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3"/>
@@ -226,77 +247,118 @@
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip"/>
             </ComboBox>
 
-            <TextBlock Text="File" Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <TextBlock x:Uid="File"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <TextBlock Text="The following parameters can be used:" Margin="{StaticResource SmallTopBottomMargin}"/>
-
-            <TextBlock FontSize="12">
-                <Run FontWeight="Bold">%1</Run>
-                <Run>  -  Original filename</Run>
-            </TextBlock>
-            <TextBlock FontSize="12">
-                <Run FontWeight="Bold">%2</Run>
-                <Run>  -  Size name</Run>
-            </TextBlock>
-            <TextBlock FontSize="12">
-                <Run FontWeight="Bold">%3</Run>
-                <Run>  -  Selected width</Run>
-            </TextBlock>
-            <TextBlock FontSize="12">
-                <Run FontWeight="Bold">%4</Run>
-                <Run>  -  Selected height</Run>
-            </TextBlock>
-            <TextBlock FontSize="12">
-                <Run FontWeight="Bold">%5</Run>
-                <Run>  -  Actual height</Run>
-            </TextBlock>
-            <TextBlock FontSize="12">
-                <Run FontWeight="Bold">%6</Run>
-                <Run>  -  Actual width</Run>
-            </TextBlock>
-
-            <TextBox  Header="Filename format"
-                      Text="{ Binding Mode=TwoWay, Path=FileName, Source={StaticResource ViewModel}}"
+            <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                       HorizontalAlignment="Left"
                       MinWidth="240"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
-                      Margin="{StaticResource SmallTopMargin}"/>
-
-            <CheckBox Content="Use original date modified"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{Binding Mode=TwoWay, Path=KeepDateModified, Source={StaticResource ViewModel}}"/>
+                      AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_FilenameFormatHeader}">
+                <TextBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Name="ImageResizer_FilenameFormatHeader"
+                            x:Uid="ImageResizer_FilenameFormatHeader"
+                            Margin="0,0,0,0"
+                            Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                        <TextBlock Text="&#xE946;"
+                           FontFamily="Segoe MDL2 Assets"
+                           Margin="4,4,0,0"/>
+                    </StackPanel>
+                </TextBox.Header>
+                <ToolTipService.ToolTip>
+                    <StackPanel>
+                        <TextBlock x:Uid="ImageResizer_FileFormatDescription"/>
+                        <TextBlock Margin="{StaticResource SmallTopMargin}">
+                            <Run Text="%1" FontWeight="Bold" />
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_Filename" />
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%2" FontWeight="Bold" />
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_Sizename"/>
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%3" FontWeight="Bold" />
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_SelectedWidth"/>
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%4" FontWeight="Bold" />
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_SelectedHeight"/>
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%5" FontWeight="Bold" />
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_ActualWidth"/>
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%6" FontWeight="Bold" />
+                            <Run Text=" - "/>
+                            <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
+                        </TextBlock>
+                    </StackPanel>
+                </ToolTipService.ToolTip>
+            </TextBox>
+
+            <CheckBox x:Uid="ImageResizer_UseOriginalDate"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.KeepDateModified}"/>
         </StackPanel>
 
-        <StackPanel 
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_ImageResizer" x:Name="AboutTitle" Grid.ColumnSpan="2"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="ImageResizer_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
 
-            <TextBlock 
-                x:Uid="About_ImageResizer"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"/>
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image x:Uid="ImageResizer_Image" Source="ms-appx:///Assets/Modules/ImageResizer.png" />
+            </Border>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md">
-                <TextBlock x:Uid="Module_overview" />
-            </HyperlinkButton>
+            <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ImageResizer">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
-
-            <TextBlock 
+                <TextBlock 
                 x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" />
+                Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <HyperlinkButton 
+                <HyperlinkButton Margin="0,-3,0,0"
                 NavigateUri="https://github.com/bricelam/ImageResizer/">
-                <TextBlock Text="Brice Lambson's ImageResizer" TextWrapping="Wrap" />
-            </HyperlinkButton>
-        </StackPanel>
-
+                    <TextBlock Text="Brice Lambson's ImageResizer" TextWrapping="Wrap" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>

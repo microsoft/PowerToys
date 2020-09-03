@@ -21,13 +21,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("FancyZones")]
         public bool FancyZones
         {
-            get => this.fancyZones;
+            get => fancyZones;
             set
             {
-                if (this.fancyZones != value)
+                if (fancyZones != value)
                 {
                     LogTelemetryEvent(value);
-                    this.fancyZones = value;
+                    fancyZones = value;
                 }
             }
         }
@@ -37,13 +37,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("Image Resizer")]
         public bool ImageResizer
         {
-            get => this.imageResizer;
+            get => imageResizer;
             set
             {
-                if (this.imageResizer != value)
+                if (imageResizer != value)
                 {
                     LogTelemetryEvent(value);
-                    this.imageResizer = value;
+                    imageResizer = value;
                 }
             }
         }
@@ -53,13 +53,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("File Explorer Preview")]
         public bool FileExplorerPreview
         {
-            get => this.fileExplorerPreview;
+            get => fileExplorerPreview;
             set
             {
-                if (this.fileExplorerPreview != value)
+                if (fileExplorerPreview != value)
                 {
                     LogTelemetryEvent(value);
-                    this.fileExplorerPreview = value;
+                    fileExplorerPreview = value;
                 }
             }
         }
@@ -69,13 +69,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("Shortcut Guide")]
         public bool ShortcutGuide
         {
-            get => this.shortcutGuide;
+            get => shortcutGuide;
             set
             {
-                if (this.shortcutGuide != value)
+                if (shortcutGuide != value)
                 {
                     LogTelemetryEvent(value);
-                    this.shortcutGuide = value;
+                    shortcutGuide = value;
                 }
             }
         }
@@ -84,54 +84,71 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public bool PowerRename
         {
-            get => this.powerRename;
+            get => powerRename;
             set
             {
-                if (this.powerRename != value)
+                if (powerRename != value)
                 {
                     LogTelemetryEvent(value);
-                    this.powerRename = value;
+                    powerRename = value;
                 }
             }
         }
 
         private bool keyboardManager = true;
+
         [JsonPropertyName("Keyboard Manager")]
         public bool KeyboardManager
         {
-            get => this.keyboardManager;
+            get => keyboardManager;
             set
             {
-                if (this.keyboardManager != value)
+                if (keyboardManager != value)
                 {
                     LogTelemetryEvent(value);
-                    this.keyboardManager = value;
+                    keyboardManager = value;
                 }
             }
         }
 
         private bool powerLauncher = true;
 
-     	[JsonPropertyName("PowerToys Run")]
+        [JsonPropertyName("PowerToys Run")]
         public bool PowerLauncher
         {
-            get => this.powerLauncher;
+            get => powerLauncher;
             set
             {
-                if (this.powerLauncher != value)
+                if (powerLauncher != value)
                 {
                     LogTelemetryEvent(value);
-                    this.powerLauncher = value;
+                    powerLauncher = value;
                 }
             }
-}
+        }
+
+        private bool colorPicker = true;
+
+        [JsonPropertyName("ColorPicker")]
+        public bool ColorPicker
+        {
+            get => colorPicker;
+            set
+            {
+                if (colorPicker != value)
+                {
+                    LogTelemetryEvent(value);
+                    colorPicker = value;
+                }
+            }
+        }
 
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
         }
 
-        private void LogTelemetryEvent(bool value, [CallerMemberName] string moduleName = null )
+        private void LogTelemetryEvent(bool value, [CallerMemberName] string moduleName = null)
         {
             var dataEvent = new SettingsEnabledEvent()
             {

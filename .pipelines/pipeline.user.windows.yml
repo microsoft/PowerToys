@@ -20,6 +20,7 @@ package_sources:
   nuget:
     feeds:
       'Nuget': 'https://api.nuget.org/v3/index.json'
+      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
       'PipelineBuildSupplement': 'https://msazure.pkgs.visualstudio.com/_packaging/PipelineBuildSupplement/nuget/v3/index.json'
 
 restore:
@@ -33,6 +34,9 @@ restore:
     - !!defaultcommand
       name: 'Restore Installer'
       command: '.pipelines\restore-installer.cmd'
+    - !!defaultcommand
+      name: 'Restore Localization packages'
+      command: '.pipelines\restore-localization.cmd'
 
 
 build:
@@ -50,6 +54,8 @@ build:
           to: 'Build_Output'
           include:
             - 'action_runner.exe'
+            - 'modules\ColorPicker\ColorPicker.dll'
+            - 'modules\ColorPicker\ColorPicker.exe'
             - 'modules\ImageResizer\ar\ImageResizer.resources.dll'
             - 'modules\ImageResizer\bg\ImageResizer.resources.dll'
             - 'modules\ImageResizer\ca\ImageResizer.resources.dll'
@@ -75,6 +81,7 @@ build:
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
+            - 'modules\FileExplorerPreview\SVGThumbnailProvider.dll'
             - 'modules\ImageResizer\ImageResizer.exe'
             - 'modules\ImageResizer\ImageResizerExt.dll'
             - 'modules\KeyboardManager\KeyboardManager.dll'
@@ -132,6 +139,26 @@ build:
             - 'PowerToysSetup-*.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
+    - !!buildcommand
+      name: 'Build Power Toys Bootstrapper'
+      command: '.pipelines\build-bootstrapper.cmd'
+      artifacts:
+        - from: 'installer\PowerToysBootstrapper\x64\Release'
+          to: 'Build_Installer_Output'
+          include:
+            - 'PowerToysSetup-*.exe'
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
+    # Localize the files after the build procedure to avoid existing localized files from getting overwritten. To be moved before the Build PowerToys step once the lcl files have been checked in. Tracked at https://github.com/microsoft/PowerToys/issues/6046
+    - !!buildcommand
+      name: 'Localize Power Toys'
+      command: '.pipelines\build-localization.cmd'
+      artifacts:
+        - from: 'out\loc'
+          to: 'loc'
+          include:
+            - '**/*'
+
 
 #package:
 #  commands:

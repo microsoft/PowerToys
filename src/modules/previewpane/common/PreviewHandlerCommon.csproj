@@ -1,12 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\..\installer\Version.props" />
+  <Import Project="..\..\..\Version.props" />
   <!-- We don't have GenerateAssemblyInfo task until we use .net core, so we generate it with WriteLinesToFile -->
   <PropertyGroup>
     <AssemblyTitle>PreviewHandlerCommon</AssemblyTitle>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyDescription>PowerToys PreviewHandlerCommon</AssemblyDescription>
+    <AssemblyCompany>Microsoft Corporation</AssemblyCompany>
+    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
@@ -22,11 +24,11 @@
       <HeaderLines Include="using System.Runtime.CompilerServices%3b" />
       <HeaderLines Include="using System.Runtime.InteropServices%3b" />
       <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyDescription(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyDescription(&quot;$(AssemblyDescription)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyTitle)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyProduct)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: ComVisible(false)]" />
@@ -93,6 +95,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
     <Compile Include="cominterop\IInitializeWithFile.cs" />
     <Compile Include="cominterop\COLORREF.cs" />
     <Compile Include="cominterop\IInitializeWithStream.cs" />
@@ -101,6 +106,8 @@
     <Compile Include="cominterop\IPreviewHandler.cs" />
     <Compile Include="cominterop\IPreviewHandlerFrame.cs" />
     <Compile Include="cominterop\IPreviewHandlerVisuals.cs" />
+    <Compile Include="cominterop\IThumbnailProvider.cs" />
+    <Compile Include="cominterop\IViewObject.cs" />
     <Compile Include="cominterop\LOGFONT.cs" />
     <Compile Include="cominterop\MSG.cs" />
     <Compile Include="cominterop\RECT.cs" />
@@ -123,6 +130,7 @@
     <Compile Include="handlers\StreamBasedPreviewHandler.cs" />
     <Compile Include="examplehandler\TestCustomHandler.cs" />
     <Compile Include="Utilities\StreamWrapper.cs" />
+    <Compile Include="Utilities\SvgPreviewHandlerHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">

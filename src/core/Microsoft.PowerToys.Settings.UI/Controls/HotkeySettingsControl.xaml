@@ -8,7 +8,34 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <TextBox x:Name="HotkeyTextBox" 
-             IsReadOnly="True"
-             Header="{x:Bind Header, Mode=OneTime}"/>
+    <StackPanel Orientation="Vertical">
+        <ToolTipService.ToolTip>
+            <ToolTip>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock x:Uid="ShortcutWarningLabel"/>
+                    <TextBlock Text="{x:Bind Keys, Mode=OneTime}" FontWeight="SemiBold"/>
+                </StackPanel>
+            </ToolTip>
+        </ToolTipService.ToolTip>
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock x:Name="TitleText"
+                       Text="{x:Bind Header, Mode=OneTime}"
+                       Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       />
+
+            <TextBlock x:Uid="SettingsPage_SetShortcut_Glyph"
+                       x:Name="TitleGlyph" Text="&#xE946;"
+                       FontFamily="Segoe MDL2 Assets"
+                       Margin="4,4,0,0"
+                       Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       />
+        
+        </StackPanel>
+        <TextBox x:Uid="SettingsPage_SetShortcut"
+                 x:Name="HotkeyTextBox"
+                 Margin="0,5,0,0"
+                 IsReadOnly="True"
+                 />
+    </StackPanel>
 </UserControl>

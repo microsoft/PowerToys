@@ -1,7 +1,21 @@
 #pragma once
-#include <vector>
-#include <winrt/Windows.System.h>
-#include <winrt/Windows.Foundation.h>
+#include "Shortcut.h"
+
+namespace winrt
+{
+    struct hstring;
+    namespace Windows::Foundation
+    {
+        struct IInspectable;
+        namespace Collections
+        {
+            template<typename T>
+            struct IVector;
+        }
+    }
+}
+
+class LayoutMap;
 
 namespace KeyboardManagerHelper
 {
@@ -29,7 +43,6 @@ namespace KeyboardManagerHelper
         CtrlAltDel,
         RemapUnsuccessful,
         SaveFailed,
-        MissingKey,
         ShortcutStartWithModifier,
         ShortcutCannotHaveRepeatedModifier,
         ShortcutAtleast2Keys,
@@ -73,9 +86,24 @@ namespace KeyboardManagerHelper
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
 
-    // Function to return the window in focus
-    HWND GetFocusWindowHandle();
+    // Function to return window handle for a full screen UWP app
+    HWND GetFullscreenUWPWindowHandle();
 
     // Function to return the executable name of the application in focus
     std::wstring GetCurrentApplication(bool keepPath);
+
+    // Function to set key events for modifier keys: When shortcutToCompare is passed (non-empty shortcut), then the key event is sent only if both shortcut's don't have the same modifier key. When keyToBeReleased is passed (non-NULL), then the key event is sent if either the shortcuts don't have the same modfifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
+    void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, LPINPUT keyEventArray, int& index, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);
+
+    // Function to filter the key codes for artificial key codes
+    DWORD FilterArtificialKeys(const DWORD& key);
+
+    // Function to sort a vector of shortcuts based on it's size
+    void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
+
+    // Function to check if a modifier has been repeated in the previous drop downs
+    bool CheckRepeatedModifier(std::vector<DWORD>& currentKeys, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
+
+    // Function to get the selected key codes from the list of selected indices
+    std::vector<DWORD> GetKeyCodesFromSelectedIndices(const std::vector<int32_t>& selectedIndices, const std::vector<DWORD>& keyCodeList);
 }

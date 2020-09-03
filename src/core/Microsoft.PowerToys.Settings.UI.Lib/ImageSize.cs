@@ -2,11 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -68,6 +65,36 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
         }
 
+        public int ExtraBoxOpacity
+        {
+            get
+            {
+                if (Unit == 2)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 100;
+                }
+            }
+        }
+
+        public bool EnableEtraBoxes
+        {
+            get
+            {
+                if (Unit == 2)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
         [JsonPropertyName("name")]
         public string Name
         {
@@ -114,9 +141,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             set
             {
+                int newWidth = -1;
+                int.TryParse(value + string.Empty, out newWidth);
+
+                if (newWidth < 0)
+                {
+                    newWidth = 0;
+                }
+
                 if (_width != value)
                 {
-                    _width = value;
+                    _width = newWidth;
                     OnPropertyChanged();
                 }
             }
@@ -132,9 +167,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             set
             {
+                int newHeight = -1;
+                int.TryParse(value + string.Empty, out newHeight);
+
+                if (newHeight < 0)
+                {
+                    newHeight = 0;
+                }
+
                 if (_height != value)
                 {
-                    _height = value;
+                    _height = newHeight;
                     OnPropertyChanged();
                 }
             }
@@ -154,6 +197,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 {
                     _unit = value;
                     OnPropertyChanged();
+                    OnPropertyChanged("ExtraBoxOpacity");
+                    OnPropertyChanged("EnableEtraBoxes");
                 }
             }
         }

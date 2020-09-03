@@ -1,6 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.IO;
-using System.Windows;
 
 namespace Wox.Plugin.SharedCommands
 {
@@ -21,6 +24,7 @@ namespace Wox.Plugin.SharedCommands
             try
             {
                 DirectoryInfo[] dirs = dir.GetDirectories();
+
                 // If the destination directory doesn't exist, create it.
                 if (!Directory.Exists(targetPath))
                 {
@@ -42,16 +46,17 @@ namespace Wox.Plugin.SharedCommands
                     Copy(subdir.FullName, temppath);
                 }
             }
+#pragma warning disable CS0168 // Variable is declared but never used. Due to #if debug vs release statement
             catch (Exception e)
+#pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
                 throw e;
 #else
-                MessageBox.Show(string.Format("Copying path {0} has failed, it will now be deleted for consistency", targetPath));
+                System.Windows.MessageBox.Show(string.Format("Copying path {0} has failed, it will now be deleted for consistency", targetPath));
                 RemoveFolder(targetPath);
 #endif
             }
-
         }
 
         public static bool VerifyBothFolderFilesEqual(this string fromPath, string toPath)
@@ -62,23 +67,28 @@ namespace Wox.Plugin.SharedCommands
                 var toDir = new DirectoryInfo(toPath);
 
                 if (fromDir.GetFiles("*", SearchOption.AllDirectories).Length != toDir.GetFiles("*", SearchOption.AllDirectories).Length)
+                {
                     return false;
+                }
 
                 if (fromDir.GetDirectories("*", SearchOption.AllDirectories).Length != toDir.GetDirectories("*", SearchOption.AllDirectories).Length)
+                {
                     return false;
+                }
 
                 return true;
             }
+#pragma warning disable CS0168 // Variable is declared but never used. Due to #if debug vs release statement
             catch (Exception e)
+#pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
                 throw e;
 #else
-                MessageBox.Show(string.Format("Unable to verify folders and files between {0} and {1}", fromPath, toPath));
+                System.Windows.MessageBox.Show(string.Format("Unable to verify folders and files between {0} and {1}", fromPath, toPath));
                 return false;
 #endif
             }
-
         }
 
         public static void RemoveFolder(this string path)
@@ -86,14 +96,18 @@ namespace Wox.Plugin.SharedCommands
             try
             {
                 if (Directory.Exists(path))
+                {
                     Directory.Delete(path, true);
+                }
             }
+#pragma warning disable CS0168 // Variable is declared but never used. Due to #if debug vs release statement
             catch (Exception e)
+#pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
                 throw e;
 #else
-                MessageBox.Show(string.Format("Not able to delete folder {0}, please go to the location and manually delete it", path));
+                System.Windows.MessageBox.Show(string.Format("Not able to delete folder {0}, please go to the location and manually delete it", path));
 #endif
             }
         }

@@ -1,6 +1,5 @@
 #pragma once
 #include "keyboard_layout.h"
-#include "..\modules\interface\lowlevel_keyboard_event_data.h"
 #include <string>
 #include <map>
 #include <mutex>

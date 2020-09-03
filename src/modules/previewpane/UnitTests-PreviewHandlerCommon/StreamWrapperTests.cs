@@ -2,16 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Castle.Core.Logging;
-using Common.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using Common.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace UnitTests_PreviewHandlerCommon
 {
@@ -19,7 +17,7 @@ namespace UnitTests_PreviewHandlerCommon
     public class StreamWrapperTests
     {
         [TestMethod]
-        public void StreamWrapper_ShouldThrow_IfInitializeWithNullStream() 
+        public void StreamWrapper_ShouldThrow_IfInitializeWithNullStream()
         {
             // Arrange
             IStream stream = null;
@@ -30,7 +28,7 @@ namespace UnitTests_PreviewHandlerCommon
             {
                 var streamWrapper = new StreamWrapper(stream);
             }
-            catch (ArgumentNullException ex) 
+            catch (ArgumentNullException ex)
             {
                 exception = ex;
             }
@@ -84,8 +82,10 @@ namespace UnitTests_PreviewHandlerCommon
             // Arrange
             long streamLength = 5;
             var stremMock = new Mock<IStream>();
-            var stat = new System.Runtime.InteropServices.ComTypes.STATSTG();
-            stat.cbSize = streamLength;
+            var stat = new System.Runtime.InteropServices.ComTypes.STATSTG
+            {
+                cbSize = streamLength,
+            };
 
             stremMock
                 .Setup(x => x.Stat(out stat, It.IsAny<int>()));
@@ -131,27 +131,28 @@ namespace UnitTests_PreviewHandlerCommon
             int expectedDwOrigin = 0; // STREAM_SEEK_SET
             var stremMock = new Mock<IStream>();
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
-
-            // Act
-            streamWrapper.Position = positionToSet;
+            var streamWrapper = new StreamWrapper(stremMock.Object)
+            {
+                // Act
+                Position = positionToSet,
+            };
 
             // Assert
             stremMock.Verify(_ => _.Seek(It.Is<long>(offset => offset == positionToSet), It.Is<int>(dworigin => dworigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
         }
 
         [DataTestMethod]
-        [DataRow((long)0, SeekOrigin.Begin)]
-        [DataRow((long)5, SeekOrigin.Begin)]
-        [DataRow((long)0, SeekOrigin.Current)]
-        [DataRow((long)5, SeekOrigin.Current)]
-        [DataRow((long)0, SeekOrigin.End)]
-        [DataRow((long)5, SeekOrigin.End)]
+        [DataRow(0L, SeekOrigin.Begin)]
+        [DataRow(5L, SeekOrigin.Begin)]
+        [DataRow(0L, SeekOrigin.Current)]
+        [DataRow(5L, SeekOrigin.Current)]
+        [DataRow(0L, SeekOrigin.End)]
+        [DataRow(5L, SeekOrigin.End)]
         public void StreamWrapper_ShouldCallIStreamSeekWithValidArguments_WhenSeekCalled(long offset, SeekOrigin origin)
         {
             // Arrange
             int expectedDwOrigin = 0;
-            switch (origin) 
+            switch (origin)
             {
                 case SeekOrigin.Begin:
                     expectedDwOrigin = 0;
@@ -218,7 +219,7 @@ namespace UnitTests_PreviewHandlerCommon
             {
                 streamWrapper.Read(buffer, offSet, bytesToRead);
             }
-            catch (ArgumentOutOfRangeException ex) 
+            catch (ArgumentOutOfRangeException ex)
             {
                 exception = ex;
             }
@@ -236,7 +237,7 @@ namespace UnitTests_PreviewHandlerCommon
             // Arrange
             var inputBuffer = new byte[1024];
             var streamBytes = new byte[count];
-            for (int i = 0; i < count; i++) 
+            for (int i = 0; i < count; i++)
             {
                 streamBytes[i] = (byte)i;
             }
@@ -244,12 +245,12 @@ namespace UnitTests_PreviewHandlerCommon
             var stremMock = new Mock<IStream>();
 
             stremMock
-                .Setup(x => x.Read(It.IsAny<byte []>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
-                .Callback<byte [], int, IntPtr>((buffer, countToRead , bytesReadPtr) =>
-                {
-                    Array.Copy(streamBytes, 0, buffer, 0, streamBytes.Length);
-                    Marshal.WriteInt32(bytesReadPtr, count);
-                });
+                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
+                .Callback<byte[], int, IntPtr>((buffer, countToRead, bytesReadPtr) =>
+               {
+                   Array.Copy(streamBytes, 0, buffer, 0, streamBytes.Length);
+                   Marshal.WriteInt32(bytesReadPtr, count);
+               });
 
             var streamWrapper = new StreamWrapper(stremMock.Object);
 
@@ -274,7 +275,7 @@ namespace UnitTests_PreviewHandlerCommon
             {
                 streamWrapper.Flush();
             }
-            catch (NotImplementedException ex) 
+            catch (NotImplementedException ex)
             {
                 exception = ex;
             }
@@ -326,7 +327,5 @@ namespace UnitTests_PreviewHandlerCommon
             // Assert
             Assert.IsNotNull(exception);
         }
-
-
     }
 }

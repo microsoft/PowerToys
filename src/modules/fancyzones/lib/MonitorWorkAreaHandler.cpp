@@ -19,12 +19,23 @@ winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(const GUID& desk
 
 winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(HWND window)
 {
-    HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     GUID desktopId{};
-    if (monitor && VirtualDesktopUtils::GetWindowDesktopId(window, &desktopId))
+    if (VirtualDesktopUtils::GetWindowDesktopId(window, &desktopId))
     {
-        return GetWorkArea(desktopId, monitor);
+        auto allMonitorsWorkArea = GetWorkArea(desktopId, NULL);
+        if (allMonitorsWorkArea)
+        {
+            // First, check if there's a work area spanning all monitors (signalled by the NULL monitor handle)
+            return allMonitorsWorkArea;
+        }
+        else
+        {
+            // Otherwise, look for the work area based on the window's position
+            HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+            return GetWorkArea(desktopId, monitor);
+        }
     }
+
     return nullptr;
 }
 
@@ -34,7 +45,8 @@ const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& MonitorWorkArea
     {
         return workAreaMap[desktopId];
     }
-    return {};
+    static const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>> empty;
+    return empty;
 }
 
 std::vector<winrt::com_ptr<IZoneWindow>> MonitorWorkAreaHandler::GetAllWorkAreas()

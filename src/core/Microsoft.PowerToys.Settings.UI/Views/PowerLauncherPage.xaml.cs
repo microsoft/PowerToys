@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class PowerLauncherPage : Page
     {
-        public PowerLauncherViewModel ViewModel { get; } = new PowerLauncherViewModel();
+        public PowerLauncherViewModel ViewModel { get; set; }
 
         private readonly ObservableCollection<Tuple<string, string>> searchResultPreferencesOptions;
         private readonly ObservableCollection<Tuple<string, string>> searchTypePreferencesOptions;
@@ -19,6 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerLauncherPage()
         {
             InitializeComponent();
+            ViewModel = new PowerLauncherViewModel(ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space);
+            DataContext = ViewModel;
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
 
@@ -33,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
         }
 
+        /*
         public Tuple<string, string> SelectedSearchResultPreference
         {
             get
@@ -64,5 +67,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
         }
+        */
     }
 }

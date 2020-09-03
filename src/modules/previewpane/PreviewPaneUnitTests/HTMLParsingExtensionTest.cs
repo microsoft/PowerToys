@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using Markdig;
 using MarkdownPreviewHandler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,29 +21,28 @@ namespace PreviewPaneUnitTests
         [TestMethod]
         public void Extension_UpdatesTablesClass_WhenUsed()
         {
-            // Arrange 
-            String mdString = "| A | B |\n| -- | -- | ";
+            // Arrange
+            string mdString = "| A | B |\n| -- | -- | ";
             HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { });
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
-            String html = Markdown.ToHtml(mdString, markdownPipeline);
+            string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
             Assert.AreEqual(html, "<table class=\"table table-striped table-bordered\">\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n</table>\n");
         }
 
-
         [TestMethod]
         public void Extension_UpdatesBlockQuotesClass_WhenUsed()
         {
-            // Arrange 
-            String mdString = "> Blockquotes.";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(()=> { });
+            // Arrange
+            string mdString = "> Blockquotes.";
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { });
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
-            String html = Markdown.ToHtml(mdString, markdownPipeline);
+            string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
             Assert.AreEqual(html, "<blockquote class=\"blockquote\">\n<p>Blockquotes.</p>\n</blockquote>\n");
@@ -49,13 +51,13 @@ namespace PreviewPaneUnitTests
         [TestMethod]
         public void Extension_UpdatesFigureClassAndBlocksRelativeUrl_WhenUsed()
         {
-            // arrange 
-            String mdString = "![text](a.jpg \"Figure\")";
+            // arrange
+            string mdString = "![text](a.jpg \"Figure\")";
             HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:\\Users\\");
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
-            String html = Markdown.ToHtml(mdString, markdownPipeline);
+            string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
             Assert.AreEqual(html, "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
@@ -64,13 +66,13 @@ namespace PreviewPaneUnitTests
         [TestMethod]
         public void Extension_AddsClassToFigureCaption_WhenUsed()
         {
-            // arrange 
-            String mdString = "^^^ This is a caption";
+            // arrange
+            string mdString = "^^^ This is a caption";
             HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { }, "C:/Users/");
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
-            String html = Markdown.ToHtml(mdString, markdownPipeline);
+            string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
             Assert.AreEqual(html, "<figure class=\"figure\">\n<figcaption class=\"figure-caption\">This is a caption</figcaption>\n</figure>\n");
@@ -81,18 +83,16 @@ namespace PreviewPaneUnitTests
         {
             // arrange
             int count = 0;
-            String mdString = "![text](http://dev.nodeca.com \"Figure\")";
+            string mdString = "![text](http://dev.nodeca.com \"Figure\")";
             HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { count++; });
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act
-            String html = Markdown.ToHtml(mdString, markdownPipeline);
+            string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
             Assert.AreEqual(count, 1);
             Assert.AreEqual(html, "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
-
         }
-
     }
 }

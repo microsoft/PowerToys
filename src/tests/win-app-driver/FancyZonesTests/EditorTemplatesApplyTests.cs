@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
@@ -9,13 +9,12 @@ namespace PowerToysTests
     {
         private void ApplyLayout(string tabName)
         {
-            string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
-            session.FindElementByXPath(elementXPath).Click();
-            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+            editorWindow.FindElementByName(tabName).Click();
+            editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
 
             try
             {
-                Assert.IsNull(session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]"));
+                Assert.IsNull(session.FindElementByName("FancyZones Editor"));
             }
             catch (OpenQA.Selenium.WebDriverException)
             {
@@ -67,7 +66,10 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context, false);
+            Setup(context);
+            Assert.IsNotNull(session);
+            EnableModules(false, true, false, false, false, false, false, false);
+
             ResetDefaultFancyZonesSettings(true);
         }
 
@@ -75,13 +77,14 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseSettings();
+            ExitPowerToys();
             TearDown();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
             OpenTemplates();
         }
 

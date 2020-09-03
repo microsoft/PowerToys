@@ -3,6 +3,7 @@
 #include "common.h"
 #include "com_object_factory.h"
 #include "notifications.h"
+#include "winstore.h"
 
 #include <unknwn.h>
 #include <winrt/base.h>
@@ -11,29 +12,36 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Notifications.h>
 #include <winrt/Windows.ApplicationModel.Background.h>
-
-#include "winstore.h"
+#include <wil/com.h>
+#include <propvarutil.h>
+#include <propkey.h>
+#include <Shobjidl.h>
 
 #include <winerror.h>
 #include <NotificationActivationCallback.h>
 
 #include "notifications_winrt/handler_functions.h"
+#include <filesystem>
 
 using namespace winrt::Windows::ApplicationModel::Background;
 using winrt::Windows::Data::Xml::Dom::XmlDocument;
 using winrt::Windows::UI::Notifications::ToastNotification;
 using winrt::Windows::UI::Notifications::ToastNotificationManager;
 
+namespace fs = std::filesystem;
+
+// This namespace contains strings that SHOULD NOT be localized
 namespace
 {
     constexpr std::wstring_view TASK_NAME = L"PowerToysBackgroundNotificationsHandler";
     constexpr std::wstring_view TASK_ENTRYPOINT = L"PowerToysNotifications.BackgroundHandler";
-    constexpr std::wstring_view APPLICATION_ID = L"PowerToys";
+    constexpr std::wstring_view PACKAGED_APPLICATION_ID = L"PowerToys";
+    constexpr std::wstring_view APPIDS_REGISTRY = LR"(Software\Classes\AppUserModelId\)";
 
-    constexpr std::wstring_view WIN32_AUMID = L"Microsoft.PowerToysWin32";
+    std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
 }
 
-namespace localized_strings 
+namespace localized_strings
 {
     constexpr std::wstring_view SNOOZE_BUTTON = L"Snooze";
 }
@@ -115,6 +123,74 @@ void notifications::run_desktop_app_activator_loop()
     CoRevokeClassObject(token);
 }
 
+bool notifications::register_application_id(const std::wstring_view appName, const std::wstring_view iconPath)
+{
+    std::wstring aumidPath{ APPIDS_REGISTRY };
+    aumidPath += APPLICATION_ID;
+    wil::unique_hkey aumidKey;
+    if (FAILED(RegCreateKeyW(HKEY_CURRENT_USER, aumidPath.c_str(), &aumidKey)))
+    {
+        return false;
+    }
+    if (FAILED(RegSetKeyValueW(aumidKey.get(),
+                               nullptr,
+                               L"DisplayName",
+                               REG_SZ,
+                               appName.data(),
+                               static_cast<DWORD>((size(appName) + 1) * sizeof(wchar_t)))))
+    {
+        return false;
+    }
+
+    if (FAILED(RegSetKeyValueW(aumidKey.get(),
+                               nullptr,
+                               L"IconUri",
+                               REG_SZ,
+                               iconPath.data(),
+                               static_cast<DWORD>((size(iconPath) + 1) * sizeof(wchar_t)))))
+    {
+        return false;
+    }
+
+    const std::wstring_view iconColor = L"FFDDDDDD";
+    if (FAILED(RegSetKeyValueW(aumidKey.get(),
+                               nullptr,
+                               L"IconBackgroundColor",
+                               REG_SZ,
+                               iconColor.data(),
+                               static_cast<DWORD>((size(iconColor) + 1) * sizeof(wchar_t)))))
+    {
+        return false;
+    }
+    return true;
+}
+
+void notifications::unregister_application_id()
+{
+    std::wstring aumidPath{ APPIDS_REGISTRY };
+    aumidPath += APPLICATION_ID;
+    wil::unique_hkey registryRoot;
+    RegOpenKeyW(HKEY_CURRENT_USER, aumidPath.c_str(), &registryRoot);
+    if (!registryRoot)
+    {
+        return;
+    }
+    RegDeleteTreeW(registryRoot.get(), nullptr);
+    registryRoot.reset();
+    RegOpenKeyW(HKEY_CURRENT_USER, APPIDS_REGISTRY.data(), &registryRoot);
+    if (!registryRoot)
+    {
+        return;
+    }
+    RegDeleteKeyW(registryRoot.get(), APPLICATION_ID.data());
+}
+
+void notifications::override_application_id(const std::wstring_view appID)
+{
+    APPLICATION_ID = appID;
+    SetCurrentProcessExplicitAppUserModelID(APPLICATION_ID.c_str());
+}
+
 void notifications::register_background_toast_handler()
 {
     if (!winstore::running_as_packaged())
@@ -129,7 +205,7 @@ void notifications::register_background_toast_handler()
         BackgroundExecutionManager::RequestAccessAsync().get();
 
         BackgroundTaskBuilder builder;
-        ToastNotificationActionTrigger trigger{ APPLICATION_ID };
+        ToastNotificationActionTrigger trigger{ PACKAGED_APPLICATION_ID };
         builder.SetTrigger(trigger);
         builder.TaskEntryPoint(TASK_ENTRYPOINT);
         builder.Name(TASK_NAME);
@@ -150,10 +226,10 @@ void notifications::register_background_toast_handler()
     }
 }
 
-void notifications::show_toast(std::wstring message, toast_params params)
+void notifications::show_toast(std::wstring message, std::wstring title, toast_params params)
 {
     // The toast won't be actually activated in the background, since it doesn't have any buttons
-    show_toast_with_activations(std::move(message), {}, {}, std::move(params));
+    show_toast_with_activations(std::move(message), std::move(title), {}, {}, std::move(params));
 }
 
 inline void xml_escape(std::wstring data)
@@ -187,24 +263,28 @@ inline void xml_escape(std::wstring data)
     data.swap(buffer);
 }
 
-void notifications::show_toast_with_activations(std::wstring message, std::wstring_view background_handler_id, std::vector<action_t> actions, toast_params params)
+void notifications::show_toast_with_activations(std::wstring message,
+                                                std::wstring title,
+                                                std::wstring_view background_handler_id,
+                                                std::vector<action_t> actions,
+                                                toast_params params)
 {
     // DO NOT LOCALIZE any string in this function, because they're XML tags and a subject to
     // https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
 
     std::wstring toast_xml;
     toast_xml.reserve(2048);
-    std::wstring title{ L"PowerToys" };
-    if (winstore::running_as_packaged())
-    {
-        title += L" (Experimental)";
-    }
 
-    toast_xml += LR"(<?xml version="1.0"?><toast><visual><binding template="ToastGeneric"><text>)";
+    toast_xml += LR"(<?xml version="1.0"?><toast><visual><binding template="ToastGeneric"><text id="1">)";
     toast_xml += title;
-    toast_xml += L"</text><text>";
+    toast_xml += LR"(</text><text id="2">)";
     toast_xml += message;
-    toast_xml += L"</text></binding></visual><actions>";
+    toast_xml += L"</text>";
+    if (params.progress_bar.has_value())
+    {
+        toast_xml += LR"(<progress title="{progressTitle}" value="{progressValue}" valueStringOverride="{progressValueString}" status="" />)";
+    }
+    toast_xml += L"</binding></visual><actions>";
     for (size_t i = 0; i < size(actions); ++i)
     {
         std::visit(overloaded{
@@ -294,8 +374,19 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     toast_xml_doc.LoadXml(toast_xml);
     ToastNotification notification{ toast_xml_doc };
 
+    if (params.progress_bar.has_value())
+    {
+        float progress = std::clamp(params.progress_bar->progress, 0.0f, 1.0f);
+        winrt::Windows::Foundation::Collections::StringMap map;
+        map.Insert(L"progressValue", std::to_wstring(progress));
+        map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
+        map.Insert(L"progressTitle", params.progress_bar->progress_title);
+        winrt::Windows::UI::Notifications::NotificationData data(map);
+        notification.Data(data);
+    }
+
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
-                                                            ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
+                                                            ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
 
     // Set a tag-related params if it has a valid length
     if (params.tag.has_value() && params.tag->length() < 64)
@@ -314,4 +405,20 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     }
 
     notifier.Show(notification);
+}
+
+void notifications::update_progress_bar_toast(std::wstring_view tag, progress_bar_params params)
+{
+    const auto notifier = winstore::running_as_packaged() ?
+                              ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
+                              ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+
+    float progress = std::clamp(params.progress, 0.0f, 1.0f);
+    winrt::Windows::Foundation::Collections::StringMap map;
+    map.Insert(L"progressValue", std::to_wstring(progress));
+    map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
+    map.Insert(L"progressTitle", params.progress_title);
+
+    winrt::Windows::UI::Notifications::NotificationData data(map);
+    winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag);
 }

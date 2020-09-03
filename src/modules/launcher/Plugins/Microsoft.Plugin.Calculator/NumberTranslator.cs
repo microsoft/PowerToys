@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Microsoft.Plugin.Calculator
 {
@@ -23,8 +24,8 @@ namespace Microsoft.Plugin.Calculator
             this.sourceCulture = sourceCulture;
             this.targetCulture = targetCulture;
 
-            this.splitRegexForSource = GetSplitRegex(this.sourceCulture);
-            this.splitRegexForTarget = GetSplitRegex(this.targetCulture);
+            splitRegexForSource = GetSplitRegex(this.sourceCulture);
+            splitRegexForTarget = GetSplitRegex(this.targetCulture);
         }
 
         /// <summary>
@@ -33,9 +34,19 @@ namespace Microsoft.Plugin.Calculator
         /// </summary>
         /// <param name="sourceCulture">source culture</param>
         /// <param name="targetCulture">target culture</param>
-        /// <returns></returns>
+        /// <returns>Number translator for target culture</returns>
         public static NumberTranslator Create(CultureInfo sourceCulture, CultureInfo targetCulture)
         {
+            if (sourceCulture == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(sourceCulture));
+            }
+
+            if (targetCulture == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(sourceCulture));
+            }
+
             bool conversionRequired = sourceCulture.NumberFormat.NumberDecimalSeparator != targetCulture.NumberFormat.NumberDecimalSeparator
                                       || sourceCulture.NumberFormat.PercentGroupSeparator != targetCulture.NumberFormat.PercentGroupSeparator
                                       || sourceCulture.NumberFormat.NumberGroupSizes != targetCulture.NumberFormat.NumberGroupSizes;
@@ -47,24 +58,24 @@ namespace Microsoft.Plugin.Calculator
         /// <summary>
         /// Translate from source to target culture.
         /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
+        /// <param name="input">input string to translate</param>
+        /// <returns>translated string</returns>
         public string Translate(string input)
         {
-            return this.Translate(input, this.sourceCulture, this.targetCulture, this.splitRegexForSource);
+            return Translate(input, sourceCulture, targetCulture, splitRegexForSource);
         }
-        
+
         /// <summary>
         /// Translate from target to source culture.
         /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
+        /// <param name="input">input string to translate back to source culture</param>
+        /// <returns>source culture string</returns>
         public string TranslateBack(string input)
         {
-            return this.Translate(input, this.targetCulture, this.sourceCulture, this.splitRegexForTarget);
+            return Translate(input, targetCulture, sourceCulture, splitRegexForTarget);
         }
 
-        private string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
+        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
         {
             var outputBuilder = new StringBuilder();
 
@@ -81,13 +92,14 @@ namespace Microsoft.Plugin.Calculator
             return outputBuilder.ToString();
         }
 
-        private Regex GetSplitRegex(CultureInfo culture)
+        private static Regex GetSplitRegex(CultureInfo culture)
         {
             var splitPattern = $"((?:\\d|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
             if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))
             {
                 splitPattern += $"|{Regex.Escape(culture.NumberFormat.NumberGroupSeparator)}";
             }
+
             splitPattern += ")+)";
             return new Regex(splitPattern);
         }

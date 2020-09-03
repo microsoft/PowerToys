@@ -1,12 +1,10 @@
 #include "pch.h"
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
 #include <settings_objects.h>
 #include <common.h>
 #include "powerpreview.h"
 #include "trace.h"
 #include "settings.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 
 // Destroy the powertoy and free memory.
 void PowerPreviewModule::destroy()
@@ -26,6 +24,20 @@ void PowerPreviewModule::destroy()
         }
     }
 
+    for (auto thumbnailProvider : this->m_thumbnailProviders)
+    {
+        if (thumbnailProvider != NULL)
+        {
+            // Disable all the active thumbnail providers.
+            if (this->m_enabled && thumbnailProvider->GetToggleSettingState())
+            {
+                thumbnailProvider->DisablePreview();
+            }
+
+            delete thumbnailProvider;
+        }
+    }
+
     delete this;
 }
 
@@ -33,11 +45,6 @@ void PowerPreviewModule::destroy()
 const wchar_t* PowerPreviewModule::get_name()
 {
     return m_moduleName.c_str();
-}
-
-const wchar_t** PowerPreviewModule::get_events()
-{
-    return nullptr;
 }
 
 // Return JSON with the configuration options.
@@ -51,7 +58,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
     // General Settings.
     settings.set_description(GET_RESOURCE_STRING(IDS_GENERAL_DESCRIPTION));
     settings.set_icon_key(GET_RESOURCE_STRING(IDS_ICON_KEY_NAME));
-    settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/previewpane/README.md");
+    settings.set_overview_link(L"https://aka.ms/PowerToysOverview_FileExplorerAddOns");
 
     // Preview Pane: Settings Group Header.
     settings.add_header_szLarge(
@@ -67,6 +74,14 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
             previewHandler->GetToggleSettingState());
     }
 
+    for (auto thumbnailProvider : this->m_thumbnailProviders)
+    {
+        settings.add_bool_toggle(
+            thumbnailProvider->GetToggleSettingName(),
+            thumbnailProvider->GetToggleSettingDescription(),
+            thumbnailProvider->GetToggleSettingState());
+    }
+
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
 
@@ -80,6 +95,11 @@ void PowerPreviewModule::set_config(const wchar_t* config)
         for (auto previewHandler : this->m_previewHandlers)
         {
             previewHandler->UpdateState(settings, this->m_enabled);
+        }
+
+        for (auto thumbnailProvider : this->m_thumbnailProviders)
+        {
+            thumbnailProvider->UpdateState(settings, this->m_enabled);
         }
 
         settings.save_to_settings_file();
@@ -106,6 +126,19 @@ void PowerPreviewModule::enable()
         }
     }
 
+    for (auto thumbnailProvider : this->m_thumbnailProviders)
+    {
+        if (thumbnailProvider->GetToggleSettingState())
+        {
+            // Enable all the thumbnail providers with initial state set as true.
+            thumbnailProvider->EnableThumbnailProvider();
+        }
+        else
+        {
+            thumbnailProvider->DisableThumbnailProvider();
+        }
+    }
+
     if (!this->m_enabled)
     {
         Trace::EnabledPowerPreview(true);
@@ -122,6 +155,11 @@ void PowerPreviewModule::disable()
         previewHandler->DisablePreview();
     }
 
+    for (auto thumbnailProvider : this->m_thumbnailProviders)
+    {
+        thumbnailProvider->DisableThumbnailProvider();
+    }
+
     if (this->m_enabled)
     {
         Trace::EnabledPowerPreview(false);
@@ -134,12 +172,6 @@ void PowerPreviewModule::disable()
 bool PowerPreviewModule::is_enabled()
 {
     return this->m_enabled;
-}
-
-// Handle incoming event, data is event-specific
-intptr_t PowerPreviewModule::signal_event(const wchar_t* name, intptr_t data)
-{
-    return 0;
 }
 
 // Load the settings file.
@@ -155,6 +187,11 @@ void PowerPreviewModule::init_settings()
         for (auto previewHandler : this->m_previewHandlers)
         {
             previewHandler->LoadState(settings);
+        }
+
+        for (auto thumbnailProvider : this->m_thumbnailProviders)
+        {
+            thumbnailProvider->LoadState(settings);
         }
     }
     catch (std::exception const& e)

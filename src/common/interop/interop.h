@@ -7,6 +7,7 @@
 #include "..\two_way_pipe_message_ipc.h"
 #include "..\common.h"
 #include "..\shared_constants.h"
+#include "..\os-detect.h"
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
@@ -113,7 +114,12 @@ public
         static String^ GetProductVersion() 
         {
             return gcnew String(get_product_version().c_str());
-        } 
+        }
+
+        static bool ShouldNewSettingsBeUsed()
+        {
+            return UseNewSettings();
+        }
     };
 
     public

@@ -13,5 +13,7 @@
 #include <Shobjidl.h>
 #include <Knownfolders.h>
 #include <ShlObj_core.h>
+#include <shellapi.h>
+#include <filesystem>
 
 #endif //PCH_H

@@ -1,12 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\..\..\installer\Version.props" />
+  <Import Project="..\..\..\..\Version.props" />
   <!-- We don't have GenerateAssemblyInfo task until we use .net core, so we generate it with WriteLinesToFile -->
   <PropertyGroup>
     <AssemblyTitle>FancyZonesEditor</AssemblyTitle>
+    <AssemblyDescription>PowerToys FancyZones Editor</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
@@ -18,17 +20,19 @@
       <HeaderLines Include="// See the LICENSE file in the project root for more information." />
       <HeaderLines Include="#pragma warning disable SA1516" />
       <HeaderLines Include="using System.Reflection%3b" />
+      <HeaderLines Include="using System.Resources%3b" />
       <HeaderLines Include="using System.Runtime.InteropServices%3b" />
       <HeaderLines Include="using System.Windows%3b" />
       <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyDescription(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyDescription(&quot;$(AssemblyDescription)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyTitle)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyProduct)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: ComVisible(false)]" />
+      <HeaderLines Include="[assembly: NeutralResourcesLanguage(&quot;en-US&quot;)]" />
       <HeaderLines Include="[assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]" />
       <HeaderLines Include="[assembly: AssemblyVersion(&quot;$(Version).0&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyFileVersion(&quot;$(Version).0&quot;)]" />
@@ -76,6 +80,13 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>images\FancyZonesEditor.ico</ApplicationIcon>
   </PropertyGroup>
@@ -105,7 +116,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
     <Compile Include="DashCaseNamingPolicy.cs" />
+    <Compile Include="GridData.cs" />
+    <Compile Include="GridDragHandles.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />
@@ -113,7 +129,6 @@
       <DependentUpon>CanvasEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="EditorWindow.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="GridEditor.xaml.cs">
       <DependentUpon>GridEditor.xaml</DependentUpon>
     </Compile>
@@ -233,7 +248,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MahApps.Metro">
-      <Version>2.0.0</Version>
+      <Version>2.1.1</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
       <Version>4.7.2</Version>
@@ -253,6 +268,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\FancyZonesEditor.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj">
+      <Project>{4AED67B6-55FD-486F-B917-E543DEE2CB3C}</Project>
+      <Name>ManagedCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

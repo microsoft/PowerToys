@@ -7,9 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Settings.UI.Lib.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities

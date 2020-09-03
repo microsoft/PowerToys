@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Windows.Media;
@@ -6,10 +10,6 @@ using System.Windows.Media.Imaging;
 
 namespace Wox.Infrastructure.Image
 {
-    public interface IImageHashGenerator
-    {
-        string GetHashFromImage(ImageSource image);
-    }
     public class ImageHashGenerator : IImageHashGenerator
     {
         public string GetHashFromImage(ImageSource imageSource)
@@ -25,7 +25,6 @@ namespace Wox.Infrastructure.Image
                 {
                     // PngBitmapEncoder enc2 = new PngBitmapEncoder();
                     // enc2.Frames.Add(BitmapFrame.Create(tt));
-
                     var enc = new JpegBitmapEncoder();
                     var bitmapFrame = BitmapFrame.Create(image);
                     bitmapFrame.Freeze();
@@ -43,7 +42,6 @@ namespace Wox.Infrastructure.Image
             {
                 return null;
             }
-
         }
     }
 }

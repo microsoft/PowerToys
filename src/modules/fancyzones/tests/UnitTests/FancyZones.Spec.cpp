@@ -3,8 +3,8 @@
 #include <filesystem>
 
 #include <lib/FancyZones.h>
+#include <lib/FancyZonesData.h>
 #include <lib/Settings.h>
-#include <common/common.h>
 
 #include "util.h"
 
@@ -70,12 +70,15 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
             ptSettings.add_bool_toggle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_moveWindowsBasedOnPosition", IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION, settings.moveWindowsBasedOnPosition);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
+            ptSettings.add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, settings.restoreSize);
             ptSettings.add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_multi_monitor_mode", IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS, settings.spanZonesAcrossMonitors);
             ptSettings.add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
@@ -118,8 +121,11 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
+                        .spanZonesAcrossMonitors = false,
                         .zoneColor = L"#abafee",
                         .zoneBorderColor = L"FAFAFA",
                         .zoneHighlightColor = L"#FAFAFA",
@@ -147,8 +153,11 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
+                        .spanZonesAcrossMonitors = false,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"#abafee",
                         .zoneHighlightColor = L"#FAFAFA",
@@ -176,9 +185,12 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .spanZonesAcrossMonitors = false,
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
@@ -207,9 +219,12 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .spanZonesAcrossMonitors = false,
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
@@ -238,9 +253,12 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
+                        .spanZonesAcrossMonitors = false,
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
@@ -265,7 +283,7 @@ namespace FancyZonesUnitTests
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IFancyZonesCallback> m_fzCallback = nullptr;
 
-        JSONHelpers::FancyZonesData& m_fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+        FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
 
         std::wstring serializedPowerToySettings(const Settings& settings)
         {
@@ -276,12 +294,15 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
             ptSettings.add_bool_toggle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_moveWindowsBasedOnPosition", IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION, settings.moveWindowsBasedOnPosition);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
+            ptSettings.add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, settings.restoreSize);
             ptSettings.add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_multi_monitor_mode", IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS, settings.spanZonesAcrossMonitors);
             ptSettings.add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);

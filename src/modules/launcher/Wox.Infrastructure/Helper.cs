@@ -1,7 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure
 {
@@ -67,12 +73,41 @@ namespace Wox.Infrastructure
 
         public static string Formatted<T>(this T t)
         {
-            var formatted = JsonConvert.SerializeObject(
-               t,
-               Formatting.Indented,
-               new StringEnumConverter()
-           );
+            var formatted = JsonConvert.SerializeObject(t, Formatting.Indented, new StringEnumConverter());
+
             return formatted;
+        }
+
+        // Function to run as admin for context menu items
+        public static void RunAsAdmin(string path)
+        {
+            var info = new ProcessStartInfo
+            {
+                FileName = path,
+                WorkingDirectory = Path.GetDirectoryName(path),
+                Verb = "runas",
+                UseShellExecute = true,
+            };
+
+            try
+            {
+                Process.Start(info);
+            }
+            catch (System.Exception ex)
+            {
+                Log.Exception($"Wox.Infrastructure.Helper| Unable to Run {path} as admin : {ex.Message}", ex);
+            }
+        }
+
+        public static Process OpenInConsole(string path)
+        {
+            var processStartInfo = new ProcessStartInfo
+            {
+                WorkingDirectory = path,
+                FileName = "cmd.exe",
+            };
+
+            return Process.Start(processStartInfo);
         }
     }
 }

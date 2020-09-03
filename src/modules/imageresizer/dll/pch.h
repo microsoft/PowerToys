@@ -10,7 +10,7 @@
 #define ATL_NO_ASSERT_ON_DESTROY_NONEXISTENT_WINDOW
 
 #include "targetver.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.h>

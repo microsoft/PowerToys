@@ -7,13 +7,12 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-
     // Represents the configuration property of the settings that store Double type.
     public class DoubleProperty
     {
         public DoubleProperty()
         {
-            this.Value = 0.0;
+            Value = 0.0;
         }
 
         public DoubleProperty(double value)

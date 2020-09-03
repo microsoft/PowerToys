@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Common;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTests_PreviewHandlerCommon
 {
@@ -15,13 +15,14 @@ namespace UnitTests_PreviewHandlerCommon
     public class FormHandlerControlTests
     {
         private class TestFormControl : FormHandlerControl
-        { }
+        {
+        }
 
         [TestMethod]
         public void FormHandlerControl_ShouldCreateHandle_OnInitialization()
         {
             // Arrange and act
-            using (var testFormHandlerControl = new TestFormControl()) 
+            using (var testFormHandlerControl = new TestFormControl())
             {
                 // Assert
                 Assert.IsTrue(testFormHandlerControl.IsHandleCreated);
@@ -111,7 +112,7 @@ namespace UnitTests_PreviewHandlerCommon
                 Assert.AreEqual(bounds, testFormHandlerControl.Bounds);
             }
         }
-        
+
         [TestMethod]
         public void FormHandlerControl_ShouldSetTextColor_WhenSetTextColorCalled()
         {

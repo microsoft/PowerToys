@@ -66,6 +66,18 @@ void github_update_worker()
     }
 }
 
+void check_for_updates()
+{
+    try
+    {
+        updating::check_new_version_available();
+    }
+    catch (...)
+    {
+        // Couldn't autoupdate
+    }
+}
+
 bool launch_pending_update()
 {
     try
@@ -75,8 +87,13 @@ bool launch_pending_update()
         {
             UpdateState::store([](UpdateState& state) {
                 state.pending_update = false;
+                state.pending_installer_filename = {};
             });
-            launch_action_runner(UPDATE_NOW_LAUNCH_STAGE1_START_PT_CMDARG);
+            std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_START_PT_CMDARG };
+            args += L' ';
+            args += update_state.pending_installer_filename;
+
+            launch_action_runner(args.c_str());
             return true;
         }
     }

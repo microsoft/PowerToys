@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.IO;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
@@ -18,6 +22,7 @@ namespace Wox.Core.Plugin
                 {
                     Directory.Delete(tempFolder, true);
                 }
+
                 UnZip(path, tempFolder, true);
 
                 string iniPath = Path.Combine(tempFolder, "plugin.json");
@@ -67,24 +72,22 @@ namespace Wox.Core.Plugin
                 {
                     if (existingPlugin != null && Directory.Exists(existingPlugin.Metadata.PluginDirectory))
                     {
-                        //when plugin is in use, we can't delete them. That's why we need to make plugin folder a random name
+                        // when plugin is in use, we can't delete them. That's why we need to make plugin folder a random name
                         File.Create(Path.Combine(existingPlugin.Metadata.PluginDirectory, "NeedDelete.txt")).Close();
                     }
 
                     UnZip(path, newPluginPath, true);
                     Directory.Delete(tempFolder, true);
 
-                    //existing plugins could be loaded by the application,
-                    //if we try to delete those kind of plugins, we will get a  error that indicate the
-                    //file is been used now.
-                    //current solution is to restart wox. Ugly.
-                    //if (MainWindow.Initialized)
-                    //{
+                    // existing plugins could be loaded by the application,
+                    // if we try to delete those kind of plugins, we will get a  error that indicate the
+                    // file is been used now.
+                    // current solution is to restart wox. Ugly.
+                    // if (MainWindow.Initialized)
+                    // {
                     //    Plugins.Initialize();
-                    //}
-                    if (MessageBox.Show($"You have installed plugin {plugin.Name} successfully.{Environment.NewLine}" +
-                                        "Restart Wox to take effect?",
-                                        "Install plugin", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    // }
+                    if (MessageBox.Show($"You have installed plugin {plugin.Name} successfully.{Environment.NewLine} Restart Wox to take effect?", "Install plugin", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
                         PluginManager.API.RestartApp();
                     }
@@ -110,51 +113,59 @@ namespace Wox.Core.Plugin
             catch (Exception)
             {
                 string error = $"Parse plugin config {configPath} failed: json format is not valid";
-#if (DEBUG)
+#if DEBUG
                 {
                     throw new Exception(error);
                 }
-#endif
+#else
                 return null;
+#endif
             }
-
 
             if (!AllowedLanguage.IsAllowed(metadata.Language))
             {
                 string error = $"Parse plugin config {configPath} failed: invalid language {metadata.Language}";
-#if (DEBUG)
+#if DEBUG
                 {
                     throw new Exception(error);
                 }
-#endif
+#else
                 return null;
+#endif
             }
+
             if (!File.Exists(metadata.ExecuteFilePath))
             {
                 string error = $"Parse plugin config {configPath} failed: ExecuteFile {metadata.ExecuteFilePath} didn't exist";
-#if (DEBUG)
+#if DEBUG
                 {
                     throw new Exception(error);
                 }
-#endif
+#else
                 return null;
+#endif
             }
 
             return metadata;
         }
 
         /// <summary>
-        /// unzip 
+        /// unzip
         /// </summary>
         /// <param name="zippedFile">The zipped file.</param>
         /// <param name="strDirectory">The STR directory.</param>
         /// <param name="overWrite">overwrite</param>
         private static void UnZip(string zippedFile, string strDirectory, bool overWrite)
         {
-            if (strDirectory == "")
+            if (strDirectory == string.Empty)
+            {
                 strDirectory = Directory.GetCurrentDirectory();
+            }
+
             if (!strDirectory.EndsWith("\\"))
-                strDirectory = strDirectory + "\\";
+            {
+                strDirectory += "\\";
+            }
 
             using (ZipInputStream s = new ZipInputStream(File.OpenRead(zippedFile)))
             {
@@ -162,18 +173,20 @@ namespace Wox.Core.Plugin
 
                 while ((theEntry = s.GetNextEntry()) != null)
                 {
-                    string directoryName = "";
-                    string pathToZip = "";
+                    string directoryName = string.Empty;
+                    string pathToZip = string.Empty;
                     pathToZip = theEntry.Name;
 
-                    if (pathToZip != "")
+                    if (pathToZip != string.Empty)
+                    {
                         directoryName = Path.GetDirectoryName(pathToZip) + "\\";
+                    }
 
                     string fileName = Path.GetFileName(pathToZip);
 
                     Directory.CreateDirectory(strDirectory + directoryName);
 
-                    if (fileName != "")
+                    if (fileName != string.Empty)
                     {
                         if ((File.Exists(strDirectory + directoryName + fileName) && overWrite) || (!File.Exists(strDirectory + directoryName + fileName)))
                         {
@@ -185,10 +198,15 @@ namespace Wox.Core.Plugin
                                     int size = s.Read(data, 0, data.Length);
 
                                     if (size > 0)
+                                    {
                                         streamWriter.Write(data, 0, size);
+                                    }
                                     else
+                                    {
                                         break;
+                                    }
                                 }
+
                                 streamWriter.Close();
                             }
                         }
