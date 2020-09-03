@@ -30,6 +30,8 @@ ShortcutControl::ShortcutControl(Grid table, const int colIndex, TextBox targetA
         // Using the XamlRoot of the typeShortcut to get the root of the XAML host
         createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, shortcutControlLayout.as<StackPanel>(), targetApp, isHybridControl, false, EditShortcutsWindowHandle, shortcutRemapBuffer);
     });
+    // Set an accessible name for the type shortcut button
+    typeShortcut.as<Button>().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_TYPE_BUTTON)));
 
     shortcutControlLayout.as<StackPanel>().Margin({ 0, 0, 0, 10 });
     shortcutControlLayout.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
