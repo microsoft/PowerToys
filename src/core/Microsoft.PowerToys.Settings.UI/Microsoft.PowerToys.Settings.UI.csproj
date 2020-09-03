@@ -291,6 +291,9 @@
       <Name>Microsoft.PowerToys.Settings.UI.Lib</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\zh-cn\Resources.resw" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
