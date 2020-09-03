@@ -126,7 +126,7 @@ namespace PowerLauncher
                         // current file and replace it with a correct json value.
                         SettingsUtils.DeleteSettings(PowerLauncherSettings.ModuleName);
                         CreateSettingsIfNotExists();
-                        ErrorReporting.ShowMessageBox(e);
+                        ErrorReporting.ShowMessageBox(Properties.Resources.deseralization_error_message, Properties.Resources.deseralization_error_title);
                     }
                     else
                     {

@@ -35,11 +35,11 @@ namespace PowerLauncher.Helper
             }
         }
 
-        public static void ShowMessageBox(Exception e)
+        public static void ShowMessageBox(string title, string message)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                MessageBox.Show(e.Message, Properties.Resources.deseralization_error);
+                MessageBox.Show(message, title);
             });
         }
 
