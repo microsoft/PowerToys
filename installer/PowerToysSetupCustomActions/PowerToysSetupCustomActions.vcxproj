@@ -97,6 +97,8 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/await %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
