@@ -56,8 +56,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 if (sizeOfTitle++ > 0)
                 {
                     StringBuilder titleBuffer = new StringBuilder(sizeOfTitle);
-                    var hr = NativeMethods.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
-                    if (hr >= 0)
+                    var numCharachtersWritten = NativeMethods.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
+                    if (numCharachtersWritten == 0)
                     {
                         return string.Empty;
                     }
