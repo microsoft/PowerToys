@@ -39,7 +39,7 @@ namespace PowerLauncher.Helper
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                MessageBox.Show(string.Format(CultureInfo.InvariantCulture, "{0} \n {1}", "Powertoys Run settings have been reset due to an internal error", e.Message));
+                MessageBox.Show(e.Message, Properties.Resources.deseralization_error);
             });
         }
 

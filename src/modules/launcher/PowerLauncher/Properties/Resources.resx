@@ -462,4 +462,7 @@
   <data name="Title" xml:space="preserve">
     <value>Title</value>
   </data>
+  <data name="deseralization_error" xml:space="preserve">
+    <value>Powertoys Run Error</value>
+  </data>
 </root>

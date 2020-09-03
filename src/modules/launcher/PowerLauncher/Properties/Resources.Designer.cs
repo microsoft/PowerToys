@@ -268,6 +268,15 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Powertoys Run Error.
+        /// </summary>
+        public static string deseralization_error {
+            get {
+                return ResourceManager.GetString("deseralization_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable.
         /// </summary>
         public static string disable {
