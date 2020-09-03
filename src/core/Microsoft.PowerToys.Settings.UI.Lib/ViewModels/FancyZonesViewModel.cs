@@ -50,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
             _useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
+            _spanZonesAcrossMonitors = Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
             _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
