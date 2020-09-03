@@ -15,10 +15,12 @@ namespace FastDelete.ShellExtension
 
         public override ExplorerCommandState GetState(IEnumerable<string> selectedFiles)
         {
+#if false
             using var key = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Microsoft\\PowerToys FastDelete");
             object value = key.GetValue("Enabled");
             bool enable = value != null ? ((int)value == 1) : true;
             if (!enable) return ExplorerCommandState.Hidden;
+#endif
 
             try
             {
