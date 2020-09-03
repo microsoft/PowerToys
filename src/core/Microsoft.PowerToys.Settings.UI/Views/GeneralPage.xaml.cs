@@ -44,10 +44,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             ShellPage.ShellHandler.IPCResponseHandleList.Add((JsonObject json) =>
             {
-                string version = json.GetNamedString("version");
-                if (version != string.Empty)
+                try
                 {
-                    ViewModel.LatestAvailableVersion = "Latest available version: " + version;
+                    string version = json.GetNamedString("version");
+                    bool isLatest = json.GetNamedBoolean("isVersionLatest");
+
+                    var str = string.Empty;
+                    if (isLatest)
+                    {
+                        str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_VersionIsLatest");
+                    }
+                    else if (version != string.Empty)
+                    {
+                        str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_NewVersionIsAvailable");
+                        if (str != string.Empty)
+                        {
+                            str += ": " + version;
+                        }
+                    }
+
+                    ViewModel.LatestAvailableVersion = string.Format(str);
+                }
+                catch (Exception)
+                {
                 }
             });
 

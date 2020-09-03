@@ -16,6 +16,8 @@
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
 #include <common/os-detect.h>
+#include <common/version.h>
+#include <common/VersionHelper.h>
 
 #define BUFSIZE 1024
 
@@ -77,8 +79,13 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
+                    std::wstring latestVersion = check_for_updates();
+                    VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+                    bool isRunningLatest = latestVersion.compare(current_version.toWstring()) == 0;
+
                     json::JsonObject json;
-                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(check_for_updates()));
+                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(latestVersion));
+                    json.SetNamedValue(L"isVersionLatest", json::JsonValue::CreateBooleanValue(isRunningLatest));
 
                     result.emplace(json.Stringify());
                 }
