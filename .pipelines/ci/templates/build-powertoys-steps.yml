@@ -96,10 +96,10 @@ steps:
     testAssemblyVer2: |
       **\ImageResizer.Test.dll
       **\KeyboardManagerTest.dll
-      **\PowerRenameUnitTests.dll
       **\UnitTests-CommonLib.dll
       **\PreviewPaneUnitTests.dll #this is the markdown tests
       **\UnitTests-PreviewHandlerCommon.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\powerpreviewTest.dll
       !**\obj\**
+#      **\PowerRenameUnitTests.dll
