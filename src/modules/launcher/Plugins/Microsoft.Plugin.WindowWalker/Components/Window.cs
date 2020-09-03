@@ -35,12 +35,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         private static readonly Dictionary<IntPtr, string> _handlesToProcessCache = new Dictionary<IntPtr, string>();
 
         /// <summary>
-        /// The list of icons from process so that we don't have to keep
-        /// loading them from disk
-        /// </summary>
-        private static readonly Dictionary<uint, ImageSource> _processIdsToIconsCache = new Dictionary<uint, ImageSource>();
-
-        /// <summary>
         /// The handle to the window
         /// </summary>
         private readonly IntPtr hwnd;
@@ -158,51 +152,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets represents the Window Icon for the specified window
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Supressing to get fxcop enabled. Unsure of what exceptions were originally being thrown and don't want to change program behavior")]
-        public ImageSource WindowIcon
-        {
-            get
-            {
-                lock (_processIdsToIconsCache)
-                {
-                    var hr = NativeMethods.GetWindowThreadProcessId(Hwnd, out uint processId);
-
-                    if (hr >= 0)
-                    {
-                        AddFailedImage(processId);
-                    }
-
-                    if (!_processIdsToIconsCache.ContainsKey(processId))
-                    {
-                        try
-                        {
-                            Process process = Process.GetProcessById((int)processId);
-                            Icon tempIcon = Icon.ExtractAssociatedIcon(process.Modules[0].FileName);
-                            _processIdsToIconsCache.Add(processId, Imaging.CreateBitmapSourceFromHIcon(
-                                tempIcon.Handle,
-                                Int32Rect.Empty,
-                                BitmapSizeOptions.FromEmptyOptions()));
-                        }
-                        catch
-                        {
-                            AddFailedImage(processId);
-                        }
-                    }
-
-                    return _processIdsToIconsCache[processId];
-                }
-            }
-        }
-
-        private static void AddFailedImage(uint processId)
-        {
-            BitmapImage failedImage = new BitmapImage(new Uri(@"Images\failedIcon.jpg", UriKind.Relative));
-            _processIdsToIconsCache.Add(processId, failedImage);
-        }
-
-        /// <summary>
         /// Gets a value indicating whether is the window visible (might return false if it is a hidden IE tab)
         /// </summary>
         public bool Visible
@@ -262,17 +211,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether the app is a cloaked UWP app
-        /// </summary>
-        public bool IsUWPCloaked
-        {
-            get
-            {
-                return IsWindowCloaked() && ClassName == "ApplicationFrameWindow";
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether determines whether the specified windows is the owner
         /// </summary>
         public bool IsOwner
@@ -281,17 +219,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
             {
                 return NativeMethods.GetWindow(Hwnd, NativeMethods.GetWindowCmd.GW_OWNER) != null;
             }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether is the window cloaked. To detect UWP apps in background or win32 apps running in another virtual desktop
-        /// </summary>
-        public bool IsWindowCloaked()
-        {
-            int isCloaked = 0;
-            const int DWMWA_CLOAKED = 14;
-            _ = NativeMethods.DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out isCloaked, sizeof(int));
-            return isCloaked != 0;
         }
 
         /// <summary>
@@ -314,14 +241,6 @@ namespace Microsoft.Plugin.WindowWalker.Components
         {
             // TODO: Add verification as to whether the window handle is valid
             this.hwnd = hwnd;
-        }
-
-        /// <summary>
-        /// Highlights a window to help the user identify the window that has been selected
-        /// </summary>
-        public void HighlightWindow()
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
