@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:p="clr-namespace:PowerLauncher.Properties"
              mc:Ignorable="d" 
              WindowStartupLocation="CenterScreen"
              Background="{DynamicResource SystemChromeLow}"
@@ -11,7 +12,7 @@
              ResizeMode="NoResize"
              Width="760"
              Height="560"
-             Title="{DynamicResource reportWindow_wox_got_an_error}"
+             Title="{x:Static p:Resources.reportWindow_wox_got_an_error}"
              d:DesignHeight="300" d:DesignWidth="600" x:ClassModifier="internal">
     <Window.Resources>
         <ResourceDictionary>
@@ -28,7 +29,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <TextBlock Text="Something went wrong."
+        <TextBlock Text="{x:Static p:Resources.reportWindow_header}"
                    FontFamily="Segoe UI Light"
                    FontSize="32"
                    Foreground="{DynamicResource ControlTextBrushKey}"/>
@@ -38,9 +39,12 @@
                        TextWrapping="Wrap"
                       
                        Foreground="{DynamicResource ControlTextBrushKey}">
-                <Run Text="Please file a bug in the"/>
-                <Hyperlink x:Name="RepositoryHyperlink" Click="RepositoryHyperlink_Click"  FontWeight="SemiBold" NavigateUri="https://aka.ms/powerToysReportBug">PowerToys GitHub repository</Hyperlink><Run Text="."/>
-                <Run Text="Make sure to upload the log file and to include the error message."/>
+                <Run Text="{x:Static p:Resources.reportWindow_file_bug}"/>
+                <Hyperlink x:Name="RepositoryHyperlink" Click="RepositoryHyperlink_Click"  FontWeight="SemiBold" NavigateUri="https://aka.ms/powerToysReportBug">
+                    <Run Text="{x:Static p:Resources.reportWindow_github_repo}"/>
+                </Hyperlink>
+                <Run Text="{x:Static p:Resources.reportWindow_period}"/>
+                <Run Text="{x:Static p:Resources.reportWindow_upload_log}"/>
             </TextBlock>
   
             <TextBox Background="Transparent"

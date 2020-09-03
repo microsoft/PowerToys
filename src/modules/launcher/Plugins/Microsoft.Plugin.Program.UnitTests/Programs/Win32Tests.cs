@@ -369,16 +369,15 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
             List<ContextMenuResult> contextMenuResults = _pinnedWebpage.ContextMenus(mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_run_as_administrator"), Times.Once());
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
+            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
         }
 
         [Test]
@@ -386,15 +385,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
             List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_in_console);
         }
 
         [Test]
@@ -402,16 +400,15 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
             List<ContextMenuResult> contextMenuResults = _chrome.ContextMenus(mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_run_as_administrator"), Times.Once());
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
+            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
         }
 
         [Test]
@@ -419,23 +416,21 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
             List<ContextMenuResult> contextMenuResults = _cmdRunCommand.ContextMenus(mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_run_as_administrator"), Times.Once());
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
-            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
+            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
         }
 
         [Test]
         public void Win32AppsShouldSetNameAsTitleWhileCreatingResult()
         {
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
             StringMatcher.Instance = new StringMatcher();
 
             // Act

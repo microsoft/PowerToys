@@ -282,10 +282,10 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuItems.Count, 4);
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Once());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuItems[0].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_containing_folder);
+            Assert.AreEqual(contextMenuItems[1].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_run_as_administrator);
+            Assert.AreEqual(contextMenuItems[2].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path);
+            Assert.AreEqual(contextMenuItems[3].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console);
         }
 
         [TestCase("item.pdf")]
@@ -310,10 +310,9 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuItems.Count, 3);
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuItems[0].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_containing_folder);
+            Assert.AreEqual(contextMenuItems[1].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path);
+            Assert.AreEqual(contextMenuItems[2].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console);
         }
 
         [TestCase("C:/DummyFolder")]
@@ -336,10 +335,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuItems.Count, 2);
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Never());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
+            Assert.AreEqual(contextMenuItems[0].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path);
+            Assert.AreEqual(contextMenuItems[1].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console);
         }
 
         [TestCase(0, false, ExpectedResult = true)]

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gdiplus.h"
+#include <common/string_utils.h>
 
 namespace FancyZonesUtils
 {
@@ -96,6 +97,24 @@ namespace FancyZonesUtils
             SRCCOPY);
     }
 
+    inline COLORREF HexToRGB(std::wstring_view hex, const COLORREF fallbackColor = RGB(255, 255, 255))
+    {
+        hex = left_trim<wchar_t>(trim<wchar_t>(hex), L"#");
+        
+        try
+        {
+            const long long tmp = std::stoll(hex.data(), nullptr, 16);
+            const BYTE nR = (tmp & 0xFF0000) >> 16;
+            const BYTE nG = (tmp & 0xFF00) >> 8;
+            const BYTE nB = (tmp & 0xFF);
+            return RGB(nR, nG, nB);
+        }
+        catch (const std::exception&)
+        {
+            return fallbackColor;
+        }
+    }
+    
     inline void ParseDeviceId(PCWSTR deviceId, PWSTR parsedId, size_t size)
     {
         // We're interested in the unique part between the first and last #'s

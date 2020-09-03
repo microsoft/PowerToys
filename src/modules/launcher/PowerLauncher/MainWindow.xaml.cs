@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Timers;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.PowerLauncher.Telemetry;
@@ -14,6 +15,7 @@ using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using Log = Wox.Infrastructure.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
 
 namespace PowerLauncher
@@ -89,6 +91,7 @@ namespace PowerLauncher
             InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
 
             SearchBox.QueryTextBox.Focus();
+            SearchBox.QueryTextBox.ControlledElements.Add(ListBox.SuggestionsList);
 
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
@@ -287,7 +290,7 @@ namespace PowerLauncher
 
         private void UpdateTextBoxToSelectedItem()
         {
-            var itemText = _viewModel?.Results?.SelectedItem?.ToString() ?? null;
+            var itemText = _viewModel?.Results?.SelectedItem?.SearchBoxDisplayText() ?? null;
             if (!string.IsNullOrEmpty(itemText))
             {
                 _viewModel.ChangeQueryText(itemText);
@@ -300,7 +303,20 @@ namespace PowerLauncher
             _viewModel.Results.SelectedItem = (ResultViewModel)listview.SelectedItem;
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
-                listview.ScrollIntoView(e.AddedItems[0]);
+                try
+                {
+                    listview.ScrollIntoView(e.AddedItems[0]);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    // Due to virtualization being enabled for the listview, the layout system updates elements in a deferred manner using an algorithm that balances performance and concurrency.
+                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for it's parent control.
+                    // To mitigate this we use the UpdateLayout function, which forces layout update to ensure that the parent element contains the latest properties.
+                    // However, it has a performance impact and is therefore not called each time.
+                    Log.Exception("MainWindow", "The parent element layout is not updated yet", ex, "SuggestionsList_SelectionChanged");
+                    listview.UpdateLayout();
+                    listview.ScrollIntoView(e.AddedItems[0]);
+                }
             }
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
@@ -309,7 +325,7 @@ namespace PowerLauncher
             {
                 SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
                     _viewModel.Results.SelectedIndex,
-                    _viewModel.Results.SelectedItem?.ToString(),
+                    _viewModel.Results.SelectedItem?.SearchBoxDisplayText(),
                     _viewModel.QueryText);
             }
         }
