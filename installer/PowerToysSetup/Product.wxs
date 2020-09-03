@@ -4,6 +4,7 @@
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
   <?define FancyZonesProjectName="FancyZones"?>
+  <?define FastDeleteProjectName="FastDelete"?>
   <?define ImageResizerProjectName="ImageResizer"?>
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
@@ -46,7 +47,6 @@
       <ComponentGroupRef Id="CoreComponents" />
       <ComponentGroupRef Id="ResourcesComponents" />
       <ComponentGroupRef Id="LauncherComponents" />
-      <ComponentGroupRef Id="FastDeleteComponents" />
     </Feature>
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
 
@@ -240,6 +240,7 @@
               <?endforeach?>
             </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
+            <Directory Id="FastDeleteInstallFolder" Name="$(var.FastDeleteProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
@@ -306,7 +307,6 @@
           <Directory Id="SettingsHtmlInstallFolder" Name="settings-html">
             <Directory Id="SettingsHtmlDistInstallFolder" Name="dist"/>
           </Directory>
-          <Directory Id="FastDeleteInstallFolder" Name="FastDelete" />
         </Directory>
       </Directory>
       <Directory Id="ProgramMenuFolder"/>
@@ -796,6 +796,7 @@
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
+      <ComponentRef Id="Module_FastDelete" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
       <ComponentRef Id="Module_ImageResizer" />
@@ -843,28 +844,25 @@
     </ComponentGroup>
   </Fragment>
   <Fragment>
-    <ComponentGroup Id="FastDeleteComponents">
-      <Component Directory="FastDeleteInstallFolder">
-        <File Source="$(var.BinX64Dir)modules\FastDelete\FastDelete.dll" />
-        <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.dll" />
-        <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.deps.json" />
-        <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.comhost.dll">
-          <AppId Advertise="no" Id="ee6b98b3-1786-4b23-b2a4-b3eefaf2768a" DllSurrogate="">
-            <Class Advertise="no" Id="1e1ecd14-ecd9-4eec-8bd4-02dad39ea829" ThreadingModel="apartment"
-                   Context="InprocServer32" Version="1.0" />
-          </AppId>
-        </File>
+    <Component Id="Module_FastDelete" Directory="FastDeleteInstallFolder">
+      <!--<File Source="$(var.BinX64Dir)modules\FastDelete\FastDelete.dll" />-->
+      <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.dll" />
+      <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.deps.json" />
+      <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.runtimeconfig.json" />
+      <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.comhost.dll">
+        <AppId Advertise="no" Id="ee6b98b3-1786-4b23-b2a4-b3eefaf2768a" DllSurrogate="">
+          <Class Advertise="no" Id="1e1ecd14-ecd9-4eec-8bd4-02dad39ea829" ThreadingModel="apartment"
+                 Context="InprocServer32" Version="1.0" />
+        </AppId>
+      </File>
 
-        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\Directory\shell\FastDelete">
-          <RegistryValue Value="Fast Delete" Type="string" />
-
-          <RegistryKey Key="command">
-            <RegistryValue Name="DelegateExecute" Value="{1e1ecd14-ecd9-4eec-8bd4-02dad39ea829}" Type="string" />
-          </RegistryKey>
+      <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\Directory\shell\FastDelete">
+        <RegistryValue Value="Fast Delete" Type="string" />
+        <RegistryKey Key="command">
+          <RegistryValue Name="DelegateExecute" Value="{1e1ecd14-ecd9-4eec-8bd4-02dad39ea829}" Type="string" />
         </RegistryKey>
-      </Component>
-    </ComponentGroup>
+      </RegistryKey>
+    </Component>
   </Fragment>
   <Fragment>
     <ComponentGroup Id="LauncherComponents">
