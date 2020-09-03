@@ -50,7 +50,7 @@ namespace FastDelete.ShellExtension
         private void mConfirmButton_Click(object sender, EventArgs e)
         {
             mConfirmButton.Visible = false;
-            mConfirmationLabel.Visible = false;
+            mInstructionLabel.Visible = false;
             mProgressBar.Visible = true;
 
             deleteThread = new Thread(DeleteThreadProc);
@@ -100,7 +100,7 @@ namespace FastDelete.ShellExtension
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             mConfirmButton.Visible = true;
-            mConfirmationLabel.Visible = true;
+            mInstructionLabel.Visible = true;
             mProgressBar.Visible = false;
         }
     }
