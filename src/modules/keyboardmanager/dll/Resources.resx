@@ -264,4 +264,7 @@
   <data name="ErrorMessage_Default" xml:space="preserve">
     <value>Unexpected error</value>
   </data>
+  <data name="Key_DropDown_Combobox" xml:space="preserve">
+    <value>Key Drop Down</value>
+  </data>
 </root>
