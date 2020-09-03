@@ -5,7 +5,7 @@ steps:
 - checkout: self
   fetchDepth: 1
   submodules: true
-  clean: true
+  clean: false
 
 - task: NuGetToolInstaller@0
   displayName: Ensure NuGet 5.5.0
@@ -33,6 +33,7 @@ steps:
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
+    clean: false
 
 - task: NuGetCommand@2
   displayName: Restore NuGet packages for PowerToysSetup.sln
