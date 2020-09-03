@@ -146,9 +146,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
             get
             {
                 StringBuilder windowClassName = new StringBuilder(300);
-                var hr = NativeMethods.GetClassName(Hwnd, windowClassName, windowClassName.MaxCapacity);
+                var numCharachtersWritten = NativeMethods.GetClassName(Hwnd, windowClassName, windowClassName.MaxCapacity);
 
-                if (hr >= 0)
+                if (numCharachtersWritten == 0)
                 {
                     return string.Empty;
                 }
