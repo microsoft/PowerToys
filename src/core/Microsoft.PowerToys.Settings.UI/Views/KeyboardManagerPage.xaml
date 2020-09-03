@@ -22,7 +22,8 @@
                 Orientation="Horizontal"
                 Height="56">
                 <ItemsControl
-                    ItemsSource="{x:Bind GetOriginalKeys()}">
+                    ItemsSource="{x:Bind GetOriginalKeys()}"
+                    IsTabStop="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
@@ -55,7 +56,8 @@
                           Margin="5,0,5,0"/>
                 <ItemsControl
                     ItemsSource="{x:Bind GetNewRemapKeys()}"
-                    Grid.Column="2">
+                    Grid.Column="2"
+                    IsTabStop="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
@@ -89,7 +91,8 @@
                 Orientation="Horizontal"
                 Height="56">
                 <ItemsControl
-                    ItemsSource="{x:Bind GetOriginalKeys()}">
+                    ItemsSource="{x:Bind GetOriginalKeys()}"
+                    IsTabStop="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
@@ -122,7 +125,8 @@
                           Margin="5,0,5,0"/>
                 <ItemsControl
                     ItemsSource="{x:Bind GetNewRemapKeys()}"
-                    Grid.Column="2">
+                    Grid.Column="2"
+                    IsTabStop="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
