@@ -852,10 +852,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
-        [DllImport("psapi.dll")]
+        [DllImport("psapi.dll", BestFitMapping = false)]
         public static extern uint GetProcessImageFileName(IntPtr hProcess, [Out] StringBuilder lpImageFileName, [In][MarshalAs(UnmanagedType.U4)] int nSize);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true, BestFitMapping = false)]
         public static extern IntPtr GetProp(IntPtr hWnd, string lpString);
 
         [DllImport("kernel32.dll")]
@@ -870,7 +870,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [DllImport("dwmapi.dll", PreserveSig = false)]
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", BestFitMapping = false)]
         public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
         [DllImport("user32.dll", SetLastError = true)]
