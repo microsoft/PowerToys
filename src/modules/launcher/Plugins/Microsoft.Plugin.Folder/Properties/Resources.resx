@@ -159,4 +159,13 @@
   <data name="Microsoft_plugin_folder_clipboard_failed" xml:space="preserve">
     <value>Fail to set text in clipboard</value>
   </data>
+  <data name="wox_plugin_folder_select_folder_first_result_subtitle" xml:space="preserve">
+    <value>Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*</value>
+  </data>
+  <data name="wox_plugin_folder_select_folder_first_result_title" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="wox_plugin_folder_select_folder_OpenFileOrFolder_error_message" xml:space="preserve">
+    <value>Could not start</value>
+  </data>
 </root>
