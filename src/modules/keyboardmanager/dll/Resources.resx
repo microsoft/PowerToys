@@ -276,4 +276,7 @@
   <data name="Delete_Remapping_Button" xml:space="preserve">
     <value>Delete Remapping</value>
   </data>
+  <data name="Remapped_To_Icon" xml:space="preserve">
+    <value>Remapped To</value>
+  </data>
 </root>
