@@ -65,7 +65,7 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ApplicationReferenceExtension = "appref-ms";
         private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
-        private static readonly HashSet<string> NonExeApplicationExtensions = new HashSet<string> { "bat", "bin", "com", "msc", "msi" };
+        private static readonly HashSet<string> NonExeApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "bat", "bin", "com", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
 
         private const string ProxyWebApp = "_proxy.exe";
         private const string AppIdArgument = "--app-id";
