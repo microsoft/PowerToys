@@ -213,4 +213,7 @@
   <data name="Powertoys_FancyZones" xml:space="preserve">
     <value>PowerToys - FancyZones</value>
   </data>
+  <data name="Span_Across_Zones_Warning" xml:space="preserve">
+    <value>With 'Allow zones to span across monitors' setting ON, all monitor must have the same DPI scaling</value>
+  </data>
 </root>
