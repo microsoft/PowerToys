@@ -106,7 +106,11 @@ void FancyZonesData::AddDevice(const std::wstring& deviceId)
         wil::unique_cotaskmem_string guidString;
         if (result == S_OK && SUCCEEDED(StringFromCLSID(guid, &guidString)))
         {
-            DeviceInfoData defaultDeviceInfoData{ ZoneSetData{ guidString.get(), ZoneSetLayoutType::PriorityGrid }, true, 16, 3 };
+            constexpr bool defaultShowSpacing{ true };
+            constexpr int defaultSpacing{ 16 };
+            constexpr int defaultZoneCount{ 3 };
+            const ZoneSetData zoneSetData{ guidString.get(), ZoneSetLayoutType::PriorityGrid };
+            DeviceInfoData defaultDeviceInfoData{ zoneSetData, defaultShowSpacing, defaultSpacing, defaultZoneCount };
             deviceInfoMap[deviceId] = std::move(defaultDeviceInfoData);
         }
         else
