@@ -40,7 +40,7 @@ Contains the source code of the PowerToys installer.
 
 ### The [`src`](/src) folder
 
-Contains the source code of the PowerToys runner and of all of the PowerToys modules. **This is where the most of the magic happens.**
+Contains the source code of the PowerToys runner and of all of the PowerToys modules. **This is where most of the magic happens.**
 
 ### The [`tools`](/tools) folder
 
