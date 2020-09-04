@@ -148,7 +148,7 @@
     <value>Show zones on all monitors while dragging a window</value>
   </data>
   <data name="Setting_Description_Span_Zones_Across_Monitors" xml:space="preserve">
-    <value>Allow zones to span across monitors</value>
+    <value>Allow zones to span across monitors (all monitor must have the same DPI scaling)</value>
   </data>
   <data name="Setting_Description_Make_Dragged_Window_Transparent" xml:space="preserve">
     <value>Make dragged window transparent</value>

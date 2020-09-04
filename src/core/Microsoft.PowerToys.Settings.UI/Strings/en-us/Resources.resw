@@ -700,7 +700,7 @@
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.</value>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" xml:space="preserve">
-    <value>Allow zones to span across monitors</value>
+    <value>Allow zones to span across monitors (all monitor must have the same DPI scaling)</value>
   </data>
   <data name="ImageResizer_Formatting_ActualHeight.Text" xml:space="preserve">
     <value>Actual height</value>
