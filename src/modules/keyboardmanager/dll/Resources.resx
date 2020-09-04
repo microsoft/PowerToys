@@ -273,4 +273,7 @@
   <data name="Add_Shortcut_Button" xml:space="preserve">
     <value>Add Shortcut</value>
   </data>
+  <data name="Delete_Remapping_Button" xml:space="preserve">
+    <value>Delete Remapping</value>
+  </data>
 </root>
