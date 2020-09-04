@@ -75,9 +75,11 @@ namespace Microsoft.Plugin.Program.Programs
             WEB_APPLICATION = 0,
             INTERNET_SHORTCUT_APPLICATION = 1,
             WIN32_APPLICATION = 2,
-            RUN_COMMAND = 3,
-            FOLDER = 4,
-            GENERIC_FILE = 5,
+            SHORTCUT_APPLICATION = 3,
+            APPREF_APPLICATION = 4,
+            RUN_COMMAND = 5,
+            FOLDER = 6,
+            GENERIC_FILE = 7,
         }
 
         // Function to calculate the score of a result
@@ -135,7 +137,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to set the subtitle based on the Type of application
         private string SetSubtitle()
         {
-            if (AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
+            if (AppType == (uint)ApplicationTypes.WIN32_APPLICATION || AppType == (uint)ApplicationTypes.SHORTCUT_APPLICATION || AppType == (uint)ApplicationTypes.APPREF_APPLICATION)
             {
                 return Properties.Resources.powertoys_run_plugin_program_win32_application;
             }
@@ -516,9 +518,17 @@ namespace Microsoft.Plugin.Program.Programs
             string extension = Extension(path);
             ApplicationTypes appType = ApplicationTypes.GENERIC_FILE;
 
-            if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension) || extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase) || extension.Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase))
+            if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension))
             {
                 appType = ApplicationTypes.WIN32_APPLICATION;
+            }
+            else if (extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                appType = ApplicationTypes.SHORTCUT_APPLICATION;
+            }
+            else if (extension.Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                appType = ApplicationTypes.APPREF_APPLICATION;
             }
             else if (extension.Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase))
             {
@@ -551,19 +561,16 @@ namespace Microsoft.Plugin.Program.Programs
 
             if (appType == ApplicationTypes.WIN32_APPLICATION)
             {
-                string extension = Extension(path);
-                if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension))
-                {
-                    app = ExeProgram(path);
-                }
-                else if (extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    app = LnkProgram(path);
-                }
-                else
-                {
-                    app = CreateWin32Program(path);
-                }
+                app = ExeProgram(path);
+            }
+            else if (appType == ApplicationTypes.SHORTCUT_APPLICATION)
+            {
+                app = LnkProgram(path);
+            }
+            else if (appType == ApplicationTypes.APPREF_APPLICATION)
+            {
+                app = CreateWin32Program(path);
+                app.AppType = (uint)ApplicationTypes.APPREF_APPLICATION;
             }
             else if (appType == ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
