@@ -104,9 +104,9 @@ namespace FancyZonesUtils
         try
         {
             const long long tmp = std::stoll(hex.data(), nullptr, 16);
-            const BYTE nR = (tmp & 0xFF0000) >> 16;
-            const BYTE nG = (tmp & 0xFF00) >> 8;
-            const BYTE nB = (tmp & 0xFF);
+            const BYTE nR = static_cast<BYTE>((tmp & 0xFF0000) >> 16);
+            const BYTE nG = static_cast<BYTE>((tmp & 0xFF00) >> 8);
+            const BYTE nB = static_cast<BYTE>((tmp & 0xFF));
             return RGB(nR, nG, nB);
         }
         catch (const std::exception&)

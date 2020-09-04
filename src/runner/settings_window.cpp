@@ -16,6 +16,8 @@
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
 #include <common/os-detect.h>
+#include <common/version.h>
+#include <common/VersionHelper.h>
 
 #define BUFSIZE 1024
 
@@ -48,8 +50,9 @@ json::JsonObject get_all_settings()
     return result;
 }
 
-void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
+std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
 {
+    std::optional<std::wstring> result;
     for (const auto& powertoy_element : powertoys_configs)
     {
         const std::wstring name{ powertoy_element.Key().c_str() };
@@ -76,9 +79,15 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
                 }
                 else if (action == L"check_for_updates")
                 {
-                    std::thread{ [] {
-                        check_for_updates();
-                    } }.detach();
+                    std::wstring latestVersion = check_for_updates();
+                    VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+                    bool isRunningLatest = latestVersion.compare(current_version.toWstring()) == 0;
+
+                    json::JsonObject json;
+                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(latestVersion));
+                    json.SetNamedValue(L"isVersionLatest", json::JsonValue::CreateBooleanValue(isRunningLatest));
+
+                    result.emplace(json.Stringify());
                 }
             }
             catch (...)
@@ -90,6 +99,8 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
             const auto element = powertoy_element.Value().Stringify();
             modules().at(name)->call_custom_action(element.c_str());
         }
+
+        return result;
     }
 }
 
@@ -146,7 +157,11 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         }
         else if (name == L"action")
         {
-            dispatch_json_action_to_module(value.GetObjectW());
+            auto result = dispatch_json_action_to_module(value.GetObjectW());
+            if (result.has_value())
+            {
+                current_settings_ipc->send(result.value());
+            }
         }
     }
     return;

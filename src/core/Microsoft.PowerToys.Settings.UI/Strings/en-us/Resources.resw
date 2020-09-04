@@ -723,4 +723,10 @@
   <data name="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows based on their position</value>
   </data>
+  <data name="GeneralSettings_NewVersionIsAvailable" xml:space="preserve">
+    <value>New update available</value>
+  </data>
+  <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
+    <value>You have the latest available version.</value>
+  </data>
 </root>

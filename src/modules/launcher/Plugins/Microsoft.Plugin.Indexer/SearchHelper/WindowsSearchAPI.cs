@@ -58,7 +58,10 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                     continue;
                 }
 
-                var uri_path = new Uri((string)oleDBResult.FieldData[0]);
+                // # is URI syntax for the fragment component, need to be encoded so LocalPath returns complete path
+                var string_path = ((string)oleDBResult.FieldData[0]).Replace("#", "%23", StringComparison.OrdinalIgnoreCase);
+                var uri_path = new Uri(string_path);
+
                 var result = new SearchResult
                 {
                     Path = uri_path.LocalPath,

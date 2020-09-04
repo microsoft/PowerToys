@@ -81,7 +81,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -107,11 +106,14 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behaviors\GridEffectBehavior.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
     <Compile Include="Settings\IUserSettings.cs" />
     <Compile Include="Settings\SettingItem`1.cs" />
     <Compile Include="Settings\UserSettings.cs" />
+    <Compile Include="Shaders\Global.cs" />
+    <Compile Include="Shaders\GridShaderEffect.cs" />
     <Compile Include="Telemetry\ColorPickerCancelledEvent.cs" />
     <Compile Include="Telemetry\ColorPickerShowEvent.cs" />
     <Compile Include="Telemetry\ColorPickerZoomOpenedEvent.cs" />
@@ -208,6 +210,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Resource Include="Shaders\GridShader.cso" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -253,6 +256,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Shaders\GridShader.fx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
