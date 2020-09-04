@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string Location => ParentDirectory;
 
-        public uint AppType { get; set; }
+        public ApplicationType AppType { get; set; }
 
         // Wrappers for File Operations
         public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
@@ -70,16 +70,16 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ProxyWebApp = "_proxy.exe";
         private const string AppIdArgument = "--app-id";
 
-        private enum ApplicationTypes
+        public enum ApplicationType
         {
-            WEB_APPLICATION = 0,
-            INTERNET_SHORTCUT_APPLICATION = 1,
-            WIN32_APPLICATION = 2,
-            SHORTCUT_APPLICATION = 3,
-            APPREF_APPLICATION = 4,
-            RUN_COMMAND = 5,
-            FOLDER = 6,
-            GENERIC_FILE = 7,
+            WebApplication = 0,
+            InternetShortcutApplication = 1,
+            Win32Application = 2,
+            ShortcutApplication = 3,
+            ApprefApplication = 4,
+            RunCommand = 5,
+            Folder = 6,
+            GenericFile = 7,
         }
 
         // Function to calculate the score of a result
@@ -111,7 +111,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // Set the subtitle to 'Web Application'
-            AppType = (uint)ApplicationTypes.WEB_APPLICATION;
+            AppType = ApplicationType.WebApplication;
 
             string[] subqueries = query?.Split() ?? Array.Empty<string>();
             bool nameContainsQuery = false;
@@ -137,27 +137,27 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to set the subtitle based on the Type of application
         private string SetSubtitle()
         {
-            if (AppType == (uint)ApplicationTypes.WIN32_APPLICATION || AppType == (uint)ApplicationTypes.SHORTCUT_APPLICATION || AppType == (uint)ApplicationTypes.APPREF_APPLICATION)
+            if (AppType == ApplicationType.Win32Application || AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication)
             {
                 return Properties.Resources.powertoys_run_plugin_program_win32_application;
             }
-            else if (AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
+            else if (AppType == ApplicationType.InternetShortcutApplication)
             {
                 return Properties.Resources.powertoys_run_plugin_program_internet_shortcut_application;
             }
-            else if (AppType == (uint)ApplicationTypes.WEB_APPLICATION)
+            else if (AppType == ApplicationType.WebApplication)
             {
                 return Properties.Resources.powertoys_run_plugin_program_web_application;
             }
-            else if (AppType == (uint)ApplicationTypes.RUN_COMMAND)
+            else if (AppType == ApplicationType.RunCommand)
             {
                 return Properties.Resources.powertoys_run_plugin_program_run_command;
             }
-            else if (AppType == (uint)ApplicationTypes.FOLDER)
+            else if (AppType == ApplicationType.Folder)
             {
                 return Properties.Resources.powertoys_run_plugin_program_folder_type;
             }
-            else if (AppType == (uint)ApplicationTypes.GENERIC_FILE)
+            else if (AppType == ApplicationType.GenericFile)
             {
                 return Properties.Resources.powertoys_run_plugin_program_generic_file_type;
             }
@@ -169,7 +169,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public bool QueryEqualsNameForRunCommands(string query)
         {
-            if (query != null && AppType == (uint)ApplicationTypes.RUN_COMMAND
+            if (query != null && AppType == ApplicationType.RunCommand
                 && !query.Equals(Name, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -253,7 +253,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var contextMenus = new List<ContextMenuResult>();
 
-            if (AppType != (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION && AppType != (uint)ApplicationTypes.FOLDER && AppType != (uint)ApplicationTypes.GENERIC_FILE)
+            if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
             {
                 contextMenus.Add(new ContextMenuResult
                 {
@@ -343,7 +343,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Description = string.Empty,
                     Valid = true,
                     Enabled = true,
-                    AppType = (uint)ApplicationTypes.WIN32_APPLICATION,
+                    AppType = ApplicationType.Win32Application,
                 };
                 return p;
             }
@@ -407,7 +407,7 @@ namespace Microsoft.Plugin.Program.Programs
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Valid = true,
                     Enabled = true,
-                    AppType = (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION,
+                    AppType = ApplicationType.InternetShortcutApplication,
                 };
                 return p;
             }
@@ -448,7 +448,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         else
                         {
-                            program.AppType = (uint)GetAppTypeFromPath(target);
+                            program.AppType = GetAppTypeFromPath(target);
                         }
 
                         var description = Helper.Description;
@@ -508,7 +508,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Function to get the application type, given the path to the application
-        private static ApplicationTypes GetAppTypeFromPath(string path)
+        public static ApplicationType GetAppTypeFromPath(string path)
         {
             if (path == null)
             {
@@ -516,23 +516,23 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             string extension = Extension(path);
-            ApplicationTypes appType = ApplicationTypes.GENERIC_FILE;
+            ApplicationType appType = ApplicationType.GenericFile;
 
             if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension))
             {
-                appType = ApplicationTypes.WIN32_APPLICATION;
+                appType = ApplicationType.Win32Application;
             }
             else if (extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase))
             {
-                appType = ApplicationTypes.SHORTCUT_APPLICATION;
+                appType = ApplicationType.ShortcutApplication;
             }
             else if (extension.Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase))
             {
-                appType = ApplicationTypes.APPREF_APPLICATION;
+                appType = ApplicationType.ApprefApplication;
             }
             else if (extension.Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase))
             {
-                appType = ApplicationTypes.INTERNET_SHORTCUT_APPLICATION;
+                appType = ApplicationType.InternetShortcutApplication;
             }
 
             // If the path exists, check if it is a directory
@@ -540,7 +540,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 if ((File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    appType = ApplicationTypes.FOLDER;
+                    appType = ApplicationType.Folder;
                 }
             }
 
@@ -557,22 +557,22 @@ namespace Microsoft.Plugin.Program.Programs
 
             Win32Program app = null;
 
-            ApplicationTypes appType = GetAppTypeFromPath(path);
+            ApplicationType appType = GetAppTypeFromPath(path);
 
-            if (appType == ApplicationTypes.WIN32_APPLICATION)
+            if (appType == ApplicationType.Win32Application)
             {
                 app = ExeProgram(path);
             }
-            else if (appType == ApplicationTypes.SHORTCUT_APPLICATION)
+            else if (appType == ApplicationType.ShortcutApplication)
             {
                 app = LnkProgram(path);
             }
-            else if (appType == ApplicationTypes.APPREF_APPLICATION)
+            else if (appType == ApplicationType.ApprefApplication)
             {
                 app = CreateWin32Program(path);
-                app.AppType = (uint)ApplicationTypes.APPREF_APPLICATION;
+                app.AppType = ApplicationType.ApprefApplication;
             }
-            else if (appType == ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
+            else if (appType == ApplicationType.InternetShortcutApplication)
             {
                 app = InternetShortcutProgram(path);
             }
@@ -719,7 +719,7 @@ namespace Microsoft.Plugin.Program.Programs
                 .Concat(programs4).Where(p => p.Valid)
                 .Select(p =>
                 {
-                    p.AppType = (uint)ApplicationTypes.RUN_COMMAND;
+                    p.AppType = ApplicationType.RunCommand;
                     return p;
                 });
 
@@ -908,7 +908,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Deduplication code
         public static Win32Program[] DeduplicatePrograms(ParallelQuery<Win32Program> programs)
         {
-            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.RUN_COMMAND)));
+            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == ApplicationType.RunCommand)));
             var uniquePrograms = uniqueExePrograms.Distinct(new RemoveDuplicatesComparer());
             return uniquePrograms.ToArray();
         }
