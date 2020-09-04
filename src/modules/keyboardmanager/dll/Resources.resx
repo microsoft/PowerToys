@@ -267,4 +267,10 @@
   <data name="Key_DropDown_Combobox" xml:space="preserve">
     <value>Key Drop Down</value>
   </data>
+  <data name="Add_Key_Remap_Button" xml:space="preserve">
+    <value>Add Key Remap</value>
+  </data>
+  <data name="Add_Shortcut_Button" xml:space="preserve">
+    <value>Add Shortcut</value>
+  </data>
 </root>
