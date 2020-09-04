@@ -65,6 +65,7 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ApplicationReferenceExtension = "appref-ms";
         private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
+        private static readonly HashSet<string> NonExeApplicationExtensions = new HashSet<string> { "bat", "msc" };
 
         private const string ProxyWebApp = "_proxy.exe";
         private const string AppIdArgument = "--app-id";
@@ -75,6 +76,18 @@ namespace Microsoft.Plugin.Program.Programs
             INTERNET_SHORTCUT_APPLICATION = 1,
             WIN32_APPLICATION = 2,
             RUN_COMMAND = 3,
+            FOLDER = 4,
+            GENERIC_FILE = 5,
+        }
+
+        private enum FileTypes
+        {
+            APPLICATION = 0,
+            SHORTCUT = 1,
+            URL = 2,
+            APPREF = 3,
+            FOLDER = 4,
+            GENERIC_FILE = 5,
         }
 
         // Function to calculate the score of a result
@@ -147,6 +160,14 @@ namespace Microsoft.Plugin.Program.Programs
             else if (AppType == (uint)ApplicationTypes.RUN_COMMAND)
             {
                 return Properties.Resources.powertoys_run_plugin_program_run_command;
+            }
+            else if (AppType == (uint)ApplicationTypes.FOLDER)
+            {
+                return Properties.Resources.powertoys_run_plugin_program_folder_type;
+            }
+            else if (AppType == (uint)ApplicationTypes.GENERIC_FILE)
+            {
+                return Properties.Resources.powertoys_run_plugin_program_generic_file_type;
             }
             else
             {
@@ -422,13 +443,34 @@ namespace Microsoft.Plugin.Program.Programs
                 if (!string.IsNullOrEmpty(target))
                 {
                     var extension = Extension(target);
-                    if (extension == ExeExtension && File.Exists(target))
+                    if (File.Exists(target) || Directory.Exists(target))
                     {
                         program.LnkResolvedPath = program.FullPath;
                         program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
-                        program.ExecutableName = Path.GetFileName(target);
-                        program.HasArguments = Helper.HasArguments;
-                        program.Arguments = Helper.Arguments;
+
+                        if (extension == ExeExtension)
+                        {
+                            program.ExecutableName = Path.GetFileName(target);
+                            program.HasArguments = Helper.HasArguments;
+                            program.Arguments = Helper.Arguments;
+                        }
+                        else
+                        {
+                            FileTypes fileType = GetFileTypeFromPath(target);
+
+                            if (fileType == FileTypes.FOLDER)
+                            {
+                                program.AppType = (uint)ApplicationTypes.FOLDER;
+                            }
+                            else if (fileType == FileTypes.GENERIC_FILE)
+                            {
+                                program.AppType = (uint)ApplicationTypes.GENERIC_FILE;
+                            }
+                            else if (fileType == FileTypes.URL)
+                            {
+                                program.AppType = (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION;
+                            }
+                        }
 
                         var description = Helper.Description;
                         if (!string.IsNullOrEmpty(description))
@@ -443,9 +485,6 @@ namespace Microsoft.Plugin.Program.Programs
                                 program.Description = info.FileDescription;
                             }
                         }
-                    }
-                    else
-                    {
                     }
                 }
 
@@ -489,6 +528,46 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
+        // Function to get the application type, given the path to the application
+        private static FileTypes GetFileTypeFromPath(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            string extension = Extension(path);
+            FileTypes fileType = FileTypes.GENERIC_FILE;
+
+            if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension))
+            {
+                fileType = FileTypes.APPLICATION;
+            }
+            else if (extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                fileType = FileTypes.SHORTCUT;
+            }
+            else if (extension.Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                fileType = FileTypes.APPREF;
+            }
+            else if (extension.Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                fileType = FileTypes.URL;
+            }
+
+            // If the path exists, check if it is a directory
+            else if (Directory.Exists(path))
+            {
+                if ((File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    fileType = FileTypes.FOLDER;
+                }
+            }
+
+            return fileType;
+        }
+
         // Function to get the Win32 application, given the path to the application
         public static Win32Program GetAppFromPath(string path)
         {
@@ -498,28 +577,24 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             Win32Program app = null;
-            const string exeExtension = ".exe";
-            const string lnkExtension = ".lnk";
-            const string urlExtenion = ".url";
-            const string apprefExtension = ".appref-ms";
 
-            string extension = Path.GetExtension(path);
+            FileTypes fileType = GetFileTypeFromPath(path);
 
-            if (extension.Equals(exeExtension, StringComparison.OrdinalIgnoreCase))
+            if (fileType == FileTypes.APPLICATION)
             {
                 app = ExeProgram(path);
             }
-            else if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+            else if (fileType == FileTypes.SHORTCUT)
             {
                 app = LnkProgram(path);
             }
-            else if (extension.Equals(apprefExtension, StringComparison.OrdinalIgnoreCase))
-            {
-                app = CreateWin32Program(path);
-            }
-            else if (extension.Equals(urlExtenion, StringComparison.OrdinalIgnoreCase))
+            else if (fileType == FileTypes.URL)
             {
                 app = InternetShortcutProgram(path);
+            }
+            else if (fileType == FileTypes.APPREF)
+            {
+                app = CreateWin32Program(path);
             }
 
             // if the app is valid, only then return the application, else return null

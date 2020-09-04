@@ -240,4 +240,10 @@
   <data name="powertoys_run_plugin_program_file_path" xml:space="preserve">
     <value>Path</value>
   </data>
+  <data name="powertoys_run_plugin_program_folder_type" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="powertoys_run_plugin_program_generic_file_type" xml:space="preserve">
+    <value>File</value>
+  </data>
 </root>
