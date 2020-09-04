@@ -261,7 +261,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var contextMenus = new List<ContextMenuResult>();
 
-            if (AppType != (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
+            if (AppType != (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION && AppType != (uint)ApplicationTypes.FOLDER)
             {
                 contextMenus.Add(new ContextMenuResult
                 {
