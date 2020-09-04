@@ -80,16 +80,6 @@ namespace Microsoft.Plugin.Program.Programs
             GENERIC_FILE = 5,
         }
 
-        private enum FileTypes
-        {
-            APPLICATION = 0,
-            SHORTCUT = 1,
-            URL = 2,
-            APPREF = 3,
-            FOLDER = 4,
-            GENERIC_FILE = 5,
-        }
-
         // Function to calculate the score of a result
         private int Score(string query)
         {
@@ -456,20 +446,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         else
                         {
-                            FileTypes fileType = GetFileTypeFromPath(target);
-
-                            if (fileType == FileTypes.FOLDER)
-                            {
-                                program.AppType = (uint)ApplicationTypes.FOLDER;
-                            }
-                            else if (fileType == FileTypes.GENERIC_FILE)
-                            {
-                                program.AppType = (uint)ApplicationTypes.GENERIC_FILE;
-                            }
-                            else if (fileType == FileTypes.URL)
-                            {
-                                program.AppType = (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION;
-                            }
+                            program.AppType = (uint)GetAppTypeFromPath(target);
                         }
 
                         var description = Helper.Description;
@@ -529,7 +506,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Function to get the application type, given the path to the application
-        private static FileTypes GetFileTypeFromPath(string path)
+        private static ApplicationTypes GetAppTypeFromPath(string path)
         {
             if (path == null)
             {
@@ -537,23 +514,15 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             string extension = Extension(path);
-            FileTypes fileType = FileTypes.GENERIC_FILE;
+            ApplicationTypes appType = ApplicationTypes.GENERIC_FILE;
 
-            if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension))
+            if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension) || extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase) || extension.Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase))
             {
-                fileType = FileTypes.APPLICATION;
-            }
-            else if (extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase))
-            {
-                fileType = FileTypes.SHORTCUT;
-            }
-            else if (extension.Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase))
-            {
-                fileType = FileTypes.APPREF;
+                appType = ApplicationTypes.WIN32_APPLICATION;
             }
             else if (extension.Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase))
             {
-                fileType = FileTypes.URL;
+                appType = ApplicationTypes.INTERNET_SHORTCUT_APPLICATION;
             }
 
             // If the path exists, check if it is a directory
@@ -561,11 +530,11 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 if ((File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    fileType = FileTypes.FOLDER;
+                    appType = ApplicationTypes.FOLDER;
                 }
             }
 
-            return fileType;
+            return appType;
         }
 
         // Function to get the Win32 application, given the path to the application
@@ -578,23 +547,27 @@ namespace Microsoft.Plugin.Program.Programs
 
             Win32Program app = null;
 
-            FileTypes fileType = GetFileTypeFromPath(path);
+            ApplicationTypes appType = GetAppTypeFromPath(path);
 
-            if (fileType == FileTypes.APPLICATION)
+            if (appType == ApplicationTypes.WIN32_APPLICATION)
             {
-                app = ExeProgram(path);
+                string extension = Extension(path);
+                if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension))
+                {
+                    app = ExeProgram(path);
+                }
+                else if (extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    app = LnkProgram(path);
+                }
+                else
+                {
+                    app = CreateWin32Program(path);
+                }
             }
-            else if (fileType == FileTypes.SHORTCUT)
-            {
-                app = LnkProgram(path);
-            }
-            else if (fileType == FileTypes.URL)
+            else if (appType == ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
                 app = InternetShortcutProgram(path);
-            }
-            else if (fileType == FileTypes.APPREF)
-            {
-                app = CreateWin32Program(path);
             }
 
             // if the app is valid, only then return the application, else return null
