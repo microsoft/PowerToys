@@ -16,6 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
@@ -116,10 +117,11 @@ namespace Microsoft.Plugin.Folder
             {
                 Process.Start(program, path);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 string messageBoxTitle = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_OpenFileOrFolder_error_message, path);
-                MessageBox.Show(ex.Message, messageBoxTitle);
+                Log.Exception($"|Microsoft.Plugin.Folder.Main.OpenFileOrFolder| Failed to open {path} in explorer, {e.Message}", e);
+                _context.API.ShowMsg(messageBoxTitle, e.Message);
             }
 
             return true;
