@@ -182,6 +182,46 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = Win32Program.ApplicationType.InternetShortcutApplication,
         };
 
+        private static readonly Win32Program _dummyAppRefApp = new Win32Program
+        {
+            Name = "Dummy AppRef Application",
+            ExecutableName = "application.lnk",
+            FullPath = "C:\\dummy.appref-ms",
+            ParentDirectory = "C:\\",
+            LnkResolvedPath = "C:\\tools\\application.lnk",
+            AppType = Win32Program.ApplicationType.ApprefApplication,
+        };
+
+        private static readonly Win32Program _dummyShortcutApp = new Win32Program
+        {
+            Name = "Dummy Shortcut Application",
+            ExecutableName = "application.lnk",
+            FullPath = "C:\\application.lnk",
+            ParentDirectory = "C:\\",
+            LnkResolvedPath = "C:\\application.lnk",
+            AppType = Win32Program.ApplicationType.ShortcutApplication,
+        };
+
+        private static readonly Win32Program _dummyFolderApp = new Win32Program
+        {
+            Name = "Dummy Folder",
+            ExecutableName = "application.lnk",
+            FullPath = "C:\\dummy\\folder",
+            ParentDirectory = "C:\\dummy\\",
+            LnkResolvedPath = "C:\\tools\\application.lnk",
+            AppType = Win32Program.ApplicationType.Folder,
+        };
+
+        private static readonly Win32Program _dummyGenericFileApp = new Win32Program
+        {
+            Name = "Dummy Folder",
+            ExecutableName = "application.lnk",
+            FullPath = "C:\\dummy\\file.pdf",
+            ParentDirectory = "C:\\dummy\\",
+            LnkResolvedPath = "C:\\tools\\application.lnk",
+            AppType = Win32Program.ApplicationType.GenericFile,
+        };
+
         [Test]
         public void DedupFunctionWhenCalledMustRemoveDuplicateNotepads()
         {
@@ -425,6 +465,68 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
             Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
             Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
+        }
+
+        [Test]
+        public void AppRefApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = _dummyAppRefApp.ContextMenus(mock.Object);
+
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 3);
+            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
+            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
+        }
+
+        [Test]
+        public void ShortcutApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = _dummyShortcutApp.ContextMenus(mock.Object);
+
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 3);
+            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
+            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
+        }
+
+        [Test]
+        public void FolderApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = _dummyFolderApp.ContextMenus(mock.Object);
+
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 2);
+            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_in_console);
+        }
+
+        [Test]
+        public void GenericFileApplicationShouldReturnContextMenuWithOpenInConsoleWhenContextMenusIsCalled()
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = _dummyGenericFileApp.ContextMenus(mock.Object);
+
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 2);
+            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
+            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_in_console);
         }
 
         [Test]
