@@ -185,10 +185,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         private static readonly Win32Program _dummyAppRefApp = new Win32Program
         {
             Name = "Dummy AppRef Application",
-            ExecutableName = "application.lnk",
+            ExecutableName = "dummy.appref-ms",
             FullPath = "C:\\dummy.appref-ms",
             ParentDirectory = "C:\\",
-            LnkResolvedPath = "C:\\tools\\application.lnk",
+            LnkResolvedPath = null,
             AppType = Win32Program.ApplicationType.ApprefApplication,
         };
 
