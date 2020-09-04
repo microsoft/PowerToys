@@ -17,4 +17,6 @@ public:
 
     // Log number of app specific shortcut remaps when the user uses Edit Shortcuts and saves settings
     static void AppSpecificShortcutRemapCount(const DWORD shortcutToShortcutCount, const DWORD shortcutToKeyCount) noexcept;
+
+    static void KeyRemapInvoked(bool remapType) noexcept;
 };

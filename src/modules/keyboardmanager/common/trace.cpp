@@ -67,3 +67,14 @@ void Trace::AppSpecificShortcutRemapCount(const DWORD shortcutToShortcutCount, c
         TraceLoggingValue(shortcutToShortcutCount, "AppSpecificShortcutToShortcutRemapCount"),
         TraceLoggingValue(shortcutToKeyCount, "AppSpecificShortcutToKeyRemapCount"));
 }
+
+// Log number of app specific shortcut remaps when the user uses Edit Shortcuts and saves settings
+void Trace::KeyRemapInvoked(bool remapType) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "KeyboardManager_KeyRemapInvoked",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(remapType, "RemappedToKey"));
+}
