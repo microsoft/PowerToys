@@ -468,13 +468,13 @@
 Disabling module or closing PowerToys will unmute microphone and camera</value>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Edit camera and microphone mute hotkey</value>
+    <value>Mute camera and microphone</value>
   </data>
   <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Edit microphone mute hotkey</value>
+    <value>Mute microphone</value>
   </data>
   <data name="VideoConference_CameraMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Edit camera mute hotkey</value>
+    <value>Mute camera</value>
   </data>
   <data name="VideoConference_SelectedCamera.Header" xml:space="preserve">
     <value>Selected camera</value>
@@ -497,7 +497,7 @@ Disabling module or closing PowerToys will unmute microphone and camera</value>
   <data name="VideoConference_OverlayPosition_BottomLeftCorner.Content" xml:space="preserve">
     <value>Bottom left corner</value>
   </data>
-	<data name="VideoConference_OverlayPosition_BottomCenter.Content" xml:space="preserve">
+  <data name="VideoConference_OverlayPosition_BottomCenter.Content" xml:space="preserve">
     <value>Bottom center</value>
   </data>
   <data name="VideoConference_OverlayPosition_BottomRightCorner.Content" xml:space="preserve">
@@ -730,5 +730,14 @@ Disabling module or closing PowerToys will unmute microphone and camera</value>
   </data>
   <data name="ImageResizer_Formatting_Sizename.Text" xml:space="preserve">
     <value>Size name</value>
+  </data>
+  <data name="VideoConference_Camera.Text" xml:space="preserve">
+    <value>Camera</value>
+  </data>
+  <data name="VideoConference_Overlay.Text" xml:space="preserve">
+    <value>Overlay</value>
+  </data>
+  <data name="VideoConference_Shortcuts.Text" xml:space="preserve">
+    <value>Shortcuts</value>
   </data>
 </root>
