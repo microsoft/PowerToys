@@ -68,13 +68,66 @@ void Trace::AppSpecificShortcutRemapCount(const DWORD shortcutToShortcutCount, c
         TraceLoggingValue(shortcutToKeyCount, "AppSpecificShortcutToKeyRemapCount"));
 }
 
-// Log number of app specific shortcut remaps when the user uses Edit Shortcuts and saves settings
-void Trace::KeyRemapInvoked(bool remapType) noexcept
+// Log if a key remap has been invoked
+void Trace::KeyRemapInvoked(bool isKeyToKey) noexcept
 {
-    TraceLoggingWrite(
-        g_hProvider,
-        "KeyboardManager_KeyRemapInvoked",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(remapType, "RemappedToKey"));
+    if (isKeyToKey)
+    {
+        TraceLoggingWrite(
+            g_hProvider,
+            "KeyboardManager_KeyToKeyRemapInvoked",
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+    }
+    else
+    {
+        TraceLoggingWrite(
+            g_hProvider,
+            "KeyboardManager_KeyToShortcutRemapInvoked",
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+    }
+}
+
+// Log if a shortcut remap has been invoked
+void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) noexcept
+{
+    if (isAppSpecific)
+    {
+        if (isShortcutToShortcut)
+        {
+            TraceLoggingWrite(
+                g_hProvider,
+                "KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked",
+                ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        }
+        else
+        {
+            TraceLoggingWrite(
+                g_hProvider,
+                "KeyboardManager_AppSpecificShortcutToKeyRemapInvoked",
+                ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        }
+    }
+    else
+    {
+        if (isShortcutToShortcut)
+        {
+            TraceLoggingWrite(
+                g_hProvider,
+                "KeyboardManager_OSLevelShortcutToShortcutRemapInvoked",
+                ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        }
+        else
+        {
+            TraceLoggingWrite(
+                g_hProvider,
+                "KeyboardManager_OSLevelShortcutToKeyRemapInvoked",
+                ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+                TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        }
+    }
 }
