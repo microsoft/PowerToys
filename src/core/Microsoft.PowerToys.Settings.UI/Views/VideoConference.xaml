@@ -23,7 +23,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
                         <Setter Target="SidePanel.Width" Value="Auto"/>
                         <Setter Target="VideoConferenceView.(Grid.Row)" Value="1" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
@@ -54,7 +53,7 @@
             
             <CustomControls:HotkeySettingsControl 
                                           x:Uid="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header"
-                                          Width="320"
+                                          Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}"
@@ -63,7 +62,7 @@
 
             <CustomControls:HotkeySettingsControl 
                                           x:Uid="VideoConference_MicrophoneMuteHotkeyControl_Header"
-                                          Width="320"
+                                          Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}"
@@ -72,7 +71,7 @@
 
             <CustomControls:HotkeySettingsControl 
                                           x:Uid="VideoConference_CameraMuteHotkeyControl_Header"
-                                          Width="320"
+                                          Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.CameraMuteHotkey, Mode=TwoWay}"
@@ -84,7 +83,7 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             
             <ComboBox x:Uid="VideoConference_SelectedCamera"
-                      Width="320"
+                      Width="240"
                       HorizontalAlignment="Left"
                       Margin="{StaticResource SmallTopMargin}"
                       SelectedIndex="{Binding Path=SelectedCameraIndex, Mode=TwoWay}"
@@ -95,7 +94,7 @@
                        Margin="{StaticResource SmallTopMargin}"/>
 
             <StackPanel Orientation="Horizontal" Padding="0" Spacing="4" Margin="{StaticResource XXSmallTopMargin}">
-                <Button Width="320"
+                <Button Width="240"
                         Height="32"
                         IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                         Content="{Binding Mode=TwoWay, Path=CameraImageOverlayPath}"

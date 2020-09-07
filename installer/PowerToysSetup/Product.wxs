@@ -802,7 +802,7 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Assets\Modules">
       <Component Id="SettingsV2AssetsModules" Guid="A0B961A9-77D0-4223-88A9-E3B41BD9C329" Win64="yes">
-        <?foreach File in ColorPicker.png;FancyZones.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png?>
+        <?foreach File in ColorPicker.png;FancyZones.png;ImageResizer.png;KBM.png;PowerLauncher.png;PowerPreview.png;PowerRename.png;PT.png;ShortcutGuide.png;VideoConference.png?>
           <File Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Modules\$(var.File)" />
         <?endforeach?>
       </Component>
