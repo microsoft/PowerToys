@@ -110,6 +110,9 @@ private:
     void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
     void FlashZones() noexcept;
 
+    // Returns all zones spanned by m_initialHighlightZone and highlightZone
+    std::vector<size_t> GetCombinedZoneRange(const std::vector<size_t>& highlightZone) noexcept;
+
     winrt::com_ptr<IZoneWindowHost> m_host;
     HMONITOR m_monitor{};
     std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
@@ -233,44 +236,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
             }
             else
             {
-                std::vector<size_t> newHighlightZone;
-                std::set_union(begin(highlightZone), end(highlightZone), begin(m_initialHighlightZone), end(m_initialHighlightZone), std::back_inserter(newHighlightZone));
-
-                RECT boundingRect;
-                bool boundingRectEmpty = true;
-                auto zones = m_activeZoneSet->GetZones();
-
-                for (size_t zoneId : newHighlightZone)
-                {
-                    RECT rect = zones[zoneId]->GetZoneRect();
-                    if (boundingRectEmpty)
-                    {
-                        boundingRect = rect;
-                        boundingRectEmpty = false;
-                    }
-                    else
-                    {
-                        boundingRect.left = min(boundingRect.left, rect.left);
-                        boundingRect.top = min(boundingRect.top, rect.top);
-                        boundingRect.right = max(boundingRect.right, rect.right);
-                        boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
-                    }
-                }
-
-                highlightZone.clear();
-
-                if (!boundingRectEmpty)
-                {
-                    for (size_t zoneId = 0; zoneId < zones.size(); zoneId++)
-                    {
-                        RECT rect = zones[zoneId]->GetZoneRect();
-                        if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
-                            boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
-                        {
-                            highlightZone.push_back(zoneId);
-                        }
-                    }
-                }
+                highlightZone = GetCombinedZoneRange(highlightZone);
             }
         }
         else
@@ -699,6 +665,48 @@ void ZoneWindow::FlashZones() noexcept
     std::thread([window = m_window.get()]() {
         AnimateWindow(window, m_flashDuration, AW_HIDE | AW_BLEND);
     }).detach();
+}
+
+std::vector<size_t> ZoneWindow::GetCombinedZoneRange(const std::vector<size_t>& highlightZone) noexcept
+{
+    std::vector<size_t> newHighlightZone, result;
+    std::set_union(begin(highlightZone), end(highlightZone), begin(m_initialHighlightZone), end(m_initialHighlightZone), std::back_inserter(newHighlightZone));
+
+    RECT boundingRect;
+    bool boundingRectEmpty = true;
+    auto zones = m_activeZoneSet->GetZones();
+
+    for (size_t zoneId : newHighlightZone)
+    {
+        RECT rect = zones[zoneId]->GetZoneRect();
+        if (boundingRectEmpty)
+        {
+            boundingRect = rect;
+            boundingRectEmpty = false;
+        }
+        else
+        {
+            boundingRect.left = min(boundingRect.left, rect.left);
+            boundingRect.top = min(boundingRect.top, rect.top);
+            boundingRect.right = max(boundingRect.right, rect.right);
+            boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
+        }
+    }
+
+    if (!boundingRectEmpty)
+    {
+        for (size_t zoneId = 0; zoneId < zones.size(); zoneId++)
+        {
+            RECT rect = zones[zoneId]->GetZoneRect();
+            if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
+                boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
+            {
+                result.push_back(zoneId);
+            }
+        }
+    }
+
+    return result;
 }
 #pragma endregion
 
