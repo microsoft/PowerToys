@@ -47,14 +47,14 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Name="KeyboardManager_RemappingIcon"
-                          x:Uid="KeyboardManager_RemappingIcon"
-                          Glyph="&#xE72A;"
+                <FontIcon Glyph="&#xE72A;"
                           Grid.Column="1"
                           FontSize="14"
                           VerticalAlignment="Center" 
                           Margin="5,0,5,0"/>
                 <ItemsControl
+                    Name="KeyboardManager_RemappedTo"
+                    x:Uid="KeyboardManager_RemappedTo"
                     ItemsSource="{x:Bind GetNewRemapKeys()}"
                     Grid.Column="2">
                     <ItemsControl.ItemsPanel>
@@ -118,14 +118,13 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Name="KeyboardManager_ShortcutRemappingIcon"
-                          x:Uid="KeyboardManager_ShortcutRemappingIcon"
-                          Glyph="&#xE72A;"
+                <FontIcon Glyph="&#xE72A;"
                           Grid.Column="1"
                           FontSize="14"
                           VerticalAlignment="Center" 
                           Margin="5,0,5,0"/>
-                <ItemsControl
+                <ItemsControl Name="KeyboardManager_ShortcutRemappedTo"
+                    x:Uid="KeyboardManager_ShortcutRemappedTo"
                     ItemsSource="{x:Bind GetNewRemapKeys()}"
                     Grid.Column="2">
                     <ItemsControl.ItemsPanel>
@@ -154,14 +153,14 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <FontIcon Name="KeyboardManager_TargetAppIcon"
-                          x:Uid="KeyboardManager_TargetAppIcon"
-                          Glyph="&#xE72A;"
+                <FontIcon Glyph="&#xE72A;"
                           Grid.Column="3"
                           FontSize="14"
                           VerticalAlignment="Center" 
                           Margin="5,0,5,0"/>
                 <Border
+                    Name="KeyboardManager_TargetApp"
+                    x:Uid="KeyboardManager_TargetApp"
                     Background="{ThemeResource SystemAccentColor}"
                     Grid.Column="4"
                     CornerRadius="4"

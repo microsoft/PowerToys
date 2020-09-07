@@ -209,13 +209,13 @@
   <data name="KeyboardManager_RemappedShortcutsListItem.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Remapping</value>
   </data>
-  <data name="KeyboardManager_RemappingIcon.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_RemappedTo.AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
   </data>
-  <data name="KeyboardManager_ShortcutRemappingIcon.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_ShortcutRemappedTo.AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
   </data>
-  <data name="KeyboardManager_TargetAppIcon.AutomationProperties.Name" xml:space="preserve">
+  <data name="KeyboardManager_TargetApp.AutomationProperties.Name" xml:space="preserve">
     <value>For Target Application</value>
   </data>
   <data name="KeyboardManager_Image.AutomationProperties.Name" xml:space="preserve">
