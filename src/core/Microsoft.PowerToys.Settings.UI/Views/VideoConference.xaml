@@ -111,7 +111,7 @@
                         HorizontalAlignment="Left" />
             </StackPanel>
 
-            <TextBlock x:Uid="VideoConference_Overlay"
+            <TextBlock x:Uid="VideoConference_Toolbar"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             
