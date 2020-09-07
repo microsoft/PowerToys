@@ -142,7 +142,7 @@
     <comment>Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_VideoConference.Content" xml:space="preserve">
-    <value>Video Conference</value>
+    <value>Video Conference Mute</value>
     <comment>Navigation view item name for Video Conference</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
@@ -476,7 +476,7 @@
     <value>Enable Video Conference</value>
   </data>
   <data name="VideoConference_Description.Text" xml:space="preserve">
-    <value>A tool that allows to quickly (un)mute your microphone and camera.
+    <value>Video Conference Mute is a quick and easy way to do an global "mute" of both your microphone and webcam.
 Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
