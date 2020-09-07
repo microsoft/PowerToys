@@ -476,7 +476,7 @@
     <value>Enable Video Conference</value>
   </data>
   <data name="VideoConference_Description.Text" xml:space="preserve">
-    <value>A tool that allows to quickly (un)mute your microphone and camera.
+    <value> A tool that allows to quickly (un)mute your microphone and camera.
 Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
   </data>
   <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
