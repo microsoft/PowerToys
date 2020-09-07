@@ -524,7 +524,8 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     // Return true to swallow the keyboard event
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
-    if (win && !shift)
+    bool const alt = GetAsyncKeyState(VK_LMENU) & 0x8000 || GetAsyncKeyState(VK_RMENU) & 0x8000;
+    if (win && (!shift || alt))
     {
         bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
         if (ctrl)

@@ -409,7 +409,24 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
         size_t result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
         if (result < zoneRects.size())
         {
-            MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+            std::vector<size_t> resultIndexSet;
+            if (selectManyZones)
+            {
+                if (m_initialZone.empty())
+                {
+                    resultIndexSet = m_initialZone = { freeZoneIndices[result] };
+                }
+                else
+                {
+                    resultIndexSet = GetCombinedZoneRange(m_initialZone, { freeZoneIndices[result] });
+                }
+            }
+            else
+            {
+                m_initialZone = {};
+                resultIndexSet = { freeZoneIndices[result] };
+            }
+            MoveWindowIntoZoneByIndexSet(window, windowZone, resultIndexSet);
             return true;
         }
         else if (cycle)
