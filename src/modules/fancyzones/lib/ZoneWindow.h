@@ -29,10 +29,10 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @param   dragEnabled     Boolean indicating is giving hints about active zone layout enabled.
      *                          Hints are given while dragging window while holding SHIFT key.
      * @param   selectManyZones When this parameter is true, the set of highlighted zones is computed
-                                by finding the minimum bounding rectangle of the zone(s) from which the
-                                user started dragging and the zone(s) above which the user is hovering
-                                at the moment this function is called. Otherwise, highlight only the zone(s)
-                                above which the user is currently hovering.
+     *                          by finding the minimum bounding rectangle of the zone(s) from which the
+     *                          user started dragging and the zone(s) above which the user is hovering
+     *                          at the moment this function is called. Otherwise, highlight only the zone(s)
+     *                          above which the user is currently hovering.
      */
     IFACEMETHOD(MoveSizeUpdate)(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) = 0;
     /**
@@ -73,14 +73,19 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT/UP/DOWN arrow), based on
      * their on-screen position.
      *
-     * @param   window Handle of window which should be assigned to zone.
-     * @param   vkCode Pressed arrow key.
-     * @param   cycle  Whether we should move window to the first zone if we reached last zone in layout.
+     * @param   window          Handle of window which should be assigned to zone.
+     * @param   vkCode          Pressed arrow key.
+     * @param   cycle           Whether we should move window to the first zone if we reached last zone in layout.
+     * @param   selectManyZones When this parameter is true, the set of highlighted zones is computed
+     *                          by finding the minimum bounding rectangle of the zone(s) from which the
+     *                          user started pressing Win+Alt+Arrow keys and the zone currently reached
+     *                          at the moment this function is called. Otherwise, highlight only the
+     *                          currently reached zone.
      *
      * @returns Boolean which is always true if cycle argument is set, otherwise indicating if there is more
      *          zones left in the zone layout in which window can move.
      */
-    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirectionAndPosition)(HWND window, DWORD vkCode, bool cycle) = 0;
+    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirectionAndPosition)(HWND window, DWORD vkCode, bool cycle, bool selectManyZones) = 0;
     /**
      * Cycle through active zone layouts (giving hints about each layout).
      *

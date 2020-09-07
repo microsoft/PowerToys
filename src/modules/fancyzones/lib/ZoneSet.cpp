@@ -142,13 +142,15 @@ public:
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
+    MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle, bool selectManyZones) noexcept;
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(bool)
     CalculateZones(RECT workArea, int zoneCount, int spacing) noexcept;
     IFACEMETHODIMP_(bool)
     IsZoneEmpty(int zoneIndex) noexcept;
+    IFACEMETHODIMP_(std::vector<size_t>)
+    GetCombinedZoneRange(const std::vector<size_t>& initialZones, const std::vector<size_t>& finalZones) noexcept;
 
 private:
     bool CalculateFocusLayout(Rect workArea, int zoneCount) noexcept;
@@ -162,6 +164,9 @@ private:
     std::vector<winrt::com_ptr<IZone>> m_zones;
     std::map<HWND, std::vector<size_t>> m_windowIndexSet;
     ZoneSetConfig m_config;
+
+    // Needed for MoveWindowIntoZoneByDirectionAndPosition with selectManyZones == true
+    std::vector<size_t> m_initialZone;
 };
 
 IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
@@ -366,7 +371,7 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND windowZone, DWO
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
+ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, DWORD vkCode, bool cycle, bool selectManyZones) noexcept
 {
     if (m_zones.empty())
     {
@@ -763,6 +768,48 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
 void ZoneSet::StampWindow(HWND window, size_t bitmask) noexcept
 {
     SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, reinterpret_cast<HANDLE>(bitmask));
+}
+
+std::vector<size_t> ZoneSet::GetCombinedZoneRange(const std::vector<size_t>& initialZones, const std::vector<size_t>& finalZones) noexcept
+{
+    std::vector<size_t> combinedZones, result;
+    std::set_union(begin(initialZones), end(initialZones), begin(finalZones), end(finalZones), std::back_inserter(combinedZones));
+
+    RECT boundingRect;
+    bool boundingRectEmpty = true;
+    auto zones = GetZones();
+
+    for (size_t zoneId : combinedZones)
+    {
+        RECT rect = zones[zoneId]->GetZoneRect();
+        if (boundingRectEmpty)
+        {
+            boundingRect = rect;
+            boundingRectEmpty = false;
+        }
+        else
+        {
+            boundingRect.left = min(boundingRect.left, rect.left);
+            boundingRect.top = min(boundingRect.top, rect.top);
+            boundingRect.right = max(boundingRect.right, rect.right);
+            boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
+        }
+    }
+
+    if (!boundingRectEmpty)
+    {
+        for (size_t zoneId = 0; zoneId < zones.size(); zoneId++)
+        {
+            RECT rect = zones[zoneId]->GetZoneRect();
+            if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
+                boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
+            {
+                result.push_back(zoneId);
+            }
+        }
+    }
+
+    return result;
 }
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept
