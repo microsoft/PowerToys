@@ -63,6 +63,7 @@ public:
         m_mouseHook(std::bind(&WindowMoveHandlerPrivate::OnMouseDown, this)),
         m_shiftKeyState(keyUpdateCallback),
         m_ctrlKeyState(keyUpdateCallback),
+        m_altKeyState(keyUpdateCallback),
         m_keyUpdateCallback(keyUpdateCallback)
     {
     }
@@ -110,6 +111,7 @@ private:
     SecondaryMouseButtonsHook m_mouseHook;
     KeyState<VK_LSHIFT, VK_RSHIFT> m_shiftKeyState;
     KeyState<VK_LCONTROL, VK_RCONTROL> m_ctrlKeyState;
+    KeyState<VK_LMENU, VK_RMENU> m_altKeyState;
     std::function<void()> m_keyUpdateCallback;
 
     struct WindowTransparencyProperties
@@ -194,6 +196,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
 
     m_shiftKeyState.enable();
     m_ctrlKeyState.enable();
+    m_altKeyState.enable();
 
     // This updates m_dragEnabled depending on if the shift key is being held down
     UpdateDragState();
@@ -311,6 +314,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     m_mouseHook.disable();
     m_shiftKeyState.disable();
     m_ctrlKeyState.disable();
+    m_altKeyState.disable();
 
     if (m_zoneWindowMoveSize)
     {
