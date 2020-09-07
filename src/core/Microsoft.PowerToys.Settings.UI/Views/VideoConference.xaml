@@ -56,6 +56,7 @@
                                           Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
+                                          Keys="Win, Ctrl, Alt, Shift"
                                           HotkeySettings="{x:Bind Path=ViewModel.CameraAndMicrophoneMuteHotkey, Mode=TwoWay}"
                                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                           />
@@ -65,6 +66,7 @@
                                           Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
+                                          Keys="Win, Ctrl, Alt, Shift"
                                           HotkeySettings="{x:Bind Path=ViewModel.MicrophoneMuteHotkey, Mode=TwoWay}"
                                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                           />
@@ -74,6 +76,7 @@
                                           Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
+                                          Keys="Win, Ctrl, Alt, Shift"
                                           HotkeySettings="{x:Bind Path=ViewModel.CameraMuteHotkey, Mode=TwoWay}"
                                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                           />
