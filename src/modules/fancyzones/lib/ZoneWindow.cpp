@@ -663,7 +663,6 @@ void ZoneWindow::FlashZones() noexcept
         AnimateWindow(window, m_flashDuration, AW_HIDE | AW_BLEND);
     }).detach();
 }
-
 #pragma endregion
 
 LRESULT CALLBACK ZoneWindow::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
