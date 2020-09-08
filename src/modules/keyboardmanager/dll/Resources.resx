@@ -264,4 +264,22 @@
   <data name="ErrorMessage_Default" xml:space="preserve">
     <value>Unexpected error</value>
   </data>
+  <data name="Key_DropDown_Combobox" xml:space="preserve">
+    <value>Key Drop Down</value>
+  </data>
+  <data name="Add_Key_Remap_Button" xml:space="preserve">
+    <value>Add Key Remap</value>
+  </data>
+  <data name="Add_Shortcut_Button" xml:space="preserve">
+    <value>Add Shortcut Remapping</value>
+  </data>
+  <data name="Delete_Remapping_Button" xml:space="preserve">
+    <value>Delete Remapping</value>
+  </data>
+  <data name="Remapped_To" xml:space="preserve">
+    <value>Remapped To</value>
+  </data>
+  <data name="Target_Application" xml:space="preserve">
+    <value>For Target Application </value>
+  </data>
 </root>
