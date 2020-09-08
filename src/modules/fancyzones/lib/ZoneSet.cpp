@@ -379,8 +379,9 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
     }
 
     auto zoneObjects = GetZones();
+    auto oldZones = GetZoneIndexSetFromWindow(window);
     std::vector<bool> usedZoneIndices(zoneObjects.size(), false);
-    for (size_t idx : GetZoneIndexSetFromWindow(window))
+    for (size_t idx : oldZones)
     {
         usedZoneIndices[idx] = true;
     }
@@ -412,14 +413,7 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
             std::vector<size_t> resultIndexSet;
             if (selectManyZones)
             {
-                if (m_initialZone.empty())
-                {
-                    resultIndexSet = m_initialZone = { freeZoneIndices[result] };
-                }
-                else
-                {
-                    resultIndexSet = GetCombinedZoneRange(m_initialZone, { freeZoneIndices[result] });
-                }
+                resultIndexSet = GetCombinedZoneRange(oldZones, { freeZoneIndices[result] });
             }
             else
             {
