@@ -268,6 +268,24 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Settings will be reset to default and program will continue to function..
+        /// </summary>
+        public static string deseralization_error_message {
+            get {
+                return ResourceManager.GetString("deseralization_error_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Powertoys Run deserialization error.
+        /// </summary>
+        public static string deseralization_error_title {
+            get {
+                return ResourceManager.GetString("deseralization_error_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable.
         /// </summary>
         public static string disable {
