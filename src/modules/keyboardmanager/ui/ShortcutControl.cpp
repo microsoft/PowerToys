@@ -69,12 +69,12 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     arrowIcon.Glyph(L"\xE72A");
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
-    // To set the accessible name of the arrow icon
-    arrowIcon.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_REMAPPED_TO_ICON)));
     parent.SetColumn(arrowIcon, KeyboardManagerConstants::ShortcutTableArrowColIndex);
     parent.SetRow(arrowIcon, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(arrowIcon);
 
+    // To set the accessible name of the arrow icon by setting the accessible name of the remapped shortcut
+    keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_REMAPPED_TO)));
     // ShortcutControl for the new shortcut
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
@@ -84,6 +84,14 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     targetAppTextBox.HorizontalAlignment(HorizontalAlignment::Center);
     targetAppTextBox.PlaceholderText(KeyboardManagerConstants::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
+
+    // To set the accessible name of the target App text box by adding the string `All Apps` if the text box is empty, if not the application name is read by narrator.
+    std::wstring targetAppTextBoxAccessibleName = GET_RESOURCE_STRING(IDS_TARGET_APPLICATION);
+    if (targetAppTextBox.Text() == L"")
+    {
+        targetAppTextBoxAccessibleName += GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
+    }
+    targetAppTextBox.SetValue(Automation::AutomationProperties::NameProperty(), box_value(targetAppTextBoxAccessibleName));
 
     // LostFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
     targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, targetAppTextBox](auto const& sender, auto const& e) {
