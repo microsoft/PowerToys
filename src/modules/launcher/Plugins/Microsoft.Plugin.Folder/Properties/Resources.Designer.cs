@@ -88,15 +88,6 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open.
-        /// </summary>
-        public static string Microsoft_plugin_folder_open {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_folder_open", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Open containing folder (Ctrl+Shift+E).
         /// </summary>
         public static string Microsoft_plugin_folder_open_containing_folder {
@@ -106,29 +97,11 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Folder: Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*..
-        /// </summary>
-        public static string Microsoft_plugin_folder_open_current_folder_subtitle {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_folder_open_current_folder_subtitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Open path in console (Ctrl+Shift+C).
         /// </summary>
         public static string Microsoft_plugin_folder_open_in_console {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_folder_open_in_console", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not start .
-        /// </summary>
-        public static string Microsoft_plugin_folder_start_failed {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_folder_start_failed", resourceCulture);
             }
         }
         
@@ -165,6 +138,42 @@ namespace Microsoft.Plugin.Folder.Properties {
         public static string wox_plugin_folder_plugin_name {
             get {
                 return ResourceManager.GetString("wox_plugin_folder_plugin_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*.
+        /// </summary>
+        public static string wox_plugin_folder_select_folder_first_result_subtitle {
+            get {
+                return ResourceManager.GetString("wox_plugin_folder_select_folder_first_result_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
+        public static string wox_plugin_folder_select_folder_first_result_title {
+            get {
+                return ResourceManager.GetString("wox_plugin_folder_select_folder_first_result_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please select a folder link.
+        /// </summary>
+        public static string wox_plugin_folder_select_folder_link_warning {
+            get {
+                return ResourceManager.GetString("wox_plugin_folder_select_folder_link_warning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not start.
+        /// </summary>
+        public static string wox_plugin_folder_select_folder_OpenFileOrFolder_error_message {
+            get {
+                return ResourceManager.GetString("wox_plugin_folder_select_folder_OpenFileOrFolder_error_message", resourceCulture);
             }
         }
     }

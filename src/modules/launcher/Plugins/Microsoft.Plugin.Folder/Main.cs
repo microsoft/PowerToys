@@ -11,8 +11,12 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.VisualBasic;
+using Newtonsoft.Json;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
@@ -106,6 +110,23 @@ namespace Microsoft.Plugin.Folder
             return results;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and instead inform the user of the error")]
+        private static bool OpenFileOrFolder(string program, string path)
+        {
+            try
+            {
+                Process.Start(program, path);
+            }
+            catch (Exception e)
+            {
+                string messageBoxTitle = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_OpenFileOrFolder_error_message, path);
+                Log.Exception($"|Microsoft.Plugin.Folder.Main.OpenFileOrFolder| Failed to open {path} in explorer, {e.Message}", e);
+                _context.API.ShowMsg(messageBoxTitle, e.Message);
+            }
+
+            return true;
+        }
+
         private static bool IsDriveOrSharedFolder(string search)
         {
             if (search == null)
@@ -137,14 +158,13 @@ namespace Microsoft.Plugin.Folder
             {
                 Title = title,
                 IcoPath = path,
-                SubTitle = "Folder: " + subtitle,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, subtitle),
                 QueryTextDisplay = path,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path },
                 Action = c =>
                 {
-                    Process.Start(_fileExplorerProgramName, path);
-                    return true;
+                    return OpenFileOrFolder(_fileExplorerProgramName, path);
                 },
             };
         }
@@ -297,37 +317,26 @@ namespace Microsoft.Plugin.Folder
             };
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alve and instead inform the user of the error")]
         private static Result CreateFileResult(string filePath, Query query)
         {
             var result = new Result
             {
                 Title = Path.GetFileName(filePath),
-                SubTitle = Properties.Resources.wox_plugin_folder_plugin_name + ": " + filePath,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, filePath),
                 IcoPath = filePath,
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath },
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
                 {
-                    try
-                    {
-                        Process.Start(_fileExplorerProgramName, filePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, Properties.Resources.Microsoft_plugin_folder_start_failed + filePath);
-                    }
-
-                    return true;
+                    return OpenFileOrFolder(_fileExplorerProgramName, filePath);
                 },
-                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath },
             };
             return result;
         }
 
         private static Result CreateOpenCurrentFolderResult(string search)
         {
-            var firstResult = Properties.Resources.Microsoft_plugin_folder_open + " " + search;
-
+            var firstResult = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_first_result_title, search);
             var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
             var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
 
@@ -341,13 +350,13 @@ namespace Microsoft.Plugin.Folder
             {
                 Title = firstResult,
                 QueryTextDisplay = search,
-                SubTitle = Properties.Resources.Microsoft_plugin_folder_open_current_folder_subtitle,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle),
                 IcoPath = search,
                 Score = 500,
+                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = search },
                 Action = c =>
                 {
-                    Process.Start(_fileExplorerProgramName, sanitizedPath);
-                    return true;
+                    return OpenFileOrFolder(_fileExplorerProgramName, search);
                 },
             };
         }

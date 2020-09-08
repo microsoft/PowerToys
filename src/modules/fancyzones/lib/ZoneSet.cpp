@@ -484,8 +484,6 @@ bool ZoneSet::IsZoneEmpty(int zoneIndex) noexcept
 
 bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 {
-    bool success = true;
-
     long left{ 100 };
     long top{ 100 };
     long right{ left + long(workArea.width() * 0.4) };
@@ -496,27 +494,30 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
     long focusRectXIncrement = (zoneCount <= 1) ? 0 : 50;
     long focusRectYIncrement = (zoneCount <= 1) ? 0 : 50;
 
-    if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
-    {
-        success = false;
-    }
-
     for (int i = 0; i < zoneCount; i++)
     {
-        AddZone(MakeZone(focusZoneRect));
+        auto zone = MakeZone(focusZoneRect);
+        if (zone)
+        {
+            AddZone(zone);
+        }
+        else
+        {
+            // All zones within zone set should be valid in order to use its functionality.
+            m_zones.clear();
+            return false;
+        }
         focusZoneRect.left += focusRectXIncrement;
         focusZoneRect.right += focusRectXIncrement;
         focusZoneRect.bottom += focusRectYIncrement;
         focusZoneRect.top += focusRectYIncrement;
     }
 
-    return success;
+    return true;
 }
 
 bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
 {
-    bool success = true;
-
     long totalWidth;
     long totalHeight;
 
@@ -538,26 +539,31 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::
 
     // Note: The expressions below are NOT equal to total{Width|Height} / zoneCount and are done
     // like this to make the sum of all zones' sizes exactly total{Width|Height}.
-    for (int zone = 0; zone < zoneCount; zone++)
+    for (int zoneIndex = 0; zoneIndex < zoneCount; ++zoneIndex)
     {
         if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
-            right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
+            right = left + (zoneIndex + 1) * totalWidth / zoneCount - zoneIndex * totalWidth / zoneCount;
             bottom = totalHeight + spacing;
         }
         else
         { //Rows
             right = totalWidth + spacing;
-            bottom = top + (zone + 1) * totalHeight / zoneCount - zone * totalHeight / zoneCount;
-        }
-        
-        if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
-        {
-            success = false;
+            bottom = top + (zoneIndex + 1) * totalHeight / zoneCount - zoneIndex * totalHeight / zoneCount;
         }
 
-        RECT focusZoneRect{ left, top, right, bottom };
-        AddZone(MakeZone(focusZoneRect));
+
+        auto zone = MakeZone(RECT{ left, top, right, bottom });
+        if (zone)
+        {
+            AddZone(zone);
+        }
+        else
+        {
+            // All zones within zone set should be valid in order to use its functionality.
+            m_zones.clear();
+            return false;
+        }
 
         if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
@@ -569,7 +575,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::
         }
     }
 
-    return success;
+    return true;
 }
 
 bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
@@ -664,15 +670,20 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
                 int width = zone.width;
                 int height = zone.height;
 
-                if (x < 0 || y < 0 || width < 0 || height < 0)
-                {
-                    return false;
-                }
-
                 DPIAware::Convert(m_config.Monitor, x, y);
                 DPIAware::Convert(m_config.Monitor, width, height);
 
-                AddZone(MakeZone(RECT{ x, y, x + width, y + height }));
+                auto zone = MakeZone(RECT{ x, y, x + width, y + height });
+                if (zone)
+                {
+                    AddZone(zone);
+                }
+                else
+                {
+                    // All zones within zone set should be valid in order to use its functionality.
+                    m_zones.clear();
+                    return false;
+                }
             }
 
             return true;
@@ -689,8 +700,6 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 
 bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing)
 {
-    bool success = true;
-
     long totalWidth = workArea.width() - (spacing * (gridLayoutInfo.columns() + 1));
     long totalHeight = workArea.height() - (spacing * (gridLayoutInfo.rows() + 1));
     struct Info
@@ -747,17 +756,22 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
                 long right = columnInfo[maxCol].End;
                 long bottom = rowInfo[maxRow].End;
 
-                if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
+                auto zone = MakeZone(RECT{ left, top, right, bottom });
+                if (zone)
                 {
-                    success = false;
+                    AddZone(zone);
                 }
-
-                AddZone(MakeZone(RECT{ left, top, right, bottom }));
+                else
+                {
+                    // All zones within zone set should be valid in order to use its functionality.
+                    m_zones.clear();
+                    return false;
+                }
             }
         }
     }
 
-    return success;
+    return true;
 }
 
 void ZoneSet::StampWindow(HWND window, size_t bitmask) noexcept

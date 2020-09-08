@@ -95,11 +95,28 @@ std::optional<FancyZonesDataTypes::CustomZoneSetData> FancyZonesData::FindCustom
 
 void FancyZonesData::AddDevice(const std::wstring& deviceId)
 {
+    using namespace FancyZonesDataTypes;
+
     std::scoped_lock lock{ dataLock };
     if (!deviceInfoMap.contains(deviceId))
     {
         // Creates default entry in map when ZoneWindow is created
-        deviceInfoMap[deviceId] = FancyZonesDataTypes::DeviceInfoData{ FancyZonesDataTypes::ZoneSetData{ NonLocalizable::NullStr, FancyZonesDataTypes::ZoneSetLayoutType::Blank } };
+        GUID guid;
+        auto result{ CoCreateGuid(&guid) };
+        wil::unique_cotaskmem_string guidString;
+        if (result == S_OK && SUCCEEDED(StringFromCLSID(guid, &guidString)))
+        {
+            constexpr bool defaultShowSpacing{ true };
+            constexpr int defaultSpacing{ 16 };
+            constexpr int defaultZoneCount{ 3 };
+            const ZoneSetData zoneSetData{ guidString.get(), ZoneSetLayoutType::PriorityGrid };
+            DeviceInfoData defaultDeviceInfoData{ zoneSetData, defaultShowSpacing, defaultSpacing, defaultZoneCount };
+            deviceInfoMap[deviceId] = std::move(defaultDeviceInfoData);
+        }
+        else
+        {
+            deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ NonLocalizable::NullStr, ZoneSetLayoutType::Blank } };
+        }
     }
 }
 
@@ -118,11 +135,7 @@ void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstr
     }
 
     // Clone information from source device if destination device is uninitialized (Blank).
-    auto& destInfo = deviceInfoMap[destination];
-    if (destInfo.activeZoneSet.type == FancyZonesDataTypes::ZoneSetLayoutType::Blank)
-    {
-        destInfo = deviceInfoMap[source];
-    }
+    deviceInfoMap[destination] = deviceInfoMap[source];
 }
 
 void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)

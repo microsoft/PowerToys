@@ -21,7 +21,7 @@ namespace ColorPicker.Helpers
         private const int ZoomWindowChangeDelayInMS = 50;
         private const int ZoomFactor = 2;
         private const int BaseZoomImageSize = 50;
-        private const int MaxZoomLevel = 3;
+        private const int MaxZoomLevel = 4;
         private const int MinZoomLevel = 0;
 
         private readonly IZoomViewModel _zoomViewModel;

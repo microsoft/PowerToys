@@ -141,15 +141,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             set
             {
-                int newWidth = -1;
-                int.TryParse(value + string.Empty, out newWidth);
+                double newWidth = -1;
 
-                if (newWidth < 0)
+                if (value < 0 || double.IsNaN(value))
                 {
                     newWidth = 0;
                 }
+                else
+                {
+                    newWidth = value;
+                }
 
-                if (_width != value)
+                if (_width != newWidth)
                 {
                     _width = newWidth;
                     OnPropertyChanged();
@@ -167,15 +170,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             set
             {
-                int newHeight = -1;
-                int.TryParse(value + string.Empty, out newHeight);
+                double newHeight = -1;
 
-                if (newHeight < 0)
+                if (value < 0 || double.IsNaN(value))
                 {
                     newHeight = 0;
                 }
+                else
+                {
+                    newHeight = value;
+                }
 
-                if (_height != value)
+                if (_height != newHeight)
                 {
                     _height = newHeight;
                     OnPropertyChanged();
