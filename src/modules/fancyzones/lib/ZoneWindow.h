@@ -78,7 +78,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @param   cycle           Whether we should move window to the first zone if we reached last zone in layout.
      * @param   selectManyZones When this parameter is true, the set of highlighted zones is computed
      *                          by finding the minimum bounding rectangle of the zone(s) from which the
-     *                          user started pressing Win+Alt+Arrow keys and the zone currently reached
+     *                          user started pressing Ctrl+Win+Alt+Arrow keys and the zone currently reached
      *                          at the moment this function is called. Otherwise, highlight only the
      *                          currently reached zone.
      *
