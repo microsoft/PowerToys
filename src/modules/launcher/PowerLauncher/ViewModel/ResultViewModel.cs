@@ -272,8 +272,7 @@ namespace PowerLauncher.ViewModel
 
         public string SearchBoxDisplayText()
         {
-            var display = string.IsNullOrEmpty(Result.QueryTextDisplay) ? Result.Title : Result.QueryTextDisplay;
-            return display;
+            return Result.QueryTextDisplay;
         }
 
         public override string ToString()
