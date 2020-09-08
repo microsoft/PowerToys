@@ -63,9 +63,8 @@ namespace Microsoft.Plugin.Program.Programs
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
-        private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
-        private static readonly HashSet<string> NonExeApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "bat", "bin", "com", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
+        private static readonly HashSet<string> ExecutableApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
 
         private const string ProxyWebApp = "_proxy.exe";
         private const string AppIdArgument = "--app-id";
@@ -434,22 +433,11 @@ namespace Microsoft.Plugin.Program.Programs
 
                 if (!string.IsNullOrEmpty(target))
                 {
-                    var extension = Extension(target);
                     if (File.Exists(target) || Directory.Exists(target))
                     {
                         program.LnkResolvedPath = program.FullPath;
                         program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
-
-                        if (extension == ExeExtension)
-                        {
-                            program.ExecutableName = Path.GetFileName(target);
-                            program.HasArguments = Helper.HasArguments;
-                            program.Arguments = Helper.Arguments;
-                        }
-                        else
-                        {
-                            program.AppType = GetAppTypeFromPath(target);
-                        }
+                        program.AppType = GetAppTypeFromPath(target);
 
                         var description = Helper.Description;
                         if (!string.IsNullOrEmpty(description))
@@ -518,7 +506,7 @@ namespace Microsoft.Plugin.Program.Programs
             string extension = Extension(path);
             ApplicationType appType = ApplicationType.GenericFile;
 
-            if (extension.Equals(ExeExtension, StringComparison.OrdinalIgnoreCase) || NonExeApplicationExtensions.Contains(extension))
+            if (ExecutableApplicationExtensions.Contains(extension))
             {
                 appType = ApplicationType.Win32Application;
             }
@@ -676,11 +664,11 @@ namespace Microsoft.Plugin.Program.Programs
 
             var paths = listToAdd.Distinct().ToArray();
 
-            var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
+            var programs1 = paths.AsParallel().Where(p => ExecutableApplicationExtensions.Contains(Extension(p))).Select(ExeProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs3 = from p in paths.AsParallel()
                             let e = Extension(p)
-                            where e != ShortcutExtension && e != ExeExtension
+                            where e != ShortcutExtension && !ExecutableApplicationExtensions.Contains(e)
                             select CreateWin32Program(p);
             return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
         }
@@ -712,7 +700,7 @@ namespace Microsoft.Plugin.Program.Programs
             var programs1 = allPaths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
             var programs2 = allPaths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(CreateWin32Program);
             var programs3 = allPaths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
-            var programs4 = allPaths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
+            var programs4 = allPaths.AsParallel().Where(p => ExecutableApplicationExtensions.Contains(Extension(p))).Select(ExeProgram);
 
             var allPrograms = programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
@@ -746,7 +734,7 @@ namespace Microsoft.Plugin.Program.Programs
             var programs1 = paths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(CreateWin32Program);
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
-            var programs4 = paths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
+            var programs4 = paths.AsParallel().Where(p => ExecutableApplicationExtensions.Contains(Extension(p))).Select(ExeProgram);
 
             return programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
@@ -908,7 +896,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Deduplication code
         public static Win32Program[] DeduplicatePrograms(ParallelQuery<Win32Program> programs)
         {
-            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == ApplicationType.RunCommand)));
+            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && ExecutableApplicationExtensions.Contains(Extension(x.FullPath)) && !(x.AppType == ApplicationType.RunCommand)));
             var uniquePrograms = uniqueExePrograms.Distinct(new RemoveDuplicatesComparer());
             return uniquePrograms.ToArray();
         }

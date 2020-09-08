@@ -124,6 +124,24 @@ namespace Microsoft.Plugin.Program.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to start.
+        /// </summary>
+        public static string powertoys_run_plugin_program_start_failed {
+            get {
+                return ResourceManager.GetString("powertoys_run_plugin_program_start_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t start UWP.
+        /// </summary>
+        public static string powertoys_run_plugin_program_uwp_failed {
+            get {
+                return ResourceManager.GetString("powertoys_run_plugin_program_uwp_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Web application.
         /// </summary>
         public static string powertoys_run_plugin_program_web_application {
@@ -138,186 +156,6 @@ namespace Microsoft.Plugin.Program.Properties {
         public static string powertoys_run_plugin_program_win32_application {
             get {
                 return ResourceManager.GetString("powertoys_run_plugin_program_win32_application", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add.
-        /// </summary>
-        public static string wox_plugin_program_add {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_add", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to All programs.
-        /// </summary>
-        public static string wox_plugin_program_all_programs {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_all_programs", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Browse.
-        /// </summary>
-        public static string wox_plugin_program_browse {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_browse", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delete.
-        /// </summary>
-        public static string wox_plugin_program_delete {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_delete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to delete the selected program sources?.
-        /// </summary>
-        public static string wox_plugin_program_delete_program_source {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_delete_program_source", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Directory:.
-        /// </summary>
-        public static string wox_plugin_program_directory {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_directory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Disable.
-        /// </summary>
-        public static string wox_plugin_program_disable {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_disable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Success.
-        /// </summary>
-        public static string wox_plugin_program_disable_dlgtitle_success {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_disable_dlgtitle_success", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Successfully disabled this program from displaying in your query.
-        /// </summary>
-        public static string wox_plugin_program_disable_dlgtitle_success_message {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_disable_dlgtitle_success_message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Disable this program from displaying.
-        /// </summary>
-        public static string wox_plugin_program_disable_program {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_disable_program", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Edit.
-        /// </summary>
-        public static string wox_plugin_program_edit {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_edit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File suffixes:.
-        /// </summary>
-        public static string wox_plugin_program_file_suffixes {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_file_suffixes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Index registry.
-        /// </summary>
-        public static string wox_plugin_program_index_registry {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_index_registry", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Index start menu.
-        /// </summary>
-        public static string wox_plugin_program_index_start {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_index_start", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Indexing.
-        /// </summary>
-        public static string wox_plugin_program_indexing {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_indexing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid Path.
-        /// </summary>
-        public static string wox_plugin_program_invalid_path {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_invalid_path", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Location.
-        /// </summary>
-        public static string wox_plugin_program_location {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_location", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Max depth.
-        /// </summary>
-        public static string wox_plugin_program_max_depth_header {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_max_depth_header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Maximum search depth (-1 is unlimited):.
-        /// </summary>
-        public static string wox_plugin_program_max_search_depth {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_max_search_depth", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Wox will only index files that end with the following suffixes:.
-        /// </summary>
-        public static string wox_plugin_program_only_index_tip {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_only_index_tip", resourceCulture);
             }
         }
         
@@ -340,16 +178,7 @@ namespace Microsoft.Plugin.Program.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please select a program source.
-        /// </summary>
-        public static string wox_plugin_program_pls_select_program_source {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_pls_select_program_source", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search programs in Wox.
+        ///   Looks up a localized string similar to Search programs in PowerToys Run.
         /// </summary>
         public static string wox_plugin_program_plugin_description {
             get {
@@ -367,83 +196,11 @@ namespace Microsoft.Plugin.Program.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reindex.
-        /// </summary>
-        public static string wox_plugin_program_reindex {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_reindex", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Run as administrator (Ctrl+Shift+Enter).
         /// </summary>
         public static string wox_plugin_program_run_as_administrator {
             get {
                 return ResourceManager.GetString("wox_plugin_program_run_as_administrator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Run as different user.
-        /// </summary>
-        public static string wox_plugin_program_run_as_different_user {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_run_as_different_user", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to (Each suffix should split by &apos;;&apos; ).
-        /// </summary>
-        public static string wox_plugin_program_split_by_tip {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_split_by_tip", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File suffixes.
-        /// </summary>
-        public static string wox_plugin_program_suffixes {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_suffixes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File suffixes can&apos;t be empty.
-        /// </summary>
-        public static string wox_plugin_program_suffixes_cannot_empty {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_suffixes_cannot_empty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Suffixes.
-        /// </summary>
-        public static string wox_plugin_program_suffixes_header {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_suffixes_header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Update.
-        /// </summary>
-        public static string wox_plugin_program_update {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Successfully updated file suffixes.
-        /// </summary>
-        public static string wox_plugin_program_update_file_suffixes {
-            get {
-                return ResourceManager.GetString("wox_plugin_program_update_file_suffixes", resourceCulture);
             }
         }
     }

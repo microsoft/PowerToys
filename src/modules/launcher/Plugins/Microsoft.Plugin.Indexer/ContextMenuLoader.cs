@@ -72,7 +72,7 @@ namespace Microsoft.Plugin.Indexer
                         }
                         catch (Exception e)
                         {
-                            var message = "Fail to set text in clipboard";
+                            var message = Properties.Resources.Microsoft_plugin_indexer_clipboard_failed;
                             LogException(message, e);
                             _context.API.ShowMsg(message);
                             return false;
@@ -177,7 +177,7 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (Exception e)
                     {
-                        var message = $"Fail to open file at {record.Path}";
+                        var message = $"{Properties.Resources.Microsoft_plugin_indexer_folder_open_failed} {record.Path}";
                         LogException(message, e);
                         _context.API.ShowMsg(message);
                         return false;

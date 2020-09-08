@@ -117,24 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="wox_plugin_folder_delete" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="wox_plugin_folder_edit" xml:space="preserve">
-    <value>Edit</value>
-  </data>
-  <data name="wox_plugin_folder_add" xml:space="preserve">
-    <value>Add</value>
-  </data>
-  <data name="wox_plugin_folder_folder_path" xml:space="preserve">
-    <value>Folder Path</value>
-  </data>
-  <data name="wox_plugin_folder_select_folder_link_warning" xml:space="preserve">
-    <value>Please select a folder link</value>
-  </data>
-  <data name="wox_plugin_folder_delete_folder_link" xml:space="preserve">
-    <value>Are you sure you want to delete {0}?</value>
-  </data>
   <data name="wox_plugin_folder_plugin_name" xml:space="preserve">
     <value>Folder</value>
   </data>
@@ -158,6 +140,9 @@
   </data>
   <data name="Microsoft_plugin_folder_clipboard_failed" xml:space="preserve">
     <value>Fail to set text in clipboard</value>
+  </data>
+  <data name="Microsoft_plugin_folder_file_open_failed" xml:space="preserve">
+    <value>Fail to open file at</value>
   </data>
   <data name="wox_plugin_folder_select_folder_first_result_subtitle" xml:space="preserve">
     <value>Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*</value>

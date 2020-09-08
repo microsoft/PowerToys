@@ -77,5 +77,14 @@ namespace Microsoft.Plugin.WindowWalker.Properties {
                 return ResourceManager.GetString("wox_plugin_windowwalker_plugin_name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running.
+        /// </summary>
+        public static string wox_plugin_windowwalker_running {
+            get {
+                return ResourceManager.GetString("wox_plugin_windowwalker_running", resourceCulture);
+            }
+        }
     }
 }

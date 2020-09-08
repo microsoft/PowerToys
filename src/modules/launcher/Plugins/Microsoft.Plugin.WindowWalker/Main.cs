@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.WindowWalker
             {
                 Title = x.Result.Title,
                 IcoPath = IconPath,
-                SubTitle = "Running: " + x.Result.ProcessName,
+                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.ProcessName,
                 Action = c =>
                 {
                     x.Result.SwitchToWindow();

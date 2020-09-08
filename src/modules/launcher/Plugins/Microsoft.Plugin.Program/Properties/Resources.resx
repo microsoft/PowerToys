@@ -117,89 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="wox_plugin_program_delete" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="wox_plugin_program_edit" xml:space="preserve">
-    <value>Edit</value>
-  </data>
-  <data name="wox_plugin_program_add" xml:space="preserve">
-    <value>Add</value>
-  </data>
-  <data name="wox_plugin_program_disable" xml:space="preserve">
-    <value>Disable</value>
-  </data>
-  <data name="wox_plugin_program_location" xml:space="preserve">
-    <value>Location</value>
-  </data>
-  <data name="wox_plugin_program_all_programs" xml:space="preserve">
-    <value>All programs</value>
-  </data>
-  <data name="wox_plugin_program_suffixes" xml:space="preserve">
-    <value>File suffixes</value>
-  </data>
-  <data name="wox_plugin_program_reindex" xml:space="preserve">
-    <value>Reindex</value>
-  </data>
-  <data name="wox_plugin_program_indexing" xml:space="preserve">
-    <value>Indexing</value>
-  </data>
-  <data name="wox_plugin_program_index_start" xml:space="preserve">
-    <value>Index start menu</value>
-  </data>
-  <data name="wox_plugin_program_index_registry" xml:space="preserve">
-    <value>Index registry</value>
-  </data>
-  <data name="wox_plugin_program_suffixes_header" xml:space="preserve">
-    <value>Suffixes</value>
-  </data>
-  <data name="wox_plugin_program_max_depth_header" xml:space="preserve">
-    <value>Max depth</value>
-  </data>
-  <data name="wox_plugin_program_directory" xml:space="preserve">
-    <value>Directory:</value>
-  </data>
-  <data name="wox_plugin_program_browse" xml:space="preserve">
-    <value>Browse</value>
-  </data>
-  <data name="wox_plugin_program_file_suffixes" xml:space="preserve">
-    <value>File suffixes:</value>
-  </data>
-  <data name="wox_plugin_program_max_search_depth" xml:space="preserve">
-    <value>Maximum search depth (-1 is unlimited):</value>
-  </data>
-  <data name="wox_plugin_program_pls_select_program_source" xml:space="preserve">
-    <value>Please select a program source</value>
-  </data>
-  <data name="wox_plugin_program_delete_program_source" xml:space="preserve">
-    <value>Are you sure you want to delete the selected program sources?</value>
-  </data>
-  <data name="wox_plugin_program_update" xml:space="preserve">
-    <value>Update</value>
-  </data>
-  <data name="wox_plugin_program_only_index_tip" xml:space="preserve">
-    <value>Wox will only index files that end with the following suffixes:</value>
-  </data>
-  <data name="wox_plugin_program_split_by_tip" xml:space="preserve">
-    <value>(Each suffix should split by ';' )</value>
-  </data>
-  <data name="wox_plugin_program_update_file_suffixes" xml:space="preserve">
-    <value>Successfully updated file suffixes</value>
-  </data>
-  <data name="wox_plugin_program_suffixes_cannot_empty" xml:space="preserve">
-    <value>File suffixes can't be empty</value>
-  </data>
-  <data name="wox_plugin_program_run_as_different_user" xml:space="preserve">
-    <value>Run as different user</value>
-  </data>
   <data name="wox_plugin_program_run_as_administrator" xml:space="preserve">
     <value>Run as administrator (Ctrl+Shift+Enter)</value>
   </data>
   <data name="wox_plugin_program_open_containing_folder" xml:space="preserve">
     <value>Open containing folder (Ctrl+Shift+E)</value>
-  </data>
-  <data name="wox_plugin_program_disable_program" xml:space="preserve">
-    <value>Disable this program from displaying</value>
   </data>
   <data name="wox_plugin_program_open_in_console" xml:space="preserve">
     <value>Open path in console (Ctrl+Shift+C)</value>
@@ -208,16 +130,7 @@
     <value>Program</value>
   </data>
   <data name="wox_plugin_program_plugin_description" xml:space="preserve">
-    <value>Search programs in Wox</value>
-  </data>
-  <data name="wox_plugin_program_invalid_path" xml:space="preserve">
-    <value>Invalid Path</value>
-  </data>
-  <data name="wox_plugin_program_disable_dlgtitle_success" xml:space="preserve">
-    <value>Success</value>
-  </data>
-  <data name="wox_plugin_program_disable_dlgtitle_success_message" xml:space="preserve">
-    <value>Successfully disabled this program from displaying in your query</value>
+    <value>Search programs in PowerToys Run</value>
   </data>
   <data name="powertoys_run_plugin_program_win32_application" xml:space="preserve">
     <value>Application</value>
@@ -245,5 +158,11 @@
   </data>
   <data name="powertoys_run_plugin_program_generic_file_type" xml:space="preserve">
     <value>File</value>
+  </data>
+  <data name="powertoys_run_plugin_program_start_failed" xml:space="preserve">
+    <value>Unable to start</value>
+  </data>
+  <data name="powertoys_run_plugin_program_uwp_failed" xml:space="preserve">
+    <value>Can't start UWP</value>
   </data>
 </root>
