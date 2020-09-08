@@ -72,7 +72,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        if (disableCore)
+        if (disableFancyZonesModuleCore)
         {
             return;
         }
@@ -138,7 +138,7 @@ public:
     // Returns if the powertoy is enabled
     virtual bool is_enabled() override
     {
-        return !disableCore && m_app != nullptr;
+        return !disableFancyZonesModuleCore && m_app != nullptr;
     }
 
     // Destroy the powertoy and free memory
@@ -159,12 +159,21 @@ public:
         catch (...)
         {
             // Not being able to find path to persisted data completely breaks down FancyZones functionality.
-            std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_DATA_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
-            MessageBox(NULL,
-                       errorMessage.c_str(),
-                       GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                       MB_OK | MB_ICONERROR);
-            disableCore = true;
+            // Retry again after 1 second, and if it fails again, disable core of FancyZones application.
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            try
+            {
+                FancyZonesDataInstance().LoadFancyZonesData();
+            }
+            catch (...)
+            {
+                std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_DATA_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
+                MessageBox(NULL,
+                           errorMessage.c_str(),
+                           GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+                           MB_OK | MB_ICONERROR);
+                disableFancyZonesModuleCore = true;
+            }
         }
         s_instance = this;
     }
@@ -219,7 +228,9 @@ private:
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
     HWINEVENTHOOK m_objectLocationWinEventHook;
 
-    bool disableCore{ false };
+    // If non-recoverable error occurs during initialization of FancyZones module, disable
+    // its core functionality. Accessing FancyZones settings will still be possible.
+    bool disableFancyZonesModuleCore{ false };
 
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
