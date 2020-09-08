@@ -599,6 +599,7 @@ namespace PowerLauncher.ViewModel
                     if (!isDelayedInvoke)
                     {
                         Results.SelectedIndex = 0;
+                        Results.SelectedItem = Results.Results[0];
                     }
                 }
                 else

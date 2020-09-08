@@ -117,8 +117,8 @@ To run and debug PowerToys from Visual Studio when the user is a member of the A
 
 ## How to create new PowerToys
 
-See the instructions on [how to install the PowerToys Module project template](tools/project_template). <br />
-Specifications for the [PowerToys settings API](doc/specs/PowerToys-settings.md).
+See the instructions on [how to install the PowerToys Module project template](/tools/project_template). <br />
+Specifications for the [PowerToys settings API](/doc/devdocs/settings.md).
 
 ## Implementation details
 

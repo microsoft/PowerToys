@@ -75,6 +75,10 @@ namespace Wox
 
         public void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true)
         {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(subTitle, title);
+            });
         }
 
         public void InstallPlugin(string path)
