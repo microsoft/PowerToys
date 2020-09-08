@@ -163,6 +163,12 @@ private:
 
     std::vector<winrt::com_ptr<IZone>> m_zones;
     std::map<HWND, std::vector<size_t>> m_windowIndexSet;
+
+    // Needed for MoveWindowIntoZoneByDirectionAndPosition with selectManyZones = true
+    std::map<HWND, std::vector<size_t>> m_windowInitialIndexSet;
+    std::map<HWND, size_t> m_windowFinalIndex;
+    bool m_inSelectManyZones = false;
+
     ZoneSetConfig m_config;
 };
 
@@ -278,6 +284,13 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
         return;
     }
 
+    // Always clear the info related to SelectManyZones if it's not being used
+    if (!m_inSelectManyZones)
+    {
+        m_windowFinalIndex.erase(window);
+        m_windowInitialIndexSet.erase(window);
+    }
+
     RECT size;
     bool sizeEmpty = true;
     size_t bitmask = 0;
@@ -375,48 +388,84 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
         return false;
     }
 
-    auto zoneObjects = GetZones();
-    auto oldZones = GetZoneIndexSetFromWindow(window);
-    std::vector<bool> usedZoneIndices(zoneObjects.size(), false);
-    for (size_t idx : oldZones)
-    {
-        usedZoneIndices[idx] = true;
-    }
-
-    std::vector<RECT> zoneRects;
-    std::vector<size_t> freeZoneIndices;
-
-    for (size_t i = 0; i < zoneObjects.size(); i++)
-    {
-        if (!usedZoneIndices[i])
-        {
-            zoneRects.emplace_back(zoneObjects[i]->GetZoneRect());
-            freeZoneIndices.emplace_back(i);
-        }
-    }
-
+    
     RECT windowRect, windowZoneRect;
     if (GetWindowRect(window, &windowRect) && GetWindowRect(windowZone, &windowZoneRect))
     {
-        // Move to coordinates relative to windowZone
-        windowRect.top -= windowZoneRect.top;
-        windowRect.bottom -= windowZoneRect.top;
-        windowRect.left -= windowZoneRect.left;
-        windowRect.right -= windowZoneRect.left;
+        auto zoneObjects = GetZones();
+        auto oldZones = GetZoneIndexSetFromWindow(window);
+        std::vector<bool> usedZoneIndices(zoneObjects.size(), false);
+        std::vector<RECT> zoneRects;
+        std::vector<size_t> freeZoneIndices;
+        
+        // If selectManyZones = true for the second time, use the last zone into which we moved
+        // instead of the window rect and enable moving to all zones except the old one
+        auto finalIndexIt = m_windowFinalIndex.find(window);
+        if (selectManyZones && finalIndexIt != m_windowFinalIndex.end())
+        {
+            usedZoneIndices[finalIndexIt->second] = true;
+            windowRect = zoneObjects[finalIndexIt->second]->GetZoneRect();
+        }
+        else
+        {
+            for (size_t idx : oldZones)
+            {
+                usedZoneIndices[idx] = true;
+            }
+            // Move to coordinates relative to windowZone
+            windowRect.top -= windowZoneRect.top;
+            windowRect.bottom -= windowZoneRect.top;
+            windowRect.left -= windowZoneRect.left;
+            windowRect.right -= windowZoneRect.left;
+        }
+
+        for (size_t i = 0; i < zoneObjects.size(); i++)
+        {
+            if (!usedZoneIndices[i])
+            {
+                zoneRects.emplace_back(zoneObjects[i]->GetZoneRect());
+                freeZoneIndices.emplace_back(i);
+            }
+        }
 
         size_t result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
         if (result < zoneRects.size())
         {
+            size_t targetZone = freeZoneIndices[result];
             std::vector<size_t> resultIndexSet;
             if (selectManyZones)
             {
-                resultIndexSet = GetCombinedZoneRange(oldZones, { freeZoneIndices[result] });
+                // First time with selectManyZones = true for this window?
+                if (finalIndexIt == m_windowFinalIndex.end())
+                {
+                    // Already zoned?
+                    if (oldZones.size())
+                    {
+                        m_windowInitialIndexSet[window] = oldZones;
+                        m_windowFinalIndex[window] = targetZone;
+                        resultIndexSet = GetCombinedZoneRange(oldZones, { targetZone });
+                    }
+                    else
+                    {
+                        m_windowInitialIndexSet[window] = { targetZone };
+                        m_windowFinalIndex[window] = targetZone;
+                        resultIndexSet = { targetZone };
+                    }
+                }
+                else
+                {
+                    auto deletethis = m_windowInitialIndexSet[window];
+                    m_windowFinalIndex[window] = targetZone;
+                    resultIndexSet = GetCombinedZoneRange(m_windowInitialIndexSet[window], { targetZone });
+                }
             }
             else
             {
-                resultIndexSet = { freeZoneIndices[result] };
+                resultIndexSet = { targetZone };
             }
+            m_inSelectManyZones = selectManyZones;
             MoveWindowIntoZoneByIndexSet(window, windowZone, resultIndexSet);
+            m_inSelectManyZones = false;
             return true;
         }
         else if (cycle)
