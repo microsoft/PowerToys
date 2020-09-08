@@ -8,9 +8,12 @@ using System.Runtime.Versioning;
 
 namespace ColorPicker
 {
+    // https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1060?view=vs-2019
+    // will have to rename
     public static class Win32Apis
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
         public const int WH_KEYBOARD_LL = 13;
         public const int VkSnapshot = 0x2c;
         public const int KfAltdown = 0x2000;
@@ -18,14 +21,23 @@ namespace ColorPicker
         public const int MonitorinfofPrimary = 0x00000001;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
         public const int VK_SHIFT = 0x10;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
         public const int VK_CONTROL = 0x11;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
         public const int VK_MENU = 0x12;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
         public const int VK_LWIN = 0x5B;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
         public const int VK_RWIN = 0x5C;
 
         public delegate bool MonitorEnumProc(
@@ -114,9 +126,9 @@ namespace ColorPicker
         internal class MonitorInfoEx
         {
             public int cbSize = Marshal.SizeOf(typeof(MonitorInfoEx));
-            public Rect rcMonitor = default;
-            public Rect rcWork = default;
-            public int dwFlags = 0;
+            public Rect rcMonitor;
+            public Rect rcWork;
+            public int dwFlags;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             public char[] szDevice = new char[32];
         }

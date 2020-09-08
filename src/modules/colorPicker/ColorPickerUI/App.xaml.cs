@@ -16,7 +16,7 @@ namespace ColorPickerUI
     /// </summary>
     public partial class App : Application
     {
-        private Mutex _instanceMutex = null;
+        private Mutex _instanceMutex;
         private static string[] _args;
         private int _powerToysPid;
 
