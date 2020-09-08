@@ -84,6 +84,8 @@ public:
                 {
                     DWORD errorCode = GetLastError();
                     show_last_error_message(L"SetWindowsHookEx", errorCode, GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str());
+                    auto errorMessage = get_last_error_message(errorCode);
+                    Trace::FancyZones::Exception(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"enable.SetWindowsHookEx");
                 }
             }
 

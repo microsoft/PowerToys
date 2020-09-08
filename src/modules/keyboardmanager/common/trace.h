@@ -23,4 +23,7 @@ public:
 
     // Log if a shortcut remap has been invoked
     static void ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) noexcept;
+    
+    // Log if an exception occurs in KBM
+    static void Exception(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
 };
