@@ -414,7 +414,6 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
             }
             else
             {
-                m_initialZone = {};
                 resultIndexSet = { freeZoneIndices[result] };
             }
             MoveWindowIntoZoneByIndexSet(window, windowZone, resultIndexSet);
