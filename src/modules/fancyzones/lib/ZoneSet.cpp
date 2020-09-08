@@ -539,17 +539,17 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::
 
     // Note: The expressions below are NOT equal to total{Width|Height} / zoneCount and are done
     // like this to make the sum of all zones' sizes exactly total{Width|Height}.
-    for (int cnt = 0; cnt < zoneCount; ++cnt)
+    for (int zoneIndex = 0; zoneIndex < zoneCount; ++zoneIndex)
     {
         if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
-            right = left + (cnt + 1) * totalWidth / zoneCount - cnt * totalWidth / zoneCount;
+            right = left + (zoneIndex + 1) * totalWidth / zoneCount - zoneIndex * totalWidth / zoneCount;
             bottom = totalHeight + spacing;
         }
         else
         { //Rows
             right = totalWidth + spacing;
-            bottom = top + (cnt + 1) * totalHeight / zoneCount - cnt * totalHeight / zoneCount;
+            bottom = top + (zoneIndex + 1) * totalHeight / zoneCount - zoneIndex * totalHeight / zoneCount;
         }
 
 
