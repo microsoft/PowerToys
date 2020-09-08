@@ -484,6 +484,14 @@ namespace Microsoft.Plugin.Program.Programs
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
+            catch (FileNotFoundException e)
+            {
+                ProgramLogger.LogException(
+                    $"|Win32|ExeProgram|{path}" +
+                                            $"|Unable to locate exe file at {path}", e);
+
+                return new Win32Program() { Valid = false, Enabled = false };
+            }
         }
 
         // Function to get the Win32 application, given the path to the application
