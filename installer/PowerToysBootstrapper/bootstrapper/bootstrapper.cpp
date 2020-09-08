@@ -297,7 +297,6 @@ int bootstrapper()
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NO_CONSOLE };
         sei.lpFile = newPTPath->c_str();
         sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = UPDATE_REPORT_SUCCESS;
         ShellExecuteExW(&sei);
     }
 
