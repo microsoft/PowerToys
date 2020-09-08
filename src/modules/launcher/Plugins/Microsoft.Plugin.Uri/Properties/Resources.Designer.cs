@@ -61,6 +61,24 @@ namespace Microsoft.Plugin.Uri.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Handles urls.
+        /// </summary>
+        public static string Microsoft_plugin_uri_plugin_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_uri_plugin_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Url Handler.
+        /// </summary>
+        public static string Microsoft_plugin_uri_plugin_name {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_uri_plugin_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open in browser.
         /// </summary>
         public static string Microsoft_plugin_uri_website {

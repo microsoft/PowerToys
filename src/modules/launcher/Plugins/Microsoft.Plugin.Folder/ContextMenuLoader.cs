@@ -116,7 +116,7 @@ namespace Microsoft.Plugin.Folder
                     }
                     catch (Exception e)
                     {
-                        var message = $"Fail to open file at {record.FullPath}";
+                        var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.FullPath}";
                         LogException(message, e);
                         _context.API.ShowMsg(message);
                         return false;

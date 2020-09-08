@@ -61,20 +61,29 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Always run as administrator.
-        /// </summary>
-        public static string wox_plugin_cmd_always_run_as_administrator {
-            get {
-                return ResourceManager.GetString("wox_plugin_cmd_always_run_as_administrator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to this command has been executed {0} times.
         /// </summary>
         public static string wox_plugin_cmd_cmd_has_been_executed_times {
             get {
                 return ResourceManager.GetString("wox_plugin_cmd_cmd_has_been_executed_times", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error running the command.
+        /// </summary>
+        public static string wox_plugin_cmd_command_failed {
+            get {
+                return ResourceManager.GetString("wox_plugin_cmd_command_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command not found.
+        /// </summary>
+        public static string wox_plugin_cmd_command_not_found {
+            get {
+                return ResourceManager.GetString("wox_plugin_cmd_command_not_found", resourceCulture);
             }
         }
         
@@ -88,16 +97,7 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do not close Command Prompt after command execution.
-        /// </summary>
-        public static string wox_plugin_cmd_leave_cmd_open {
-            get {
-                return ResourceManager.GetString("wox_plugin_cmd_leave_cmd_open", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allows to execute system commands from Wox. Commands should start with &gt;.
+        ///   Looks up a localized string similar to Allows to execute system commands from PowerToys Run. Commands should start with &gt;.
         /// </summary>
         public static string wox_plugin_cmd_plugin_description {
             get {
@@ -115,29 +115,11 @@ namespace Microsoft.Plugin.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Replace Win+R.
-        /// </summary>
-        public static string wox_plugin_cmd_relace_winr {
-            get {
-                return ResourceManager.GetString("wox_plugin_cmd_relace_winr", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Run as administrator (Ctrl+Shift+Enter).
         /// </summary>
         public static string wox_plugin_cmd_run_as_administrator {
             get {
                 return ResourceManager.GetString("wox_plugin_cmd_run_as_administrator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Run as different user.
-        /// </summary>
-        public static string wox_plugin_cmd_run_as_different_user {
-            get {
-                return ResourceManager.GetString("wox_plugin_cmd_run_as_different_user", resourceCulture);
             }
         }
     }

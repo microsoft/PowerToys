@@ -84,12 +84,12 @@ namespace Microsoft.Plugin.Uri
 
         public string GetTranslatedPluginTitle()
         {
-            return "Url Handler";
+            return Properties.Resources.Microsoft_plugin_uri_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return "Handles urls";
+            return Properties.Resources.Microsoft_plugin_uri_plugin_description;
         }
 
         public void Save()

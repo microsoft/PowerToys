@@ -117,23 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="wox_plugin_cmd_relace_winr" xml:space="preserve">
-    <value>Replace Win+R</value>
-  </data>
-  <data name="wox_plugin_cmd_leave_cmd_open" xml:space="preserve">
-    <value>Do not close Command Prompt after command execution</value>
-  </data>
-  <data name="wox_plugin_cmd_always_run_as_administrator" xml:space="preserve">
-    <value>Always run as administrator</value>
-  </data>
-  <data name="wox_plugin_cmd_run_as_different_user" xml:space="preserve">
-    <value>Run as different user</value>
-  </data>
   <data name="wox_plugin_cmd_plugin_name" xml:space="preserve">
     <value>Shell</value>
   </data>
   <data name="wox_plugin_cmd_plugin_description" xml:space="preserve">
-    <value>Allows to execute system commands from Wox. Commands should start with &gt;</value>
+    <value>Allows to execute system commands from PowerToys Run. Commands should start with &gt;</value>
   </data>
   <data name="wox_plugin_cmd_cmd_has_been_executed_times" xml:space="preserve">
     <value>this command has been executed {0} times</value>
@@ -143,5 +131,11 @@
   </data>
   <data name="wox_plugin_cmd_run_as_administrator" xml:space="preserve">
     <value>Run as administrator (Ctrl+Shift+Enter)</value>
+  </data>
+  <data name="wox_plugin_cmd_command_failed" xml:space="preserve">
+    <value>Error running the command</value>
+  </data>
+  <data name="wox_plugin_cmd_command_not_found" xml:space="preserve">
+    <value>Command not found</value>
   </data>
 </root>
