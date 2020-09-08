@@ -27,6 +27,9 @@ private:
     // StackPanel to parent the above controls
     winrt::Windows::Foundation::IInspectable shortcutControlLayout;
 
+    // Function to set the accessible name of the target app text box
+    static void SetAccessibleNameForTextBox(TextBox targetAppTextBox);
+
 public:
     // Handle to the current Edit Shortcuts Window
     static HWND EditShortcutsWindowHandle;

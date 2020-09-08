@@ -42,6 +42,18 @@ ShortcutControl::ShortcutControl(Grid table, const int colIndex, TextBox targetA
     shortcutControlLayout.as<StackPanel>().UpdateLayout();
 }
 
+// Function to set the accessible name of the target App text box
+void ShortcutControl::SetAccessibleNameForTextBox(TextBox targetAppTextBox)
+{
+    // To set the accessible name of the target App text box by adding the string `All Apps` if the text box is empty, if not the application name is read by narrator.
+    std::wstring targetAppTextBoxAccessibleName = GET_RESOURCE_STRING(IDS_TARGET_APPLICATION);
+    if (targetAppTextBox.Text() == L"")
+    {
+        targetAppTextBoxAccessibleName += GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
+    }
+    targetAppTextBox.SetValue(Automation::AutomationProperties::NameProperty(), box_value(targetAppTextBoxAccessibleName));
+}
+
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
 void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const std::variant<DWORD, Shortcut>& newKeys, const std::wstring& targetAppName)
 {
@@ -84,14 +96,8 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     targetAppTextBox.HorizontalAlignment(HorizontalAlignment::Center);
     targetAppTextBox.PlaceholderText(KeyboardManagerConstants::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
-
-    // To set the accessible name of the target App text box by adding the string `All Apps` if the text box is empty, if not the application name is read by narrator.
-    std::wstring targetAppTextBoxAccessibleName = GET_RESOURCE_STRING(IDS_TARGET_APPLICATION);
-    if (targetAppTextBox.Text() == L"")
-    {
-        targetAppTextBoxAccessibleName += GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
-    }
-    targetAppTextBox.SetValue(Automation::AutomationProperties::NameProperty(), box_value(targetAppTextBoxAccessibleName));
+    // Initialize the accessible name of the target app text box
+    ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox);
 
     // LostFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
     targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, targetAppTextBox](auto const& sender, auto const& e) {
@@ -136,6 +142,9 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         {
             shortcutRemapBuffer[rowIndex].second = targetAppTextBox.Text().c_str();
         }
+
+        // To set the accessibile name of the target app text box when focus is lost
+        ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox);
     });
 
     parent.SetColumn(targetAppTextBox, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
