@@ -61,6 +61,8 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static IShellLinkHelper Helper { get; set; } = new ShellLinkHelper();
 
+        public static IDirectoryWrapper DirectoryWrapper { get; set; } = new DirectoryWrapper();
+
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
         private const string InternetShortcutExtension = "url";
@@ -524,12 +526,9 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // If the path exists, check if it is a directory
-            else if (Directory.Exists(path))
+            else if (DirectoryWrapper.Exists(path))
             {
-                if ((File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory)
-                {
-                    appType = ApplicationType.Folder;
-                }
+                appType = ApplicationType.Folder;
             }
 
             return appType;
