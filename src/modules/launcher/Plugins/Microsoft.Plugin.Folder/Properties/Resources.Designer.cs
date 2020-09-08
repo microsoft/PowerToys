@@ -160,15 +160,6 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please select a folder link.
-        /// </summary>
-        public static string wox_plugin_folder_select_folder_link_warning {
-            get {
-                return ResourceManager.GetString("wox_plugin_folder_select_folder_link_warning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Could not start.
         /// </summary>
         public static string wox_plugin_folder_select_folder_OpenFileOrFolder_error_message {
