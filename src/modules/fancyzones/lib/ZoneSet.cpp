@@ -164,9 +164,6 @@ private:
     std::vector<winrt::com_ptr<IZone>> m_zones;
     std::map<HWND, std::vector<size_t>> m_windowIndexSet;
     ZoneSetConfig m_config;
-
-    // Needed for MoveWindowIntoZoneByDirectionAndPosition with selectManyZones == true
-    std::vector<size_t> m_initialZone;
 };
 
 IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
