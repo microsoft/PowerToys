@@ -50,8 +50,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 if (sizeOfTitle++ > 0)
                 {
                     StringBuilder titleBuffer = new StringBuilder(sizeOfTitle);
-                    var numCharachtersWritten = NativeMethods.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
-                    if (numCharachtersWritten == 0)
+                    var numCharactersWritten = NativeMethods.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
+                    if (numCharactersWritten == 0)
                     {
                         return string.Empty;
                     }
@@ -140,9 +140,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
             get
             {
                 StringBuilder windowClassName = new StringBuilder(300);
-                var numCharachtersWritten = NativeMethods.GetClassName(Hwnd, windowClassName, windowClassName.MaxCapacity);
+                var numCharactersWritten = NativeMethods.GetClassName(Hwnd, windowClassName, windowClassName.MaxCapacity);
 
-                if (numCharachtersWritten == 0)
+                if (numCharactersWritten == 0)
                 {
                     return string.Empty;
                 }
