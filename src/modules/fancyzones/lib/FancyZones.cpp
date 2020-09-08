@@ -526,7 +526,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
     bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
     bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
-    if ((win && !shift) || (ctrl && alt))
+    if ((win && !shift && !ctrl) || (win && ctrl && alt))
     {
         // Temporarily disable Win+Ctrl+Number functionality
         // if (ctrl)
