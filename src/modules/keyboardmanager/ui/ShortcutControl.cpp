@@ -177,7 +177,14 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         uint32_t index;
         // Get index of delete button
         UIElementCollection children = parent.Children();
-        children.IndexOf(currentButton, index);
+        bool indexFound = children.IndexOf(currentButton, index);
+
+        // IndexOf could fail if the the row got deleted and the button handler was invoked twice. In this case it should return
+        if (!indexFound)
+        {
+            return;
+        }
+
         uint32_t lastIndexInRow = index + ((KeyboardManagerConstants::ShortcutTableColCount - 1) - KeyboardManagerConstants::ShortcutTableRemoveColIndex);
         // Change the row index of elements appearing after the current row, as we will delete the row definition
         for (uint32_t i = lastIndexInRow + 1; i < children.Size(); i++)
