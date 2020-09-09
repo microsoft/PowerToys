@@ -738,7 +738,6 @@ namespace PowerLauncher.ViewModel
                 if (_settings.ClearInputOnLaunch)
                 {
                     ClearQueryCommand.Execute(null);
-                    Results.Results.NotifyChanges();
                     Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
                     {
                         MainWindowVisibility = Visibility.Collapsed;
