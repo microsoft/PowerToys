@@ -739,12 +739,15 @@ namespace PowerLauncher.ViewModel
                 {
                     ClearQueryCommand.Execute(null);
                     Results.Results.NotifyChanges();
+                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                    {
+                        MainWindowVisibility = Visibility.Collapsed;
+                    }));
                 }
-
-                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                else
                 {
                     MainWindowVisibility = Visibility.Collapsed;
-                }));
+                }
             }
         }
 
