@@ -18,9 +18,11 @@ namespace ColorPicker.Settings
         private const string ColorPickerModuleName = "ColorPicker";
         private const string DefaultActivationShortcut = "Ctrl + Break";
         private const int MaxNumberOfRetry = 5;
-        private FileSystemWatcher _watcher;
 
-        private object _loadingSettingsLock = new object();
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
+        private readonly FileSystemWatcher _watcher;
+
+        private readonly object _loadingSettingsLock = new object();
 
         [ImportingConstructor]
         public UserSettings()

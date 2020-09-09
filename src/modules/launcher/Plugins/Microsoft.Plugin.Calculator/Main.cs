@@ -137,12 +137,8 @@ namespace Microsoft.Plugin.Calculator
 
         public void Init(PluginInitContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(context));
-            }
+            Context = context ?? throw new ArgumentNullException(paramName: nameof(context));
 
-            Context = context;
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
         }

@@ -41,8 +41,7 @@ namespace ColorPickerUI
         protected override void OnStartup(StartupEventArgs e)
         {
             // allow only one instance of color picker
-            bool createdNew;
-            _instanceMutex = new Mutex(true, @"Global\ColorPicker", out createdNew);
+            _instanceMutex = new Mutex(true, @"Global\ColorPicker", out bool createdNew);
             if (!createdNew)
             {
                 _instanceMutex = null;
