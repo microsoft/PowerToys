@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -734,7 +735,19 @@ namespace PowerLauncher.ViewModel
             }
             else
             {
-                MainWindowVisibility = Visibility.Collapsed;
+                if (_settings.ClearInputOnLaunch)
+                {
+                    ClearQueryCommand.Execute(null);
+                    Results.Results.NotifyChanges();
+                }
+
+                Task.Run(() =>
+                {
+                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                    {
+                        MainWindowVisibility = Visibility.Collapsed;
+                    }));
+                });
             }
         }
 

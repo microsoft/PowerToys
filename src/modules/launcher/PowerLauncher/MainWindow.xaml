@@ -22,7 +22,6 @@
         Closing="OnClosing"
         Background="Transparent"
         LocationChanged="OnLocationChanged"
-        Activated="OnActivated"
         Deactivated="OnDeactivated"
         IsVisibleChanged="OnVisibilityChanged"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
