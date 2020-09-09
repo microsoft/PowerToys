@@ -105,6 +105,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         UIElementCollection children = parent.Children();
         uint32_t index;
         children.IndexOf(targetAppTextBox, index);
+        Sleep(5000);
         uint32_t lastIndexInRow = index + ((KeyboardManagerConstants::ShortcutTableColCount - 1) - KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
         // Calculate row index in the buffer from the grid child index (first set of children are header elements and then three children in each row)
         int rowIndex = (lastIndexInRow - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
