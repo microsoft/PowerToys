@@ -132,12 +132,12 @@ void Trace::ShortcutRemapInvoked(bool isShortcutToShortcut, bool isAppSpecific) 
     }
 }
 
-// Log if an exception occurs in KBM
-void Trace::Exception(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
+// Log if an error occurs in KBM
+void Trace::Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "KeyboardManager_Exception",
+        "KeyboardManager_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(methodName.c_str(), "MethodName"),

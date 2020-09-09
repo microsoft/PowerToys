@@ -213,12 +213,12 @@ void Trace::FancyZones::EditorLaunched(int value) noexcept
         TraceLoggingInt32(value, EditorLaunchValueKey));
 }
 
-// Log if an exception occurs in FZ
-void Trace::FancyZones::Exception(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
+// Log if an error occurs in FZ
+void Trace::FancyZones::Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_Exception",
+        "FancyZones_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(methodName.c_str(), "MethodName"),

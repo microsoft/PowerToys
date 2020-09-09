@@ -228,7 +228,7 @@ void OverlayWindow::enable()
                 DWORD errorCode = GetLastError();
                 show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Shortcut Guide");
                 auto errorMessage = get_last_error_message(errorCode);
-                Trace::Exception(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"OverlayWindow.enable.SetWindowsHookEx");
+                Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"OverlayWindow.enable.SetWindowsHookEx");
             }
         }
         RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);

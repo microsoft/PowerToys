@@ -366,7 +366,7 @@ public:
                 DWORD errorCode = GetLastError();
                 show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager");
                 auto errorMessage = get_last_error_message(errorCode);
-                Trace::Exception(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
+                Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
             }
         }
     }
