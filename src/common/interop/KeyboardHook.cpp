@@ -4,6 +4,7 @@
 #include <msclr\marshal.h>
 #include <msclr\marshal_cppstd.h>
 #include <common/debug_control.h>
+#include <common/common.h>
 
 using namespace interop;
 using namespace System::Runtime::InteropServices;
@@ -46,7 +47,8 @@ void KeyboardHook::Start()
             0);
         if (hookHandle == nullptr)
         {
-            throw std::exception("SetWindowsHookEx failed.");
+            DWORD errorCode = GetLastError();
+            show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Interop");
         }
     }
 }
