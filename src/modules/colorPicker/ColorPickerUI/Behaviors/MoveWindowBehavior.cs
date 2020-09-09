@@ -11,9 +11,7 @@ namespace ColorPicker.Behaviors
 {
     public class MoveWindowBehavior : Behavior<Window>
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        public static DependencyProperty LeftProperty = DependencyProperty.Register("Left", typeof(double), typeof(MoveWindowBehavior), new PropertyMetadata(new PropertyChangedCallback(LeftPropertyChanged)));
+        public static readonly DependencyProperty LeftProperty = DependencyProperty.Register("Left", typeof(double), typeof(MoveWindowBehavior), new PropertyMetadata(new PropertyChangedCallback(LeftPropertyChanged)));
 
         private static void LeftPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -23,9 +21,7 @@ namespace ColorPicker.Behaviors
             sender.BeginAnimation(Window.LeftProperty, move, HandoffBehavior.Compose);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        public static DependencyProperty TopProperty = DependencyProperty.Register("Top", typeof(double), typeof(MoveWindowBehavior), new PropertyMetadata(new PropertyChangedCallback(TopPropertyChanged)));
+        public static readonly DependencyProperty TopProperty = DependencyProperty.Register("Top", typeof(double), typeof(MoveWindowBehavior), new PropertyMetadata(new PropertyChangedCallback(TopPropertyChanged)));
 
         private static void TopPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

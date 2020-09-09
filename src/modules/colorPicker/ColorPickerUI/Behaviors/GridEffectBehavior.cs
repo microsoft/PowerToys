@@ -12,13 +12,9 @@ namespace ColorPicker.Behaviors
     {
         private static double _baseZoomImageSizeInPx = 50;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        public static DependencyProperty EffectProperty = DependencyProperty.Register("Effect", typeof(GridShaderEffect), typeof(GridEffectBehavior));
+        public static readonly DependencyProperty EffectProperty = DependencyProperty.Register("Effect", typeof(GridShaderEffect), typeof(GridEffectBehavior));
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        public static DependencyProperty ZoomFactorProperty = DependencyProperty.Register("ZoomFactor", typeof(double), typeof(GridEffectBehavior));
+        public static readonly DependencyProperty ZoomFactorProperty = DependencyProperty.Register("ZoomFactor", typeof(double), typeof(GridEffectBehavior));
 
         public GridShaderEffect Effect
         {
