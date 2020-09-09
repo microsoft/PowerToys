@@ -27,6 +27,7 @@ namespace NonLocalizable
     const wchar_t EditorShowSpacingStr[] = L"editor-show-spacing";
     const wchar_t EditorSpacingStr[] = L"editor-spacing";
     const wchar_t EditorZoneCountStr[] = L"editor-zone-count";
+    const wchar_t EditorSensitivityRadiusStr[] = L"editor-sensitivity-radius";
     const wchar_t GridStr[] = L"grid";
     const wchar_t HeightStr[] = L"height";
     const wchar_t HistoryStr[] = L"history";
@@ -404,6 +405,7 @@ namespace JSONHelpers
         result.SetNamedValue(NonLocalizable::EditorShowSpacingStr, json::value(device.data.showSpacing));
         result.SetNamedValue(NonLocalizable::EditorSpacingStr, json::value(device.data.spacing));
         result.SetNamedValue(NonLocalizable::EditorZoneCountStr, json::value(device.data.zoneCount));
+        result.SetNamedValue(NonLocalizable::EditorSensitivityRadiusStr, json::value(device.data.sensitivityRadius));
 
         return result;
     }
@@ -431,8 +433,8 @@ namespace JSONHelpers
 
             result.data.showSpacing = device.GetNamedBoolean(NonLocalizable::EditorShowSpacingStr);
             result.data.spacing = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorSpacingStr));
-            result.data.zoneCount = static_cast<int>(
-                device.GetNamedNumber(NonLocalizable::EditorZoneCountStr));
+            result.data.zoneCount = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorZoneCountStr));
+            result.data.sensitivityRadius = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorSensitivityRadiusStr, 20));
 
             return result;
         }

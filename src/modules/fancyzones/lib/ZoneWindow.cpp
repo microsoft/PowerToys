@@ -495,10 +495,13 @@ void ZoneWindow::CalculateZoneSet() noexcept
     GUID zoneSetId;
     if (SUCCEEDED_LOG(CLSIDFromString(activeZoneSet.uuid.c_str(), &zoneSetId)))
     {
+        int sensitivityRadius = deviceInfoData->sensitivityRadius;
+
         auto zoneSet = MakeZoneSet(ZoneSetConfig(
             zoneSetId,
             activeZoneSet.type,
-            m_monitor));
+            m_monitor,
+            sensitivityRadius));
         
         RECT workArea;
         if (m_monitor)
@@ -522,6 +525,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
         bool showSpacing = deviceInfoData->showSpacing;
         int spacing = showSpacing ? deviceInfoData->spacing : 0;
         int zoneCount = deviceInfoData->zoneCount;
+        
         zoneSet->CalculateZones(workArea, zoneCount, spacing);
         UpdateActiveZoneSet(zoneSet.get());        
     }
