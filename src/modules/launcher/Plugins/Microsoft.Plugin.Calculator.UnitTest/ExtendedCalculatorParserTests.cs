@@ -4,12 +4,7 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
-using System.Threading;
-using Microsoft.Plugin.Calculator;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NUnit.Framework;
-using Wox.Plugin;
 
 namespace Microsoft.Plugin.Calculator.UnitTests
 {

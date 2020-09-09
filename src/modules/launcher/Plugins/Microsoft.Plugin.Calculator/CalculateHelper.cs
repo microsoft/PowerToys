@@ -9,7 +9,6 @@ namespace Microsoft.Plugin.Calculator
 {
     public static class CalculateHelper
     {
-        private static readonly Regex RegBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
         private static readonly Regex RegValidExpressChar = new Regex(
             @"^(" +
             @"ceil|floor|exp|pi|e|max|min|det|abs|log|ln|sqrt|" +
@@ -37,31 +36,12 @@ namespace Microsoft.Plugin.Calculator
                 return false;
             }
 
-            if (!IsBracketComplete(input))
+            if (!BracketHelper.IsBracketComplete(input))
             {
                 return false;
             }
 
             return true;
-        }
-
-        public static bool IsBracketComplete(string query)
-        {
-            var matchs = RegBrackets.Matches(query);
-            var leftBracketCount = 0;
-            foreach (Match match in matchs)
-            {
-                if (match.Value == "(" || match.Value == "[")
-                {
-                    leftBracketCount++;
-                }
-                else
-                {
-                    leftBracketCount--;
-                }
-            }
-
-            return leftBracketCount == 0;
         }
     }
 }
