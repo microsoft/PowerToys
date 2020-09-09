@@ -10,7 +10,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
-using static ColorPicker.Win32Apis;
+using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Mouse
 {

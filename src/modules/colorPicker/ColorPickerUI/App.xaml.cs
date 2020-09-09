@@ -14,11 +14,12 @@ namespace ColorPickerUI
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : Application, IDisposable
     {
         private Mutex _instanceMutex;
         private static string[] _args;
         private int _powerToysPid;
+        private bool disposedValue;
 
         [STAThread]
         public static void Main(string[] args)
@@ -27,9 +28,11 @@ namespace ColorPickerUI
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             try
             {
-                var application = new App();
-                application.InitializeComponent();
-                application.Run();
+                using (var application = new App())
+                {
+                    application.InitializeComponent();
+                    application.Run();
+                }
             }
             catch (Exception ex)
             {
@@ -78,6 +81,28 @@ namespace ColorPickerUI
         {
             Logger.LogError("Unhandled exception", (e.ExceptionObject is Exception) ? (e.ExceptionObject as Exception) : new Exception());
             CursorManager.RestoreOriginalCursors();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _instanceMutex.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

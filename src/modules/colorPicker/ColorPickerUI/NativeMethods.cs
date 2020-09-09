@@ -10,7 +10,7 @@ namespace ColorPicker
 {
     // https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1060?view=vs-2019
     // will have to rename
-    public static class Win32Apis
+    public static class NativeMethods
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
