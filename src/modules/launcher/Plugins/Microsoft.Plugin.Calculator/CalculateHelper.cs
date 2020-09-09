@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.Calculator
 
         public static bool InputValid(string input)
         {
-            if (input == null)
+            if (string.IsNullOrWhiteSpace(input))
             {
                 throw new ArgumentNullException(paramName: nameof(input));
             }

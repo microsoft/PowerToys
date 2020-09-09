@@ -11,6 +11,7 @@ namespace Microsoft.Plugin.Calculator
     public class CalculateEngine
     {
         private readonly Engine _magesEngine = new Engine();
+        public const int RoundingDigits = 10;
 
         public CalculateResult Interpret(string input)
         {
@@ -19,11 +20,6 @@ namespace Microsoft.Plugin.Calculator
 
         public CalculateResult Interpret(string input, CultureInfo cultureInfo)
         {
-            if (input == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(input));
-            }
-
             if (!CalculateHelper.InputValid(input))
             {
                 return default;
@@ -45,7 +41,7 @@ namespace Microsoft.Plugin.Calculator
             }
 
             var decimalResult = Convert.ToDecimal(result, cultureInfo);
-            var roundedResult = Math.Round(decimalResult, 10, MidpointRounding.AwayFromZero);
+            var roundedResult = Math.Round(decimalResult, RoundingDigits, MidpointRounding.AwayFromZero);
 
             return new CalculateResult()
             {
