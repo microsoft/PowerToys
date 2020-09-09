@@ -91,7 +91,7 @@ namespace ColorPickerUI
             {
                 if (disposing)
                 {
-                    _instanceMutex.Dispose();
+                    _instanceMutex?.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
