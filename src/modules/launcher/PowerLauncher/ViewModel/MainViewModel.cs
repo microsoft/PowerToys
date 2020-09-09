@@ -741,13 +741,10 @@ namespace PowerLauncher.ViewModel
                     Results.Results.NotifyChanges();
                 }
 
-                Task.Run(() =>
+                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
                 {
-                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
-                    {
-                        MainWindowVisibility = Visibility.Collapsed;
-                    }));
-                });
+                    MainWindowVisibility = Visibility.Collapsed;
+                }));
             }
         }
 
