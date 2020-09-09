@@ -104,11 +104,23 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         // Get index of targetAppTextBox button
         UIElementCollection children = parent.Children();
         uint32_t index;
-        children.IndexOf(targetAppTextBox, index);
-        Sleep(5000);
+        bool indexFound = children.IndexOf(targetAppTextBox, index);
+
+        // IndexOf could fail if the the row got deleted after LostFocus handler was invoked. In this case it should return
+        if (!indexFound)
+        {
+            return;
+        }
+
         uint32_t lastIndexInRow = index + ((KeyboardManagerConstants::ShortcutTableColCount - 1) - KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
         // Calculate row index in the buffer from the grid child index (first set of children are header elements and then three children in each row)
         int rowIndex = (lastIndexInRow - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
+
+        // rowIndex could be out of bounds if the the row got deleted after LostFocus handler was invoked. In this case it should return
+        if (rowIndex >= keyboardRemapControlObjects.size())
+        {
+            return;
+        }
 
         // Validate both set of drop downs
         KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][0]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>(), 0, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][0]->keyDropDownControlObjects, targetAppTextBox, false, false);
