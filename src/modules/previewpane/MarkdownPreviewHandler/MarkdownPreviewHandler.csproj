@@ -125,7 +125,7 @@
       <Version>1.11.24</Version>
     </PackageReference>
     <PackageReference Include="Markdig.Signed">
-      <Version>0.20.0</Version>
+      <Version>0.21.1</Version>
     </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>

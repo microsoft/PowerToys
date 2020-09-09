@@ -88,7 +88,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.2.4">
+    <PackageReference Include="Fody" Version="6.2.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -102,11 +102,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NuGet.CommandLine" Version="5.6.0">
+    <PackageReference Include="NuGet.CommandLine" Version="5.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.2.8">
+    <PackageReference Include="PropertyChanged.Fody" Version="3.2.9">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Data.SQLite" Version="1.0.113.1" />

@@ -69,7 +69,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NLog" Version="4.7.2" />
+    <PackageReference Include="NLog" Version="4.7.4" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
   
