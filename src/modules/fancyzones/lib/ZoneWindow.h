@@ -73,19 +73,25 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT/UP/DOWN arrow), based on
      * their on-screen position.
      *
-     * @param   window          Handle of window which should be assigned to zone.
-     * @param   vkCode          Pressed arrow key.
-     * @param   cycle           Whether we should move window to the first zone if we reached last zone in layout.
-     * @param   selectManyZones When this parameter is true, the set of highlighted zones is computed
-     *                          by finding the minimum bounding rectangle of the zone(s) from which the
-     *                          user started pressing Ctrl+Win+Alt+Arrow keys and the zone currently reached
-     *                          at the moment this function is called. Otherwise, highlight only the
-     *                          currently reached zone.
+     * @param   window Handle of window which should be assigned to zone.
+     * @param   vkCode Pressed arrow key.
+     * @param   cycle  Whether we should move window to the first zone if we reached last zone in layout.
      *
      * @returns Boolean which is always true if cycle argument is set, otherwise indicating if there is more
      *          zones left in the zone layout in which window can move.
      */
-    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirectionAndPosition)(HWND window, DWORD vkCode, bool cycle, bool selectManyZones) = 0;
+    IFACEMETHOD_(bool, MoveWindowIntoZoneByDirectionAndPosition)(HWND window, DWORD vkCode, bool cycle) = 0;
+    /**
+     * Extend or shrink the window to an adjacent zone based on direction (using CTRL+WIN+ALT + LEFT/RIGHT/UP/DOWN arrow), based on
+     * their on-screen position.
+     *
+     * @param   window Handle of window which should be assigned to zone.
+     * @param   vkCode Pressed arrow key.
+     *
+     * @returns Boolean indicating whether the window was rezoned. False could be returned when there are no more
+     *          zones available in the given direction.
+     */
+    IFACEMETHOD_(bool, ExtendWindowByDirectionAndPosition)(HWND window, DWORD vkCode) = 0;
     /**
      * Cycle through active zone layouts (giving hints about each layout).
      *

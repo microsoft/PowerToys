@@ -383,7 +383,18 @@ bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirectionAndIndex(HWND window
 
 bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
 {
-    return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, GetAsyncKeyState(VK_MENU) & 0x8000);
+    if (zoneWindow)
+    {
+        if (GetAsyncKeyState(VK_MENU) & 0x8000)
+        {
+            return zoneWindow->ExtendWindowByDirectionAndPosition(window, vkCode);
+        }
+        else
+        {
+            return zoneWindow->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle);
+        }
+    }
+    return false;
 }
 
 void WindowMoveHandlerPrivate::WarnIfElevationIsRequired(HWND window) noexcept
