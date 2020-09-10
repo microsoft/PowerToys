@@ -166,7 +166,7 @@ private:
     std::vector<winrt::com_ptr<IZone>> m_zones;
     std::map<HWND, std::vector<size_t>> m_windowIndexSet;
 
-    // Needed for MoveWindowIntoZoneByDirectionAndPosition with selectManyZones = true
+    // Needed for ExtendWindowByDirectionAndPosition
     std::map<HWND, std::vector<size_t>> m_windowInitialIndexSet;
     std::map<HWND, size_t> m_windowFinalIndex;
     bool m_inSelectManyZones = false;
