@@ -959,6 +959,37 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
                      DefWindowProc(window, message, wparam, lparam);
 }
 
+std::wstring LastErrorDescription()
+{
+    const DWORD error_code = GetLastError();
+    wchar_t* error_msg;
+    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                   nullptr,
+                   error_code,
+                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                   reinterpret_cast<LPWSTR>(&error_msg),
+                   0,
+                   nullptr);
+    std::wstring result{ error_msg };
+    LocalFree(error_msg);
+    return result;
+}
+
+void ShowMessageBox(const std::wstring& error, bool useLastError)
+{
+    std::wstring description = error;
+    if (useLastError)
+    {
+        description += LastErrorDescription();
+    }
+    int nmonitor = GetSystemMetrics(SM_CMONITORS);
+    description += L" There should be " + std::to_wstring(nmonitor) + L" monitors attached.";
+    MessageBoxW(NULL,
+                description.c_str(),
+                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+                MB_OK | MB_ICONERROR);
+}
+
 void FancyZones::UpdateZoneWindows() noexcept
 {
     auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
@@ -981,6 +1012,10 @@ void FancyZones::UpdateZoneWindows() noexcept
                     deviceId = displayDevice.DeviceID;
                 }
             }
+            else
+            {
+                ShowMessageBox(L"EnumDisplayDevices FAILED: ", true);
+            }
 
             if (validMonitor)
             {
@@ -994,6 +1029,14 @@ void FancyZones::UpdateZoneWindows() noexcept
                 auto strongThis = reinterpret_cast<FancyZones*>(data);
                 strongThis->AddZoneWindow(monitor, deviceId);
             }
+            else
+            {
+                ShowMessageBox(L"InvalidMonitor (DISPLAY_DEVICE_MIRRORING_DRIVER)", false);
+            }
+        }
+        else
+        {
+            ShowMessageBox(L"GetMonitorInfo FAILED: ", true);
         }
         return TRUE;
     };
@@ -1004,7 +1047,10 @@ void FancyZones::UpdateZoneWindows() noexcept
     }
     else
     {
-        EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this));
+        if (!EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this)))
+        {
+            ShowMessageBox(L"EnumDisplayMonitors FAILED: ", true);
+        }
     }
 }
 
