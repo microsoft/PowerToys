@@ -727,7 +727,7 @@ namespace PowerLauncher.ViewModel
             });
         }
 
-        private void ToggleWox()
+        public void ToggleWox()
         {
             if (MainWindowVisibility != Visibility.Visible)
             {
