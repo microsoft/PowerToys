@@ -427,12 +427,15 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
         else if (cycle)
         {
             // Try again from the position off the screen in the opposite direction to vkCode
+            // Consider all zones as available
+            zoneRects.resize(zoneObjects.size());
+            std::transform(zoneObjects.begin(), zoneObjects.end(), zoneRects.begin(), [](auto zone) { return zone->GetZoneRect(); });
             windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
             result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
 
             if (result < zoneRects.size())
             {
-                MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+                MoveWindowIntoZoneByIndex(window, windowZone, result);
                 return true;
             }
         }
