@@ -169,7 +169,7 @@ private:
     // Needed for ExtendWindowByDirectionAndPosition
     std::map<HWND, std::vector<size_t>> m_windowInitialIndexSet;
     std::map<HWND, size_t> m_windowFinalIndex;
-    bool m_inSelectManyZones = false;
+    bool m_inExtendWindow = false;
 
     ZoneSetConfig m_config;
 };
@@ -287,7 +287,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
     }
 
     // Always clear the info related to SelectManyZones if it's not being used
-    if (!m_inSelectManyZones)
+    if (!m_inExtendWindow)
     {
         m_windowFinalIndex.erase(window);
         m_windowInitialIndexSet.erase(window);
@@ -465,9 +465,9 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
             {
                 resultIndexSet = { targetZone };
             }
-            m_inSelectManyZones = false;
+            m_inExtendWindow = false;
             MoveWindowIntoZoneByIndexSet(window, windowZone, resultIndexSet);
-            m_inSelectManyZones = false;
+            m_inExtendWindow = false;
             return true;
         }
         else if (cycle)
@@ -569,9 +569,9 @@ ZoneSet::ExtendWindowByDirectionAndPosition(HWND window, HWND windowZone, DWORD 
             {
                 resultIndexSet = { targetZone };
             }
-            m_inSelectManyZones = true;
+            m_inExtendWindow = true;
             MoveWindowIntoZoneByIndexSet(window, windowZone, resultIndexSet);
-            m_inSelectManyZones = false;
+            m_inExtendWindow = false;
             return true;
         }
         else if (false)
