@@ -886,12 +886,19 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonMissingKeys)
         {
-            DeviceInfoJSON deviceInfo{ m_defaultDeviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+            DeviceInfoJSON deviceInfo{ m_defaultDeviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3, 20 } };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
 
             auto iter = json.First();
             while (iter.HasCurrent())
             {
+                //this setting has been added later and gets a default value, so missing key still result is valid Json
+                if (iter.Current().Key() == L"editor-sensitivity-radius")
+                {
+                    iter.MoveNext();
+                    continue;
+                }
+
                 json::JsonObject modifiedJson = json::JsonObject::Parse(json.Stringify());
                 modifiedJson.Remove(iter.Current().Key());
 
@@ -900,6 +907,16 @@ namespace FancyZonesUnitTests
 
                 iter.MoveNext();
             }
+        }
+
+        TEST_METHOD (FromJsonMissingSensitivityRadiusUsesDefault)
+        {
+            //json without "editor-sensitivity-radius"
+            json::JsonObject json = json::JsonObject::Parse(L"{\"device-id\":\"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{33A2B101-06E0-437B-A61E-CDBECF502906}\",\"type\":\"custom\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}");
+            auto actual = DeviceInfoJSON::FromJson(json);
+
+            Assert::IsTrue(actual.has_value());
+            Assert::AreEqual(20, actual->data.sensitivityRadius);
         }
 
         TEST_METHOD (FromJsonInvalidTypes)
