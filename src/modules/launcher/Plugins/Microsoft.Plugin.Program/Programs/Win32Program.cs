@@ -376,7 +376,17 @@ namespace Microsoft.Plugin.Program.Programs
                 if (line.StartsWith(urlPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     urlPath = line.Substring(urlPrefix.Length);
-                    Uri uri = new Uri(urlPath);
+
+                    try
+                    {
+                        Uri uri = new Uri(urlPath);
+                    }
+                    catch (UriFormatException e)
+                    {
+                        // To catch the exception if the uri cannot be parsed.
+                        ProgramLogger.LogException($"|Win32Program|InternetShortcutProgram|{urlPath}|url could not be parsed", e);
+                        return new Win32Program() { Valid = false, Enabled = false };
+                    }
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
                     if (internetShortcutURLPrefixes.Match(urlPath).Success)
