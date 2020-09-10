@@ -961,17 +961,17 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 
 std::wstring LastErrorDescription()
 {
-    const DWORD error_code = GetLastError();
-    wchar_t* error_msg;
+    const DWORD errorCode = GetLastError();
+    wchar_t* errorMsg;
     FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                    nullptr,
-                   error_code,
+                   errorCode,
                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                   reinterpret_cast<LPWSTR>(&error_msg),
+                   reinterpret_cast<LPWSTR>(&errorMsg),
                    0,
                    nullptr);
-    std::wstring result{ error_msg };
-    LocalFree(error_msg);
+    std::wstring result{ errorMsg };
+    LocalFree(errorMsg);
     return result;
 }
 
@@ -983,7 +983,7 @@ void ShowMessageBox(const std::wstring& error, bool useLastError)
         description += LastErrorDescription();
     }
     int nmonitor = GetSystemMetrics(SM_CMONITORS);
-    description += L" There should be " + std::to_wstring(nmonitor) + L" monitors attached.";
+    description += L"\nThere should be " + std::to_wstring(nmonitor) + L" monitors attached.";
     MessageBoxW(NULL,
                 description.c_str(),
                 GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
@@ -1005,7 +1005,7 @@ void FancyZones::UpdateZoneWindows() noexcept
             {
                 if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
                 {
-                    validMonitor = FALSE;
+                    validMonitor = false;
                 }
                 else if (displayDevice.DeviceID[0] != L'\0')
                 {
