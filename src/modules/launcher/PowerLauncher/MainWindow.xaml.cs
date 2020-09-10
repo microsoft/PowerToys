@@ -166,10 +166,7 @@ namespace PowerLauncher
             if (_settings.HideWhenDeactivated)
             {
                 // (this.FindResource("OutroStoryboard") as Storyboard).Begin();
-                if (_viewModel.MainWindowVisibility != Visibility.Collapsed)
-                {
-                    _viewModel.ToggleWox();
-                }
+                _viewModel.Hide();
             }
         }
 

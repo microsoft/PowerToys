@@ -131,7 +131,7 @@ namespace PowerLauncher.ViewModel
                 }
                 else
                 {
-                    MainWindowVisibility = Visibility.Collapsed;
+                    Hide();
                 }
             });
 
@@ -203,7 +203,7 @@ namespace PowerLauncher.ViewModel
                         // SelectedItem returns null if selection is empty.
                         if (result != null && result.Action != null)
                         {
-                            MainWindowVisibility = Visibility.Collapsed;
+                            Hide();
 
                             Application.Current.Dispatcher.Invoke(() =>
                             {
@@ -747,6 +747,14 @@ namespace PowerLauncher.ViewModel
                 {
                     MainWindowVisibility = Visibility.Collapsed;
                 }
+            }
+        }
+
+        public void Hide()
+        {
+            if (MainWindowVisibility != Visibility.Collapsed)
+            {
+                ToggleWox();
             }
         }
 
