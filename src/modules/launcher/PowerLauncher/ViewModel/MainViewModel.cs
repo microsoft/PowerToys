@@ -735,7 +735,7 @@ namespace PowerLauncher.ViewModel
             }
             else
             {
-                if (_settings.ClearInputOnLaunch)
+                if (_settings.ClearInputOnLaunch && Results.Visibility == Visibility.Visible)
                 {
                     ClearQueryCommand.Execute(null);
                     Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
