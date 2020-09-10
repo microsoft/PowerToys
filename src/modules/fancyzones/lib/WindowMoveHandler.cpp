@@ -173,12 +173,12 @@ bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DW
 
 void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
-    m_moveSizeStartWindowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
     if (!FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;
     }
 
+    m_moveSizeStartWindowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
     m_inMoveSize = true;
 
     auto iter = zoneWindowMap.find(monitor);
@@ -361,7 +361,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         }
         ::RemoveProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
     }
-    
+
     m_inMoveSize = false;
     m_dragEnabled = false;
     m_mouseState = false;
