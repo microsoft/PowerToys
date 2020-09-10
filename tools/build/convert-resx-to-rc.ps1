@@ -177,7 +177,7 @@ try {
         Set-Content -Path $generatedFilesFolder\$generatedHeaderFileName -Value $headerFileContent
     }
     else {
-        echo "Skipping write to generated header file"
+        # echo "Skipping write to generated header file"
     }
 }
 catch {
@@ -191,7 +191,7 @@ try {
         Set-Content -Path $generatedFilesFolder\$generatedRCFileName -Value $rcFileContent -Encoding unicode
     }
     else {    
-        echo "Skipping write to generated rc file"
+        # echo "Skipping write to generated rc file"
     }
 }
 catch {
