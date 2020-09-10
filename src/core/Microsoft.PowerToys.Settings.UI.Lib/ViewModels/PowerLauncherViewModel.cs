@@ -22,41 +22,36 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public PowerLauncherViewModel(Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
-            try
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+
+            callback = (PowerLauncherSettings settings) =>
             {
-                callback = (PowerLauncherSettings settings) =>
-                {
-                    // Propagate changes to Power Launcher through IPC
-                    SendConfigMSG(
-                        string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.ModuleName, JsonSerializer.Serialize(settings)));
-                };
-                if (SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
-                {
-                    settings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
-                }
-                else
-                {
-                    settings = new PowerLauncherSettings();
-                    settings.Properties.OpenPowerLauncher.Alt = true;
-                    settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
-                    settings.Properties.MaximumNumberOfResults = 4;
-                    callback(settings);
-                }
+                // Propagate changes to Power Launcher through IPC
+                SendConfigMSG(
+                    string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.ModuleName, JsonSerializer.Serialize(settings)));
+            };
 
-                if (SettingsUtils.SettingsExists())
-                {
-                    generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
-                }
-                else
-                {
-                    generalSettings = new GeneralSettings();
-                }
-
-                // set the callback functions value to hangle outgoing IPC message.
-                SendConfigMSG = ipcMSGCallBackFunc;
+            if (SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+            {
+                settings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
             }
-            catch
+            else
             {
+                settings = new PowerLauncherSettings();
+                settings.Properties.OpenPowerLauncher.Alt = true;
+                settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
+                settings.Properties.MaximumNumberOfResults = 4;
+                callback(settings);
+            }
+
+            if (SettingsUtils.SettingsExists())
+            {
+                generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
+            }
+            else
+            {
+                generalSettings = new GeneralSettings();
             }
         }
 
