@@ -461,7 +461,7 @@ ZoneSet::ExtendWindowByDirectionAndPosition(HWND window, HWND windowZone, DWORD 
         // If selectManyZones = true for the second time, use the last zone into which we moved
         // instead of the window rect and enable moving to all zones except the old one
         auto finalIndexIt = m_windowFinalIndex.find(window);
-        if (true && finalIndexIt != m_windowFinalIndex.end())
+        if (finalIndexIt != m_windowFinalIndex.end())
         {
             usedZoneIndices[finalIndexIt->second] = true;
             windowRect = zoneObjects[finalIndexIt->second]->GetZoneRect();
@@ -493,52 +493,35 @@ ZoneSet::ExtendWindowByDirectionAndPosition(HWND window, HWND windowZone, DWORD 
         {
             size_t targetZone = freeZoneIndices[result];
             std::vector<size_t> resultIndexSet;
-            if (true)
+
+            // First time with selectManyZones = true for this window?
+            if (finalIndexIt == m_windowFinalIndex.end())
             {
-                // First time with selectManyZones = true for this window?
-                if (finalIndexIt == m_windowFinalIndex.end())
+                // Already zoned?
+                if (oldZones.size())
                 {
-                    // Already zoned?
-                    if (oldZones.size())
-                    {
-                        m_windowInitialIndexSet[window] = oldZones;
-                        m_windowFinalIndex[window] = targetZone;
-                        resultIndexSet = GetCombinedZoneRange(oldZones, { targetZone });
-                    }
-                    else
-                    {
-                        m_windowInitialIndexSet[window] = { targetZone };
-                        m_windowFinalIndex[window] = targetZone;
-                        resultIndexSet = { targetZone };
-                    }
+                    m_windowInitialIndexSet[window] = oldZones;
+                    m_windowFinalIndex[window] = targetZone;
+                    resultIndexSet = GetCombinedZoneRange(oldZones, { targetZone });
                 }
                 else
                 {
-                    auto deletethis = m_windowInitialIndexSet[window];
+                    m_windowInitialIndexSet[window] = { targetZone };
                     m_windowFinalIndex[window] = targetZone;
-                    resultIndexSet = GetCombinedZoneRange(m_windowInitialIndexSet[window], { targetZone });
+                    resultIndexSet = { targetZone };
                 }
             }
             else
             {
-                resultIndexSet = { targetZone };
+                auto deletethis = m_windowInitialIndexSet[window];
+                m_windowFinalIndex[window] = targetZone;
+                resultIndexSet = GetCombinedZoneRange(m_windowInitialIndexSet[window], { targetZone });
             }
+
             m_inExtendWindow = true;
             MoveWindowIntoZoneByIndexSet(window, windowZone, resultIndexSet);
             m_inExtendWindow = false;
             return true;
-        }
-        else if (false)
-        {
-            // Try again from the position off the screen in the opposite direction to vkCode
-            windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
-            result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
-
-            if (result < zoneRects.size())
-            {
-                MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
-                return true;
-            }
         }
     }
 
