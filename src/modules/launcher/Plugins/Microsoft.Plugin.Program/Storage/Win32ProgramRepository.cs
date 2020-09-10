@@ -69,6 +69,7 @@ namespace Microsoft.Plugin.Program.Storage
             string newPath = e.FullPath;
 
             string extension = Path.GetExtension(newPath);
+            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(newPath);
             Programs.Win32Program newApp = Programs.Win32Program.GetAppFromPath(newPath);
             Programs.Win32Program oldApp = null;
 
@@ -78,11 +79,11 @@ namespace Microsoft.Plugin.Program.Storage
             // This situation is not encountered for other application types because the fullPath is the path itself, instead of being computed by using the path to the app.
             try
             {
-                if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
+                if (appType == Win32Program.ApplicationType.ShortcutApplication)
                 {
                     oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
                 }
-                else if (extension.Equals(UrlExtension, StringComparison.OrdinalIgnoreCase))
+                else if (appType == Win32Program.ApplicationType.InternetShortcutApplication)
                 {
                     oldApp = new Win32Program() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
                 }
