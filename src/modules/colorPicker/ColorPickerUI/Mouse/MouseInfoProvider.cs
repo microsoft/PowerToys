@@ -10,7 +10,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
-using static ColorPicker.Win32Apis;
+using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Mouse
 {
@@ -31,9 +31,13 @@ namespace ColorPicker.Mouse
             _timer.Interval = TimeSpan.FromMilliseconds(MousePullInfoIntervalInMs);
             _timer.Tick += Timer_Tick;
 
-            appStateMonitor.AppShown += AppStateMonitor_AppShown;
-            appStateMonitor.AppClosed += AppStateMonitor_AppClosed;
-            appStateMonitor.AppHidden += AppStateMonitor_AppClosed;
+            if (appStateMonitor != null)
+            {
+                appStateMonitor.AppShown += AppStateMonitor_AppShown;
+                appStateMonitor.AppClosed += AppStateMonitor_AppClosed;
+                appStateMonitor.AppHidden += AppStateMonitor_AppClosed;
+            }
+
             _mouseHook = new MouseHook();
             _userSettings = userSettings;
         }
@@ -79,11 +83,13 @@ namespace ColorPicker.Mouse
         private static Color GetPixelColor(System.Windows.Point mousePosition)
         {
             var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
-            var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb);
-            var g = Graphics.FromImage(bmp);
-            g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+            using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
+            {
+                var g = Graphics.FromImage(bmp);
+                g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
-            return bmp.GetPixel(0, 0);
+                return bmp.GetPixel(0, 0);
+            }
         }
 
         private static System.Windows.Point GetCursorPosition()
