@@ -7,7 +7,7 @@
 #include "trace.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
-#include "resource.h"
+#include "Generated files/resource.h"
 
 #include <common/common.h>
 #include <common/dpi_aware.h>

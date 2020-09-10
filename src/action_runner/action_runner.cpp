@@ -16,7 +16,7 @@
 #include "../runner/tray_icon.h"
 #include "../runner/action_runner_utils.h"
 
-#include "resource.h"
+#include "Generated Files/resource.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
