@@ -21,6 +21,7 @@
 #include <functional>
 #include <unordered_set>
 #include <ShObjIdl.h>
+#include <tuple>
 
 #pragma comment(lib, "windowsapp")
 
