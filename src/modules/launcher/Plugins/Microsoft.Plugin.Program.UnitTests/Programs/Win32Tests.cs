@@ -554,116 +554,20 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Assert.IsFalse(result.Title.Equals(_cmderRunCommand.Description, StringComparison.Ordinal));
         }
 
-        [Test]
-        public void GetAppTypeFromPathShouldReturnWin32ApplicationWhenExeFilePathIsPassedAsArgument()
+        [TestCase("C:\\Program Files\\dummy.exe", ExpectedResult = Win32Program.ApplicationType.Win32Application)]
+        [TestCase("C:\\Program Files\\dummy.msc", ExpectedResult = Win32Program.ApplicationType.Win32Application)]
+        [TestCase("C:\\Program Files\\dummy.lnk", ExpectedResult = Win32Program.ApplicationType.ShortcutApplication)]
+        [TestCase("C:\\Program Files\\dummy.appref-ms", ExpectedResult = Win32Program.ApplicationType.ApprefApplication)]
+        [TestCase("C:\\Program Files\\dummy.url", ExpectedResult = Win32Program.ApplicationType.InternetShortcutApplication)]
+        [TestCase("C:\\Program Files\\dummy", ExpectedResult = Win32Program.ApplicationType.Folder)]
+        [TestCase("C:\\Program Files\\dummy.txt", ExpectedResult = Win32Program.ApplicationType.GenericFile)]
+        public Win32Program.ApplicationType GetAppTypeFromPathShouldReturnCorrectAppTypeWhenAppPathIsPassedAsArgument(string path)
         {
-            // Arrange
-            string path = "C:\\Program Files\\dummy.exe";
-
             // Directory.Exists must be mocked
             Win32Program.DirectoryWrapper = GetMockedDirectoryWrapper();
 
             // Act
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(path);
-
-            // Assert
-            Assert.AreEqual(appType, Win32Program.ApplicationType.Win32Application);
-        }
-
-        [Test]
-        public void GetAppTypeFromPathShouldReturnWin32ApplicationWhenMscFilePathIsPassedAsArgument()
-        {
-            // Arrange
-            string path = "C:\\Program Files\\dummy.msc";
-
-            // Directory.Exists must be mocked
-            Win32Program.DirectoryWrapper = GetMockedDirectoryWrapper();
-
-            // Act
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(path);
-
-            // Assert
-            Assert.AreEqual(appType, Win32Program.ApplicationType.Win32Application);
-        }
-
-        [Test]
-        public void GetAppTypeFromPathShouldReturnShortcutApplicationWhenLnkFilePathIsPassedAsArgument()
-        {
-            // Arrange
-            string path = "C:\\Program Files\\dummy.lnk";
-
-            // Directory.Exists must be mocked
-            Win32Program.DirectoryWrapper = GetMockedDirectoryWrapper();
-
-            // Act
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(path);
-
-            // Assert
-            Assert.AreEqual(appType, Win32Program.ApplicationType.ShortcutApplication);
-        }
-
-        [Test]
-        public void GetAppTypeFromPathShouldReturnApprefApplicationWhenApprefMsFilePathIsPassedAsArgument()
-        {
-            // Arrange
-            string path = "C:\\Program Files\\dummy.appref-ms";
-
-            // Directory.Exists must be mocked
-            Win32Program.DirectoryWrapper = GetMockedDirectoryWrapper();
-
-            // Act
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(path);
-
-            // Assert
-            Assert.AreEqual(appType, Win32Program.ApplicationType.ApprefApplication);
-        }
-
-        [Test]
-        public void GetAppTypeFromPathShouldReturnInternetShortcutApplicationWhenUrlFilePathIsPassedAsArgument()
-        {
-            // Arrange
-            string path = "C:\\Program Files\\dummy.url";
-
-            // Directory.Exists must be mocked
-            Win32Program.DirectoryWrapper = GetMockedDirectoryWrapper();
-
-            // Act
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(path);
-
-            // Assert
-            Assert.AreEqual(appType, Win32Program.ApplicationType.InternetShortcutApplication);
-        }
-
-        [Test]
-        public void GetAppTypeFromPathShouldReturnFolderWhenFolderPathIsPassedAsArgument()
-        {
-            // Arrange
-            string path = "C:\\Program Files\\dummy";
-
-            // Directory.Exists must be mocked
-            Win32Program.DirectoryWrapper = GetMockedDirectoryWrapper();
-
-            // Act
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(path);
-
-            // Assert
-            Assert.AreEqual(appType, Win32Program.ApplicationType.Folder);
-        }
-
-        [Test]
-        public void GetAppTypeFromPathShouldReturnGenericFileWhenTxtFilePathIsPassedAsArgument()
-        {
-            // Arrange
-            string path = "C:\\Program Files\\dummy.txt";
-
-            // Directory.Exists must be mocked
-            Win32Program.DirectoryWrapper = GetMockedDirectoryWrapper();
-
-            // Act
-            Win32Program.ApplicationType appType = Win32Program.GetAppTypeFromPath(path);
-
-            // Assert
-            Assert.AreEqual(appType, Win32Program.ApplicationType.GenericFile);
+            return Win32Program.GetAppTypeFromPath(path);
         }
     }
 }
