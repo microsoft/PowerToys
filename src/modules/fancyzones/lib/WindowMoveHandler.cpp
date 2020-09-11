@@ -318,11 +318,10 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     {
         auto zoneWindow = std::move(m_zoneWindowMoveSize);
         ResetWindowTransparency();
+
         auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
-        auto myTie = [](const FancyZonesUtils::FancyZonesWindowInfo& windowInfo) {
-            return std::tie(windowInfo.noVisibleOwner, windowInfo.processPath, windowInfo.standardWindow);
-        };
-        if (myTie(windowInfo) == myTie(m_moveSizeStartWindowInfo))
+        if (windowInfo.standardWindow == m_moveSizeStartWindowInfo.standardWindow &&
+            windowInfo.noVisibleOwner == m_moveSizeStartWindowInfo.noVisibleOwner)
         {
             zoneWindow->MoveSizeEnd(m_windowMoveSize, ptScreen);
         }
