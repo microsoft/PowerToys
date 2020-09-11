@@ -320,8 +320,13 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         ResetWindowTransparency();
 
         auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
-        if (windowInfo.standardWindow == m_moveSizeStartWindowInfo.standardWindow &&
-            windowInfo.noVisibleOwner == m_moveSizeStartWindowInfo.noVisibleOwner)
+
+        if (windowInfo.standardWindow == false && windowInfo.noVisibleOwner == false &&
+          m_moveSizeStartWindowInfo.standardWindow == true && m_moveSizeStartWindowInfo.noVisibleOwner == true)
+        {
+            // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
+        }
+        else
         {
             zoneWindow->MoveSizeEnd(m_windowMoveSize, ptScreen);
         }
