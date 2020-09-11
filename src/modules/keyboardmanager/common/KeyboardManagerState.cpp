@@ -240,7 +240,6 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     auto detectedShortcutCopy = detectedShortcut;
     currentShortcut_lock.unlock();
     detectedShortcut_lock.unlock();
-
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
     currentShortcutUI1.as<StackPanel>().Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, detectedShortcutCopy]() {
         std::vector<hstring> shortcut = detectedShortcutCopy.GetKeyVector(keyboardMap);
@@ -419,6 +418,7 @@ void KeyboardManagerState::RegisterKeyDelay(
     {
         throw std::invalid_argument("This key was already registered.");
     }
+
     keyDelays[key] = std::make_unique<KeyDelay>(key, onShortPress, onLongPressDetected, onLongPressReleased);
 }
 
@@ -431,6 +431,13 @@ void KeyboardManagerState::UnregisterKeyDelay(DWORD key)
     {
         throw std::invalid_argument("The key was not previously registered.");
     }
+}
+
+// Function to clear all the registered key delays
+void KeyboardManagerState::ClearRegisteredKeyDelays()
+{
+    std::lock_guard l(keyDelays_mutex);
+    keyDelays.clear();
 }
 
 bool KeyboardManagerState::HandleKeyDelayEvent(LowlevelKeyboardEvent* ev)
