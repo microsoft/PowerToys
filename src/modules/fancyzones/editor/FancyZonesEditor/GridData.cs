@@ -1025,15 +1025,13 @@ namespace FancyZonesEditor
                 total += info[i].Percent;
             }
 
-            int totalDiff = total - 10000;
-            if (totalDiff != 0)
+            int prefixTotal = 0;
+            for (int i = 0; i < percents.Count; i++)
             {
-                for (int i = 0; i < percents.Count; i++)
-                {
-                    int diffFraction = (totalDiff * (i + 1) / percents.Count) - (totalDiff * i / percents.Count);
-                    info[i].Percent -= diffFraction;
-                    percents[i] = info[i].Percent;
-                }
+                int first = prefixTotal * 10000 / total;
+                prefixTotal += info[i].Percent;
+                int last = prefixTotal * 10000 / total;
+                percents[i] = info[i].Percent = last - first;
             }
         }
 
