@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
     <Platforms>x64</Platforms>
-    <RootNamespace>Microsoft.Plugin.Uri.UnitTests</RootNamespace>
+    <RootNamespace>Microsoft.Plugin.Folder.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -17,8 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.csproj" />
+    <ProjectReference Include="..\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj" />
   </ItemGroup>
+
+
   <ItemGroup>
     <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>

@@ -1,0 +1,34 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.IO;
+using Wox.Infrastructure;
+
+namespace Microsoft.Plugin.Folder.Sources.Result
+{
+    public class FileItemResult : IItemResult
+    {
+        private static readonly IExplorerAction ExplorerAction = new ExplorerAction();
+
+        public string FilePath { get; set; }
+
+        public string Title => Path.GetFileName(FilePath);
+
+        public string Search { get; set; }
+
+        public Wox.Plugin.Result Create()
+        {
+            var result = new Wox.Plugin.Result
+            {
+                Title = Title,
+                SubTitle = "Folder: " + FilePath,
+                IcoPath = FilePath,
+                TitleHighlightData = StringMatcher.FuzzySearch(Search, Path.GetFileName(FilePath)).MatchData,
+                Action = c => ExplorerAction.ExecuteWithCatch(FilePath),
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = FilePath },
+            };
+            return result;
+        }
+    }
+}
