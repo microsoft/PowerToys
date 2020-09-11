@@ -146,7 +146,7 @@
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
-    <value>File Explorer Preview</value>
+    <value>File Explorer</value>
     <comment>Navigation view item name for File Explorer Preview</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
@@ -640,10 +640,10 @@
     <value>About FancyZones</value>
   </data>
   <data name="About_FileExplorerPreview.Text" xml:space="preserve">
-    <value>About File Explorer Preview</value>
+    <value>About File Explorer</value>
   </data>
   <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
-    <value>File Explorer Preview</value>
+    <value>File Explorer</value>
   </data>
   <data name="About_ImageResizer.Text" xml:space="preserve">
     <value>About Image Resizer</value>
@@ -752,5 +752,11 @@
   </data>
   <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
     <value>You have the latest available version.</value>
+  </data>
+  <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
+    <value>Icon Preview</value>
+  </data>
+  <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
+    <value>Preview Pane</value>
   </data>
 </root>
