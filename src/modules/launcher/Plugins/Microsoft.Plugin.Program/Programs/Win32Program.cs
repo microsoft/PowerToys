@@ -384,6 +384,7 @@ namespace Microsoft.Plugin.Program.Programs
                     catch (UriFormatException e)
                     {
                         // To catch the exception if the uri cannot be parsed.
+                        // Link to watson crash: https://watsonportal.microsoft.com/Failure?FailureSearchText=5f871ea7-e886-911f-1b31-131f63f6655b
                         ProgramLogger.LogException($"|Win32Program|InternetShortcutProgram|{urlPath}|url could not be parsed", e);
                         return new Win32Program() { Valid = false, Enabled = false };
                     }
