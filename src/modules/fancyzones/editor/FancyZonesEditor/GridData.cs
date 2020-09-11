@@ -1028,23 +1028,12 @@ namespace FancyZonesEditor
             int totalDiff = total - 10000;
             if (totalDiff != 0)
             {
-                int perLineDiff = totalDiff / percents.Count;
-                int lastLineDiff = totalDiff - (perLineDiff * (percents.Count - 1));
-
-                for (int i = 0; i < percents.Count - 1 && perLineDiff != 0; i++)
+                for (int i = 0; i < percents.Count; i++)
                 {
-                    int percent = percents[i] - perLineDiff;
-                    if (percent < 0)
-                    {
-                        percent = 0;
-                    }
-
-                    percents[i] = percent;
-                    info[i].Percent = percent;
+                    int diffFraction = (totalDiff * (i + 1) / percents.Count) - (totalDiff * i / percents.Count);
+                    info[i].Percent -= diffFraction;
+                    percents[i] = info[i].Percent;
                 }
-
-                info[percents.Count - 1].Percent -= lastLineDiff;
-                percents[percents.Count - 1] -= lastLineDiff;
             }
         }
 
