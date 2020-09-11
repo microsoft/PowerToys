@@ -104,9 +104,10 @@ private:
 
     HWND m_windowMoveSize{}; // The window that is being moved/sized
     bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
+    FancyZonesUtils::FancyZonesWindowInfo m_moveSizeStartWindowInfo; // WindowInfo of the window at the moment when dragging started
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
-    
+
     std::atomic<bool> m_mouseState;
     SecondaryMouseButtonsHook m_mouseHook;
     KeyState<VK_LSHIFT, VK_RSHIFT> m_shiftKeyState;
@@ -183,6 +184,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
         return;
     }
 
+    m_moveSizeStartWindowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
     m_inMoveSize = true;
 
     auto iter = zoneWindowMap.find(monitor);
@@ -309,7 +311,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
 
 void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
-    if (window != m_windowMoveSize && !FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
+    if (window != m_windowMoveSize)
     {
         return;
     }
@@ -322,7 +324,18 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     {
         auto zoneWindow = std::move(m_zoneWindowMoveSize);
         ResetWindowTransparency();
-        zoneWindow->MoveSizeEnd(m_windowMoveSize, ptScreen);
+
+        auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
+
+        if (windowInfo.standardWindow == false && windowInfo.noVisibleOwner == false &&
+          m_moveSizeStartWindowInfo.standardWindow == true && m_moveSizeStartWindowInfo.noVisibleOwner == true)
+        {
+            // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
+        }
+        else
+        {
+            zoneWindow->MoveSizeEnd(m_windowMoveSize, ptScreen);
+        }
     }
     else
     {
@@ -358,7 +371,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         }
         ::RemoveProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
     }
-    
+
     m_inMoveSize = false;
     m_dragEnabled = false;
     m_mouseState = false;
