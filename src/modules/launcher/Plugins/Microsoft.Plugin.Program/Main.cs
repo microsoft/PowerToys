@@ -154,8 +154,8 @@ namespace Microsoft.Plugin.Program
             }
             catch (Exception)
             {
-                var name = "Plugin: Program";
-                var message = $"Unable to start: {info?.FileName}";
+                var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
+                var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {info?.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
             }
         }

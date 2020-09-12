@@ -4,13 +4,12 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Wox.Infrastructure.FileSystemHelper;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
-    public interface IQueryFileSystemInfo
+    public interface IQueryFileSystemInfo : IDirectoryWrapper
     {
         IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, SearchOption searchOption);
-
-        bool DirectoryExists(string path);
     }
 }

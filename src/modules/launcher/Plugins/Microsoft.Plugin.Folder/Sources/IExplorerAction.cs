@@ -2,16 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Wox.Plugin;
+
 namespace Microsoft.Plugin.Folder.Sources
 {
     public interface IExplorerAction
     {
-        bool Execute(string sanitizedPath);
+        bool Execute(string sanitizedPath, IPublicAPI contextApi);
 
-        bool ExecuteSanitized(string search);
-
-        bool ExecuteWithCatch(string filePath);
-
-        bool ExecuteSanitizedWithCatch(string filePath);
+        bool ExecuteSanitized(string search, IPublicAPI contextApi);
     }
 }

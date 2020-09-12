@@ -4,8 +4,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
+using Wox.Infrastructure.Logger;
+using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
@@ -13,43 +16,24 @@ namespace Microsoft.Plugin.Folder.Sources
     {
         private const string FileExplorerProgramName = "explorer";
 
-        public bool Execute(string path)
+        public bool Execute(string path, IPublicAPI contextApi)
         {
-            Process.Start(FileExplorerProgramName, path);
-            return true;
+            if (contextApi == null)
+            {
+                throw new ArgumentNullException(nameof(contextApi));
+            }
+
+            return OpenFileOrFolder(FileExplorerProgramName, path, contextApi);
         }
 
-        public bool ExecuteSanitized(string search)
+        public bool ExecuteSanitized(string search, IPublicAPI contextApi)
         {
-            return Execute(SanitizedPath(search));
-        }
-
-        public bool ExecuteWithCatch(string filePath)
-        {
-            try
+            if (contextApi == null)
             {
-                return Execute(filePath);
-            }
-            catch (InvalidOperationException ex)
-            {
-                MessageBox.Show(ex.Message, "Could not start " + filePath);
+                throw new ArgumentNullException(nameof(contextApi));
             }
 
-            return true;
-        }
-
-        public bool ExecuteSanitizedWithCatch(string filePath)
-        {
-            try
-            {
-                return ExecuteSanitized(filePath);
-            }
-            catch (InvalidOperationException ex)
-            {
-                MessageBox.Show(ex.Message, "Could not start " + filePath);
-            }
-
-            return true;
+            return Execute(SanitizedPath(search), contextApi);
         }
 
         private static string SanitizedPath(string search)
@@ -63,6 +47,23 @@ namespace Microsoft.Plugin.Folder.Sources
             }
 
             return sanitizedPath.Insert(0, "\\");
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and instead inform the user of the error")]
+        private static bool OpenFileOrFolder(string program, string path, IPublicAPI contextApi)
+        {
+            try
+            {
+                Process.Start(program, path);
+            }
+            catch (Exception e)
+            {
+                string messageBoxTitle = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_OpenFileOrFolder_error_message, path);
+                Log.Exception($"|Microsoft.Plugin.Folder.Main.OpenFileOrFolder| Failed to open {path} in explorer, {e.Message}", e);
+                contextApi.ShowMsg(messageBoxTitle, e.Message);
+            }
+
+            return true;
         }
     }
 }

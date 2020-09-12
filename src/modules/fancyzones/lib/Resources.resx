@@ -148,7 +148,7 @@
     <value>Show zones on all monitors while dragging a window</value>
   </data>
   <data name="Setting_Description_Span_Zones_Across_Monitors" xml:space="preserve">
-    <value>Allow zones to span across monitors</value>
+    <value>Allow zones to span across monitors (all monitors must have the same DPI scaling)</value>
   </data>
   <data name="Setting_Description_Make_Dragged_Window_Transparent" xml:space="preserve">
     <value>Make dragged window transparent</value>
@@ -212,5 +212,8 @@
   </data>
   <data name="Powertoys_FancyZones" xml:space="preserve">
     <value>PowerToys - FancyZones</value>
+  </data>
+  <data name="Span_Across_Zones_Warning" xml:space="preserve">
+    <value>The 'Allow zones to span across monitors' option requires all monitors to have the same DPI scaling to work properly.</value>
   </data>
 </root>

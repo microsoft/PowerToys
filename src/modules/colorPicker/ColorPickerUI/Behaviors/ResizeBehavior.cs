@@ -11,8 +11,7 @@ namespace ColorPicker.Behaviors
 {
     public class ResizeBehavior : Behavior<FrameworkElement>
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        public static DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(double), typeof(ResizeBehavior), new PropertyMetadata(new PropertyChangedCallback(WidthPropertyChanged)));
+        public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(double), typeof(ResizeBehavior), new PropertyMetadata(new PropertyChangedCallback(WidthPropertyChanged)));
 
         private static void WidthPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -28,8 +27,7 @@ namespace ColorPicker.Behaviors
             sender.BeginAnimation(FrameworkElement.WidthProperty, move, HandoffBehavior.Compose);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
-        public static DependencyProperty HeightProperty = DependencyProperty.Register("Height", typeof(double), typeof(ResizeBehavior), new PropertyMetadata(new PropertyChangedCallback(HeightPropertyChanged)));
+        public static readonly DependencyProperty HeightProperty = DependencyProperty.Register("Height", typeof(double), typeof(ResizeBehavior), new PropertyMetadata(new PropertyChangedCallback(HeightPropertyChanged)));
 
         private static void HeightPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

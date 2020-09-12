@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public string Location => ParentDirectory;
 
-        public uint AppType { get; set; }
+        public ApplicationType AppType { get; set; }
 
         // Wrappers for File Operations
         public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
@@ -61,20 +61,26 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static IShellLinkHelper Helper { get; set; } = new ShellLinkHelper();
 
+        public static IDirectoryWrapper DirectoryWrapper { get; set; } = new DirectoryWrapper();
+
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
-        private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
+        private static readonly HashSet<string> ExecutableApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
 
         private const string ProxyWebApp = "_proxy.exe";
         private const string AppIdArgument = "--app-id";
 
-        private enum ApplicationTypes
+        public enum ApplicationType
         {
-            WEB_APPLICATION = 0,
-            INTERNET_SHORTCUT_APPLICATION = 1,
-            WIN32_APPLICATION = 2,
-            RUN_COMMAND = 3,
+            WebApplication = 0,
+            InternetShortcutApplication = 1,
+            Win32Application = 2,
+            ShortcutApplication = 3,
+            ApprefApplication = 4,
+            RunCommand = 5,
+            Folder = 6,
+            GenericFile = 7,
         }
 
         // Function to calculate the score of a result
@@ -106,7 +112,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // Set the subtitle to 'Web Application'
-            AppType = (uint)ApplicationTypes.WEB_APPLICATION;
+            AppType = ApplicationType.WebApplication;
 
             string[] subqueries = query?.Split() ?? Array.Empty<string>();
             bool nameContainsQuery = false;
@@ -132,21 +138,29 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to set the subtitle based on the Type of application
         private string SetSubtitle()
         {
-            if (AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
+            if (AppType == ApplicationType.Win32Application || AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication)
             {
                 return Properties.Resources.powertoys_run_plugin_program_win32_application;
             }
-            else if (AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
+            else if (AppType == ApplicationType.InternetShortcutApplication)
             {
                 return Properties.Resources.powertoys_run_plugin_program_internet_shortcut_application;
             }
-            else if (AppType == (uint)ApplicationTypes.WEB_APPLICATION)
+            else if (AppType == ApplicationType.WebApplication)
             {
                 return Properties.Resources.powertoys_run_plugin_program_web_application;
             }
-            else if (AppType == (uint)ApplicationTypes.RUN_COMMAND)
+            else if (AppType == ApplicationType.RunCommand)
             {
                 return Properties.Resources.powertoys_run_plugin_program_run_command;
+            }
+            else if (AppType == ApplicationType.Folder)
+            {
+                return Properties.Resources.powertoys_run_plugin_program_folder_type;
+            }
+            else if (AppType == ApplicationType.GenericFile)
+            {
+                return Properties.Resources.powertoys_run_plugin_program_generic_file_type;
             }
             else
             {
@@ -156,7 +170,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public bool QueryEqualsNameForRunCommands(string query)
         {
-            if (query != null && AppType == (uint)ApplicationTypes.RUN_COMMAND
+            if (query != null && AppType == ApplicationType.RunCommand
                 && !query.Equals(Name, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -240,7 +254,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var contextMenus = new List<ContextMenuResult>();
 
-            if (AppType != (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
+            if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
             {
                 contextMenus.Add(new ContextMenuResult
                 {
@@ -330,7 +344,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Description = string.Empty,
                     Valid = true,
                     Enabled = true,
-                    AppType = (uint)ApplicationTypes.WIN32_APPLICATION,
+                    AppType = ApplicationType.Win32Application,
                 };
                 return p;
             }
@@ -362,7 +376,18 @@ namespace Microsoft.Plugin.Program.Programs
                 if (line.StartsWith(urlPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     urlPath = line.Substring(urlPrefix.Length);
-                    Uri uri = new Uri(urlPath);
+
+                    try
+                    {
+                        Uri uri = new Uri(urlPath);
+                    }
+                    catch (UriFormatException e)
+                    {
+                        // To catch the exception if the uri cannot be parsed.
+                        // Link to watson crash: https://watsonportal.microsoft.com/Failure?FailureSearchText=5f871ea7-e886-911f-1b31-131f63f6655b
+                        ProgramLogger.LogException($"|Win32Program|InternetShortcutProgram|{urlPath}|url could not be parsed", e);
+                        return new Win32Program() { Valid = false, Enabled = false };
+                    }
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
                     if (internetShortcutURLPrefixes.Match(urlPath).Success)
@@ -394,7 +419,7 @@ namespace Microsoft.Plugin.Program.Programs
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Valid = true,
                     Enabled = true,
-                    AppType = (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION,
+                    AppType = ApplicationType.InternetShortcutApplication,
                 };
                 return p;
             }
@@ -421,14 +446,11 @@ namespace Microsoft.Plugin.Program.Programs
 
                 if (!string.IsNullOrEmpty(target))
                 {
-                    var extension = Extension(target);
-                    if (extension == ExeExtension && File.Exists(target))
+                    if (File.Exists(target) || Directory.Exists(target))
                     {
                         program.LnkResolvedPath = program.FullPath;
                         program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
-                        program.ExecutableName = Path.GetFileName(target);
-                        program.HasArguments = Helper.HasArguments;
-                        program.Arguments = Helper.Arguments;
+                        program.AppType = GetAppTypeFromPath(target);
 
                         var description = Helper.Description;
                         if (!string.IsNullOrEmpty(description))
@@ -484,6 +506,51 @@ namespace Microsoft.Plugin.Program.Programs
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
+            catch (FileNotFoundException e)
+            {
+                ProgramLogger.LogException(
+                    $"|Win32|ExeProgram|{path}" +
+                                            $"|Unable to locate exe file at {path}", e);
+
+                return new Win32Program() { Valid = false, Enabled = false };
+            }
+        }
+
+        // Function to get the application type, given the path to the application
+        public static ApplicationType GetAppTypeFromPath(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            string extension = Extension(path);
+            ApplicationType appType = ApplicationType.GenericFile;
+
+            if (ExecutableApplicationExtensions.Contains(extension))
+            {
+                appType = ApplicationType.Win32Application;
+            }
+            else if (extension.Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                appType = ApplicationType.ShortcutApplication;
+            }
+            else if (extension.Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                appType = ApplicationType.ApprefApplication;
+            }
+            else if (extension.Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                appType = ApplicationType.InternetShortcutApplication;
+            }
+
+            // If the path exists, check if it is a directory
+            else if (DirectoryWrapper.Exists(path))
+            {
+                appType = ApplicationType.Folder;
+            }
+
+            return appType;
         }
 
         // Function to get the Win32 application, given the path to the application
@@ -495,26 +562,23 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             Win32Program app = null;
-            const string exeExtension = ".exe";
-            const string lnkExtension = ".lnk";
-            const string urlExtenion = ".url";
-            const string apprefExtension = ".appref-ms";
 
-            string extension = Path.GetExtension(path);
+            ApplicationType appType = GetAppTypeFromPath(path);
 
-            if (extension.Equals(exeExtension, StringComparison.OrdinalIgnoreCase))
+            if (appType == ApplicationType.Win32Application)
             {
                 app = ExeProgram(path);
             }
-            else if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+            else if (appType == ApplicationType.ShortcutApplication)
             {
                 app = LnkProgram(path);
             }
-            else if (extension.Equals(apprefExtension, StringComparison.OrdinalIgnoreCase))
+            else if (appType == ApplicationType.ApprefApplication)
             {
                 app = CreateWin32Program(path);
+                app.AppType = ApplicationType.ApprefApplication;
             }
-            else if (extension.Equals(urlExtenion, StringComparison.OrdinalIgnoreCase))
+            else if (appType == ApplicationType.InternetShortcutApplication)
             {
                 app = InternetShortcutProgram(path);
             }
@@ -618,13 +682,13 @@ namespace Microsoft.Plugin.Program.Programs
 
             var paths = listToAdd.Distinct().ToArray();
 
-            var programs1 = paths.AsParallel().Where(p => Extension(p) == ExeExtension).Select(ExeProgram);
-            var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(ExeProgram);
+            var programs1 = paths.AsParallel().Where(p => ExecutableApplicationExtensions.Contains(Extension(p))).Select(ExeProgram);
+            var programs2 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs3 = from p in paths.AsParallel()
                             let e = Extension(p)
-                            where e != ShortcutExtension && e != ExeExtension
+                            where e != ShortcutExtension && !ExecutableApplicationExtensions.Contains(e)
                             select CreateWin32Program(p);
-            return programs1.Concat(programs2).Concat(programs3);
+            return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
         }
 
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
@@ -654,14 +718,14 @@ namespace Microsoft.Plugin.Program.Programs
             var programs1 = allPaths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
             var programs2 = allPaths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(CreateWin32Program);
             var programs3 = allPaths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
-            var programs4 = allPaths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
+            var programs4 = allPaths.AsParallel().Where(p => ExecutableApplicationExtensions.Contains(Extension(p))).Select(ExeProgram);
 
             var allPrograms = programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
                 .Concat(programs4).Where(p => p.Valid)
                 .Select(p =>
                 {
-                    p.AppType = (uint)ApplicationTypes.RUN_COMMAND;
+                    p.AppType = ApplicationType.RunCommand;
                     return p;
                 });
 
@@ -688,7 +752,7 @@ namespace Microsoft.Plugin.Program.Programs
             var programs1 = paths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(CreateWin32Program);
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
-            var programs4 = paths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
+            var programs4 = paths.AsParallel().Where(p => ExecutableApplicationExtensions.Contains(Extension(p))).Select(ExeProgram);
 
             return programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
@@ -850,7 +914,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Deduplication code
         public static Win32Program[] DeduplicatePrograms(ParallelQuery<Win32Program> programs)
         {
-            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.RUN_COMMAND)));
+            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && ExecutableApplicationExtensions.Contains(Extension(x.FullPath)) && !(x.AppType == ApplicationType.RunCommand)));
             var uniquePrograms = uniqueExePrograms.Distinct(new RemoveDuplicatesComparer());
             return uniquePrograms.ToArray();
         }

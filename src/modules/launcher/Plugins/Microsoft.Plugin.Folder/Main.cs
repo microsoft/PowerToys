@@ -55,7 +55,7 @@ namespace Microsoft.Plugin.Folder
             var expandedName = FolderHelper.Expand(query.Search);
 
             return _processors.SelectMany(processor => processor.Results(query.ActionKeyword, expandedName))
-                .Select(res => res.Create())
+                .Select(res => res.Create(_context.API))
                 .Select(AddScore)
                 .ToList();
         }
@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Folder
             var expandedName = FolderHelper.Expand(query.Search);
 
             return _processors.SelectMany(processor => processor.Results(query.ActionKeyword, expandedName))
-                .Select(res => res.Create())
+                .Select(res => res.Create(_context.API))
                 .Select(AddScore);
         }
 

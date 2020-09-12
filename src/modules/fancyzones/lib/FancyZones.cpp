@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include <common/common.h>
 #include <common/dpi_aware.h>
 #include <common/on_thread_executor.h>
 #include <common/window_helpers.h>
@@ -17,6 +18,8 @@
 #include "MonitorWorkAreaHandler.h"
 
 #include <lib/SecondaryMouseButtonsHook.h>
+
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 enum class DisplayChangeType
 {
@@ -204,6 +207,7 @@ private:
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
+    bool ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
 
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
 
@@ -521,21 +525,23 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     // Return true to swallow the keyboard event
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
-    if (win && !shift)
+    bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
+    bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+    if ((win && !shift && !ctrl) || (win && ctrl && alt))
     {
-        bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
-        if (ctrl)
-        {
-            // Temporarily disable Win+Ctrl+Number functionality
-            //if ((info->vkCode >= '0') && (info->vkCode <= '9'))
-            //{
-            //    // Win+Ctrl+Number will cycle through ZoneSets
-            //    Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-            //    CycleActiveZoneSet(info->vkCode);
-            //    return true;
-            //}
-        }
-        else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
+        // Temporarily disable Win+Ctrl+Number functionality
+        // if (ctrl)
+        // {
+        //    if ((info->vkCode >= '0') && (info->vkCode <= '9'))
+        //    {
+        //        // Win+Ctrl+Number will cycle through ZoneSets
+        //        Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
+        //        CycleActiveZoneSet(info->vkCode);
+        //        return true;
+        //    }
+        // }
+        // else
+        if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
         {
             if (ShouldProcessSnapHotkey(info->vkCode))
             {
@@ -627,6 +633,29 @@ void FancyZones::ToggleEditor() noexcept
         m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
                               allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
             } }).wait();
+
+        UINT currentDpi = 0;
+        for (const auto& monitor : allMonitors)
+        {
+            UINT dpiX = 0;
+            UINT dpiY = 0;
+            if (GetDpiForMonitor(monitor.first, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
+            {
+                if (currentDpi == 0)
+                {
+                  currentDpi = dpiX;
+                  continue;
+                }
+                if (currentDpi != dpiX)
+                {
+                    MessageBoxW(NULL,
+                    GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
+                    GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+                    MB_OK | MB_ICONWARNING);
+                    break;
+                }
+            }
+        }
 
         for (auto& [monitor, workArea] : allMonitors)
         {
@@ -1116,7 +1145,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
     {
         // Multi monitor environment.
         // First, try to stay on the same monitor
-        bool success = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, false, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+        bool success = ProcessDirectedSnapHotkey(window, vkCode, false, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
         if (success)
         {
             return true;
@@ -1224,7 +1253,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
     else
     {
         // Single monitor environment, or combined multi-monitor environment.
-        return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, true, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+        return ProcessDirectedSnapHotkey(window, vkCode, true, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
     }
 }
 
@@ -1243,6 +1272,19 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
         }
     }
     return false;
+}
+
+bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+{
+    // Check whether Alt is used in the shortcut key combination
+    if (GetAsyncKeyState(VK_MENU) & 0x8000)
+    {
+        return m_windowMoveHandler.ExtendWindowByDirectionAndPosition(window, vkCode, zoneWindow);
+    }
+    else
+    {
+        return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, zoneWindow);
+    }
 }
 
 void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept

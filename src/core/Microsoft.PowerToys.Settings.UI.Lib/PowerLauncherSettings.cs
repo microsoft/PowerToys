@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public PowerLauncherSettings()
         {
             Properties = new PowerLauncherProperties();
-            Version = "1";
+            Version = "1.0";
             Name = ModuleName;
         }
 

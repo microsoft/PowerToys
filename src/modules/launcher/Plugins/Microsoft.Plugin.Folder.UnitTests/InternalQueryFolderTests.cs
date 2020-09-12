@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
         public void SetupMock()
         {
             var queryFileSystemInfoMock = new Mock<IQueryFileSystemInfo>();
-            queryFileSystemInfoMock.Setup(r => r.DirectoryExists(It.IsAny<string>()))
+            queryFileSystemInfoMock.Setup(r => r.Exists(It.IsAny<string>()))
                 .Returns<string>(path => ContainsDirectory(path));
 
             queryFileSystemInfoMock.Setup(r => r.MatchFileSystemInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SearchOption>()))

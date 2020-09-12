@@ -4,6 +4,7 @@
 
 using System.IO;
 using Wox.Infrastructure;
+using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources.Result
 {
@@ -17,7 +18,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 
         public string Search { get; set; }
 
-        public Wox.Plugin.Result Create()
+        public Wox.Plugin.Result Create(IPublicAPI contextApi)
         {
             var result = new Wox.Plugin.Result
             {
@@ -25,7 +26,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 SubTitle = "Folder: " + FilePath,
                 IcoPath = FilePath,
                 TitleHighlightData = StringMatcher.FuzzySearch(Search, Path.GetFileName(FilePath)).MatchData,
-                Action = c => ExplorerAction.ExecuteWithCatch(FilePath),
+                Action = c => ExplorerAction.Execute(FilePath, contextApi),
                 ContextData = new SearchResult { Type = ResultType.File, FullPath = FilePath },
             };
             return result;

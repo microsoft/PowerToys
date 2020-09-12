@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources.Result
 {
@@ -16,7 +17,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 
         public string Search { get; set; }
 
-        public Wox.Plugin.Result Create()
+        public Wox.Plugin.Result Create(IPublicAPI contextApi)
         {
             return new Wox.Plugin.Result
             {

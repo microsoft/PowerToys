@@ -403,8 +403,13 @@ void notifications::show_toast_with_activations(std::wstring message,
             }
         }
     }
-
-    notifier.Show(notification);
+    try
+    {
+        notifier.Show(notification);
+    }
+    catch (...)
+    {
+    }
 }
 
 void notifications::update_progress_bar_toast(std::wstring_view tag, progress_bar_params params)

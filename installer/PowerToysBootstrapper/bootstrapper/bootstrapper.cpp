@@ -91,7 +91,8 @@ std::unordered_set<CmdArgs> parseCmdArgs(const int nCmdArgs, LPWSTR* argList)
     }
     return result;
 }
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+
+int bootstrapper()
 {
     using namespace localized_strings;
     winrt::init_apartment();
@@ -215,7 +216,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 {
                     break;
                 }
-                progressParams.progress = min(0.99f, progressParams.progress + 0.001f);
+                progressParams.progress = std::min(0.99f, progressParams.progress + 0.001f);
                 notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
             }
         } }.detach();
@@ -257,12 +258,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         updateProgressBar(.5f, INSTALLING_DOTNET);
     }
-    if (installDotnet &&
-        !updating::dotnet_is_installed() &&
-        !updating::install_dotnet(cmdArgs.contains(CmdArgs::silent)) &&
-        !cmdArgs.contains(CmdArgs::silent))
+
+    try
     {
-        notifications::show_toast(DOTNET_INSTALL_ERROR, TOAST_TITLE);
+        if (installDotnet &&
+            !updating::dotnet_is_installed() &&
+            !updating::install_dotnet(cmdArgs.contains(CmdArgs::silent)) &&
+            !cmdArgs.contains(CmdArgs::silent))
+        {
+            notifications::show_toast(DOTNET_INSTALL_ERROR, TOAST_TITLE);
+        }
+    }
+    catch (...)
+    {
+        MessageBoxW(nullptr, L".NET Core installation", L"Unknown exception encountered!", MB_OK | MB_ICONERROR);
     }
 
     updateProgressBar(.75f, INSTALLING_NEW_VERSION);
@@ -288,9 +297,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NO_CONSOLE };
         sei.lpFile = newPTPath->c_str();
         sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = UPDATE_REPORT_SUCCESS;
         ShellExecuteExW(&sei);
     }
 
+    return 0;
+}
+
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+    try
+    {
+        return bootstrapper();
+    }
+    catch (const std::exception& ex)
+    {
+        MessageBoxA(nullptr, ex.what(), "Unhandled stdexception encountered!", MB_OK | MB_ICONERROR);
+    }
+    catch (winrt::hresult_error const& ex)
+    {
+        winrt::hstring message = ex.message();
+        MessageBoxW(nullptr, message.c_str(), L"Unhandled winrt exception encountered!", MB_OK | MB_ICONERROR);
+    }
+    catch (...)
+    {
+        auto lastErrorMessage = get_last_error_message(GetLastError());
+        std::wstring message = lastErrorMessage ? std::move(*lastErrorMessage) : L"";
+        MessageBoxW(nullptr, message.c_str(), L"Unknown exception encountered!", MB_OK | MB_ICONERROR);
+    }
     return 0;
 }

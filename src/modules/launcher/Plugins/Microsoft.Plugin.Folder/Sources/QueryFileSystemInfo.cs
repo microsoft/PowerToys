@@ -6,10 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Wox.Infrastructure.FileSystemHelper;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
-    public class QueryFileSystemInfo : IQueryFileSystemInfo
+    public class QueryFileSystemInfo : DirectoryWrapper,  IQueryFileSystemInfo
     {
         public IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, SearchOption searchOption)
         {
@@ -17,39 +18,35 @@ namespace Microsoft.Plugin.Folder.Sources
             var directoryInfo = new DirectoryInfo(search);
             var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, searchOption);
 
-            var q = SafeEnumerateFileSystemInfos(fileSystemInfos);
-
-            return q
+            return SafeEnumerateFileSystemInfos(fileSystemInfos)
                 .Where(fileSystemInfo => (fileSystemInfo.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden)
-                .Take(100)
                 .Select(CreateDisplayFileInfo);
         }
 
         private static IEnumerable<FileSystemInfo> SafeEnumerateFileSystemInfos(IEnumerable<FileSystemInfo> fileSystemInfos)
         {
-            var enumerator = fileSystemInfos.GetEnumerator();
-
-            while (true)
+            using (var enumerator = fileSystemInfos.GetEnumerator())
             {
-                FileSystemInfo currentFileSystemInfo;
-                try
+                while (true)
                 {
-                    if (!enumerator.MoveNext())
+                    FileSystemInfo currentFileSystemInfo;
+                    try
                     {
-                        break;
+                        if (!enumerator.MoveNext())
+                        {
+                            break;
+                        }
+
+                        currentFileSystemInfo = enumerator.Current;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        continue;
                     }
 
-                    currentFileSystemInfo = enumerator.Current;
+                    yield return currentFileSystemInfo;
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    continue;
-                }
-
-                yield return currentFileSystemInfo;
             }
-
-            enumerator.Dispose();
         }
 
         private static DisplayFileInfo CreateDisplayFileInfo(FileSystemInfo fileSystemInfo)
@@ -72,11 +69,6 @@ namespace Microsoft.Plugin.Folder.Sources
             {
                 return DisplayType.File;
             }
-        }
-
-        public bool DirectoryExists(string path)
-        {
-            return Directory.Exists(path);
         }
     }
 }

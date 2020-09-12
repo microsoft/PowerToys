@@ -1,0 +1,236 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Controls;
+<<<<<<< HEAD
+using Microsoft.Plugin.Folder.Sources;
+using Microsoft.PowerToys.Settings.UI.Lib;
+=======
+using System.Windows.Media;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.VisualBasic;
+using Newtonsoft.Json;
+using Wox.Infrastructure;
+using Wox.Infrastructure.Logger;
+>>>>>>> master
+using Wox.Infrastructure.Storage;
+using Wox.Plugin;
+
+namespace Microsoft.Plugin.Folder
+{
+    public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu, IDisposable
+    {
+        public const string FolderImagePath = "Images\\folder.dark.png";
+        public const string FileImagePath = "Images\\file.dark.png";
+        public const string DeleteFileFolderImagePath = "Images\\delete.dark.png";
+        public const string CopyImagePath = "Images\\copy.dark.png";
+
+        private static readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
+        private static readonly FolderSettings _settings = _storage.Load();
+        private static readonly IQueryInternalDirectory _internalDirectory = new QueryInternalDirectory(_settings, new QueryFileSystemInfo());
+        private static readonly FolderHelper _folderHelper = new FolderHelper(new DriveInformation(), new FolderLinksSettings(_settings));
+
+        private static readonly ICollection<IFolderProcessor> _processors = new IFolderProcessor[]
+        {
+            new UserFolderProcessor(_folderHelper),
+            new InternalDirectoryProcessor(_folderHelper, _internalDirectory),
+        };
+
+        private static PluginInitContext _context;
+        private IContextMenu _contextMenuLoader;
+        private bool _disposed;
+
+        public void Save()
+        {
+            _storage.Save();
+        }
+
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Result> Query(Query query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(query));
+            }
+
+            var expandedName = FolderHelper.Expand(query.Search);
+
+            return _processors.SelectMany(processor => processor.Results(query.ActionKeyword, expandedName))
+                .Select(res => res.Create())
+                .Select(AddScore)
+                .ToList();
+        }
+
+<<<<<<< HEAD
+        public void Init(PluginInitContext context)
+=======
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and instead inform the user of the error")]
+        private static bool OpenFileOrFolder(string program, string path)
+        {
+            try
+            {
+                Process.Start(program, path);
+            }
+            catch (Exception e)
+            {
+                string messageBoxTitle = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_OpenFileOrFolder_error_message, path);
+                Log.Exception($"|Microsoft.Plugin.Folder.Main.OpenFileOrFolder| Failed to open {path} in explorer, {e.Message}", e);
+                _context.API.ShowMsg(messageBoxTitle, e.Message);
+            }
+
+            return true;
+        }
+
+        private static bool IsDriveOrSharedFolder(string search)
+>>>>>>> master
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _contextMenuLoader = new ContextMenuLoader(context);
+
+<<<<<<< HEAD
+            _context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(_context.API.GetCurrentTheme());
+=======
+        private static Result CreateFolderResult(string title, string subtitle, string path, Query query)
+        {
+            return new Result
+            {
+                Title = title,
+                IcoPath = path,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, subtitle),
+                QueryTextDisplay = path,
+                TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
+                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path },
+                Action = c =>
+                {
+                    return OpenFileOrFolder(_fileExplorerProgramName, path);
+                },
+            };
+>>>>>>> master
+        }
+
+        public static IEnumerable<Result> GetFolderPluginResults(Query query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(query));
+            }
+
+            var expandedName = FolderHelper.Expand(query.Search);
+
+            return _processors.SelectMany(processor => processor.Results(query.ActionKeyword, expandedName))
+                .Select(res => res.Create())
+                .Select(AddScore);
+        }
+
+        private static void UpdateIconPath(Theme theme)
+        {
+            QueryInternalDirectory.SetWarningIcon(theme);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1313:Parameter names should begin with lower-case letter", Justification = "The parameter is unused")]
+        private static void OnThemeChanged(Theme _, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
+        }
+
+<<<<<<< HEAD
+        // todo why was this hack here?
+        private static Result AddScore(Result result)
+        {
+            result.Score += 10;
+            return result;
+        }
+
+=======
+        private static Result CreateFileResult(string filePath, Query query)
+        {
+            var result = new Result
+            {
+                Title = Path.GetFileName(filePath),
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, filePath),
+                IcoPath = filePath,
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath },
+                TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
+                Action = c =>
+                {
+                    return OpenFileOrFolder(_fileExplorerProgramName, filePath);
+                },
+            };
+            return result;
+        }
+
+        private static Result CreateOpenCurrentFolderResult(string search)
+        {
+            var firstResult = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_first_result_title, search);
+            var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
+            var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
+
+            // A network path must start with \\
+            if (sanitizedPath.StartsWith("\\", StringComparison.InvariantCulture))
+            {
+                sanitizedPath = sanitizedPath.Insert(0, "\\");
+            }
+
+            return new Result
+            {
+                Title = firstResult,
+                QueryTextDisplay = search,
+                SubTitle = string.Format(CultureInfo.InvariantCulture, "{0}: {1}", Properties.Resources.wox_plugin_folder_plugin_name, Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle),
+                IcoPath = search,
+                Score = 500,
+                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = search },
+                Action = c =>
+                {
+                    return OpenFileOrFolder(_fileExplorerProgramName, search);
+                },
+            };
+        }
+
+>>>>>>> master
+        public string GetTranslatedPluginTitle()
+        {
+            return Properties.Resources.wox_plugin_folder_plugin_name;
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return Properties.Resources.wox_plugin_folder_plugin_description;
+        }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            return _contextMenuLoader.LoadContextMenus(selectedResult);
+        }
+
+        public void UpdateSettings(PowerLauncherSettings settings)
+        {
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _context.API.ThemeChanged -= OnThemeChanged;
+                    _disposed = true;
+                }
+            }
+        }
+    }
+}

@@ -21,7 +21,7 @@ namespace Microsoft.Plugin.Folder
 
         public string Subtitle { get; set; }
 
-        public Result Create()
+        public Result Create(IPublicAPI contextApi)
         {
             return new Result
             {
@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.Folder
                 QueryTextDisplay = Path,
                 TitleHighlightData = StringMatcher.FuzzySearch(Search, Title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Path },
-                Action = c => _explorerAction.Execute(Path),
+                Action = c => _explorerAction.Execute(Path, contextApi),
             };
         }
     }

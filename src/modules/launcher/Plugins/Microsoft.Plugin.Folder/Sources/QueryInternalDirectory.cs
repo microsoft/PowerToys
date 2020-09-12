@@ -58,7 +58,7 @@ namespace Microsoft.Plugin.Folder.Sources
         private (string search, string incompleteName) Process(string search)
         {
             string incompleteName = string.Empty;
-            if (HasSpecialChars(search) || !_queryFileSystemInfo.DirectoryExists($@"{search}\"))
+            if (HasSpecialChars(search) || !_queryFileSystemInfo.Exists($@"{search}\"))
             {
                 // if folder doesn't exist, we want to take the last part and use it afterwards to help the user
                 // find the right folder.
@@ -73,7 +73,7 @@ namespace Microsoft.Plugin.Folder.Sources
                 // Remove everything after the last \ and add *
                 incompleteName = search.Substring(index + 1).ToLower(CultureInfo.InvariantCulture) + "*";
                 search = search.Substring(0, index + 1);
-                if (!_queryFileSystemInfo.DirectoryExists(search))
+                if (!_queryFileSystemInfo.Exists(search))
                 {
                     return default;
                 }
@@ -121,7 +121,9 @@ namespace Microsoft.Plugin.Folder.Sources
 
             yield return new CreateOpenCurrentFolderResult(search);
 
+            // Note: Take 1000 is so that you don't search the whole system before you discard
             var lookup = _queryFileSystemInfo.MatchFileSystemInfo(search, incompleteName, searchOption)
+                .Take(1000)
                 .ToLookup(r => r.Type);
 
             var folderList = lookup[DisplayType.Directory].ToImmutableArray();
