@@ -265,6 +265,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\core\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.Plugin.Calculator.UnitTest\Microsoft.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder.UnitTests\Microsoft.Plugin.Folder.UnitTests.csproj", "{4FA206A5-F69F-4193-BF8F-F6EEB496734C}"
 EndProject
 Global
@@ -533,6 +535,10 @@ Global
 		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Debug|x64.Build.0 = Debug|x64
 		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Release|x64.ActiveCfg = Release|x64
 		{0F85E674-34AE-443D-954C-8321EB8B93B1}.Release|x64.Build.0 = Release|x64
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6}.Debug|x64.ActiveCfg = Debug|x64
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6}.Debug|x64.Build.0 = Debug|x64
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6}.Release|x64.ActiveCfg = Release|x64
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6}.Release|x64.Build.0 = Release|x64
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Debug|x64.ActiveCfg = Debug|x64
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Debug|x64.Build.0 = Debug|x64
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Release|x64.ActiveCfg = Release|x64
@@ -613,6 +619,7 @@ Global
 		{03276A39-D4E9-417C-8FFD-200B0EE5E871} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{B81FB7B6-D30E-428F-908A-41422EFC1172} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{0F85E674-34AE-443D-954C-8321EB8B93B1} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
