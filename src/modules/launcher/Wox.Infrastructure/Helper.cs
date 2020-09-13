@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Wox.Infrastructure.Logger;
@@ -108,6 +110,33 @@ namespace Wox.Infrastructure
             };
 
             return Process.Start(processStartInfo);
+        }
+
+        public static void KillProcess(string name)
+        {
+            var chromeDriverProcesses = Process.GetProcessesByName(name)
+                .Where(r => r.MainModule != null)
+                .ToArray();
+
+            var exceptions = new List<System.Exception>();
+
+            foreach (var process in chromeDriverProcesses)
+            {
+                try
+                {
+                    process.Kill();
+                }
+                catch (System.Exception e)
+                {
+                    Log.Exception($"|Wox.Infrastructure.Helpers|Failed to kill {name}, {e.Message}", e);
+                    exceptions.Add(e);
+                }
+            }
+
+            if (exceptions.Any())
+            {
+                throw new AggregateException(exceptions);
+            }
         }
     }
 }

@@ -160,6 +160,15 @@ namespace Microsoft.Plugin.Program.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Kill all application with name (Ctrl+Delete).
+        /// </summary>
+        public static string wox_plugin_program_kill_application {
+            get {
+                return ResourceManager.GetString("wox_plugin_program_kill_application", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open containing folder (Ctrl+Shift+E).
         /// </summary>
         public static string wox_plugin_program_open_containing_folder {

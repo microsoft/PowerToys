@@ -123,6 +123,9 @@
   <data name="wox_plugin_program_open_containing_folder" xml:space="preserve">
     <value>Open containing folder (Ctrl+Shift+E)</value>
   </data>
+  <data name="wox_plugin_program_kill_application" xml:space="preserve">
+    <value>Kill all application with name (Ctrl+Delete)</value>
+  </data>
   <data name="wox_plugin_program_open_in_console" xml:space="preserve">
     <value>Open path in console (Ctrl+Shift+C)</value>
   </data>

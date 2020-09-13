@@ -191,6 +191,33 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             });
 
+            if (Process.GetProcessesByName(Name).Any())
+            {
+                contextMenus.Add(
+                    new ContextMenuResult
+                    {
+                        PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                        Title = Properties.Resources.wox_plugin_program_kill_application,
+                        Glyph = "\xE945",
+                        FontFamily = "Segoe MDL2 Assets",
+                        AcceleratorKey = Key.Delete,
+                        AcceleratorModifiers = ModifierKeys.Control,
+                        Action = _ =>
+                        {
+                            try
+                            {
+                                Wox.Infrastructure.Helper.KillProcess(Name);
+                                return true;
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Exception($"|Microsoft.Plugin.Program.Win32.ContextMenu| Failed to kill {Name}, {e.Message}", e);
+                                return false;
+                            }
+                        },
+                    });
+            }
+
             return contextMenus;
         }
 
