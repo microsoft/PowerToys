@@ -124,6 +124,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Distance to highlight adjacent zones.
+        /// </summary>
+        public static string Distance_adjacent_zones {
+            get {
+                return ResourceManager.GetString("Distance_adjacent_zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit selected layout.
         /// </summary>
         public static string Edit_Selected_Layout {

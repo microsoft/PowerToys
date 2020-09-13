@@ -258,10 +258,10 @@
         </TabControl>
 
 		<StackPanel Orientation="Horizontal" Margin="10,4,0,8">
-			<CheckBox x:Name="spaceAroundSetting" Content="Show space around zones" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}"/>
-			<TextBlock Text="Space around zones" Style="{StaticResource settingText}" IsEnabled="{Binding ShowSpacing}" />
+			<CheckBox x:Name="spaceAroundSetting" Content="{x:Static props:Resources.Show_Space_Zones}" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}"/>
+			<TextBlock Text="{x:Static props:Resources.Space_Around_Zones}" Style="{StaticResource settingText}" IsEnabled="{Binding ShowSpacing}" />
 			<TextBox x:Name="paddingValue" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="32" IsEnabled="{Binding ShowSpacing}"/>
-			<TextBlock Text="Space inside zone to highlight adjacent zone" Style="{StaticResource settingText}"/>
+			<TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}" Style="{StaticResource settingText}"/>
 			<TextBox x:Name="sensitivityRadiusValue" Text="{Binding Path=SensitivityRadius,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="40"/>
 		</StackPanel>
 
