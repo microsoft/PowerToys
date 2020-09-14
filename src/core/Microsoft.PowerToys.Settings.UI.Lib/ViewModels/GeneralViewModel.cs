@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class GeneralViewModel : Observable
     {
-        private GeneralSettings GeneralSettingsConfigs { get; set; }
+        public static GeneralSettings GeneralSettingsConfigs { get; set; }
 
         public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
 

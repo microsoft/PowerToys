@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
@@ -12,15 +12,15 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public sealed class ModuleEnabledToForegroundConverter : IValueConverter
     {
+        private string selectedTheme = string.Empty;
+
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             bool isEnabled = (bool)value;
-            GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
 
             var defaultTheme = new Windows.UI.ViewManagement.UISettings();
             var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
-
-            string selectedTheme = generalSettings.Theme.ToLower();
+            selectedTheme = GeneralViewModel.GeneralSettingsConfigs.Theme;
 
             if (selectedTheme == "dark" || (selectedTheme == "system" && uiTheme == "#FF000000"))
             {
