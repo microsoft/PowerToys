@@ -8,6 +8,11 @@
 #include <vector>
 #include <unordered_map>
 
+namespace ValueConstants
+{
+    const int DefaultSensitivityRadius = 20;
+}
+
 namespace JSONHelpers
 {
     namespace CanvasLayoutInfoJSON

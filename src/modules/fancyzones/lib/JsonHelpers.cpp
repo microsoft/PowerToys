@@ -434,7 +434,7 @@ namespace JSONHelpers
             result.data.showSpacing = device.GetNamedBoolean(NonLocalizable::EditorShowSpacingStr);
             result.data.spacing = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorSpacingStr));
             result.data.zoneCount = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorZoneCountStr));
-            result.data.sensitivityRadius = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorSensitivityRadiusStr, 20));
+            result.data.sensitivityRadius = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorSensitivityRadiusStr, ValueConstants::DefaultSensitivityRadius));
 
             return result;
         }
