@@ -110,7 +110,7 @@ namespace PowerLauncher
                 if (result is ResultViewModel resultVM)
                 {
                     _viewModel.Results.SelectedItem = resultVM;
-                    _viewModel.OpenResultCommand.Execute(null);
+                    _viewModel.OpenResultWithMouseCommand.Execute(null);
                 }
             }
         }
