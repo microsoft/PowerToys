@@ -27,7 +27,7 @@
 
 #include <Psapi.h>
 #include <RestartManager.h>
-#include "root_kbhook.h"
+#include "centralized_kb_hook.h"
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"

@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "root_kbhook.h"
+#include "centralized_kb_hook.h"
 
-namespace RootKeyboardHook
+namespace CentralizedKeyboardHook
 {
     std::map<std::wstring, Hotkey> moduleNameToHotkeyMap;
     std::map<Hotkey, std::function<void()>> hotkeyToActionMap;

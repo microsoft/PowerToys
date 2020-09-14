@@ -2,7 +2,7 @@
 
 #include "../modules/interface/powertoy_module_interface.h"
 
-namespace RootKeyboardHook
+namespace CentralizedKeyboardHook
 {
     using Hotkey = PowertoyModuleIface::Hotkey;
 
