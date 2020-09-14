@@ -5,11 +5,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
+        private IGeneralSettingsData GeneralSettingsData { get; set; }
+
         private ShortcutGuideSettings Settings { get; set; }
 
         private const string ModuleName = "Shortcut Guide";
@@ -18,10 +21,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public ShortcutGuideViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public ShortcutGuideViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
+
+            GeneralSettingsData = generalSettingsData;
 
             try
             {
@@ -36,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = GeneralViewModel.GeneralSettingsConfigs.Enabled.ShortcutGuide;
+            _isEnabled = GeneralSettingsData.Enabled.ShortcutGuide;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
 
@@ -75,8 +80,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralViewModel.GeneralSettingsConfigs.Enabled.ShortcutGuide = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
+                    GeneralSettingsData.Enabled.ShortcutGuide = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsData);
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }

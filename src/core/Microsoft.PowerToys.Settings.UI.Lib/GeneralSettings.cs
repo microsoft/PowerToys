@@ -4,11 +4,25 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class GeneralSettings
+    public class GeneralSettings : IGeneralSettingsData
     {
+        private static readonly GeneralSettings GeneralSettingsData = new GeneralSettings();
+
+        public static GeneralSettings Instance
+        {
+            get
+            {
+                return GeneralSettingsData;
+            }
+        }
+
+        // This is to internally check if the general settings information has been read from the settings.json file
+        public bool IsInitialized { get; set; }
+
         // Gets or sets a value indicating whether packaged.
         [JsonPropertyName("packaged")]
         public bool Packaged { get; set; }
@@ -50,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
-        public GeneralSettings()
+        private GeneralSettings()
         {
             Packaged = false;
             Startup = false;

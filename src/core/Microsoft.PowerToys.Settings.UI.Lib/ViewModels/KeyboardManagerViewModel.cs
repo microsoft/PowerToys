@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 
@@ -16,6 +17,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class KeyboardManagerViewModel : Observable
     {
+        private IGeneralSettingsData GeneralSettingsData { get; set; }
+
         private const string PowerToyName = "Keyboard Manager";
         private const string RemapKeyboardActionName = "RemapKeyboard";
         private const string RemapKeyboardActionValue = "Open Remap Keyboard Window";
@@ -35,8 +38,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
+            GeneralSettingsData = generalSettingsData;
+
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
             FilterRemapKeysList = filterRemapKeysList;
@@ -63,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return GeneralViewModel.GeneralSettingsConfigs.Enabled.KeyboardManager;
+                return GeneralSettingsData.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (GeneralViewModel.GeneralSettingsConfigs.Enabled.KeyboardManager != value)
+                if (GeneralSettingsData.Enabled.KeyboardManager != value)
                 {
-                    GeneralViewModel.GeneralSettingsConfigs.Enabled.KeyboardManager = value;
+                    GeneralSettingsData.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsData);
 
                     SendConfigMSG(outgoing.ToString());
                 }

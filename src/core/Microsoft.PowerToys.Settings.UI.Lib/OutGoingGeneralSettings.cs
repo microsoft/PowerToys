@@ -4,19 +4,20 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class OutGoingGeneralSettings
     {
         [JsonPropertyName("general")]
-        public GeneralSettings GeneralSettings { get; set; }
+        public IGeneralSettingsData GeneralSettings { get; set; }
 
         public OutGoingGeneralSettings()
         {
         }
 
-        public OutGoingGeneralSettings(GeneralSettings generalSettings)
+        public OutGoingGeneralSettings(IGeneralSettingsData generalSettings)
         {
             GeneralSettings = generalSettings;
         }

@@ -6,11 +6,14 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
+        private IGeneralSettingsData GeneralSettingsData { get; set; }
+
         private PowerLauncherSettings settings;
 
         public delegate void SendCallback(PowerLauncherSettings settings);
@@ -19,8 +22,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
+            GeneralSettingsData = generalSettingsData;
+
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
@@ -63,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return GeneralViewModel.GeneralSettingsConfigs.Enabled.PowerLauncher;
+                return GeneralSettingsData.Enabled.PowerLauncher;
             }
 
             set
             {
-                if (GeneralViewModel.GeneralSettingsConfigs.Enabled.PowerLauncher != value)
+                if (GeneralSettingsData.Enabled.PowerLauncher != value)
                 {
-                    GeneralViewModel.GeneralSettingsConfigs.Enabled.PowerLauncher = value;
+                    GeneralSettingsData.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsData);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

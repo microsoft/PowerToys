@@ -6,12 +6,15 @@ using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
+        private IGeneralSettingsData GeneralSettingsData { get; set; }
+
         private const string ModuleName = "FancyZones";
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
@@ -22,8 +25,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string settingsConfigFileFolder = string.Empty;
 
-        public FancyZonesViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            GeneralSettingsData = generalSettingsData;
             settingsConfigFileFolder = configFileSubfolder;
 
             try
@@ -68,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             _zoneHighlightColor = highlightColor != string.Empty ? highlightColor : "#0078D7";
 
-            _isEnabled = GeneralViewModel.GeneralSettingsConfigs.Enabled.FancyZones;
+            _isEnabled = GeneralSettingsData.Enabled.FancyZones;
         }
 
         private bool _isEnabled;
@@ -106,8 +110,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralViewModel.GeneralSettingsConfigs.Enabled.FancyZones = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
+                    GeneralSettingsData.Enabled.FancyZones = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsData);
 
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");

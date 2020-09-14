@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.UI.Xaml.Controls;
 
@@ -19,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerLauncherPage()
         {
             InitializeComponent();
-            ViewModel = new PowerLauncherViewModel(ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space);
+            ViewModel = new PowerLauncherViewModel(GeneralSettings.Instance, ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space);
             DataContext = ViewModel;
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();

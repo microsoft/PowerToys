@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
             var defaultTheme = new Windows.UI.ViewManagement.UISettings();
             var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
-            selectedTheme = GeneralViewModel.GeneralSettingsConfigs.Theme.ToLower();
+            selectedTheme = GeneralSettings.Instance.Theme.ToLower();
 
             if (selectedTheme == "dark" || (selectedTheme == "system" && uiTheme == "#FF000000"))
             {

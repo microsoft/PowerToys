@@ -5,18 +5,24 @@
 using System;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
+        private IGeneralSettingsData GeneralSettingsData { get; set; }
+
         private ColorPickerSettings _colorPickerSettings;
+
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ColorPickerViewModel(Func<string, int> ipcMSGCallBackFunc)
+        public ColorPickerViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc)
         {
+            GeneralSettingsData = generalSettingsData;
+
             if (SettingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
                 _colorPickerSettings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
@@ -26,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _colorPickerSettings = new ColorPickerSettings();
             }
 
-            _isEnabled = GeneralViewModel.GeneralSettingsConfigs.Enabled.ColorPicker;
+            _isEnabled = GeneralSettingsData.Enabled.ColorPicker;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -47,8 +53,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
 
                     // grab the latest version of settings
-                    GeneralViewModel.GeneralSettingsConfigs.Enabled.ColorPicker = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
+                    GeneralSettingsData.Enabled.ColorPicker = value;
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsData);
                     SendConfigMSG(outgoing.ToString());
                 }
             }
