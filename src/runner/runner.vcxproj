@@ -117,6 +117,7 @@
     <ClCompile Include="powertoy_module.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="restart_elevated.cpp" />
+    <ClCompile Include="root_kbhook.cpp" />
     <ClCompile Include="settings_window.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="tray_icon.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="root_kbhook.h" />
     <ClInclude Include="update_utils.h" />
     <ClInclude Include="update_state.h" />
     <ClInclude Include="powertoy_module.h" />

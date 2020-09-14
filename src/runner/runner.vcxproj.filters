@@ -36,6 +36,9 @@
     <ClCompile Include="action_runner_utils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="root_kbhook.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -73,7 +76,10 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="root_kbhook.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
