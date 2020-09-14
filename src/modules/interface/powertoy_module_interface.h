@@ -29,6 +29,18 @@
 class PowertoyModuleIface
 {
 public:
+    /* Describes a hotkey which can trigger an action in the PowerToy */
+    struct Hotkey
+    {
+        bool win;
+        bool ctrl;
+        bool shift;
+        bool alt;
+        unsigned char key;
+
+        std::strong_ordering operator<=>(const Hotkey&) const = default;
+    };
+
     /* Returns the name of the PowerToy, this will be cached by the runner. */
     virtual const wchar_t* get_name() = 0;
     /* Fills a buffer with the available configuration settings.
