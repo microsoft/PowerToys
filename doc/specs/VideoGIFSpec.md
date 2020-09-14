@@ -86,7 +86,7 @@ Camtasia is a paid software that provides users with an extensive set of high-en
 
 Snip and Sketch is a native Windows application that allows users to select sections of their screen to capture images of. While Snip and Sketch does not include recording functionality, we note this application because it captures the essence of simplicity and efficiency we hope to replicate in Video GIF Capture. Snip and Sketch’s intuitive interface (Figure 1.5.11) is quickly launched via the OS level key binding: Win + Shift + S. By selecting each option, the user easily becomes familiar with the range of applications. Once a section is captured, the image is immediately copied to the clipboard for usage in other applications. Snip and Sketch’s typical interaction time only takes a matter of seconds.
 
-![Snip & Sketch](/images/GIFSpec/SnipAndSketch.png)
+![Snip & Sketch](./images/GIFSpec/SnipAndSketch.png "Snip & Sketch Screenshot")
 
 
 ### 1.6. Opportunity for Impact
