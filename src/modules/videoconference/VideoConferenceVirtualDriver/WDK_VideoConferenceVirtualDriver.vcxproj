@@ -10,6 +10,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Target Name="AssembleCabFile" AfterTargets="Build">
+    <Exec Command="powershell -NonInteractive $(SolutionDir)tools\build\video_conference_make_cab.ps1 -arch $(Platform) -configuration $(Configuration)" />
+  </Target>
   <ItemGroup>
     <ClCompile Include="Device.c" />
     <ClCompile Include="Driver.c" />
