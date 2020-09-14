@@ -48,45 +48,87 @@ Outcome from Using VGC for IT Guidance: A successful VGC would enable IT & admin
 
 | Category | Xbox Game Bar | ScreenToGIF | Camtasia | SnagIt | Snip and Sketch | Video GIF Capture |
 | -----    | -----         | -----       |  -----   | -----  | -----           | -----             |
-| Free     | | | | | | |
-| Launch Application via Keyboard Shortcuts  | | | | | | |
-| Click-And-Drag Rectangular Section Capture | | | | | | |
-| Specific Recorded Window Capture           | | | | | | |
-| Full Screen Capture                        | | | | | | |
-| Explicit Recording Dimensions Capture      | | | | | | |
-| Trim Recording                             | | | | | | |
-| Add Text Overlay to Recording              | | | | | | |
-| System Audio                               | | | | | | |
-| Optional Cursor Capture                    | | | | | | |
-| Keystroke Capture                          | | | | | | |
-| Save to MP4                                | | | | | | |
-| Save to GIF                                | | | | | | |
-| Copy Captured Media to Clipboard           | | | | | | |
-| Microphone Audio                           | | | | | | |
-| Webcam Capture                             | | | | | | |
-| Frame by Frame Editing                     | | | | | | |
-| Edit Out Middle Sections from Recording    | | | | | | |
-| Add CGI Effects during Editing             | | | | | | |
+| Free                                       |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Launch Application via Keyboard Shortcuts  | ![Y](./images/GIFSpec/Y.png "Yes")|![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Click-And-Drag Rectangular Section Capture |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Specific Recorded Window Capture           |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Full Screen Capture                        |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Explicit Recording Dimensions Capture      |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Trim Recording                             |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Add Text Overlay to Recording              |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| System Audio                               |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Optional Cursor Capture                    |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Keystroke Capture                          |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Save to MP4                                |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Save to GIF                                |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Copy Captured Media to Clipboard           |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Microphone Audio                           |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
+| Webcam Capture                             |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
+| Frame by Frame Editing                     |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
+| Edit Out Middle Sections from Recording    |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
+| Add CGI Effects during Editing             |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No")|
 
 The following subsections of **1.5.** describe insights into the user experience of capturing a recording with existing software.
 
+![BaseScreen](./images/GIFSpec/BaseScreen.png "Screenshot of Halo Infinite Video")
+
+*Figure 1.5.1 - Original state of example screen to be recorded.*
+
 #### 1.5.1. Xbox Game Bar
 
-Xbox Game Bar is a native Windows application that allows users to record their full screen by simply pressing the key binding: Win + Alt + R, for both starting and stopping the recording. A minimalistic recording widget is displayed while recording (Figure 1.5.2), yet removed from the final recording when played in the app’s gallery (Figure 1.5.3). Note that the gallery is accessed through the Xbox Game Bar menu (launched via Win + G), which includes a host of various options, settings, and metrics. To trim the recording, Xbox Game Bar’s interface has the user click through its gallery window, File Explorer, the Movies and TV app, and the Photos app before trimming functionality can be accessed (Figure 1.5.4).  
+Xbox Game Bar is a native Windows application that allows users to record their full screen by simply pressing the key binding: Win + Alt + R, for both starting and stopping the recording. A minimalistic recording widget is displayed while recording (Figure 1.5.2), yet removed from the final recording when played in the app’s gallery (Figure 1.5.3). Note that the gallery is accessed through the Xbox Game Bar menu (launched via Win + G), which includes a host of various options, settings, and metrics. To trim the recording, Xbox Game Bar’s interface has the user click through its gallery window, File Explorer, the Movies and TV app, and the Photos app before trimming functionality can be accessed (Figure 1.5.4).
+
+![XGBRecording](./images/GIFSpec/xboxGBRecordingWidget.png "Xbox Game Bar Recording Widget")
+
+*Figure 1.5.2 – Xbox Game Bar Recording Widget*
+
+![XGBGallery](./images/GIFSpec/xboxGBGallery.png "Screenshot of Xbox Game Bar Gallery accessed from HUD")
+
+*Figure 1.5.3 – Gallery Window in Xbox Game Bar*
+
+![XGBTrimming](./images/GIFSpec/xboxGBTrimming.png "Screenshot of video trimming via Xbox Game Bar")
+
+*Figure 1.5.4 – Trimming video via Xbox Game Bar. Note that the editing process takes the user through File Explorer, Movies & TV, and Photos before accessing the trimming functionality.*
 
 #### 1.5.2. ScreenToGIF
 
 ScreenToGIF is a free application that allows users to record a section of their screen. The launch menu (Figure 1.5.5) features a minimalistic set of options, and the recording interface (Figure 1.5.6) allows the user to drag and modify the bounding box around the desired content prior to recording. Note that there was a noticeable delay in the time from stopping the recording to opening the editing window as compared to other applications. Also note the verbose set of functionalities and editing options available in ScreenToGIF’s editing window (Figure 1.5.7).
 
+![STGMenu](./images/GIFSpec/StGMenu.png "Screenshot of ScreenToGIF's launch menu")
+
+*Figure 1.5.5 - ScreenToGIF Launch Menu*
+
+![STGRecording](./images/GIFSpec/StGRecording.png "Screenshot of ScreenToGIF's recording interface")
+
+*Figure 1.5.6 - ScreenToGIF Recording Interface*
+
+![STGEditing](./images/GIFSpec/StGEditing.png "ScreenToGIF's editing window")
+
+*Figure 1.5.7 - ScreenToGIF Editing Window*
+
 #### 1.5.3. Camtasia
 
 Camtasia is a paid software that provides users with an extensive set of high-end recording and editing features. The recording interface (Figure 1.5.8) offers a rich set of controls and settings that enable the user to capture a multitude of different media assets. The editing window (Figure 1.5.9) includes a verbose set options ranging from trimming capabilities to CGI and transition effects. Note the video export options (Figure 1.5.10) Camtasia supports offer popular MP4 formats and social media sharing options, in addition to GIF support under ‘Custom production settings’.
+
+![CamtasiaRecording](./images/GIFSpec/camtasiaRecording.png "Screenshot of Camtasia's recording interface")
+
+*Figure 1.5.8 - Camtasia's Recording Interface*
+
+![CamtasiaEditing](./images/GIFSpec/camtasiaRecording.png "Camtasia's editing menu")
+
+*Figure 1.5.9 - Camtasia's Editing Window*
+
+![CamtasiaExporting](./images/GIFSpec/camtasiaExporting.png "Camtasia's video export options")
+
+*Figure 1.5.10 - Camtasia's video export options*
 
 #### 1.5.4. Snip and Sketch
 
 Snip and Sketch is a native Windows application that allows users to select sections of their screen to capture images of. While Snip and Sketch does not include recording functionality, we note this application because it captures the essence of simplicity and efficiency we hope to replicate in Video GIF Capture. Snip and Sketch’s intuitive interface (Figure 1.5.11) is quickly launched via the OS level key binding: Win + Shift + S. By selecting each option, the user easily becomes familiar with the range of applications. Once a section is captured, the image is immediately copied to the clipboard for usage in other applications. Snip and Sketch’s typical interaction time only takes a matter of seconds.
 
 ![Snip & Sketch](./images/GIFSpec/SnipAndSketch.png "Snip & Sketch Screenshot")
+
+*Figure 1.5.11 - Snip and Sketch Selection Interface*
 
 
 ### 1.6. Opportunity for Impact
