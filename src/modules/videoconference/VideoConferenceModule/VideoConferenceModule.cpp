@@ -19,6 +19,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 VideoConferenceModule* instance = nullptr;
 
 VideoConferenceSettings VideoConferenceModule::settings;
+Toolbar VideoConferenceModule::toolbar;
 
 HHOOK VideoConferenceModule::hook_handle;
 
@@ -170,10 +171,10 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             if (isHotkeyPressed(kbd->vkCode, settings.cameraAndMicrophoneMuteHotkey))
             {
                 reverseMicrophoneMute();
-                if (settings.toolbar.getCameraMute() != settings.toolbar.getMicrophoneMute())
+                if (toolbar.getCameraMute() != toolbar.getMicrophoneMute())
                 {
                     reverseVirtualCameraMuteState();
-                    settings.toolbar.setCameraMute(getVirtualCameraMuteState());
+                    toolbar.setCameraMute(getVirtualCameraMuteState());
                 }
             }
             else if (isHotkeyPressed(kbd->vkCode, settings.microphoneMuteHotkey))
@@ -183,7 +184,7 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
             {
                 reverseVirtualCameraMuteState();
-                settings.toolbar.setCameraMute(getVirtualCameraMuteState());
+                toolbar.setCameraMute(getVirtualCameraMuteState());
             }
         }
     }
@@ -204,24 +205,23 @@ VideoConferenceModule::VideoConferenceModule()
     }
     sendSourceCameraNameUpdate();
     sendOverlayImageUpdate();
-
-    settings.toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
+    toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
 }
 
 inline VideoConferenceModule::~VideoConferenceModule()
 {
-    if (settings.toolbar.getCameraMute())
+    if (toolbar.getCameraMute())
     {
         reverseVirtualCameraMuteState();
-        settings.toolbar.setCameraMute(getVirtualCameraMuteState());
+        toolbar.setCameraMute(getVirtualCameraMuteState());
     }
 
-    if (settings.toolbar.getMicrophoneMute())
+    if (toolbar.getMicrophoneMute())
     {
         reverseMicrophoneMute();
     }
 
-    settings.toolbar.hide();
+    toolbar.hide();
 }
 
 const wchar_t* VideoConferenceModule::get_name()
@@ -283,7 +283,7 @@ void VideoConferenceModule::set_config(const wchar_t* config)
                 Toolbar::setHideToolbarWhenUnmuted(val.value());
             }
 
-            settings.toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
+            toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
         }
     }
     catch (...)
@@ -345,10 +345,10 @@ void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
-        settings.toolbar.setMicrophoneMute(getMicrophoneMuteState());
-        settings.toolbar.setCameraMute(getVirtualCameraMuteState());
+        toolbar.setMicrophoneMute(getMicrophoneMuteState());
+        toolbar.setCameraMute(getVirtualCameraMuteState());
 
-        settings.toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
+        toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
 
         _enabled = true;
 
@@ -375,18 +375,18 @@ void VideoConferenceModule::disable()
             }
         }
 
-        if (settings.toolbar.getCameraMute())
+        if (toolbar.getCameraMute())
         {
             reverseVirtualCameraMuteState();
-            settings.toolbar.setCameraMute(getVirtualCameraMuteState());
+            toolbar.setCameraMute(getVirtualCameraMuteState());
         }
 
-        if (settings.toolbar.getMicrophoneMute())
+        if (toolbar.getMicrophoneMute())
         {
             reverseMicrophoneMute();
         }
 
-        settings.toolbar.hide();
+        toolbar.hide();
 
         _enabled = false;
     }

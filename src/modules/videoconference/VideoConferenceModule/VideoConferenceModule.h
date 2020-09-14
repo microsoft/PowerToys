@@ -16,8 +16,6 @@ extern class VideoConferenceModule* instance;
 
 struct VideoConferenceSettings
 {
-    Toolbar toolbar;
-
     CVolumeNotification* volumeNotification = nullptr;
 
     PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, 78);
@@ -71,4 +69,5 @@ private:
     std::optional<SerializedSharedMemory> _settingsUpdateChannel;
 
     static VideoConferenceSettings settings;
+    static Toolbar toolbar;
 };
