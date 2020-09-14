@@ -12,7 +12,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     public class PowerLauncherViewModel : Observable
     {
         private PowerLauncherSettings settings;
-        private GeneralSettings generalSettings;
 
         public delegate void SendCallback(PowerLauncherSettings settings);
 
