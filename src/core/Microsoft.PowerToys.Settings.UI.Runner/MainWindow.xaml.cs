@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
     public partial class MainWindow : Window
     {
         private bool isOpen = true;
+        private WindowsXamlHost windowsXamlHost;
 
         public MainWindow()
         {
@@ -31,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
         {
             // Hook up x:Bind source.
-            WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
+            windowsXamlHost = sender as WindowsXamlHost;
             ShellPage shellPage = windowsXamlHost.GetUwpInternalObject() as ShellPage;
 
             if (shellPage != null)
@@ -90,6 +91,13 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             isOpen = false;
+
+            // If the window is closed while minimized, set the xaml island core window back to visible. Required to avoid process not terminating issue - https://github.com/microsoft/PowerToys/issues/4430
+            if (WindowState == WindowState.Minimized && windowsXamlHost != null)
+            {
+                ShellPage shellPage = windowsXamlHost.GetUwpInternalObject() as ShellPage;
+                shellPage.SetXamlIslandCoreWindowVisible();
+            }
         }
     }
 }

@@ -68,6 +68,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             shellFrame.Navigate(typeof(GeneralPage));
         }
 
+        // Function to set the xaml island core window to visible. Needs to be run from ShellPage since it uses UWP methods
+        public void SetXamlIslandCoreWindowVisible()
+        {
+            var coreWindow = Windows.UI.Core.CoreWindow.GetForCurrentThread();
+            var coreWindowInterop = Interop.GetInterop(coreWindow);
+            Interop.ShowWindow(coreWindowInterop.WindowHandle, Interop.SW_SHOW);
+        }
+
         public static int SendDefaultIPCMessage(string msg)
         {
             DefaultSndMSGCallback(msg);
