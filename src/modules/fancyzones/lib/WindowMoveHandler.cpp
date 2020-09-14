@@ -56,7 +56,6 @@ namespace WindowMoveHandlerUtils
     // MoveSize related window properties
     struct MoveSizeWindowInfo
     {
-        WindowState windowState;
         // True if from the styles the window looks like a standard window
         bool standardWindow = false;
         // True if the window is a top-level window that does not have a visible owner
@@ -194,7 +193,6 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
         return;
     }
 
-    m_moveSizeWindowInfo.windowState = get_window_state(window);
     m_moveSizeWindowInfo.noVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
     m_moveSizeWindowInfo.standardWindow = FancyZonesUtils::IsStandardWindow(window);
     m_inMoveSize = true;
@@ -343,7 +341,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
 
         if ((isStandardWindow == false && hasNoVisibleOwnoer == false &&
              m_moveSizeWindowInfo.standardWindow == true && m_moveSizeWindowInfo.noVisibleOwner == true) ||
-            (m_moveSizeWindowInfo.windowState != WindowState::MAXIMIZED && windowState == WindowState::MAXIMIZED))
+            (windowState == WindowState::MAXIMIZED))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
             // or if the window is maximized by Windows when the cursor hits the screen top border
