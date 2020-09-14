@@ -18,10 +18,9 @@ namespace ViewModelTests
         [TestInitialize]
         public void Setup()
         {
-            var generalSettings = new GeneralSettings();
+            GeneralViewModel.GeneralSettingsConfigs = new GeneralSettings();
             var colorPickerSettings = new ColorPickerSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
             SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.Name, ModuleName + ".json");
         }
 

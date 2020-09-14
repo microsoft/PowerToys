@@ -22,10 +22,9 @@ namespace ViewModelTests
         public void Setup()
         {
             // initialize creation of test settings file.
-            GeneralSettings generalSettings = new GeneralSettings();
+            GeneralViewModel.GeneralSettingsConfigs = new GeneralSettings();
             FZConfigProperties fZConfigProperties = new FZConfigProperties();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
             SettingsUtils.SaveSettings(fZConfigProperties.ToJsonString(), FancyZonesTestFolderName);
         }
 
