@@ -38,26 +38,29 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
 
-            try
+            if (GeneralSettingsConfigs == null)
             {
-                GeneralSettingsConfigs = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-
-                if (Helper.CompareVersions(GeneralSettingsConfigs.PowertoysVersion, Helper.GetProductVersion()) < 0)
+                try
                 {
-                    // Update settings
-                    GeneralSettingsConfigs.PowertoysVersion = Helper.GetProductVersion();
+                    GeneralSettingsConfigs = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+
+                    if (Helper.CompareVersions(GeneralSettingsConfigs.PowertoysVersion, Helper.GetProductVersion()) < 0)
+                    {
+                        // Update settings
+                        GeneralSettingsConfigs.PowertoysVersion = Helper.GetProductVersion();
+                        SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
+                    }
+                }
+                catch (FormatException e)
+                {
+                    // If there is an issue with the version number format, don't migrate settings.
+                    Debug.WriteLine(e.Message);
+                }
+                catch
+                {
+                    GeneralSettingsConfigs = new GeneralSettings();
                     SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
                 }
-            }
-            catch (FormatException e)
-            {
-                // If there is an issue with the version number format, don't migrate settings.
-                Debug.WriteLine(e.Message);
-            }
-            catch
-            {
-                GeneralSettingsConfigs = new GeneralSettings();
-                SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
             }
 
             // set the callback functions value to hangle outgoing IPC message.
