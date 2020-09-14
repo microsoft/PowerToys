@@ -8,6 +8,6 @@ namespace RootKeyboardHook
 
     void Start() noexcept;
     void Stop() noexcept;
-    void SetHotkeyAction(const Hotkey& hotkey, std::function<void()>&& action) noexcept;
-    void ClearHotkeyAction(const Hotkey& hotkey) noexcept;
+    void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<void()>&& action) noexcept;
+    void ClearHotkeyAction(const std::wstring& moduleName) noexcept;
 };

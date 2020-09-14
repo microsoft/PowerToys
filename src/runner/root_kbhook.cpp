@@ -3,6 +3,7 @@
 
 namespace RootKeyboardHook
 {
+    std::map<std::wstring, Hotkey> moduleNameToHotkeyMap;
     std::map<Hotkey, std::function<void()>> hotkeyToActionMap;
     std::mutex mutex;
     HHOOK hHook{};
@@ -52,16 +53,28 @@ namespace RootKeyboardHook
         return CallNextHookEx(hHook, nCode, wParam, lParam);
     }
 
-    void SetHotkeyAction(const Hotkey& hotkey, std::function<void()>&& action) noexcept
+    void ClearHotkeyActionImpl(const std::wstring& moduleName) noexcept
+    {
+        auto it = moduleNameToHotkeyMap.find(moduleName);
+        if (it != moduleNameToHotkeyMap.end())
+        {
+            hotkeyToActionMap.erase(it->second);
+            moduleNameToHotkeyMap.erase(it);
+        }
+    }
+
+    void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<void()>&& action) noexcept
     {
         std::unique_lock lock{ mutex };
+        ClearHotkeyActionImpl(moduleName);
+        moduleNameToHotkeyMap[moduleName] = hotkey;
         hotkeyToActionMap[hotkey] = action;
     }
 
-    void ClearHotkeyAction(const Hotkey& hotkey) noexcept
+    void ClearHotkeyAction(const std::wstring& moduleName) noexcept
     {
         std::unique_lock lock{ mutex };
-        hotkeyToActionMap.erase(hotkey);
+        ClearHotkeyActionImpl(moduleName);
     }
 
     void Start() noexcept
