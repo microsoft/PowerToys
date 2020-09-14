@@ -44,15 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 settings.Properties.MaximumNumberOfResults = 4;
                 callback(settings);
             }
-
-            if (SettingsUtils.SettingsExists())
-            {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
-            }
-            else
-            {
-                generalSettings = new GeneralSettings();
-            }
         }
 
         public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
@@ -73,16 +64,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return generalSettings.Enabled.PowerLauncher;
+                return GeneralViewModel.GeneralSettingsConfigs.Enabled.PowerLauncher;
             }
 
             set
             {
-                if (generalSettings.Enabled.PowerLauncher != value)
+                if (GeneralViewModel.GeneralSettingsConfigs.Enabled.PowerLauncher != value)
                 {
-                    generalSettings.Enabled.PowerLauncher = value;
+                    GeneralViewModel.GeneralSettingsConfigs.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

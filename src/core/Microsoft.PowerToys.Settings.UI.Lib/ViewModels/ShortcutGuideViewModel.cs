@@ -33,22 +33,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
-            GeneralSettings generalSettings;
-
-            try
-            {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            }
-            catch
-            {
-                generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
-            }
-
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = generalSettings.Enabled.ShortcutGuide;
+            _isEnabled = GeneralViewModel.GeneralSettingsConfigs.Enabled.ShortcutGuide;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
 
@@ -87,9 +75,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                    generalSettings.Enabled.ShortcutGuide = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
+                    GeneralViewModel.GeneralSettingsConfigs.Enabled.ShortcutGuide = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }

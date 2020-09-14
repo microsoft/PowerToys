@@ -43,19 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _powerRenameRestoreFlagsOnLaunch = Settings.Properties.PersistState.Value;
             _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
             _autoComplete = Settings.Properties.MRUEnabled.Value;
-
-            GeneralSettings generalSettings;
-            try
-            {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            }
-            catch
-            {
-                generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
-            }
-
-            _powerRenameEnabled = generalSettings.Enabled.PowerRename;
+            _powerRenameEnabled = GeneralViewModel.GeneralSettingsConfigs.Enabled.PowerRename;
         }
 
         private bool _powerRenameEnabled = false;
@@ -76,9 +64,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value != _powerRenameEnabled)
                 {
-                        GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                        generalSettings.Enabled.PowerRename = value;
-                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
+                        GeneralViewModel.GeneralSettingsConfigs.Enabled.PowerRename = value;
+                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
                         SendConfigMSG(snd.ToString());
 
                         _powerRenameEnabled = value;

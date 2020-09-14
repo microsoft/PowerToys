@@ -58,32 +58,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 Settings = new KeyboardManagerSettings(PowerToyName);
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
             }
-
-            if (SettingsUtils.SettingsExists())
-            {
-                _generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            }
-            else
-            {
-                _generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(_generalSettings.ToJsonString(), string.Empty);
-            }
         }
 
         public bool Enabled
         {
             get
             {
-                return _generalSettings.Enabled.KeyboardManager;
+                return GeneralViewModel.GeneralSettingsConfigs.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (_generalSettings.Enabled.KeyboardManager != value)
+                if (GeneralViewModel.GeneralSettingsConfigs.Enabled.KeyboardManager != value)
                 {
-                    _generalSettings.Enabled.KeyboardManager = value;
+                    GeneralViewModel.GeneralSettingsConfigs.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(_generalSettings);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralViewModel.GeneralSettingsConfigs);
 
                     SendConfigMSG(outgoing.ToString());
                 }
