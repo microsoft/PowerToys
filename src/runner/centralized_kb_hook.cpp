@@ -4,7 +4,7 @@
 namespace CentralizedKeyboardHook
 {
     std::map<std::wstring, Hotkey> moduleNameToHotkeyMap;
-    std::map<Hotkey, std::function<void()>> hotkeyToActionMap;
+    std::map<Hotkey, std::function<bool()>> hotkeyToActionMap;
     std::mutex mutex;
     HHOOK hHook{};
 
@@ -33,7 +33,7 @@ namespace CentralizedKeyboardHook
             .key = static_cast<unsigned char>(keyPressInfo.vkCode)
         };
 
-        std::function<void()>* action = nullptr;
+        std::function<bool()>* action = nullptr;
         {
             // Hold the lock for the shortest possible duration
             std::unique_lock lock{ mutex };
@@ -46,8 +46,14 @@ namespace CentralizedKeyboardHook
 
         if (action)
         {
-            (*action)();
-            return 1;
+            if ((*action)())
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         return CallNextHookEx(hHook, nCode, wParam, lParam);
@@ -63,7 +69,7 @@ namespace CentralizedKeyboardHook
         }
     }
 
-    void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<void()>&& action) noexcept
+    void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<bool()>&& action) noexcept
     {
         std::unique_lock lock{ mutex };
         ClearHotkeyActionImpl(moduleName);

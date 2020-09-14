@@ -88,7 +88,7 @@ int runner(bool isProcessElevated)
 #endif
     Trace::RegisterProvider();
     start_tray_icon();
-    RootKeyboardHook::Start();
+    CentralizedKeyboardHook::Start();
 
     int result = -1;
     try

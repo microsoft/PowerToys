@@ -109,7 +109,15 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
 {
     if (modules().find(module_key) != modules().end())
     {
-        modules().at(module_key)->set_config(settings.c_str());
+        moduleIt->second->set_config(settings.c_str());
+        CentralizedKeyboardHook::Hotkey* hotkey = moduleIt->second->get_invoke_hotkey();
+        if (hotkey)
+        {
+            CentralizedKeyboardHook::SetHotkeyAction(module_key, *hotkey, [moduleIt]() {
+                moduleIt->second->invoke();
+                return true;
+            });
+        }
     }
 }
 
