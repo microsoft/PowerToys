@@ -12,6 +12,9 @@ namespace FancyZonesEditor
 {
     public class GridData
     {
+        // The sum of row/column percents should be equal to this number
+        private const int _multiplier = 10000;
+
         public class ResizeInfo
         {
             public ResizeInfo()
@@ -70,7 +73,7 @@ namespace FancyZonesEditor
                     total += info[i].Percent;
                 }
 
-                int diff = total - 10000;
+                int diff = total - _multiplier;
                 if (diff != 0)
                 {
                     TotalPercent -= diff;
@@ -1028,9 +1031,9 @@ namespace FancyZonesEditor
             int prefixTotal = 0;
             for (int i = 0; i < percents.Count; i++)
             {
-                int first = prefixTotal * 10000 / total;
+                int first = prefixTotal * _multiplier / total;
                 prefixTotal += info[i].Percent;
-                int last = prefixTotal * 10000 / total;
+                int last = prefixTotal * _multiplier / total;
                 percents[i] = info[i].Percent = last - first;
             }
         }
