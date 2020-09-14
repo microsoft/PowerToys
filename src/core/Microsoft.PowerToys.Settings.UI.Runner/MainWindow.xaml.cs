@@ -16,7 +16,6 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
     public partial class MainWindow : Window
     {
         private bool isOpen = true;
-        private WindowsXamlHost windowsXamlHost;
 
         public MainWindow()
         {
@@ -32,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
         {
             // Hook up x:Bind source.
-            windowsXamlHost = sender as WindowsXamlHost;
+            WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
             ShellPage shellPage = windowsXamlHost.GetUwpInternalObject() as ShellPage;
 
             if (shellPage != null)
@@ -81,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 shellPage.Refresh();
             }
 
-            // If the window is open, explicity force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
+            // XAML Islands: If the window is open, explicity force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
             if (isOpen)
             {
                 Show();
@@ -92,11 +91,11 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         {
             isOpen = false;
 
-            // If the window is closed while minimized, set the xaml island core window back to visible. Required to avoid process not terminating issue - https://github.com/microsoft/PowerToys/issues/4430
-            if (WindowState == WindowState.Minimized && windowsXamlHost != null)
+            // XAML Islands: If the window is closed while minimized, exit the process. Required to avoid process not terminating issue - https://github.com/microsoft/PowerToys/issues/4430
+            if (WindowState == WindowState.Minimized)
             {
-                ShellPage shellPage = windowsXamlHost.GetUwpInternalObject() as ShellPage;
-                shellPage.SetXamlIslandCoreWindowVisible();
+                // Run Environment.Exit on a separate task to avoid performance impact
+                System.Threading.Tasks.Task.Run(() => { Environment.Exit(0); });
             }
         }
     }
