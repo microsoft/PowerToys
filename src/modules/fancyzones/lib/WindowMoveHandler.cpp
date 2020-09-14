@@ -346,6 +346,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
             (m_moveSizeWindowInfo.windowState != WindowState::MAXIMIZED && windowState == WindowState::MAXIMIZED))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
+            // or if the window is maximized by Windows when the cursor hits the screen top border
         }
         else
         {
