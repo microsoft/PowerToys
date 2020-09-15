@@ -52,6 +52,15 @@ namespace WindowMoveHandlerUtils
         }
         return false;
     }
+
+    // MoveSize related window properties
+    struct MoveSizeWindowInfo
+    {
+        // True if from the styles the window looks like a standard window
+        bool standardWindow = false;
+        // True if the window is a top-level window that does not have a visible owner
+        bool noVisibleOwner = false;
+    };
 }
 
 class WindowMoveHandlerPrivate
@@ -104,7 +113,7 @@ private:
 
     HWND m_windowMoveSize{}; // The window that is being moved/sized
     bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
-    FancyZonesUtils::FancyZonesWindowInfo m_moveSizeStartWindowInfo; // WindowInfo of the window at the moment when dragging started
+    WindowMoveHandlerUtils::MoveSizeWindowInfo m_moveSizeWindowInfo; // MoveSizeWindowInfo of the window at the moment when dragging started
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
 
@@ -184,7 +193,8 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
         return;
     }
 
-    m_moveSizeStartWindowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
+    m_moveSizeWindowInfo.noVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
+    m_moveSizeWindowInfo.standardWindow = FancyZonesUtils::IsStandardWindow(window);
     m_inMoveSize = true;
 
     auto iter = zoneWindowMap.find(monitor);
@@ -325,12 +335,15 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         auto zoneWindow = std::move(m_zoneWindowMoveSize);
         ResetWindowTransparency();
 
-        auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
+        bool hasNoVisibleOwnoer = FancyZonesUtils::HasNoVisibleOwner(window);
+        bool isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
 
-        if (windowInfo.standardWindow == false && windowInfo.noVisibleOwner == false &&
-          m_moveSizeStartWindowInfo.standardWindow == true && m_moveSizeStartWindowInfo.noVisibleOwner == true)
+        if ((isStandardWindow == false && hasNoVisibleOwnoer == false &&
+             m_moveSizeWindowInfo.standardWindow == true && m_moveSizeWindowInfo.noVisibleOwner == true) ||
+             FancyZonesUtils::IsWindowMaximized(window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
+            // or if the window is maximized by Windows when the cursor hits the screen top border
         }
         else
         {
