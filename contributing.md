@@ -121,6 +121,10 @@ When you'd like the team to take a look, (even if the work is not yet fully-comp
 
 Once your code has been reviewed and approved by the requisite number of team members, it will be merged into the master branch. Once merged, your PR will be automatically closed.
 
+### How can I get write access to the master Branch?
+
+Just help out a lot and make useful additions. If the time comes, Microsoft will ask you for collaborating.
+
 ---
 
 ## Thank you
