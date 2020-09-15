@@ -5,9 +5,10 @@
 using System;
 using System.Runtime.InteropServices;
 using Common;
+using Microsoft.PowerToys.PreviewHandler.Markdown;
 using Microsoft.PowerToys.Telemetry;
 
-namespace MarkdownPreviewHandler
+namespace Microsoft.PowerToys.PreviewHandler.Markdown
 {
     /// <summary>
     /// Implementation of preview handler for markdown files.

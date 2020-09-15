@@ -44,7 +44,7 @@
     <ProjectGuid>{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MarkdownPreviewHandler</RootNamespace>
+    <RootNamespace>Microsoft.PowerToys.PreviewHandler.Markdown</RootNamespace>
     <AssemblyName>MarkdownPreviewHandler</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

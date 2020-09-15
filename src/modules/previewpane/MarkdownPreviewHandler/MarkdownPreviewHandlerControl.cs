@@ -9,12 +9,12 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Common;
 using Markdig;
-using MarkdownPreviewHandler.Properties;
-using MarkdownPreviewHandler.Telemetry.Events;
+using Microsoft.PowerToys.PreviewHandler.Markdown.Properties;
+using Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using PreviewHandlerCommon;
 
-namespace MarkdownPreviewHandler
+namespace Microsoft.PowerToys.PreviewHandler.Markdown
 {
     /// <summary>
     /// Win Form Implementation for Markdown Preview Handler.
@@ -61,9 +61,9 @@ namespace MarkdownPreviewHandler
         /// </summary>
         public MarkdownPreviewHandlerControl()
         {
-            this.extension = new HTMLParsingExtension(this.ImagesBlockedCallBack);
-            this.pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley();
-            this.pipelineBuilder.Extensions.Add(this.extension);
+            extension = new HTMLParsingExtension(ImagesBlockedCallBack);
+            pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley();
+            pipelineBuilder.Extensions.Add(extension);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace MarkdownPreviewHandler
         /// <param name="dataSource">Path to the file.</param>
         public override void DoPreview<T>(T dataSource)
         {
-            this.infoBarDisplayed = false;
+            infoBarDisplayed = false;
 
             try
             {
@@ -85,17 +85,17 @@ namespace MarkdownPreviewHandler
                 Regex imageTagRegex = new Regex(@"<[ ]*img.*>");
                 if (imageTagRegex.IsMatch(fileText))
                 {
-                    this.infoBarDisplayed = true;
+                    infoBarDisplayed = true;
                 }
 
-                this.extension.BaseUrl = Path.GetDirectoryName(filePath);
-                MarkdownPipeline pipeline = this.pipelineBuilder.Build();
-                string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
-                string markdownHTML = $"{this.htmlHeader}{parsedMarkdown}{this.htmlFooter}";
+                extension.BaseUrl = Path.GetDirectoryName(filePath);
+                MarkdownPipeline pipeline = pipelineBuilder.Build();
+                string parsedMarkdown = Markdig.Markdown.ToHtml(fileText, pipeline);
+                string markdownHTML = $"{htmlHeader}{parsedMarkdown}{htmlFooter}";
 
                 this.InvokeOnControlThread(() =>
                 {
-                    this.browser = new WebBrowserExt
+                    browser = new WebBrowserExt
                     {
                         DocumentText = markdownHTML,
                         Dock = DockStyle.Fill,
@@ -104,13 +104,13 @@ namespace MarkdownPreviewHandler
                         ScrollBarsEnabled = true,
                         AllowNavigation = false,
                     };
-                    this.Controls.Add(this.browser);
+                    Controls.Add(browser);
 
-                    if (this.infoBarDisplayed)
+                    if (infoBarDisplayed)
                     {
-                        this.infoBar = this.GetTextBoxControl(Resources.BlockedImageInfoText);
-                        this.Resize += this.FormResized;
-                        this.Controls.Add(this.infoBar);
+                        infoBar = this.GetTextBoxControl(Resources.BlockedImageInfoText);
+                        Resize += FormResized;
+                        Controls.Add(infoBar);
                     }
                 });
 
@@ -122,11 +122,11 @@ namespace MarkdownPreviewHandler
 
                 this.InvokeOnControlThread(() =>
                 {
-                    this.Controls.Clear();
-                    this.infoBarDisplayed = true;
-                    this.infoBar = this.GetTextBoxControl(Resources.MarkdownNotPreviewedError);
-                    this.Resize += this.FormResized;
-                    this.Controls.Add(this.infoBar);
+                    Controls.Clear();
+                    infoBarDisplayed = true;
+                    infoBar = this.GetTextBoxControl(Resources.MarkdownNotPreviewedError);
+                    Resize += FormResized;
+                    Controls.Add(infoBar);
                 });
             }
             finally
@@ -150,7 +150,7 @@ namespace MarkdownPreviewHandler
                 Dock = DockStyle.Top,
                 ReadOnly = true,
             };
-            richTextBox.ContentsResized += this.RTBContentsResized;
+            richTextBox.ContentsResized += RTBContentsResized;
             richTextBox.ScrollBars = RichTextBoxScrollBars.None;
             richTextBox.BorderStyle = BorderStyle.None;
 
@@ -175,9 +175,9 @@ namespace MarkdownPreviewHandler
         /// <param name="e">Provides data for the event.</param>
         private void FormResized(object sender, EventArgs e)
         {
-            if (this.infoBarDisplayed)
+            if (infoBarDisplayed)
             {
-                this.infoBar.Width = this.Width;
+                infoBar.Width = Width;
             }
         }
 
@@ -186,7 +186,7 @@ namespace MarkdownPreviewHandler
         /// </summary>
         private void ImagesBlockedCallBack()
         {
-            this.infoBarDisplayed = true;
+            infoBarDisplayed = true;
         }
     }
 }
