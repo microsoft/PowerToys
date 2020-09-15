@@ -13,6 +13,7 @@
   On the received object, the runner will call:
     - get_name() to get the name of the PowerToy,
     - enable() to initialize the PowerToy.
+    - get_hotkeys() to register the hotkeys the PowerToy uses.
 
   While running, the runner might call the following methods between create_powertoy()
   and destroy():
@@ -20,6 +21,8 @@
     - get_config() to get the available configuration settings,
     - set_config() to set various settings,
     - call_custom_action() when the user selects clicks a custom action in settings,
+    - get_hotkeys() when the settings change, to make sure the hotkey(s) are up to date.
+    - on_hotkey() when the corresponding hotkey is pressed.
 
   When terminating, the runner will:
     - call destroy() which should free all the memory and delete the PowerToy object,
@@ -61,6 +64,15 @@ public:
     virtual bool is_enabled() = 0;
     /* Destroy the PowerToy and free all memory. */
     virtual void destroy() = 0;
+
+    /* Get the list of hotkeys. Should return the number of available hotkeys and
+     * fill up the buffer to the minimum of the number of hotkeys and its size.
+     * Modules do not need to override this method, it will return zero by default.
+     */
+    virtual int get_hotkeys(Hotkey* buffer, int buffer_size) { return 0; }
+
+    /* Called when one of the registered hotkeys is pressed. */
+    virtual void on_hotkey(size_t hotkeyId) {}
 };
 
 /*

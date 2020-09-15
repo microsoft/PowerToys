@@ -3,8 +3,20 @@
 
 namespace CentralizedKeyboardHook
 {
-    std::map<std::wstring, Hotkey> moduleNameToHotkeyMap;
-    std::map<Hotkey, std::function<bool()>> hotkeyToActionMap;
+    struct HotkeyDescriptor
+    {
+        Hotkey hotkey;
+        std::wstring moduleName;
+        std::function<bool()> action;
+
+        bool operator<(const HotkeyDescriptor& other) const 
+        {
+            return hotkey < other.hotkey;
+        };
+
+    };
+
+    std::set<HotkeyDescriptor> hotkeyDescriptors;
     std::mutex mutex;
     HHOOK hHook{};
 
@@ -33,14 +45,15 @@ namespace CentralizedKeyboardHook
             .key = static_cast<unsigned char>(keyPressInfo.vkCode)
         };
 
-        std::function<bool()>* action = nullptr;
+        const std::function<bool()>* action = nullptr;
         {
             // Hold the lock for the shortest possible duration
             std::unique_lock lock{ mutex };
-            auto it = hotkeyToActionMap.find(hotkey);
-            if (it != hotkeyToActionMap.end())
+            HotkeyDescriptor dummy{ .hotkey = hotkey };
+            auto it = hotkeyDescriptors.find(dummy);
+            if (it != hotkeyDescriptors.end())
             {
-                action = &it->second;
+                action = &it->action;
             }
         }
 
@@ -59,28 +72,22 @@ namespace CentralizedKeyboardHook
         return CallNextHookEx(hHook, nCode, wParam, lParam);
     }
 
-    void ClearHotkeyActionImpl(const std::wstring& moduleName) noexcept
-    {
-        auto it = moduleNameToHotkeyMap.find(moduleName);
-        if (it != moduleNameToHotkeyMap.end())
-        {
-            hotkeyToActionMap.erase(it->second);
-            moduleNameToHotkeyMap.erase(it);
-        }
-    }
-
     void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<bool()>&& action) noexcept
     {
         std::unique_lock lock{ mutex };
-        ClearHotkeyActionImpl(moduleName);
-        moduleNameToHotkeyMap[moduleName] = hotkey;
-        hotkeyToActionMap[hotkey] = action;
+        hotkeyDescriptors.insert({ .hotkey = hotkey, .moduleName = moduleName, .action = action });
     }
 
-    void ClearHotkeyAction(const std::wstring& moduleName) noexcept
+    void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
     {
-        std::unique_lock lock{ mutex };
-        ClearHotkeyActionImpl(moduleName);
+        auto it = hotkeyDescriptors.begin();
+        while (it != hotkeyDescriptors.end())
+        {
+            if (it->moduleName == moduleName)
+            {
+                it = hotkeyDescriptors.erase(it);
+            }
+        }
     }
 
     void Start() noexcept
