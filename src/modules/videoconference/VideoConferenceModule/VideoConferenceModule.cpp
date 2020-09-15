@@ -8,6 +8,7 @@
 
 #include <common/common.h>
 #include <common/debug_control.h>
+#include <common/settings_helpers.h>
 
 #include <CameraStateUpdateChannels.h>
 
@@ -326,10 +327,6 @@ void VideoConferenceModule::init_settings()
         {
             settings.imageOverlayPath = val.value();
         }
-        if (const auto val = powerToysSettings.get_string_value(L"theme"))
-        {
-            Toolbar::setTheme(val.value());
-        }
         if (const auto val = powerToysSettings.get_bool_value(L"hide_toolbar_when_unmuted"))
         {
             Toolbar::setHideToolbarWhenUnmuted(val.value());
@@ -338,6 +335,20 @@ void VideoConferenceModule::init_settings()
     catch (std::exception&)
     {
         // Error while loading from the settings file. Just let default values stay as they are.
+    }
+
+    try
+    {
+        auto loaded = PTSettingsHelper::load_general_settings();
+        std::wstring settings_theme{ static_cast<std::wstring_view>(loaded.GetNamedString(L"theme", L"system")) };
+        if (settings_theme != L"dark" && settings_theme != L"light")
+        {
+            settings_theme = L"system";
+        }
+        Toolbar::setTheme(settings_theme);
+    }
+    catch (...)
+    {
     }
 }
 
