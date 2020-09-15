@@ -337,11 +337,10 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
 
         bool hasNoVisibleOwnoer = FancyZonesUtils::HasNoVisibleOwner(window);
         bool isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
-        auto windowState = get_window_state(window);
 
         if ((isStandardWindow == false && hasNoVisibleOwnoer == false &&
              m_moveSizeWindowInfo.standardWindow == true && m_moveSizeWindowInfo.noVisibleOwner == true) ||
-            (windowState == WindowState::MAXIMIZED))
+             FancyZonesUtils::IsWindowMaximized(window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
             // or if the window is maximized by Windows when the cursor hits the screen top border
