@@ -31,6 +31,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.Events.MarkdownFileHandlerLoaded());
             _markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
+
             return _markdownPreviewHandlerControl;
         }
 
@@ -44,8 +45,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
-                    _markdownPreviewHandlerControl.Dispose();
+                   _markdownPreviewHandlerControl.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
