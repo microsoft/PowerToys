@@ -15,22 +15,51 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     [Guid("ddee2b8a-6807-48a6-bb20-2338174ff779")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class SvgPreviewHandler : StreamBasedPreviewHandler
+    public class SvgPreviewHandler : StreamBasedPreviewHandler, IDisposable
     {
-        private SvgPreviewControl svgPreviewControl;
+        private SvgPreviewControl _svgPreviewControl;
+        private bool disposedValue;
 
         /// <inheritdoc/>
         public override void DoPreview()
         {
-            svgPreviewControl.DoPreview(Stream);
+            _svgPreviewControl.DoPreview(Stream);
         }
 
         /// <inheritdoc/>
         protected override IPreviewHandlerControl CreatePreviewHandlerControl()
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.Events.SvgFileHandlerLoaded());
-            svgPreviewControl = new SvgPreviewControl();
-            return svgPreviewControl;
+            _svgPreviewControl = new SvgPreviewControl();
+
+            return _svgPreviewControl;
+        }
+
+        /// <summary>
+        /// Disposes objects
+        /// </summary>
+        /// <param name="disposing">Is Disposing</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _svgPreviewControl.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -12,7 +13,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
     /// <summary>
     /// Helper utilities for Svg Preview Handler.
     /// </summary>
-    public class SvgPreviewHandlerHelper
+    public static class SvgPreviewHandlerHelper
     {
         /// <summary>
         /// Dictionary of elements in lower case that are blocked from Svg for preview pane.
@@ -46,7 +47,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                 var elements = doc.Descendants().ToList();
                 foreach (XElement element in elements)
                 {
-                    var elementName = element?.Name?.LocalName?.ToLower();
+                    var elementName = element?.Name?.LocalName?.ToLower(CultureInfo.CurrentCulture);
                     if (elementName != null && blockedElementsName.ContainsKey(elementName))
                     {
                         foundBlockedElement = true;
@@ -56,7 +57,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
 

@@ -24,17 +24,17 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <summary>
         /// Extended Browser Control to display Svg.
         /// </summary>
-        private WebBrowserExt browser;
+        private WebBrowserExt _browser;
 
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
         /// </summary>
-        private RichTextBox textBox;
+        private RichTextBox _textBox;
 
         /// <summary>
         /// Represent if an text box info bar is added for showing message.
         /// </summary>
-        private bool infoBarAdded = false;
+        private bool _infoBarAdded;
 
         /// <summary>
         /// Start the preview on the Control.
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             {
                 try
                 {
-                    infoBarAdded = false;
+                    _infoBarAdded = false;
                     string svgData = null;
                     using (var stream = new StreamWrapper(dataSource as IStream))
                     {
@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     // Add a info bar on top of the Preview if any blocked element is present.
                     if (SvgPreviewHandlerHelper.CheckBlockedElements(svgData))
                     {
-                        infoBarAdded = true;
+                        _infoBarAdded = true;
                         AddTextBoxControl(Resource.BlockedElementInfoText);
                     }
 
@@ -68,11 +68,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     base.DoPreview(dataSource);
                     PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
                     Controls.Clear();
-                    infoBarAdded = true;
+                    _infoBarAdded = true;
                     AddTextBoxControl(Resource.SvgNotPreviewedError);
                     base.DoPreview(dataSource);
                 }
@@ -97,9 +99,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="e">Provides data for the resize event.</param>
         private void FormResized(object sender, EventArgs e)
         {
-            if (infoBarAdded)
+            if (_infoBarAdded)
             {
-                textBox.Width = Width;
+                _textBox.Width = Width;
             }
         }
 
@@ -109,14 +111,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="svgData">Svg to display on Browser Control.</param>
         private void AddBrowserControl(string svgData)
         {
-            browser = new WebBrowserExt();
-            browser.DocumentText = svgData;
-            browser.Dock = DockStyle.Fill;
-            browser.IsWebBrowserContextMenuEnabled = false;
-            browser.ScriptErrorsSuppressed = true;
-            browser.ScrollBarsEnabled = true;
-            browser.AllowNavigation = false;
-            Controls.Add(browser);
+            _browser = new WebBrowserExt();
+            _browser.DocumentText = svgData;
+            _browser.Dock = DockStyle.Fill;
+            _browser.IsWebBrowserContextMenuEnabled = false;
+            _browser.ScriptErrorsSuppressed = true;
+            _browser.ScrollBarsEnabled = true;
+            _browser.AllowNavigation = false;
+            Controls.Add(_browser);
         }
 
         /// <summary>
@@ -125,16 +127,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="message">Message to be displayed in textbox.</param>
         private void AddTextBoxControl(string message)
         {
-            textBox = new RichTextBox();
-            textBox.Text = message;
-            textBox.BackColor = Color.LightYellow;
-            textBox.Multiline = true;
-            textBox.Dock = DockStyle.Top;
-            textBox.ReadOnly = true;
-            textBox.ContentsResized += RTBContentsResized;
-            textBox.ScrollBars = RichTextBoxScrollBars.None;
-            textBox.BorderStyle = BorderStyle.None;
-            Controls.Add(textBox);
+            _textBox = new RichTextBox();
+            _textBox.Text = message;
+            _textBox.BackColor = Color.LightYellow;
+            _textBox.Multiline = true;
+            _textBox.Dock = DockStyle.Top;
+            _textBox.ReadOnly = true;
+            _textBox.ContentsResized += RTBContentsResized;
+            _textBox.ScrollBars = RichTextBoxScrollBars.None;
+            _textBox.BorderStyle = BorderStyle.None;
+            Controls.Add(_textBox);
         }
     }
 }
