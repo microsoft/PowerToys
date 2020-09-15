@@ -44,7 +44,7 @@
     <ProjectGuid>{DA425894-6E13-404F-8DCB-78584EC0557A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SvgPreviewHandler</RootNamespace>
+    <RootNamespace>Microsoft.PowerToys.PreviewHandler.Svg</RootNamespace>
     <AssemblyName>SvgPreviewHandler</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -115,6 +115,7 @@
     <Compile Include="Telemetry\Events\SvgFileHandlerLoaded.cs" />
     <Compile Include="Telemetry\Events\SvgFilePreviewed.cs" />
     <Compile Include="Telemetry\Events\SvgFilePreviewError.cs" />
+    <Compile Include="Utilities\SvgPreviewHandlerHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">

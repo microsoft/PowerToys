@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using Common;
 using Microsoft.PowerToys.Telemetry;
 
-namespace SvgPreviewHandler
+namespace Microsoft.PowerToys.PreviewHandler.Svg
 {
     /// <summary>
     /// Extends <see cref="StreamBasedPreviewHandler"/> for Svg Preview Handler.
@@ -22,15 +22,15 @@ namespace SvgPreviewHandler
         /// <inheritdoc/>
         public override void DoPreview()
         {
-            this.svgPreviewControl.DoPreview(this.Stream);
+            svgPreviewControl.DoPreview(Stream);
         }
 
         /// <inheritdoc/>
         protected override IPreviewHandlerControl CreatePreviewHandlerControl()
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.Events.SvgFileHandlerLoaded());
-            this.svgPreviewControl = new SvgPreviewControl();
-            return this.svgPreviewControl;
+            svgPreviewControl = new SvgPreviewControl();
+            return svgPreviewControl;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Common.Utilities
+namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
 {
     /// <summary>
     /// Helper utilities for Svg Preview Handler.
