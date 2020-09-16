@@ -30,6 +30,7 @@ namespace Microsoft.Plugin.WindowWalker
             {
                 throw new ArgumentNullException(nameof(query));
             }
+
             SearchController.Instance.UpdateSearchText(query.Search).Wait();
 
             OpenWindows.Instance.UpdateOpenWindowsList();
