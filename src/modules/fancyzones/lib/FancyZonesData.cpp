@@ -62,22 +62,16 @@ namespace
 
     bool DeleteRegistryKey(HKEY hKeyRoot, LPTSTR lpSubKey)
     {
-        // First, see if we can delete the key without having
-        // to recurse.
-        auto result = RegDeleteKey(hKeyRoot, lpSubKey);
-
-        if (result == ERROR_SUCCESS)
+        // First, see if we can delete the key without having to recurse.
+        if (ERROR_SUCCESS == RegDeleteKey(hKeyRoot, lpSubKey))
         {
             return true;
         }
 
         HKEY hKey;
-        result = RegOpenKeyEx(hKeyRoot, lpSubKey, 0, KEY_READ, &hKey);
-
-        if (result != ERROR_SUCCESS)
+        if (ERROR_SUCCESS != RegOpenKeyEx(hKeyRoot, lpSubKey, 0, KEY_READ, &hKey))
         {
-            // Error opening key
-            return FALSE;
+            return false;
         }
 
         // Check for an ending slash and add one if it is missing.
@@ -95,7 +89,7 @@ namespace
         DWORD dwSize = MAX_PATH;
         TCHAR szName[MAX_PATH];
         FILETIME ftWrite;
-        result = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
+        auto result = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
 
         if (result == ERROR_SUCCESS)
         {
@@ -120,9 +114,7 @@ namespace
         RegCloseKey(hKey);
 
         // Try again to delete the root key.
-        result = RegDeleteKey(hKeyRoot, lpSubKey);
-
-        if (result == ERROR_SUCCESS)
+        if (ERROR_SUCCESS == RegDeleteKey(hKeyRoot, lpSubKey))
         {
             return true;
         }
@@ -136,10 +128,8 @@ namespace
         StringCchPrintf(key, ARRAYSIZE(key), L"%s", NonLocalizable::RegistryPath);
 
         HKEY hKey;
-        auto result = RegOpenKeyEx(HKEY_CURRENT_USER, key, 0, KEY_READ, &hKey);
-        if (result == ERROR_FILE_NOT_FOUND)
+        if (ERROR_FILE_NOT_FOUND == RegOpenKeyEx(HKEY_CURRENT_USER, key, 0, KEY_READ, &hKey))
         {
-            // Key not found
             return true;
         }
         else
