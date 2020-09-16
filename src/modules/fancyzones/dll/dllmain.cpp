@@ -6,7 +6,7 @@
 #include <interface/powertoy_module_interface.h>
 #include <lib/ZoneSet.h>
 
-#include <lib/resource.h>
+#include <lib/Generated Files/resource.h>
 #include <lib/trace.h>
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>
@@ -82,10 +82,10 @@ public:
                 s_llKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
                 if (!s_llKeyboardHook)
                 {
-                    MessageBoxW(NULL,
-                                GET_RESOURCE_STRING(IDS_KEYBOARD_LISTENER_ERROR).c_str(),
-                                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                                MB_OK | MB_ICONERROR);
+                    DWORD errorCode = GetLastError();
+                    show_last_error_message(L"SetWindowsHookEx", errorCode, GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str());
+                    auto errorMessage = get_last_error_message(errorCode);
+                    Trace::FancyZones::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"enable.SetWindowsHookEx");
                 }
             }
 

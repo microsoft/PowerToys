@@ -48,7 +48,7 @@ namespace CommonLibTest
             BasePTSettingsTest actual_json = SettingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
             // Assert
-            Assert.IsTrue(actual_json.Equals(actual_json));
+            Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace CommonLibTest
             BasePTSettingsTest actual_json = SettingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
             // Assert
-            Assert.IsTrue(actual_json.Equals(actual_json));
+            Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
         }
 
         [TestMethod]

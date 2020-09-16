@@ -131,11 +131,14 @@
     </ClInclude>
     <ClInclude Include="comUtils.h">
       <Filter>Header Files</Filter>
-    </ClInclude>    
+    </ClInclude>
     <ClInclude Include="LowlevelKeyboardEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WinHookEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="string_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

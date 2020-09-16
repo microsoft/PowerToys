@@ -5,7 +5,7 @@
 #include <trace.h>
 #include <common/settings_objects.h>
 #include <common/common.h>
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <atomic>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;

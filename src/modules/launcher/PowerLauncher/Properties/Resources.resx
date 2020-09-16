@@ -117,8 +117,73 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="placeholderLauncher" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\placeholderLauncher.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="startTyping" xml:space="preserve">
+    <value>Start typing...</value>
+  </data>
+  <data name="registerHotkeyFailed" xml:space="preserve">
+    <value>Failed to register hotkey: {0}</value>
+  </data>
+  <data name="executeQuery" xml:space="preserve">
+    <value>Execute query: {0}</value>
+  </data>
+  <data name="lastExecuteTime" xml:space="preserve">
+    <value>Last execution time: {0}</value>
+  </data>
+  <data name="about_activate_times" xml:space="preserve">
+    <value>You have activated Wox {0} times</value>
+  </data>
+  <data name="reportWindow_header" xml:space="preserve">
+    <value>Something went wrong.</value>
+  </data>
+  <data name="reportWindow_file_bug" xml:space="preserve">
+    <value>Please file a bug in the</value>
+  </data>
+  <data name="reportWindow_github_repo" xml:space="preserve">
+    <value>PowerToys GitHub repository</value>
+  </data>
+  <data name="reportWindow_upload_log" xml:space="preserve">
+    <value>Make sure to upload the log file and to include the error message.</value>
+  </data>
+  <data name="reportWindow_period" xml:space="preserve">
+    <value>.</value>
+  </data>
+  <data name="reportWindow_wox_got_an_error" xml:space="preserve">
+    <value>PowerToys Run ran into an issue</value>
+  </data>
+  <data name="AppIcon" xml:space="preserve">
+    <value>Application Icon</value>
+  </data>
+  <data name="ContextMenuItem" xml:space="preserve">
+    <value>Context Menu Item</value>
+  </data>
+  <data name="ContextMenuItemAdditionalInformation" xml:space="preserve">
+    <value>Context Menu Item Additional Information</value>
+  </data>
+  <data name="ContextMenuIcon" xml:space="preserve">
+    <value>Context Menu Icon</value>
+  </data>
+  <data name="ContextMenuItemsCollection" xml:space="preserve">
+    <value>Context Menu Items Collection</value>
+  </data>
+  <data name="Query" xml:space="preserve">
+    <value>Query</value>
+  </data>
+  <data name="Results" xml:space="preserve">
+    <value>Results</value>
+  </data>
+  <data name="SearchIcon" xml:space="preserve">
+    <value>Search Icon</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Subtitle</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="deseralization_error_title" xml:space="preserve">
+    <value>Powertoys Run deserialization error</value>
+  </data>
+  <data name="deseralization_error_message" xml:space="preserve">
+    <value>Settings will be reset to default and program will continue to function.</value>
   </data>
 </root>

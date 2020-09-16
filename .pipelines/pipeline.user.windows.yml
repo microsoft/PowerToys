@@ -143,6 +143,9 @@ build:
       name: 'Build Power Toys Bootstrapper'
       command: '.pipelines\build-bootstrapper.cmd'
       artifacts:
+        - to: 'Symbols'
+          include:
+            - 'installer\PowerToysBootstrapper\x64\Release\PowerToysSetup-*.pdb'
         - from: 'installer\PowerToysBootstrapper\x64\Release'
           to: 'Build_Installer_Output'
           include:

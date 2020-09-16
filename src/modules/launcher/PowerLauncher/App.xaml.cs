@@ -12,7 +12,6 @@ using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox;
 using Wox.Core.Plugin;
-using Wox.Core.Resource;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
@@ -101,11 +100,6 @@ namespace PowerLauncher
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
 
-                // happlebao todo temp fix for instance code logic
-                // load plugin before change language, because plugin language also needs be changed
-                InternationalizationManager.Instance.Settings = _settings;
-                InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
-
                 // main windows needs initialized before theme change because of blur settings
                 Http.Proxy = _settings.Proxy;
 
@@ -179,13 +173,17 @@ namespace PowerLauncher
                     Log.Info("|App.OnExit| Start PowerToys Run Exit----------------------------------------------------  ");
                     if (disposing)
                     {
-                        _themeManager.ThemeChanged -= OnThemeChanged;
-                        API.SaveAppAllSettings();
+                        if (_themeManager != null)
+                        {
+                            _themeManager.ThemeChanged -= OnThemeChanged;
+                        }
+
+                        API?.SaveAppAllSettings();
                         PluginManager.Dispose();
-                        _mainWindow.Dispose();
-                        API.Dispose();
-                        _mainVM.Dispose();
-                        _themeManager.Dispose();
+                        _mainWindow?.Dispose();
+                        API?.Dispose();
+                        _mainVM?.Dispose();
+                        _themeManager?.Dispose();
                         _disposed = true;
                     }
 

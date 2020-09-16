@@ -65,3 +65,16 @@ void Trace::SettingsChanged(const int press_delay_time, const int overlay_opacit
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+// Log if an error occurs in Shortcut Guide
+void Trace::Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "ShortcutGuide_Error",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingValue(methodName.c_str(), "MethodName"),
+        TraceLoggingValue(errorCode, "ErrorCode"),
+        TraceLoggingValue(errorMessage.c_str(), "ErrorMessage"));
+}

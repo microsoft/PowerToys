@@ -27,15 +27,21 @@ inline std::vector<wil::unique_process_handle> getProcessHandlesByName(const std
     handleAccess |= PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ;
     for (const DWORD processId : processIds)
     {
-        wil::unique_process_handle hProcess{ OpenProcess(handleAccess, FALSE, processId) };
-        wchar_t name[MAX_PATH + 1];
-        if (!hProcess || !GetProcessImageFileNameW(hProcess.get(), name, MAX_PATH))
+        try
         {
-            continue;
+            wil::unique_process_handle hProcess{ OpenProcess(handleAccess, FALSE, processId) };
+            wchar_t name[MAX_PATH + 1];
+            if (!hProcess || !GetProcessImageFileNameW(hProcess.get(), name, MAX_PATH))
+            {
+                continue;
+            }
+            if (processName == PathFindFileNameW(name))
+            {
+                result.push_back(std::move(hProcess));
+            }
         }
-        if (processName == PathFindFileNameW(name))
+        catch (...)
         {
-            result.push_back(std::move(hProcess));
         }
     }
     return result;

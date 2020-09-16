@@ -22,7 +22,7 @@ namespace PowerLauncher.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace PowerLauncher.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PowerLauncher.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace PowerLauncher.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,12 +61,209 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        ///   Looks up a localized string similar to You have activated Wox {0} times.
         /// </summary>
-        internal static System.Drawing.Icon placeholderLauncher {
+        public static string about_activate_times {
             get {
-                object obj = ResourceManager.GetObject("placeholderLauncher", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
+                return ResourceManager.GetString("about_activate_times", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application Icon.
+        /// </summary>
+        public static string AppIcon {
+            get {
+                return ResourceManager.GetString("AppIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Context Menu Icon.
+        /// </summary>
+        public static string ContextMenuIcon {
+            get {
+                return ResourceManager.GetString("ContextMenuIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Context Menu Item.
+        /// </summary>
+        public static string ContextMenuItem {
+            get {
+                return ResourceManager.GetString("ContextMenuItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Context Menu Item Additional Information.
+        /// </summary>
+        public static string ContextMenuItemAdditionalInformation {
+            get {
+                return ResourceManager.GetString("ContextMenuItemAdditionalInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Context Menu Items Collection.
+        /// </summary>
+        public static string ContextMenuItemsCollection {
+            get {
+                return ResourceManager.GetString("ContextMenuItemsCollection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings will be reset to default and program will continue to function..
+        /// </summary>
+        public static string deseralization_error_message {
+            get {
+                return ResourceManager.GetString("deseralization_error_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Powertoys Run deserialization error.
+        /// </summary>
+        public static string deseralization_error_title {
+            get {
+                return ResourceManager.GetString("deseralization_error_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Execute query: {0}.
+        /// </summary>
+        public static string executeQuery {
+            get {
+                return ResourceManager.GetString("executeQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last execution time: {0}.
+        /// </summary>
+        public static string lastExecuteTime {
+            get {
+                return ResourceManager.GetString("lastExecuteTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Query.
+        /// </summary>
+        public static string Query {
+            get {
+                return ResourceManager.GetString("Query", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to register hotkey: {0}.
+        /// </summary>
+        public static string registerHotkeyFailed {
+            get {
+                return ResourceManager.GetString("registerHotkeyFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please file a bug in the.
+        /// </summary>
+        public static string reportWindow_file_bug {
+            get {
+                return ResourceManager.GetString("reportWindow_file_bug", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys GitHub repository.
+        /// </summary>
+        public static string reportWindow_github_repo {
+            get {
+                return ResourceManager.GetString("reportWindow_github_repo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Something went wrong..
+        /// </summary>
+        public static string reportWindow_header {
+            get {
+                return ResourceManager.GetString("reportWindow_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ..
+        /// </summary>
+        public static string reportWindow_period {
+            get {
+                return ResourceManager.GetString("reportWindow_period", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Make sure to upload the log file and to include the error message..
+        /// </summary>
+        public static string reportWindow_upload_log {
+            get {
+                return ResourceManager.GetString("reportWindow_upload_log", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Run ran into an issue.
+        /// </summary>
+        public static string reportWindow_wox_got_an_error {
+            get {
+                return ResourceManager.GetString("reportWindow_wox_got_an_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Results.
+        /// </summary>
+        public static string Results {
+            get {
+                return ResourceManager.GetString("Results", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search Icon.
+        /// </summary>
+        public static string SearchIcon {
+            get {
+                return ResourceManager.GetString("SearchIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start typing....
+        /// </summary>
+        public static string startTyping {
+            get {
+                return ResourceManager.GetString("startTyping", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subtitle.
+        /// </summary>
+        public static string Subtitle {
+            get {
+                return ResourceManager.GetString("Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Title.
+        /// </summary>
+        public static string Title {
+            get {
+                return ResourceManager.GetString("Title", resourceCulture);
             }
         }
     }

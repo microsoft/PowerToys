@@ -172,6 +172,7 @@ namespace Wox.Core.Plugin
                     if (results != null)
                     {
                         UpdatePluginMetadata(results, metadata, query);
+                        UpdateResultWithActionKeyword(results, query);
                     }
                 });
                 metadata.QueryCount += 1;
@@ -183,6 +184,23 @@ namespace Wox.Core.Plugin
                 Log.Exception($"|PluginManager.QueryForPlugin|Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e);
                 return new List<Result>();
             }
+        }
+
+        private static List<Result> UpdateResultWithActionKeyword(List<Result> results, Query query)
+        {
+            foreach (Result result in results)
+            {
+                if (!string.IsNullOrEmpty(result.QueryTextDisplay))
+                {
+                    result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
+                }
+                else
+                {
+                    result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.Title);
+                }
+            }
+
+            return results;
         }
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)

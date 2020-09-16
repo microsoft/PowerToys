@@ -146,7 +146,7 @@
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
-    <value>File Explorer Preview</value>
+    <value>File Explorer</value>
     <comment>Navigation view item name for File Explorer Preview</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
@@ -197,6 +197,30 @@
     <value>Remap shortcuts</value>
     <comment>Keyboard Manager remap shortcuts header</comment>
   </data>
+  <data name="RemapKeysList.AutomationProperties.Name" xml:space="preserve">
+    <value>Current Key Remappings</value>
+  </data>
+  <data name="RemapShortcutsList.AutomationProperties.Name" xml:space="preserve">
+    <value>Current Shortcut Remappings</value>
+  </data>
+  <data name="KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" xml:space="preserve">
+    <value>Key Remapping</value>
+  </data>
+  <data name="KeyboardManager_RemappedShortcutsListItem.AutomationProperties.Name" xml:space="preserve">
+    <value>Shortcut Remapping</value>
+  </data>
+  <data name="KeyboardManager_RemappedTo.AutomationProperties.Name" xml:space="preserve">
+    <value>Remapped to</value>
+  </data>
+  <data name="KeyboardManager_ShortcutRemappedTo.AutomationProperties.Name" xml:space="preserve">
+    <value>Remapped to</value>
+  </data>
+  <data name="KeyboardManager_TargetApp.AutomationProperties.Name" xml:space="preserve">
+    <value>For Target Application</value>
+  </data>
+  <data name="KeyboardManager_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Keyboard Manager</value>
+  </data>
   <data name="ColorPicker_Description.Text" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
   </data>
@@ -245,7 +269,7 @@
   <data name="PowerLauncher_SearchTypePreference_ExecutableName" xml:space="preserve">
     <value>Executable name</value>
   </data>
-  <data name="PowerLauncher_MaximumNumberOfResults.Text" xml:space="preserve">
+  <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
     <value>Maximum number of results</value>
   </data>
   <data name="PowerLauncher_Shortcuts.Text" xml:space="preserve">
@@ -343,7 +367,7 @@
     <value>Move newly created windows to their last known zone</value>
   </data>
   <data name="FancyZones_OpenWindowOnActiveMonitor.Content" xml:space="preserve">
-    <value>Move newly created windows to the current active monitor [EXPERIMENTAL]</value>
+    <value>Move newly created windows to the current active monitor (EXPERIMENTAL)</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
     <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
@@ -417,7 +441,7 @@
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
     <value>Appear only in extended context menu (Shift + Right-click)</value>
   </data>
-  <data name="PowerRename_Toggle_MaxDispListNum.Text" xml:space="preserve">
+  <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
     <value>Maximum number of items</value>
   </data>
   <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Content" xml:space="preserve">
@@ -453,7 +477,7 @@
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
   </data>
-  <data name="ShortcutGuide_PressTime.Text" xml:space="preserve">
+  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
     <value>Press duration before showing (ms)</value>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
@@ -477,13 +501,43 @@
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
     <value>Enable Image Resizer</value>
   </data>
+  <data name="ImagesSizesListView.AutomationProperties.Name" xml:space="preserve">
+    <value>Image Size</value>
+  </data>
+  <data name="ImageResizer_Configurations.AutomationProperties.Name" xml:space="preserve">
+    <value>Configurations</value>
+  </data>
+  <data name="ImageResizer_Name.AutomationProperties.Name" xml:space="preserve">
+    <value>Configuration Name</value>
+  </data>
+  <data name="ImageResizer_Fit_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Fit Property</value>
+  </data>
+  <data name="ImageResizer_Width_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Width Property</value>
+  </data>
+  <data name="ImageResizer_Height_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Height Property</value>
+  </data>
+  <data name="ImageResizer_Size_Property.AutomationProperties.Name" xml:space="preserve">
+    <value>Size Property</value>
+  </data>
+  <data name="ImageResizer_Times_Symbol.AutomationProperties.Name" xml:space="preserve">
+    <value>Times Symbol</value>
+  </data>
+  <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ImageResizer_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Image Resizer</value>
+  </data>
   <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
     <value>Add size</value>
   </data>
   <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
     <value>Save sizes</value>
   </data>
-  <data name="ImageResizer_Encoding.Text" xml:space="preserve">
+  <data name="ImageResizer_Encoding.Header" xml:space="preserve">
     <value>JPEG quality level</value>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
@@ -586,7 +640,10 @@
     <value>About FancyZones</value>
   </data>
   <data name="About_FileExplorerPreview.Text" xml:space="preserve">
-    <value>About File Explorer Preview</value>
+    <value>About File Explorer</value>
+  </data>
+  <data name="FileExplorerPreview_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>File Explorer</value>
   </data>
   <data name="About_ImageResizer.Text" xml:space="preserve">
     <value>About Image Resizer</value>
@@ -597,6 +654,9 @@
   <data name="About_ColorPicker.Text" xml:space="preserve">
     <value>About Color Picker</value>
   </data>
+  <data name="ColorPicker_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Color Picker</value>
+  </data>
   <data name="About_PowerLauncher.Text" xml:space="preserve">
     <value>About PowerToys Run</value>
   </data>
@@ -606,8 +666,14 @@
   <data name="About_PowerRename.Text" xml:space="preserve">
     <value>About Power Rename</value>
   </data>
+  <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Power Rename</value>
+  </data>
   <data name="About_ShortcutGuide.Text" xml:space="preserve">
     <value>About Shortcut Guide</value>
+  </data>
+  <data name="Shortcut_Guide_Image.AutomationProperties.Name" xml:space="preserve">
+    <value>Shortcut Guide</value>
   </data>
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
@@ -658,7 +724,7 @@
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.</value>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" xml:space="preserve">
-    <value>Allow zones to span across monitors</value>
+    <value>Allow zones to span across monitors (all monitors must have the same DPI scaling)</value>
   </data>
   <data name="ImageResizer_Formatting_ActualHeight.Text" xml:space="preserve">
     <value>Actual height</value>
@@ -680,5 +746,17 @@
   </data>
   <data name="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows based on their position</value>
+  </data>
+  <data name="GeneralSettings_NewVersionIsAvailable" xml:space="preserve">
+    <value>New update available</value>
+  </data>
+  <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
+    <value>You have the latest available version.</value>
+  </data>
+  <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
+    <value>Icon Preview</value>
+  </data>
+  <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
+    <value>Preview Pane</value>
   </data>
 </root>

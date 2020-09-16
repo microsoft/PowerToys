@@ -56,14 +56,11 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <TextBlock x:Uid="ShortcutGuide_PressTime"
-                Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
-            <muxc:NumberBox Minimum="100"
+            <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
+                            Minimum="100"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource HeaderTextTopMargin}"
+                            Margin="{StaticResource SmallTopMargin}"
                             Width="240"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" 
@@ -89,14 +86,18 @@
                     Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             </StackPanel>
 
-            <TextBlock x:Uid="ShortcutGuide_Theme"
+            <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
+            The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
+            Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
+            <TextBlock Name="ShortcutGuide_Theme"
+                x:Uid="ShortcutGuide_Theme"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
             <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
-                               Margin="{StaticResource HeaderTextTopMargin}">
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"/>
+                               Margin="{StaticResource XXSmallTopMargin}"
+                               AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_Theme}">
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark" />
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" />
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"/>
             </muxc:RadioButtons>
@@ -124,7 +125,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/ShortcutGuide.png" />
+                <Image x:Uid="Shortcut_Guide_Image" Source="ms-appx:///Assets/Modules/ShortcutGuide.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"

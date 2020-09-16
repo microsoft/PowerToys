@@ -20,10 +20,7 @@ namespace Microsoft.Plugin.Program
     {
         internal static ProgramPluginSettings Settings { get; set; }
 
-        private static bool IsStartupIndexProgramsRequired => Settings.LastIndexTime.AddDays(3) < DateTime.Today;
-
         private static PluginInitContext _context;
-
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;
         private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
@@ -41,27 +38,14 @@ namespace Microsoft.Plugin.Program
             // Initialize the Win32ProgramRepository with the settings object
             _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32Program>>("Win32"), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
 
-            Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
-            {
-                _win32ProgramRepository.Load();
-                _packageRepository.Load();
-            });
-            Log.Info($"|Microsoft.Plugin.Program.Main|Number of preload win32 programs <{_win32ProgramRepository.Count()}>");
-
             var a = Task.Run(() =>
             {
-                if (IsStartupIndexProgramsRequired || !_win32ProgramRepository.Any())
-                {
-                    Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _win32ProgramRepository.IndexPrograms);
-                }
+                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _win32ProgramRepository.IndexPrograms);
             });
 
             var b = Task.Run(() =>
             {
-                if (IsStartupIndexProgramsRequired || !_packageRepository.Any())
-                {
-                    Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _packageRepository.IndexPrograms);
-                }
+                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _packageRepository.IndexPrograms);
             });
 
             Task.WaitAll(a, b);
@@ -72,8 +56,6 @@ namespace Microsoft.Plugin.Program
         public void Save()
         {
             _settingsStorage.Save();
-            _win32ProgramRepository.Save();
-            _packageRepository.Save();
         }
 
         public List<Result> Query(Query query)
@@ -129,12 +111,12 @@ namespace Microsoft.Plugin.Program
 
         public string GetTranslatedPluginTitle()
         {
-            return _context.API.GetTranslation("wox_plugin_program_plugin_name");
+            return Properties.Resources.wox_plugin_program_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return _context.API.GetTranslation("wox_plugin_program_plugin_description");
+            return Properties.Resources.wox_plugin_program_plugin_description;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
@@ -172,8 +154,8 @@ namespace Microsoft.Plugin.Program
             }
             catch (Exception)
             {
-                var name = "Plugin: Program";
-                var message = $"Unable to start: {info?.FileName}";
+                var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
+                var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {info?.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
             }
         }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <functional>
 #include "pch.h"
+#include <functional>
 
 template<int... keys>
 class GenericKeyHook
@@ -38,8 +38,8 @@ public:
     }
 
 private:
-    static HHOOK hHook;
-    static std::function<void(bool)> callback;
+    inline static HHOOK hHook;
+    inline static std::function<void(bool)> callback;
 
     static LRESULT CALLBACK GenericKeyHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
@@ -57,6 +57,3 @@ private:
         return CallNextHookEx(hHook, nCode, wParam, lParam);
     }
 };
-
-typedef GenericKeyHook<VK_LSHIFT, VK_RSHIFT> ShiftKeyHook;
-typedef GenericKeyHook<VK_LCONTROL, VK_RCONTROL> CtrlKeyHook;

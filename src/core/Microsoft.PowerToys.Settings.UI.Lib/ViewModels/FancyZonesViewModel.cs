@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
@@ -49,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
             _useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
+            _spanZonesAcrossMonitors = Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
             _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
@@ -401,6 +403,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
+                value = ToRGBHex(value);
                 if (!value.Equals(_zoneHighlightColor))
                 {
                     _zoneHighlightColor = value;
@@ -419,6 +422,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
+                value = ToRGBHex(value);
                 if (!value.Equals(_zoneBorderColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneBorderColor = value;
@@ -437,6 +441,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
+                value = ToRGBHex(value);
                 if (!value.Equals(_zoneInActiveColor))
                 {
                     _zoneInActiveColor = value;
@@ -522,6 +527,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 SndFancyZonesSettings outsettings = new SndFancyZonesSettings(Settings);
                 SndModuleSettings<SndFancyZonesSettings> ipcMessage = new SndModuleSettings<SndFancyZonesSettings>(outsettings);
                 SendConfigMSG(ipcMessage.ToJsonString());
+            }
+        }
+
+        private string ToRGBHex(string color)
+        {
+            try
+            {
+                int argb = int.Parse(color.Replace("#", string.Empty), System.Globalization.NumberStyles.HexNumber);
+                Color clr = Color.FromArgb(argb);
+                return "#" + clr.R.ToString("X2") + clr.G.ToString("X2") + clr.B.ToString("X2");
+            }
+            catch (Exception)
+            {
+                return "#FFFFFF";
             }
         }
     }

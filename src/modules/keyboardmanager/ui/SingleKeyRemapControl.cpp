@@ -5,7 +5,7 @@
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "ShortcutControl.h"
 #include "common/common.h"
-#include "keyboardmanager/dll/resource.h"
+#include "keyboardmanager/dll/Generated Files/resource.h"
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 //Both static members are initialized to null
@@ -90,6 +90,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     parent.SetRow(arrowIcon, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(arrowIcon);
 
+    // To set the accessible name of the arrow icon by setting the accessible name of the remapped key
+    keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_REMAPPED_TO)));
     // SingleKeyRemapControl for the new remap key
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl());
 
@@ -136,7 +138,14 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         uint32_t index;
         // Get index of delete button
         UIElementCollection children = parent.Children();
-        children.IndexOf(currentButton, index);
+        bool indexFound = children.IndexOf(currentButton, index);
+
+        // IndexOf could fail if the the row got deleted and the button handler was invoked twice. In this case it should return
+        if (!indexFound)
+        {
+            return;
+        }
+
         uint32_t lastIndexInRow = index + ((KeyboardManagerConstants::RemapTableColCount - 1) - KeyboardManagerConstants::RemapTableRemoveColIndex);
         // Change the row index of elements appearing after the current row, as we will delete the row definition
         for (uint32_t i = lastIndexInRow + 1; i < children.Size(); i++)
@@ -159,6 +168,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
     });
+    // To set the accessible name of the delete button
+    deleteRemapKeys.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
     parent.SetColumn(deleteRemapKeys, KeyboardManagerConstants::RemapTableRemoveColIndex);
     parent.SetRow(deleteRemapKeys, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteRemapKeys);
@@ -187,10 +198,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     ComboBox linkedRemapDropDown = KeyboardManagerHelper::getSiblingElement(sender).as<ComboBox>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
-        std::thread t1(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_ESCAPE);
-        std::thread t2(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_RETURN);
-        t1.detach();
-        t2.detach();
+        keyboardManagerState.ClearRegisteredKeyDelays();
     };
 
     auto onPressEnter = [linkedRemapDropDown,

@@ -33,14 +33,14 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @param   pt Cursor coordinates.
      * @returns Vector of indices, corresponding to the current set of zones - the zones considered active.
      */
-    IFACEMETHOD_(std::vector<int>, ZonesFromPoint)(POINT pt) = 0;
+    IFACEMETHOD_(std::vector<size_t>, ZonesFromPoint)(POINT pt) = 0;
     /**
      * Get index set of the zones to which the window was assigned.
      *
      * @param   window Handle of the window.
-     * @returns A vector of integers, 0-based, the index set.
+     * @returns A vector of size_t, 0-based, the index set.
      */
-    IFACEMETHOD_(std::vector<int>, GetZoneIndexSetFromWindow)(HWND window) = 0;
+    IFACEMETHOD_(std::vector<size_t>, GetZoneIndexSetFromWindow)(HWND window) = 0;
     /**
      * @returns Array of zone objects (defining coordinates of the zone) inside this zone layout.
      */
@@ -53,7 +53,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      *                     current monitor desktop work area.
      * @param   index      Zone index within zone layout.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, HWND zoneWindow, int index) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, HWND zoneWindow, size_t index) = 0;
     /**
      * Assign window to the zones based on the set of zone indices inside zone layout.
      *
@@ -62,7 +62,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      *                     current monitor desktop work area.
      * @param   indexSet   The set of zone indices within zone layout.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND zoneWindow, const std::vector<int>& indexSet) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND zoneWindow, const std::vector<size_t>& indexSet) = 0;
     /**
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow), based on zone index numbers,
      * not their on-screen position.
@@ -92,6 +92,19 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      */
     IFACEMETHOD_(bool, MoveWindowIntoZoneByDirectionAndPosition)(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) = 0;
     /**
+     * Extend or shrink the window to an adjacent zone based on direction (using CTRL+WIN+ALT + LEFT/RIGHT/UP/DOWN arrow), based on
+     * their on-screen position.
+     *
+     * @param   window     Handle of window which should be assigned to zone.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
+     * @param   vkCode     Pressed arrow key.
+     *
+     * @returns Boolean indicating whether the window was rezoned. False could be returned when there are no more
+     *          zones available in the given direction.
+     */
+    IFACEMETHOD_(bool, ExtendWindowByDirectionAndPosition)(HWND window, HWND zoneWindow, DWORD vkCode) = 0;
+    /**
      * Assign window to the zone based on cursor coordinates.
      *
      * @param   window     Handle of window which should be assigned to zone.
@@ -119,6 +132,15 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @returns Boolean indicating whether the zone is empty.
      */
     IFACEMETHOD_(bool, IsZoneEmpty)(int zoneIndex) = 0;
+    /**
+     * Returns all zones spanned by the minimum bounding rectangle containing the two given zone index sets.
+     * 
+     * @param   initialZones   The indices of the first chosen zone (the anchor).
+     * @param   finalZones     The indices of the last chosen zone (the current window position).
+     *
+     * @returns A vector indicating describing the chosen zone index set.
+     */
+    IFACEMETHOD_(std::vector<size_t>, GetCombinedZoneRange)(const std::vector<size_t>& initialZones, const std::vector<size_t>& finalZones) = 0;
 };
 
 struct ZoneSetConfig

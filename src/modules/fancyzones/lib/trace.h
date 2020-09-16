@@ -16,6 +16,7 @@ public:
         static void OnKeyDown(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept;
         static void DataChanged() noexcept;
         static void EditorLaunched(int value) noexcept;
+        static void Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept;
     };
 
     static void SettingsChanged(const Settings& settings) noexcept;
