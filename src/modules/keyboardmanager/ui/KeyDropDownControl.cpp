@@ -67,7 +67,8 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel singleKeyCo
         bool indexFound = table.Children().IndexOf(singleKeyControl, controlIndex);
         if (indexFound)
         {
-            int rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
+            // GetRow will give the row index including the table header
+            int rowIndex = table.GetRow(singleKeyControl) - 1;
 
             // Validate current remap selection
             KeyboardManagerHelper::ErrorType errorType = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(rowIndex, colIndex, selectedKeyIndex, keyCodeList, singleKeyRemapBuffer);
@@ -109,14 +110,8 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
 
     if (controlIindexFound)
     {
-        if (isSingleKeyWindow)
-        {
-            rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
-        }
-        else
-        {
-            rowIndex = (controlIndex - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
-        }
+        // GetRow will give the row index including the table header
+        rowIndex = table.GetRow(shortcutControl) - 1;
 
         std::vector<int32_t> selectedIndices = GetSelectedIndicesFromStackPanel(parent);
 
