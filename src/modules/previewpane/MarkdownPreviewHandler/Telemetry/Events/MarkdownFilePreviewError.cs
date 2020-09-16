@@ -5,7 +5,7 @@
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
-namespace MarkdownPreviewHandler.Telemetry.Events
+namespace Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events
 {
     /// <summary>
     /// A telemetry event that is triggered when an error occurs while attempting to view a markdown file in the preview pane.

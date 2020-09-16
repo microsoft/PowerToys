@@ -4,7 +4,7 @@
 
 using System.Drawing;
 using System.Windows.Forms;
-using MarkdownPreviewHandler;
+using Microsoft.PowerToys.PreviewHandler.Markdown;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PreviewHandlerCommon;
 

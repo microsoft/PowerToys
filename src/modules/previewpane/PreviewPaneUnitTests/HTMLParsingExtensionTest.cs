@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Markdig;
-using MarkdownPreviewHandler;
+using Microsoft.PowerToys.PreviewHandler.Markdown;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PreviewPaneUnitTests
