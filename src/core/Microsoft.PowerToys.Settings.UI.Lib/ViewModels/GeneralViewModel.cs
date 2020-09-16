@@ -40,25 +40,28 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
             GeneralSettingsCache = generalSettingsCache;
 
-            try
+            if (GeneralSettingsCache.GeneralSettings == null)
             {
-                GeneralSettingsCache.GeneralSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-
-                if (Helper.CompareVersions(GeneralSettingsCache.GeneralSettings.PowertoysVersion, Helper.GetProductVersion()) < 0)
+                try
                 {
-                    // Update settings
-                    GeneralSettingsCache.GeneralSettings.PowertoysVersion = Helper.GetProductVersion();
+                    GeneralSettingsCache.GeneralSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+
+                    if (Helper.CompareVersions(GeneralSettingsCache.GeneralSettings.PowertoysVersion, Helper.GetProductVersion()) < 0)
+                    {
+                        // Update settings
+                        GeneralSettingsCache.GeneralSettings.PowertoysVersion = Helper.GetProductVersion();
+                        SettingsUtils.SaveSettings(GeneralSettingsCache.GeneralSettings.ToJsonString(), string.Empty);
+                    }
+                }
+                catch (FormatException e)
+                {
+                    // If there is an issue with the version number format, don't migrate settings.
+                    Debug.WriteLine(e.Message);
+                }
+                catch
+                {
                     SettingsUtils.SaveSettings(GeneralSettingsCache.GeneralSettings.ToJsonString(), string.Empty);
                 }
-            }
-            catch (FormatException e)
-            {
-                // If there is an issue with the version number format, don't migrate settings.
-                Debug.WriteLine(e.Message);
-            }
-            catch
-            {
-                SettingsUtils.SaveSettings(GeneralSettingsCache.GeneralSettings.ToJsonString(), string.Empty);
             }
 
             // set the callback functions value to hangle outgoing IPC message.
