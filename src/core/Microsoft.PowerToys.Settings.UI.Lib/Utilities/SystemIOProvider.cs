@@ -14,6 +14,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             return directioryInfo != null;
         }
 
+        public void DeleteDirectory(string path)
+        {
+            Directory.Delete(path);
+        }
+
         public bool DirectoryExists(string path)
         {
             return Directory.Exists(path);

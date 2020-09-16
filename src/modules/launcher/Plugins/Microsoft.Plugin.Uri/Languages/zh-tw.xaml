@@ -1,5 +1,0 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib">
-    <system:String x:Key="Microsoft_plugin_uri_website">Open in browser</system:String>
-</ResourceDictionary>

@@ -7,7 +7,7 @@
         xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
         mc:Ignorable="d"
-        Title="Zoom window" WindowStyle="None" SizeToContent="WidthAndHeight" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" Focusable="False">
+        Title="Zoom window" WindowStyle="None" SizeToContent="WidthAndHeight" Topmost="True" AllowsTransparency="True" Background="Transparent" ShowInTaskbar="False" ResizeMode="NoResize" Focusable="False">
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior/>
         <behaviors:MoveWindowBehavior Left="{Binding DesiredLeft, Mode=TwoWay}" Top="{Binding DesiredTop}"/>

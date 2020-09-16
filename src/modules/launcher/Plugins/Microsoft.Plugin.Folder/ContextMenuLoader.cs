@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.Folder
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = _context.API.GetTranslation("Microsoft_plugin_folder_copy_path"),
+                    Title = Properties.Resources.Microsoft_plugin_folder_copy_path,
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
@@ -53,7 +53,7 @@ namespace Microsoft.Plugin.Folder
                         }
                         catch (Exception e)
                         {
-                            var message = "Fail to set text in clipboard";
+                            var message = Properties.Resources.Microsoft_plugin_folder_clipboard_failed;
                             LogException(message, e);
                             _context.API.ShowMsg(message);
                             return false;
@@ -64,7 +64,7 @@ namespace Microsoft.Plugin.Folder
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = _context.API.GetTranslation("Microsoft_plugin_folder_open_in_console"),
+                    Title = Properties.Resources.Microsoft_plugin_folder_open_in_console,
                     Glyph = "\xE756",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
@@ -103,7 +103,7 @@ namespace Microsoft.Plugin.Folder
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = _context.API.GetTranslation("Microsoft_plugin_folder_open_containing_folder"),
+                Title = Properties.Resources.Microsoft_plugin_folder_open_containing_folder,
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
@@ -116,7 +116,7 @@ namespace Microsoft.Plugin.Folder
                     }
                     catch (Exception e)
                     {
-                        var message = $"Fail to open file at {record.FullPath}";
+                        var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.FullPath}";
                         LogException(message, e);
                         _context.API.ShowMsg(message);
                         return false;

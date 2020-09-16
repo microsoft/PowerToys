@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Threading;
 using NLog;
 using Wox.Infrastructure;
@@ -12,7 +15,7 @@ namespace PowerLauncher.Helper
 {
     public static class ErrorReporting
     {
-        private static void Report(Exception e)
+        private static void Report(Exception e, bool waitForClose)
         {
             if (e != null)
             {
@@ -20,20 +23,39 @@ namespace PowerLauncher.Helper
                 logger.Fatal(ExceptionFormatter.FormatException(e));
 
                 var reportWindow = new ReportWindow(e);
-                reportWindow.Show();
+
+                if (waitForClose)
+                {
+                    reportWindow.ShowDialog();
+                }
+                else
+                {
+                    reportWindow.Show();
+                }
             }
+        }
+
+        public static void ShowMessageBox(string title, string message)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(message, title);
+            });
         }
 
         public static void UnhandledExceptionHandle(object sender, UnhandledExceptionEventArgs e)
         {
             // handle non-ui thread exceptions
-            Report((Exception)e?.ExceptionObject);
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                Report((Exception)e?.ExceptionObject, true);
+            });
         }
 
         public static void DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             // handle ui thread exceptions
-            Report(e?.Exception);
+            Report(e?.Exception, false);
 
             // prevent application exist, so the user can copy prompted error info
             e.Handled = true;

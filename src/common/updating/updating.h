@@ -30,7 +30,7 @@ namespace updating
     std::future<void> try_autoupdate(const bool download_updates_automatically);
     std::filesystem::path get_pending_updates_path();
 
-    std::future<void> check_new_version_available();
+    std::future<std::wstring> check_new_version_available();
     std::future<std::wstring> download_update();
 
     // non-localized

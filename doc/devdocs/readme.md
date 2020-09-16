@@ -40,7 +40,7 @@ Contains the source code of the PowerToys installer.
 
 ### The [`src`](/src) folder
 
-Contains the source code of the PowerToys runner and of all of the PowerToys modules. **This is where the most of the magic happens.**
+Contains the source code of the PowerToys runner and of all of the PowerToys modules. **This is where most of the magic happens.**
 
 ### The [`tools`](/tools) folder
 
@@ -80,7 +80,7 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 - The PowerToys binaries will be in your repo under `x64\Release`.
 - If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
 
-## Building the Installer (.MSI)
+## Building the Installer
 
 ### Prerequisites Building the Installer (.MSI)
 
@@ -91,6 +91,18 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 
 - From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+
+### .EXE Installer
+- When the .MSI compiler is built, you can also build `PowerToysBootstrapper` solution (`installer\PowerToysBootstrapper\`), which is a .msi wrapper installer with additional features, such as silent installation and pre-installing `dotnet`.
+
+#### Supported arguments:
+
+- `--help` - shows the list of supported command-line arguments
+- `--no_full_ui` - do not use MSI wizard dialog, use reduced progress bar instead
+- `--no_start_pt` - do not start PowerToys after the installation is complete
+- `--silent` - use completely silent installation
+- `--skip_dotnet_install` - do not install dotnet, even if it's detected that it's not installed
+
 
 ## Debugging
 
@@ -105,8 +117,8 @@ To run and debug PowerToys from Visual Studio when the user is a member of the A
 
 ## How to create new PowerToys
 
-See the instructions on [how to install the PowerToys Module project template](tools/project_template). <br />
-Specifications for the [PowerToys settings API](doc/specs/PowerToys-settings.md).
+See the instructions on [how to install the PowerToys Module project template](/tools/project_template). <br />
+Specifications for the [PowerToys settings API](/doc/devdocs/settings.md).
 
 ## Implementation details
 

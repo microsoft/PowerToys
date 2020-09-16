@@ -52,3 +52,14 @@ PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Expl
 ### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
 
 Color Picker is from Martin.
+
+<!--
+@alekhyareddy28 
+@jyuwono 
+@laviusmotileng-ms 
+@ryanbodrug-microsoft 
+@saahmedm
+@somil55
+@traies 
+@udit3333
+-->

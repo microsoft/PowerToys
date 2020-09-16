@@ -19,9 +19,11 @@ namespace ColorPicker.Settings
         private const string ColorPickerModuleName = "ColorPicker";
         private const string DefaultActivationShortcut = "Ctrl + Break";
         private const int MaxNumberOfRetry = 5;
-        private FileSystemWatcher _watcher;
 
-        private object _loadingSettingsLock = new object();
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
+        private readonly FileSystemWatcher _watcher;
+
+        private readonly object _loadingSettingsLock = new object();
 
         [ImportingConstructor]
         public UserSettings()
@@ -83,7 +85,9 @@ namespace ColorPicker.Settings
                             Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
+#pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             if (retryCount > MaxNumberOfRetry)
                             {

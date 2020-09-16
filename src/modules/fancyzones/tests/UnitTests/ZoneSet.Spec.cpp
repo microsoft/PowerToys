@@ -85,6 +85,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (AddOne)
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                Assert::IsNotNull(zone.get());
                 m_set->AddZone(zone);
                 auto zones = m_set->GetZones();
                 Assert::AreEqual((size_t)1, zones.size());
@@ -95,6 +96,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (AddManySame)
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                Assert::IsNotNull(zone.get());
                 for (size_t i = 0; i < 1024; i++)
                 {
                     m_set->AddZone(zone);
@@ -110,6 +112,7 @@ namespace FancyZonesUnitTests
                 for (size_t i = 0; i < 1024; i++)
                 {
                     winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                    Assert::IsNotNull(zone.get());
                     m_set->AddZone(zone);
                     auto zones = m_set->GetZones();
                     Assert::AreEqual(i + 1, zones.size());
@@ -122,13 +125,42 @@ namespace FancyZonesUnitTests
             {
                 for (size_t i = 0; i < 1024; i++)
                 {
-                    winrt::com_ptr<IZone> zone = MakeZone({ rand() % 10, rand() % 10, rand() % 100, rand() % 100 });
+                    int left   = rand() % 10;
+                    int top    = rand() % 10;
+                    int right  = left + 1 + rand() % 100;
+                    int bottom = top  + 1 + rand() % 100;
+                    winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom });
+                    Assert::IsNotNull(zone.get());
                     m_set->AddZone(zone);
                     auto zones = m_set->GetZones();
                     Assert::AreEqual(i + 1, zones.size());
                     compareZones(zone, zones[i]);
                     Assert::AreEqual(i + 1, zones[i]->Id());
                 }
+            }
+
+            TEST_METHOD (MakeZoneFromZeroRect)
+            {
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 });
+                Assert::IsNotNull(zone.get());
+            }
+
+            TEST_METHOD (MakeZoneFromInvalidRectWidth)
+            {
+                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 99, 101 });
+                Assert::IsNull(zone.get());
+            }
+
+            TEST_METHOD (MakeZoneFromInvalidRectHeight)
+            {
+                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 101, 99 });
+                Assert::IsNull(zone.get());
+            }
+
+            TEST_METHOD (MakeZoneFromInvalidRectCoords)
+            {
+                winrt::com_ptr<IZone> zone = MakeZone({ -1, -1, -1, -1 });
+                Assert::IsNull(zone.get());
             }
 
             TEST_METHOD (ZoneFromPointEmpty)
@@ -268,24 +300,6 @@ namespace FancyZonesUnitTests
                 compareZones(zone2, m_set->GetZones()[actual[1]]);
                 compareZones(zone3, m_set->GetZones()[actual[2]]);
                 compareZones(zone4, m_set->GetZones()[actual[3]]);
-            }
-
-            TEST_METHOD (ZoneFromPointWithNotNormalizedRect)
-            {
-                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 0, 0 });
-                m_set->AddZone(zone);
-
-                auto actual = m_set->ZonesFromPoint(POINT{ 50, 50 });
-                Assert::IsTrue(actual.size() == 0);
-            }
-
-            TEST_METHOD (ZoneFromPointWithZeroRect)
-            {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 });
-                m_set->AddZone(zone);
-
-                auto actual = m_set->ZonesFromPoint(POINT{ 0, 0 });
-                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneIndexFromWindowUnknown)

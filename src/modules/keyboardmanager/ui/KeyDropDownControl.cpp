@@ -36,6 +36,8 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
     // Attach flyout to the drop down
     warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
     dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
+    // To set the accessible name of the combo-box
+    dropDown.as<ComboBox>().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_KEY_DROPDOWN_COMBOBOX)));
 }
 
 // Function to check if the layout has changed and accordingly update the drop down list

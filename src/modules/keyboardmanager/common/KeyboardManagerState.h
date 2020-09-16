@@ -185,6 +185,9 @@ public:
     // NOTE*: the virtual key should represent the original, unmapped virtual key.
     void UnregisterKeyDelay(DWORD key);
 
+    // Function to clear all the registered key delays
+    void ClearRegisteredKeyDelays();
+
     // Handle a key event, for a delayed key.
     bool HandleKeyDelayEvent(LowlevelKeyboardEvent* ev);
 

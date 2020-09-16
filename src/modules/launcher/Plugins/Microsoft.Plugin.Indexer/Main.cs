@@ -77,8 +77,8 @@ namespace Microsoft.Plugin.Indexer
                         {
                             results.Add(new Result
                             {
-                                Title = _context.API.GetTranslation("Microsoft_plugin_indexer_drivedetectionwarning"),
-                                SubTitle = _context.API.GetTranslation("Microsoft_plugin_indexer_disable_warning_in_settings"),
+                                Title = Properties.Resources.Microsoft_plugin_indexer_drivedetectionwarning,
+                                SubTitle = Properties.Resources.Microsoft_plugin_indexer_disable_warning_in_settings,
                                 IcoPath = WarningIconPath,
                                 Action = e =>
                                 {
@@ -109,8 +109,8 @@ namespace Microsoft.Plugin.Indexer
                         foreach (var searchResult in searchResultsList)
                         {
                             var path = searchResult.Path;
-                            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
-                            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
+                            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_name, searchResult.Title);
+                            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_path, path);
                             string workingDir = null;
                             if (_settings.UseLocationAsWorkingDir)
                             {
@@ -119,7 +119,7 @@ namespace Microsoft.Plugin.Indexer
 
                             Result r = new Result();
                             r.Title = searchResult.Title;
-                            r.SubTitle = "Search: " + path;
+                            r.SubTitle = Properties.Resources.Microsoft_plugin_indexer_subtitle_header + ": " + path;
                             r.IcoPath = path;
                             r.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
                             r.Action = c =>
@@ -138,7 +138,7 @@ namespace Microsoft.Plugin.Indexer
                                 catch (Win32Exception)
                                 {
                                     var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                    var msg = "Can't Open this file";
+                                    var msg = Properties.Resources.Microsoft_plugin_indexer_file_open_failed;
                                     _context.API.ShowMsg(name, msg, string.Empty);
                                     hide = false;
                                 }
@@ -206,18 +206,16 @@ namespace Microsoft.Plugin.Indexer
             UpdateIconPath(newTheme);
         }
 
-        // TODO: Localize the strings
         // Set the Plugin Title
         public string GetTranslatedPluginTitle()
         {
-            return "Windows Indexer Plugin";
+            return Properties.Resources.Microsoft_plugin_indexer_plugin_name;
         }
 
-        // TODO: Localize the string
         // Set the plugin Description
         public string GetTranslatedPluginDescription()
         {
-            return "Returns files and folders";
+            return Properties.Resources.Microsoft_plugin_indexer_plugin_description;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)

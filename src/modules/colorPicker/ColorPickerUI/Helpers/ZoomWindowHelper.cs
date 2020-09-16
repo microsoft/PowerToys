@@ -21,15 +21,15 @@ namespace ColorPicker.Helpers
         private const int ZoomWindowChangeDelayInMS = 50;
         private const int ZoomFactor = 2;
         private const int BaseZoomImageSize = 50;
-        private const int MaxZoomLevel = 3;
+        private const int MaxZoomLevel = 4;
         private const int MinZoomLevel = 0;
 
         private readonly IZoomViewModel _zoomViewModel;
         private readonly AppStateHandler _appStateHandler;
         private readonly IThrottledActionInvoker _throttledActionInvoker;
 
-        private int _currentZoomLevel = 0;
-        private int _previousZoomLevel = 0;
+        private int _currentZoomLevel;
+        private int _previousZoomLevel;
 
         private ZoomWindow _zoomWindow;
 
@@ -90,14 +90,17 @@ namespace ColorPicker.Helpers
                 var x = (int)point.X - (BaseZoomImageSize / 2);
                 var y = (int)point.Y - (BaseZoomImageSize / 2);
                 var rect = new Rectangle(x, y, BaseZoomImageSize, BaseZoomImageSize);
-                var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb);
-                var g = Graphics.FromImage(bmp);
-                g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
-                var bitmapImage = BitmapToImageSource(bmp);
+                using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
+                {
+                    var g = Graphics.FromImage(bmp);
+                    g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
-                _zoomViewModel.ZoomArea = bitmapImage;
-                _zoomViewModel.ZoomFactor = 1;
+                    var bitmapImage = BitmapToImageSource(bmp);
+
+                    _zoomViewModel.ZoomArea = bitmapImage;
+                    _zoomViewModel.ZoomFactor = 1;
+                }
             }
             else
             {
@@ -110,17 +113,19 @@ namespace ColorPicker.Helpers
             ShowZoomWindow((int)point.X, (int)point.Y);
         }
 
-        private BitmapSource BitmapToImageSource(Bitmap bitmap)
+        private static BitmapSource BitmapToImageSource(Bitmap bitmap)
         {
             using (MemoryStream memory = new MemoryStream())
             {
                 bitmap.Save(memory, ImageFormat.Bmp);
                 memory.Position = 0;
+
                 BitmapImage bitmapimage = new BitmapImage();
                 bitmapimage.BeginInit();
                 bitmapimage.StreamSource = memory;
                 bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
                 bitmapimage.EndInit();
+
                 return bitmapimage;
             }
         }

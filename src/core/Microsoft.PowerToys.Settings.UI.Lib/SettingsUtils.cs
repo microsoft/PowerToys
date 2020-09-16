@@ -29,6 +29,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             _ioProvider.CreateDirectory(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
         }
 
+        public void DeleteSettings(string powertoy = "")
+        {
+            _ioProvider.DeleteDirectory(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+        }
+
         /// <summary>
         /// Get path to the json settings file.
         /// </summary>
@@ -58,7 +63,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// <returns>Deserialized json settings object.</returns>
         public T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
-            var jsonSettingsString = _ioProvider.ReadAllText(GetSettingsPath(powertoy, fileName));
+            // Adding Trim('\0') to overcome possible NTFS file corruption.
+            // Look at issue https://github.com/microsoft/PowerToys/issues/6413 you'll see the file has a large sum of \0 to fill up a 4096 byte buffer for writing to disk
+            // This, while not totally ideal, does work around the problem by trimming the end.
+            // The file itself did write the content correctly but something is off with the actual end of the file, hence the 0x00 bug
+            var jsonSettingsString = _ioProvider.ReadAllText(GetSettingsPath(powertoy, fileName)).Trim('\0');
+
             return JsonSerializer.Deserialize<T>(jsonSettingsString);
         }
 

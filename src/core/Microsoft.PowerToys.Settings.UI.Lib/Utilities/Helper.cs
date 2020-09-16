@@ -39,8 +39,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
                 ModuleAction = customAction,
             };
 
-            var sendCustomAction = new SendCustomAction(moduleName);
-            sendCustomAction.Action = moduleCustomAction;
+            var sendCustomAction = new SendCustomAction(moduleName)
+            {
+                Action = moduleCustomAction,
+            };
+
             return sendCustomAction.ToJsonString();
         }
 
@@ -53,12 +56,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
                 Directory.CreateDirectory(path);
             }
 
-            var watcher = new FileSystemWatcher();
-            watcher.Path = path;
-            watcher.Filter = fileName;
-            watcher.NotifyFilter = NotifyFilters.LastWrite;
+            var watcher = new FileSystemWatcher
+            {
+                Path = path,
+                Filter = fileName,
+                NotifyFilter = NotifyFilters.LastWrite,
+                EnableRaisingEvents = true,
+            };
+
             watcher.Changed += (o, e) => onChangedCallback();
-            watcher.EnableRaisingEvents = true;
 
             return watcher;
         }
@@ -71,11 +77,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
         [DllImport("user32.dll")]
         private static extern bool AllowSetForegroundWindow(int dwProcessId);
 
-        private static interop.LayoutMapManaged layoutMap = new interop.LayoutMapManaged();
+        private static readonly interop.LayoutMapManaged LayoutMap = new interop.LayoutMapManaged();
 
         public static string GetKeyName(uint key)
         {
-            return layoutMap.GetKeyName(key);
+            return LayoutMap.GetKeyName(key);
         }
 
         public static string GetProductVersion()

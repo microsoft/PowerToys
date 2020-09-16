@@ -11,5 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         void SaveSettings(string jsonSettings, string powertoy = "", string fileName = "settings.json");
 
         bool SettingsExists(string powertoy = "", string fileName = "settings.json");
+
+        void DeleteSettings(string powertoy = "");
     }
 }

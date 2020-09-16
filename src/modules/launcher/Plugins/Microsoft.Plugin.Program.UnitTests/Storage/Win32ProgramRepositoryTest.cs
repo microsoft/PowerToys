@@ -84,7 +84,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Assert
             Assert.AreEqual(win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, 2);
+            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, Win32Program.ApplicationType.ApprefApplication);
         }
 
         [TestCase("directory", "path.appref-ms")]
@@ -145,7 +145,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Assert
             Assert.AreEqual(win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, 2);
+            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, Win32Program.ApplicationType.Win32Application);
         }
 
         [TestCase("directory", "path.exe")]
@@ -216,7 +216,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Assert
             Assert.AreEqual(win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, 1); // Internet Shortcut Application
+            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, Win32Program.ApplicationType.InternetShortcutApplication); // Internet Shortcut Application
         }
 
         [TestCase("path.url")]
@@ -336,7 +336,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Assert
             Assert.AreEqual(win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, 2);
+            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, Win32Program.ApplicationType.Win32Application);
         }
 
         [TestCase("directory", "path.lnk")]

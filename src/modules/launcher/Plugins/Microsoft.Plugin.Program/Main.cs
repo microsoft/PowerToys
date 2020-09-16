@@ -111,12 +111,12 @@ namespace Microsoft.Plugin.Program
 
         public string GetTranslatedPluginTitle()
         {
-            return _context.API.GetTranslation("wox_plugin_program_plugin_name");
+            return Properties.Resources.wox_plugin_program_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return _context.API.GetTranslation("wox_plugin_program_plugin_description");
+            return Properties.Resources.wox_plugin_program_plugin_description;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
@@ -154,8 +154,8 @@ namespace Microsoft.Plugin.Program
             }
             catch (Exception)
             {
-                var name = "Plugin: Program";
-                var message = $"Unable to start: {info?.FileName}";
+                var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
+                var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {info?.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
             }
         }

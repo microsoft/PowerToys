@@ -613,14 +613,35 @@ bool Shortcut::CheckModifiersKeyboardState(InputInterface& ii) const
     return true;
 }
 
+// Function to check if the key code is to be ignored
+bool IgnoreKeyCode(DWORD key)
+{
+    switch (key)
+    {
+        // Ignore mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
+    case VK_LBUTTON:
+    case VK_RBUTTON:
+    case VK_MBUTTON:
+    case VK_XBUTTON1:
+    case VK_XBUTTON2:
+        // Ignore these key codes as they are reserved. Used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/5225
+    case 0xF0:
+    case 0xF1:
+    case 0xF2:
+        return true;
+    }
+
+    return false;
+}
+
 // Function to check if any keys are pressed down except those in the shortcut
 bool Shortcut::IsKeyboardStateClearExceptShortcut(InputInterface& ii) const
 {
     // Iterate through all the virtual key codes - 0xFF is set to key down because of the Num Lock
     for (int keyVal = 1; keyVal < 0xFF; keyVal++)
     {
-        // Skip mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
-        if (keyVal == VK_LBUTTON || keyVal == VK_RBUTTON || keyVal == VK_MBUTTON || keyVal == VK_XBUTTON1 || keyVal == VK_XBUTTON2)
+        // Ignore problematic key codes
+        if (IgnoreKeyCode(keyVal))
         {
             continue;
         }
