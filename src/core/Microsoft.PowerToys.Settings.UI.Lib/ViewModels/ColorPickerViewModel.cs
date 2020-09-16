@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
-        private IGeneralSettingsData GeneralSettingsData { get; set; }
+        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
 
         private ColorPickerSettings _colorPickerSettings;
 
@@ -19,9 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ColorPickerViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc)
+        public ColorPickerViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc)
         {
-            GeneralSettingsData = generalSettingsData;
+            GeneralSettingsCache = generalSettingsCache;
 
             if (SettingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _colorPickerSettings = new ColorPickerSettings();
             }
 
-            _isEnabled = GeneralSettingsData.Enabled.ColorPicker;
+            _isEnabled = GeneralSettingsCache.GeneralSettings.Enabled.ColorPicker;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -53,8 +53,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
 
                     // grab the latest version of settings
-                    GeneralSettingsData.Enabled.ColorPicker = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsData);
+                    GeneralSettingsCache.GeneralSettings.Enabled.ColorPicker = value;
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
-        private IGeneralSettingsData GeneralSettingsData { get; set; }
+        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
 
         private ShortcutGuideSettings Settings { get; set; }
 
@@ -21,12 +21,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public ShortcutGuideViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public ShortcutGuideViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            GeneralSettingsData = generalSettingsData;
+            GeneralSettingsCache = generalSettingsCache;
 
             try
             {
@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = GeneralSettingsData.Enabled.ShortcutGuide;
+            _isEnabled = GeneralSettingsCache.GeneralSettings.Enabled.ShortcutGuide;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
 
@@ -80,8 +80,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettingsData.Enabled.ShortcutGuide = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsData);
+                    GeneralSettingsCache.GeneralSettings.Enabled.ShortcutGuide = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }

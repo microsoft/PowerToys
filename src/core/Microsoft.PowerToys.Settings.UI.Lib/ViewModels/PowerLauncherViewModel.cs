@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
-        private IGeneralSettingsData GeneralSettingsData { get; set; }
+        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
 
         private PowerLauncherSettings settings;
 
@@ -22,9 +22,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
-            GeneralSettingsData = generalSettingsData;
+            GeneralSettingsCache = generalSettingsCache;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return GeneralSettingsData.Enabled.PowerLauncher;
+                return GeneralSettingsCache.GeneralSettings.Enabled.PowerLauncher;
             }
 
             set
             {
-                if (GeneralSettingsData.Enabled.PowerLauncher != value)
+                if (GeneralSettingsCache.GeneralSettings.Enabled.PowerLauncher != value)
                 {
-                    GeneralSettingsData.Enabled.PowerLauncher = value;
+                    GeneralSettingsCache.GeneralSettings.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsData);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

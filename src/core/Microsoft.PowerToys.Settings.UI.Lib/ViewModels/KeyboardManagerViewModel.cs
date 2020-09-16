@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class KeyboardManagerViewModel : Observable
     {
-        private IGeneralSettingsData GeneralSettingsData { get; set; }
+        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
 
         private const string PowerToyName = "Keyboard Manager";
         private const string RemapKeyboardActionName = "RemapKeyboard";
@@ -38,9 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
-            GeneralSettingsData = generalSettingsData;
+            GeneralSettingsCache = generalSettingsCache;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return GeneralSettingsData.Enabled.KeyboardManager;
+                return GeneralSettingsCache.GeneralSettings.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (GeneralSettingsData.Enabled.KeyboardManager != value)
+                if (GeneralSettingsCache.GeneralSettings.Enabled.KeyboardManager != value)
                 {
-                    GeneralSettingsData.Enabled.KeyboardManager = value;
+                    GeneralSettingsCache.GeneralSettings.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsData);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
 
                     SendConfigMSG(outgoing.ToString());
                 }

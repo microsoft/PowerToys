@@ -10,16 +10,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class GeneralSettings : IGeneralSettingsData
     {
-        private static readonly GeneralSettings GeneralSettingsData = new GeneralSettings();
-
-        public static GeneralSettings Instance
-        {
-            get
-            {
-                return GeneralSettingsData;
-            }
-        }
-
         // Gets or sets a value indicating whether packaged.
         [JsonPropertyName("packaged")]
         public bool Packaged { get; set; }
@@ -61,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("download_updates_automatically")]
         public bool AutoDownloadUpdates { get; set; }
 
-        private GeneralSettings()
+        public GeneralSettings()
         {
             Packaged = false;
             Startup = false;

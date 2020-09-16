@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ImageResizerViewModel : Observable
     {
-        private IGeneralSettingsData GeneralSettingsData { get; set; }
+        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
 
         private ImageResizerSettings Settings { get; set; }
 
@@ -21,9 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ImageResizerViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc)
+        public ImageResizerViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc)
         {
-            GeneralSettingsData = generalSettingsData;
+            GeneralSettingsCache = generalSettingsCache;
 
             try
             {
@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = GeneralSettingsData.Enabled.ImageResizer;
+            _isEnabled = GeneralSettingsCache.GeneralSettings.Enabled.ImageResizer;
             _advancedSizes = Settings.Properties.ImageresizerSizes.Value;
             _jpegQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
             _pngInterlaceOption = Settings.Properties.ImageresizerPngInterlaceOption.Value;
@@ -77,8 +77,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettingsData.Enabled.ImageResizer = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsData);
+                    GeneralSettingsCache.GeneralSettings.Enabled.ImageResizer = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }

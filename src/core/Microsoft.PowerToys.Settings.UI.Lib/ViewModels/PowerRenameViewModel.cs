@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerRenameViewModel : Observable
     {
-        private IGeneralSettingsData GeneralSettingsData { get; set; }
+        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
 
         private const string ModuleName = "PowerRename";
 
@@ -21,11 +21,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerRenameViewModel(IGeneralSettingsData generalSettingsData, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public PowerRenameViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
-            GeneralSettingsData = generalSettingsData;
+            GeneralSettingsCache = generalSettingsCache;
 
             try
             {
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _powerRenameRestoreFlagsOnLaunch = Settings.Properties.PersistState.Value;
             _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
             _autoComplete = Settings.Properties.MRUEnabled.Value;
-            _powerRenameEnabled = GeneralSettingsData.Enabled.PowerRename;
+            _powerRenameEnabled = GeneralSettingsCache.GeneralSettings.Enabled.PowerRename;
         }
 
         private bool _powerRenameEnabled = false;
@@ -68,8 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value != _powerRenameEnabled)
                 {
-                        GeneralSettingsData.Enabled.PowerRename = value;
-                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsData);
+                        GeneralSettingsCache.GeneralSettings.Enabled.PowerRename = value;
+                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
                         SendConfigMSG(snd.ToString());
 
                         _powerRenameEnabled = value;
