@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return GeneralSettingsCache.GeneralSettings.Enabled.PowerLauncher;
+                return GeneralSettingsCache.CommonSettingsConfig.Enabled.PowerLauncher;
             }
 
             set
             {
-                if (GeneralSettingsCache.GeneralSettings.Enabled.PowerLauncher != value)
+                if (GeneralSettingsCache.CommonSettingsConfig.Enabled.PowerLauncher != value)
                 {
-                    GeneralSettingsCache.GeneralSettings.Enabled.PowerLauncher = value;
+                    GeneralSettingsCache.CommonSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

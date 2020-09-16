@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             _zoneHighlightColor = highlightColor != string.Empty ? highlightColor : "#0078D7";
 
-            _isEnabled = GeneralSettingsCache.GeneralSettings.Enabled.FancyZones;
+            _isEnabled = GeneralSettingsCache.CommonSettingsConfig.Enabled.FancyZones;
         }
 
         private bool _isEnabled;
@@ -110,8 +110,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettingsCache.GeneralSettings.Enabled.FancyZones = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
+                    GeneralSettingsCache.CommonSettingsConfig.Enabled.FancyZones = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");

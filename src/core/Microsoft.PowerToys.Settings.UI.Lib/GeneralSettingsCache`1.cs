@@ -27,6 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
         }
 
-        public T GeneralSettings { get; set; }
+        public T CommonSettingsConfig { get; set; }
     }
 }

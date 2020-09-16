@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
             var defaultTheme = new Windows.UI.ViewManagement.UISettings();
             var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
-            selectedTheme = GeneralSettingsCache<GeneralSettings>.Instance.GeneralSettings.Theme.ToLower();
+            selectedTheme = GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.Theme.ToLower();
 
             if (selectedTheme == "dark" || (selectedTheme == "system" && uiTheme == "#FF000000"))
             {

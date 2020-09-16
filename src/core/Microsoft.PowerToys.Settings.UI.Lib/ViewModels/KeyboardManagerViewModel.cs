@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return GeneralSettingsCache.GeneralSettings.Enabled.KeyboardManager;
+                return GeneralSettingsCache.CommonSettingsConfig.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (GeneralSettingsCache.GeneralSettings.Enabled.KeyboardManager != value)
+                if (GeneralSettingsCache.CommonSettingsConfig.Enabled.KeyboardManager != value)
                 {
-                    GeneralSettingsCache.GeneralSettings.Enabled.KeyboardManager = value;
+                    GeneralSettingsCache.CommonSettingsConfig.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());
                 }

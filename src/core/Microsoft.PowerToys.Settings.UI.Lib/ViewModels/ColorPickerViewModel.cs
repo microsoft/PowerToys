@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _colorPickerSettings = new ColorPickerSettings();
             }
 
-            _isEnabled = GeneralSettingsCache.GeneralSettings.Enabled.ColorPicker;
+            _isEnabled = GeneralSettingsCache.CommonSettingsConfig.Enabled.ColorPicker;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -53,8 +53,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
 
                     // grab the latest version of settings
-                    GeneralSettingsCache.GeneralSettings.Enabled.ColorPicker = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.GeneralSettings);
+                    GeneralSettingsCache.CommonSettingsConfig.Enabled.ColorPicker = value;
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
             }
