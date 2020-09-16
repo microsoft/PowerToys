@@ -37,7 +37,13 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
     warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
     dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
     // To set the accessible name of the combo-box
-    dropDown.as<ComboBox>().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_KEY_DROPDOWN_COMBOBOX)));
+    SetAccessibleNameForComboBox(dropDown.as<ComboBox>(), 1);
+}
+
+// Function to set accessible name for combobox
+void KeyDropDownControl::SetAccessibleNameForComboBox(ComboBox dropDown, int index)
+{
+    dropDown.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_KEY_DROPDOWN_COMBOBOX) + L" " + std::to_wstring(index)));
 }
 
 // Function to check if the layout has changed and accordingly update the drop down list
@@ -131,7 +137,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
         }
         else if (validationResult.second == BufferValidationHelpers::DropDownAction::ClearUnusedDropDowns)
         {
-            // remove all the drop downs after the current index
+            // remove all the drop downs after the current index (accessible names do not have to be updated since drop downs at the end of the list are getting removed)
             int elementsToBeRemoved = parent.Children().Size() - dropDownIndex - 1;
             for (int i = 0; i < elementsToBeRemoved; i++)
             {
@@ -149,6 +155,13 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
         // Handle None case if there are no other errors
         else if (validationResult.second == BufferValidationHelpers::DropDownAction::DeleteDropDown)
         {
+            // Update accessible names for drop downs appearing after the deleted one
+            for (uint32_t i = dropDownIndex + 1; i < keyDropDownControlObjects.size(); i++)
+            {
+                // Update accessible name (row index will become i-1 for this element, so the display name would be i (display name indexing from 1)
+                SetAccessibleNameForComboBox(keyDropDownControlObjects[i]->GetComboBox(), i);            
+            }
+
             parent.Children().RemoveAt(dropDownIndex);
             // delete drop down control object from the vector so that it can be destructed
             keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
@@ -260,6 +273,9 @@ void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, Sta
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
     keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
     parent.UpdateLayout();
+
+    // Update accessible name
+    SetAccessibleNameForComboBox(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox(), (int)keyDropDownControlObjects.size());
 }
 
 // Function to get the list of key codes from the shortcut combo box stack panel
