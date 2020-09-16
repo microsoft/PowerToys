@@ -44,16 +44,23 @@ PowertoyModule::PowertoyModule(PowertoyModuleIface* module, HMODULE handle) :
         throw std::runtime_error("Module not initialized");
     }
 
+    set_hotkeys();
+}
+
+void PowertoyModule::set_hotkeys()
+{
     CentralizedKeyboardHook::ClearModuleHotkeys(module->get_name());
 
     int hotkeyCount = module->get_hotkeys(nullptr, 0);
     std::vector<PowertoyModuleIface::Hotkey> hotkeys(hotkeyCount);
     module->get_hotkeys(hotkeys.data(), hotkeyCount);
-    
+
+    auto modulePtr = module.get();
+
     for (int i = 0; i < hotkeyCount; i++)
     {
-        CentralizedKeyboardHook::SetHotkeyAction(module->get_name(), hotkeys[i], [module, i] {
-            module->on_hotkey(i);
+        CentralizedKeyboardHook::SetHotkeyAction(module->get_name(), hotkeys[i], [modulePtr, i] {
+            modulePtr->on_hotkey(i);
             return true;
         });
     }

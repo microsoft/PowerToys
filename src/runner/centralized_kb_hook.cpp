@@ -16,7 +16,7 @@ namespace CentralizedKeyboardHook
 
     };
 
-    std::set<HotkeyDescriptor> hotkeyDescriptors;
+    std::multiset<HotkeyDescriptor> hotkeyDescriptors;
     std::mutex mutex;
     HHOOK hHook{};
 
@@ -63,10 +63,6 @@ namespace CentralizedKeyboardHook
             {
                 return 1;
             }
-            else
-            {
-                return 0;
-            }
         }
 
         return CallNextHookEx(hHook, nCode, wParam, lParam);
@@ -86,6 +82,10 @@ namespace CentralizedKeyboardHook
             if (it->moduleName == moduleName)
             {
                 it = hotkeyDescriptors.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }

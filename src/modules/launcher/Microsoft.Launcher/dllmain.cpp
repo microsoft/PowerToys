@@ -10,7 +10,14 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace
 {
-	#define POWER_LAUNCHER_PID_SHARED_FILE L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"
+    const wchar_t POWER_LAUNCHER_PID_SHARED_FILE[] = L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74";
+    const wchar_t JSON_PROPERTIES[] = L"properties";
+    const wchar_t JSON_WIN[] = L"win";
+    const wchar_t JSON_ALT[] = L"alt";
+    const wchar_t JSON_CTRL[] = L"ctrl";
+    const wchar_t JSON_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY[] = L"code";
+    const wchar_t JSON_INVOKE_HOTKEY[] = L"open_powerlauncher";
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -54,12 +61,27 @@ private:
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
 
+    // Hotkey to invoke the module
+    Hotkey m_hotkey = { .key = 0 };
+
+    // Helper function to extract the hotkey from the settings
+    void parse_hotkey(PowerToysSettings::PowerToyValues& settings);
+
+    // Handle to event used to invoke the Runner
+    HANDLE m_hEvent;
+
 public:
     // Constructor
     Microsoft_Launcher()
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
         init_settings();
+
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(sa);
+        sa.bInheritHandle = false;
+        sa.lpSecurityDescriptor = NULL;
+        m_hEvent = CreateEventW(&sa, FALSE, FALSE, L"Local\\PowerToysRunInvokeEvent-30f26ad7-d36d-4c0e-ab02-68bb5ff3c4ab");
     };
 
     ~Microsoft_Launcher()
@@ -122,6 +144,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
 
+            parse_hotkey(values);
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
             values.save_to_settings_file();
@@ -218,6 +241,31 @@ public:
         return m_enabled;
     }
 
+    // Return the invocation hotkey
+    virtual int get_hotkeys(Hotkey* hotkeys, int buffer_size) override
+    {
+        if (m_hotkey.key)
+        {
+            if (hotkeys && buffer_size >= 1)
+            {
+                hotkeys[0] = m_hotkey;
+            }
+
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    // Process the hotkey event
+    virtual void on_hotkey(size_t hotkeyId) override
+    {
+        // For now, hotkeyId will always be zero
+        SetEvent(m_hEvent);
+    }
+
     // Callback to send WM_CLOSE signal to each top level window.
     static BOOL CALLBACK requestMainWindowClose(HWND nextWindow, LPARAM closePid)
     {
@@ -251,12 +299,31 @@ void Microsoft_Launcher::init_settings()
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+        
+        parse_hotkey(settings);
     }
     catch (std::exception ex)
     {
         // Error while loading from the settings file. Let default values stay as they are.
     }
 }
+
+void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+{
+    try
+    {
+        auto jsonHotkeyObject = settings.get_raw_json().GetNamedObject(JSON_PROPERTIES).GetNamedObject(JSON_INVOKE_HOTKEY);
+        m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_WIN);
+        m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_ALT);
+        m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_SHIFT);
+        m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_CTRL);
+        m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY));
+    }
+    catch (...)
+    {
+        m_hotkey.key = 0;
+    }
+}    
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

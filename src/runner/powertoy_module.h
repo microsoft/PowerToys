@@ -40,6 +40,8 @@ public:
 
     json::JsonObject json_config() const;
 
+    void set_hotkeys();
+
 private:
     std::unique_ptr<HMODULE, PowertoyModuleDLLDeleter> handle;
     std::unique_ptr<PowertoyModuleIface, PowertoyModuleDeleter> module;

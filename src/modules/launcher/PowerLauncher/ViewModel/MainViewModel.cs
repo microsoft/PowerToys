@@ -49,13 +49,11 @@ namespace PowerLauncher.ViewModel
 
         private CancellationToken _updateToken;
         private bool _saved;
-        private ushort _hotkeyHandle;
 
-        internal HotkeyManager HotkeyManager { get; set; }
+        private NativeEventWaiter _hotkeyEventWaiter;
 
         public MainViewModel(Settings settings)
         {
-            HotkeyManager = new HotkeyManager();
             _saved = false;
             _queryTextBeforeLeaveResults = string.Empty;
             _currentQuery = _emptyQuery;
@@ -78,27 +76,7 @@ namespace PowerLauncher.ViewModel
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
 
-            _settings.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(Settings.Hotkey))
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
-                        {
-                            HotkeyManager.UnregisterHotkey(_hotkeyHandle);
-                        }
-
-                        if (!string.IsNullOrEmpty(_settings.Hotkey))
-                        {
-                            SetHotkey(_settings.Hotkey, OnHotkey);
-                        }
-                    });
-                }
-            };
-
-            SetHotkey(_settings.Hotkey, OnHotkey);
-            SetCustomPluginHotkey();
+            _hotkeyEventWaiter = new NativeEventWaiter("Local\\PowerToysRunInvokeEvent-30f26ad7-d36d-4c0e-ab02-68bb5ff3c4ab", OnHotkey);
         }
 
         private void RegisterResultsUpdatedEvent()
@@ -621,37 +599,6 @@ namespace PowerLauncher.ViewModel
             return selected;
         }
 
-        private void SetHotkey(string hotkeyStr, HotkeyCallback action)
-        {
-            var hotkey = new HotkeyModel(hotkeyStr);
-            SetHotkey(hotkey, action);
-        }
-
-        private void SetHotkey(HotkeyModel hotkeyModel, HotkeyCallback action)
-        {
-            string hotkeyStr = hotkeyModel.ToString();
-            try
-            {
-                Hotkey hotkey = new Hotkey
-                {
-                    Alt = hotkeyModel.Alt,
-                    Shift = hotkeyModel.Shift,
-                    Ctrl = hotkeyModel.Ctrl,
-                    Win = hotkeyModel.Win,
-                    Key = (byte)KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey),
-                };
-
-                _hotkeyHandle = HotkeyManager.RegisterHotkey(hotkey, action);
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                string errorMsg = string.Format(CultureInfo.InvariantCulture, Properties.Resources.registerHotkeyFailed, hotkeyStr);
-                MessageBox.Show(errorMsg);
-            }
-        }
-
         /// <summary>
         /// Checks if Wox should ignore any hotkeys
         /// </summary>
@@ -668,28 +615,6 @@ namespace PowerLauncher.ViewModel
             }
 
             return false;
-        }
-
-        private void SetCustomPluginHotkey()
-        {
-            if (_settings.CustomPluginHotkeys == null)
-            {
-                return;
-            }
-
-            foreach (CustomPluginHotkey hotkey in _settings.CustomPluginHotkeys)
-            {
-                SetHotkey(hotkey.Hotkey, () =>
-                {
-                    if (ShouldIgnoreHotkeys())
-                    {
-                        return;
-                    }
-
-                    MainWindowVisibility = Visibility.Visible;
-                    ChangeQueryText(hotkey.ActionKeyword);
-                });
-            }
         }
 
         private void OnHotkey()
@@ -885,12 +810,6 @@ namespace PowerLauncher.ViewModel
             {
                 if (disposing)
                 {
-                    if (_hotkeyHandle != 0)
-                    {
-                        HotkeyManager?.UnregisterHotkey(_hotkeyHandle);
-                    }
-
-                    HotkeyManager?.Dispose();
                     _updateSource?.Dispose();
                     _disposed = true;
                 }

@@ -27,6 +27,12 @@ namespace PowerLauncher.Helper
         [DllImport("kernel32.dll", EntryPoint = "LocalFree", SetLastError = true)]
         internal static extern IntPtr Kernel32LocalFree(IntPtr hMem);
 
+        [DllImport("kernel32.dll", EntryPoint = "WaitForSingleObject", SetLastError = true)]
+        internal static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+        [DllImport("kernel32.dll", EntryPoint = "OpenEventW", SetLastError = true)]
+        internal static extern IntPtr OpenEventW(uint dwDesiredAccess, bool bInheritHandle, [MarshalAs(UnmanagedType.LPWStr)] string lpName);
+
         [DllImport("user32.dll")]
         internal static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
