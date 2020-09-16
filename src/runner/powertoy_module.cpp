@@ -60,8 +60,7 @@ void PowertoyModule::set_hotkeys()
     for (int i = 0; i < hotkeyCount; i++)
     {
         CentralizedKeyboardHook::SetHotkeyAction(module->get_name(), hotkeys[i], [modulePtr, i] {
-            modulePtr->on_hotkey(i);
-            return true;
+            return modulePtr->on_hotkey(i);
         });
     }
 }

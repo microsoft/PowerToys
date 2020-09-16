@@ -27,6 +27,8 @@
   When terminating, the runner will:
     - call destroy() which should free all the memory and delete the PowerToy object,
     - unload the DLL.
+
+  The runner will call on_hotkey() even if the module is disabled.
  */
 
 class PowertoyModuleIface
@@ -71,8 +73,10 @@ public:
      */
     virtual int get_hotkeys(Hotkey* buffer, int buffer_size) { return 0; }
 
-    /* Called when one of the registered hotkeys is pressed. */
-    virtual void on_hotkey(size_t hotkeyId) {}
+    /* Called when one of the registered hotkeys is pressed. Should return true
+     * if the key press is to be swallowed.
+     */
+    virtual bool on_hotkey(size_t hotkeyId) { return false; }
 };
 
 /*

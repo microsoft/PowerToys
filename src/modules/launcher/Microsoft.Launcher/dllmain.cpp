@@ -262,13 +262,16 @@ public:
     }
 
     // Process the hotkey event
-    virtual void on_hotkey(size_t hotkeyId) override
+    virtual bool on_hotkey(size_t hotkeyId) override
     {
         // For now, hotkeyId will always be zero
         if (m_enabled)
         {
             SetEvent(m_hEvent);
+            return true;
         }
+
+        return false;
     }
 
     // Callback to send WM_CLOSE signal to each top level window.
