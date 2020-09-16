@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     public class OutGoingGeneralSettings
     {
         [JsonPropertyName("general")]
-        public IGeneralSettingsData GeneralSettings { get; set; }
+        public GeneralSettings GeneralSettings { get; set; }
 
         public OutGoingGeneralSettings()
         {
@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public OutGoingGeneralSettings(IGeneralSettingsData generalSettings)
         {
-            GeneralSettings = generalSettings;
+            GeneralSettings = (GeneralSettings)generalSettings;
         }
 
         public override string ToString()

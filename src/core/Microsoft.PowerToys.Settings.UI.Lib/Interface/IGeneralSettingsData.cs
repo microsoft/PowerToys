@@ -6,8 +6,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Interface
 {
     public interface IGeneralSettingsData
     {
-        bool IsInitialized { get; set; }
-
         bool Packaged { get; set; }
 
         bool Startup { get; set; }

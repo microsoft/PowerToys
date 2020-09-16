@@ -40,30 +40,25 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
             GeneralSettingsData = generalSettingsData;
 
-            if (GeneralSettingsData.IsInitialized)
+            try
             {
-                try
-                {
-                    GeneralSettingsData = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                GeneralSettingsData = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
 
-                    if (Helper.CompareVersions(GeneralSettingsData.PowertoysVersion, Helper.GetProductVersion()) < 0)
-                    {
-                        // Update settings
-                        GeneralSettingsData.PowertoysVersion = Helper.GetProductVersion();
-                        SettingsUtils.SaveSettings(GeneralSettingsData.ToJsonString(), string.Empty);
-                    }
-                }
-                catch (FormatException e)
+                if (Helper.CompareVersions(GeneralSettingsData.PowertoysVersion, Helper.GetProductVersion()) < 0)
                 {
-                    // If there is an issue with the version number format, don't migrate settings.
-                    Debug.WriteLine(e.Message);
-                }
-                catch
-                {
+                    // Update settings
+                    GeneralSettingsData.PowertoysVersion = Helper.GetProductVersion();
                     SettingsUtils.SaveSettings(GeneralSettingsData.ToJsonString(), string.Empty);
                 }
-
-                generalSettingsData.IsInitialized = true;
+            }
+            catch (FormatException e)
+            {
+                // If there is an issue with the version number format, don't migrate settings.
+                Debug.WriteLine(e.Message);
+            }
+            catch
+            {
+                SettingsUtils.SaveSettings(GeneralSettingsData.ToJsonString(), string.Empty);
             }
 
             // set the callback functions value to hangle outgoing IPC message.

@@ -20,9 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
         }
 
-        // This is to internally check if the general settings information has been read from the settings.json file
-        public bool IsInitialized { get; set; }
-
         // Gets or sets a value indicating whether packaged.
         [JsonPropertyName("packaged")]
         public bool Packaged { get; set; }
