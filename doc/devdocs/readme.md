@@ -80,7 +80,11 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 - The PowerToys binaries will be in your repo under `x64\Release`.
 - If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
 
-## Building the Installer
+## Building the Installers
+
+Our installer is two parts, an EXE and an MSI.  The EXE contains the MSI and handles more complex install logic. 
+- The EXE installs all prerequisites and installs PowerToys via the MSI. Also has additional features, such as silent installation flags
+- The MSI installs PowerToys.
 
 ### Prerequisites Building the Installer (.MSI)
 
@@ -92,17 +96,14 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 - From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 
-### .EXE Installer
-- When the .MSI compiler is built, you can also build `PowerToysBootstrapper` solution (`installer\PowerToysBootstrapper\`), which is a .msi wrapper installer with additional features, such as silent installation and pre-installing `dotnet`.
+### Compiling Bootstraper Installer (.EXE)
 
-#### Supported arguments:
+- MSI Installer needs to be built in release mode
+- Build `PowerToysBootstrapper` solution (`installer\PowerToysBootstrapper\`)
 
-- `--help` - shows the list of supported command-line arguments
-- `--no_full_ui` - do not use MSI wizard dialog, use reduced progress bar instead
-- `--no_start_pt` - do not start PowerToys after the installation is complete
-- `--silent` - use completely silent installation
-- `--skip_dotnet_install` - do not install dotnet, even if it's detected that it's not installed
+#### Supported arguments for EXE installer:
 
+Head over to the wiki to get the [full list of supported installer arguments][installerArgWiki].
 
 ## Debugging
 
@@ -146,7 +147,7 @@ The common lib, as the name suggests, contains code shared by multiple PowerToys
 
 WebView project for editing the PowerToys settings.
 
-The html portion of the project that is shown in the WebView is contained in [`settings-html`](/src/settings/settings-heml).
+The html portion of the project that is shown in the WebView is contained in [`settings-html`](/src/settings/settings-html).
 Instructions on how build a new version and update this project are in the [Web project for the Settings UI](./settings-web.md).
 
 While developing, it's possible to connect the WebView to the development server running in localhost by setting the `_DEBUG_WITH_LOCALHOST` flag to `1` and following the instructions near it in `./main.cpp`.
@@ -176,3 +177,5 @@ This module has a setting to serve as an example for each of the currently imple
 - CustomAction property
 
 ![Image of the Options](/doc/images/settings/example_settings.png)
+
+[installerArgWiki]: https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe
