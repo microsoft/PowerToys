@@ -121,6 +121,7 @@ build:
             - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceCustomMediaSource.dll'
             - 'modules\VideoConference\VideoConferenceVirtualDriver\videoconferencevirtualdriver.cat'
             - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.inf'
+            - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.cab'
             - 'Notifications.dll'
             - 'os-detection.dll'
             - 'PowerToys.exe'
