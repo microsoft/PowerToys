@@ -212,14 +212,14 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 
 |No. | Requirement | Pri
 | - | - | - |
-|1 | Populate the selection menu with recording options: Record, Cancel ([Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording)) | P0 |
+|1 | Populate the selection menu with recording options: Record, Cancel ([Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording)). | P0 |
 |2 | Keep the highlighted border around the selected recording region but remove the dimmed background effect that was created when the selection tool was activated. | P0 |
 |3 | Allow the user to interact with the system as needed to prepare for the initiation of the recording. | P0 |
 |4 | Allow the user to manually modify the recording region prior to the initiation of recording via click-and-drag functionality on the highlighted border like Camtasia’s bounding box in [Figure 1.5.8](#figure-158---camtasias-recording-interface). | P0 |
 |5 | When ‘Play’ is selected, lock the highlighted border so that it can no longer be adjusted. | P0 |
 |6 | When ‘Play’ is selected, overlay the screen with a visual count-down, immediately followed by the initiation of the recording. | P0 |
 |7 |Alternatively start recording by pressing the OS level short-cut: Win + Shift + R. | P0 |
-|8 | When recording begins, transition the recording menu to the active state as depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-recording-interface-during-recording) | P0 |
+|8 | When recording begins, transition the recording menu to the active state as depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-recording-interface-during-recording). | P0 |
 |9 | While the recording is active, the user is free to interact with the system as desired. | P0 |
 |10| When the user selects the ‘Stop’ button, the recording is ended and loaded into an editor window like that depicted in [Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-video-editing). | P0 |
 |11| Alternatively stop the recording and load it into an editor window by pressing the OS level short-cut: Win + Shift + R at any time while recording. | P0 |
@@ -231,10 +231,10 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 |1 | Load the recording from [section 3.1.7](#317-recording) in an editor window as described in [Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-video-editing). | P0 |
 |2 | A scrub bar should be loaded to trim the recording. Scrubber UI should resemble that of the Photos app in [Figure 1.5.4](#figure-154--trimming-video-via-xbox-game-bar-note-that-the-editing-process-takes-the-user-through-file-explorer-movies--tv-and-photos-before-accessing-the-trimming-functionality). | P0 |
 |3 | On the right-hand menu, display a selection menu for either Video or GIF. | P0 |
-|4 | Under the ‘Video’ menu, display options to adjust resolution quality and save the video ([Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-video-editing)). | P0 |
+|4 | Under the ‘Video’ menu, display options to adjust resolution quality, enable/disable system audio, and save the video ([Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-video-editing)). | P0 |
 |5 | Under the ‘GIF’ menu, display options to adjust the resolution, frames-per-second, and save the GIF ([Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-gif-editing)). | P0 |
 |6 | ‘GIF’ menu should allow the user to save the GIF to the clipboard.| P0 |
-|7 | The settings icon should display the PowerToys settings menu for VGC when clicked ([Figure 3.2.7](#figure-327---mock-up-of-video-gif-capture-powertoys-settings)) | P0 |
+|7 | The settings icon should display the PowerToys settings menu for VGC when clicked ([Figure 3.2.7](#figure-327---mock-up-of-video-gif-capture-powertoys-settings)). | P0 |
 
 ### 3.2. Design Mock-Ups
 
@@ -268,14 +268,14 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 
 ### 3.3. Open Considerations
 
-* DRM considerations.
-* Memory considerations when recording.
+* DRM considerations
+* Memory considerations when recording
 * File size considerations for exporting
-* Text overlay functionality.
-* PowerToys Settings menu options (ex: default encoder, cursor capture, key stroke capture, multi-monitor display behaviors, pre-recording countdown etc.).
-* OS level shortcuts & hot-keys. Ex: Play, Stop, Pause, Resume, Cancel.
-* Discoverability of features and settings.
-* Touch & Pen interaction considerations and supporting UI.
+* Text overlay functionality
+* PowerToys Settings menu options (ex: default encoder, cursor capture, key stroke capture, multi-monitor display behaviors, pre-recording countdown etc.)
+* OS level shortcuts & hot-keys. Ex: Play, Stop, Pause, Resume, Cancel
+* Discoverability of features and settings
+* Touch & Pen interaction considerations and supporting UI
 * Supported export formats
 
 ## 4. Measure Requirements
