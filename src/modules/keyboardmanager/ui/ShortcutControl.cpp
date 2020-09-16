@@ -43,15 +43,24 @@ ShortcutControl::ShortcutControl(Grid table, const int colIndex, TextBox targetA
 }
 
 // Function to set the accessible name of the target App text box
-void ShortcutControl::SetAccessibleNameForTextBox(TextBox targetAppTextBox)
+void ShortcutControl::SetAccessibleNameForTextBox(TextBox targetAppTextBox, int rowIndex)
 {
     // To set the accessible name of the target App text box by adding the string `All Apps` if the text box is empty, if not the application name is read by narrator.
-    std::wstring targetAppTextBoxAccessibleName = GET_RESOURCE_STRING(IDS_TARGET_APPLICATION);
+    std::wstring targetAppTextBoxAccessibleName = GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_TARGETAPPHEADER);
     if (targetAppTextBox.Text() == L"")
     {
         targetAppTextBoxAccessibleName += GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
     }
     targetAppTextBox.SetValue(Automation::AutomationProperties::NameProperty(), box_value(targetAppTextBoxAccessibleName));
+}
+
+// Function to set the accessible names for all the controls in a row
+void ShortcutControl::UpdateAccessibleNames(StackPanel sourceColumn, StackPanel mappedToColumn, TextBox targetAppTextBox, Button deleteButton, int rowIndex)
+{
+    sourceColumn.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_SOURCEHEADER)));
+    mappedToColumn.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_TARGETHEADER)));
+    ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox, rowIndex);
+    deleteButton.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
 }
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
@@ -85,8 +94,6 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     parent.SetRow(arrowIcon, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(arrowIcon);
 
-    // To set the accessible name of the arrow icon by setting the accessible name of the remapped shortcut
-    keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl().SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_REMAPPED_TO)));
     // ShortcutControl for the new shortcut
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
@@ -96,8 +103,6 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     targetAppTextBox.HorizontalAlignment(HorizontalAlignment::Center);
     targetAppTextBox.PlaceholderText(KeyboardManagerConstants::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
-    // Initialize the accessible name of the target app text box
-    ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox);
 
     // LostFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
     targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, targetAppTextBox](auto const& sender, auto const& e) {
@@ -157,7 +162,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         }
 
         // To set the accessibile name of the target app text box when focus is lost
-        ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox);
+        ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox, rowIndex + 1);
     });
 
     parent.SetColumn(targetAppTextBox, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
@@ -193,6 +198,18 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
             parent.SetRow(children.GetAt(i).as<FrameworkElement>(), elementRowIndex - 1);
         }
 
+        // Update accessible names for each row after the deleted row
+        for (uint32_t i = lastIndexInRow + 1; i < children.Size(); i += KeyboardManagerConstants::ShortcutTableColCount)
+        {
+            // Get row index from grid
+            int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
+            StackPanel sourceCol = children.GetAt(i + KeyboardManagerConstants::ShortcutTableOriginalColIndex).as<StackPanel>();
+            StackPanel targetCol = children.GetAt(i + KeyboardManagerConstants::ShortcutTableNewColIndex).as<StackPanel>();
+            TextBox targetApp = children.GetAt(i + KeyboardManagerConstants::ShortcutTableTargetAppColIndex).as<TextBox>();
+            Button delButton = children.GetAt(i + KeyboardManagerConstants::ShortcutTableRemoveColIndex).as<Button>();
+            UpdateAccessibleNames(sourceCol, targetCol, targetApp, delButton, elementRowIndex);
+        }
+
         for (int i = 0; i < KeyboardManagerConstants::ShortcutTableColCount; i++)
         {
             parent.Children().RemoveAt(lastIndexInRow - i);
@@ -213,6 +230,9 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     parent.SetRow(deleteShortcut, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteShortcut);
     parent.UpdateLayout();
+
+    // Set accessible names
+    UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl(), targetAppTextBox, deleteShortcut, parent.RowDefinitions().Size() - 1);
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
     if (originalKeys.IsValidShortcut() && !(newKeys.index() == 0 && std::get<DWORD>(newKeys) == NULL) && !(newKeys.index() == 1 && !std::get<Shortcut>(newKeys).IsValidShortcut()))

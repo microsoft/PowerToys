@@ -276,10 +276,7 @@
   <data name="Delete_Remapping_Button" xml:space="preserve">
     <value>Delete Remapping</value>
   </data>
-  <data name="Remapped_To" xml:space="preserve">
-    <value>Remapped To</value>
-  </data>
-  <data name="Target_Application" xml:space="preserve">
-    <value>For Target Application </value>
+  <data name="AutomationProperties_Row" xml:space="preserve">
+    <value>Row </value>
   </data>
 </root>

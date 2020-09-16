@@ -217,18 +217,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyRemapTable.ColumnDefinitions().Append(removeColumn);
     keyRemapTable.RowDefinitions().Append(RowDefinition());
 
-    ListView keyRemapListView;
-    keyRemapListView.CanDragItems(false);
-    keyRemapListView.CanReorderItems(false);
-    keyRemapListView.IsSwipeEnabled(false);
-    keyRemapListView.SelectionMode(ListViewSelectionMode::None);
-
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_SOURCEHEADER));
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
-    keyRemapListView.Items().Append(box_value(L"LMAO"));
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
@@ -312,7 +305,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     StackPanel mappingsPanel;
     mappingsPanel.Children().Append(keyRemapInfoHeader);
     mappingsPanel.Children().Append(keyRemapInfoExample);
-    mappingsPanel.Children().Append(keyRemapListView);
     mappingsPanel.Children().Append(keyRemapTable);
     mappingsPanel.Children().Append(addRemapKey);
 
