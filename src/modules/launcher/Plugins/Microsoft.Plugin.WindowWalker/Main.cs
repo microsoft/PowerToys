@@ -31,10 +31,8 @@ namespace Microsoft.Plugin.WindowWalker
                 throw new ArgumentNullException(nameof(query));
             }
 
-            SearchController.Instance.UpdateSearchText(query.Search).Wait();
-
             OpenWindows.Instance.UpdateOpenWindowsList();
-            SearchController.Instance.UpdateSearchText(query.RawQuery).Wait();
+            SearchController.Instance.UpdateSearchText(query.Search).Wait();
 
             return _results.Select(x => new Result()
             {
