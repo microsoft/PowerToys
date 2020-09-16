@@ -45,7 +45,7 @@ namespace CentralizedKeyboardHook
             .key = static_cast<unsigned char>(keyPressInfo.vkCode)
         };
 
-        const std::function<bool()>* action = nullptr;
+        std::function<bool()> action;
         {
             // Hold the lock for the shortest possible duration
             std::unique_lock lock{ mutex };
@@ -53,13 +53,13 @@ namespace CentralizedKeyboardHook
             auto it = hotkeyDescriptors.find(dummy);
             if (it != hotkeyDescriptors.end())
             {
-                action = &it->action;
+                action = it->action;
             }
         }
 
         if (action)
         {
-            if ((*action)())
+            if (action())
             {
                 return 1;
             }
