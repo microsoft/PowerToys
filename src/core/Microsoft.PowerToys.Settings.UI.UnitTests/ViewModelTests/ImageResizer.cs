@@ -23,10 +23,9 @@ namespace ViewModelTests
             // initialize creation of test settings file.
             // Test base path:
             // C:\Users\<user name>\AppData\Local\Packages\08e1807b-8b6d-4bfa-adc4-79c64aae8e78_9abkseg265h2m\LocalState\Microsoft\PowerToys\
-            GeneralSettings generalSettings = new GeneralSettings();
             ImageResizerSettings imageResizer = new ImageResizerSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            SettingsUtils.SaveSettings(GeneralSettings.Instance.ToJsonString());
             SettingsUtils.SaveSettings(imageResizer.ToJsonString(), imageResizer.Name);
         }
 
@@ -63,7 +62,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
 
             // act
             viewModel.IsEnabled = true;
@@ -74,13 +73,13 @@ namespace ViewModelTests
         {
             // arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
 
             // act
             viewModel.JPEGQualityLevel = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.JPEGQualityLevel);
         }
 
@@ -89,13 +88,13 @@ namespace ViewModelTests
         {
             // arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
 
             // act
             viewModel.PngInterlaceOption = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.PngInterlaceOption);
         }
 
@@ -104,13 +103,13 @@ namespace ViewModelTests
         {
             // arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
 
             // act
             viewModel.TiffCompressOption = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.TiffCompressOption);
         }
 
@@ -119,14 +118,14 @@ namespace ViewModelTests
         {
             // arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
             string expectedValue = "%1 (%3)";
 
             // act
             viewModel.FileName = expectedValue;
 
             // Assert
-            viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
             Assert.AreEqual(expectedValue, viewModel.FileName);
         }
 
@@ -135,7 +134,7 @@ namespace ViewModelTests
         {
             // arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
 
             // act
             viewModel.KeepDateModified = true;
@@ -150,13 +149,13 @@ namespace ViewModelTests
         {
             // arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
 
             // act
             viewModel.Encoder = 3;
 
             // Assert
-            viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
             Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", viewModel.GetEncoderGuid(viewModel.Encoder));
             Assert.AreEqual(3, viewModel.Encoder);
         }
@@ -166,7 +165,7 @@ namespace ViewModelTests
         {
             // arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
             int sizeOfOriginalArray = viewModel.Sizes.Count;
 
             // act
@@ -181,7 +180,7 @@ namespace ViewModelTests
         {
             // arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(GeneralSettings.Instance, SendMockIPCConfigMSG);
             int sizeOfOriginalArray = viewModel.Sizes.Count;
             ImageSize deleteCandidate = viewModel.Sizes.Where<ImageSize>(x => x.Id == 0).First();
 

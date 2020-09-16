@@ -20,10 +20,9 @@ namespace ViewModelTests
         public void Setup()
         {
             // initialize creation of test settings file.
-            GeneralSettings generalSettings = new GeneralSettings();
             PowerPreviewSettings powerpreview = new PowerPreviewSettings();
 
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            SettingsUtils.SaveSettings(GeneralSettings.Instance.ToJsonString());
             SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);
         }
 
