@@ -21,6 +21,8 @@ namespace ViewModelTests
         {
             // initialize creation of test settings file.
             PowerRenameSettings powerRename = new PowerRenameSettings();
+
+            // Initialize the common settings configurations
             GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
             SettingsUtils.SaveSettings(GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.ToJsonString());
             SettingsUtils.SaveSettings(powerRename.ToJsonString(), generalSettings_file_name, "power-rename-settings.json");

@@ -6,6 +6,8 @@ using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
+    // This Singleton class is a wrapper around the Common settings configurations that are to be shared across all the viewmodels.
+    // This class can have only one instance and therefore the settings configurations are common to all.
     public class GeneralSettingsCache<T> : IGeneralSettingsCache<T>
     {
         private static GeneralSettingsCache<T> settingsCache;
@@ -27,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
         }
 
+        // Settings configurations shared across all viewmodels
         public T CommonSettingsConfig { get; set; }
     }
 }

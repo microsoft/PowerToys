@@ -23,6 +23,8 @@ namespace ViewModelTests
         {
             // initialize creation of test settings file.
             FZConfigProperties fZConfigProperties = new FZConfigProperties();
+
+            // Initialize the common settings configurations
             GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
             SettingsUtils.SaveSettings(fZConfigProperties.ToJsonString(), FancyZonesTestFolderName);
         }

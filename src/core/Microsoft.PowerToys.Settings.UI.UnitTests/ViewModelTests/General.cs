@@ -19,7 +19,7 @@ namespace ViewModelTests
         [TestInitialize]
         public void Setup()
         {
-            // initialize creation of test settings file.
+            // Initialize the common settings configurations
             GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
             SettingsUtils.SaveSettings(GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.ToJsonString(), generalSettings_file_name);
         }

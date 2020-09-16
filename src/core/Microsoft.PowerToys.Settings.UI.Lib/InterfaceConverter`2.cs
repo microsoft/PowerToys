@@ -8,17 +8,20 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class InterfaceConverter<TM, TI> : JsonConverter<TI>
-        where TM : class, TI
+    // Deserialization of interfaces is not allowed by JsonConverter as we do not have enough information about the class type to deserialize to.
+    // This custom Json Converter helps deserialize interfaces to the given class.
+    public class InterfaceConverter<TClass, TInterface> : JsonConverter<TInterface>
+        where TClass : class, TInterface
     {
-        public override TI Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        // Custom serializer specifying the class name to deserialize to.
+        public override TInterface Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return JsonSerializer.Deserialize<TM>(ref reader, options);
+            return JsonSerializer.Deserialize<TClass>(ref reader, options);
         }
 
-        public override void Write(Utf8JsonWriter writer, TI value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, TInterface value, JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize(writer, (TM)value);
+            JsonSerializer.Serialize(writer, (TClass)value);
         }
     }
 }

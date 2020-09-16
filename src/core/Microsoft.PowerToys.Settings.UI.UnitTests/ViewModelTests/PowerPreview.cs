@@ -21,6 +21,8 @@ namespace ViewModelTests
         {
             // initialize creation of test settings file.
             PowerPreviewSettings powerpreview = new PowerPreviewSettings();
+
+            // Initialize the common settings configurations
             GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
             SettingsUtils.SaveSettings(GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.ToJsonString());
             SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);

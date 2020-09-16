@@ -19,7 +19,10 @@ namespace ViewModelTests
         public void Setup()
         {
             var colorPickerSettings = new ColorPickerSettings();
+
+            // Initialize the common settings configurations
             GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
+
             SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.Name, ModuleName + ".json");
         }
 

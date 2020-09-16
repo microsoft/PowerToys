@@ -24,6 +24,8 @@ namespace ViewModelTests
             // Test base path:
             // C:\Users\<user name>\AppData\Local\Packages\08e1807b-8b6d-4bfa-adc4-79c64aae8e78_9abkseg265h2m\LocalState\Microsoft\PowerToys\
             ImageResizerSettings imageResizer = new ImageResizerSettings();
+
+            // Initialize the common settings configurations
             GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
             SettingsUtils.SaveSettings(GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.ToJsonString());
             SettingsUtils.SaveSettings(imageResizer.ToJsonString(), imageResizer.Name);
