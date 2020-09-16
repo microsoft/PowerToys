@@ -59,14 +59,17 @@ namespace Wox.Core.Plugin
                 }
             }
 
-            var globalplugins = PluginManager.GlobalPlugins;
-
-            foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
+            if (pluginQueryPair.Count == 0)
             {
-                var query = new Query(rawQuery, rawQuery, terms, string.Empty);
-                if (!pluginQueryPair.ContainsKey(globalPlugin))
+                var globalplugins = PluginManager.GlobalPlugins;
+
+                foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
                 {
-                    pluginQueryPair.Add(globalPlugin, query);
+                    var query = new Query(rawQuery, rawQuery, terms, string.Empty);
+                    if (!pluginQueryPair.ContainsKey(globalPlugin))
+                    {
+                        pluginQueryPair.Add(globalPlugin, query);
+                    }
                 }
             }
 
