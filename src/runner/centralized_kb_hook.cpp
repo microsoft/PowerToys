@@ -30,7 +30,7 @@ namespace CentralizedKeyboardHook
 
     LRESULT CALLBACK KeyboardHookProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
     {
-        if (nCode < 0 || wParam != WM_KEYDOWN)
+        if (nCode < 0 || ((wParam != WM_KEYDOWN) && (wParam != WM_SYSKEYDOWN)))
         {
             return CallNextHookEx(hHook, nCode, wParam, lParam);
         }
@@ -76,6 +76,7 @@ namespace CentralizedKeyboardHook
 
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
     {
+        std::unique_lock lock{ mutex };
         auto it = hotkeyDescriptors.begin();
         while (it != hotkeyDescriptors.end())
         {

@@ -160,6 +160,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        ResetEvent(m_hEvent);
         // Start PowerLauncher.exe only if the OS is 19H1 or higher
         if (UseNewSettings())
         {
@@ -229,6 +230,7 @@ public:
     {
         if (m_enabled)
         {
+            ResetEvent(m_hEvent);
             terminateProcess();
         }
 
@@ -263,7 +265,10 @@ public:
     virtual void on_hotkey(size_t hotkeyId) override
     {
         // For now, hotkeyId will always be zero
-        SetEvent(m_hEvent);
+        if (m_enabled)
+        {
+            SetEvent(m_hEvent);
+        }
     }
 
     // Callback to send WM_CLOSE signal to each top level window.
