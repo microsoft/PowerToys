@@ -36,13 +36,14 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
     // Attach flyout to the drop down
     warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
     dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
-    // To set the accessible name of the combo-box
+    // To set the accessible name of the combo-box (by default index 1)
     SetAccessibleNameForComboBox(dropDown.as<ComboBox>(), 1);
 }
 
 // Function to set accessible name for combobox
 void KeyDropDownControl::SetAccessibleNameForComboBox(ComboBox dropDown, int index)
 {
+    // Display name with drop down index (where this indexing will start from 1) - Used by narrator
     dropDown.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_KEY_DROPDOWN_COMBOBOX) + L" " + std::to_wstring(index)));
 }
 
@@ -159,7 +160,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             for (uint32_t i = dropDownIndex + 1; i < keyDropDownControlObjects.size(); i++)
             {
                 // Update accessible name (row index will become i-1 for this element, so the display name would be i (display name indexing from 1)
-                SetAccessibleNameForComboBox(keyDropDownControlObjects[i]->GetComboBox(), i);            
+                SetAccessibleNameForComboBox(keyDropDownControlObjects[i]->GetComboBox(), i);
             }
 
             parent.Children().RemoveAt(dropDownIndex);
