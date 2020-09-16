@@ -19,7 +19,7 @@ namespace ViewModelTests
         public void Setup()
         {
             var colorPickerSettings = new ColorPickerSettings();
-
+            GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
             SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.Name, ModuleName + ".json");
         }
 
@@ -41,7 +41,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ColorPickerIsEnabledByDefault()
         {
-            var viewModel = new ColorPickerViewModel(GeneralSettings.Instance, ColorPickerIsEnabledByDefault_IPC);
+            var viewModel = new ColorPickerViewModel(GeneralSettingsCache<GeneralSettings>.Instance, ColorPickerIsEnabledByDefault_IPC);
 
             Assert.IsTrue(viewModel.IsEnabled);
         }
