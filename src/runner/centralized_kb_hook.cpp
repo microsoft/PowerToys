@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "centralized_kb_hook.h"
+#include "common/common.h"
 
 namespace CentralizedKeyboardHook
 {
@@ -104,6 +105,11 @@ namespace CentralizedKeyboardHook
         if (!hHook)
         {
             hHook = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardHookProc, NULL, NULL);
+            if (!hHook)
+            {
+                DWORD errorCode = GetLastError();
+                show_last_error_message(L"SetWindowsHookEx", errorCode, L"centralized_kb_hook");
+            }
         }
     }
 
