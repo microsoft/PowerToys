@@ -12,17 +12,12 @@ namespace PowerLauncher.Helper
     {
         public NativeEventWaiter(string eventName, Action callback)
         {
-            const uint INFINITE = 0xFFFFFFFF;
-            const uint WAIT_OBJECT_0 = 0x00000000;
-            const uint SYNCHRONIZE = 0x00100000;
-
-            IntPtr eventHandle = NativeMethods.OpenEventW(SYNCHRONIZE, false, eventName);
-
             new Thread(() =>
             {
+                var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
                 while (true)
                 {
-                    if (NativeMethods.WaitForSingleObject(eventHandle, INFINITE) == WAIT_OBJECT_0)
+                    if (eventHandle.WaitOne())
                     {
                         Application.Current.Dispatcher.Invoke(callback);
                     }
