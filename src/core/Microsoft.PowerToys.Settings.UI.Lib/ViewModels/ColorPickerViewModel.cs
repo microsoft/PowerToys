@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
-        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
+        private ISettingsRepository SettingsRepository { get; set; }
 
         private ColorPickerSettings _colorPickerSettings;
 
@@ -19,9 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ColorPickerViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc)
+        public ColorPickerViewModel(ISettingsRepository settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            GeneralSettingsCache = generalSettingsCache;
+            SettingsRepository = settingsRepository;
 
             if (SettingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _colorPickerSettings = new ColorPickerSettings();
             }
 
-            _isEnabled = GeneralSettingsCache.CommonSettingsConfig.Enabled.ColorPicker;
+            _isEnabled = SettingsRepository.GeneralSettingsConfig.Enabled.ColorPicker;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -53,8 +53,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
 
                     // grab the latest version of settings
-                    GeneralSettingsCache.CommonSettingsConfig.Enabled.ColorPicker = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
+                    SettingsRepository.GeneralSettingsConfig.Enabled.ColorPicker = value;
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(SettingsRepository.GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

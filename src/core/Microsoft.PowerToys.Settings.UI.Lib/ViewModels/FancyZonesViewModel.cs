@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
-        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
+        private ISettingsRepository SettingsRepository { get; set; }
 
         private const string ModuleName = "FancyZones";
 
@@ -25,9 +25,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string settingsConfigFileFolder = string.Empty;
 
-        public FancyZonesViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(ISettingsRepository settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
-            GeneralSettingsCache = generalSettingsCache;
+            SettingsRepository = settingsRepository;
             settingsConfigFileFolder = configFileSubfolder;
 
             try
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             _zoneHighlightColor = highlightColor != string.Empty ? highlightColor : "#0078D7";
 
-            _isEnabled = GeneralSettingsCache.CommonSettingsConfig.Enabled.FancyZones;
+            _isEnabled = SettingsRepository.GeneralSettingsConfig.Enabled.FancyZones;
         }
 
         private bool _isEnabled;
@@ -110,8 +110,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettingsCache.CommonSettingsConfig.Enabled.FancyZones = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
+                    SettingsRepository.GeneralSettingsConfig.Enabled.FancyZones = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.GeneralSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");

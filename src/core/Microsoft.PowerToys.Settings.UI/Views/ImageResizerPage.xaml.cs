@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
 
-            ViewModel = new ImageResizerViewModel(GeneralSettingsCache<GeneralSettings>.Instance, ShellPage.SendDefaultIPCMessage);
+            ViewModel = new ImageResizerViewModel(SettingsRepository.Instance, ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
 

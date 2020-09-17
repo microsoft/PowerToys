@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class KeyboardManagerViewModel : Observable
     {
-        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
+        private ISettingsRepository SettingsRepository { get; set; }
 
         private const string PowerToyName = "Keyboard Manager";
         private const string RemapKeyboardActionName = "RemapKeyboard";
@@ -38,9 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(ISettingsRepository settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
-            GeneralSettingsCache = generalSettingsCache;
+            SettingsRepository = settingsRepository;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return GeneralSettingsCache.CommonSettingsConfig.Enabled.KeyboardManager;
+                return SettingsRepository.GeneralSettingsConfig.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (GeneralSettingsCache.CommonSettingsConfig.Enabled.KeyboardManager != value)
+                if (SettingsRepository.GeneralSettingsConfig.Enabled.KeyboardManager != value)
                 {
-                    GeneralSettingsCache.CommonSettingsConfig.Enabled.KeyboardManager = value;
+                    SettingsRepository.GeneralSettingsConfig.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(SettingsRepository.GeneralSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());
                 }

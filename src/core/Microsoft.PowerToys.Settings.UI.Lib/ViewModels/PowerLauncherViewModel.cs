@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
-        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
+        private ISettingsRepository SettingsRepository { get; set; }
 
         private PowerLauncherSettings settings;
 
@@ -22,9 +22,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(ISettingsRepository settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
-            GeneralSettingsCache = generalSettingsCache;
+            SettingsRepository = settingsRepository;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return GeneralSettingsCache.CommonSettingsConfig.Enabled.PowerLauncher;
+                return SettingsRepository.GeneralSettingsConfig.Enabled.PowerLauncher;
             }
 
             set
             {
-                if (GeneralSettingsCache.CommonSettingsConfig.Enabled.PowerLauncher != value)
+                if (SettingsRepository.GeneralSettingsConfig.Enabled.PowerLauncher != value)
                 {
-                    GeneralSettingsCache.CommonSettingsConfig.Enabled.PowerLauncher = value;
+                    SettingsRepository.GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(SettingsRepository.GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
             }
