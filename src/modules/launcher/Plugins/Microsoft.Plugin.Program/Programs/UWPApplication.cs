@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Program.Programs
             return Properties.Resources.powertoys_run_plugin_program_packaged_application;
         }
 
-        public Result Result(string query, IPublicAPI api)
+        public Result Result(string query, string queryArguments, IPublicAPI api)
         {
             if (api == null)
             {
@@ -100,7 +100,7 @@ namespace Microsoft.Plugin.Program.Programs
                 ContextData = this,
                 Action = e =>
                 {
-                    Launch(api);
+                    Launch(api, queryArguments);
                     return true;
                 },
             };
@@ -195,16 +195,15 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive, and showing the user an error message")]
-        private async void Launch(IPublicAPI api)
+        private async void Launch(IPublicAPI api, string queryArguments)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
-            const string noArgs = "";
             const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;
             await Task.Run(() =>
             {
                 try
                 {
-                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out uint unusedPid);
+                    appManager.ActivateApplication(UserModelId, queryArguments, noFlags, out var unusedPid);
                 }
                 catch (Exception)
                 {

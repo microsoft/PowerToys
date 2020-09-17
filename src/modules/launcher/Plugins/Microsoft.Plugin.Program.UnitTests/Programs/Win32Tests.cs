@@ -547,7 +547,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             StringMatcher.Instance = new StringMatcher();
 
             // Act
-            var result = _cmderRunCommand.Result("cmder", mock.Object);
+            var result = _cmderRunCommand.Result("cmder", string.Empty, mock.Object);
 
             // Assert
             Assert.IsTrue(result.Title.Equals(_cmderRunCommand.Name, StringComparison.Ordinal));

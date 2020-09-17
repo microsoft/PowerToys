@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -179,7 +179,7 @@ namespace Microsoft.Plugin.Program.Programs
             return true;
         }
 
-        public Result Result(string query, IPublicAPI api)
+        public Result Result(string query, string queryArguments, IPublicAPI api)
         {
             if (api == null)
             {
@@ -225,6 +225,7 @@ namespace Microsoft.Plugin.Program.Programs
                         FileName = LnkResolvedPath ?? FullPath,
                         WorkingDirectory = ParentDirectory,
                         UseShellExecute = true,
+                        Arguments = queryArguments,
                     };
 
                     Main.StartProcess(Process.Start, info);
