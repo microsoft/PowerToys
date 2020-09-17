@@ -70,6 +70,7 @@ public:
     /* Get the list of hotkeys. Should return the number of available hotkeys and
      * fill up the buffer to the minimum of the number of hotkeys and its size.
      * Modules do not need to override this method, it will return zero by default.
+     * This method is called even when the module is disabled.
      */
     virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) { return 0; }
 
