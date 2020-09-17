@@ -18,7 +18,7 @@ namespace Microsoft.Plugin.Program
         {
             if (!string.IsNullOrEmpty(query?.Search))
             {
-                // First Argument is always (part of) the programa, 2nd term is possibly  a Program Argument
+                // First Argument is always (part of) the program, 2nd term is possibly  a Program Argument
                 if (query.Terms.Length > 1)
                 {
                     for (var i = 1; i < query.Terms.Length; i++)
