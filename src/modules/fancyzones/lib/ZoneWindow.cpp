@@ -79,6 +79,8 @@ public:
     MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle) noexcept;
+    IFACEMETHODIMP_(bool)
+    ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
     IFACEMETHODIMP_(void)
     CycleActiveZoneSet(DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring)
@@ -233,44 +235,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
             }
             else
             {
-                std::vector<size_t> newHighlightZone;
-                std::set_union(begin(highlightZone), end(highlightZone), begin(m_initialHighlightZone), end(m_initialHighlightZone), std::back_inserter(newHighlightZone));
-
-                RECT boundingRect;
-                bool boundingRectEmpty = true;
-                auto zones = m_activeZoneSet->GetZones();
-
-                for (size_t zoneId : newHighlightZone)
-                {
-                    RECT rect = zones[zoneId]->GetZoneRect();
-                    if (boundingRectEmpty)
-                    {
-                        boundingRect = rect;
-                        boundingRectEmpty = false;
-                    }
-                    else
-                    {
-                        boundingRect.left = min(boundingRect.left, rect.left);
-                        boundingRect.top = min(boundingRect.top, rect.top);
-                        boundingRect.right = max(boundingRect.right, rect.right);
-                        boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
-                    }
-                }
-
-                highlightZone.clear();
-
-                if (!boundingRectEmpty)
-                {
-                    for (size_t zoneId = 0; zoneId < zones.size(); zoneId++)
-                    {
-                        RECT rect = zones[zoneId]->GetZoneRect();
-                        if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
-                            boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
-                        {
-                            highlightZone.push_back(zoneId);
-                        }
-                    }
-                }
+                highlightZone = m_activeZoneSet->GetCombinedZoneRange(m_initialHighlightZone, highlightZone);
             }
         }
         else
@@ -307,8 +272,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
         MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
         m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), m_highlightZone);
 
-        auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
-        if (windowInfo.noVisibleOwner)
+        if (FancyZonesUtils::HasNoVisibleOwner(window))
         {
             SaveWindowProcessToZoneIndex(window);
         }
@@ -342,8 +306,7 @@ ZoneWindow::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, boo
     {
         if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window.get(), vkCode, cycle))
         {
-            auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
-            if (windowInfo.noVisibleOwner)
+            if (FancyZonesUtils::HasNoVisibleOwner(window))
             {
                 SaveWindowProcessToZoneIndex(window);
             }
@@ -359,6 +322,20 @@ ZoneWindow::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, 
     if (m_activeZoneSet)
     {
         if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndPosition(window, m_window.get(), vkCode, cycle))
+        {
+            SaveWindowProcessToZoneIndex(window);
+            return true;
+        }
+    }
+    return false;
+}
+
+IFACEMETHODIMP_(bool)
+ZoneWindow::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept
+{
+    if (m_activeZoneSet)
+    {
+        if (m_activeZoneSet->ExtendWindowByDirectionAndPosition(window, m_window.get(), vkCode))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;

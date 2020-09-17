@@ -23,4 +23,8 @@
         <Setter Property="Margin" Value="0,34,0,4" />
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
+
+    <Style x:Key="SettingsGroupTitleStyleAsHeader" TargetType="TextBlock" BasedOn="{StaticResource SettingsGroupTitleStyle}">
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
 </ResourceDictionary>
