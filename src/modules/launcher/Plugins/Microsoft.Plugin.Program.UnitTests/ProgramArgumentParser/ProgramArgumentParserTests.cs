@@ -20,7 +20,7 @@ namespace Microsoft.Plugin.Program.UnitTests.ProgramArgumentParser
         [TestCase("edge.exe -- --inprivate", "edge.exe", "--inprivate")]
         [TestCase("edge.exe", "edge.exe", null)]
         [TestCase("edge", "edge", null)]
-        [TestCase("cmd -c \"ping 1.1.1.1\"", "cmd", "-c \"ping 1.1.1.1\"")]
+        [TestCase("cmd /c \"ping 1.1.1.1\"", "cmd", "/c \"ping 1.1.1.1\"")]
         public void ProgramArgumentParserTestsCanParseQuery(string inputQuery, string expectedProgram, string expectedProgramArguments)
         {
             // Arrange
