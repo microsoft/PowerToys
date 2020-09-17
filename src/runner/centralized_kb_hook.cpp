@@ -102,13 +102,21 @@ namespace CentralizedKeyboardHook
 
     void Start() noexcept
     {
-        if (!hHook)
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
+        const bool hook_disabled = IsDebuggerPresent();
+#else
+        const bool hook_disabled = false;
+#endif
+        if (!hook_disabled)
         {
-            hHook = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardHookProc, NULL, NULL);
             if (!hHook)
             {
-                DWORD errorCode = GetLastError();
-                show_last_error_message(L"SetWindowsHookEx", errorCode, L"centralized_kb_hook");
+                hHook = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardHookProc, NULL, NULL);
+                if (!hHook)
+                {
+                    DWORD errorCode = GetLastError();
+                    show_last_error_message(L"SetWindowsHookEx", errorCode, L"centralized_kb_hook");
+                }
             }
         }
     }
