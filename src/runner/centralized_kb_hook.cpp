@@ -61,6 +61,7 @@ namespace CentralizedKeyboardHook
         {
             if (action())
             {
+                // Swallow the key press
                 return 1;
             }
         }
