@@ -41,6 +41,8 @@ namespace localized_strings
     const wchar_t DOWNLOAD_UPDATE_ERROR[] = L"Couldn't download PowerToys update! Please report the issue on Github.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
     const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated successfully!";
+    const wchar_t POWER_TOYS[] = L"PowerToys";
+    const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
 }
 
 namespace
@@ -136,6 +138,11 @@ int runner(bool isProcessElevated)
             }
             catch (...)
             {
+                std::wstring errorMessage = std::wstring(localized_strings::POWER_TOYS_MODULE_LOAD_FAIL) + moduleSubdir.data();
+                MessageBox(NULL,
+                           errorMessage.c_str(),
+                           localized_strings::POWER_TOYS,
+                           MB_OK | MB_ICONERROR);
             }
         }
         // Start initial powertoys
