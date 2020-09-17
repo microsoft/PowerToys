@@ -41,6 +41,15 @@ restore:
 
 build:
   commands:
+      # Localize the files after the build procedure to avoid existing localized files from getting overwritten. To be moved before the Build PowerToys step once the lcl files have been checked in. Tracked at https://github.com/microsoft/PowerToys/issues/6046
+    - !!buildcommand
+      name: 'Localize Power Toys'
+      command: '.pipelines\build-localization.cmd'
+      artifacts:
+        - from: 'out\loc'
+          to: 'loc'
+          include:
+            - '**/*'
     - !!buildcommand
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
@@ -152,15 +161,7 @@ build:
             - 'PowerToysSetup-*.exe'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-    # Localize the files after the build procedure to avoid existing localized files from getting overwritten. To be moved before the Build PowerToys step once the lcl files have been checked in. Tracked at https://github.com/microsoft/PowerToys/issues/6046
-    - !!buildcommand
-      name: 'Localize Power Toys'
-      command: '.pipelines\build-localization.cmd'
-      artifacts:
-        - from: 'out\loc'
-          to: 'loc'
-          include:
-            - '**/*'
+
 
 
 #package:
