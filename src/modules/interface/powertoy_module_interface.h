@@ -1,5 +1,7 @@
 #pragma once
 
+#include <compare>
+
 /*
   DLL Interface for PowerToys. The powertoy_create() (see below) must return
   an object that implements this interface.
