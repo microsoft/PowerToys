@@ -94,6 +94,8 @@ namespace Microsoft.Plugin.Program
                     var maxScore = result.Max(x => x.Score);
                     result = result.Where(x => x.Score > Settings.MinScoreThreshold * maxScore);
                 }
+
+                return result.ToList();
             }
 
             return new List<Result>(0);
