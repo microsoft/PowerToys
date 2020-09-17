@@ -4,15 +4,12 @@
 
 using System.Diagnostics.Tracing;
 
+// WARNING: THIS FILE GETS REPLACED ON THE BUILD FARM
 namespace Microsoft.PowerToys.Telemetry
 {
     /// <summary>
     /// Privacy Tag values
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "Part of telem, can't adjust")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Part of telem, gets overwritten by build farm")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Part of telem, can't adjust")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1717:Only FlagsAttribute enums should have plural names", Justification = "Part of telem, can't adjust")]
     public enum PartA_PrivTags
            : ulong
     {
@@ -50,8 +47,12 @@ namespace Microsoft.PowerToys.Telemetry
         /// Initializes a new instance of the <see cref="TelemetryBase"/> class.
         /// </summary>
         /// <param name="eventSourceName">.</param>
-        public TelemetryBase(string eventSourceName)
-            : base(eventSourceName, EventSourceSettings.EtwSelfDescribingEventFormat, PowerToysTelemetryTraits)
+        public TelemetryBase(
+            string eventSourceName)
+            : base(
+            eventSourceName,
+            EventSourceSettings.EtwSelfDescribingEventFormat,
+            PowerToysTelemetryTraits)
         {
             return;
         }
