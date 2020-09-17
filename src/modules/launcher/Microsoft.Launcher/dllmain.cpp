@@ -244,7 +244,7 @@ public:
     }
 
     // Return the invocation hotkey
-    virtual int get_hotkeys(Hotkey* hotkeys, int buffer_size) override
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
         if (m_hotkey.key)
         {

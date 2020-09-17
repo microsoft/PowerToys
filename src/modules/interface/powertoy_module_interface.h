@@ -71,7 +71,7 @@ public:
      * fill up the buffer to the minimum of the number of hotkeys and its size.
      * Modules do not need to override this method, it will return zero by default.
      */
-    virtual int get_hotkeys(Hotkey* buffer, int buffer_size) { return 0; }
+    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) { return 0; }
 
     /* Called when one of the registered hotkeys is pressed. Should return true
      * if the key press is to be swallowed.
