@@ -76,7 +76,7 @@ namespace PowerLauncher.ViewModel
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
 
-            _hotkeyEventWaiter = new NativeEventWaiter("Local\\PowerToysRunInvokeEvent-30f26ad7-d36d-4c0e-ab02-68bb5ff3c4ab", OnHotkey);
+            _hotkeyEventWaiter = new NativeEventWaiter(Constants.PowerLauncherSharedEvent(), OnHotkey);
         }
 
         private void RegisterResultsUpdatedEvent()

@@ -2,6 +2,7 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
 #include <common/common.h>
+#include <common/shared_constants.h>
 #include "trace.h"
 #include "Generated Files/resource.h"
 #include <common/os-detect.h>
@@ -81,7 +82,7 @@ public:
         sa.nLength = sizeof(sa);
         sa.bInheritHandle = false;
         sa.lpSecurityDescriptor = NULL;
-        m_hEvent = CreateEventW(&sa, FALSE, FALSE, L"Local\\PowerToysRunInvokeEvent-30f26ad7-d36d-4c0e-ab02-68bb5ff3c4ab");
+        m_hEvent = CreateEventW(&sa, FALSE, FALSE, CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
     };
 
     ~Microsoft_Launcher()
