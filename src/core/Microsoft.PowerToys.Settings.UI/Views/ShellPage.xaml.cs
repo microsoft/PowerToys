@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.Data.Json;
 using Windows.UI.Xaml.Controls;
@@ -93,6 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetDefaultSndMessageCallback(IPCMessageCallback implementation)
         {
             DefaultSndMSGCallback = implementation;
+            SettingsUtils.DefaultSndMsgCallback = ShellPage.SendDefaultIPCMessage;
         }
 
         /// <summary>
@@ -102,6 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetRestartAdminSndMessageCallback(IPCMessageCallback implementation)
         {
             SndRestartAsAdminMsgCallback = implementation;
+            SettingsUtils.SendRestartAdminIPCMessage = ShellPage.SendRestartAdminIPCMessage;
         }
 
         /// <summary>
@@ -111,6 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetCheckForUpdatesMessageCallback(IPCMessageCallback implementation)
         {
             CheckForUpdatesMsgCallback = implementation;
+            SettingsUtils.SendCheckForUpdatesIPCMessage = ShellPage.SendRestartAdminIPCMessage;
         }
 
         public void SetElevationStatus(bool isElevated)

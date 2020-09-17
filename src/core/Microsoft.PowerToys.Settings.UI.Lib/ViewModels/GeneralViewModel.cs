@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -14,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class GeneralViewModel : Observable
     {
-        private IGeneralSettingsCache<GeneralSettings> GeneralSettingsCache { get; set; }
+        private ISettingsRepository SettingsRepository { get; set; }
 
         public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
 
@@ -34,35 +33,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(IGeneralSettingsCache<GeneralSettings> generalSettingsCache, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        public GeneralViewModel(ISettingsRepository settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
-            GeneralSettingsCache = generalSettingsCache;
-
-            if (GeneralSettingsCache.CommonSettingsConfig == null)
-            {
-                try
-                {
-                    GeneralSettingsCache.CommonSettingsConfig = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-
-                    if (Helper.CompareVersions(GeneralSettingsCache.CommonSettingsConfig.PowertoysVersion, Helper.GetProductVersion()) < 0)
-                    {
-                        // Update settings
-                        GeneralSettingsCache.CommonSettingsConfig.PowertoysVersion = Helper.GetProductVersion();
-                        SettingsUtils.SaveSettings(GeneralSettingsCache.CommonSettingsConfig.ToJsonString(), string.Empty);
-                    }
-                }
-                catch (FormatException e)
-                {
-                    // If there is an issue with the version number format, don't migrate settings.
-                    Debug.WriteLine(e.Message);
-                }
-                catch
-                {
-                    SettingsUtils.SaveSettings(GeneralSettingsCache.CommonSettingsConfig.ToJsonString(), string.Empty);
-                }
-            }
+            SettingsRepository = settingsRepository;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -71,12 +46,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
-            UpdateUIThemeCallBack(GeneralSettingsCache.CommonSettingsConfig.Theme.ToLower());
+            UpdateUIThemeCallBack(SettingsRepository.GeneralSettingsConfig.Theme.ToLower());
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            switch (GeneralSettingsCache.CommonSettingsConfig.Theme.ToLower())
+            switch (SettingsRepository.GeneralSettingsConfig.Theme.ToLower())
             {
                 case "light":
                     _isLightThemeRadioButtonChecked = true;
@@ -89,10 +64,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     break;
             }
 
-            _startup = GeneralSettingsCache.CommonSettingsConfig.Startup;
-            _autoDownloadUpdates = GeneralSettingsCache.CommonSettingsConfig.AutoDownloadUpdates;
+            _startup = SettingsRepository.GeneralSettingsConfig.Startup;
+            _autoDownloadUpdates = SettingsRepository.GeneralSettingsConfig.AutoDownloadUpdates;
             _isElevated = isElevated;
-            _runElevated = GeneralSettingsCache.CommonSettingsConfig.RunElevated;
+            _runElevated = SettingsRepository.GeneralSettingsConfig.RunElevated;
 
             RunningAsUserDefaultText = runAsUserText;
             RunningAsAdminDefaultText = runAsAdminText;
@@ -143,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_startup != value)
                 {
                     _startup = value;
-                    GeneralSettingsCache.CommonSettingsConfig.Startup = value;
+                    SettingsRepository.GeneralSettingsConfig.Startup = value;
                     RaisePropertyChanged();
                 }
             }
@@ -215,7 +190,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_runElevated != value)
                 {
                     _runElevated = value;
-                    GeneralSettingsCache.CommonSettingsConfig.RunElevated = value;
+                    SettingsRepository.GeneralSettingsConfig.RunElevated = value;
                     RaisePropertyChanged();
                 }
             }
@@ -242,7 +217,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_autoDownloadUpdates != value)
                 {
                     _autoDownloadUpdates = value;
-                    GeneralSettingsCache.CommonSettingsConfig.AutoDownloadUpdates = value;
+                    SettingsRepository.GeneralSettingsConfig.AutoDownloadUpdates = value;
                     RaisePropertyChanged();
                 }
             }
@@ -259,11 +234,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsCache.CommonSettingsConfig.Theme = "dark";
+                    SettingsRepository.GeneralSettingsConfig.Theme = "dark";
                     _isDarkThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(GeneralSettingsCache.CommonSettingsConfig.Theme);
+                        UpdateUIThemeCallBack(SettingsRepository.GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
@@ -285,11 +260,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsCache.CommonSettingsConfig.Theme = "light";
+                    SettingsRepository.GeneralSettingsConfig.Theme = "light";
                     _isLightThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(GeneralSettingsCache.CommonSettingsConfig.Theme);
+                        UpdateUIThemeCallBack(SettingsRepository.GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
@@ -311,11 +286,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsCache.CommonSettingsConfig.Theme = "system";
+                    SettingsRepository.GeneralSettingsConfig.Theme = "system";
                     _isSystemThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(GeneralSettingsCache.CommonSettingsConfig.Theme);
+                        UpdateUIThemeCallBack(SettingsRepository.GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
@@ -356,7 +331,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
-            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsCache.CommonSettingsConfig);
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(SettingsRepository.GeneralSettingsConfig);
 
             SendConfigMSG(outsettings.ToString());
         }

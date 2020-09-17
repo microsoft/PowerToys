@@ -85,5 +85,26 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
+
+        public static Func<string, int> DefaultSndMsgCallback { get; set; }
+
+        public static Func<string, int> SendRestartAdminIPCMessage { get; set; }
+
+        public static Func<string, int> SendCheckForUpdatesIPCMessage { get; set; }
+
+        public static void SendDefaultMessageToRunner<T>(T msgToRunner)
+        {
+            DefaultSndMsgCallback(msgToRunner.ToString());
+        }
+
+        public static void SendRestartAsAdminMessageToRunner<T>(T msgToRunner)
+        {
+            SendRestartAdminIPCMessage(msgToRunner.ToString());
+        }
+
+        public static void SendCheckForUpdatesMessageToRunner<T>(T msgToRunner)
+        {
+            SendCheckForUpdatesIPCMessage(msgToRunner.ToString());
+        }
     }
 }
