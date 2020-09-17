@@ -8,11 +8,6 @@
 #include <vector>
 #include <unordered_map>
 
-namespace ValueConstants
-{
-    const int DefaultSensitivityRadius = 20;
-}
-
 namespace JSONHelpers
 {
     namespace CanvasLayoutInfoJSON
@@ -36,7 +31,7 @@ namespace JSONHelpers
         static std::optional<CustomZoneSetJSON> FromJson(const json::JsonObject& customZoneSet);
     };
 
-	namespace ZoneSetDataJSON
+    namespace ZoneSetDataJSON
     {
         json::JsonObject ToJson(const FancyZonesDataTypes::ZoneSetData& zoneSet);
         std::optional<FancyZonesDataTypes::ZoneSetData> FromJson(const json::JsonObject& zoneSet);
@@ -67,10 +62,10 @@ namespace JSONHelpers
 
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
     void SaveFancyZonesData(const std::wstring& zonesSettingsFileName,
-							const std::wstring& appZoneHistoryFileName,
-							const TDeviceInfoMap& deviceInfoMap,
-							const TCustomZoneSetsMap& customZoneSetsMap,
-							const TAppZoneHistoryMap& appZoneHistoryMap);
+                            const std::wstring& appZoneHistoryFileName,
+                            const TDeviceInfoMap& deviceInfoMap,
+                            const TCustomZoneSetsMap& customZoneSetsMap,
+                            const TAppZoneHistoryMap& appZoneHistoryMap);
 
     TAppZoneHistoryMap ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON);
     json::JsonArray SerializeAppZoneHistory(const TAppZoneHistoryMap& appZoneHistoryMap);

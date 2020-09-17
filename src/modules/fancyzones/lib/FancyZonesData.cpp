@@ -106,11 +106,8 @@ void FancyZonesData::AddDevice(const std::wstring& deviceId)
         wil::unique_cotaskmem_string guidString;
         if (result == S_OK && SUCCEEDED(StringFromCLSID(guid, &guidString)))
         {
-            constexpr bool defaultShowSpacing{ true };
-            constexpr int defaultSpacing{ 16 };
-            constexpr int defaultZoneCount{ 3 };
             const ZoneSetData zoneSetData{ guidString.get(), ZoneSetLayoutType::PriorityGrid };
-            DeviceInfoData defaultDeviceInfoData{ zoneSetData, defaultShowSpacing, defaultSpacing, defaultZoneCount };
+            DeviceInfoData defaultDeviceInfoData{ zoneSetData, DefaultValues::ShowSpacing, DefaultValues::Spacing, DefaultValues::ZoneCount, DefaultValues::SensitivityRadius };
             deviceInfoMap[deviceId] = std::move(defaultDeviceInfoData);
         }
         else
@@ -480,10 +477,10 @@ void FancyZonesData::SaveFancyZonesData() const
 {
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveFancyZonesData(zonesSettingsFileName,
-									appZoneHistoryFileName,
-									deviceInfoMap,
-									customZoneSetsMap,
-									appZoneHistoryMap);
+                                    appZoneHistoryFileName,
+                                    deviceInfoMap,
+                                    customZoneSetsMap,
+                                    appZoneHistoryMap);
 }
 
 void FancyZonesData::MigrateCustomZoneSetsFromRegistry()

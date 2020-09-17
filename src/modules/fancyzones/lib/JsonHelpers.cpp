@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "JsonHelpers.h"
+#include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
 #include "trace.h"
 #include "util.h"
@@ -434,7 +435,7 @@ namespace JSONHelpers
             result.data.showSpacing = device.GetNamedBoolean(NonLocalizable::EditorShowSpacingStr);
             result.data.spacing = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorSpacingStr));
             result.data.zoneCount = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorZoneCountStr));
-            result.data.sensitivityRadius = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorSensitivityRadiusStr, ValueConstants::DefaultSensitivityRadius));
+            result.data.sensitivityRadius = static_cast<int>(device.GetNamedNumber(NonLocalizable::EditorSensitivityRadiusStr, DefaultValues::SensitivityRadius));
 
             return result;
         }

@@ -886,7 +886,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonMissingKeys)
         {
-            DeviceInfoJSON deviceInfo{ m_defaultDeviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3, ValueConstants::DefaultSensitivityRadius } };
+            DeviceInfoJSON deviceInfo{ m_defaultDeviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3, DefaultValues::SensitivityRadius } };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
 
             auto iter = json.First();
@@ -916,7 +916,7 @@ namespace FancyZonesUnitTests
             auto actual = DeviceInfoJSON::FromJson(json);
 
             Assert::IsTrue(actual.has_value());
-            Assert::AreEqual(ValueConstants::DefaultSensitivityRadius, actual->data.sensitivityRadius);
+            Assert::AreEqual(DefaultValues::SensitivityRadius, actual->data.sensitivityRadius);
         }
 
         TEST_METHOD (FromJsonInvalidTypes)
