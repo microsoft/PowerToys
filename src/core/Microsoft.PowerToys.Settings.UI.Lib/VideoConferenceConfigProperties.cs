@@ -61,6 +61,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("selected_camera")]
         public StringProperty SelectedCamera { get; set; } = string.Empty;
 
+        [JsonPropertyName("selected_mic")]
+        public StringProperty SelectedMicrophone { get; set; } = string.Empty;
+
         [JsonPropertyName("toolbar_position")]
         public StringProperty ToolbarPosition { get; set; } = "Top right corner";
 

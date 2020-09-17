@@ -5,10 +5,10 @@
 
 #include <interface/powertoy_module_interface.h>
 
-#include "common/settings_objects.h"
+#include <common/settings_objects.h>
+#include <common/MicrophoneDevice.h>
 
 #include "Toolbar.h"
-#include "CVolumeNotification.h"
 
 #include <SerializedSharedMemory.h>
 
@@ -16,8 +16,6 @@ extern class VideoConferenceModule* instance;
 
 struct VideoConferenceSettings
 {
-    CVolumeNotification* volumeNotification = nullptr;
-
     PowerToysSettings::HotkeyObject cameraAndMicrophoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, 78);
     PowerToysSettings::HotkeyObject microphoneMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 65);
     PowerToysSettings::HotkeyObject cameraMuteHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 79);
@@ -27,6 +25,7 @@ struct VideoConferenceSettings
 
     std::wstring selectedCamera;
     std::wstring imageOverlayPath;
+    std::wstring selectedMicrophone;
 };
 
 class VideoConferenceModule : public PowertoyModuleIface
@@ -56,7 +55,7 @@ public:
 
 private:
     void init_settings();
-
+    void updateControlledMicrophones(const std::wstring_view new_mic);
     //  all callback methods and used by callback have to be static
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
     static bool isKeyPressed(unsigned int keyCode);
@@ -64,6 +63,9 @@ private:
 
     static HHOOK hook_handle;
     bool _enabled = false;
+
+    std::vector<MicrophoneDevice> _controlledMicrophones;
+    MicrophoneDevice* _microphoneTrackedInUI = nullptr;
 
     std::optional<SerializedSharedMemory> _imageOverlayChannel;
     std::optional<SerializedSharedMemory> _settingsUpdateChannel;

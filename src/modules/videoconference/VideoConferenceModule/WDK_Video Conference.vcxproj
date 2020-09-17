@@ -16,7 +16,7 @@
     <ProjectGuid>{FD2CAFFC-D682-4ED9-A06B-5FC88AE0A193}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>overlaywindow</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>VideoConferenceModule</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -108,14 +108,12 @@ xcopy /y /I  "$(ProjectDir)black.bmp*" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CVolumeNotification.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Toolbar.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="VideoConferenceModule.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CVolumeNotification.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Toolbar.cpp" />
     <ClCompile Include="pch.cpp">

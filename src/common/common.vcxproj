@@ -91,6 +91,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</MultiProcessorCompilation>
+      <ConformanceMode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ConformanceMode>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -106,6 +107,7 @@
       <AdditionalIncludeDirectories>inc;telemetry;..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -132,6 +134,7 @@
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="LowlevelKeyboardEvent.h" />
+    <ClInclude Include="MicrophoneDevice.h" />
     <ClInclude Include="naming.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="processApi.h" />
@@ -144,6 +147,7 @@
     <ClInclude Include="two_way_pipe_message_ipc.h" />
     <ClInclude Include="user.h" />
     <ClInclude Include="VersionHelper.h" />
+    <ClInclude Include="VideoCaptureDeviceList.h" />
     <ClInclude Include="window_helpers.h" />
     <ClInclude Include="icon_helpers.h" />
     <ClInclude Include="json.h" />
@@ -172,6 +176,7 @@
     <ClCompile Include="dpi_aware.cpp" />
     <ClCompile Include="json.cpp" />
     <ClCompile Include="keyboard_layout.cpp" />
+    <ClCompile Include="MicrophoneDevice.cpp" />
     <ClCompile Include="monitors.cpp" />
     <ClCompile Include="naming.cpp" />
     <ClCompile Include="notifications.cpp" />
@@ -192,6 +197,7 @@
     <ClCompile Include="version.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="VersionHelper.cpp" />
+    <ClCompile Include="VideoCaptureDeviceList.cpp" />
     <ClCompile Include="windows_colors.cpp" />
     <ClCompile Include="window_helpers.cpp" />
     <ClCompile Include="winstore.cpp" />

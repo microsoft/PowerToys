@@ -55,7 +55,7 @@ bool is_system_window(HWND hwnd, const char* class_name)
 
 int run_message_loop(const bool until_idle, const std::optional<uint32_t> timeout_seconds)
 {
-    MSG msg;
+    MSG msg{};
     bool stop = false;
     UINT_PTR timerId = 0;
     if (timeout_seconds.has_value())

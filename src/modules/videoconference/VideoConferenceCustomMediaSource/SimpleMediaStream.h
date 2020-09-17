@@ -5,31 +5,9 @@
 #include <SerializedSharedMemory.h>
 #include <CameraStateUpdateChannels.h>
 
+#include <common/VideoCaptureDeviceList.h>
+
 class SimpleMediaSource;
-
-class DeviceList
-{
-    UINT32 m_numberDevices;
-    IMFActivate** m_ppDevices = nullptr;
-    wchar_t** m_deviceFriendlyNames = nullptr;
-
-public:
-    DeviceList() :
-        m_ppDevices(NULL), m_numberDevices(0)
-    {
-    }
-    ~DeviceList()
-    {
-        Clear();
-    }
-
-    UINT32 Count() const { return m_numberDevices; }
-
-    void Clear();
-    HRESULT EnumerateDevices();
-    HRESULT GetDevice(UINT32 index, IMFActivate** ppActivate);
-    std::wstring_view GetDeviceName(UINT32 index);
-};
 
 class SimpleMediaStream : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IMFMediaEventGenerator, IMFMediaStream, IMFMediaStream2>
 {
@@ -89,7 +67,7 @@ protected:
     bool _isShutdown = false;
     bool _isSelected = false;
 
-    DeviceList _cameraList;
+    VideoCaptureDeviceList _cameraList;
     ComPtr<IMFSourceReader> _sourceCamera;
     ComPtr<IMFSample> _overlayImage;
 

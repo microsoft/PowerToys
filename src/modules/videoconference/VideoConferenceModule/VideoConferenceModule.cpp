@@ -42,74 +42,15 @@ bool VideoConferenceModule::isHotkeyPressed(DWORD code, PowerToysSettings::Hotke
 
 void VideoConferenceModule::reverseMicrophoneMute()
 {
-    IMMDeviceEnumerator* deviceEnumerator = NULL;
-    if (CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (LPVOID*)&deviceEnumerator) == S_OK)
+    for (auto& controlledMic : instance->_controlledMicrophones)
     {
-        IMMDevice* defaultDevice = NULL;
-        if (deviceEnumerator->GetDefaultAudioEndpoint(eCapture, eCommunications, &defaultDevice) == S_OK)
-        {
-            deviceEnumerator->Release();
-            deviceEnumerator = NULL;
-
-            IAudioEndpointVolume* microphoneEndpoint = NULL;
-            if (defaultDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_INPROC_SERVER, NULL, (LPVOID*)&microphoneEndpoint) == S_OK)
-            {
-                settings.volumeNotification = new CVolumeNotification();
-                microphoneEndpoint->RegisterControlChangeNotify(settings.volumeNotification);
-
-                BOOL currentMute;
-                if (microphoneEndpoint->GetMute(&currentMute) == S_OK)
-                {
-                    if (microphoneEndpoint->SetMute(!currentMute, NULL) == S_OK)
-                    {
-                        if (!currentMute)
-                        {
-                            Trace::MicrophoneMuted();
-                        }
-                    }
-                }
-
-                defaultDevice->Release();
-                defaultDevice = NULL;
-
-                microphoneEndpoint->Release();
-            }
-        }
+        controlledMic.toggle_muted();
     }
 }
 
 bool VideoConferenceModule::getMicrophoneMuteState()
 {
-    HRESULT hr;
-
-    BOOL currentMute = false;
-
-    IMMDeviceEnumerator* deviceEnumerator = NULL;
-
-    if (CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (LPVOID*)&deviceEnumerator) == S_OK)
-    {
-        IMMDevice* defaultDevice = NULL;
-
-        if (deviceEnumerator->GetDefaultAudioEndpoint(eCapture, eCommunications, &defaultDevice) == S_OK)
-        {
-            deviceEnumerator->Release();
-            deviceEnumerator = NULL;
-
-            IAudioEndpointVolume* endpointVolume = NULL;
-            if (defaultDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_INPROC_SERVER, NULL, (LPVOID*)&endpointVolume) == S_OK)
-            {
-                settings.volumeNotification = new CVolumeNotification();
-                hr = endpointVolume->RegisterControlChangeNotify(settings.volumeNotification);
-                defaultDevice->Release();
-                defaultDevice = NULL;
-
-                endpointVolume->GetMute(&currentMute);
-
-                settings.volumeNotification->Release();
-            }
-        }
-    }
-    return currentMute;
+    return instance->_microphoneTrackedInUI ? instance->_microphoneTrackedInUI->muted() : false;
 }
 
 void VideoConferenceModule::reverseVirtualCameraMuteState()
@@ -148,11 +89,11 @@ bool VideoConferenceModule::getVirtualCameraMuteState()
 
 bool VideoConferenceModule::getVirtualCameraInUse()
 {
-    bool inUse = false;
     if (!instance->_settingsUpdateChannel.has_value())
     {
-        return inUse;
+        return false;
     }
+    bool inUse = false;
     instance->_settingsUpdateChannel->access([&inUse](auto settingsMemory) {
         auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory._data);
         inUse = settings->cameraInUse;
@@ -283,6 +224,11 @@ void VideoConferenceModule::set_config(const wchar_t* config)
             {
                 Toolbar::setHideToolbarWhenUnmuted(val.value());
             }
+            if (const auto val = values.get_string_value(L"selected_mic"))
+            {
+                settings.selectedMicrophone = *val;
+                updateControlledMicrophones(settings.selectedMicrophone);
+            }
 
             toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
         }
@@ -331,6 +277,11 @@ void VideoConferenceModule::init_settings()
         {
             Toolbar::setHideToolbarWhenUnmuted(val.value());
         }
+        if (const auto val = powerToysSettings.get_string_value(L"selected_mic"); *val != settings.selectedMicrophone)
+        {
+            settings.selectedMicrophone = *val;
+            updateControlledMicrophones(settings.selectedMicrophone);
+        }
     }
     catch (std::exception&)
     {
@@ -349,6 +300,51 @@ void VideoConferenceModule::init_settings()
     }
     catch (...)
     {
+    }
+}
+
+void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view new_mic)
+{
+    for (auto& controlledMic : _controlledMicrophones)
+    {
+        controlledMic.set_muted(false);
+    }
+    _controlledMicrophones.clear();
+    _microphoneTrackedInUI = nullptr;
+    auto allMics = MicrophoneDevice::getAllActive();
+    if (new_mic == L"[All]")
+    {
+        _controlledMicrophones = std::move(allMics);
+        if (auto defaultMic = MicrophoneDevice::getDefault())
+        {
+            for (auto& controlledMic : _controlledMicrophones)
+            {
+                if (controlledMic.id() == defaultMic->id())
+                {
+                    _microphoneTrackedInUI = &controlledMic;
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        for (auto& controlledMic : allMics)
+        {
+            if (controlledMic.name() == new_mic)
+            {
+                _controlledMicrophones.emplace_back(std::move(controlledMic));
+                _microphoneTrackedInUI = &_controlledMicrophones[0];
+                break;
+            }
+        }
+    }
+    if (_microphoneTrackedInUI)
+    {
+        _microphoneTrackedInUI->set_mute_changed_callback([](const bool muted) {
+            Toolbar::setMicrophoneMute(muted);
+        });
+        Toolbar::setMicrophoneMute(_microphoneTrackedInUI->muted());
     }
 }
 
@@ -386,7 +382,7 @@ void VideoConferenceModule::disable()
             }
         }
 
-        if (toolbar.getCameraMute())
+        if (toolbar.getCameraMute()) // TODO: unmute
         {
             reverseVirtualCameraMuteState();
             toolbar.setCameraMute(getVirtualCameraMuteState());

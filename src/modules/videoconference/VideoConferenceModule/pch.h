@@ -1,27 +1,23 @@
 #pragma once
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <Unknwn.h>
+
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
-#include <Windows.h>
-#include <dxgi1_3.h>
-#include <d3d11_2.h>
-#include <d2d1_3.h>
-#include <d2d1_3helper.h>
-#include <d2d1helper.h>
-#include <dwrite.h>
-#include <dcomp.h>
-#include <dwmapi.h>
+
+#include <wil/resource.h>
+#include <wil/com.h>
+
+#include <string_view>
+#include <optional>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <functional>
+#include <algorithm>
+
 #include <Shobjidl.h>
 #include <Shlwapi.h>
-#include <string>
-#include <algorithm>
-#include <chrono>
-#include <mutex>
-#include <thread>
-#include <functional>
-#include <condition_variable>
-#include <stdexcept>
-#include <tuple>
-#include <unordered_set>
-#include <string>
 #include <ProjectTelemetry.h>

@@ -80,6 +80,17 @@
                                           HotkeySettings="{x:Bind Path=ViewModel.CameraMuteHotkey, Mode=TwoWay}"
                                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                           />
+            <TextBlock x:Uid="VideoConference_Microphone"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <ComboBox x:Uid="VideoConference_SelectedMicrophone"
+                      Width="240"
+                      HorizontalAlignment="Left"
+                      Margin="{StaticResource SmallTopMargin}"
+                      SelectedIndex="{Binding Path=SelectedMicrophoneIndex, Mode=TwoWay}"
+                      ItemsSource="{Binding MicrophoneNames, Mode=OneTime}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
             <TextBlock x:Uid="VideoConference_Camera"
                        Style="{StaticResource SettingsGroupTitleStyle}"

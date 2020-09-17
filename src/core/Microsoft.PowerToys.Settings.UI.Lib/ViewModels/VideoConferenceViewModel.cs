@@ -5,14 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
-using Windows.Devices.Enumeration;
-using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -43,19 +43,37 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
-            CameraNames = Task.Run(() => GetAllCameras()).Result.Select(di => di.Name).ToList();
+            CameraNames = interop.CommonManaged.GetAllVideoCaptureDeviceNames();
+            MicrophoneNames = interop.CommonManaged.GetAllActiveMicrophoneDeviceNames();
+            MicrophoneNames.Insert(0, "[All]");
 
-            // Uncomment to have an additional webcam to debug with! (don't forget to install it)
-            // CameraNames.Add("DroidCam Source 3");
+            var shouldSaveSettings = false;
+
             if (Settings.Properties.SelectedCamera.Value == string.Empty && CameraNames.Count != 0)
             {
                 _selectedCameraIndex = 0;
                 Settings.Properties.SelectedCamera.Value = CameraNames[0];
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                shouldSaveSettings = true;
             }
             else
             {
                 _selectedCameraIndex = CameraNames.FindIndex(name => name == Settings.Properties.SelectedCamera.Value);
+            }
+
+            if (Settings.Properties.SelectedMicrophone.Value == string.Empty)
+            {
+                _selectedMicrophoneIndex = 0;
+                Settings.Properties.SelectedMicrophone.Value = MicrophoneNames[0];
+                shouldSaveSettings = true;
+            }
+            else
+            {
+                _selectedMicrophoneIndex = MicrophoneNames.FindIndex(name => name == Settings.Properties.SelectedMicrophone.Value);
+            }
+
+            if (shouldSaveSettings)
+            {
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
             GeneralSettings generalSettings;
@@ -113,12 +131,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private static async Task<List<DeviceInformation>> GetAllCameras()
-        {
-            var allCameras = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
-            return allCameras.Where(cameraInfo => cameraInfo.Name != ProxyCameraName).ToList();
-        }
-
         private bool _isEnabled = false;
         private int _toolbarPositionIndex;
         private int _toolbarMonitorIndex;
@@ -126,9 +138,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private HotkeySettings _mirophoneMuteHotkey;
         private HotkeySettings _cameraMuteHotkey;
         private int _selectedCameraIndex = -1;
+        private int _selectedMicrophoneIndex = 0;
         private bool _hideToolbarWhenUnmuted;
 
         public List<string> CameraNames { get; }
+
+        public List<string> MicrophoneNames { get; }
 
         public string CameraImageOverlayPath { get; set; }
 
@@ -143,28 +158,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             RaisePropertyChanged("CameraImageOverlayPath");
         }
 
-        private async void SelectOverlayImageAction()
+        private void SelectOverlayImageAction()
         {
             try
             {
-                FileOpenPicker openPicker = new FileOpenPicker
+                string pickedImage = null;
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    ViewMode = PickerViewMode.Thumbnail,
-                    SuggestedStartLocation = PickerLocationId.ComputerFolder,
-                };
-
-                openPicker.FileTypeFilter.Add(".jpg");
-                openPicker.FileTypeFilter.Add(".jpeg");
-                openPicker.FileTypeFilter.Add(".png");
-#pragma warning disable CS0436 // Type conflicts with imported type
-                ((IInitializeWithWindow)(object)openPicker).Initialize(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle);
-#pragma warning restore CS0436 // Type conflicts with imported type
-                var pickedImage = await openPicker.PickSingleFileAsync();
+                    openFileDialog.Filter = "Image Files (*.jpeg;*.jpg;*.png)|*.jpeg;*.jpg;*.png";
+                    openFileDialog.RestoreDirectory = true;
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        pickedImage = openFileDialog.FileName;
+                    }
+                }
 
                 if (pickedImage != null)
                 {
-                    CameraImageOverlayPath = pickedImage.Path;
-                    Settings.Properties.CameraOverlayImagePath = pickedImage.Path;
+                    CameraImageOverlayPath = pickedImage;
+                    Settings.Properties.CameraOverlayImagePath = pickedImage;
                     RaisePropertyChanged("CameraImageOverlayPath");
                 }
             }
@@ -188,6 +200,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     if (_selectedCameraIndex >= 0 && _selectedCameraIndex < CameraNames.Count())
                     {
                         Settings.Properties.SelectedCamera.Value = CameraNames[_selectedCameraIndex];
+                        RaisePropertyChanged();
+                    }
+                }
+            }
+        }
+
+        public int SelectedMicrophoneIndex
+        {
+            get
+            {
+                return _selectedMicrophoneIndex;
+            }
+
+            set
+            {
+                if (_selectedMicrophoneIndex != value)
+                {
+                    _selectedMicrophoneIndex = value;
+                    if (_selectedMicrophoneIndex >= 0 && _selectedMicrophoneIndex < MicrophoneNames.Count())
+                    {
+                        Settings.Properties.SelectedMicrophone.Value = MicrophoneNames[_selectedMicrophoneIndex];
                         RaisePropertyChanged();
                     }
                 }
