@@ -6,8 +6,8 @@ using Microsoft.PowerToys.Settings.UI.Lib;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.Interface
 {
-    public interface ISettingsRepository
+    public interface ISettingsRepository<T>
     {
-        GeneralSettings GeneralSettingsConfig { get; set; }
+        T SettingsConfig { get; set; }
     }
 }

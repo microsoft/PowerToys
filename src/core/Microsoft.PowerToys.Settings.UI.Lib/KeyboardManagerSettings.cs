@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class KeyboardManagerSettings : BasePTModuleSettings
+    public class KeyboardManagerSettings : BasePTModuleSettings, ISettingsConfig
     {
         [JsonPropertyName("properties")]
         public KeyboardManagerProperties Properties { get; set; }

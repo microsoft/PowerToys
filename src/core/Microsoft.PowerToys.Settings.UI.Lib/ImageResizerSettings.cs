@@ -4,10 +4,11 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class ImageResizerSettings : BasePTModuleSettings
+    public class ImageResizerSettings : BasePTModuleSettings, ISettingsConfig
     {
         public const string ModuleName = "Image Resizer";
 

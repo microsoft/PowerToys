@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
-        private ISettingsRepository SettingsRepository { get; set; }
+        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
 
         private const string ModuleName = "FancyZones";
 
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string settingsConfigFileFolder = string.Empty;
 
-        public FancyZonesViewModel(ISettingsRepository settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             SettingsRepository = settingsRepository;
             settingsConfigFileFolder = configFileSubfolder;
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             _zoneHighlightColor = highlightColor != string.Empty ? highlightColor : "#0078D7";
 
-            _isEnabled = SettingsRepository.GeneralSettingsConfig.Enabled.FancyZones;
+            _isEnabled = SettingsRepository.SettingsConfig.Enabled.FancyZones;
         }
 
         private bool _isEnabled;
@@ -110,8 +110,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    SettingsRepository.GeneralSettingsConfig.Enabled.FancyZones = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.GeneralSettingsConfig);
+                    SettingsRepository.SettingsConfig.Enabled.FancyZones = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
 
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");

@@ -5,6 +5,8 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
@@ -56,6 +58,42 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// </summary>
         /// <returns>Deserialized json settings object.</returns>
         public static T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+            where T : ISettingsConfig, new()
+        {
+            if (SettingsExists(powertoy, fileName))
+            {
+                var deserializedSettings = GetFile<T>(powertoy, fileName);
+
+                // If GeneralSettings is being accessed for the first time, perform a check on the version number and update accordingly.
+                if (powertoy.Equals(DefaultModuleName))
+                {
+                    try
+                    {
+                        if (Helper.CompareVersions(((GeneralSettings)(object)deserializedSettings).PowertoysVersion, Helper.GetProductVersion()) < 0)
+                        {
+                            // Update settings
+                            ((GeneralSettings)(object)deserializedSettings).PowertoysVersion = Helper.GetProductVersion();
+                            SaveSettings(((GeneralSettings)(object)deserializedSettings).ToJsonString(), powertoy, fileName);
+                        }
+                    }
+                    catch (FormatException)
+                    {
+                        // If there is an issue with the version number format, don't migrate settings.
+                    }
+                }
+
+                return deserializedSettings;
+            }
+            else
+            {
+                T newObject = new T();
+                SaveSettings(newObject.ToJsonString(), powertoy, fileName);
+                return newObject;
+            }
+        }
+
+        // Given the powerToy folder name and filename to be accessed, this function deserializes and returns the file.
+        public static T GetFile<T>(string powertoy, string fileName)
         {
             var jsonSettingsString = File.ReadAllText(GetSettingsPath(powertoy, fileName));
             return JsonSerializer.Deserialize<T>(jsonSettingsString);

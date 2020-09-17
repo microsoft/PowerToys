@@ -8,7 +8,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class GeneralSettings : IGeneralSettingsData
+    public class GeneralSettings : IGeneralSettingsData, ISettingsConfig
     {
         // Gets or sets a value indicating whether packaged.
         [JsonPropertyName("packaged")]

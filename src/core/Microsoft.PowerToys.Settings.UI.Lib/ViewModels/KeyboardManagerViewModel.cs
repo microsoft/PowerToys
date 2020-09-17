@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class KeyboardManagerViewModel : Observable
     {
-        private ISettingsRepository SettingsRepository { get; set; }
+        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
 
         private const string PowerToyName = "Keyboard Manager";
         private const string RemapKeyboardActionName = "RemapKeyboard";
@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(ISettingsRepository settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
             SettingsRepository = settingsRepository;
 
@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return SettingsRepository.GeneralSettingsConfig.Enabled.KeyboardManager;
+                return SettingsRepository.SettingsConfig.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (SettingsRepository.GeneralSettingsConfig.Enabled.KeyboardManager != value)
+                if (SettingsRepository.SettingsConfig.Enabled.KeyboardManager != value)
                 {
-                    SettingsRepository.GeneralSettingsConfig.Enabled.KeyboardManager = value;
+                    SettingsRepository.SettingsConfig.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(SettingsRepository.GeneralSettingsConfig);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -167,7 +167,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // update the UI element here.
                         try
                         {
-                            _profile = SettingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, Settings.Properties.ActiveConfiguration.Value + JsonFileType);
+                            _profile = SettingsUtils.GetFile<KeyboardManagerProfile>(PowerToyName, Settings.Properties.ActiveConfiguration.Value + JsonFileType);
                             FilterRemapKeysList(_profile.RemapKeys.InProcessRemapKeys);
                         }
                         finally

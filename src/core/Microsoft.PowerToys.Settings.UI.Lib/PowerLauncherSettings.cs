@@ -4,10 +4,11 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class PowerLauncherSettings : BasePTModuleSettings
+    public class PowerLauncherSettings : BasePTModuleSettings, ISettingsConfig
     {
         public const string ModuleName = "PowerToys Run";
 

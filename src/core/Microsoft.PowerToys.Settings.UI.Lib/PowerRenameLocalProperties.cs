@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class PowerRenameLocalProperties
+    public class PowerRenameLocalProperties : ISettingsConfig
     {
         public PowerRenameLocalProperties()
         {

@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerLauncherPage()
         {
             InitializeComponent();
-            ViewModel = new PowerLauncherViewModel(SettingsRepository.Instance, ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space);
+            ViewModel = new PowerLauncherViewModel(SettingsRepository<GeneralSettings>.Instance, ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space);
             DataContext = ViewModel;
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();

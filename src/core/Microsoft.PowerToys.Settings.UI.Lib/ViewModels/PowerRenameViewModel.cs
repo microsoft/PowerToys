@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerRenameViewModel : Observable
     {
-        private ISettingsRepository SettingsRepository { get; set; }
+        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
 
         private const string ModuleName = "PowerRename";
 
@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerRenameViewModel(ISettingsRepository settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public PowerRenameViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _powerRenameRestoreFlagsOnLaunch = Settings.Properties.PersistState.Value;
             _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
             _autoComplete = Settings.Properties.MRUEnabled.Value;
-            _powerRenameEnabled = SettingsRepository.GeneralSettingsConfig.Enabled.PowerRename;
+            _powerRenameEnabled = SettingsRepository.SettingsConfig.Enabled.PowerRename;
         }
 
         private bool _powerRenameEnabled = false;
@@ -68,8 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value != _powerRenameEnabled)
                 {
-                        SettingsRepository.GeneralSettingsConfig.Enabled.PowerRename = value;
-                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.GeneralSettingsConfig);
+                        SettingsRepository.SettingsConfig.Enabled.PowerRename = value;
+                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
                         SendConfigMSG(snd.ToString());
 
                         _powerRenameEnabled = value;

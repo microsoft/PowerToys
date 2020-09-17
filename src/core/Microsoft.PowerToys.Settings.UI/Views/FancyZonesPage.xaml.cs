@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public FancyZonesPage()
         {
             InitializeComponent();
-            ViewModel = new FancyZonesViewModel(SettingsRepository.Instance, ShellPage.SendDefaultIPCMessage);
+            ViewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.Instance, ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
     }
