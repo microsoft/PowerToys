@@ -111,7 +111,7 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
     if (moduleIt != modules().end())
     {
         moduleIt->second->set_config(settings.c_str());
-        moduleIt->second.set_hotkeys();
+        moduleIt->second.update_hotkeys();
     }
 }
 

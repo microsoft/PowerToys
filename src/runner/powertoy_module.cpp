@@ -44,10 +44,10 @@ PowertoyModule::PowertoyModule(PowertoyModuleIface* module, HMODULE handle) :
         throw std::runtime_error("Module not initialized");
     }
 
-    set_hotkeys();
+    update_hotkeys();
 }
 
-void PowertoyModule::set_hotkeys()
+void PowertoyModule::update_hotkeys()
 {
     CentralizedKeyboardHook::ClearModuleHotkeys(module->get_name());
 
