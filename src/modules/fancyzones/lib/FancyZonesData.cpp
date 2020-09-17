@@ -445,9 +445,9 @@ bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, 
     std::unordered_map<DWORD, HWND> processIdToHandleMap{};
     processIdToHandleMap[processId] = window;
     FancyZonesDataTypes::AppZoneHistoryData data{ .processIdToHandleMap = processIdToHandleMap,
-                                                    .zoneSetUuid = zoneSetId,
-                                                    .deviceId = deviceId,
-                                                    .zoneIndexSet = zoneIndexSet };
+                                                  .zoneSetUuid = zoneSetId,
+                                                  .deviceId = deviceId,
+                                                  .zoneIndexSet = zoneIndexSet };
 
     if (appZoneHistoryMap.contains(processPath))
     {
@@ -555,10 +555,10 @@ void FancyZonesData::SaveFancyZonesData() const
 {
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveFancyZonesData(zonesSettingsFileName,
-									appZoneHistoryFileName,
-									deviceInfoMap,
-									customZoneSetsMap,
-									appZoneHistoryMap);
+                                    appZoneHistoryFileName,
+                                    deviceInfoMap,
+                                    customZoneSetsMap,
+                                    appZoneHistoryMap);
 }
 
 void FancyZonesData::RemoveDesktopAppZoneHistory(const std::wstring& desktopId)
