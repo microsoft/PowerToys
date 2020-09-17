@@ -3,15 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using PowerLauncher.Helper;
 using Wox.Core.Plugin;
 using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher
 {
@@ -34,6 +36,16 @@ namespace PowerLauncher
             OverloadSettings();
         }
 
+        public static void CreateSettingsIfNotExists()
+        {
+            if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+            {
+                Log.Info("|SettingsWatcher.OverloadSettings|PT Run settings.json was missing, creating a new one");
+                var defaultSettings = new PowerLauncherSettings();
+                defaultSettings.Save();
+            }
+        }
+
         public void OverloadSettings()
         {
             Monitor.Enter(_watcherSyncObject);
@@ -44,13 +56,7 @@ namespace PowerLauncher
                 try
                 {
                     retryCount++;
-                    if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
-                    {
-                        Debug.WriteLine("PT Run settings.json was missing, creating a new one");
-
-                        var defaultSettings = new PowerLauncherSettings();
-                        defaultSettings.Save();
-                    }
+                    CreateSettingsIfNotExists();
 
                     var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
@@ -77,7 +83,7 @@ namespace PowerLauncher
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.Properties.IgnoreHotkeysInFullscreen;
                     }
 
-                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer Plugin", StringComparison.OrdinalIgnoreCase));
+                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer", StringComparison.OrdinalIgnoreCase));
                     if (indexer != null)
                     {
                         var indexerSettings = indexer.Plugin as ISettingProvider;
@@ -99,10 +105,30 @@ namespace PowerLauncher
                     if (retryCount > MaxRetries)
                     {
                         retry = false;
+                        Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserialize PowerToys settings, Retrying {e.Message}", e);
                     }
+                    else
+                    {
+                        Thread.Sleep(1000);
+                    }
+                }
+                catch (JsonException e)
+                {
+                    if (retryCount > MaxRetries)
+                    {
+                        retry = false;
+                        Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserialize PowerToys settings, Creating new settings as file could be corrupted {e.Message}", e);
 
-                    Thread.Sleep(1000);
-                    Debug.WriteLine(e.Message);
+                        // Settings.json could possibly be corrupted. To mitigate this we delete the
+                        // current file and replace it with a correct json value.
+                        SettingsUtils.DeleteSettings(PowerLauncherSettings.ModuleName);
+                        CreateSettingsIfNotExists();
+                        ErrorReporting.ShowMessageBox(Properties.Resources.deseralization_error_title, Properties.Resources.deseralization_error_message);
+                    }
+                    else
+                    {
+                        Thread.Sleep(1000);
+                    }
                 }
             }
 

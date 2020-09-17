@@ -11,6 +11,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h runner.base.rc runner.rc" />
+  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}</ProjectGuid>
@@ -140,7 +143,8 @@
     <ClInclude Include="unhandled_exception_handler.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="runner.rc" />
+    <None Include="runner.base.rc" />
+    <ResourceCompile Include="Generated Files/runner.rc" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="svgs\0.svg">

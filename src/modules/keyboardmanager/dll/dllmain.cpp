@@ -363,7 +363,10 @@ public:
             hook_handle_copy = hook_handle;
             if (!hook_handle)
             {
-                throw std::runtime_error("Cannot install keyboard listener");
+                DWORD errorCode = GetLastError();
+                show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager");
+                auto errorMessage = get_last_error_message(errorCode);
+                Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"start_lowlevel_keyboard_hook.SetWindowsHookEx");
             }
         }
     }

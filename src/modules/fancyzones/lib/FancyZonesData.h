@@ -116,7 +116,6 @@ private:
     void ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
     void ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
-    void MigrateCustomZoneSetsFromRegistry();
     void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 
     // Maps app path to app's zone history data

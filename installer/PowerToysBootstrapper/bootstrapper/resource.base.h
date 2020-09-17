@@ -12,8 +12,5 @@
 // Non-localizable
 //////////////////////////////
 
-#define IDS_DOTNET_CORE_DOWNLOAD_FAILURE 101
-#define IDS_DOTNET_CORE_DOWNLOAD_FAILURE_TITLE 102
-
 #define IDR_BIN_MSIINSTALLER 103
 #define IDR_BIN_ICON 104

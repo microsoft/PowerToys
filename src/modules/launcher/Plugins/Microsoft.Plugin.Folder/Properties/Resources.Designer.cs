@@ -79,6 +79,15 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fail to open file at.
+        /// </summary>
+        public static string Microsoft_plugin_folder_file_open_failed {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_folder_file_open_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open containing folder (Ctrl+Shift+E).
         /// </summary>
         public static string Microsoft_plugin_folder_open_containing_folder {
@@ -115,51 +124,6 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add.
-        /// </summary>
-        public static string wox_plugin_folder_add {
-            get {
-                return ResourceManager.GetString("wox_plugin_folder_add", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delete.
-        /// </summary>
-        public static string wox_plugin_folder_delete {
-            get {
-                return ResourceManager.GetString("wox_plugin_folder_delete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to delete {0}?.
-        /// </summary>
-        public static string wox_plugin_folder_delete_folder_link {
-            get {
-                return ResourceManager.GetString("wox_plugin_folder_delete_folder_link", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Edit.
-        /// </summary>
-        public static string wox_plugin_folder_edit {
-            get {
-                return ResourceManager.GetString("wox_plugin_folder_edit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Folder Path.
-        /// </summary>
-        public static string wox_plugin_folder_folder_path {
-            get {
-                return ResourceManager.GetString("wox_plugin_folder_folder_path", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Open favorite folder from PowerToys Run directly.
         /// </summary>
         public static string wox_plugin_folder_plugin_description {
@@ -192,15 +156,6 @@ namespace Microsoft.Plugin.Folder.Properties {
         public static string wox_plugin_folder_select_folder_first_result_title {
             get {
                 return ResourceManager.GetString("wox_plugin_folder_select_folder_first_result_title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please select a folder link.
-        /// </summary>
-        public static string wox_plugin_folder_select_folder_link_warning {
-            get {
-                return ResourceManager.GetString("wox_plugin_folder_select_folder_link_warning", resourceCulture);
             }
         }
         

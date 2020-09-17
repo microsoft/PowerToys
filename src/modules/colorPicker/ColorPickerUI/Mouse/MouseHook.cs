@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 using ColorPicker.Helpers;
-using static ColorPicker.Win32Apis;
+using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Mouse
 {
@@ -21,8 +21,6 @@ namespace ColorPicker.Mouse
         private const int WM_LBUTTONDOWN = 0x0201;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
         private const int WM_MOUSEWHEEL = 0x020A;
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
-        private const int WHEEL_DELTA = 120;
 
         private IntPtr _mouseHookHandle;
         private HookProc _mouseDelegate;

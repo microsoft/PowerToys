@@ -42,11 +42,14 @@ namespace ColorPicker.ViewModels
             _appStateHandler = appStateHandler;
             _userSettings = userSettings;
 
-            mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
-            mouseInfoProvider.OnMouseDown += MouseInfoProvider_OnMouseDown;
-            mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
+            if (mouseInfoProvider != null)
+            {
+                mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
+                mouseInfoProvider.OnMouseDown += MouseInfoProvider_OnMouseDown;
+                mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
+            }
 
-            keyboardMonitor.Start();
+            keyboardMonitor?.Start();
         }
 
         public string HexColor

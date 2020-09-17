@@ -20,7 +20,7 @@ namespace ImageResizer.Models
         private static readonly string EOL = Environment.NewLine;
 
         [Fact]
-        public void FromCommandLine_works()
+        public void FromCommandLineWorks()
         {
             var standardInput =
                 "Image1.jpg" + EOL +
@@ -56,7 +56,7 @@ namespace ImageResizer.Models
         }*/
 
         [Fact]
-        public void Process_aggregates_errors()
+        public void ProcessAggregatesErrors()
         {
             var batch = CreateBatch(file => throw new Exception("Error: " + file));
             batch.Files.Add("Image1.jpg");
@@ -81,7 +81,7 @@ namespace ImageResizer.Models
         }
 
         [Fact]
-        public void Process_reports_progress()
+        public void ProcessReportsProgress()
         {
             var batch = CreateBatch(_ => { });
             batch.Files.Add("Image1.jpg");

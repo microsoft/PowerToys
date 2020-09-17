@@ -12,7 +12,7 @@ using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 
-namespace MarkdownPreviewHandler
+namespace Microsoft.PowerToys.PreviewHandler.Markdown
 {
     /// <summary>
     /// Callback if extension blocks external images.
@@ -33,24 +33,27 @@ namespace MarkdownPreviewHandler
         /// Initializes a new instance of the <see cref="HTMLParsingExtension"/> class.
         /// </summary>
         /// <param name="imagesBlockedCallBack">Callback function if image is blocked by extension.</param>
-        /// <param name="baseUrl">Absolute path of markdown file.</param>
-        public HTMLParsingExtension(ImagesBlockedCallBack imagesBlockedCallBack, string baseUrl = "")
+        /// <param name="filePath">Absolute path of markdown file.</param>
+        public HTMLParsingExtension(ImagesBlockedCallBack imagesBlockedCallBack, string filePath = "")
         {
             this.imagesBlockedCallBack = imagesBlockedCallBack;
-            this.BaseUrl = baseUrl;
+            FilePath = filePath;
         }
 
         /// <summary>
         /// Gets or sets path to directory containing markdown file.
         /// </summary>
-        public string BaseUrl { get; set; }
+        public string FilePath { get; set; }
 
         /// <inheritdoc/>
         public void Setup(MarkdownPipelineBuilder pipeline)
         {
-            // Make sure we don't have a delegate twice
-            pipeline.DocumentProcessed -= this.PipelineOnDocumentProcessed;
-            pipeline.DocumentProcessed += this.PipelineOnDocumentProcessed;
+            if (pipeline != null)
+            {
+                // Make sure we don't have a delegate twice
+                pipeline.DocumentProcessed -= PipelineOnDocumentProcessed;
+                pipeline.DocumentProcessed += PipelineOnDocumentProcessed;
+            }
         }
 
         /// <inheritdoc/>
@@ -93,7 +96,7 @@ namespace MarkdownPreviewHandler
                         {
                             link.Url = "#";
                             link.GetAttributes().AddClass("img-fluid");
-                            this.imagesBlockedCallBack();
+                            imagesBlockedCallBack();
                         }
                     }
                 }

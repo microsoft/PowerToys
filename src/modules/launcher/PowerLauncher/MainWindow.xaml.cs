@@ -110,7 +110,7 @@ namespace PowerLauncher
                 if (result is ResultViewModel resultVM)
                 {
                     _viewModel.Results.SelectedItem = resultVM;
-                    _viewModel.OpenResultCommand.Execute(null);
+                    _viewModel.OpenResultWithMouseCommand.Execute(null);
                 }
             }
         }
@@ -119,10 +119,10 @@ namespace PowerLauncher
         {
             if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
             {
-                if (Visibility == System.Windows.Visibility.Visible)
+                if (Visibility == System.Windows.Visibility.Visible && _viewModel.MainWindowVisibility != Visibility.Hidden)
                 {
                     // Not called on first launch
-                    // Additionally called when deactivated by clicking on screen
+                    // Called when window is made visible by hotkey. Not called when the window is deactivated by clicking away
                     UpdatePosition();
                     BringProcessToForeground();
 

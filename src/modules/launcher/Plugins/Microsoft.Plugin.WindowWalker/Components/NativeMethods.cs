@@ -12,7 +12,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// <summary>
     /// Interop calls with helper layers
     /// </summary>
-    internal class InteropAndHelpers
+    internal class NativeMethods
     {
         public delegate bool CallBackPtr(IntPtr hwnd, IntPtr lParam);
 
@@ -20,6 +20,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Some flags for interop calls to SetWindowPosition
         /// </summary>
         [Flags]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These are defined in win32 libraries.  See https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowpos")]
         public enum SetWindowPosFlags : uint
         {
             /// <summary>
@@ -150,6 +151,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Show Window Enums
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "This is defined in the ShowWindow win32 method. See https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow")]
         public enum ShowWindowCommands
         {
             /// <summary>
@@ -425,8 +427,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Required pointless variables that we don't use in making a windows show
         /// </summary>
+        [Serializable]
         [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
+        public struct RECT : IEquatable<RECT>
         {
             public int Left;
             public int Top;
@@ -567,6 +570,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Same as the RECT struct above
         /// </summary>
+        [Serializable]
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
         {
@@ -647,6 +651,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// The following are the extended window styles
         /// </summary>
         [Flags]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are specific in the win32 libraries.  See https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles")]
         public enum ExtendedWindowStyles : uint
         {
             /// <summary>
@@ -847,10 +852,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
-        [DllImport("psapi.dll")]
+        [DllImport("psapi.dll", BestFitMapping = false)]
         public static extern uint GetProcessImageFileName(IntPtr hProcess, [Out] StringBuilder lpImageFileName, [In][MarshalAs(UnmanagedType.U4)] int nSize);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true, BestFitMapping = false)]
         public static extern IntPtr GetProp(IntPtr hWnd, string lpString);
 
         [DllImport("kernel32.dll")]
@@ -865,7 +870,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         [DllImport("dwmapi.dll", PreserveSig = false)]
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", BestFitMapping = false)]
         public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
         [DllImport("user32.dll", SetLastError = true)]

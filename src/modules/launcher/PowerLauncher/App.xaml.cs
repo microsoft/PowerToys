@@ -173,13 +173,17 @@ namespace PowerLauncher
                     Log.Info("|App.OnExit| Start PowerToys Run Exit----------------------------------------------------  ");
                     if (disposing)
                     {
-                        _themeManager.ThemeChanged -= OnThemeChanged;
-                        API.SaveAppAllSettings();
+                        if (_themeManager != null)
+                        {
+                            _themeManager.ThemeChanged -= OnThemeChanged;
+                        }
+
+                        API?.SaveAppAllSettings();
                         PluginManager.Dispose();
-                        _mainWindow.Dispose();
-                        API.Dispose();
-                        _mainVM.Dispose();
-                        _themeManager.Dispose();
+                        _mainWindow?.Dispose();
+                        API?.Dispose();
+                        _mainVM?.Dispose();
+                        _themeManager?.Dispose();
                         _disposed = true;
                     }
 

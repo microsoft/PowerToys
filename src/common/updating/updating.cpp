@@ -84,7 +84,6 @@ namespace updating
         const auto uninstall_result = MsiInstallProductW(package_path.c_str(), L"REMOVE=ALL");
         if (ERROR_SUCCESS == uninstall_result)
         {
-            notifications::show_uninstallation_success();
             return true;
         }
         else if (auto system_message = get_last_error_message(uninstall_result); system_message.has_value())

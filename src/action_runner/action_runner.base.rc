@@ -2,12 +2,6 @@
 #include "resource.h"
 #include "../common/version.h"
 
-STRINGTABLE
-BEGIN
-    IDS_DOTNET_CORE_DOWNLOAD_FAILURE "Couldn't download .NET Core Desktop Runtime 3.1, please install it manually."
-    IDS_DOTNET_CORE_DOWNLOAD_FAILURE_TITLE "PowerToys installation error"
-END
-
 1 VERSIONINFO
 FILEVERSION FILE_VERSION
 PRODUCTVERSION PRODUCT_VERSION

@@ -82,6 +82,7 @@ steps:
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
       **\Microsoft.Plugin.Program.UnitTests.dll
+      **\Microsoft.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
       **\*Microsoft.PowerToys.Settings.UI.UnitTests.dll

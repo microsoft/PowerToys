@@ -9,7 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
-using static ColorPicker.Win32Apis;
+using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Helpers
 {
@@ -17,6 +17,7 @@ namespace ColorPicker.Helpers
     {
         public static readonly HandleRef NullHandleRef = new HandleRef(null, IntPtr.Zero);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Interop")]
         private MonitorResolutionHelper(IntPtr monitor, IntPtr hdc)
         {
             var info = new MonitorInfoEx();
@@ -73,6 +74,7 @@ namespace ColorPicker.Helpers
 
             public ArrayList Monitors { get; private set; }
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Interop")]
             public bool Callback(
                 IntPtr monitor,
                 IntPtr hdc,

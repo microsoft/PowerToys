@@ -109,6 +109,7 @@
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="Settings\IUserSettings.cs" />
     <Compile Include="Settings\SettingItem`1.cs" />
     <Compile Include="Settings\UserSettings.cs" />
@@ -117,7 +118,6 @@
     <Compile Include="Telemetry\ColorPickerCancelledEvent.cs" />
     <Compile Include="Telemetry\ColorPickerShowEvent.cs" />
     <Compile Include="Telemetry\ColorPickerZoomOpenedEvent.cs" />
-    <Compile Include="Win32Apis.cs" />
     <Compile Include="ZoomWindow.xaml.cs">
       <DependentUpon>ZoomWindow.xaml</DependentUpon>
     </Compile>
@@ -216,6 +216,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>3.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="System.Windows.Interactivity.WPF">
       <Version>2.0.20525</Version>
     </PackageReference>
