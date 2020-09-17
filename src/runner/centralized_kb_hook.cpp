@@ -72,7 +72,7 @@ namespace CentralizedKeyboardHook
     void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<bool()>&& action) noexcept
     {
         std::unique_lock lock{ mutex };
-        hotkeyDescriptors.insert({ .hotkey = hotkey, .moduleName = moduleName, .action = action });
+        hotkeyDescriptors.insert({ .hotkey = hotkey, .moduleName = moduleName, .action = std::move(action) });
     }
 
     void ClearModuleHotkeys(const std::wstring& moduleName) noexcept
