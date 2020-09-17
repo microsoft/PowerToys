@@ -20,7 +20,6 @@
 namespace NonLocalizable
 {
     const wchar_t FancyZonesStr[] = L"FancyZones";
-    const wchar_t LayoutsStr[] = L"Layouts";
     const wchar_t NullStr[] = L"null";
 
     const wchar_t FancyZonesDataFile[] = L"zones-settings.json";
@@ -59,6 +58,84 @@ namespace
         });
 
         return tmpDirPath;
+    }
+
+    bool DeleteRegistryKey(HKEY hKeyRoot, LPTSTR lpSubKey)
+    {
+        // First, see if we can delete the key without having to recurse.
+        if (ERROR_SUCCESS == RegDeleteKey(hKeyRoot, lpSubKey))
+        {
+            return true;
+        }
+
+        HKEY hKey;
+        if (ERROR_SUCCESS != RegOpenKeyEx(hKeyRoot, lpSubKey, 0, KEY_READ, &hKey))
+        {
+            return false;
+        }
+
+        // Check for an ending slash and add one if it is missing.
+        LPTSTR lpEnd = lpSubKey + lstrlen(lpSubKey);
+
+        if (*(lpEnd - 1) != TEXT('\\'))
+        {
+            *lpEnd = TEXT('\\');
+            lpEnd++;
+            *lpEnd = TEXT('\0');
+        }
+
+        // Enumerate the keys
+
+        DWORD dwSize = MAX_PATH;
+        TCHAR szName[MAX_PATH];
+        FILETIME ftWrite;
+        auto result = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
+
+        if (result == ERROR_SUCCESS)
+        {
+            do
+            {
+                *lpEnd = TEXT('\0');
+                StringCchCat(lpSubKey, MAX_PATH * 2, szName);
+
+                if (!DeleteRegistryKey(hKeyRoot, lpSubKey))
+                {
+                    break;
+                }
+
+                dwSize = MAX_PATH;
+                result = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
+            } while (result == ERROR_SUCCESS);
+        }
+
+        lpEnd--;
+        *lpEnd = TEXT('\0');
+
+        RegCloseKey(hKey);
+
+        // Try again to delete the root key.
+        if (ERROR_SUCCESS == RegDeleteKey(hKeyRoot, lpSubKey))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool DeleteFancyZonesRegistryData()
+    {
+        wchar_t key[256];
+        StringCchPrintf(key, ARRAYSIZE(key), L"%s", NonLocalizable::RegistryPath);
+
+        HKEY hKey;
+        if (ERROR_FILE_NOT_FOUND == RegOpenKeyEx(HKEY_CURRENT_USER, key, 0, KEY_READ, &hKey))
+        {
+            return true;
+        }
+        else
+        {
+            return DeleteRegistryKey(HKEY_CURRENT_USER, key);
+        }
     }
 }
 
@@ -371,9 +448,9 @@ bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, 
     std::unordered_map<DWORD, HWND> processIdToHandleMap{};
     processIdToHandleMap[processId] = window;
     FancyZonesDataTypes::AppZoneHistoryData data{ .processIdToHandleMap = processIdToHandleMap,
-                                                    .zoneSetUuid = zoneSetId,
-                                                    .deviceId = deviceId,
-                                                    .zoneIndexSet = zoneIndexSet };
+                                                  .zoneSetUuid = zoneSetId,
+                                                  .deviceId = deviceId,
+                                                  .zoneIndexSet = zoneIndexSet };
 
     if (appZoneHistoryMap.contains(processPath))
     {
@@ -463,7 +540,6 @@ void FancyZonesData::LoadFancyZonesData()
 {
     if (!std::filesystem::exists(zonesSettingsFileName))
     {
-        MigrateCustomZoneSetsFromRegistry();
         SaveFancyZonesData();
     }
     else
@@ -474,118 +550,18 @@ void FancyZonesData::LoadFancyZonesData()
         deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
         customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
     }
+
+    DeleteFancyZonesRegistryData();
 }
 
 void FancyZonesData::SaveFancyZonesData() const
 {
     std::scoped_lock lock{ dataLock };
     JSONHelpers::SaveFancyZonesData(zonesSettingsFileName,
-									appZoneHistoryFileName,
-									deviceInfoMap,
-									customZoneSetsMap,
-									appZoneHistoryMap);
-}
-
-void FancyZonesData::MigrateCustomZoneSetsFromRegistry()
-{
-    std::scoped_lock lock{ dataLock };
-    wchar_t key[256];
-    StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", NonLocalizable::RegistryPath, NonLocalizable::LayoutsStr);
-    HKEY hkey;
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS)
-    {
-        BYTE data[256];
-        DWORD dataSize = ARRAYSIZE(data);
-        wchar_t value[256]{};
-        DWORD valueLength = ARRAYSIZE(value);
-        DWORD i = 0;
-        while (RegEnumValueW(hkey, i++, value, &valueLength, nullptr, nullptr, reinterpret_cast<BYTE*>(&data), &dataSize) == ERROR_SUCCESS)
-        {
-            FancyZonesDataTypes::CustomZoneSetData zoneSetData;
-            zoneSetData.name = std::wstring{ value };
-            zoneSetData.type = static_cast<FancyZonesDataTypes::CustomLayoutType>(data[2]);
-
-            GUID guid;
-            auto result = CoCreateGuid(&guid);
-            if (result != S_OK)
-            {
-                continue;
-            }
-            wil::unique_cotaskmem_string guidString;
-            if (!SUCCEEDED(StringFromCLSID(guid, &guidString)))
-            {
-                continue;
-            }
-
-            std::wstring uuid = guidString.get();
-
-            switch (zoneSetData.type)
-            {
-            case FancyZonesDataTypes::CustomLayoutType::Grid:
-            {
-                // Visit https://github.com/microsoft/PowerToys/blob/v0.14.0/src/modules/fancyzones/editor/FancyZonesEditor/Models/GridLayoutModel.cs#L183
-                // To see how custom Grid layout was packed in registry
-                int j = 5;
-                FancyZonesDataTypes::GridLayoutInfo zoneSetInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = data[j++], .columns = data[j++] });
-
-                for (int row = 0; row < zoneSetInfo.rows(); row++, j += 2)
-                {
-                    zoneSetInfo.rowsPercents()[row] = data[j] * 256 + data[j + 1];
-                }
-
-                for (int col = 0; col < zoneSetInfo.columns(); col++, j += 2)
-                {
-                    zoneSetInfo.columnsPercents()[col] = data[j] * 256 + data[j + 1];
-                }
-
-                for (int row = 0; row < zoneSetInfo.rows(); row++)
-                {
-                    for (int col = 0; col < zoneSetInfo.columns(); col++)
-                    {
-                        zoneSetInfo.cellChildMap()[row][col] = data[j++];
-                    }
-                }
-                zoneSetData.info = zoneSetInfo;
-                break;
-            }
-            case FancyZonesDataTypes::CustomLayoutType::Canvas:
-            {
-                // Visit https://github.com/microsoft/PowerToys/blob/v0.14.0/src/modules/fancyzones/editor/FancyZonesEditor/Models/CanvasLayoutModel.cs#L128
-                // To see how custom Canvas layout was packed in registry
-                int j = 5;
-                FancyZonesDataTypes::CanvasLayoutInfo info;
-                info.lastWorkAreaWidth = data[j] * 256 + data[j + 1];
-                j += 2;
-                info.lastWorkAreaHeight = data[j] * 256 + data[j + 1];
-                j += 2;
-
-                int count = data[j++];
-                info.zones.reserve(count);
-                while (count-- > 0)
-                {
-                    int x = data[j] * 256 + data[j + 1];
-                    j += 2;
-                    int y = data[j] * 256 + data[j + 1];
-                    j += 2;
-                    int width = data[j] * 256 + data[j + 1];
-                    j += 2;
-                    int height = data[j] * 256 + data[j + 1];
-                    j += 2;
-                    info.zones.push_back(FancyZonesDataTypes::CanvasLayoutInfo::Rect{
-                        x, y, width, height });
-                }
-                zoneSetData.info = info;
-                break;
-            }
-            default:
-                continue;
-            }
-            customZoneSetsMap[uuid] = zoneSetData;
-
-            valueLength = ARRAYSIZE(value);
-            dataSize = ARRAYSIZE(data);
-        }
-    }
+                                    appZoneHistoryFileName,
+                                    deviceInfoMap,
+                                    customZoneSetsMap,
+                                    appZoneHistoryMap);
 }
 
 void FancyZonesData::RemoveDesktopAppZoneHistory(const std::wstring& desktopId)
