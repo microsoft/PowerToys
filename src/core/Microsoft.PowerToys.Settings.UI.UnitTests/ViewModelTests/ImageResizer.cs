@@ -44,15 +44,16 @@ namespace ViewModelTests
         public void JPEGQualityLevel_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
 
             // act
             viewModel.JPEGQualityLevel = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.JPEGQualityLevel);
         }
 
@@ -60,15 +61,16 @@ namespace ViewModelTests
         public void PngInterlaceOption_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
 
             // act
             viewModel.PngInterlaceOption = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.PngInterlaceOption);
         }
 
@@ -76,15 +78,16 @@ namespace ViewModelTests
         public void TiffCompressOption_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
 
             // act
             viewModel.TiffCompressOption = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.TiffCompressOption);
         }
 
@@ -92,16 +95,17 @@ namespace ViewModelTests
         public void FileName_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
             string expectedValue = "%1 (%3)";
 
             // act
             viewModel.FileName = expectedValue;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
             Assert.AreEqual(expectedValue, viewModel.FileName);
         }
 
@@ -132,15 +136,16 @@ namespace ViewModelTests
         public void Encoder_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
 
             // act
             viewModel.Encoder = 3;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
             Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", viewModel.GetEncoderGuid(viewModel.Encoder));
             Assert.AreEqual(3, viewModel.Encoder);
         }
