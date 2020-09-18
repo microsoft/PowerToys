@@ -5,6 +5,7 @@
 using System;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -26,15 +27,7 @@ namespace CommonLibTest
             //Mock Disk access
             string saveContent = string.Empty;
             string savePath = string.Empty;
-            var mockIOProvider = new Mock<IIOProvider>();
-            mockIOProvider.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
-                          .Callback<string, string>((path, content) =>
-                          {
-                              savePath = path;
-                              saveContent = content;
-                          });
-            mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
-                          .Returns(() => saveContent);
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
 
             var settingsUtils = new SettingsUtils(mockIOProvider.Object);
 
