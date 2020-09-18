@@ -45,7 +45,7 @@ namespace NonLocalizable
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
-    FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
+    FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings, std::function<void()> disableModuleCallback) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
         m_windowMoveHandler(settings, [this]() {
@@ -53,6 +53,8 @@ public:
         })
     {
         m_settings->SetCallback(this);
+
+        this->disableModuleCallback = std::move(disableModuleCallback);
     }
 
     // IFancyZones
@@ -240,6 +242,9 @@ private:
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
 
+    // If non-recoverable error occurs, trigger disabling of entire FancyZones.
+    static std::function<void()> disableModuleCallback;
+
     static UINT WM_PRIV_VD_INIT; // Scheduled when FancyZones is initialized
     static UINT WM_PRIV_VD_SWITCH; // Scheduled when virtual desktop switch occurs
     static UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
@@ -254,6 +259,8 @@ private:
         Terminate
     };
 };
+
+std::function<void()> FancyZones::disableModuleCallback = {};
 
 UINT FancyZones::WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
 UINT FancyZones::WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
@@ -1385,12 +1392,14 @@ std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
     return monitorInfo;
 }
 
-winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept
+winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance,
+                                           const winrt::com_ptr<IFancyZonesSettings>& settings,
+                                           std::function<void()> disableCallback) noexcept
 {
     if (!settings)
     {
         return nullptr;
     }
 
-    return winrt::make_self<FancyZones>(hinstance, settings);
+    return winrt::make_self<FancyZones>(hinstance, settings, disableCallback);
 }

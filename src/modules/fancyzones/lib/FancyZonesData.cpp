@@ -148,6 +148,7 @@ FancyZonesData& FancyZonesDataInstance()
 FancyZonesData::FancyZonesData()
 {
     std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::FancyZonesStr);
+
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
     appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
 
