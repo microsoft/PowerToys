@@ -146,6 +146,12 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             parent.UpdateLayout();
         }
 
+        // If ignore key to shortcut warning flag is true and it is a hybrid control in SingleKeyRemapControl, then skip MapToSameKey error
+        if (isHybridControl && isSingleKeyWindow && ignoreKeyToShortcutWarning && (validationResult.first == KeyboardManagerHelper::ErrorType::MapToSameKey))
+        {
+            validationResult.first = KeyboardManagerHelper::ErrorType::NoError;
+        }
+
         if (validationResult.first != KeyboardManagerHelper::ErrorType::NoError)
         {
             SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(validationResult.first));
@@ -159,6 +165,12 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
             parent.UpdateLayout();
         }
+    }
+
+    // Reset ignoreKeyToShortcutWarning
+    if (ignoreKeyToShortcutWarning)
+    {
+        ignoreKeyToShortcutWarning = false;
     }
 
     return std::make_pair(validationResult.first, rowIndex);
@@ -259,9 +271,9 @@ ComboBox KeyDropDownControl::GetComboBox()
 }
 
 // Function to add a drop down to the shortcut stack panel
-void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
+void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, bool ignoreWarning)
 {
-    keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true))));
+    keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true, ignoreWarning))));
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
     keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
     parent.UpdateLayout();
@@ -330,7 +342,16 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, Grid table, Sta
     std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
     {
-        KeyDropDownControl::AddDropDown(table, controlLayout, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
+        bool ignoreWarning = false;
+
+        // If more than one key is to be added, ignore a shortcut to key warning on partially entering the remapping
+        if (shortcutKeyCodes.size() > 1)
+        {
+            ignoreWarning = true;
+        }
+
+        KeyDropDownControl::AddDropDown(table, controlLayout, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
+
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedIndex is set
