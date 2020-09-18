@@ -131,25 +131,24 @@ To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar
 3. Open developer command prompt from `Tools > Command Line > Developer Command Prompt`.
 4. Run following commands to register preview handler. 
 ```
-cd <path to XYZPreviewHandler.dll>
-gacutil -i XYZPreviewHandler.dll
-regasm /codebase XYZPreviewHandler.dll
+cd C:\Windows\Microsoft.NET\Framework64\4.0.x.x
+gacutil -i <path to XYZPreviewHandler.dll>
+RegAsm.exe /codebase <path to XYZPreviewHandler.dll>
 ```
 5. Restart Windows Explorer process.
 
 #### Unregistering Preview Handler
 1. Run following commands in elevated developer command prompt to unregister preview handler. 
 ```
-cd <path to XYZPreviewHandler.dll>
-regasm /unregister XYZPreviewHandler.dll
+cd C:\Windows\Microsoft.NET\Framework64\4.0.x.x
+RegAsm.exe /unregister <path to XYZPreviewHandler.dll>
 gacutil -u XYZPreviewHandler
 ```
 
-
 ## Debugging
-Since in-process preview handlers run under a surrogate hosting process (prevhost.exe by default), to debug a preview handler, you need to attach the debugger to the host process. When there are multiple instances of `prevhost.exe` running, you need to know which instance to connect to. 
-1. Click on a file with registered extensions to start host process.
-2. Attach debugger in Visual studio from `Debug->Attach to Process` and selecting host process. 
+Since in-process preview handlers run under a surrogate hosting process (prevhost.exe by default), to debug a preview handler, you need to attach the debugger to the host process. 
+1. Click on a file with registered extension to start host process.
+2. Attach debugger in Visual studio from `Debug->Attach to Process` and select `prevhost.exe` with type `Managed(version), x64`.
 
 ## Managing Preview Handlers
 
