@@ -7,7 +7,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class KeyboardManagerSettings : BasePTModuleSettings, ISettingsConfig
+    public class KeyboardManagerSettings : BasePTModuleSettings
     {
         [JsonPropertyName("properties")]
         public KeyboardManagerProperties Properties { get; set; }

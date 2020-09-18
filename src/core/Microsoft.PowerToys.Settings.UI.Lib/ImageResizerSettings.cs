@@ -8,7 +8,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class ImageResizerSettings : BasePTModuleSettings, ISettingsConfig
+    public class ImageResizerSettings : BasePTModuleSettings
     {
         public const string ModuleName = "Image Resizer";
 

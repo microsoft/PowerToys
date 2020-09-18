@@ -7,7 +7,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class PowerRenameSettings : BasePTModuleSettings, ISettingsConfig
+    public class PowerRenameSettings : BasePTModuleSettings
     {
         public const string ModuleName = "PowerRename";
 
