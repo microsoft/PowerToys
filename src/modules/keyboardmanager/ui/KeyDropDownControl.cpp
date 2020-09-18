@@ -152,6 +152,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             validationResult.first = KeyboardManagerHelper::ErrorType::NoError;
         }
 
+        // If the remapping is invalid display an error message
         if (validationResult.first != KeyboardManagerHelper::ErrorType::NoError)
         {
             SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(validationResult.first));
