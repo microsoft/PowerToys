@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             return JsonSerializer.Serialize(this, GetType());
         }
 
+        // To retrive the name of the file while the powertoy's properties are stored.
         public virtual string GetSettingsFileName()
         {
             return "settings.json";

@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         /// <summary>
         /// Get a Deserialized object of the json settings string.
+        /// This function creates a file in the powertoy folder if it does not exist and returns an object with default properties.
         /// </summary>
         /// <returns>Deserialized json settings object.</returns>
         public static T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
@@ -86,6 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
             else
             {
+                // If the settings file does not exist, to create a new object with default parameters and save it to a newly created settings file.
                 T newSettingsItem = new T();
                 SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
                 return newSettingsItem;
@@ -122,27 +124,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public static string LocalApplicationDataFolder()
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        }
-
-        public static Func<string, int> DefaultSndMsgCallback { get; set; }
-
-        public static Func<string, int> SendRestartAdminIPCMessage { get; set; }
-
-        public static Func<string, int> SendCheckForUpdatesIPCMessage { get; set; }
-
-        public static void SendDefaultMessageToRunner<T>(T msgToRunner)
-        {
-            DefaultSndMsgCallback(msgToRunner.ToString());
-        }
-
-        public static void SendRestartAsAdminMessageToRunner<T>(T msgToRunner)
-        {
-            SendRestartAdminIPCMessage(msgToRunner.ToString());
-        }
-
-        public static void SendCheckForUpdatesMessageToRunner<T>(T msgToRunner)
-        {
-            SendCheckForUpdatesIPCMessage(msgToRunner.ToString());
         }
     }
 }

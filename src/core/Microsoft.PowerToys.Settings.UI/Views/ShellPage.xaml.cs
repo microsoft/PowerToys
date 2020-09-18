@@ -95,7 +95,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetDefaultSndMessageCallback(IPCMessageCallback implementation)
         {
             DefaultSndMSGCallback = implementation;
-            SettingsUtils.DefaultSndMsgCallback = ShellPage.SendDefaultIPCMessage;
         }
 
         /// <summary>
@@ -105,7 +104,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetRestartAdminSndMessageCallback(IPCMessageCallback implementation)
         {
             SndRestartAsAdminMsgCallback = implementation;
-            SettingsUtils.SendRestartAdminIPCMessage = ShellPage.SendRestartAdminIPCMessage;
         }
 
         /// <summary>
@@ -115,7 +113,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetCheckForUpdatesMessageCallback(IPCMessageCallback implementation)
         {
             CheckForUpdatesMsgCallback = implementation;
-            SettingsUtils.SendCheckForUpdatesIPCMessage = ShellPage.SendRestartAdminIPCMessage;
         }
 
         public void SetElevationStatus(bool isElevated)

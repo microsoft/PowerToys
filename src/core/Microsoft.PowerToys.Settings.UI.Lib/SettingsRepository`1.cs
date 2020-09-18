@@ -8,7 +8,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    // This Singleton class is a wrapper around the Common settings configurations that are to be shared across all the viewmodels.
+    // This Singleton class is a wrapper around the settings configurations that are accessed by viewmodels.
     // This class can have only one instance and therefore the settings configurations are common to all.
     public class SettingsRepository<T> : ISettingsRepository<T>
         where T : class, ISettingsConfig, new()
@@ -21,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             get
             {
+                // To ensure that only one instance of Settings Repository is created in a multi-threaded environment.
                 lock (SettingsRepoLock)
                 {
                     if (settingsRepository == null)
@@ -33,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
         }
 
+        // The Singleton class must have a private constructor so that it cannot be instantiated by any other object other than itself.
         private SettingsRepository()
         {
         }
