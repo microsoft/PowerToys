@@ -63,9 +63,9 @@ namespace Wox.Core.Plugin
 
             foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
             {
-                var query = new Query(rawQuery, rawQuery, terms, string.Empty);
                 if (!pluginQueryPair.ContainsKey(globalPlugin))
                 {
+                    var query = new Query(rawQuery, rawQuery, terms, string.Empty);
                     pluginQueryPair.Add(globalPlugin, query);
                 }
             }
