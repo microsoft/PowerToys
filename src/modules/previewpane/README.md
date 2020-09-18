@@ -123,14 +123,23 @@ To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar
       </Component>
 ```
 
-### Directly registering DLL's
+### Directly registering/unregistering DLL's
+
+#### Registering Preview Handler
+1. Restart Visual studio as administrator and build `XYZPreviewHandler` project.
+2. Open developer command prompt from `Tools > Command Line > Developer Command Prompt`.
+3. Run following commands to register preview handler. 
 ```
-gacutil -i MsdnMagPreviewHandlers.dll
-regasm /codebase MsdnMagPreviewHandlers.dll
+gacutil -i XYZPreviewHandler.dll
+regasm /codebase XYZPreviewHandler.dll
 ```
 
-## Debugging
-Once the 
+#### Unregistering Preview Handler
+1. Run following commands in elevated developer command prompt to unregister preview handler. 
+```
+regasm /unregister XYZPreviewHandler.dll
+gacutil -u XYZPreviewHandler
+```
 
 ## Managing Preview Handlers
 
