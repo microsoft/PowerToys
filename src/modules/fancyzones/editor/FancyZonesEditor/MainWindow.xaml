@@ -215,20 +215,6 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
-                    <StackPanel Orientation="Horizontal" Margin="10,4,0,8">
-                        <CheckBox x:Name="spaceAroundSetting" Content="Show space around zones" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}"/>
-                        <TextBlock Text="Space around zones" Style="{StaticResource settingText}"/>
-                        <TextBox x:Name="paddingValue" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        
-
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
-                        <Button x:Name="EditTemplateButton" Padding="8" Content="Edit selected layout" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
-                        <Button x:Name="ApplyTemplateButton" Padding="8" Content="Apply" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
-                    </StackPanel>
                 </StackPanel>
             </TabItem>
             
@@ -267,15 +253,22 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,10,0,16">
-                        <Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
-                            <Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
-                    </StackPanel>
                 </StackPanel>
             </TabItem>
         </TabControl>
-        
 
+		<StackPanel Orientation="Horizontal" Margin="10,4,0,8">
+			<CheckBox x:Name="spaceAroundSetting" Content="{x:Static props:Resources.Show_Space_Zones}" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}"/>
+			<TextBlock Text="{x:Static props:Resources.Space_Around_Zones}" Style="{StaticResource settingText}" IsEnabled="{Binding ShowSpacing}" />
+			<TextBox x:Name="paddingValue" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="32" IsEnabled="{Binding ShowSpacing}"/>
+			<TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}" Style="{StaticResource settingText}"/>
+			<TextBox x:Name="sensitivityRadiusValue" Text="{Binding Path=SensitivityRadius,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="40"/>
+		</StackPanel>
 
-    </StackPanel>
+		<StackPanel Orientation="Horizontal" Margin="0,10,0,16">
+			<Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
+			<Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
+		</StackPanel>
+
+	</StackPanel>
 </Controls:MetroWindow>

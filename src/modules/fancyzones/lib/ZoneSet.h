@@ -148,16 +148,19 @@ struct ZoneSetConfig
     ZoneSetConfig(
         GUID id,
         FancyZonesDataTypes::ZoneSetLayoutType layoutType,
-        HMONITOR monitor) noexcept :
+        HMONITOR monitor,
+        int sensitivityRadius) noexcept :
             Id(id),
             LayoutType(layoutType),
-            Monitor(monitor)
+            Monitor(monitor),
+            SensitivityRadius(sensitivityRadius)
     {
     }
 
     GUID Id{};
     FancyZonesDataTypes::ZoneSetLayoutType LayoutType{};
     HMONITOR Monitor{};
+    int SensitivityRadius;
 };
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept;

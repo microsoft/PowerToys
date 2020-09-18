@@ -138,6 +138,9 @@
   <data name="Custom_Table_Layout" xml:space="preserve">
     <value>Custom table layout creator</value>
   </data>
+  <data name="Distance_adjacent_zones" xml:space="preserve">
+    <value>Distance to highlight adjacent zones</value>
+  </data>
   <data name="Edit_Selected_Layout" xml:space="preserve">
     <value>Edit selected layout</value>
   </data>
