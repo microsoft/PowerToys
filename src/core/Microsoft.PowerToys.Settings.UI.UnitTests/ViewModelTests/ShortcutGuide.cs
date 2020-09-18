@@ -25,8 +25,10 @@ namespace ViewModelTests
             ShortcutGuideSettings shortcutGuide = new ShortcutGuideSettings();
 
             // Initialize the common settings configurations
-            GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
-            SettingsUtils.SaveSettings(GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.ToJsonString());
+            SettingsRepository<GeneralSettings>.Instance.SettingsConfig = new GeneralSettings();
+            SettingsRepository<ShortcutGuideSettings>.Instance.SettingsConfig = new ShortcutGuideSettings();
+
+            SettingsUtils.SaveSettings(SettingsRepository<GeneralSettings>.Instance.SettingsConfig.ToJsonString());
             SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ShortCutGuideTestFolderName);
         }
 
@@ -66,7 +68,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.Instance, SettingsRepository<ShortcutGuideSettings>.Instance, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
 
             // Act
             viewModel.IsEnabled = true;
@@ -85,7 +87,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.Instance, SettingsRepository<ShortcutGuideSettings>.Instance, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(1, viewModel.ThemeIndex);
 
             // Act
@@ -105,7 +107,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.Instance, SettingsRepository<ShortcutGuideSettings>.Instance, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(900, viewModel.PressTime);
 
             // Act
@@ -127,7 +129,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.Instance, SettingsRepository<ShortcutGuideSettings>.Instance, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(90, viewModel.OverlayOpacity);
 
             // Act

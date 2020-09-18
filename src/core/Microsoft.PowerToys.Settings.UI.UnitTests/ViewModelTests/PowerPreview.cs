@@ -23,8 +23,9 @@ namespace ViewModelTests
             PowerPreviewSettings powerpreview = new PowerPreviewSettings();
 
             // Initialize the common settings configurations
-            GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
-            SettingsUtils.SaveSettings(GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.ToJsonString());
+            SettingsRepository<GeneralSettings>.Instance.SettingsConfig = new GeneralSettings();
+            SettingsRepository<PowerPreviewSettings>.Instance.SettingsConfig = new PowerPreviewSettings();
+            SettingsUtils.SaveSettings(SettingsRepository<GeneralSettings>.Instance.SettingsConfig.ToJsonString());
             SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);
         }
 
@@ -61,7 +62,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.Instance, SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -79,7 +80,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.Instance, SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -97,7 +98,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SendMockIPCConfigMSG, Module);;
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.Instance, SendMockIPCConfigMSG, Module);;
 
             // act
             viewModel.MDRenderIsEnabled = true;

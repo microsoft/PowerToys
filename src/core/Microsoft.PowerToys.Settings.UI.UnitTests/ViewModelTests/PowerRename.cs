@@ -23,8 +23,8 @@ namespace ViewModelTests
             PowerRenameSettings powerRename = new PowerRenameSettings();
 
             // Initialize the common settings configurations
-            GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
-            SettingsUtils.SaveSettings(GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.ToJsonString());
+            SettingsRepository<GeneralSettings>.Instance.SettingsConfig = new GeneralSettings();
+            SettingsUtils.SaveSettings(SettingsRepository<GeneralSettings>.Instance.SettingsConfig.ToJsonString());
             SettingsUtils.SaveSettings(powerRename.ToJsonString(), generalSettings_file_name, "power-rename-settings.json");
         }
 
@@ -50,7 +50,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.IsEnabled = true;
@@ -68,7 +68,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.MRUEnabled = true;
@@ -78,7 +78,7 @@ namespace ViewModelTests
         public void WhenIsEnabledIsOffAndMRUEnabledIsOffGlobalAndMruShouldBeOff()
         {
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             viewModel.IsEnabled = false;
             viewModel.MRUEnabled = false;
@@ -90,7 +90,7 @@ namespace ViewModelTests
         public void WhenIsEnabledIsOffAndMRUEnabledIsOnGlobalAndMruShouldBeOff()
         {
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             viewModel.IsEnabled = false;
             viewModel.MRUEnabled = true;
@@ -102,7 +102,7 @@ namespace ViewModelTests
         public void WhenIsEnabledIsOnAndMRUEnabledIsOffGlobalAndMruShouldBeOff()
         {
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             viewModel.IsEnabled = true;
             viewModel.MRUEnabled = false;
@@ -114,7 +114,7 @@ namespace ViewModelTests
         public void WhenIsEnabledIsOnAndMRUEnabledIsOnGlobalAndMruShouldBeOn()
         {
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             viewModel.IsEnabled = true;
             viewModel.MRUEnabled = true;
@@ -134,7 +134,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.EnabledOnContextMenu = true;
@@ -152,7 +152,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.EnabledOnContextMenu = true;
@@ -170,7 +170,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.RestoreFlagsOnLaunch = true;
@@ -188,7 +188,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(GeneralSettingsCache<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.MaxDispListNum = 20;

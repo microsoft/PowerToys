@@ -20,8 +20,8 @@ namespace ViewModelTests
         public void Setup()
         {
             // Initialize the common settings configurations
-            GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig = new GeneralSettings();
-            SettingsUtils.SaveSettings(GeneralSettingsCache<GeneralSettings>.Instance.CommonSettingsConfig.ToJsonString(), generalSettings_file_name);
+            SettingsRepository<GeneralSettings>.Instance.SettingsConfig = new GeneralSettings();
+            SettingsUtils.SaveSettings(SettingsRepository<GeneralSettings>.Instance.SettingsConfig.ToJsonString(), generalSettings_file_name);
         }
 
         [TestCleanup]
@@ -47,7 +47,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                GeneralSettingsCache<GeneralSettings>.Instance,
+                SettingsRepository<GeneralSettings>.Instance,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -84,7 +84,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                GeneralSettingsCache<GeneralSettings>.Instance,
+                SettingsRepository<GeneralSettings>.Instance,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -116,7 +116,7 @@ namespace ViewModelTests
 
             // Arrange
             GeneralViewModel viewModel = new GeneralViewModel(
-                GeneralSettingsCache<GeneralSettings>.Instance,
+                SettingsRepository<GeneralSettings>.Instance,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -149,7 +149,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             viewModel = new GeneralViewModel(
-                GeneralSettingsCache<GeneralSettings>.Instance,
+                SettingsRepository<GeneralSettings>.Instance,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -180,7 +180,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                GeneralSettingsCache<GeneralSettings>.Instance,
+                SettingsRepository<GeneralSettings>.Instance,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
