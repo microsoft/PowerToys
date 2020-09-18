@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
 
-            ViewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.Instance, ShellPage.SendDefaultIPCMessage);
+            ViewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.Instance, SettingsRepository<ShortcutGuideSettings>.Instance, ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
     }
