@@ -7,7 +7,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class PowerRenameLocalProperties
+    public class PowerRenameLocalProperties : ISettingsConfig
     {
         public PowerRenameLocalProperties()
         {
