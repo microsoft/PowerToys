@@ -30,15 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             SettingsRepository = settingsRepository;
             settingsConfigFileFolder = configFileSubfolder;
 
-            try
-            {
-                Settings = SettingsUtils.GetSettings<FancyZonesSettings>(GetSettingsSubPath());
-            }
-            catch
-            {
-                Settings = new FancyZonesSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
-            }
+            Settings = SettingsRepository<FancyZonesSettings>.Instance.SettingsConfig;
 
             LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
 

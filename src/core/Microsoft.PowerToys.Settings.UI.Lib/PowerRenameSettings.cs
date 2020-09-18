@@ -40,5 +40,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Version = "1";
             Name = ptName;
         }
+
+        public override string GetSettingsFileName()
+        {
+            return "power-rename-settings.json";
+        }
     }
 }

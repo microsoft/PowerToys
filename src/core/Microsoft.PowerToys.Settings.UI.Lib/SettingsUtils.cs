@@ -86,16 +86,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
             else
             {
-                T newObject = new T();
-                SaveSettings(newObject.ToJsonString(), powertoy, fileName);
-                return newObject;
+                T newSettingsItem = new T();
+                SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
+                return newSettingsItem;
             }
         }
 
         // Given the powerToy folder name and filename to be accessed, this function deserializes and returns the file.
-        public static T GetFile<T>(string powertoy, string fileName)
+        public static T GetFile<T>(string powertoyFolderName, string fileName)
         {
-            var jsonSettingsString = File.ReadAllText(GetSettingsPath(powertoy, fileName));
+            var jsonSettingsString = File.ReadAllText(GetSettingsPath(powertoyFolderName, fileName));
             return JsonSerializer.Deserialize<T>(jsonSettingsString);
         }
 

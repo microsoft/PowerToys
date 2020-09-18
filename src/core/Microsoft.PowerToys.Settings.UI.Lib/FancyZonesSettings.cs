@@ -9,10 +9,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class FancyZonesSettings : BasePTModuleSettings, ISettingsConfig
     {
+        public const string ModuleName = "FancyZones";
+
         public FancyZonesSettings()
         {
-            Version = string.Empty;
-            Name = string.Empty;
+            Version = "1.0";
+            Name = ModuleName;
             Properties = new FZConfigProperties();
         }
 

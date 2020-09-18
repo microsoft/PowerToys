@@ -52,8 +52,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     }
                     else
                     {
-                        T newObject = new T();
-                        settingsConfig = SettingsUtils.GetSettings<T>(((BasePTModuleSettings)(object)newObject).Name);
+                        T settingsItem = new T();
+                        settingsConfig = SettingsUtils.GetSettings<T>(((BasePTModuleSettings)(object)settingsItem).Name, ((BasePTModuleSettings)(object)settingsItem).GetSettingsFileName());
                     }
                 }
 

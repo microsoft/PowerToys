@@ -30,15 +30,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             // To get the shortcut guide settings
             Settings = SettingsRepository<ShortcutGuideSettings>.Instance.SettingsConfig;
-            /*try
-            {
-                Settings = SettingsUtils.GetSettings<ShortcutGuideSettings>(GetSettingsSubPath());
-            }
-            catch
-            {
-                Settings = new ShortcutGuideSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
-            }*/
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;

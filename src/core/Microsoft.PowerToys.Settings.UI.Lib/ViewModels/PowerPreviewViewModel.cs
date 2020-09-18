@@ -23,15 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            try
-            {
-                Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(GetSettingsSubPath());
-            }
-            catch
-            {
-                Settings = new PowerPreviewSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
-            }
+            Settings = SettingsRepository<PowerPreviewSettings>.Instance.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
