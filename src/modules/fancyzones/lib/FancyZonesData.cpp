@@ -16,8 +16,6 @@
 #include <sstream>
 #include <unordered_set>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-
 // Non-localizable strings
 namespace NonLocalizable
 {
