@@ -12,13 +12,13 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 namespace
 {
     const wchar_t POWER_LAUNCHER_PID_SHARED_FILE[] = L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74";
-    const wchar_t JSON_PROPERTIES[] = L"properties";
-    const wchar_t JSON_WIN[] = L"win";
-    const wchar_t JSON_ALT[] = L"alt";
-    const wchar_t JSON_CTRL[] = L"ctrl";
-    const wchar_t JSON_SHIFT[] = L"shift";
-    const wchar_t JSON_KEY[] = L"code";
-    const wchar_t JSON_INVOKE_HOTKEY[] = L"open_powerlauncher";
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_OPEN_POWERLAUNCHER[] = L"open_powerlauncher";
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -324,12 +324,12 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
 {
     try
     {
-        auto jsonHotkeyObject = settings.get_raw_json().GetNamedObject(JSON_PROPERTIES).GetNamedObject(JSON_INVOKE_HOTKEY);
-        m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_WIN);
-        m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_ALT);
-        m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_SHIFT);
-        m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_CTRL);
-        m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY));
+        auto jsonHotkeyObject = settings.get_raw_json().GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OPEN_POWERLAUNCHER);
+        m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+        m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+        m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+        m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+        m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
     }
     catch (...)
     {
