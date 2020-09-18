@@ -50,14 +50,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     {
                         settingsConfig = SettingsUtils.GetSettings<T>();
                     }
-                    else if (typeof(T) == typeof(BasePTModuleSettings))
+                    else
                     {
                         T newObject = new T();
                         settingsConfig = SettingsUtils.GetSettings<T>(((BasePTModuleSettings)(object)newObject).Name);
-                    }
-                    else
-                    {
-                        settingsConfig = default;
                     }
                 }
 
