@@ -83,7 +83,7 @@ FileExplorerPreviewSettings(
 
 ## Installation
 
-### MSI
+### MSI (Recommended)
 
 To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar to existing Previewer to register the Preview Handler. More details about registration of Preview Handlers can be [found here.](https://docs.microsoft.com/en-us/windows/win32/shell/how-to-register-a-preview-handler)
 
@@ -122,6 +122,15 @@ To add a new Previewer update the `Product.wxs` file in `PowerToysSetup` similar
         </RegistryKey>
       </Component>
 ```
+
+### Directly registering DLL's
+```
+gacutil -i MsdnMagPreviewHandlers.dll
+regasm /codebase MsdnMagPreviewHandlers.dll
+```
+
+## Debugging
+Once the 
 
 ## Managing Preview Handlers
 
