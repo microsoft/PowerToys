@@ -11,14 +11,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     public class OutGoingGeneralSettings
     {
         [JsonPropertyName("general")]
-        [JsonConverter(typeof(InterfaceConverter<GeneralSettings, IGeneralSettingsData>))]
-        public IGeneralSettingsData GeneralSettings { get; set; }
+        public GeneralSettings GeneralSettings { get; set; }
 
         public OutGoingGeneralSettings()
         {
         }
 
-        public OutGoingGeneralSettings(IGeneralSettingsData generalSettings)
+        public OutGoingGeneralSettings(GeneralSettings generalSettings)
         {
             GeneralSettings = generalSettings;
         }
