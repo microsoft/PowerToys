@@ -8,9 +8,9 @@ using System.Windows;
 
 namespace PowerLauncher.Helper
 {
-    public class NativeEventWaiter
+    public static class NativeEventWaiter
     {
-        public NativeEventWaiter(string eventName, Action callback)
+        public static void WaitForEventLoop(string eventName, Action callback)
         {
             new Thread(() =>
             {

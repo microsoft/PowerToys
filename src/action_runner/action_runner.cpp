@@ -190,7 +190,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
             else
             {
-                params = args[nextArg];
+                params += args[nextArg];
+                params += L' ';
                 nextArg++;
             }
         }

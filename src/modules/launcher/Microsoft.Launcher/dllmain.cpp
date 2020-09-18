@@ -169,8 +169,10 @@ public:
 
             if (!is_process_elevated(false))
             {
-                std::wstring executable_args = L"";
-                executable_args.append(std::to_wstring(powertoys_pid));
+                std::wstring executable_args;
+                executable_args += L" -powerToysPid ";
+                executable_args += std::to_wstring(powertoys_pid);
+                executable_args += L" --centralized-kb-hook";
 
                 SHELLEXECUTEINFOW sei{ sizeof(sei) };
                 sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -190,7 +192,8 @@ public:
                 params += L"-target modules\\launcher\\PowerLauncher.exe ";
                 params += L"-pidFile ";
                 params += POWER_LAUNCHER_PID_SHARED_FILE;
-                params += L" " + std::to_wstring(powertoys_pid) + L" ";
+                params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
+                params += L"--centralized-kb-hook ";
 
                 action_runner_path += L"\\action_runner.exe";
                 // Set up the shared file from which to retrieve the PID of PowerLauncher
