@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
-        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ShortcutGuideSettings Settings { get; set; }
 
@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            SettingsRepository = settingsRepository;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // To get the shortcut guide settings
             Settings = SettingsRepository<ShortcutGuideSettings>.Instance.SettingsConfig;
@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = SettingsRepository.SettingsConfig.Enabled.ShortcutGuide;
+            _isEnabled = GeneralSettingsConfig.Enabled.ShortcutGuide;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
 
@@ -73,8 +73,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    SettingsRepository.SettingsConfig.Enabled.ShortcutGuide = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
+                    GeneralSettingsConfig.Enabled.ShortcutGuide = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }

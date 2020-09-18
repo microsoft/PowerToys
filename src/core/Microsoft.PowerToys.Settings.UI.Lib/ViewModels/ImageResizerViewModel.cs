@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ImageResizerViewModel : Observable
     {
-        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ImageResizerSettings Settings { get; set; }
 
@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public ImageResizerViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            SettingsRepository = settingsRepository;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             try
             {
@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = SettingsRepository.SettingsConfig.Enabled.ImageResizer;
+            _isEnabled = GeneralSettingsConfig.Enabled.ImageResizer;
             _advancedSizes = Settings.Properties.ImageresizerSizes.Value;
             _jpegQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
             _pngInterlaceOption = Settings.Properties.ImageresizerPngInterlaceOption.Value;
@@ -77,8 +77,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    SettingsRepository.SettingsConfig.Enabled.ImageResizer = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
+                    GeneralSettingsConfig.Enabled.ImageResizer = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }

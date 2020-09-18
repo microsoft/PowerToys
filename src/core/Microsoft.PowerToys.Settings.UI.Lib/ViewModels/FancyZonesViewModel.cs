@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
-        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private const string ModuleName = "FancyZones";
 
@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
-            SettingsRepository = settingsRepository;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
             settingsConfigFileFolder = configFileSubfolder;
 
             Settings = SettingsRepository<FancyZonesSettings>.Instance.SettingsConfig;
@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             _zoneHighlightColor = highlightColor != string.Empty ? highlightColor : "#0078D7";
 
-            _isEnabled = SettingsRepository.SettingsConfig.Enabled.FancyZones;
+            _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
         }
 
         private bool _isEnabled;
@@ -102,8 +102,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    SettingsRepository.SettingsConfig.Enabled.FancyZones = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
+                    GeneralSettingsConfig.Enabled.FancyZones = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");

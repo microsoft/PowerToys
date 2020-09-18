@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class KeyboardManagerViewModel : Observable
     {
-        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private const string PowerToyName = "Keyboard Manager";
         private const string RemapKeyboardActionName = "RemapKeyboard";
@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public KeyboardManagerViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
-            SettingsRepository = settingsRepository;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return SettingsRepository.SettingsConfig.Enabled.KeyboardManager;
+                return GeneralSettingsConfig.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (SettingsRepository.SettingsConfig.Enabled.KeyboardManager != value)
+                if (GeneralSettingsConfig.Enabled.KeyboardManager != value)
                 {
-                    SettingsRepository.SettingsConfig.Enabled.KeyboardManager = value;
+                    GeneralSettingsConfig.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());
                 }

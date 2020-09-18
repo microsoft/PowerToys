@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
-        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private PowerLauncherSettings settings;
 
@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public PowerLauncherViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
-            SettingsRepository = settingsRepository;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -68,16 +68,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return SettingsRepository.SettingsConfig.Enabled.PowerLauncher;
+                return GeneralSettingsConfig.Enabled.PowerLauncher;
             }
 
             set
             {
-                if (SettingsRepository.SettingsConfig.Enabled.PowerLauncher != value)
+                if (GeneralSettingsConfig.Enabled.PowerLauncher != value)
                 {
-                    SettingsRepository.SettingsConfig.Enabled.PowerLauncher = value;
+                    GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

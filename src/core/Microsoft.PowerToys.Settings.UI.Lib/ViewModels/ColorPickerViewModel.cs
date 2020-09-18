@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
-        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ColorPickerSettings _colorPickerSettings;
 
@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public ColorPickerViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            SettingsRepository = settingsRepository;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             if (SettingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _colorPickerSettings = new ColorPickerSettings();
             }
 
-            _isEnabled = SettingsRepository.SettingsConfig.Enabled.ColorPicker;
+            _isEnabled = GeneralSettingsConfig.Enabled.ColorPicker;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -53,8 +53,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
 
                     // grab the latest version of settings
-                    SettingsRepository.SettingsConfig.Enabled.ColorPicker = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
+                    GeneralSettingsConfig.Enabled.ColorPicker = value;
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

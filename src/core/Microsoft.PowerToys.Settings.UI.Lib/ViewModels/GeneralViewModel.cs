@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class GeneralViewModel : Observable
     {
-        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
 
@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
-            SettingsRepository = settingsRepository;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -46,12 +46,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
-            UpdateUIThemeCallBack(SettingsRepository.SettingsConfig.Theme.ToLower());
+            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme.ToLower());
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            switch (SettingsRepository.SettingsConfig.Theme.ToLower())
+            switch (GeneralSettingsConfig.Theme.ToLower())
             {
                 case "light":
                     _isLightThemeRadioButtonChecked = true;
@@ -64,10 +64,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     break;
             }
 
-            _startup = SettingsRepository.SettingsConfig.Startup;
-            _autoDownloadUpdates = SettingsRepository.SettingsConfig.AutoDownloadUpdates;
+            _startup = GeneralSettingsConfig.Startup;
+            _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _isElevated = isElevated;
-            _runElevated = SettingsRepository.SettingsConfig.RunElevated;
+            _runElevated = GeneralSettingsConfig.RunElevated;
 
             RunningAsUserDefaultText = runAsUserText;
             RunningAsAdminDefaultText = runAsAdminText;
@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_startup != value)
                 {
                     _startup = value;
-                    SettingsRepository.SettingsConfig.Startup = value;
+                    GeneralSettingsConfig.Startup = value;
                     RaisePropertyChanged();
                 }
             }
@@ -190,7 +190,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_runElevated != value)
                 {
                     _runElevated = value;
-                    SettingsRepository.SettingsConfig.RunElevated = value;
+                    GeneralSettingsConfig.RunElevated = value;
                     RaisePropertyChanged();
                 }
             }
@@ -217,7 +217,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_autoDownloadUpdates != value)
                 {
                     _autoDownloadUpdates = value;
-                    SettingsRepository.SettingsConfig.AutoDownloadUpdates = value;
+                    GeneralSettingsConfig.AutoDownloadUpdates = value;
                     RaisePropertyChanged();
                 }
             }
@@ -234,11 +234,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    SettingsRepository.SettingsConfig.Theme = "dark";
+                    GeneralSettingsConfig.Theme = "dark";
                     _isDarkThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(SettingsRepository.SettingsConfig.Theme);
+                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
@@ -260,11 +260,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    SettingsRepository.SettingsConfig.Theme = "light";
+                    GeneralSettingsConfig.Theme = "light";
                     _isLightThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(SettingsRepository.SettingsConfig.Theme);
+                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
@@ -286,11 +286,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    SettingsRepository.SettingsConfig.Theme = "system";
+                    GeneralSettingsConfig.Theme = "system";
                     _isSystemThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(SettingsRepository.SettingsConfig.Theme);
+                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
@@ -331,7 +331,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
-            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
             SendConfigMSG(outsettings.ToString());
         }

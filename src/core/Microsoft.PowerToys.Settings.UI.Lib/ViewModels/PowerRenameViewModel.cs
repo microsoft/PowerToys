@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerRenameViewModel : Observable
     {
-        private ISettingsRepository<GeneralSettings> SettingsRepository { get; set; }
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private const string ModuleName = "PowerRename";
 
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
-            SettingsRepository = settingsRepository;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             try
             {
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _powerRenameRestoreFlagsOnLaunch = Settings.Properties.PersistState.Value;
             _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
             _autoComplete = Settings.Properties.MRUEnabled.Value;
-            _powerRenameEnabled = SettingsRepository.SettingsConfig.Enabled.PowerRename;
+            _powerRenameEnabled = GeneralSettingsConfig.Enabled.PowerRename;
         }
 
         private bool _powerRenameEnabled = false;
@@ -68,8 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value != _powerRenameEnabled)
                 {
-                        SettingsRepository.SettingsConfig.Enabled.PowerRename = value;
-                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(SettingsRepository.SettingsConfig);
+                        GeneralSettingsConfig.Enabled.PowerRename = value;
+                        OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
                         SendConfigMSG(snd.ToString());
 
                         _powerRenameEnabled = value;
