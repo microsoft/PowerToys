@@ -15,11 +15,6 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-namespace NonLocalizable
-{
-    const wchar_t PowerToysIssuesURL[] = L"https://aka.ms/powerToysReportBug";
-}
-
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
