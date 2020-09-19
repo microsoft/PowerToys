@@ -215,6 +215,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_NONCONVERT] = L"IME Non-Convert";
     keyboardLayoutMap[VK_ACCEPT] = L"IME Kana";
     keyboardLayoutMap[VK_MODECHANGE] = L"IME Mode Change";
+    keyboardLayoutMap[CommonSharedConstants::VK_DISABLED] = L"Disabled";
 }
 
 // Function to return the list of key codes in the order for the drop down. It creates it if it doesn't exist
@@ -225,6 +226,7 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
     std::vector<DWORD> keyCodes;
     if (!isKeyCodeListGenerated)
     {
+        keyCodes.push_back(CommonSharedConstants::VK_DISABLED);
         // Add character keys
         for (auto& it : unicodeKeys)
         {

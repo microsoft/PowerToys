@@ -8,4 +8,6 @@ namespace CommonSharedConstants
 
     // Fake key code to represent VK_WIN.
     inline const DWORD VK_WIN_BOTH = 0x104;
+
+    const DWORD VK_DISABLED = DWORD(ULONG_MAX);
 }
