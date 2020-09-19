@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BufferValidationHelpers.h"
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <common\shared_constants.h>
 
 namespace BufferValidationHelpers
 {
@@ -19,6 +20,11 @@ namespace BufferValidationHelpers
                 {
                     errorType = KeyboardManagerHelper::ErrorType::MapToSameKey;
                 }
+            }
+            //If attempting to remap "Disabled" to something
+            if (colIndex == 0 && keyCodeList[selectedKeyIndex] == CommonSharedConstants::VK_DISABLED)
+            {
+                errorType = KeyboardManagerHelper::ErrorType::MappedFromDisabled;
             }
 
             // If one column is shortcut and other is key no warning required
