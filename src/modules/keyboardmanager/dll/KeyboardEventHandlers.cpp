@@ -27,7 +27,7 @@ namespace KeyboardEventHandlers
                 // If mapped to 0x0 then the key is disabled
                 if (remapToKey)
                 {
-                    if (std::get<DWORD>(it->second) == 0x0)
+                    if (std::get<DWORD>(it->second) == CommonSharedConstants::VK_DISABLED)
                     {
                         return 1;
                     }
