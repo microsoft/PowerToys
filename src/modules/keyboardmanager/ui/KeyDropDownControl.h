@@ -45,6 +45,9 @@ private:
     // Function to check if the layout has changed and accordingly update the drop down list
     void CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut);
 
+    // Function to set accessible name for combobox
+    static void SetAccessibleNameForComboBox(ComboBox dropDown, int index);
+
 public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
