@@ -10,7 +10,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
-using Common;
 using Common.ComInterlop;
 using Common.Utilities;
 using Microsoft.PowerToys.Telemetry;
@@ -18,8 +17,6 @@ using PreviewHandlerCommon;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 {
-
-
     /// <summary>
     /// SVG Thumbnail Provider.
     /// </summary>
@@ -181,9 +178,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <returns>The resized image.</returns>
         public static Bitmap ResizeImage(Image image, int width, int height)
         {
-            if (width <= 0 || 
+            if (width <= 0 ||
                 height <= 0 ||
-                width > MaxThumbnailSize || 
+                width > MaxThumbnailSize ||
                 height > MaxThumbnailSize ||
                 image == null)
             {
