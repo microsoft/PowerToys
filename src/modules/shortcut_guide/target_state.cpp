@@ -45,10 +45,10 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
         // keyboard shortcuts.
         INPUT input[3] = { {}, {}, {} };
         input[0].type = INPUT_KEYBOARD;
-        input[0].ki.wVk = 0xCF;
+        input[0].ki.wVk = 0xFF;
         input[0].ki.dwExtraInfo = CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
         input[1].type = INPUT_KEYBOARD;
-        input[1].ki.wVk = 0xCF;
+        input[1].ki.wVk = 0xFF;
         input[1].ki.dwFlags = KEYEVENTF_KEYUP;
         input[1].ki.dwExtraInfo = CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
         input[2].type = INPUT_KEYBOARD;
