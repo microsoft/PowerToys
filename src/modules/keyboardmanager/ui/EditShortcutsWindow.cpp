@@ -179,6 +179,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutTable.ColumnDefinitions().Append(targetAppColumn);
     shortcutTable.ColumnDefinitions().Append(removeColumn);
     shortcutTable.RowDefinitions().Append(RowDefinition());
+    shortcutTable.MinWidth(KeyboardManagerConstants::EditShortcutsTableMinWidth);
 
     // First header textblock in the header row of the shortcut table
     TextBlock originalShortcutHeader;
@@ -270,6 +271,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     header.Children().Append(cancelButton);
 
     ScrollViewer scrollViewer;
+    scrollViewer.VerticalScrollMode(ScrollMode::Enabled);
+    scrollViewer.HorizontalScrollMode(ScrollMode::Enabled);
+    scrollViewer.VerticalScrollBarVisibility(ScrollBarVisibility::Auto);
+    scrollViewer.HorizontalScrollBarVisibility(ScrollBarVisibility::Auto);
 
     // Add shortcut button
     Windows::UI::Xaml::Controls::Button addShortcut;
@@ -286,21 +291,30 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Set accessible name for the add shortcut button
     addShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON)));
 
+    // Header and example text at the top of the window
+    StackPanel helperText;
+    helperText.Children().Append(shortcutRemapInfoHeader);
+    helperText.Children().Append(shortcutRemapInfoExample);
+
+    // Remapping table
     StackPanel mappingsPanel;
-    mappingsPanel.Children().Append(shortcutRemapInfoHeader);
-    mappingsPanel.Children().Append(shortcutRemapInfoExample);
     mappingsPanel.Children().Append(shortcutTable);
     mappingsPanel.Children().Append(addShortcut);
 
+    // Remapping table should be scrollable
     scrollViewer.Content(mappingsPanel);
 
     RelativePanel xamlContainer;
-    xamlContainer.SetBelow(scrollViewer, header);
+    xamlContainer.SetBelow(helperText, header);
+    xamlContainer.SetBelow(scrollViewer, helperText);
     xamlContainer.SetAlignLeftWithPanel(header, true);
     xamlContainer.SetAlignRightWithPanel(header, true);
+    xamlContainer.SetAlignLeftWithPanel(helperText, true);
+    xamlContainer.SetAlignRightWithPanel(helperText, true);
     xamlContainer.SetAlignLeftWithPanel(scrollViewer, true);
     xamlContainer.SetAlignRightWithPanel(scrollViewer, true);
     xamlContainer.Children().Append(header);
+    xamlContainer.Children().Append(helperText);
     xamlContainer.Children().Append(scrollViewer);
     xamlContainer.UpdateLayout();
 
