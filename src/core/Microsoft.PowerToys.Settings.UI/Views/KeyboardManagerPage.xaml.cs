@@ -31,7 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             dispatcher = Window.Current.Dispatcher;
 
-            ViewModel = new KeyboardManagerViewModel(ShellPage.SendDefaultIPCMessage, FilterRemapKeysList);
+            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            ViewModel = new KeyboardManagerViewModel(settingsUtils, ShellPage.SendDefaultIPCMessage, FilterRemapKeysList);
 
             watcher = Helper.GetFileWatcher(
                 PowerToyName,

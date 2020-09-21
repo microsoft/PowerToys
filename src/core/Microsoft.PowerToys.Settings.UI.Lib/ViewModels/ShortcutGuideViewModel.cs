@@ -5,11 +5,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
+        private readonly ISettingsUtils _settingsUtils;
+
         private ShortcutGuideSettings Settings { get; set; }
 
         private const string ModuleName = "Shortcut Guide";
@@ -18,31 +21,32 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public ShortcutGuideViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public ShortcutGuideViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             try
             {
-                Settings = SettingsUtils.GetSettings<ShortcutGuideSettings>(GetSettingsSubPath());
+                Settings = _settingsUtils.GetSettings<ShortcutGuideSettings>(GetSettingsSubPath());
             }
             catch
             {
                 Settings = new ShortcutGuideSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
+                _settingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
             }
 
             GeneralSettings generalSettings;
 
             try
             {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
             }
             catch
             {
                 generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
+                _settingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -87,7 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                    GeneralSettings generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
                     generalSettings.Enabled.ShortcutGuide = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
                     SendConfigMSG(snd.ToString());
