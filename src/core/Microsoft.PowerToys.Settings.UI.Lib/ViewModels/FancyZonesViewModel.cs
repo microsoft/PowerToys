@@ -15,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private readonly ISettingsUtils _settingsUtils;
+
         private const string ModuleName = "FancyZones";
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
@@ -25,11 +27,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string settingsConfigFileFolder = string.Empty;
 
-        public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            // To obtain the general settings configurations of PowerToys Settings.
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             settingsConfigFileFolder = configFileSubfolder;
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
+            // To obtain the settings configurations of Fancy zones.
             Settings = moduleSettingsRepository.SettingsConfig;
 
             LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
@@ -102,6 +107,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
+
+                    // Set the status of FancyZones in the general settings configuration
                     GeneralSettingsConfig.Enabled.FancyZones = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 

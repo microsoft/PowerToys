@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Generated Files/resource.h"
 
 #include <common/common.h>
 #include <common/notifications.h>
@@ -9,7 +10,6 @@
 #include <common/appMutex.h>
 #include <common/processApi.h>
 
-#include "resource.h"
 
 #include <runner/action_runner_utils.h>
 

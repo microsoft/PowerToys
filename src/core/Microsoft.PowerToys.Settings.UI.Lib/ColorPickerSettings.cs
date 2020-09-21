@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Name = ModuleName;
         }
 
-        public virtual void Save()
+        public virtual void Save(ISettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = new JsonSerializerOptions
@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 WriteIndented = true,
             };
 
-            SettingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
+            settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }
     }
 }

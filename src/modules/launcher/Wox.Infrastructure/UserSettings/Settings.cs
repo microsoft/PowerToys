@@ -172,6 +172,8 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
+        public bool UsePowerToysRunnerKeyboardHook { get; set; }
+
         public HttpProxy Proxy { get; set; } = new HttpProxy();
 
         [JsonConverter(typeof(StringEnumConverter))]

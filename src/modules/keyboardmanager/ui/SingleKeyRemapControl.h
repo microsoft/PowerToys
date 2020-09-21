@@ -10,6 +10,7 @@ namespace winrt::Windows::UI::Xaml
     {
         struct StackPanel;
         struct Grid;
+        struct Button;
     }
 }
 
@@ -24,6 +25,9 @@ private:
 
     // Stack panel for the drop downs to display the selected shortcut for the hybrid case
     winrt::Windows::Foundation::IInspectable hybridDropDownStackPanel;
+
+    // Function to set the accessible names for all the controls in a row
+    static void UpdateAccessibleNames(StackPanel sourceColumn, StackPanel mappedToColumn, Button deleteButton, int rowIndex);
 
 public:
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction

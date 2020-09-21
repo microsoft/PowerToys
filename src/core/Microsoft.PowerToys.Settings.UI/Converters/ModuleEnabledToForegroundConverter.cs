@@ -4,6 +4,7 @@
 
 using System;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
@@ -12,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public sealed class ModuleEnabledToForegroundConverter : IValueConverter
     {
+        private readonly ISettingsUtils settingsUtils = new SettingsUtils(new SystemIOProvider());
+
         private string selectedTheme = string.Empty;
 
         public object Convert(object value, Type targetType, object parameter, string language)
@@ -20,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
             var defaultTheme = new Windows.UI.ViewManagement.UISettings();
             var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
-            selectedTheme = SettingsRepository<GeneralSettings>.Instance.SettingsConfig.Theme.ToLower();
+            selectedTheme = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToLower();
 
             if (selectedTheme == "dark" || (selectedTheme == "system" && uiTheme == "#FF000000"))
             {

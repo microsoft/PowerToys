@@ -6,7 +6,7 @@ using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
-namespace SvgPreviewHandler.Telemetry.Events
+namespace Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events
 {
     /// <summary>
     /// A telemetry event to be raised when an error has occurred in the preview pane.

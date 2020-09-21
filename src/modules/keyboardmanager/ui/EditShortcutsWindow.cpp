@@ -322,6 +322,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     hwndLock.lock();
     hwndEditShortcutsNativeWindow = nullptr;
     keyboardManagerState.ResetUIState();
+    keyboardManagerState.ClearRegisteredKeyDelays();
 
     // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
     xamlBridge.ClearXamlIslands();

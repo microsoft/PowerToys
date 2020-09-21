@@ -79,6 +79,24 @@ namespace Microsoft.Plugin.Program.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Folder.
+        /// </summary>
+        public static string powertoys_run_plugin_program_folder_type {
+            get {
+                return ResourceManager.GetString("powertoys_run_plugin_program_folder_type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File.
+        /// </summary>
+        public static string powertoys_run_plugin_program_generic_file_type {
+            get {
+                return ResourceManager.GetString("powertoys_run_plugin_program_generic_file_type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Internet shortcut application.
         /// </summary>
         public static string powertoys_run_plugin_program_internet_shortcut_application {

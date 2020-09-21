@@ -11,7 +11,7 @@ namespace Microsoft.Plugin.Program.Programs
     {
         List<ContextMenuResult> ContextMenus(IPublicAPI api);
 
-        Result Result(string query, IPublicAPI api);
+        Result Result(string query, string queryArguments, IPublicAPI api);
 
         string UniqueIdentifier { get; set; }
 

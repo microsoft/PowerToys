@@ -7,7 +7,9 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -16,27 +18,6 @@ namespace ViewModelTests
     {
         public const string ModuleName = "PowerRename";
         public const string generalSettings_file_name = "Test\\PowerRename";
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            PowerRenameSettings powerRename = new PowerRenameSettings();
-
-            // Initialize the common settings configurations
-            SettingsRepository<GeneralSettings>.Instance.SettingsConfig = new GeneralSettings();
-            SettingsUtils.SaveSettings(SettingsRepository<GeneralSettings>.Instance.SettingsConfig.ToJsonString());
-            SettingsUtils.SaveSettings(powerRename.ToJsonString(), generalSettings_file_name, "power-rename-settings.json");
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete folder created.
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
-            {
-                DeleteFolder(generalSettings_file_name);
-            }
-        }
 
         [TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()
@@ -50,7 +31,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.IsEnabled = true;
@@ -68,7 +49,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.MRUEnabled = true;
@@ -78,7 +59,7 @@ namespace ViewModelTests
         public void WhenIsEnabledIsOffAndMRUEnabledIsOffGlobalAndMruShouldBeOff()
         {
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             viewModel.IsEnabled = false;
             viewModel.MRUEnabled = false;
@@ -90,7 +71,7 @@ namespace ViewModelTests
         public void WhenIsEnabledIsOffAndMRUEnabledIsOnGlobalAndMruShouldBeOff()
         {
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             viewModel.IsEnabled = false;
             viewModel.MRUEnabled = true;
@@ -102,7 +83,7 @@ namespace ViewModelTests
         public void WhenIsEnabledIsOnAndMRUEnabledIsOffGlobalAndMruShouldBeOff()
         {
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             viewModel.IsEnabled = true;
             viewModel.MRUEnabled = false;
@@ -114,7 +95,7 @@ namespace ViewModelTests
         public void WhenIsEnabledIsOnAndMRUEnabledIsOnGlobalAndMruShouldBeOn()
         {
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             viewModel.IsEnabled = true;
             viewModel.MRUEnabled = true;
@@ -134,7 +115,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.EnabledOnContextMenu = true;
@@ -152,7 +133,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.EnabledOnContextMenu = true;
@@ -170,7 +151,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.RestoreFlagsOnLaunch = true;
@@ -188,15 +169,10 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(SettingsRepository<GeneralSettings>.Instance, SendMockIPCConfigMSG, generalSettings_file_name);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, generalSettings_file_name);
 
             // act
             viewModel.MaxDispListNum = 20;
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
         }
     }
 }

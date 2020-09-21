@@ -14,6 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private readonly ISettingsUtils _settingsUtils;
+
         private PowerLauncherSettings settings;
 
         public delegate void SendCallback(PowerLauncherSettings settings);
@@ -22,13 +24,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+
+            // To obtain the general Settings configurations of PowerToys
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-
             callback = (PowerLauncherSettings settings) =>
             {
                 // Propagate changes to Power Launcher through IPC
@@ -36,9 +40,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.ModuleName, JsonSerializer.Serialize(settings)));
             };
 
-            if (SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+            if (_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
             {
-                settings = SettingsUtils.GetFile<PowerLauncherSettings>(PowerLauncherSettings.ModuleName, "settings.json");
+                settings = _settingsUtils.GetFile<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
             }
             else
             {

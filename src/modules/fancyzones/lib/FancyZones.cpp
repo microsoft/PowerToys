@@ -45,7 +45,7 @@ namespace NonLocalizable
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
-    FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
+    FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings, std::function<void()> disableModuleCallback) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
         m_windowMoveHandler(settings, [this]() {
@@ -53,6 +53,8 @@ public:
         })
     {
         m_settings->SetCallback(this);
+
+        this->disableModuleCallback = std::move(disableModuleCallback);
     }
 
     // IFancyZones
@@ -207,6 +209,7 @@ private:
     bool OnSnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
+    bool ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
 
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
 
@@ -239,6 +242,9 @@ private:
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
 
+    // If non-recoverable error occurs, trigger disabling of entire FancyZones.
+    static std::function<void()> disableModuleCallback;
+
     static UINT WM_PRIV_VD_INIT; // Scheduled when FancyZones is initialized
     static UINT WM_PRIV_VD_SWITCH; // Scheduled when virtual desktop switch occurs
     static UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
@@ -253,6 +259,8 @@ private:
         Terminate
     };
 };
+
+std::function<void()> FancyZones::disableModuleCallback = {};
 
 UINT FancyZones::WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
 UINT FancyZones::WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
@@ -524,21 +532,23 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     // Return true to swallow the keyboard event
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
-    if (win && !shift)
+    bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
+    bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+    if ((win && !shift && !ctrl) || (win && ctrl && alt))
     {
-        bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
-        if (ctrl)
-        {
-            // Temporarily disable Win+Ctrl+Number functionality
-            //if ((info->vkCode >= '0') && (info->vkCode <= '9'))
-            //{
-            //    // Win+Ctrl+Number will cycle through ZoneSets
-            //    Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-            //    CycleActiveZoneSet(info->vkCode);
-            //    return true;
-            //}
-        }
-        else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
+        // Temporarily disable Win+Ctrl+Number functionality
+        // if (ctrl)
+        // {
+        //    if ((info->vkCode >= '0') && (info->vkCode <= '9'))
+        //    {
+        //        // Win+Ctrl+Number will cycle through ZoneSets
+        //        Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
+        //        CycleActiveZoneSet(info->vkCode);
+        //        return true;
+        //    }
+        // }
+        // else
+        if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
         {
             if (ShouldProcessSnapHotkey(info->vkCode))
             {
@@ -1142,7 +1152,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
     {
         // Multi monitor environment.
         // First, try to stay on the same monitor
-        bool success = m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, false, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+        bool success = ProcessDirectedSnapHotkey(window, vkCode, false, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
         if (success)
         {
             return true;
@@ -1250,7 +1260,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
     else
     {
         // Single monitor environment, or combined multi-monitor environment.
-        return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, true, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+        return ProcessDirectedSnapHotkey(window, vkCode, true, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
     }
 }
 
@@ -1269,6 +1279,19 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
         }
     }
     return false;
+}
+
+bool FancyZones::ProcessDirectedSnapHotkey(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+{
+    // Check whether Alt is used in the shortcut key combination
+    if (GetAsyncKeyState(VK_MENU) & 0x8000)
+    {
+        return m_windowMoveHandler.ExtendWindowByDirectionAndPosition(window, vkCode, zoneWindow);
+    }
+    else
+    {
+        return m_windowMoveHandler.MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, zoneWindow);
+    }
 }
 
 void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
@@ -1369,12 +1392,14 @@ std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
     return monitorInfo;
 }
 
-winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept
+winrt::com_ptr<IFancyZones> MakeFancyZones(HINSTANCE hinstance,
+                                           const winrt::com_ptr<IFancyZonesSettings>& settings,
+                                           std::function<void()> disableCallback) noexcept
 {
     if (!settings)
     {
         return nullptr;
     }
 
-    return winrt::make_self<FancyZones>(hinstance, settings);
+    return winrt::make_self<FancyZones>(hinstance, settings, disableCallback);
 }

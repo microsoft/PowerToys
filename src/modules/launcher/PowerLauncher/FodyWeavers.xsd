@@ -11,6 +11,16 @@
                 <xs:documentation>Used to control if the On_PropertyName_Changed feature is enabled.</xs:documentation>
               </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="TriggerDependentProperties" type="xs:boolean">
+              <xs:annotation>
+                <xs:documentation>Used to control if the Dependent properties feature is enabled.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="EnableIsChangedProperty" type="xs:boolean">
+              <xs:annotation>
+                <xs:documentation>Used to control if the IsChanged property feature is enabled.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="EventInvokerNames" type="xs:string">
               <xs:annotation>
                 <xs:documentation>Used to change the name of the method that fires the notify event. This is a string that accepts multiple values in a comma separated form.</xs:documentation>

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.UI.Xaml.Controls;
 
@@ -15,7 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public FancyZonesPage()
         {
             InitializeComponent();
-            ViewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.Instance, SettingsRepository<FancyZonesSettings>.Instance, ShellPage.SendDefaultIPCMessage);
+            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            ViewModel = new FancyZonesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<FancyZonesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
     }

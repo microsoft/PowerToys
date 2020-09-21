@@ -13,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private readonly ISettingsUtils _settingsUtils;
+
         private const string ModuleName = "PowerRename";
 
         private string _settingsConfigFileFolder = string.Empty;
@@ -21,22 +23,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerRenameViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public PowerRenameViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             try
             {
-                PowerRenameLocalProperties localSettings = SettingsUtils.GetSettings<PowerRenameLocalProperties>(GetSettingsSubPath(), "power-rename-settings.json");
+                PowerRenameLocalProperties localSettings = _settingsUtils.GetSettings<PowerRenameLocalProperties>(GetSettingsSubPath(), "power-rename-settings.json");
                 Settings = new PowerRenameSettings(localSettings);
             }
             catch
             {
                 PowerRenameLocalProperties localSettings = new PowerRenameLocalProperties();
                 Settings = new PowerRenameSettings(localSettings);
-                SettingsUtils.SaveSettings(localSettings.ToJsonString(), GetSettingsSubPath(), "power-rename-settings.json");
+                _settingsUtils.SaveSettings(localSettings.ToJsonString(), GetSettingsSubPath(), "power-rename-settings.json");
             }
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -70,6 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                         GeneralSettingsConfig.Enabled.PowerRename = value;
                         OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
+
                         SendConfigMSG(snd.ToString());
 
                         _powerRenameEnabled = value;

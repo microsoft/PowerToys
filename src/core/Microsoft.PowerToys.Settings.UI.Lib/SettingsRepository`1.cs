@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
@@ -15,22 +14,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         private static readonly object SettingsRepoLock = new object();
 
+        private static ISettingsUtils _settingsUtils;
+
         private static SettingsRepository<T> settingsRepository;
 
-        public static SettingsRepository<T> Instance
-        {
-            get
-            {
-                // To ensure that only one instance of Settings Repository is created in a multi-threaded environment.
-                lock (SettingsRepoLock)
-                {
-                    if (settingsRepository == null)
-                    {
-                        settingsRepository = new SettingsRepository<T>();
-                    }
+        private T settingsConfig;
 
-                    return settingsRepository;
+        public static SettingsRepository<T> GetInstance(ISettingsUtils settingsUtils)
+        {
+            // To ensure that only one instance of Settings Repository is created in a multi-threaded environment.
+            lock (SettingsRepoLock)
+            {
+                if (settingsRepository == null)
+                {
+                    settingsRepository = new SettingsRepository<T>();
+                    _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
                 }
+
+                return settingsRepository;
             }
         }
 
@@ -38,8 +39,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         private SettingsRepository()
         {
         }
-
-        private T settingsConfig;
 
         // Settings configurations shared across all viewmodels
         public T SettingsConfig
@@ -50,12 +49,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 {
                     if (typeof(T) == typeof(GeneralSettings))
                     {
-                        settingsConfig = SettingsUtils.GetSettings<T>();
+                        settingsConfig = _settingsUtils.GetSettings<T>();
                     }
                     else
                     {
                         T settingsItem = new T();
-                        settingsConfig = SettingsUtils.GetSettings<T>(((BasePTModuleSettings)(object)settingsItem).Name, ((BasePTModuleSettings)(object)settingsItem).GetSettingsFileName());
+                        settingsConfig = _settingsUtils.GetSettings<T>(((BasePTModuleSettings)(object)settingsItem).Name);
                     }
                 }
 

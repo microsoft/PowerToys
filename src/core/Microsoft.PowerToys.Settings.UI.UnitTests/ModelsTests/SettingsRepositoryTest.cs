@@ -8,17 +8,19 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 
 namespace CommonLibTest
 {
     [TestClass]
     public class SettingsRepositoryTest
     {
-        private Task<SettingsRepository<GeneralSettings>> GetSettingsRepository()
+        private Task<SettingsRepository<GeneralSettings>> GetSettingsRepository(ISettingsUtils settingsUtils)
         {
+
             return Task.Run(() =>
             {
-                return SettingsRepository<GeneralSettings>.Instance;
+                return SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
             });
         }
 
@@ -27,10 +29,11 @@ namespace CommonLibTest
         public void SettingsRepositoryInstanceWhenCalledMustReturnSameObject()
         {
             // The singleton class Settings Repository must always have a single instance
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
 
             // Arrange and Act
-            SettingsRepository<GeneralSettings> firstInstance = SettingsRepository<GeneralSettings>.Instance;
-            SettingsRepository<GeneralSettings> secondInstance = SettingsRepository<GeneralSettings>.Instance;
+            SettingsRepository<GeneralSettings> firstInstance = SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils.Object);
+            SettingsRepository<GeneralSettings> secondInstance = SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils.Object);
 
             // Assert
             Assert.IsTrue(object.ReferenceEquals(firstInstance, secondInstance));
@@ -42,12 +45,13 @@ namespace CommonLibTest
             // Multiple tasks try to access and initialize the settings repository class, however they must all access the same settings Repository object.
 
             // Arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
             List<Task<SettingsRepository<GeneralSettings>>> settingsRepoTasks = new List<Task<SettingsRepository<GeneralSettings>>>();
             int numberOfTasks = 100;
 
             for(int i = 0; i < numberOfTasks; i++)
             {
-                settingsRepoTasks.Add(GetSettingsRepository());
+                settingsRepoTasks.Add(GetSettingsRepository(mockSettingsUtils.Object));
             }
 
             // Act

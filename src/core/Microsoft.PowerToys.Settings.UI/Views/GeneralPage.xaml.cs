@@ -4,6 +4,7 @@
 
 using System;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.ApplicationModel.Resources;
 using Windows.Data.Json;
@@ -32,9 +33,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Load string resources
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+            var settingsUtils = new SettingsUtils(new SystemIOProvider());
 
             ViewModel = new GeneralViewModel(
-                SettingsRepository<GeneralSettings>.Instance,
+                settingsUtils,
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
                 loader.GetString("GeneralSettings_RunningAsUserText"),
                 ShellPage.IsElevated,

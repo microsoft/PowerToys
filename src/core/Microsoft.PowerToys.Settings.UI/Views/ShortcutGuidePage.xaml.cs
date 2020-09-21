@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.UI.Xaml.Controls;
 
@@ -16,7 +17,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
 
-            ViewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.Instance, SettingsRepository<ShortcutGuideSettings>.Instance, ShellPage.SendDefaultIPCMessage);
+            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            ViewModel = new ShortcutGuideViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
     }

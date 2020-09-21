@@ -7,7 +7,9 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -15,40 +17,6 @@ namespace ViewModelTests
     public class PowerPreview
     {
         public const string Module = "Test\\File Explorer";
-
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            PowerPreviewSettings powerpreview = new PowerPreviewSettings();
-
-            // Initialize the common settings configurations
-            SettingsRepository<GeneralSettings>.Instance.SettingsConfig = new GeneralSettings();
-            SettingsRepository<PowerPreviewSettings>.Instance.SettingsConfig = new PowerPreviewSettings();
-            SettingsUtils.SaveSettings(SettingsRepository<GeneralSettings>.Instance.SettingsConfig.ToJsonString());
-            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete folder created.
-            string generalSettings_file_name = string.Empty;
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
-            {
-                DeleteFolder(generalSettings_file_name);
-            }
-
-            if (SettingsUtils.SettingsFolderExists(Module))
-            {
-                DeleteFolder(Module);
-            }
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        }
 
         [TestMethod]
         public void SVGRenderIsEnabled_ShouldPrevHandler_WhenSuccessful()
@@ -62,7 +30,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.Instance, SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<PowerPreviewSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -80,7 +48,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.Instance, SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<PowerPreviewSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -98,7 +66,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.Instance, SendMockIPCConfigMSG, Module);;
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<PowerPreviewSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, Module);;
 
             // act
             viewModel.MDRenderIsEnabled = true;

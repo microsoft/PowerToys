@@ -6,7 +6,7 @@ using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
-namespace MarkdownPreviewHandler.Telemetry.Events
+namespace Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events
 {
     /// <summary>
     /// A telemetry event that is triggered when a markdown file is viewed in the preview pane.
