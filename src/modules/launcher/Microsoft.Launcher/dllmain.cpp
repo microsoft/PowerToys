@@ -11,7 +11,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace
 {
-    const wchar_t POWER_LAUNCHER_PID_SHARED_FILE[] = L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74";
+    const wchar_t POWER_LAUNCHER_PID_SHARED_FILE[] = L"Local\\PowerLauncherPidSharedFile-3cbfbad4-199b-4e2c-9825-942d5d3d3c74";
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_WIN[] = L"win";
     const wchar_t JSON_KEY_ALT[] = L"alt";
@@ -315,7 +315,7 @@ void Microsoft_Launcher::init_settings()
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
-        
+
         parse_hotkey(settings);
     }
     catch (std::exception ex)
@@ -339,7 +339,7 @@ void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& setting
     {
         m_hotkey.key = 0;
     }
-}    
+}
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
