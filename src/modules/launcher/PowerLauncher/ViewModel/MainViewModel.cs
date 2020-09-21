@@ -55,7 +55,6 @@ namespace PowerLauncher.ViewModel
 
         public MainViewModel(Settings settings)
         {
-            HotkeyManager = new HotkeyManager();
             _saved = false;
             _queryTextBeforeLeaveResults = string.Empty;
             _currentQuery = _emptyQuery;
@@ -78,27 +77,36 @@ namespace PowerLauncher.ViewModel
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
 
-            _settings.PropertyChanged += (s, e) =>
+            if (settings != null && settings.UsePowerToysRunnerKeyboardHook)
             {
-                if (e.PropertyName == nameof(Settings.Hotkey))
+                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey);
+                _hotkeyHandle = 0;
+            }
+            else
+            {
+                HotkeyManager = new HotkeyManager();
+                _settings.PropertyChanged += (s, e) =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    if (e.PropertyName == nameof(Settings.Hotkey))
                     {
-                        if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            HotkeyManager.UnregisterHotkey(_hotkeyHandle);
-                        }
+                            if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
+                            {
+                                HotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                            }
 
-                        if (!string.IsNullOrEmpty(_settings.Hotkey))
-                        {
-                            SetHotkey(_settings.Hotkey, OnHotkey);
-                        }
-                    });
-                }
-            };
+                            if (!string.IsNullOrEmpty(_settings.Hotkey))
+                            {
+                                SetHotkey(_settings.Hotkey, OnHotkey);
+                            }
+                        });
+                    }
+                };
 
-            SetHotkey(_settings.Hotkey, OnHotkey);
-            SetCustomPluginHotkey();
+                SetHotkey(_settings.Hotkey, OnHotkey);
+                SetCustomPluginHotkey();
+            }
         }
 
         private void RegisterResultsUpdatedEvent()

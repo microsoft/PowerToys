@@ -343,6 +343,11 @@ namespace PowerToysSettings
         return m_json.GetNamedObject(L"properties").GetNamedObject(property_name).GetNamedObject(L"value");
     }
 
+    json::JsonObject PowerToyValues::get_raw_json()
+    {
+        return m_json;
+    }
+
     std::wstring PowerToyValues::serialize()
     {
         set_version();
