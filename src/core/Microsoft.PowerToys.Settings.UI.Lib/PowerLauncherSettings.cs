@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
@@ -21,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Name = ModuleName;
         }
 
-        public virtual void Save()
+        public virtual void Save(ISettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = new JsonSerializerOptions
@@ -29,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 WriteIndented = true,
             };
 
-            SettingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
+            settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }
     }
 }

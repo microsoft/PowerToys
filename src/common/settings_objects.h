@@ -83,6 +83,7 @@ namespace PowerToysSettings
         std::optional<int> get_int_value(std::wstring_view property_name);
         std::optional<std::wstring> get_string_value(std::wstring_view property_name);
         std::optional<json::JsonObject> get_json(std::wstring_view property_name);
+        json::JsonObject get_raw_json();
 
         std::wstring serialize();
         void save_to_settings_file();

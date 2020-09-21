@@ -8,6 +8,8 @@ using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using NuGet.Frameworks;
 
 namespace ViewModelTests
 {
@@ -15,29 +17,6 @@ namespace ViewModelTests
     public class General
     {
         public const string generalSettings_file_name = "Test\\GenealSettings";
-
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            GeneralSettings generalSettings = new GeneralSettings();
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), generalSettings_file_name);
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete folder created.
-            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
-            {
-                DeleteFolder(generalSettings_file_name);
-            }
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        }
 
         [TestMethod]
         public void IsElevated_ShouldUpdateRunasAdminStatusAttrs_WhenSuccessful()
@@ -47,6 +26,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
+                new Mock<ISettingsUtils>().Object,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -83,6 +63,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
+                new Mock<ISettingsUtils>().Object,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -114,6 +95,7 @@ namespace ViewModelTests
 
             // Arrange
             GeneralViewModel viewModel = new GeneralViewModel(
+                new Mock<ISettingsUtils>().Object,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -146,6 +128,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             viewModel = new GeneralViewModel(
+                new Mock<ISettingsUtils>().Object,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -176,6 +159,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
+                new Mock<ISettingsUtils>().Object,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -191,6 +175,24 @@ namespace ViewModelTests
 
             // act
             viewModel.IsDarkThemeRadioButtonChecked = true;
+        }
+
+        [TestMethod]
+        public void AllModulesAreEnabledByDefault()
+        {
+            //arrange 
+            EnabledModules modules = new EnabledModules();
+
+
+            //Assert
+            Assert.IsTrue(modules.FancyZones);
+            Assert.IsTrue(modules.ImageResizer);
+            Assert.IsTrue(modules.FileExplorerPreview);
+            Assert.IsTrue(modules.ShortcutGuide);
+            Assert.IsTrue(modules.PowerRename);
+            Assert.IsTrue(modules.KeyboardManager);
+            Assert.IsTrue(modules.PowerLauncher);
+            Assert.IsTrue(modules.ColorPicker);
         }
 
         public int UpdateUIThemeMethod(string themeName)

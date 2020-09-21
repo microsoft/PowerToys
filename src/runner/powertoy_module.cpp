@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "powertoy_module.h"
+#include "centralized_kb_hook.h"
 
 std::map<std::wstring, PowertoyModule>& modules()
 {
@@ -41,5 +42,25 @@ PowertoyModule::PowertoyModule(PowertoyModuleIface* module, HMODULE handle) :
     if (!module)
     {
         throw std::runtime_error("Module not initialized");
+    }
+
+    update_hotkeys();
+}
+
+void PowertoyModule::update_hotkeys()
+{
+    CentralizedKeyboardHook::ClearModuleHotkeys(module->get_name());
+
+    size_t hotkeyCount = module->get_hotkeys(nullptr, 0);
+    std::vector<PowertoyModuleIface::Hotkey> hotkeys(hotkeyCount);
+    module->get_hotkeys(hotkeys.data(), hotkeyCount);
+
+    auto modulePtr = module.get();
+
+    for (size_t i = 0; i < hotkeyCount; i++)
+    {
+        CentralizedKeyboardHook::SetHotkeyAction(module->get_name(), hotkeys[i], [modulePtr, i] {
+            return modulePtr->on_hotkey(i);
+        });
     }
 }

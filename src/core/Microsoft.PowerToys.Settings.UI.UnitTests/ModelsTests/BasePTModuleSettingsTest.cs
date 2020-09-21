@@ -4,8 +4,11 @@
 
 using System;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 
@@ -21,6 +24,13 @@ namespace CommonLibTest
         [Obsolete]
         public void ToJsonString_ShouldReturnValidJSONOfModel_WhenSuccessful()
         {
+            //Mock Disk access
+            string saveContent = string.Empty;
+            string savePath = string.Empty;
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+
+            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
+
             // Arrange
             string file_name = "test\\BasePTModuleSettingsTest";
             string expectedSchemaText = @"
@@ -39,11 +49,11 @@ namespace CommonLibTest
                 }";
 
             string testSettingsConfigs = new BasePTSettingsTest().ToJsonString();
-            SettingsUtils.SaveSettings(testSettingsConfigs, file_name);
+            settingsUtils.SaveSettings(testSettingsConfigs, file_name);
             JsonSchema expectedSchema = JsonSchema.Parse(expectedSchemaText);
 
             // Act
-            JObject actualSchema = JObject.Parse(SettingsUtils.GetSettings<BasePTSettingsTest>(file_name).ToJsonString());
+            JObject actualSchema = JObject.Parse(settingsUtils.GetSettings<BasePTSettingsTest>(file_name).ToJsonString());
             bool valid = actualSchema.IsValid(expectedSchema);
 
             // Assert
