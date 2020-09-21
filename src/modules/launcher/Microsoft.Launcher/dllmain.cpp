@@ -294,12 +294,16 @@ public:
     void terminateProcess()
     {
         DWORD processID = GetProcessId(m_hProcess);
+        TerminateProcess(m_hProcess, 1);
+        // Temporarily disable sending a message to close
+        /*
         EnumWindows(&requestMainWindowClose, processID);
         const DWORD result = WaitForSingleObject(m_hProcess, MAX_WAIT_MILLISEC);
         if (result == WAIT_TIMEOUT || result == WAIT_FAILED)
         {
             TerminateProcess(m_hProcess, 1);
         }
+        */
     }
 };
 
