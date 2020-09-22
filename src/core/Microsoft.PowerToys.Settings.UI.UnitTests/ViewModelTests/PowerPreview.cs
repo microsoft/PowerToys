@@ -18,7 +18,15 @@ namespace ViewModelTests
     {
         public const string Module = "Test\\File Explorer";
 
-        /*[TestMethod]
+        private Mock<ISettingsUtils> mockPowerPreviewSettingsUtils;
+
+        [TestInitialize]
+        public void SetUp_StubSettingUtils()
+        {
+            mockPowerPreviewSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<PowerPreviewSettings>();
+        }
+
+        [TestMethod]
         public void SVGRenderIsEnabled_ShouldPrevHandler_WhenSuccessful()
         {
             // Assert
@@ -30,7 +38,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<PowerPreviewSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -48,7 +56,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<PowerPreviewSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -66,10 +74,10 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SettingsRepository<PowerPreviewSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils().Object), SendMockIPCConfigMSG, Module);;
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module); ;
 
             // act
             viewModel.MDRenderIsEnabled = true;
-        }*/
+        }
     }
 }

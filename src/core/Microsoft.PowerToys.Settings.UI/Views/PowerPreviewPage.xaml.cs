@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils(new SystemIOProvider());
-            ViewModel = new PowerPreviewViewModel(settingsUtils, SettingsRepository<PowerPreviewSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
     }
