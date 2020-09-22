@@ -43,7 +43,7 @@ build:
   commands:
       !!defaultcommand
       name: 'Udpate version'
-      command: '.pipelines\restore-localization.cmd' "$(BuildVersion)" ""
+      command: 'tools\build\versionSetting.ps1' "$(BuildVersion)" ""
     - !!buildcommand
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
