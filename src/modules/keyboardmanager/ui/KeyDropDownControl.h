@@ -38,6 +38,8 @@ private:
     winrt::Windows::Foundation::IInspectable warningMessage;
     // Stores the flyout attached to the current drop down
     winrt::Windows::Foundation::IInspectable warningFlyout;
+    // Stores whether a key to shortcut warning has to be ignored
+    bool ignoreKeyToShortcutWarning;
 
     // Function to set properties apart from the SelectionChanged event handler
     void SetDefaultProperties(bool isShortcut);
@@ -53,7 +55,8 @@ public:
     static KeyboardManagerState* keyboardManagerState;
 
     // Constructor - the last default parameter should be passed as false only if it originates from Type shortcut or when an old shortcut is reloaded
-    KeyDropDownControl(bool isShortcut)
+    KeyDropDownControl(bool isShortcut, bool fromAddShortcutToControl = false) :
+        ignoreKeyToShortcutWarning(fromAddShortcutToControl)
     {
         SetDefaultProperties(isShortcut);
     }
@@ -74,7 +77,7 @@ public:
     ComboBox GetComboBox();
 
     // Function to add a drop down to the shortcut stack panel
-    static void AddDropDown(winrt::Windows::UI::Xaml::Controls::Grid table, winrt::Windows::UI::Xaml::Controls::StackPanel shortcutControl, winrt::Windows::UI::Xaml::Controls::StackPanel parent, const int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
+    static void AddDropDown(winrt::Windows::UI::Xaml::Controls::Grid table, winrt::Windows::UI::Xaml::Controls::StackPanel shortcutControl, winrt::Windows::UI::Xaml::Controls::StackPanel parent, const int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, bool ignoreWarning = false);
 
     // Function to get the list of key codes from the shortcut combo box stack panel
     static std::vector<int32_t> GetSelectedIndicesFromStackPanel(StackPanel parent);
