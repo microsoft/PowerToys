@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         public MarkdownPreviewHandlerControl()
         {
             _extension = new HTMLParsingExtension(ImagesBlockedCallBack);
-            _pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley();
+            _pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley().UseYamlFrontMatter().UseMathematics();
             _pipelineBuilder.Extensions.Add(_extension);
         }
 
