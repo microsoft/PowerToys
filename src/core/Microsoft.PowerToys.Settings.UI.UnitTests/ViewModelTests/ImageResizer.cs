@@ -18,7 +18,8 @@ namespace ViewModelTests
     [TestClass]
     public class ImageResizer
     {
-        public const string Module = "ImageResizer";
+        // To have a consistent name.
+        public const string Module = ImageResizerSettings.ModuleName;
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
 

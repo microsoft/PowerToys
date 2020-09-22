@@ -14,5 +14,15 @@ namespace Microsoft.PowerToys.Settings.UnitTest
             Name = string.Empty;
             Version = string.Empty;
         }
+
+        public string GetModuleName()
+        {
+            return Name;
+        }
+
+        public bool UpgradeSettingsConfiguration()
+        {
+            return false;
+        }
     }
 }

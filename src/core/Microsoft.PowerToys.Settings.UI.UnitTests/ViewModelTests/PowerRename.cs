@@ -16,7 +16,7 @@ namespace ViewModelTests
     [TestClass]
     public class PowerRename
     {
-        public const string ModuleName = "PowerRename";
+        public const string ModuleName = PowerRenameSettings.ModuleName;
         public const string generalSettings_file_name = "Test\\PowerRename";
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
