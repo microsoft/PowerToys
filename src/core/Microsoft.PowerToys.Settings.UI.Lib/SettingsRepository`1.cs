@@ -47,15 +47,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             {
                 if (settingsConfig == null)
                 {
-                    if (typeof(T) == typeof(GeneralSettings))
-                    {
-                        settingsConfig = _settingsUtils.GetSettings<T>();
-                    }
-                    else
-                    {
-                        T settingsItem = new T();
-                        settingsConfig = _settingsUtils.GetSettings<T>(((BasePTModuleSettings)(object)settingsItem).Name);
-                    }
+                    T settingsItem = new T();
+                    settingsConfig = _settingsUtils.GetSettings<T>(settingsItem.GetModuleName());
                 }
 
                 return settingsConfig;

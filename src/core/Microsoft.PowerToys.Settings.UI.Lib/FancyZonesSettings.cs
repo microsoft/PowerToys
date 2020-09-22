@@ -20,5 +20,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         [JsonPropertyName("properties")]
         public FZConfigProperties Properties { get; set; }
+
+        public string GetModuleName()
+        {
+            return Name;
+        }
     }
 }

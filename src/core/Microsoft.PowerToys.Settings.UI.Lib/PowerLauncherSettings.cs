@@ -32,5 +32,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }
+
+        public string GetModuleName()
+        {
+            return Name;
+        }
     }
 }

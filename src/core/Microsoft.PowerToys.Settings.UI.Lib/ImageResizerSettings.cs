@@ -30,5 +30,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             };
             return JsonSerializer.Serialize(this, options);
         }
+
+        public string GetModuleName()
+        {
+            return Name;
+        }
     }
 }

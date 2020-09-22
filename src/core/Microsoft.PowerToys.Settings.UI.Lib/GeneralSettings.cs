@@ -83,5 +83,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             return interop.CommonManaged.GetProductVersion();
         }
+
+        // This function is to implement the ISettingsConfig interface.
+        // This interface helps in getting the settings configurations.
+        public string GetModuleName()
+        {
+            // The SettingsUtils functions access general settings when the module name is an empty string.
+            return string.Empty;
+        }
     }
 }

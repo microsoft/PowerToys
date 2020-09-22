@@ -9,6 +9,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerRenameLocalProperties : ISettingsConfig
     {
+        private const string ModuleName = "PowerRename";
+
         public PowerRenameLocalProperties()
         {
             PersistState = false;
@@ -51,6 +53,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
+        }
+
+        // This function is required to implement the ISettingsConfig interface and obtain the settings configurations.
+        public string GetModuleName()
+        {
+            return ModuleName;
         }
     }
 }

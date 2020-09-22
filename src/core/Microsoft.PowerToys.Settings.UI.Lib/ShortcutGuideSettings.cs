@@ -20,5 +20,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Properties = new ShortcutGuideProperties();
             Version = "1.0";
         }
+
+        public string GetModuleName()
+        {
+            return Name;
+        }
     }
 }

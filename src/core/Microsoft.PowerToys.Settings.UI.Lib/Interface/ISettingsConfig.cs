@@ -8,5 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Interface
     public interface ISettingsConfig
     {
         string ToJsonString();
+
+        string GetModuleName();
     }
 }
