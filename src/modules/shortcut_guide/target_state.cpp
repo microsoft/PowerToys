@@ -39,10 +39,8 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
     cv.notify_one();
     if (suppress_win_release)
     {
-        // Send a fake key-stroke to prevent the start menu from appearing.
-        // We use 0xCF VK code, which is reserved. It still prevents the
-        // start menu from appearing, but should not interfere with any
-        // keyboard shortcuts.
+        // Send a 0xFF VK code, which is outside of the VK code range, to prevent
+        // the start menu from appearing.
         INPUT input[3] = { {}, {}, {} };
         input[0].type = INPUT_KEYBOARD;
         input[0].ki.wVk = 0xFF;
