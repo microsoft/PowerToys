@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             if (_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
             {
-                settings = _settingsUtils.GetFile<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                settings = _settingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
             }
             else
             {
