@@ -41,6 +41,9 @@ restore:
 
 build:
   commands:
+      !!defaultcommand
+      name: 'Udpate version'
+      command: '.pipelines\restore-localization.cmd' "$(BuildVersion)" ""
     - !!buildcommand
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
