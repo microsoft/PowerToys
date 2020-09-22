@@ -41,9 +41,6 @@ restore:
 
 build:
   commands:
-      !!defaultcommand
-      name: 'Udpate version'
-      command: 'tools\build\versionSetting.ps1' "$(BuildVersion)" ""
     - !!buildcommand
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
