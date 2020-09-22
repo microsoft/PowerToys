@@ -26,7 +26,7 @@ namespace UnitTests_PreviewHandlerCommon
             // Act
             try
             {
-                var streamWrapper = new StreamWrapper(stream);
+                var streamWrapper = new ReadonlyStream(stream);
             }
             catch (ArgumentNullException ex)
             {
@@ -44,7 +44,7 @@ namespace UnitTests_PreviewHandlerCommon
             var streamMock = new Mock<IStream>();
 
             // Act
-            var streamWrapper = new StreamWrapper(streamMock.Object);
+            var streamWrapper = new ReadonlyStream(streamMock.Object);
 
             // Assert
             Assert.AreEqual(streamWrapper.CanRead, true);
@@ -57,7 +57,7 @@ namespace UnitTests_PreviewHandlerCommon
             var streamMock = new Mock<IStream>();
 
             // Act
-            var streamWrapper = new StreamWrapper(streamMock.Object);
+            var streamWrapper = new ReadonlyStream(streamMock.Object);
 
             // Assert
             Assert.AreEqual(streamWrapper.CanSeek, true);
@@ -70,7 +70,7 @@ namespace UnitTests_PreviewHandlerCommon
             var streamMock = new Mock<IStream>();
 
             // Act
-            var streamWrapper = new StreamWrapper(streamMock.Object);
+            var streamWrapper = new ReadonlyStream(streamMock.Object);
 
             // Assert
             Assert.AreEqual(streamWrapper.CanWrite, false);
@@ -89,7 +89,7 @@ namespace UnitTests_PreviewHandlerCommon
 
             stremMock
                 .Setup(x => x.Stat(out stat, It.IsAny<int>()));
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
 
             // Act
             var actualLength = streamWrapper.Length;
@@ -113,7 +113,7 @@ namespace UnitTests_PreviewHandlerCommon
                 {
                     Marshal.WriteInt64(plibNewPosition, currPosition);
                 });
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
 
             // Act
             var actualPosition = streamWrapper.Position;
@@ -131,7 +131,7 @@ namespace UnitTests_PreviewHandlerCommon
             int expectedDwOrigin = 0; // STREAM_SEEK_SET
             var stremMock = new Mock<IStream>();
 
-            var streamWrapper = new StreamWrapper(stremMock.Object)
+            var streamWrapper = new ReadonlyStream(stremMock.Object)
             {
                 // Act
                 Position = positionToSet,
@@ -168,7 +168,7 @@ namespace UnitTests_PreviewHandlerCommon
             }
 
             var stremMock = new Mock<IStream>();
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
 
             // Act
             streamWrapper.Seek(offset, origin);
@@ -191,7 +191,7 @@ namespace UnitTests_PreviewHandlerCommon
                     Marshal.WriteInt64(plibNewPosition, position);
                 });
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
 
             // Act
             var actualPosition = streamWrapper.Seek(0, SeekOrigin.Begin);
@@ -212,7 +212,7 @@ namespace UnitTests_PreviewHandlerCommon
             var stremMock = new Mock<IStream>();
             ArgumentOutOfRangeException exception = null;
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
 
             // Act
             try
@@ -252,7 +252,7 @@ namespace UnitTests_PreviewHandlerCommon
                    Marshal.WriteInt32(bytesReadPtr, count);
                });
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
 
             // Act
             var bytesRead = streamWrapper.Read(inputBuffer, offset, count);
@@ -267,7 +267,7 @@ namespace UnitTests_PreviewHandlerCommon
         {
             // Arrange
             var stremMock = new Mock<IStream>();
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
             NotImplementedException exception = null;
 
             // Act
@@ -289,7 +289,7 @@ namespace UnitTests_PreviewHandlerCommon
         {
             // Arrange
             var stremMock = new Mock<IStream>();
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
             NotImplementedException exception = null;
 
             // Act
@@ -311,7 +311,7 @@ namespace UnitTests_PreviewHandlerCommon
         {
             // Arrange
             var stremMock = new Mock<IStream>();
-            var streamWrapper = new StreamWrapper(stremMock.Object);
+            var streamWrapper = new ReadonlyStream(stremMock.Object);
             NotImplementedException exception = null;
 
             // Act

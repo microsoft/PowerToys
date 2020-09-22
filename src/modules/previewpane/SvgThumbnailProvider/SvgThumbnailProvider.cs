@@ -222,7 +222,7 @@ namespace SvgThumbnailProvider
             }
 
             string svgData = null;
-            using (var stream = new StreamWrapper(this.Stream as IStream))
+            using (var stream = new ReadonlyStream(this.Stream as IStream))
             {
                 using (var reader = new StreamReader(stream))
                 {

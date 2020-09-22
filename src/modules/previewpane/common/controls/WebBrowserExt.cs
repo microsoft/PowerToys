@@ -51,7 +51,8 @@ namespace PreviewHandlerCommon
             public object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
             {
                 object result;
-                if (name.Equals(DISPIDAMBIENTDLCONTROL))
+
+                if (name != null && name.Equals(DISPIDAMBIENTDLCONTROL, StringComparison.CurrentCulture))
                 {
                     result = Convert.ToInt32(
                         WebBrowserDownloadControlFlags.DLIMAGES |
@@ -65,11 +66,11 @@ namespace PreviewHandlerCommon
                         WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS |
                         WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS |
                         WebBrowserDownloadControlFlags.NO_BEHAVIORS |
-                        WebBrowserDownloadControlFlags.SILENT);
+                        WebBrowserDownloadControlFlags.SILENT, CultureInfo.CurrentCulture);
                 }
                 else
                 {
-                    result = this.GetType().InvokeMember(name, invokeAttr, binder, target, args, modifiers, culture, namedParameters);
+                    result = GetType().InvokeMember(name, invokeAttr, binder, target, args, modifiers, culture, namedParameters);
                 }
 
                 return result;
