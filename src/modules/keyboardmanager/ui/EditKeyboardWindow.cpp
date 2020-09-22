@@ -366,9 +366,22 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     // Resize the XAML window whenever the parent window is painted or resized
     case WM_PAINT:
     case WM_SIZE:
+    {
         GetClientRect(hWnd, &rcClient);
         SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
-        break;
+    }
+    break;
+    // To avoid UI elements overlapping on making the window smaller enforce a minimum window size
+    case WM_GETMINMAXINFO:
+    {
+        LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+        int minWidth = KeyboardManagerConstants::MinimumEditKeyboardWindowWidth;
+        int minHeight = KeyboardManagerConstants::MinimumEditKeyboardWindowHeight;
+        DPIAware::Convert(nullptr, minWidth, minHeight);
+        lpMMI->ptMinTrackSize.x = minWidth;
+        lpMMI->ptMinTrackSize.y = minHeight;
+    }
+    break;
     default:
         // If the Xaml Bridge object exists, then use it's message handler to handle keyboard focus operations
         if (xamlBridgePtr != nullptr)
