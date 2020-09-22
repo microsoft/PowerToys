@@ -10,5 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Interface
         string ToJsonString();
 
         string GetModuleName();
+
+        bool UpgradeSettingsConfiguration();
     }
 }

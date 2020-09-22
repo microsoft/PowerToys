@@ -2,9 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
@@ -90,6 +92,25 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             // The SettingsUtils functions access general settings when the module name is an empty string.
             return string.Empty;
+        }
+
+        public bool UpgradeSettingsConfiguration()
+        {
+            try
+            {
+                if (Helper.CompareVersions(PowertoysVersion, Helper.GetProductVersion()) < 0)
+                {
+                    // Update settings
+                    PowertoysVersion = Helper.GetProductVersion();
+                    return true;
+                }
+            }
+            catch (FormatException)
+            {
+                // If there is an issue with the version number format, don't migrate settings.
+            }
+
+            return false;
         }
     }
 }

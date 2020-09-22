@@ -31,5 +31,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             return KeyboardManagerSettings.ModuleName;
         }
+
+        // This can be utilized in the future if the default.json file is to be modified/deleted.
+        public bool UpgradeSettingsConfiguration()
+        {
+            return false;
+        }
     }
 }

@@ -68,24 +68,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             if (SettingsExists(powertoy, fileName))
             {
-                var deserializedSettings = GetFile<T>(powertoy, fileName);
+                // Given the file already exists, to deserialize the file and read it's content.
+                T deserializedSettings = GetFile<T>(powertoy, fileName);
 
-                // If GeneralSettings is being accessed for the first time, perform a check on the version number and update accordingly.
-                if (powertoy.Equals(DefaultModuleName))
+                // IF the file needs to be modified, to save the new configurations accordingly.
+                if (!deserializedSettings.UpgradeSettingsConfiguration())
                 {
-                    try
-                    {
-                        if (Helper.CompareVersions(((GeneralSettings)(object)deserializedSettings).PowertoysVersion, Helper.GetProductVersion()) < 0)
-                        {
-                            // Update settings
-                            ((GeneralSettings)(object)deserializedSettings).PowertoysVersion = Helper.GetProductVersion();
-                            SaveSettings(((GeneralSettings)(object)deserializedSettings).ToJsonString(), powertoy, fileName);
-                        }
-                    }
-                    catch (FormatException)
-                    {
-                        // If there is an issue with the version number format, don't migrate settings.
-                    }
+                    SaveSettings(deserializedSettings.ToJsonString(), powertoy, fileName);
                 }
 
                 return deserializedSettings;

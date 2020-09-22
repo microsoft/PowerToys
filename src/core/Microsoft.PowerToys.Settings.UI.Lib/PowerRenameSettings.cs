@@ -50,5 +50,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             return Name;
         }
+
+        // This can be utilized in the future if the power-rename-settings.json file is to be modified/deleted.
+        public bool UpgradeSettingsConfiguration()
+        {
+            return false;
+        }
     }
 }
