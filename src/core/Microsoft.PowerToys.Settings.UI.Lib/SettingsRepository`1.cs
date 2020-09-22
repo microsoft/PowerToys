@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     public class SettingsRepository<T> : ISettingsRepository<T>
         where T : class, ISettingsConfig, new()
     {
-        private static readonly object SettingsRepoLock = new object();
+        private static readonly object _SettingsRepoLock = new object();
 
         private static ISettingsUtils _settingsUtils;
 
@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public static SettingsRepository<T> GetInstance(ISettingsUtils settingsUtils)
         {
             // To ensure that only one instance of Settings Repository is created in a multi-threaded environment.
-            lock (SettingsRepoLock)
+            lock (_SettingsRepoLock)
             {
                 if (settingsRepository == null)
                 {
