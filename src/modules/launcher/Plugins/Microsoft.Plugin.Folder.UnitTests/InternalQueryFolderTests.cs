@@ -111,21 +111,21 @@ namespace Microsoft.Plugin.Folder.UnitTests
             var queryInternalDirectory = new QueryInternalDirectory(new FolderSettings(), _queryFileSystemInfoMock.Object);
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => queryInternalDirectory.Query(string.Empty, null).ToArray());
+            Assert.Throws<ArgumentNullException>(() => queryInternalDirectory.Query(null).ToArray());
         }
 
-        [TestCase("", @"c", 0, 0, false, Reason = "String empty is nothing")]
-        [TestCase("", @"c:", 1, 1, false, Reason = "Root without \\")]
-        [TestCase("", @"c:\", 1, 1, false, Reason = "Normal root")]
-        [TestCase("", @"c:\Test", 1, 2, false, Reason = "Select yourself")]
-        [TestCase(">", @"c:\", 2, 2, true, Reason = "Max Folder test")]
-        [TestCase(">", @"c:\Test", 2, 2, true, Reason = "2 Folders")]
-        [TestCase("", @"c:\not-exist", 1, 1, false, Reason = "Folder not exist, return root")]
-        [TestCase(">", @"c:\not-exist", 2, 2, true, Reason = "Folder not exist, return root")]
-        [TestCase("", @"c:\not-exist\not-exist2", 0, 0, false, Reason = "Folder not exist, return root")]
-        [TestCase(">", @"c:\not-exist\not-exist2", 0, 0, false, Reason = "Folder not exist, return root")]
-        [TestCase("", @"c:\bla.t", 1, 1, false, Reason = "Partial match file")]
-        public void Query_WhenCalled(string actionKeyword, string search, int folders, int files, bool truncated)
+        [TestCase(@"c", 0, 0, false, Reason = "String empty is nothing")]
+        [TestCase(@"c:", 1, 1, false, Reason = "Root without \\")]
+        [TestCase(@"c:\", 1, 1, false, Reason = "Normal root")]
+        [TestCase(@"c:\Test", 1, 2, false, Reason = "Select yourself")]
+        [TestCase(@"c:\>", 2, 2, true, Reason = "Max Folder test recursive")]
+        [TestCase(@"c:\Test>", 2, 2, true, Reason = "2 Folders recursive")]
+        [TestCase(@"c:\not-exist", 1, 1, false, Reason = "Folder not exist, return root")]
+        [TestCase(@"c:\not-exist>", 2, 2, true, Reason = "Folder not exist, return root recursive")]
+        [TestCase(@"c:\not-exist\not-exist2", 0, 0, false, Reason = "Folder not exist, return root")]
+        [TestCase(@"c:\not-exist\not-exist2>", 0, 0, false, Reason = "Folder not exist, return root recursive")]
+        [TestCase(@"c:\bla.t", 1, 1, false, Reason = "Partial match file")]
+        public void Query_WhenCalled(string search, int folders, int files, bool truncated)
         {
             const int maxFolderSetting = 2;
 
@@ -139,7 +139,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
             var queryInternalDirectory = new QueryInternalDirectory(folderSettings, _queryFileSystemInfoMock.Object);
 
             // Act
-            var isDriveOrSharedFolder = queryInternalDirectory.Query(actionKeyword, search)
+            var isDriveOrSharedFolder = queryInternalDirectory.Query(search)
                 .ToLookup(r => r.GetType());
 
             // Assert

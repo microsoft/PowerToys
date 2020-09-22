@@ -75,7 +75,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
             var itemResultMock = new Mock<IItemResult>();
 
             var internalDirectoryMock = new Mock<IQueryInternalDirectory>();
-            internalDirectoryMock.Setup(r => r.Query(It.IsAny<string>(), It.IsAny<string>()))
+            internalDirectoryMock.Setup(r => r.Query(It.IsAny<string>()))
                 .Returns(new List<IItemResult>() { itemResultMock.Object });
 
             var processor = new InternalDirectoryProcessor(folderHelperMock.Object, internalDirectoryMock.Object);

@@ -28,7 +28,7 @@ namespace Microsoft.Plugin.Folder
                 return Enumerable.Empty<IItemResult>();
             }
 
-            return _internalDirectory.Query(actionKeyword, search);
+            return _internalDirectory.Query(search);
         }
     }
 }

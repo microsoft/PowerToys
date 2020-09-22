@@ -36,22 +36,15 @@ namespace Microsoft.Plugin.Folder.Sources
             return search.Any(c => SpecialSearchChars.Contains(c));
         }
 
-        public static SearchOption GetSearchOptions(string actionKeyword)
+        public static SearchOption GetSearchOptions(string query)
         {
-            // give the ability to search all folder when starting with >
-            if (actionKeyword?.StartsWith(">", StringComparison.InvariantCulture) == true)
+            // give the ability to search all folder when it contains a >
+            if (query.Any(c => c.Equals('>')))
             {
                 return SearchOption.AllDirectories;
             }
 
             return SearchOption.TopDirectoryOnly;
-        }
-
-        public IEnumerable<IItemResult> Query(string actionKeyword, string search)
-        {
-            var searchOption = GetSearchOptions(actionKeyword);
-
-            return Query(search, searchOption);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
@@ -71,7 +64,9 @@ namespace Microsoft.Plugin.Folder.Sources
                 }
 
                 // Remove everything after the last \ and add *
-                incompleteName = search.Substring(index + 1).ToLower(CultureInfo.InvariantCulture) + "*";
+                incompleteName = search.Substring(index + 1)
+                    .Replace(">", string.Empty, StringComparison.Ordinal)
+                    .ToLower(CultureInfo.InvariantCulture) + "*";
                 search = search.Substring(0, index + 1);
                 if (!_queryFileSystemInfo.Exists(search))
                 {
@@ -90,7 +85,7 @@ namespace Microsoft.Plugin.Folder.Sources
             return (search, incompleteName);
         }
 
-        public IEnumerable<IItemResult> Query(string querySearch, SearchOption searchOption)
+        public IEnumerable<IItemResult> Query(string querySearch)
         {
             if (querySearch == null)
             {
@@ -105,6 +100,7 @@ namespace Microsoft.Plugin.Folder.Sources
             }
 
             var (search, incompleteName) = processed;
+            var searchOption = GetSearchOptions(querySearch);
 
             if (searchOption == SearchOption.AllDirectories)
             {
