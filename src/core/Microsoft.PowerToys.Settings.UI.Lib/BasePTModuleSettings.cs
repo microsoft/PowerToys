@@ -23,11 +23,5 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             // By default JsonSerializer will only serialize the properties in the base class. This can be avoided by passing the object type (more details at https://stackoverflow.com/a/62498888)
             return JsonSerializer.Serialize(this, GetType());
         }
-
-        // To retrive the name of the file while the powertoy's properties are stored.
-        public virtual string GetSettingsFileName()
-        {
-            return "settings.json";
-        }
     }
 }

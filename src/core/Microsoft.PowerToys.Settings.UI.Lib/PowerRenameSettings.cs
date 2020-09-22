@@ -41,11 +41,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Name = ptName;
         }
 
-        public override string GetSettingsFileName()
-        {
-            return "power-rename-settings.json";
-        }
-
         public string GetModuleName()
         {
             return Name;
