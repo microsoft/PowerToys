@@ -11,8 +11,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         T GetSettings<T>(string powertoy = "", string fileName = "settings.json")
             where T : ISettingsConfig, new();
 
-        T GetFile<T>(string powertoyFolderName = "", string fileName = "settings.json");
-
         void SaveSettings(string jsonSettings, string powertoy = "", string fileName = "settings.json");
 
         bool SettingsExists(string powertoy = "", string fileName = "settings.json");

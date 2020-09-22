@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -171,8 +172,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // update the UI element here.
                         try
                         {
-                            _profile = _settingsUtils.GetFile<KeyboardManagerProfile>(PowerToyName, Settings.Properties.ActiveConfiguration.Value + JsonFileType);
-                            FilterRemapKeysList(_profile.RemapKeys.InProcessRemapKeys);
+                            string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
+
+                            if (_settingsUtils.SettingsExists(PowerToyName, fileName))
+                            {
+                                _profile = _settingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, fileName);
+                            }
+                            else
+                            {
+                                // The KBM process out of runner creates the default.json file if it does not exist.
+                                success = false;
+                            }
+
+                            FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
                         }
                         finally
                         {

@@ -100,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         }
 
         // Given the powerToy folder name and filename to be accessed, this function deserializes and returns the file.
-        public T GetFile<T>(string powertoyFolderName = DefaultModuleName, string fileName = DefaultFileName)
+        private T GetFile<T>(string powertoyFolderName = DefaultModuleName, string fileName = DefaultFileName)
         {
             // Adding Trim('\0') to overcome possible NTFS file corruption.
             // Look at issue https://github.com/microsoft/PowerToys/issues/6413 you'll see the file has a large sum of \0 to fill up a 4096 byte buffer for writing to disk
