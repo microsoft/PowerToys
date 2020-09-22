@@ -29,7 +29,7 @@ namespace CommonLibTest
         public void SettingsRepositoryInstanceWhenCalledMustReturnSameObject()
         {
             // The singleton class Settings Repository must always have a single instance
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
 
             // Arrange and Act
             SettingsRepository<GeneralSettings> firstInstance = SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils.Object);
@@ -45,7 +45,7 @@ namespace CommonLibTest
             // Multiple tasks try to access and initialize the settings repository class, however they must all access the same settings Repository object.
 
             // Arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
             List<Task<SettingsRepository<GeneralSettings>>> settingsRepoTasks = new List<Task<SettingsRepository<GeneralSettings>>>();
             int numberOfTasks = 100;
 

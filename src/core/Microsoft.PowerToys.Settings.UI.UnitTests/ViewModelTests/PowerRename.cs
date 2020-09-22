@@ -19,7 +19,7 @@ namespace ViewModelTests
         public const string ModuleName = "PowerRename";
         public const string generalSettings_file_name = "Test\\PowerRename";
 
-        [TestMethod]
+        /*[TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()
         {
             // Assert
@@ -173,6 +173,6 @@ namespace ViewModelTests
 
             // act
             viewModel.MaxDispListNum = 20;
-        }
+        }*/
     }
 }

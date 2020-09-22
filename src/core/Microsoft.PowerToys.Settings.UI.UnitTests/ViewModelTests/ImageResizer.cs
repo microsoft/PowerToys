@@ -20,11 +20,20 @@ namespace ViewModelTests
     {
         public const string Module = "ImageResizer";
 
+        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+
+        private Mock<ISettingsUtils> mockImgResizerSettingsUtils;
+
+        [TestInitialize]
+        public void SetUp_StubSettingUtils()
+        {
+            mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
+            mockImgResizerSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+        }
+
         [TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()
         {
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
-
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
             {
@@ -34,7 +43,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils.Object), SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockImgResizerSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
             // act
             viewModel.IsEnabled = true;
@@ -113,7 +122,7 @@ namespace ViewModelTests
         public void KeepDateModified_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var settingUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var settingUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
 
             var expectedSettingsString = new ImageResizerSettings() { Properties = new ImageResizerProperties() { ImageresizerKeepDateModified = new BoolProperty() { Value = true } } }.ToJsonString();
             settingUtils.Setup(x => x.SaveSettings(
@@ -154,7 +163,7 @@ namespace ViewModelTests
         public void AddRow_ShouldAddEmptyImageSize_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils.Object), SendMockIPCConfigMSG);
             int sizeOfOriginalArray = viewModel.Sizes.Count;
@@ -170,7 +179,7 @@ namespace ViewModelTests
         public void DeleteImageSize_ShouldDeleteImageSize_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils.Object), SendMockIPCConfigMSG);
             int sizeOfOriginalArray = viewModel.Sizes.Count;

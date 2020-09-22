@@ -18,7 +18,7 @@ namespace ViewModelTests
     {
         public const string Module = "Test\\File Explorer";
 
-        [TestMethod]
+        /*[TestMethod]
         public void SVGRenderIsEnabled_ShouldPrevHandler_WhenSuccessful()
         {
             // Assert
@@ -70,6 +70,6 @@ namespace ViewModelTests
 
             // act
             viewModel.MDRenderIsEnabled = true;
-        }
+        }*/
     }
 }

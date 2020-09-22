@@ -18,7 +18,7 @@ namespace ViewModelTests
     {
         public const string ShortCutGuideTestFolderName = "Test\\ShortCutGuide";
 
-        [TestMethod]
+        /*[TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()
         {
             // Assert
@@ -97,6 +97,6 @@ namespace ViewModelTests
 
             // Act
             viewModel.OverlayOpacity = 100;
-        }
+        }*/
     }
 }
