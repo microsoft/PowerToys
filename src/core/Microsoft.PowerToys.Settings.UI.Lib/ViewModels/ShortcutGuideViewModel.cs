@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private ShortcutGuideSettings Settings { get; set; }
 
-        private const string ModuleName = "Shortcut Guide";
+        private const string ModuleName = ShortcutGuideSettings.ModuleName;
 
         private Func<string, int> SendConfigMSG { get; }
 

@@ -21,13 +21,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Name = ModuleName;
         }
 
-        public PowerPreviewSettings(string ptName)
-        {
-            Properties = new PowerPreviewProperties();
-            Version = "1";
-            Name = ptName;
-        }
-
         public string GetModuleName()
         {
             return Name;

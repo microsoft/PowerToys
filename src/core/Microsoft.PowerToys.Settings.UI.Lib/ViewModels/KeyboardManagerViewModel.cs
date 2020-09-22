@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private readonly ISettingsUtils _settingsUtils;
 
-        private const string PowerToyName = "Keyboard Manager";
+        private const string PowerToyName = KeyboardManagerSettings.ModuleName;
         private const string RemapKeyboardActionName = "RemapKeyboard";
         private const string RemapKeyboardActionValue = "Open Remap Keyboard Window";
         private const string EditShortcutActionName = "EditShortcut";
@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
             else
             {
-                Settings = new KeyboardManagerSettings(PowerToyName);
+                Settings = new KeyboardManagerSettings();
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
             }
         }

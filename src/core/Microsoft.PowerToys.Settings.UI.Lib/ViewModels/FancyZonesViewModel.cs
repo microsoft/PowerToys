@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private const string ModuleName = "FancyZones";
+        private const string ModuleName = FancyZonesSettings.ModuleName;
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
 

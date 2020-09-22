@@ -9,6 +9,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class KeyboardManagerSettings : BasePTModuleSettings, ISettingsConfig
     {
+        public const string ModuleName = "Keyboard Manager";
+
         [JsonPropertyName("properties")]
         public KeyboardManagerProperties Properties { get; set; }
 
@@ -16,14 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             Properties = new KeyboardManagerProperties();
             Version = "1";
-            Name = "_unset_";
-        }
-
-        public KeyboardManagerSettings(string ptName)
-        {
-            Properties = new KeyboardManagerProperties();
-            Version = "1";
-            Name = ptName;
+            Name = ModuleName;
         }
 
         public string GetModuleName()

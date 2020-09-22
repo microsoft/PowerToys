@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private readonly ISettingsUtils _settingsUtils;
 
-        private const string ModuleName = "PowerRename";
+        private const string ModuleName = PowerRenameSettings.ModuleName;
 
         private string _settingsConfigFileFolder = string.Empty;
 
