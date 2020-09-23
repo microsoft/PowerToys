@@ -18,13 +18,23 @@ namespace ViewModelTests
     [TestClass]
     public class ImageResizer
     {
-        public const string Module = "ImageResizer";
+        // To have a consistent name.
+        public const string Module = ImageResizerSettings.ModuleName;
+
+        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+
+        private Mock<ISettingsUtils> mockImgResizerSettingsUtils;
+
+        [TestInitialize]
+        public void SetUp_StubSettingUtils()
+        {
+            mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
+            mockImgResizerSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+        }
 
         [TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()
         {
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
-
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
             {
@@ -34,7 +44,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockImgResizerSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
             // act
             viewModel.IsEnabled = true;
@@ -47,13 +57,13 @@ namespace ViewModelTests
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
             // act
             viewModel.JPEGQualityLevel = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.JPEGQualityLevel);
         }
 
@@ -64,13 +74,13 @@ namespace ViewModelTests
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
             // act
             viewModel.PngInterlaceOption = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.PngInterlaceOption);
         }
 
@@ -81,13 +91,13 @@ namespace ViewModelTests
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
             // act
             viewModel.TiffCompressOption = 10;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             Assert.AreEqual(10, viewModel.TiffCompressOption);
         }
 
@@ -98,14 +108,14 @@ namespace ViewModelTests
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             string expectedValue = "%1 (%3)";
 
             // act
             viewModel.FileName = expectedValue;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             Assert.AreEqual(expectedValue, viewModel.FileName);
         }
 
@@ -113,7 +123,7 @@ namespace ViewModelTests
         public void KeepDateModified_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var settingUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var settingUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
 
             var expectedSettingsString = new ImageResizerSettings() { Properties = new ImageResizerProperties() { ImageresizerKeepDateModified = new BoolProperty() { Value = true } } }.ToJsonString();
             settingUtils.Setup(x => x.SaveSettings(
@@ -123,7 +133,7 @@ namespace ViewModelTests
                                      .Verifiable();
 
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(settingUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(settingUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
             // act
             viewModel.KeepDateModified = true;
@@ -139,13 +149,13 @@ namespace ViewModelTests
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
             // act
             viewModel.Encoder = 3;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", viewModel.GetEncoderGuid(viewModel.Encoder));
             Assert.AreEqual(3, viewModel.Encoder);
         }
@@ -154,9 +164,9 @@ namespace ViewModelTests
         public void AddRow_ShouldAddEmptyImageSize_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             int sizeOfOriginalArray = viewModel.Sizes.Count;
 
             // act
@@ -170,9 +180,9 @@ namespace ViewModelTests
         public void DeleteImageSize_ShouldDeleteImageSize_WhenSuccessful()
         {
             // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils();
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SendMockIPCConfigMSG);
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             int sizeOfOriginalArray = viewModel.Sizes.Count;
             ImageSize deleteCandidate = viewModel.Sizes.Where<ImageSize>(x => x.Id == 0).First();
 
