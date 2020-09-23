@@ -47,7 +47,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Infrastructure.Logger.Log.Exception($"|PluginsLoader.CSharpPlugins|Couldn't load assembly for {metadata.Name}", e);
+                        Infrastructure.Logger.Log.Exception($"Couldn't load assembly for {metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 
@@ -59,7 +59,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (InvalidOperationException e)
                     {
-                        Infrastructure.Logger.Log.Exception($"|PluginsLoader.CSharpPlugins|Can't find class implement IPlugin for <{metadata.Name}>", e);
+                        Infrastructure.Logger.Log.Exception($"Can't find class implement IPlugin for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 
@@ -70,7 +70,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Infrastructure.Logger.Log.Exception($"|PluginsLoader.CSharpPlugins|Can't create instance for <{metadata.Name}>", e);
+                        Infrastructure.Logger.Log.Exception($"Can't create instance for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 #endif
@@ -96,6 +96,7 @@ namespace Wox.Core.Plugin
                 Plugin = new ExecutablePlugin(metadata.ExecuteFilePath),
                 Metadata = metadata,
             });
+
             return plugins;
         }
     }

@@ -22,51 +22,29 @@ namespace Microsoft.Plugin.Program.Logger
         /// Logs an exception
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
-        internal static void LogException(string classname, string callingMethodName, string loadingProgramPath, string interpretationMessage, Exception e)
+        internal static void Exception(string message, Exception ex, Type fullClassName, string loadingProgramPath, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            Debug.WriteLine($"ERROR{classname}|{callingMethodName}|{loadingProgramPath}|{interpretationMessage}");
-
+            // internal static void LogException(string classname, string callingMethodName, string loadingProgramPath, string interpretationMessage, Exception e)
             var possibleResolution = "Not yet known";
             var errorStatus = "UNKNOWN";
 
-            if (IsKnownWinProgramError(e, callingMethodName) || IsKnownUWPProgramError(e, callingMethodName))
+            if (IsKnownWinProgramError(ex, methodName) || IsKnownUWPProgramError(ex, methodName))
             {
                 possibleResolution = "Can be ignored and Wox should still continue, however the program may not be loaded";
                 errorStatus = "KNOWN";
             }
 
-            var calledMethod = e.TargetSite != null ? e.TargetSite.ToString() : e.StackTrace;
+            var calledMethod = ex.TargetSite != null ? ex.TargetSite.ToString() : ex.StackTrace;
 
             calledMethod = string.IsNullOrEmpty(calledMethod) ? "Not available" : calledMethod;
-            var msg = $"Error status: {errorStatus}"
-                         + $"\nProgram path: {loadingProgramPath}"
-                         + $"\nException thrown in called method: {calledMethod}"
-                         + $"\nPossible interpretation of the error: {interpretationMessage}"
-                         + $"\nPossible resolution: {possibleResolution}";
+            var msg = $"\tError status: {errorStatus}"
+                         + $"\n\t\tProgram path: {loadingProgramPath}"
+                         + $"\n\t\tException thrown in called method: {calledMethod}"
+                         + $"\n\t\tPossible interpretation of the error: {message}"
+                         + $"\n\t\tPossible resolution: {possibleResolution}";
 
             // removed looping logic since that is inside Log class
-            Log.Exception(classname, msg, e, callingMethodName);
-        }
-
-        /// <summary>
-        /// Please follow exception format: |class name|calling method name|loading program path|user friendly message that explains the error
-        /// => Example: |Win32|LnkProgram|c:\..\chrome.exe|Permission denied on directory, but Wox should continue
-        /// </summary>
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        internal static void LogException(string message, Exception e)
-        {
-            var parts = message.Split('|');
-            if (parts.Length < 4)
-            {
-                Log.Exception($"|ProgramLogger|LogException|Fail to log exception in program logger, parts length is too small: {parts.Length}, message: {message}", e);
-            }
-
-            var classname = parts[1];
-            var callingMethodName = parts[2];
-            var loadingProgramPath = parts[3];
-            var interpretationMessage = parts[4];
-
-            LogException(classname, callingMethodName, loadingProgramPath, interpretationMessage, e);
+            Log.Exception(msg, ex, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         private static bool IsKnownWinProgramError(Exception e, string callingMethodName)

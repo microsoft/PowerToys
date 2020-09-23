@@ -185,7 +185,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|Microsoft.Plugin.Program.UWP.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
+                        Log.Exception($"Failed to open {Name} in console, {e.Message}", e, GetType());
                         return false;
                     }
                 },
@@ -310,9 +310,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException(
-                            $"|UWP|ResourceFromPri|{Package.Location}|Can't load null or empty result "
-                                                    + $"pri {source} in uwp location {Package.Location}", new NullReferenceException());
+                        ProgramLogger.Exception($"Can't load null or empty result pri {source} in uwp location {Package.Location}", new NullReferenceException(), GetType(), Package.Location);
+
                         return string.Empty;
                     }
                 }
@@ -325,7 +324,8 @@ namespace Microsoft.Plugin.Program.Programs
                     // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
                     // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
                     var e = Marshal.GetExceptionForHR((int)hResult);
-                    ProgramLogger.LogException($"|UWP|ResourceFromPri|{Package.Location}|Load pri failed {source} with HResult {hResult} and location {Package.Location}", e);
+                    ProgramLogger.Exception($"Load pri failed {source} with HResult {hResult} and location {Package.Location}", e, GetType(), Package.Location);
+
                     return string.Empty;
                 }
             }
@@ -569,9 +569,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 LogoPath = string.Empty;
                 LogoType = LogoType.Error;
-                ProgramLogger.LogException(
-                            $"|UWP|LogoPathFromUri|{Package.Location}" +
-                            $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
+                ProgramLogger.Exception($"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException(), GetType(), Package.Location);
             }
         }
 
@@ -588,6 +586,8 @@ namespace Microsoft.Plugin.Program.Programs
                 return ImageFromPath(LogoPath);
             }
         }
+
+        private const int _dpiScale100 = 96;
 
         private ImageSource PlatedImage(BitmapImage image)
         {
@@ -630,21 +630,21 @@ namespace Microsoft.Plugin.Program.Programs
                     var context = visual.RenderOpen();
                     context.DrawDrawing(group);
                     context.Close();
-                    const int dpiScale100 = 96;
+
                     var bitmap = new RenderTargetBitmap(
                         Convert.ToInt32(width),
                         Convert.ToInt32(height),
-                        dpiScale100,
-                        dpiScale100,
+                        _dpiScale100,
+                        _dpiScale100,
                         PixelFormats.Pbgra32);
+
                     bitmap.Render(visual);
+
                     return bitmap;
                 }
                 else
                 {
-                    ProgramLogger.LogException(
-                        $"|UWP|PlatedImage|{Package.Location}|Unable to convert background string {BackgroundColor} " +
-                                                $"to color for {Package.Location}", new InvalidOperationException());
+                    ProgramLogger.Exception($"Unable to convert background string {BackgroundColor} to color for {Package.Location}", new InvalidOperationException(), GetType(), Package.Location);
 
                     return new BitmapImage(new Uri(Constant.ErrorIcon));
                 }
@@ -674,9 +674,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                ProgramLogger.LogException(
-                    $"|UWP|ImageFromPath|{path}|Unable to get logo for {UserModelId} from {path} and" +
-                                                $" located in {Package.Location}", new FileNotFoundException());
+                ProgramLogger.Exception($"Unable to get logo for {UserModelId} from {path} and located in {Package.Location}", new FileNotFoundException(), GetType(), path);
                 return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
             }
         }

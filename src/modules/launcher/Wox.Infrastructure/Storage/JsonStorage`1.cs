@@ -51,7 +51,7 @@ namespace Wox.Infrastructure.Storage
                 if (File.Exists(FilePath))
                 {
                     File.Delete(FilePath);
-                    Log.Info($"|JsonStorage.TryLoad|Deleting cached data at <{FilePath}>");
+                    Log.Info($"Deleting cached data at <{FilePath}>", GetType());
                 }
             }
 
@@ -84,7 +84,7 @@ namespace Wox.Infrastructure.Storage
             catch (JsonException e)
             {
                 LoadDefault();
-                Log.Exception($"|JsonStorage.Deserialize|Deserialize error for json <{FilePath}>", e);
+                Log.Exception($"Deserialize error for json <{FilePath}>", e, GetType());
             }
 
             if (_data == null)
@@ -123,11 +123,12 @@ namespace Wox.Infrastructure.Storage
                 string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
                 File.WriteAllText(FilePath, serialized);
                 _storageHelper.Close();
-                Log.Info($"|JsonStorage.Save|Saving cached data at <{FilePath}>");
+
+                Log.Info($"Saving cached data at <{FilePath}>", GetType());
             }
             catch (IOException e)
             {
-                Log.Error($"|JsonStorage.Save|Error in saving data at <{FilePath}>", e.Message);
+                Log.Exception($"Error in saving data at <{FilePath}>", e, GetType());
             }
         }
     }

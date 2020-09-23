@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure
@@ -24,7 +25,7 @@ namespace Wox.Infrastructure
             stopWatch.Stop();
             var milliseconds = stopWatch.ElapsedMilliseconds;
             string info = $"{message} <{milliseconds}ms>";
-            Log.Debug(info);
+            Log.Debug(info, MethodBase.GetCurrentMethod().DeclaringType);
             return milliseconds;
         }
 
@@ -36,7 +37,7 @@ namespace Wox.Infrastructure
             stopWatch.Stop();
             var milliseconds = stopWatch.ElapsedMilliseconds;
             string info = $"{message} <{milliseconds}ms>";
-            Log.Info(info);
+            Log.Info(info, MethodBase.GetCurrentMethod().DeclaringType);
             return milliseconds;
         }
 
@@ -65,7 +66,7 @@ namespace Wox.Infrastructure
             foreach (var key in Count.Keys)
             {
                 string info = $"{key} already cost {Count[key]}ms";
-                Log.Debug(info);
+                Log.Debug(info, MethodBase.GetCurrentMethod().DeclaringType);
             }
         }
     }
