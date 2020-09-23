@@ -4,6 +4,7 @@ Param(
   [string]$versionNumber = "0.0.1",
 
   [Parameter(Mandatory=$True,Position=2)]
+  [AllowEmptyString()]
   [string]$DevEnvironment = "Local"
 )
 
