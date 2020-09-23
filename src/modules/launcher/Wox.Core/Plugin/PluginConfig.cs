@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -27,6 +28,7 @@ namespace Wox.Core.Plugin
             PluginMetadatas.Clear();
             var directories = pluginDirectories.SelectMany(Directory.GetDirectories);
             ParsePluginConfigs(directories);
+
             return PluginMetadatas;
         }
 
@@ -43,7 +45,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|PluginConfig.ParsePLuginConfigs|Can't delete <{directory}>", e);
+                        Log.Exception($"Can't delete <{directory}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                     }
                 }
                 else
@@ -62,7 +64,8 @@ namespace Wox.Core.Plugin
             string configPath = Path.Combine(pluginDirectory, PluginConfigName);
             if (!File.Exists(configPath))
             {
-                Log.Error($"|PluginConfig.GetPluginMetadata|Didn't find config file <{configPath}>");
+                Log.Error($"Didn't find config file <{configPath}>", MethodBase.GetCurrentMethod().DeclaringType);
+
                 return null;
             }
 
@@ -80,19 +83,19 @@ namespace Wox.Core.Plugin
             }
             catch (Exception e)
             {
-                Log.Exception($"|PluginConfig.GetPluginMetadata|invalid json for config <{configPath}>", e);
+                Log.Exception($"|PluginConfig.GetPluginMetadata|invalid json for config <{configPath}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return null;
             }
 
             if (!AllowedLanguage.IsAllowed(metadata.Language))
             {
-                Log.Error($"|PluginConfig.GetPluginMetadata|Invalid language <{metadata.Language}> for config <{configPath}>");
+                Log.Error($"|PluginConfig.GetPluginMetadata|Invalid language <{metadata.Language}> for config <{configPath}>", MethodBase.GetCurrentMethod().DeclaringType);
                 return null;
             }
 
             if (!File.Exists(metadata.ExecuteFilePath))
             {
-                Log.Error($"|PluginConfig.GetPluginMetadata|execute file path didn't exist <{metadata.ExecuteFilePath}> for config <{configPath}");
+                Log.Error($"|PluginConfig.GetPluginMetadata|execute file path didn't exist <{metadata.ExecuteFilePath}> for config <{configPath}", MethodBase.GetCurrentMethod().DeclaringType);
                 return null;
             }
 

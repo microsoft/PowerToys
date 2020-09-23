@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
@@ -80,9 +81,7 @@ namespace Microsoft.Plugin.Program.Programs
             else
             {
                 var e = Marshal.GetExceptionForHR((int)hResult);
-                ProgramLogger.LogException(
-                    $"|UWP|InitializeAppInfo|{path}" +
-                                                "|Error caused while trying to get the details of the UWP program", e);
+                ProgramLogger.Exception("Error caused while trying to get the details of the UWP program", e, GetType(), path);
 
                 Apps = new List<UWPApplication>().ToArray();
             }
@@ -104,7 +103,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                Log.Error($"|UWP.XmlNamespaces|Error occurred while trying to get the XML from {path}");
+                Log.Error($"Error occurred while trying to get the XML from {path}", MethodBase.GetCurrentMethod().DeclaringType);
 
                 return Array.Empty<string>();
             }
@@ -128,10 +127,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            ProgramLogger.LogException(
-                $"|UWP|XmlNamespaces|{Location}" +
-                                                "|Trying to get the package version of the UWP program, but a unknown UWP appmanifest version  "
-                                                + $"{FullName} from location {Location} is returned.", new FormatException());
+            ProgramLogger.Exception($"|Trying to get the package version of the UWP program, but a unknown UWP appmanifest version {FullName} from location {Location} is returned.", new FormatException(), GetType(), Location);
 
             Version = PackageVersion.Unknown;
         }
@@ -153,9 +149,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException(
-                            $"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
-                                                        + $"unable to convert Package to UWP for {p.FullName}", e);
+                        ProgramLogger.Exception($"Unable to convert Package to UWP for {p.FullName}", e, MethodBase.GetCurrentMethod().DeclaringType, p.InstalledLocation);
+
                         return Array.Empty<UWPApplication>();
                     }
 
@@ -190,7 +185,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e)
                 {
-                    ProgramLogger.LogException("UWP", "CurrentUserPackages", $"id", "An unexpected error occurred and unable to verify if package is valid", e);
+                    ProgramLogger.Exception("An unexpected error occurred and unable to verify if package is valid", e, MethodBase.GetCurrentMethod().DeclaringType, "id");
                     return false;
                 }
 

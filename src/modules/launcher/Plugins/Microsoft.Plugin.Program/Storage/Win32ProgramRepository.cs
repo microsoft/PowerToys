@@ -94,7 +94,7 @@ namespace Microsoft.Plugin.Program.Storage
             }
             catch (Exception ex)
             {
-                Log.Info($"|Win32ProgramRepository|OnAppRenamed-{extension}Program|{oldPath}|Unable to create program from {oldPath}| {ex.Message}");
+                Log.Exception($"OnAppRenamed-{extension}Program|{oldPath}|Unable to create program from {oldPath}", ex, GetType());
             }
 
             // To remove the old app which has been renamed and to add the new application.
@@ -134,7 +134,7 @@ namespace Microsoft.Plugin.Program.Storage
             }
             catch (Exception ex)
             {
-                Log.Info($"|Win32ProgramRepository|OnAppDeleted-{extension}Program|{path}|Unable to create program from {path}| {ex.Message}");
+                Log.Exception($"OnAppDeleted-{extension}Program|{path}|Unable to create program from {path}", ex, GetType());
             }
 
             if (app != null)

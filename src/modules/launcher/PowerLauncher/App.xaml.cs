@@ -82,8 +82,9 @@ namespace PowerLauncher
             bootTime.Start();
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
-                Log.Info("|App.OnStartup|Begin PowerToys Run startup ----------------------------------------------------");
-                Log.Info($"|App.OnStartup|Runtime info:{ErrorReporting.RuntimeInfo()}");
+                Log.Info("Begin PowerToys Run startup ----------------------------------------------------", GetType());
+                Log.Info($"Runtime info:{ErrorReporting.RuntimeInfo()}", GetType());
+
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
@@ -118,7 +119,7 @@ namespace PowerLauncher
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
                 _themeManager.ThemeChanged += OnThemeChanged;
-                Log.Info("|App.OnStartup|End PowerToys Run startup ----------------------------------------------------  ");
+                Log.Info("End PowerToys Run startup ----------------------------------------------------  ", GetType());
 
                 bootTime.Stop();
 
@@ -178,7 +179,7 @@ namespace PowerLauncher
             {
                 Stopwatch.Normal("|App.OnExit|Exit cost", () =>
                 {
-                    Log.Info("|App.OnExit| Start PowerToys Run Exit----------------------------------------------------  ");
+                    Log.Info("Start PowerToys Run Exit----------------------------------------------------  ", GetType());
                     if (disposing)
                     {
                         if (_themeManager != null)
@@ -198,7 +199,7 @@ namespace PowerLauncher
                     // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                     // TODO: set large fields to null
                     _disposed = true;
-                    Log.Info("|App.OnExit| End PowerToys Run Exit ----------------------------------------------------  ");
+                    Log.Info("End PowerToys Run Exit ----------------------------------------------------  ", GetType());
                 });
             }
         }

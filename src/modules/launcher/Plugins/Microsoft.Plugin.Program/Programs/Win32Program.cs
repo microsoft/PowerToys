@@ -316,7 +316,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         catch (Exception e)
                         {
-                            Log.Exception($"|Microsoft.Plugin.Program.Win32.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
+                            Log.Exception($"|Failed to open {Name} in console, {e.Message}", e, GetType());
                             return false;
                         }
                     },
@@ -351,9 +351,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.LogException(
-                    $"|Win32|Win32Program|{path}" +
-                                            $"|Permission denied when trying to load the program from {path}", e);
+                ProgramLogger.Exception($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
@@ -386,7 +384,7 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         // To catch the exception if the uri cannot be parsed.
                         // Link to watson crash: https://watsonportal.microsoft.com/Failure?FailureSearchText=5f871ea7-e886-911f-1b31-131f63f6655b
-                        ProgramLogger.LogException($"|Win32Program|InternetShortcutProgram|{urlPath}|url could not be parsed", e);
+                        ProgramLogger.Exception($"url could not be parsed", e, MethodBase.GetCurrentMethod().DeclaringType, urlPath);
                         return new Win32Program() { Valid = false, Enabled = false };
                     }
 
@@ -426,9 +424,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.LogException(
-                    $"|Win32|InternetShortcutProgram|{path}" +
-                                            $"|Permission denied when trying to load the program from {path}", e);
+                ProgramLogger.Exception($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
@@ -476,9 +472,7 @@ namespace Microsoft.Plugin.Program.Programs
             // Error caused likely due to trying to get the description of the program
             catch (Exception e)
             {
-                ProgramLogger.LogException(
-                    $"|Win32|LnkProgram|{path}" +
-                                                "|An unexpected error occurred in the calling method LnkProgram", e);
+                ProgramLogger.Exception("An unexpected error occurred in the calling method LnkProgram", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 program.Valid = false;
                 return program;
@@ -501,17 +495,13 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.LogException(
-                    $"|Win32|ExeProgram|{path}" +
-                                            $"|Permission denied when trying to load the program from {path}", e);
+                ProgramLogger.Exception($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
             catch (FileNotFoundException e)
             {
-                ProgramLogger.LogException(
-                    $"|Win32|ExeProgram|{path}" +
-                                            $"|Unable to locate exe file at {path}", e);
+                ProgramLogger.Exception($"|Unable to locate exe file at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return new Win32Program() { Valid = false, Enabled = false };
             }
@@ -619,17 +609,13 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         catch (DirectoryNotFoundException e)
                         {
-                            ProgramLogger.LogException(
-                                $"|Win32|ProgramPaths|{currentDirectory}" +
-                                                "|The directory trying to load the program from does not exist", e);
+                            ProgramLogger.Exception("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                         }
                     }
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    ProgramLogger.LogException(
-                        $"|Win32|ProgramPaths|{currentDirectory}" +
-                                                $"|Permission denied when trying to load programs from {currentDirectory}", e);
+                    ProgramLogger.Exception($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                 }
 
                 try
@@ -647,9 +633,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    ProgramLogger.LogException(
-                        $"|Win32|ProgramPaths|{currentDirectory}" +
-                                                $"|Permission denied when trying to load programs from {currentDirectory}", e);
+                    ProgramLogger.Exception($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                 }
             }
             while (folderQueue.Any());
@@ -841,9 +825,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                ProgramLogger.LogException(
-                    $"|Win32|GetProgramPathFromRegistrySubKeys|{path}" +
-                                            $"|Permission denied when trying to load the program from {path}", e);
+                ProgramLogger.Exception($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
 
                 return string.Empty;
             }
@@ -963,7 +945,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e)
             {
-                ProgramLogger.LogException("|Win32|All|Not available|An unexpected error occurred", e);
+                ProgramLogger.Exception("An unexpected error occurred", e, MethodBase.GetCurrentMethod().DeclaringType, "Not available");
 
                 return Array.Empty<Win32Program>();
             }

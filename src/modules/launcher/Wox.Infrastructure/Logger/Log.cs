@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using NLog;
@@ -37,55 +38,11 @@ namespace Wox.Infrastructure.Logger
             LogManager.Configuration = configuration;
         }
 
-        private static void LogFaultyFormat(string message)
+        private static void LogInternalException(string message, System.Exception e, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            var logger = LogManager.GetLogger("FaultyLogger");
-            message = $"Wrong logger message format <{message}>";
-            System.Diagnostics.Debug.WriteLine($"FATAL|{message}");
-            logger.Fatal(message);
-        }
+            var logger = GetLogger(fullClassName.FullName, methodName);
 
-        private static bool FormatValid(string message)
-        {
-            var parts = message.Split('|');
-            var valid = parts.Length == 3 && !string.IsNullOrWhiteSpace(parts[1]) && !string.IsNullOrWhiteSpace(parts[2]);
-            return valid;
-        }
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Exception(string className, string message, System.Exception exception, [CallerMemberName] string methodName = "")
-        {
-            var classNameWithMethod = CheckClassAndMessageAndReturnFullClassWithMethod(className, message, methodName);
-
-            ExceptionInternal(classNameWithMethod, message, exception);
-        }
-
-        private static string CheckClassAndMessageAndReturnFullClassWithMethod(string className, string message, string methodName)
-        {
-            if (string.IsNullOrWhiteSpace(className))
-            {
-                LogFaultyFormat($"Fail to specify a class name during logging of message: {message ?? "no message entered"}");
-            }
-
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                // todo: not sure we really need that
-                LogFaultyFormat($"Fail to specify a message during logging");
-            }
-
-            if (!string.IsNullOrWhiteSpace(methodName))
-            {
-                return className + "." + methodName;
-            }
-
-            return className;
-        }
-
-        private static void ExceptionInternal(string classAndMethod, string message, System.Exception e)
-        {
-            var logger = LogManager.GetLogger(classAndMethod);
-
-            System.Diagnostics.Debug.WriteLine($"ERROR|{message}");
+            LogInternal(LogLevel.Error, message, fullClassName, logger, methodName, sourceFilePath, sourceLineNumber);
 
             logger.Error("-------------------------- Begin exception --------------------------");
             logger.Error(message);
@@ -105,93 +62,52 @@ namespace Wox.Infrastructure.Logger
             logger.Error("-------------------------- End exception --------------------------");
         }
 
-        private static void LogInternal(string message, LogLevel level)
+        public static void Info(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            if (FormatValid(message))
-            {
-                var parts = message.Split('|');
-                var prefix = parts[1];
-                var unprefixed = parts[2];
-                var logger = LogManager.GetLogger(prefix);
-
-                System.Diagnostics.Debug.WriteLine($"{level.Name}|{message}");
-                logger.Log(level, unprefixed);
-            }
-            else
-            {
-                LogFaultyFormat(message);
-            }
+            LogInternal(LogLevel.Info, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
-        /// <param name="message">example: "|prefix|unprefixed" </param>
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Exception(string message, System.Exception e)
+        public static void Debug(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            if (FormatValid(message))
-            {
-                var parts = message.Split('|');
-                var prefix = parts[1];
-                var unprefixed = parts[2];
-                ExceptionInternal(prefix, unprefixed, e);
-            }
-            else
-            {
-                LogFaultyFormat(message);
-            }
+            LogInternal(LogLevel.Debug, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
-        /// <param name="message">example: "|prefix|unprefixed" </param>
-        public static void Error(string message)
+        public static void Warn(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            LogInternal(message, LogLevel.Error);
+            LogInternal(LogLevel.Warn, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
-        public static void Error(string className, string message, [CallerMemberName] string methodName = "")
+        public static void Error(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            LogInternal(LogLevel.Error, className, message, methodName);
+            LogInternal(LogLevel.Error, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
-        private static void LogInternal(LogLevel level, string className, string message, [CallerMemberName] string methodName = "")
+        public static void Exception(string message, System.Exception ex, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            var classNameWithMethod = CheckClassAndMessageAndReturnFullClassWithMethod(className, message, methodName);
+            LogInternalException(message, ex, fullClassName, methodName, sourceFilePath, sourceLineNumber);
+        }
 
-            var logger = LogManager.GetLogger(classNameWithMethod);
+        private static void LogInternal(LogLevel level, string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        {
+            var logger = GetLogger(fullClassName.FullName, methodName);
 
-            System.Diagnostics.Debug.WriteLine($"{level.Name}|{message}");
+            LogInternal(level, message, fullClassName, logger, methodName, sourceFilePath, sourceLineNumber);
+        }
+
+        private static void LogInternal(LogLevel level, string message, Type fullClassName, NLog.Logger logger, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        {
+            System.Diagnostics.Debug.WriteLine($" {level.Name} | {message}");
+
             logger.Log(level, message);
+            logger.Log(level, $"Offender: {fullClassName}.{methodName}");
+            logger.Log(level, $"Path: {sourceFilePath}::{sourceLineNumber}");
         }
 
-        public static void Debug(string className, string message, [CallerMemberName] string methodName = "")
+        private static NLog.Logger GetLogger(string fullClassName, string methodName)
         {
-            LogInternal(LogLevel.Debug, className, message, methodName);
-        }
+            var classNameWithMethod = $"{fullClassName}.{methodName}";
 
-        /// <param name="message">example: "|prefix|unprefixed" </param>
-        public static void Debug(string message)
-        {
-            LogInternal(message, LogLevel.Debug);
-        }
-
-        public static void Info(string className, string message, [CallerMemberName] string methodName = "")
-        {
-            LogInternal(LogLevel.Info, className, message, methodName);
-        }
-
-        /// <param name="message">example: "|prefix|unprefixed" </param>
-        public static void Info(string message)
-        {
-            LogInternal(message, LogLevel.Info);
-        }
-
-        public static void Warn(string className, string message, [CallerMemberName] string methodName = "")
-        {
-            LogInternal(LogLevel.Warn, className, message, methodName);
-        }
-
-        /// <param name="message">example: "|prefix|unprefixed" </param>
-        public static void Warn(string message)
-        {
-            LogInternal(message, LogLevel.Warn);
+            return LogManager.GetLogger(classNameWithMethod);
         }
     }
 }
