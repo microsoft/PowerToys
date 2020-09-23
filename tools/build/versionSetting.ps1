@@ -30,7 +30,7 @@ else{
 	throw "Build format does not match the expected pattern (buildName_w.x.y.z)"
 }
 
-$verPropWriteFileLocation = $PSScriptRoot + '../../src/Version.props';
+$verPropWriteFileLocation = $PSScriptRoot + '/../../src/Version.props';
 $verPropReadFileLocation = $verPropWriteFileLocation;
 
 [XML]$verProps = Get-Content $verPropReadFileLocation
