@@ -8,6 +8,7 @@ Param(
   [string]$DevEnvironment = "Local"
 )
 
+Write-Host $PSScriptRoot
 $versionRegex = "(\d+)\.(\d+)\.(\d+)"
 
 if($versionNumber -match $versionRegEx)
@@ -29,8 +30,8 @@ else{
 	throw "Build format does not match the expected pattern (buildName_w.x.y.z)"
 }
 
-$verPropWriteFileLocation = 'src/Version.props';
-$verPropReadFileLocation = '../../' + $verPropWriteFileLocation;
+$verPropWriteFileLocation = $PSScriptRoot + '../../src/Version.props';
+$verPropReadFileLocation = $verPropWriteFileLocation;
 
 [XML]$verProps = Get-Content $verPropReadFileLocation
 $verProps.Project.PropertyGroup.Version = $versionNumber;
