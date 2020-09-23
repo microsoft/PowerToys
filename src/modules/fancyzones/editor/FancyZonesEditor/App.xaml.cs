@@ -76,7 +76,7 @@ namespace FancyZonesEditor
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
-            var fileStream = File.OpenWrite("FZEditorCrash.log");
+            var fileStream = File.OpenWrite("FZEditorCrashLog.txt");
             var sw = new StreamWriter(fileStream);
             sw.Write(FormatException((Exception)args.ExceptionObject));
             fileStream.Close();
