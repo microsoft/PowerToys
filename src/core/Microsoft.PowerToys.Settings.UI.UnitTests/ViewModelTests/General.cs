@@ -19,8 +19,14 @@ namespace ViewModelTests
     {
         public const string generalSettings_file_name = "Test\\GenealSettings";
 
-        /// <summary>
-        /// Test if the original settings files were modified.
+        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+		
+		[TestInitialize]
+        public void SetUp_StubSettingUtils()
+        {
+            mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
+        }
+		
         /// </summary>
         [TestMethod]
         public void OriginalFilesModificationTest()
@@ -37,6 +43,7 @@ namespace ViewModelTests
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
                 mockSettingsUtils,
+                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -64,6 +71,7 @@ namespace ViewModelTests
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
                 new Mock<ISettingsUtils>().Object,
+                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -101,6 +109,7 @@ namespace ViewModelTests
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
                 new Mock<ISettingsUtils>().Object,
+                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -133,6 +142,7 @@ namespace ViewModelTests
             // Arrange
             GeneralViewModel viewModel = new GeneralViewModel(
                 new Mock<ISettingsUtils>().Object,
+                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -166,6 +176,7 @@ namespace ViewModelTests
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             viewModel = new GeneralViewModel(
                 new Mock<ISettingsUtils>().Object,
+                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -197,6 +208,7 @@ namespace ViewModelTests
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
                 new Mock<ISettingsUtils>().Object,
+                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,

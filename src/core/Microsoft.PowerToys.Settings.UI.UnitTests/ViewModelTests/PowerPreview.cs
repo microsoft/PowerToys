@@ -16,11 +16,15 @@ namespace ViewModelTests
     [TestClass]
     public class PowerPreview
     {
-        public const string TestModuleName = "Test\\File Explorer";
-        // This should not be changed. 
-        // Changing it will causes user's to lose their local settings configs.
-        private const string OriginalModuleName = "File Explorer";
+        private const string Module = "File Explorer";
 
+        private Mock<ISettingsUtils> mockPowerPreviewSettingsUtils;
+
+        [TestInitialize]
+        public void SetUp_StubSettingUtils()
+        {
+            mockPowerPreviewSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<PowerPreviewSettings>();
+        }
 
         /// <summary>
         /// Test if the original settings files were modified.
@@ -31,17 +35,18 @@ namespace ViewModelTests
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             // Load Originl Settings Config File
-            PowerPreviewSettings originalSettings = mockSettingsUtils.GetSettings<PowerPreviewSettings>(OriginalModuleName);
+            PowerPreviewSettings originalSettings = mockSettingsUtils.GetSettings<PowerPreviewSettings>(Module);
 
             // Initialise View Model with test Config files
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockSettingsUtils), SendMockIPCConfigMSG);
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalSettings.Properties.EnableMdPreview, viewModel.MDRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgPreview, viewModel.SVGRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgThumbnail, viewModel.SVGThumbnailIsEnabled);
-		}
+        }
+
 
         [TestMethod]
         public void SVGRenderIsEnabled_ShouldPrevHandler_WhenSuccessful()
@@ -55,7 +60,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, TestModuleName);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -73,7 +78,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, TestModuleName);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -91,7 +96,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, TestModuleName);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module); ;
 
             // act
             viewModel.MDRenderIsEnabled = true;

@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class PowerPreviewSettings : BasePTModuleSettings
+    public class PowerPreviewSettings : BasePTModuleSettings, ISettingsConfig
     {
         public const string ModuleName = "File Explorer";
 
@@ -20,11 +21,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Name = ModuleName;
         }
 
-        public PowerPreviewSettings(string ptName)
+        public string GetModuleName()
         {
-            Properties = new PowerPreviewProperties();
-            Version = "1";
-            Name = ptName;
+            return Name;
+        }
+
+        // This can be utilized in the future if the settings.json file is to be modified/deleted.
+        public bool UpgradeSettingsConfiguration()
+        {
+            return false;
         }
     }
 }
