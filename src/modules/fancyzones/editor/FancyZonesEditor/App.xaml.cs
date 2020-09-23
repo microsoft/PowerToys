@@ -80,6 +80,7 @@ namespace FancyZonesEditor
             var sw = new StreamWriter(fileStream);
             sw.Write(FormatException((Exception)args.ExceptionObject));
             fileStream.Close();
+            MessageBox.Show("FancyZones editor crash log written to " + Path.GetFullPath(fileStream.Name));
         }
 
         private string FormatException(Exception ex)
@@ -135,9 +136,6 @@ namespace FancyZonesEditor
             sb.AppendLine($"* IntPtr Length: {IntPtr.Size}");
             sb.AppendLine($"* x64: {Environment.Is64BitOperatingSystem}");
             sb.AppendLine($"* CLR Version: {Environment.Version}");
-            sb.AppendLine($"* Installed .NET Framework: ");
-
-            sb.AppendLine();
             sb.AppendLine("## Assemblies - " + AppDomain.CurrentDomain.FriendlyName);
             sb.AppendLine();
             foreach (var ass in AppDomain.CurrentDomain.GetAssemblies().OrderBy(o => o.GlobalAssemblyCache ? 50 : 0))
