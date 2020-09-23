@@ -45,16 +45,18 @@ namespace Wox.Infrastructure.Logger
             LogInternal(LogLevel.Error, message, fullClassName, logger, methodName, sourceFilePath, sourceLineNumber);
 
             logger.Error("-------------------------- Begin exception --------------------------");
-            logger.Error(message);
+            logger.Error($"\n\tMessage:\n\t {message}");
 
             do
             {
-                logger.Error($"Exception full name:\n <{e.GetType().FullName}>");
-                logger.Error($"Exception message:\n <{e.Message}>");
-                logger.Error($"Exception stack trace:\n <{e.StackTrace}>");
-                logger.Error($"Exception source:\n <{e.Source}>");
-                logger.Error($"Exception target site:\n <{e.TargetSite}>");
-                logger.Error($"Exception HResult:\n <{e.HResult}>");
+                logger.Error(
+                    $"\n\tException full name:\n\t <{e.GetType().FullName}>" +
+                    $"\n\tException message:\n\t <{e.Message}>" +
+                    $"\n\tException stack trace:\n\t <{e.StackTrace}>" +
+                    $"\n\tException source:\n\t <{e.Source}>" +
+                    $"\n\tException target site:\n\t <{e.TargetSite}>" +
+                    $"\n\tException HResult:\n\t <{e.HResult}>");
+
                 e = e.InnerException;
             }
             while (e != null);
@@ -98,9 +100,11 @@ namespace Wox.Infrastructure.Logger
         {
             System.Diagnostics.Debug.WriteLine($" {level.Name} | {message}");
 
-            logger.Log(level, message);
-            logger.Log(level, $"Offender: {fullClassName}.{methodName}");
-            logger.Log(level, $"Path: {sourceFilePath}::{sourceLineNumber}");
+            var msg = $"\n\tMessage: {message}" +
+                    $"\n\tArea: {fullClassName}.{methodName}" +
+                    $"\n\tSource Path: {sourceFilePath}::{sourceLineNumber}\n";
+
+            logger.Log(level, msg);
         }
 
         private static NLog.Logger GetLogger(string fullClassName, string methodName)

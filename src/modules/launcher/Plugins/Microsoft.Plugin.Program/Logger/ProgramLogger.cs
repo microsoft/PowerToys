@@ -38,10 +38,10 @@ namespace Microsoft.Plugin.Program.Logger
 
             calledMethod = string.IsNullOrEmpty(calledMethod) ? "Not available" : calledMethod;
             var msg = $"Error status: {errorStatus}"
-                         + $"\nProgram path: {loadingProgramPath}"
-                         + $"\nException thrown in called method: {calledMethod}"
-                         + $"\nPossible interpretation of the error: {message}"
-                         + $"\nPossible resolution: {possibleResolution}";
+                         + $"\n\tProgram path: {loadingProgramPath}"
+                         + $"\n\tException thrown in called method: {calledMethod}"
+                         + $"\n\tPossible interpretation of the error: {message}"
+                         + $"\n\tPossible resolution: {possibleResolution}";
 
             // removed looping logic since that is inside Log class
             Log.Exception(msg, ex, fullClassName, methodName, sourceFilePath, sourceLineNumber);
