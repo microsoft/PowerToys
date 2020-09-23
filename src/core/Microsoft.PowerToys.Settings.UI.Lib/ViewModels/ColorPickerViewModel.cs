@@ -5,20 +5,27 @@
 using System;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
         private readonly ISettingsUtils _settingsUtils;
+
         private ColorPickerSettings _colorPickerSettings;
+
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ColorPickerViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc)
+        public ColorPickerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
+            // Obtain the general PowerToy settings configurations
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
+
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             if (_settingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
@@ -29,11 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _colorPickerSettings = new ColorPickerSettings();
             }
 
-            if (_settingsUtils.SettingsExists())
-            {
-                var generalSettings = _settingsUtils.GetSettings<GeneralSettings>();
-                _isEnabled = generalSettings.Enabled.ColorPicker;
-            }
+            _isEnabled = GeneralSettingsConfig.Enabled.ColorPicker;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -53,10 +56,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
 
-                    // grab the latest version of settings
-                    var generalSettings = _settingsUtils.GetSettings<GeneralSettings>();
-                    generalSettings.Enabled.ColorPicker = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
+                    // Set the status of ColorPicker in the general settings
+                    GeneralSettingsConfig.Enabled.ColorPicker = value;
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+
                     SendConfigMSG(outgoing.ToString());
                 }
             }

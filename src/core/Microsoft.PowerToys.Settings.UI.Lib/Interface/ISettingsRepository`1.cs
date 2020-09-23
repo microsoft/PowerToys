@@ -2,13 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace ViewModelTests
+namespace Microsoft.PowerToys.Settings.UI.Lib.Interface
 {
-    [TestClass]
-    public class ColorPicker
+    public interface ISettingsRepository<T>
     {
-
+        T SettingsConfig { get; set; }
     }
 }

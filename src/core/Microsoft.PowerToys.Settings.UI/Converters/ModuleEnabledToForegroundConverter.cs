@@ -15,15 +15,15 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     {
         private readonly ISettingsUtils settingsUtils = new SettingsUtils(new SystemIOProvider());
 
+        private string selectedTheme = string.Empty;
+
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             bool isEnabled = (bool)value;
-            GeneralSettings generalSettings = settingsUtils.GetSettings<GeneralSettings>(string.Empty);
 
             var defaultTheme = new Windows.UI.ViewManagement.UISettings();
             var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
-
-            string selectedTheme = generalSettings.Theme.ToLower();
+            selectedTheme = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToLower();
 
             if (selectedTheme == "dark" || (selectedTheme == "system" && uiTheme == "#FF000000"))
             {

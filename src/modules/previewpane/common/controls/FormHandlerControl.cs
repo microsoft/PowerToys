@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using PreviewHandlerCommon.ComInterop;
 
 namespace Common
 {
@@ -34,12 +35,13 @@ namespace Common
             // This is important, because the thread that instantiates the preview handler component and calls its constructor is a single-threaded apartment (STA) thread, but the thread that calls into the interface members later on is a multithreaded apartment (MTA) thread. Windows Forms controls are meant to run on STA threads.
             // More details: https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers.
             var forceCreation = this.Handle;
+
             this.FormBorderStyle = FormBorderStyle.None;
             this.Visible = false;
         }
 
         /// <inheritdoc />
-        public IntPtr GetHandle()
+        public IntPtr GetWindowHandle()
         {
             return this.Handle;
         }
@@ -50,7 +52,7 @@ namespace Common
             var getResult = IntPtr.Zero;
             this.InvokeOnControlThread(() =>
             {
-                getResult = GetFocus();
+                getResult = NativeMethods.GetFocus();
             });
             result = getResult;
         }
@@ -141,28 +143,6 @@ namespace Common
         }
 
         /// <summary>
-        /// Changes the parent window of the specified child window.
-        /// </summary>
-        /// <param name="hWndChild">A handle to the child window.</param>
-        /// <param name="hWndNewParent">A handle to the new parent window.</param>
-        /// <returns>If the function succeeds, the return value is a handle to the previous parent window and NULL in case of failure.</returns>
-        [DllImport("user32.dll")]
-        private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
-
-        /// <summary>
-        /// Retrieves the handle to the window that has the keyboard focus, if the window is attached to the calling thread's message queue.
-        /// </summary>
-        /// <returns>The return value is the handle to the window with the keyboard focus. If the calling thread's message queue does not have an associated window with the keyboard focus, the return value is NULL.</returns>
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr GetFocus();
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        /// <summary>
         /// Update the Form Control window with the passed rectangle.
         /// </summary>
         /// <param name="windowBounds">An instance of rectangle.</param>
@@ -171,14 +151,14 @@ namespace Common
             this.InvokeOnControlThread(() =>
             {
                 // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
-                int windowStyle = GetWindowLong(this.Handle, gwlStyle);
+                int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
                 if ((windowStyle & wsChild) == 0)
                 {
-                    SetWindowLong(this.Handle, gwlStyle, windowStyle | wsChild);
+                    _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
                 }
 
-                SetParent(this.Handle, this.parentHwnd);
-                this.Bounds = windowBounds;
+                NativeMethods.SetParent(Handle, parentHwnd);
+                Bounds = windowBounds;
             });
         }
     }
