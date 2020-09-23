@@ -285,7 +285,7 @@
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps}"
                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                     Width="370"
+                     Width="375"
                      Height="160"
                      HorizontalAlignment="Left"
                      ScrollViewer.VerticalScrollBarVisibility ="Visible"
