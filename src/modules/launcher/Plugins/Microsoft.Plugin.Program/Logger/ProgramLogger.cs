@@ -37,11 +37,11 @@ namespace Microsoft.Plugin.Program.Logger
             var calledMethod = ex.TargetSite != null ? ex.TargetSite.ToString() : ex.StackTrace;
 
             calledMethod = string.IsNullOrEmpty(calledMethod) ? "Not available" : calledMethod;
-            var msg = $"Error status: {errorStatus}"
-                         + $"\n\tProgram path: {loadingProgramPath}"
-                         + $"\n\tException thrown in called method: {calledMethod}"
-                         + $"\n\tPossible interpretation of the error: {message}"
-                         + $"\n\tPossible resolution: {possibleResolution}";
+            var msg = $"\tError status: {errorStatus}"
+                         + $"\n\t\tProgram path: {loadingProgramPath}"
+                         + $"\n\t\tException thrown in called method: {calledMethod}"
+                         + $"\n\t\tPossible interpretation of the error: {message}"
+                         + $"\n\t\tPossible resolution: {possibleResolution}";
 
             // removed looping logic since that is inside Log class
             Log.Exception(msg, ex, fullClassName, methodName, sourceFilePath, sourceLineNumber);

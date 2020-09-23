@@ -98,8 +98,7 @@ namespace Wox.Infrastructure.Logger
 
         private static void LogInternal(LogLevel level, string message, Type fullClassName, NLog.Logger logger, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            System.Diagnostics.Debug.WriteLine($" {level.Name} | {message}");
-
+            // System.Diagnostics.Debug.WriteLine($" {level.Name} | {message}");
             var msg = $"\n\tMessage: {message}" +
                     $"\n\tArea: {fullClassName}.{methodName}" +
                     $"\n\tSource Path: {sourceFilePath}::{sourceLineNumber}\n";
