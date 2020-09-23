@@ -11,6 +11,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h powerpreview.base.rc powerpreview.rc" />
+  </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{217DF501-135C-4E38-BFC8-99D4821032EA}</ProjectGuid>
@@ -108,7 +111,8 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="registry_wrapper.h" />
     <ClInclude Include="registry_wrapper_interface.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Generated Files/resource.h" />
+    <None Include="resource.base.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
@@ -124,7 +128,8 @@
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="powerpreview.rc" />
+    <ResourceCompile Include="Generated Files/powerpreview.rc" />
+    <None Include="powerpreview.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\common.vcxproj">
@@ -134,6 +139,9 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="powerpreview.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

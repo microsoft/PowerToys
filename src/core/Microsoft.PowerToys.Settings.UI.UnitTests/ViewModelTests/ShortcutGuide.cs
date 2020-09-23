@@ -7,7 +7,9 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -15,45 +17,9 @@ namespace ViewModelTests
     public class ShortcutGuide
     {
         public const string ShortCutGuideTestFolderName = "Test\\ShortCutGuide";
-
         // This should not be changed. 
         // Changing it will cause user's to lose their local settings configs.
         public const string ModuleName = "Shortcut Guide";
-
-        [TestInitialize]
-        public void Setup()
-        {
-            // initialize creation of test settings file.
-            // Test base path:
-            // C:\Users\<user name>\AppData\Local\Packages\08e1807b-8b6d-4bfa-adc4-79c64aae8e78_9abkseg265h2m\LocalState\Microsoft\PowerToys\
-            GeneralSettings generalSettings = new GeneralSettings();
-            ShortcutGuideSettings shortcutGuide = new ShortcutGuideSettings();
-
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), "Test");
-            SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), ShortCutGuideTestFolderName);
-        }
-
-        [TestCleanup]
-        public void CleanUp()
-        {
-            // delete folder created.
-            // delete general settings folder.
-            if (SettingsUtils.SettingsFolderExists("Test"))
-            {
-                DeleteFolder("Test");
-            }
-
-            // delete power rename folder.
-            if (SettingsUtils.SettingsFolderExists(ShortCutGuideTestFolderName))
-            {
-                DeleteFolder(ShortCutGuideTestFolderName);
-            }
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
-        }
 
         /// <summary>
         /// Test if the original settings files were modified.
@@ -61,15 +27,15 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
-            SettingsUtils.IsTestMode = true;
-
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             // Load Originl Settings Config File
-            ShortcutGuideSettings originalSettings = SettingsUtils.GetSettings<ShortcutGuideSettings>(ModuleName);
-            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+            ShortcutGuideSettings originalSettings = mockSettingsUtils.GetSettings<ShortcutGuideSettings>(ModuleName);
+            GeneralSettings originalGeneralSettings = mockSettingsUtils.GetSettings<GeneralSettings>();
 
             // Initialise View Model with test Config files
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(mockSettingsUtils, SendMockIPCConfigMSG);
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ShortcutGuide, viewModel.IsEnabled);
@@ -90,7 +56,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
 
             // Act
             viewModel.IsEnabled = true;
@@ -109,7 +75,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(1, viewModel.ThemeIndex);
 
             // Act
@@ -129,7 +95,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(900, viewModel.PressTime);
 
             // Act
@@ -151,7 +117,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(ISettingsUtilsMocks.GetStubSettingsUtils().Object, SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(90, viewModel.OverlayOpacity);
 
             // Act

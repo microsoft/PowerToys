@@ -307,21 +307,21 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
         while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
         {
             CComPtr<IPowerRenameItemFactory> spsrif;
-            hr = psrm->get_renameItemFactory(&spsrif);
+            hr = psrm->GetRenameItemFactory(&spsrif);
             if (SUCCEEDED(hr))
             {
                 CComPtr<IPowerRenameItem> spNewItem;
                 hr = spsrif->Create(spsi, &spNewItem);
                 if (SUCCEEDED(hr))
                 {
-                    spNewItem->put_depth(depth);
+                    spNewItem->PutDepth(depth);
                     hr = psrm->AddItem(spNewItem);
                 }
 
                 if (SUCCEEDED(hr))
                 {
                     bool isFolder = false;
-                    if (SUCCEEDED(spNewItem->get_isFolder(&isFolder)) && isFolder)
+                    if (SUCCEEDED(spNewItem->GetIsFolder(&isFolder)) && isFolder)
                     {
                         // Bind to the IShellItem for the IEnumShellItems interface
                         CComPtr<IEnumShellItems> spesiNext;

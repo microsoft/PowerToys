@@ -70,7 +70,8 @@
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
     <Property Id="WixShellExecTarget" Value="[#action_runner.exe]" />
-    
+    <Property Id="SKIPDOTNETINSTALL" Value="0"/>
+        
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
     </Property>
@@ -96,7 +97,7 @@
       </Custom>
       
       <Custom Action="InstallDotNet" After="InstallFinalize">
-        NOT Installed
+        NOT Installed and (SKIPDOTNETINSTALL = 0)
       </Custom>
 
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
@@ -420,52 +421,52 @@
         <!-- Added a separate component for Per-User registry changes -->
         <!-- Registry Key for Class Registration of Svg Preview Handler -->
         <RegistryKey Root="HKCR" Key="CLSID\{ddee2b8a-6807-48a6-bb20-2338174ff779}">
-          <RegistryValue Type="string" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
           <RegistryValue Type="string" Name="DisplayName" Value="Svg Preview Handler" />
           <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
           <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
           <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
           <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]SvgPreviewHandler.dll" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]SvgPreviewHandler.dll" />
         </RegistryKey>
         <!-- Registry Key for Class Registration of Svg Thumbnail Provider -->
         <RegistryKey Root="HKCR" Key="CLSID\{36B27788-A8BB-4698-A756-DF9F11F64F84}">
-            <RegistryValue Type="string" Value="SvgThumbnailProvider.SvgThumbnailProvider" />
+            <RegistryValue Type="string" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
             <RegistryValue Type="string" Name="DisplayName" Value="Svg Thumbnail Provider" />
             <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
             <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
             <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
             <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
-            <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="SvgThumbnailProvider.SvgThumbnailProvider" />
+            <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
             <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
             <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
             <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]SvgThumbnailProvider.dll" />
             <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
-            <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="SvgThumbnailProvider.SvgThumbnailProvider" />
+            <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
             <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
             <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]SvgThumbnailProvider.dll" />
         </RegistryKey>
         <!-- Registry Key for Class Registration of Markdown Preview Handler -->
         <RegistryKey Root="HKCR" Key="CLSID\{45769bcc-e8fd-42d0-947e-02beef77a1f5}">
-          <RegistryValue Type="string" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Name="DisplayName" Value="Markdown Preview Handler" />
           <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
           <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
           <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]MarkdownPreviewHandler.dll" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]MarkdownPreviewHandler.dll" />
         </RegistryKey>
@@ -665,7 +666,7 @@
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.exe"/>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.exe"/>
         <!-- dll -->
-        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Runtime.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Telemetry.dll;ManagedCommon.dll?>
+        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Telemetry.dll;ManagedCommon.dll?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\$(var.File)" />
         <?endforeach?>
         <!-- json -->
@@ -843,7 +844,7 @@
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;PropertyChanged.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll;ManagedCommon.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll;ManagedCommon.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
@@ -874,20 +875,6 @@
         <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.light.png" />
         <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.dark.png" />
       </Component>
-       <Component Id="calculatorLanguagesComponent" Directory="CalculatorLanguagesFolder" Guid="2D8019E7-664F-4529-9FAA-83C8DACF0732">
-        <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
-          <!--NB: Ids can't contain hyphens-->
-          <?if $(var.LanguageFile) = zh-cn.xaml?>
-            <?define IdSafeLanguage = zh_cn.xaml?>
-          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
-            <?define IdSafeLanguage = zh_tw.xaml?>
-          <?else?>
-            <?define IdSafeLanguage = $(var.LanguageFile)?>
-          <?endif?>
-          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Languages\$(var.LanguageFile)" />
-          <?undef IdSafeLanguage?>
-        <?endforeach?>
-      </Component>
       <Component Id="calculatorpinyindbComponent" Directory="CalculatorpinyindbFolder" Guid="D5527670-BE9A-4AA9-9D36-1249F2184B5B">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
           <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\pinyindb\$(var.File)" />
@@ -903,20 +890,6 @@
       <Component Id="FolderImagesComponent" Directory="FolderPluginImagesFolder" Guid="6C5226EB-E312-4768-B4D1-B1D3ACFCCBDF">
         <?foreach File in copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png;Warning.dark.png;Warning.light.png?>
           <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Images\$(var.File)" />
-        <?endforeach?>
-      </Component>
-      <Component Id="FolderPluginLanguagesComponent" Directory="FolderPluginLanguagesFolder" Guid="6316D847-5FD2-488B-A60E-5517BF95A25C">
-        <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
-          <!--NB: Ids can't contain hyphens-->
-          <?if $(var.LanguageFile) = zh-cn.xaml?>
-            <?define IdSafeLanguage = zh_cn.xaml?>
-          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
-            <?define IdSafeLanguage = zh_tw.xaml?>
-          <?else?>
-            <?define IdSafeLanguage = $(var.LanguageFile)?>
-          <?endif?>
-            <File Id="File_Folder_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Languages\$(var.LanguageFile)" />
-          <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="FolderPluginpinyindbComponent" Directory="FolderPluginpinyindbFolder" Guid="233BE087-B9DC-408A-8809-593C42DE8B1B">
@@ -936,20 +909,6 @@
           <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\Images\$(var.File)" />
         <?endforeach?>
       </Component>
-       <Component Id="ProgramLanguagesComponent" Directory="ProgramLanguagesFolder" Guid="EBFF53B6-3602-4F55-8784-FC7DB29D3D62">
-        <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
-          <!--NB: Ids can't contain hyphens-->
-          <?if $(var.LanguageFile) = zh-cn.xaml?>
-            <?define IdSafeLanguage = zh_cn.xaml?>
-          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
-            <?define IdSafeLanguage = zh_tw.xaml?>
-          <?else?>
-            <?define IdSafeLanguage = $(var.LanguageFile)?>
-          <?endif?>
-          <File Id="File_Program_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\Languages\$(var.LanguageFile)" />
-          <?undef IdSafeLanguage?>
-        <?endforeach?>
-      </Component>
       <Component Id="ProgrampinyindbComponent" Directory="ProgrampinyindbFolder" Guid="65A488C3-C67D-45F7-9654-6DF529AEEB3F">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
           <File Id="ProgramPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\pinyindb\$(var.File)" />
@@ -965,20 +924,6 @@
       <Component Id="ShellImagesComponent" Directory="ShellImagesFolder" Guid="15B5DBAE-E7C1-4BF7-A29E-6CE76242F8F4">
        <?foreach File in shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
           <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Images\$(var.File)" />
-        <?endforeach?>
-      </Component>
-       <Component Id="ShellLanguagesComponent" Directory="ShellLanguagesFolder" Guid="4190F789-8A66-46AA-B920-C76CB29277D7">
-        <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
-          <!--NB: Ids can't contain hyphens-->
-          <?if $(var.LanguageFile) = zh-cn.xaml?>
-            <?define IdSafeLanguage = zh_cn.xaml?>
-          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
-            <?define IdSafeLanguage = zh_tw.xaml?>
-          <?else?>
-            <?define IdSafeLanguage = $(var.LanguageFile)?>
-          <?endif?>
-          <File Id="File_Shell_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Languages\$(var.LanguageFile)" />
-          <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="ShellpinyindbComponent" Directory="ShellpinyindbFolder" Guid="A60742F3-2187-47F2-A5B5-300E44837DD7">
@@ -998,20 +943,6 @@
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
         <?endforeach?>
       </Component>
-      <Component Id="IndexerLanguagesComponent" Directory="IndexerLanguagesFolder" Guid="4B5ED306-7DD5-4EA6-9DBB-CF054929182C">
-        <?foreach LanguageFile in de.xaml;en.xaml;ja.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
-          <!--NB: Ids can't contain hyphens-->
-          <?if $(var.LanguageFile) = zh-cn.xaml?>
-            <?define IdSafeLanguage = zh_cn.xaml?>
-          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
-            <?define IdSafeLanguage = zh_tw.xaml?>
-          <?else?>
-            <?define IdSafeLanguage = $(var.LanguageFile)?>
-          <?endif?>
-          <File Id="Indexer_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Languages\$(var.LanguageFile)" />
-          <?undef IdSafeLanguage?>
-        <?endforeach?>
-      </Component>
       <Component Id="IndexerpinyindbComponent" Directory="IndexerpinyindbFolder" Guid="48DE333A-80F8-400A-87F4-244DF0A2DB05">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
           <File Id="IndexerPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\pinyindb\$(var.File)" />
@@ -1028,20 +959,6 @@
         <File Id="UriDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.dark.png" />
         <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.light.png" />
       </Component>
-      <Component Id="UriLanguagesComponent" Directory="UriLanguagesFolder" Guid="4CA9CECE-BB93-4686-A58F-35835F5C3F7D">
-        <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
-          <!--NB: Ids can't contain hyphens-->
-          <?if $(var.LanguageFile) = zh-cn.xaml?>
-            <?define IdSafeLanguage = zh_cn.xaml?>
-          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
-            <?define IdSafeLanguage = zh_tw.xaml?>
-          <?else?>
-            <?define IdSafeLanguage = $(var.LanguageFile)?>
-          <?endif?>
-            <File Id="File_Uri_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Languages\$(var.LanguageFile)" />
-          <?undef IdSafeLanguage?>
-        <?endforeach?>
-      </Component>
       <Component Id="UripinyindbComponent" Directory="UripinyindbFolder" Guid="A52A7281-CD7C-4E7D-A5A6-EA8CFCF462A2">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
           <File Id="UriPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\pinyindb\$(var.File)" />
@@ -1057,9 +974,6 @@
       <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
           <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.dark.png" />
           <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.light.png" />
-      </Component>
-      <Component Id="WindowWalkerLanguagesComponent" Directory="WindowWalkerLanguagesFolder" Guid="7D9471D9-5C0A-4BD1-9A01-BAB65DD58834">
-        <File Id="WindowWalkerLanguage" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Languages\en.xaml" />
       </Component>
       <Component Id="WindowWalkerpinyindbComponent" Directory="WindowWalkerpinyindbFolder" Guid="02C7A758-CDD4-4E27-9EC7-2ED68DC444B0">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>

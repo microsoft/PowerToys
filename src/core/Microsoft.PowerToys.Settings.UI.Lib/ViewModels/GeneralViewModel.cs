@@ -13,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class GeneralViewModel : Observable
     {
+        private readonly ISettingsUtils _settingsUtils;
+
         private GeneralSettings GeneralSettingsConfigs { get; set; }
 
         public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
@@ -33,20 +35,21 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        public GeneralViewModel(ISettingsUtils settingsUtils, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             try
             {
-                GeneralSettingsConfigs = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                GeneralSettingsConfigs = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
 
                 if (Helper.CompareVersions(GeneralSettingsConfigs.PowertoysVersion, Helper.GetProductVersion()) < 0)
                 {
                     // Update settings
                     GeneralSettingsConfigs.PowertoysVersion = Helper.GetProductVersion();
-                    SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
+                    _settingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
                 }
             }
             catch (FormatException e)
@@ -57,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             catch
             {
                 GeneralSettingsConfigs = new GeneralSettings();
-                SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
+                _settingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
             }
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -105,6 +108,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         private bool _isLightThemeRadioButtonChecked = false;
         private bool _isSystemThemeRadioButtonChecked = false;
         private bool _autoDownloadUpdates = false;
+
+        private string _latestAvailableVersion = string.Empty;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -328,11 +333,28 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
+        // Temp string. Appears when a user clicks "Check for updates" button and shows latest version available on the Github.
+        public string LatestAvailableVersion
+        {
+            get
+            {
+                return _latestAvailableVersion;
+            }
+
+            set
+            {
+                if (_latestAvailableVersion != value)
+                {
+                    _latestAvailableVersion = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
-
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfigs);
 
             SendConfigMSG(outsettings.ToString());
@@ -341,7 +363,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdates_Click()
         {
-            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
+            GeneralSettings settings = _settingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
             settings.CustomActionName = "check_for_updates";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
@@ -352,7 +374,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public void Restart_Elevated()
         {
-            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
+            GeneralSettings settings = _settingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
             settings.CustomActionName = "restart_elevation";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);

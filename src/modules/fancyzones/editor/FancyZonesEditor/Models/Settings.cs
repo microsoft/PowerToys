@@ -88,6 +88,7 @@ namespace FancyZonesEditor
         private const string EditorShowSpacingJsonTag = "editor-show-spacing";
         private const string EditorSpacingJsonTag = "editor-spacing";
         private const string EditorZoneCountJsonTag = "editor-zone-count";
+        private const string EditorSensitivityRadiusJsonTag = "editor-sensitivity-radius";
 
         private const string FocusJsonTag = "focus";
         private const string ColumnsJsonTag = "columns";
@@ -208,7 +209,7 @@ namespace FancyZonesEditor
             {
                 if (_spacing != value)
                 {
-                    _spacing = value;
+                    _spacing = Math.Max(0, value);
                     FirePropertyChanged();
                 }
             }
@@ -235,6 +236,26 @@ namespace FancyZonesEditor
         }
 
         private bool _showSpacing;
+
+        // SensitivityRadius - how much space inside the zone to highlight the adjacent zone too
+        public int SensitivityRadius
+        {
+            get
+            {
+                return _sensitivityRadius;
+            }
+
+            set
+            {
+                if (_sensitivityRadius != value)
+                {
+                    _sensitivityRadius = Math.Max(0, value);
+                    FirePropertyChanged();
+                }
+            }
+        }
+
+        private int _sensitivityRadius;
 
         // IsShiftKeyPressed - is the shift key currently being held down
         public bool IsShiftKeyPressed
@@ -435,6 +456,7 @@ namespace FancyZonesEditor
                     _showSpacing = true;
                     _spacing = 16;
                     _zoneCount = 3;
+                    _sensitivityRadius = 20;
                 }
                 else
                 {
@@ -463,6 +485,7 @@ namespace FancyZonesEditor
                     _showSpacing = jsonObject.GetProperty(EditorShowSpacingJsonTag).GetBoolean();
                     _spacing = jsonObject.GetProperty(EditorSpacingJsonTag).GetInt32();
                     _zoneCount = jsonObject.GetProperty(EditorZoneCountJsonTag).GetInt32();
+                    _sensitivityRadius = jsonObject.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32();
                 }
             }
             catch (Exception ex)

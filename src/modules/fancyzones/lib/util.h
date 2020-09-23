@@ -1,20 +1,10 @@
 #pragma once
 
 #include "gdiplus.h"
+#include <common/string_utils.h>
 
 namespace FancyZonesUtils
 {
-    // Window properties relevant to FancyZones
-    struct FancyZonesWindowInfo
-    {
-        // True if from the styles the window looks like a standard window
-        bool standardWindow = false;
-        // True if the window is a top-level window that does not have a visible owner
-        bool noVisibleOwner = false;
-        // Path to the executable owning the window
-        std::wstring processPath;
-    };
-
     struct Rect
     {
         Rect() {}
@@ -96,6 +86,24 @@ namespace FancyZonesUtils
             SRCCOPY);
     }
 
+    inline COLORREF HexToRGB(std::wstring_view hex, const COLORREF fallbackColor = RGB(255, 255, 255))
+    {
+        hex = left_trim<wchar_t>(trim<wchar_t>(hex), L"#");
+        
+        try
+        {
+            const long long tmp = std::stoll(hex.data(), nullptr, 16);
+            const BYTE nR = static_cast<BYTE>((tmp & 0xFF0000) >> 16);
+            const BYTE nG = static_cast<BYTE>((tmp & 0xFF00) >> 8);
+            const BYTE nB = static_cast<BYTE>((tmp & 0xFF));
+            return RGB(nR, nG, nB);
+        }
+        catch (const std::exception&)
+        {
+            return fallbackColor;
+        }
+    }
+    
     inline void ParseDeviceId(PCWSTR deviceId, PWSTR parsedId, size_t size)
     {
         // We're interested in the unique part between the first and last #'s
@@ -181,7 +189,11 @@ namespace FancyZonesUtils
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
-    bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
+    bool HasNoVisibleOwner(HWND window) noexcept;
+    bool IsStandardWindow(HWND window);
+    bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
+    bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
+
     bool IsWindowMaximized(HWND window) noexcept;
     void SaveWindowSizeAndOrigin(HWND window) noexcept;
     void RestoreWindowSize(HWND window) noexcept;

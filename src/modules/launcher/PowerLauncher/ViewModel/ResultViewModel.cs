@@ -270,10 +270,14 @@ namespace PowerLauncher.ViewModel
             return Result.GetHashCode();
         }
 
+        public string SearchBoxDisplayText()
+        {
+            return Result.QueryTextDisplay;
+        }
+
         public override string ToString()
         {
-            var display = string.IsNullOrEmpty(Result.QueryTextDisplay) ? Result.Title : Result.QueryTextDisplay;
-            return display;
+            return Result.ToString();
         }
     }
 }

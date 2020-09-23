@@ -6,6 +6,8 @@ using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Moq;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 
 namespace ViewModelTests
 {
@@ -29,13 +31,11 @@ namespace ViewModelTests
         private PowerLauncherViewModel viewModel;
         private PowerLauncherSettings mockSettings;
         private SendCallbackMock sendCallbackMock;
-
         [TestInitialize]
         public void Initialize()
         {
             mockSettings = new PowerLauncherSettings();
             sendCallbackMock = new SendCallbackMock();
-
             viewModel = new PowerLauncherViewModel(
                 mockSettings,
                 new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));
@@ -47,15 +47,15 @@ namespace ViewModelTests
         [TestMethod]
         public void OriginalFilesModificationTest()
         {
-            SettingsUtils.IsTestMode = true;
-
+            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
             // Load Originl Settings Config File
-            PowerLauncherSettings originalSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(OriginalModuleName);
-            GeneralSettings originalGeneralSettings = SettingsUtils.GetSettings<GeneralSettings>();
+            PowerLauncherSettings originalSettings = mockSettingsUtils.GetSettings<PowerLauncherSettings>(OriginalModuleName);
+            GeneralSettings originalGeneralSettings = mockSettingsUtils.GetSettings<GeneralSettings>();
 
             // Initialise View Model with test Config files
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(SendMockIPCConfigMSG, 32);
+            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(mockSettingsUtils, SendMockIPCConfigMSG, 32);
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.PowerLauncher, viewModel.EnablePowerLauncher);

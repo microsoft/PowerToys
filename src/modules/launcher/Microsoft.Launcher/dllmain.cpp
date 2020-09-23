@@ -2,11 +2,24 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
 #include <common/common.h>
+#include <common/shared_constants.h>
 #include "trace.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include <common/os-detect.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+namespace
+{
+    const wchar_t POWER_LAUNCHER_PID_SHARED_FILE[] = L"Local\\PowerLauncherPidSharedFile-3cbfbad4-199b-4e2c-9825-942d5d3d3c74";
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_OPEN_POWERLAUNCHER[] = L"open_powerlauncher";
+}
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
@@ -49,12 +62,27 @@ private:
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
 
+    // Hotkey to invoke the module
+    Hotkey m_hotkey = { .key = 0 };
+
+    // Helper function to extract the hotkey from the settings
+    void parse_hotkey(PowerToysSettings::PowerToyValues& settings);
+
+    // Handle to event used to invoke the Runner
+    HANDLE m_hEvent;
+
 public:
     // Constructor
     Microsoft_Launcher()
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
         init_settings();
+
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(sa);
+        sa.bInheritHandle = false;
+        sa.lpSecurityDescriptor = NULL;
+        m_hEvent = CreateEventW(&sa, FALSE, FALSE, CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
     };
 
     ~Microsoft_Launcher()
@@ -117,6 +145,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
 
+            parse_hotkey(values);
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
             values.save_to_settings_file();
@@ -132,6 +161,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        ResetEvent(m_hEvent);
         // Start PowerLauncher.exe only if the OS is 19H1 or higher
         if (UseNewSettings())
         {
@@ -139,8 +169,10 @@ public:
 
             if (!is_process_elevated(false))
             {
-                std::wstring executable_args = L"";
-                executable_args.append(std::to_wstring(powertoys_pid));
+                std::wstring executable_args;
+                executable_args += L" -powerToysPid ";
+                executable_args += std::to_wstring(powertoys_pid);
+                executable_args += L" --centralized-kb-hook";
 
                 SHELLEXECUTEINFOW sei{ sizeof(sei) };
                 sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -160,7 +192,8 @@ public:
                 params += L"-target modules\\launcher\\PowerLauncher.exe ";
                 params += L"-pidFile ";
                 params += POWER_LAUNCHER_PID_SHARED_FILE;
-                params += L" " + std::to_wstring(powertoys_pid) + L" ";
+                params += L" -powerToysPid " + std::to_wstring(powertoys_pid) + L" ";
+                params += L"--centralized-kb-hook ";
 
                 action_runner_path += L"\\action_runner.exe";
                 // Set up the shared file from which to retrieve the PID of PowerLauncher
@@ -201,6 +234,7 @@ public:
     {
         if (m_enabled)
         {
+            ResetEvent(m_hEvent);
             terminateProcess();
         }
 
@@ -211,6 +245,37 @@ public:
     virtual bool is_enabled() override
     {
         return m_enabled;
+    }
+
+    // Return the invocation hotkey
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        if (m_hotkey.key)
+        {
+            if (hotkeys && buffer_size >= 1)
+            {
+                hotkeys[0] = m_hotkey;
+            }
+
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    // Process the hotkey event
+    virtual bool on_hotkey(size_t hotkeyId) override
+    {
+        // For now, hotkeyId will always be zero
+        if (m_enabled)
+        {
+            SetEvent(m_hEvent);
+            return true;
+        }
+
+        return false;
     }
 
     // Callback to send WM_CLOSE signal to each top level window.
@@ -229,12 +294,16 @@ public:
     void terminateProcess()
     {
         DWORD processID = GetProcessId(m_hProcess);
+        TerminateProcess(m_hProcess, 1);
+        // Temporarily disable sending a message to close
+        /*
         EnumWindows(&requestMainWindowClose, processID);
         const DWORD result = WaitForSingleObject(m_hProcess, MAX_WAIT_MILLISEC);
         if (result == WAIT_TIMEOUT || result == WAIT_FAILED)
         {
             TerminateProcess(m_hProcess, 1);
         }
+        */
     }
 };
 
@@ -246,10 +315,29 @@ void Microsoft_Launcher::init_settings()
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+
+        parse_hotkey(settings);
     }
     catch (std::exception ex)
     {
         // Error while loading from the settings file. Let default values stay as they are.
+    }
+}
+
+void Microsoft_Launcher::parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+{
+    try
+    {
+        auto jsonHotkeyObject = settings.get_raw_json().GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OPEN_POWERLAUNCHER);
+        m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+        m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+        m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+        m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+        m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+    }
+    catch (...)
+    {
+        m_hotkey.key = 0;
     }
 }
 

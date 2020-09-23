@@ -4,7 +4,7 @@
 
 using System.Drawing;
 using System.Windows.Forms;
-using MarkdownPreviewHandler;
+using Microsoft.PowerToys.PreviewHandler.Markdown;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PreviewHandlerCommon;
 
@@ -14,7 +14,7 @@ namespace PreviewPaneUnitTests
     public class MarkdownPreviewHandlerTest
     {
         [TestMethod]
-        public void MarkdownPreviewHandlerControl__AddsBrowserToForm_WhenDoPreviewIsCalled()
+        public void MarkdownPreviewHandlerControlAddsBrowserToFormWhenDoPreviewIsCalled()
         {
             // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
@@ -29,7 +29,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void MarkdownPreviewHandlerControl__AddsInfoBarToFormIfExternalImageLinkPresent_WhenDoPreviewIsCalled()
+        public void MarkdownPreviewHandlerControlAddsInfoBarToFormIfExternalImageLinkPresentWhenDoPreviewIsCalled()
         {
             // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
@@ -44,7 +44,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void MarkdownPreviewHandlerControl__AddsInfoBarToFormIfHTMLImageTagIsPresent_WhenDoPreviewIsCalled()
+        public void MarkdownPreviewHandlerControlAddsInfoBarToFormIfHTMLImageTagIsPresentWhenDoPreviewIsCalled()
         {
             // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
@@ -59,7 +59,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void MarkdownPreviewHandlerControl__DoesNotAddInfoBarToFormIfExternalImageLinkNotPresent_WhenDoPreviewIsCalled()
+        public void MarkdownPreviewHandlerControlDoesNotAddInfoBarToFormIfExternalImageLinkNotPresentWhenDoPreviewIsCalled()
         {
             // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
@@ -74,7 +74,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void MarkdownPreviewHandlerControl__UpdatesWebBrowserSettings_WhenDoPreviewIsCalled()
+        public void MarkdownPreviewHandlerControlUpdatesWebBrowserSettingsWhenDoPreviewIsCalled()
         {
             // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
@@ -94,7 +94,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void MarkdownPreviewHandlerControl__UpdateInfobarSettings_WhenDoPreviewIsCalled()
+        public void MarkdownPreviewHandlerControlUpdateInfobarSettingsWhenDoPreviewIsCalled()
         {
             // Arrange
             using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())

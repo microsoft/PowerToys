@@ -116,7 +116,6 @@ private:
     void ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
     void ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
-    void MigrateCustomZoneSetsFromRegistry();
     void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 
     // Maps app path to app's zone history data
@@ -137,3 +136,11 @@ private:
 };
 
 FancyZonesData& FancyZonesDataInstance();
+
+namespace DefaultValues
+{
+    const int ZoneCount = 3;
+    const bool ShowSpacing = true;
+    const int Spacing = 16;
+    const int SensitivityRadius = 20;
+}

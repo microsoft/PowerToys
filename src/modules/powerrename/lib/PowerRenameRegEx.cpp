@@ -71,7 +71,7 @@ IFACEMETHODIMP CPowerRenameRegEx::UnAdvise(_In_ DWORD cookie)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameRegEx::get_searchTerm(_Outptr_ PWSTR* searchTerm)
+IFACEMETHODIMP CPowerRenameRegEx::GetSearchTerm(_Outptr_ PWSTR* searchTerm)
 {
     *searchTerm = nullptr;
     HRESULT hr = m_searchTerm ? S_OK : E_FAIL;
@@ -83,7 +83,7 @@ IFACEMETHODIMP CPowerRenameRegEx::get_searchTerm(_Outptr_ PWSTR* searchTerm)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameRegEx::put_searchTerm(_In_ PCWSTR searchTerm)
+IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm)
 {
     bool changed = false;
     HRESULT hr = searchTerm ? S_OK : E_INVALIDARG;
@@ -106,7 +106,7 @@ IFACEMETHODIMP CPowerRenameRegEx::put_searchTerm(_In_ PCWSTR searchTerm)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameRegEx::get_replaceTerm(_Outptr_ PWSTR* replaceTerm)
+IFACEMETHODIMP CPowerRenameRegEx::GetReplaceTerm(_Outptr_ PWSTR* replaceTerm)
 {
     *replaceTerm = nullptr;
     HRESULT hr = m_replaceTerm ? S_OK : E_FAIL;
@@ -118,7 +118,7 @@ IFACEMETHODIMP CPowerRenameRegEx::get_replaceTerm(_Outptr_ PWSTR* replaceTerm)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameRegEx::put_replaceTerm(_In_ PCWSTR replaceTerm)
+IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm)
 {
     bool changed = false;
     HRESULT hr = replaceTerm ? S_OK : E_INVALIDARG;
@@ -141,13 +141,13 @@ IFACEMETHODIMP CPowerRenameRegEx::put_replaceTerm(_In_ PCWSTR replaceTerm)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameRegEx::get_flags(_Out_ DWORD* flags)
+IFACEMETHODIMP CPowerRenameRegEx::GetFlags(_Out_ DWORD* flags)
 {
     *flags = m_flags;
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameRegEx::put_flags(_In_ DWORD flags)
+IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
 {
     if (m_flags != flags)
     {

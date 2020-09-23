@@ -44,7 +44,7 @@ namespace Wox.Infrastructure.Storage
                 if (File.Exists(FilePath))
                 {
                     File.Delete(FilePath);
-                    Log.Info($"|BinaryStorage.TryLoad|Deleting cached data| <{FilePath}>");
+                    Log.Info($"|BinaryStorage.TryLoad|Deleting cached data at <{FilePath}>");
                 }
             }
 
@@ -133,7 +133,7 @@ namespace Wox.Infrastructure.Storage
             }
 
             _storageHelper.Close();
-            Log.Info($"|BinaryStorage.Save|Saving cached data| <{FilePath}>");
+            Log.Info($"|BinaryStorage.Save|Saving cached data at <{FilePath}>");
         }
     }
 }

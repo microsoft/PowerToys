@@ -8,7 +8,7 @@ using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
-using Windows.UI.Popups;
+using Windows.Data.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
@@ -56,12 +56,31 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     Program.GetTwoWayIPCManager().Send(msg);
                 });
 
+                // receive IPC Message
+                Program.IPCMessageReceivedCallback = (string msg) =>
+                {
+                    if (ShellPage.ShellHandler.IPCResponseHandleList != null)
+                    {
+                        try
+                        {
+                            JsonObject json = JsonObject.Parse(msg);
+                            foreach (Action<JsonObject> handle in ShellPage.ShellHandler.IPCResponseHandleList)
+                            {
+                                handle(json);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                };
+
                 shellPage.SetElevationStatus(Program.IsElevated);
                 shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();
             }
 
-            // If the window is open, explicity force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
+            // XAML Islands: If the window is open, explicity force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
             if (isOpen)
             {
                 Show();
@@ -71,6 +90,13 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             isOpen = false;
+
+            // XAML Islands: If the window is closed while minimized, exit the process. Required to avoid process not terminating issue - https://github.com/microsoft/PowerToys/issues/4430
+            if (WindowState == WindowState.Minimized)
+            {
+                // Run Environment.Exit on a separate task to avoid performance impact
+                System.Threading.Tasks.Task.Run(() => { Environment.Exit(0); });
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Generated Files/resource.h"
 
 #include <common/common.h>
 #include <common/notifications.h>
@@ -9,8 +10,6 @@
 #include <common/appMutex.h>
 #include <common/processApi.h>
 
-
-#include "resource.h"
 
 #include <runner/action_runner_utils.h>
 
@@ -64,12 +63,24 @@ enum class CmdArgs
 {
     silent,
     noFullUI,
-    noStartPT
+    noStartPT,
+    skipDotnetInstall,
+    showHelp
 };
+
+namespace
+{
+    const std::unordered_map<std::wstring_view, CmdArgs> knownArgs = {
+        { L"--help", CmdArgs::showHelp },
+        { L"--no_full_ui", CmdArgs::noFullUI },
+        { L"--silent", CmdArgs::silent },
+        { L"--no_start_pt", CmdArgs::noStartPT },
+        { L"--skip_dotnet_install", CmdArgs::skipDotnetInstall }
+    };
+}
 
 std::unordered_set<CmdArgs> parseCmdArgs(const int nCmdArgs, LPWSTR* argList)
 {
-    const std::unordered_map<std::wstring_view, CmdArgs> knownArgs = { { L"--no_full_ui", CmdArgs::noFullUI }, { L"--silent", CmdArgs::silent }, { L"--no_start_pt", CmdArgs::noStartPT } };
     std::unordered_set<CmdArgs> result;
     for (size_t i = 1; i < nCmdArgs; ++i)
     {
@@ -81,7 +92,7 @@ std::unordered_set<CmdArgs> parseCmdArgs(const int nCmdArgs, LPWSTR* argList)
     return result;
 }
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int bootstrapper()
 {
     using namespace localized_strings;
     winrt::init_apartment();
@@ -89,6 +100,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     int nCmdArgs = 0;
     LPWSTR* argList = CommandLineToArgvW(GetCommandLineW(), &nCmdArgs);
     const auto cmdArgs = parseCmdArgs(nCmdArgs, argList);
+    std::wostringstream oss;
+    if (cmdArgs.contains(CmdArgs::showHelp))
+    {
+        oss << "Supported arguments:\n\n";
+        for (auto [arg, _] : knownArgs)
+        {
+            oss << arg << '\n';
+        }
+        MessageBoxW(nullptr, oss.str().c_str(), L"Help", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
     if (!cmdArgs.contains(CmdArgs::noFullUI))
     {
         MsiSetInternalUI(INSTALLUILEVEL_FULL, nullptr);
@@ -194,7 +216,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 {
                     break;
                 }
-                progressParams.progress = min(0.99f, progressParams.progress + 0.001f);
+                progressParams.progress = std::min(0.99f, progressParams.progress + 0.001f);
                 notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
             }
         } }.detach();
@@ -231,16 +253,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         notifications::show_toast(UNINSTALL_PREVIOUS_VERSION_ERROR, TOAST_TITLE);
     }
-
-    updateProgressBar(.5f, INSTALLING_DOTNET);
-    if (!updating::dotnet_is_installed() && !updating::install_dotnet() && !cmdArgs.contains(CmdArgs::silent))
+    const bool installDotnet = !cmdArgs.contains(CmdArgs::skipDotnetInstall);
+    if (installDotnet)
     {
-        notifications::show_toast(DOTNET_INSTALL_ERROR, TOAST_TITLE);
+        updateProgressBar(.5f, INSTALLING_DOTNET);
+    }
+
+    try
+    {
+        if (installDotnet &&
+            !updating::dotnet_is_installed() &&
+            !updating::install_dotnet(cmdArgs.contains(CmdArgs::silent)) &&
+            !cmdArgs.contains(CmdArgs::silent))
+        {
+            notifications::show_toast(DOTNET_INSTALL_ERROR, TOAST_TITLE);
+        }
+    }
+    catch (...)
+    {
+        MessageBoxW(nullptr, L".NET Core installation", L"Unknown exception encountered!", MB_OK | MB_ICONERROR);
     }
 
     updateProgressBar(.75f, INSTALLING_NEW_VERSION);
 
-    const bool installationDone = MsiInstallProductW(installerPath->c_str(), nullptr) == ERROR_SUCCESS;
+    // Always skip dotnet install, because we should've installed it from here earlier
+    std::wstring msiProps = L"SKIPDOTNETINSTALL=1 ";
+    const bool installationDone = MsiInstallProductW(installerPath->c_str(), msiProps.c_str()) == ERROR_SUCCESS;
     updateProgressBar(1.f, installationDone ? NEW_VERSION_INSTALLATION_DONE : NEW_VERSION_INSTALLATION_ERROR);
     if (!installationDone)
     {
@@ -259,9 +297,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NO_CONSOLE };
         sei.lpFile = newPTPath->c_str();
         sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = UPDATE_REPORT_SUCCESS;
         ShellExecuteExW(&sei);
     }
 
+    return 0;
+}
+
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+    try
+    {
+        return bootstrapper();
+    }
+    catch (const std::exception& ex)
+    {
+        MessageBoxA(nullptr, ex.what(), "Unhandled stdexception encountered!", MB_OK | MB_ICONERROR);
+    }
+    catch (winrt::hresult_error const& ex)
+    {
+        winrt::hstring message = ex.message();
+        MessageBoxW(nullptr, message.c_str(), L"Unhandled winrt exception encountered!", MB_OK | MB_ICONERROR);
+    }
+    catch (...)
+    {
+        auto lastErrorMessage = get_last_error_message(GetLastError());
+        std::wstring message = lastErrorMessage ? std::move(*lastErrorMessage) : L"";
+        MessageBoxW(nullptr, message.c_str(), L"Unknown exception encountered!", MB_OK | MB_ICONERROR);
+    }
     return 0;
 }

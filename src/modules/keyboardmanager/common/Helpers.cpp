@@ -4,7 +4,7 @@
 #include "../common/shared_constants.h"
 #include <shlwapi.h>
 #include "../../common/common.h"
-#include "keyboardmanager/dll/resource.h"
+#include "keyboardmanager/dll/Generated Files/resource.h"
 #include "../common/keyboard_layout.h"
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 

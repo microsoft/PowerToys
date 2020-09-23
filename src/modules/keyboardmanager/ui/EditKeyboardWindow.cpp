@@ -10,7 +10,7 @@
 #include <common/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
-#include <keyboardmanager/dll/resource.h>
+#include <keyboardmanager/dll/Generated Files/resource.h>
 #include "../common/shared_constants.h"
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "common/common.h"
@@ -299,6 +299,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         // Whenever a remap is added move to the bottom of the screen
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
     });
+    // Set accessible name for the addRemapKey button
+    addRemapKey.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_ADD_KEY_REMAP_BUTTON)));
 
     StackPanel mappingsPanel;
     mappingsPanel.Children().Append(keyRemapInfoHeader);
@@ -336,6 +338,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     hwndLock.lock();
     hwndEditKeyboardNativeWindow = nullptr;
     keyboardManagerState.ResetUIState();
+    keyboardManagerState.ClearRegisteredKeyDelays();
 
     // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
     xamlBridge.ClearXamlIslands();

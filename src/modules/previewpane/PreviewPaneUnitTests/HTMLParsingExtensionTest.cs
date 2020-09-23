@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Markdig;
-using MarkdownPreviewHandler;
+using Microsoft.PowerToys.PreviewHandler.Markdown;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PreviewPaneUnitTests
@@ -11,15 +11,16 @@ namespace PreviewPaneUnitTests
     [TestClass]
     public class HTMLParsingExtensionTest
     {
-        private MarkdownPipeline BuidPipeline(IMarkdownExtension extension)
+        private static MarkdownPipeline BuidPipeline(IMarkdownExtension extension)
         {
             MarkdownPipelineBuilder pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions();
             pipelineBuilder.Extensions.Add(extension);
+
             return pipelineBuilder.Build();
         }
 
         [TestMethod]
-        public void Extension_UpdatesTablesClass_WhenUsed()
+        public void ExtensionUpdatesTablesClassWhenUsed()
         {
             // Arrange
             string mdString = "| A | B |\n| -- | -- | ";
@@ -34,7 +35,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void Extension_UpdatesBlockQuotesClass_WhenUsed()
+        public void ExtensionUpdatesBlockQuotesClassWhenUsed()
         {
             // Arrange
             string mdString = "> Blockquotes.";
@@ -49,7 +50,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void Extension_UpdatesFigureClassAndBlocksRelativeUrl_WhenUsed()
+        public void ExtensionUpdatesFigureClassAndBlocksRelativeUrlWhenUsed()
         {
             // arrange
             string mdString = "![text](a.jpg \"Figure\")";
@@ -64,7 +65,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void Extension_AddsClassToFigureCaption_WhenUsed()
+        public void ExtensionAddsClassToFigureCaptionWhenUsed()
         {
             // arrange
             string mdString = "^^^ This is a caption";
@@ -79,7 +80,7 @@ namespace PreviewPaneUnitTests
         }
 
         [TestMethod]
-        public void Extension_RemovesExternalImageUrlAndMakeCallback_WhenUsed()
+        public void ExtensionRemovesExternalImageUrlAndMakeCallbackWhenUsed()
         {
             // arrange
             int count = 0;

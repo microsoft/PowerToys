@@ -25,7 +25,6 @@ namespace localized_strings
     const wchar_t GITHUB_NEW_VERSION_UPDATE_NOW[] = L"Update now";
     const wchar_t GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART[] = L"At next launch";
 
-    const wchar_t UNINSTALLATION_SUCCESS[] = L"Previous version of PowerToys was uninstalled successfully.";
     const wchar_t UNINSTALLATION_UNKNOWN_ERROR[] = L"Error: please uninstall the previous version of PowerToys manually.";
 
     const wchar_t GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT[] = L"An update to PowerToys is available. Visit our GitHub page to update.\n";
@@ -129,11 +128,6 @@ namespace updating
                                                            ::notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" + info.installer_filename },
                                                            ::notifications::snooze_button{ GITHUB_NEW_VERSION_SNOOZE_TITLE, { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } },
                                                          std::move(toast_params));
-        }
-
-        void show_uninstallation_success()
-        {
-            ::notifications::show_toast(localized_strings::UNINSTALLATION_SUCCESS, TOAST_TITLE);
         }
 
         void show_uninstallation_error()

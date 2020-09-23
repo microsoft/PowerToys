@@ -6,28 +6,24 @@
 #include <memory>
 #include <vector>
 
-// Returns RECT with positions of the minimize/maximize buttons of the given window.
-// Does not always work, since some apps draw custom toolbars.
-std::optional<RECT> get_button_pos(HWND hwnd);
+
+namespace localized_strings
+{
+    const wchar_t LAST_ERROR_FORMAT_STRING[] = L"%s failed with error %d: %s";
+    const wchar_t LAST_ERROR_TITLE_STRING[] = L"Error";
+}
+
 // Gets position of given window.
 std::optional<RECT> get_window_pos(HWND hwnd);
-// Gets mouse position.
-std::optional<POINT> get_mouse_pos();
+
 // Check if window is part of the shell or the taskbar.
 bool is_system_window(HWND hwnd, const char* class_name);
 
-// Calculate sizes
-int width(const RECT& rect);
-int height(const RECT& rect);
-// Compare rects
-bool operator<(const RECT& lhs, const RECT& rhs);
-// Moves and/or resizes small_rect to fit inside big_rect.
-RECT keep_rect_inside_rect(const RECT& small_rect, const RECT& big_rect);
 // Initializes and runs windows message loop
 int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_seconds = {});
 
 std::optional<std::wstring> get_last_error_message(const DWORD dw);
-void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
+void show_last_error_message(LPCWSTR lpszFunction, DWORD dw, LPCWSTR errorTitle = localized_strings::LAST_ERROR_TITLE_STRING);
 
 enum WindowState
 {
@@ -107,5 +103,3 @@ struct overloaded : Ts...
 };
 template<class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
-
-#define POWER_LAUNCHER_PID_SHARED_FILE L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"

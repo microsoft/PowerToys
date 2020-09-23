@@ -16,6 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class KeyboardManagerViewModel : Observable
     {
+        private readonly ISettingsUtils _settingsUtils;
+
         private const string PowerToyName = "Keyboard Manager";
         private const string RemapKeyboardActionName = "RemapKeyboard";
         private const string RemapKeyboardActionValue = "Open Remap Keyboard Window";
@@ -36,16 +38,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
             FilterRemapKeysList = filterRemapKeysList;
 
-            if (SettingsUtils.SettingsExists(PowerToyName))
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+
+            if (_settingsUtils.SettingsExists(PowerToyName))
             {
                 // Todo: Be more resilient while reading and saving settings.
-                Settings = SettingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
+                Settings = _settingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
 
                 // Load profile.
                 if (!LoadProfile())
@@ -56,17 +60,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             else
             {
                 Settings = new KeyboardManagerSettings(PowerToyName);
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
+                _settingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
             }
 
-            if (SettingsUtils.SettingsExists())
+            if (_settingsUtils.SettingsExists())
             {
-                _generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                _generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
             }
             else
             {
                 _generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(_generalSettings.ToJsonString(), string.Empty);
+                _settingsUtils.SaveSettings(_generalSettings.ToJsonString(), string.Empty);
             }
         }
 
@@ -173,7 +177,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // update the UI element here.
                         try
                         {
-                            _profile = SettingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, Settings.Properties.ActiveConfiguration.Value + JsonFileType);
+                            _profile = _settingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, Settings.Properties.ActiveConfiguration.Value + JsonFileType);
                             FilterRemapKeysList(_profile.RemapKeys.InProcessRemapKeys);
                         }
                         finally

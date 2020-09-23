@@ -74,12 +74,12 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Function to set the subtitle based on the Type of application
-        private static string SetSubtitle(IPublicAPI api)
+        private static string SetSubtitle()
         {
-            return api.GetTranslation("powertoys_run_plugin_program_packaged_application");
+            return Properties.Resources.powertoys_run_plugin_program_packaged_application;
         }
 
-        public Result Result(string query, IPublicAPI api)
+        public Result Result(string query, string queryArguments, IPublicAPI api)
         {
             if (api == null)
             {
@@ -94,13 +94,13 @@ namespace Microsoft.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = SetSubtitle(api),
+                SubTitle = SetSubtitle(),
                 Icon = Logo,
                 Score = score,
                 ContextData = this,
                 Action = e =>
                 {
-                    Launch(api);
+                    Launch(api, queryArguments);
                     return true;
                 },
             };
@@ -109,8 +109,8 @@ namespace Microsoft.Plugin.Program.Programs
             result.Title = DisplayName;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
-            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
-            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), Package.Location);
+            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
+            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, Package.Location);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
@@ -132,7 +132,7 @@ namespace Microsoft.Plugin.Program.Programs
                         new ContextMenuResult
                         {
                             PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                            Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
+                            Title = Properties.Resources.wox_plugin_program_run_as_administrator,
                             Glyph = "\xE7EF",
                             FontFamily = "Segoe MDL2 Assets",
                             AcceleratorKey = Key.Enter,
@@ -155,7 +155,7 @@ namespace Microsoft.Plugin.Program.Programs
                 new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                    Title = Properties.Resources.wox_plugin_program_open_containing_folder,
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.E,
@@ -171,7 +171,7 @@ namespace Microsoft.Plugin.Program.Programs
             contextMenus.Add(new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = api.GetTranslation("wox_plugin_program_open_in_console"),
+                Title = Properties.Resources.wox_plugin_program_open_in_console,
                 Glyph = "\xE756",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.C,
@@ -195,21 +195,20 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive, and showing the user an error message")]
-        private async void Launch(IPublicAPI api)
+        private async void Launch(IPublicAPI api, string queryArguments)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
-            const string noArgs = "";
             const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;
             await Task.Run(() =>
             {
                 try
                 {
-                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out uint unusedPid);
+                    appManager.ActivateApplication(UserModelId, queryArguments, noFlags, out var unusedPid);
                 }
                 catch (Exception)
                 {
-                    var name = "Plugin: Program";
-                    var message = $"Can't start UWP: {DisplayName}";
+                    var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
+                    var message = $"{Properties.Resources.powertoys_run_plugin_program_uwp_failed}: {DisplayName}";
                     api.ShowMsg(name, message, string.Empty);
                 }
             }).ConfigureAwait(false);

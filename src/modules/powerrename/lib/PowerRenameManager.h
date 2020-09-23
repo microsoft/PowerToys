@@ -26,16 +26,21 @@ public:
     IFACEMETHODIMP Rename(_In_ HWND hwndParent);
     IFACEMETHODIMP AddItem(_In_ IPowerRenameItem* pItem);
     IFACEMETHODIMP GetItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem);
+    IFACEMETHODIMP GetVisibleItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem);
     IFACEMETHODIMP GetItemById(_In_ int id, _COM_Outptr_ IPowerRenameItem** ppItem);
     IFACEMETHODIMP GetItemCount(_Out_ UINT* count);
+    IFACEMETHODIMP SetVisible();
+    IFACEMETHODIMP GetVisibleItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetSelectedItemCount(_Out_ UINT* count);
     IFACEMETHODIMP GetRenameItemCount(_Out_ UINT* count);
-    IFACEMETHODIMP get_flags(_Out_ DWORD* flags);
-    IFACEMETHODIMP put_flags(_In_ DWORD flags);
-    IFACEMETHODIMP get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
-    IFACEMETHODIMP put_renameRegEx(_In_ IPowerRenameRegEx* pRegEx);
-    IFACEMETHODIMP get_renameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
-    IFACEMETHODIMP put_renameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
+    IFACEMETHODIMP GetFlags(_Out_ DWORD* flags);
+    IFACEMETHODIMP PutFlags(_In_ DWORD flags);
+    IFACEMETHODIMP GetFilter(_Out_ DWORD* filter);
+    IFACEMETHODIMP SwitchFilter(_In_ int columnNumber);
+    IFACEMETHODIMP GetRenameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
+    IFACEMETHODIMP PutRenameRegEx(_In_ IPowerRenameRegEx* pRegEx);
+    IFACEMETHODIMP GetRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
+    IFACEMETHODIMP PutRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
 
     // IPowerRenameRegExEvents
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
@@ -102,6 +107,8 @@ protected:
     DWORD m_cookie = 0;
     DWORD m_regExAdviseCookie = 0;
 
+    DWORD m_filter = PowerRenameFilters::None;
+
     struct RENAME_MGR_EVENT
     {
         IPowerRenameManagerEvents* pEvents;
@@ -113,6 +120,7 @@ protected:
 
     _Guarded_by_(m_lockEvents) std::vector<RENAME_MGR_EVENT> m_powerRenameManagerEvents;
     _Guarded_by_(m_lockItems) std::map<int, IPowerRenameItem*> m_renameItems;
+    _Guarded_by_(m_lockItems) std::vector<bool> m_isVisible;
 
     // Parent HWND used by IFileOperation
     HWND m_hwndParent = nullptr;
