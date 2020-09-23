@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -15,17 +16,17 @@ namespace Common.Utilities
     /// <remarks>
     /// Implements only read from the stream functionality.
     /// </remarks>
-    public class StreamWrapper : Stream
+    public class ReadonlyStream : Stream
     {
-        private IStream stream;
+        private IStream _stream;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StreamWrapper"/> class.
+        /// Initializes a new instance of the <see cref="ReadonlyStream"/> class.
         /// </summary>
         /// <param name="stream">A pointer to an <see cref="IStream" /> interface that represents the stream source.</param>
-        public StreamWrapper(IStream stream)
+        public ReadonlyStream(IStream stream)
         {
-            this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
         }
 
         /// <summary>
@@ -68,11 +69,11 @@ namespace Common.Utilities
         {
             get
             {
-                this.CheckDisposed();
+                CheckDisposed();
                 System.Runtime.InteropServices.ComTypes.STATSTG stat;
 
                 // Stat called with STATFLAG_NONAME. The pwcsName is not required more details https://docs.microsoft.com/en-us/windows/win32/api/wtypes/ne-wtypes-statflag
-                this.stream.Stat(out stat, 1); // STATFLAG_NONAME
+                _stream.Stat(out stat, 1); // STATFLAG_NONAME
 
                 return stat.cbSize;
             }
@@ -85,12 +86,12 @@ namespace Common.Utilities
         {
             get
             {
-                return this.Seek(0, SeekOrigin.Current);
+                return Seek(0, SeekOrigin.Current);
             }
 
             set
             {
-                this.Seek(value, SeekOrigin.Begin);
+                Seek(value, SeekOrigin.Begin);
             }
         }
 
@@ -103,11 +104,16 @@ namespace Common.Utilities
         /// <returns>The total number of bytes read into the buffer. This can be less than the number of bytes requested if that many bytes are not currently available, or zero if the end of the stream has been reached.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            this.CheckDisposed();
+            CheckDisposed();
 
-            if (offset < 0 || count < 0 || offset + count > buffer.Length)
+            if (buffer == null)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new NullReferenceException("buffer is null");
+            }
+
+            if (offset < 0 || count < 0 || (offset + count) > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(buffer), "Out of range for buffer");
             }
 
             byte[] localBuffer = buffer;
@@ -121,7 +127,7 @@ namespace Common.Utilities
 
             try
             {
-                this.stream.Read(localBuffer, count, bytesReadPtr);
+                _stream.Read(localBuffer, count, bytesReadPtr);
                 int bytesRead = Marshal.ReadInt32(bytesReadPtr);
 
                 if (offset > 0)
@@ -145,7 +151,7 @@ namespace Common.Utilities
         /// <returns>The new position within the current stream.</returns>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            this.CheckDisposed();
+            CheckDisposed();
             int dwOrigin;
 
             // Maps the SeekOrigin with dworigin more details: https://docs.microsoft.com/en-us/windows/win32/api/objidl/ne-objidl-stream_seek
@@ -164,14 +170,14 @@ namespace Common.Utilities
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(origin));
             }
 
             IntPtr posPtr = Marshal.AllocCoTaskMem(sizeof(long));
 
             try
             {
-                this.stream.Seek(offset, dwOrigin, posPtr);
+                _stream.Seek(offset, dwOrigin, posPtr);
                 return Marshal.ReadInt64(posPtr);
             }
             finally
@@ -220,22 +226,24 @@ namespace Common.Utilities
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
-            if (this.stream != null)
+            base.Dispose(true);
+
+            if (_stream != null)
             {
-                if (Marshal.IsComObject(this.stream))
+                if (Marshal.IsComObject(_stream))
                 {
-                    Marshal.ReleaseComObject(this.stream);
+                    Marshal.ReleaseComObject(_stream);
                 }
 
-                this.stream = null;
+                _stream = null;
             }
         }
 
         private void CheckDisposed()
         {
-            if (this.stream == null)
+            if (_stream == null)
             {
-                throw new ObjectDisposedException(nameof(StreamWrapper));
+                throw new ObjectDisposedException(nameof(ReadonlyStream));
             }
         }
     }

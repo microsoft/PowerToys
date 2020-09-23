@@ -19,6 +19,11 @@ namespace UnitTests_PreviewHandlerCommon
 
         public class TestPreviewHandler : PreviewHandlerBase
         {
+            public TestPreviewHandler()
+            {
+                Initialize();
+            }
+
             public override void DoPreview()
             {
                 throw new NotImplementedException();
@@ -291,7 +296,7 @@ namespace UnitTests_PreviewHandlerCommon
             // Arrange
             var previewControlHandle = new IntPtr(5);
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
-            mockPreviewControl.Setup(x => x.GetHandle())
+            mockPreviewControl.Setup(x => x.GetWindowHandle())
                 .Returns(previewControlHandle);
 
             previewHandlerControl = mockPreviewControl.Object;

@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 {
                     _infoBarAdded = false;
                     string svgData = null;
-                    using (var stream = new StreamWrapper(dataSource as IStream))
+                    using (var stream = new ReadonlyStream(dataSource as IStream))
                     {
                         using (var reader = new StreamReader(stream))
                         {
