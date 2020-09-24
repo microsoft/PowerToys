@@ -204,6 +204,19 @@ std::optional<SingleKeyRemapBufferRow> KeyboardManagerState::GetSingleKeyRemap(c
     return std::nullopt;
 }
 
+// Function to get the app specific shortcut remapping table given the target app. Returns nullopt if there are no remaps for that app
+std::optional<ShortcutRemapTable> KeyboardManagerState::GetAppSpecificShortcutRemappingTable(const std::wstring& appName)
+{
+    std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
+    auto it = appSpecificShortcutReMap.find(appName);
+    if (it != appSpecificShortcutReMap.end())
+    {
+        return it->second;
+    }
+
+    return std::nullopt;
+}
+
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2)
 {

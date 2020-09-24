@@ -124,6 +124,8 @@ namespace KeyboardEventHandlers
         return 0;
     }
 
+    /* This feature has not been enabled (code from proof of concept stage)
+    * 
     // Function to a change a key's behavior from toggle to modifier
     __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept
     {
@@ -172,9 +174,10 @@ namespace KeyboardEventHandlers
 
         return 0;
     }
+    */
 
     // Function to a handle a shortcut remap
-    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, std::map<Shortcut, RemapShortcut>& reMap, std::vector<Shortcut>& sortedReMapKeys, std::mutex& map_mutex, KeyboardManagerState& keyboardManagerState, const std::wstring& activatedApp) noexcept
+    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, ShortcutRemapTable& reMap, std::vector<Shortcut>& sortedReMapKeys, std::mutex& map_mutex, KeyboardManagerState& keyboardManagerState, const std::wstring& activatedApp) noexcept
     {
         // The mutex should be unlocked before SendInput is called to avoid re-entry into the same mutex. More details can be found at https://github.com/microsoft/PowerToys/pull/1789#issuecomment-607555837
         std::unique_lock<std::mutex> lock(map_mutex);
@@ -657,7 +660,7 @@ namespace KeyboardEventHandlers
             std::unique_lock<std::mutex> lock(keyboardManagerState.appSpecificShortcutReMap_mutex);
             std::wstring query_string;
 
-            std::map<std::wstring, std::map<Shortcut, RemapShortcut>>::iterator it;
+            std::map<std::wstring, ShortcutRemapTable>::iterator it;
             // Check if an app-specific shortcut is already activated
             if (keyboardManagerState.GetActivatedApp() == KeyboardManagerConstants::NoActivatedApp)
             {

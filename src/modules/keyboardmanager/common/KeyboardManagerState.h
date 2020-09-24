@@ -21,6 +21,8 @@ namespace winrt::Windows::UI::Xaml::Controls
 }
 
 using SingleKeyRemapBufferRow = std::pair<DWORD, KeyShortcutUnion>;
+using SingleKeyRemapTable = std::unordered_map<DWORD, KeyShortcutUnion>;
+using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 
 // Enum type to store different states of the UI
 enum class KeyboardManagerUIState
@@ -101,12 +103,12 @@ public:
     std::mutex singleKeyToggleToMod_mutex;
 
     // Stores the os level shortcut remappings
-    std::map<Shortcut, RemapShortcut> osLevelShortcutReMap;
+    ShortcutRemapTable osLevelShortcutReMap;
     std::vector<Shortcut> osLevelShortcutReMapSortedKeys;
     std::mutex osLevelShortcutReMap_mutex;
 
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
-    std::map<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificShortcutReMap;
+    std::map<std::wstring, ShortcutRemapTable> appSpecificShortcutReMap;
     std::map<std::wstring, std::vector<Shortcut>> appSpecificShortcutReMapSortedKeys;
     std::mutex appSpecificShortcutReMap_mutex;
 
@@ -148,9 +150,12 @@ public:
 
     // Function to add a new App specific level shortcut remapping
     bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC);
-        
-    // Function to get the target of a single key remap given the source key
+
+    // Function to get the source and target of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapBufferRow> GetSingleKeyRemap(const DWORD& originalKey);
+
+    // Function to get the app specific shortcut remapping table given the target app. Returns nullopt if there are no remaps for that app
+    std::optional<ShortcutRemapTable> GetAppSpecificShortcutRemappingTable(const std::wstring& appName);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);

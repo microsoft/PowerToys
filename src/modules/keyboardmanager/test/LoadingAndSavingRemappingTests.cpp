@@ -298,7 +298,7 @@ namespace RemappingUITests
         // Test if the PreProcessRemapTable method combines all the modifier pairs when the left and right modifiers are remapped to the same target
         TEST_METHOD (PreProcessRemapTable_ShouldCombineAllPairs_OnPassingLeftAndRightModifiersRemappedToTheSameTarget)
         {
-            std::unordered_map<DWORD, KeyShortcutUnion> remapTable;
+            SingleKeyRemapTable remapTable;
 
             // Remap LCtrl and RCtrl to A, LAlt and RAlt to B, LShift and RShift to C, LWin and RWin to D
             remapTable[VK_LCONTROL] = 0x41;
@@ -314,7 +314,7 @@ namespace RemappingUITests
             LoadingAndSavingRemappingHelper::PreProcessRemapTable(remapTable);
 
             // Expected Ctrl remapped to A, Alt to B, Shift to C, Win to D
-            std::unordered_map<DWORD, KeyShortcutUnion> expectedTable;
+            SingleKeyRemapTable expectedTable;
             expectedTable[VK_CONTROL] = 0x41;
             expectedTable[VK_MENU] = 0x42;
             expectedTable[VK_SHIFT] = 0x43;
@@ -327,7 +327,7 @@ namespace RemappingUITests
         // Test if the PreProcessRemapTable method does not combines any of the modifier pairs when the left and right modifiers are remapped to different targets
         TEST_METHOD (PreProcessRemapTable_ShouldNotCombineAnyPairs_OnPassingLeftAndRightModifiersRemappedToTheDifferentTargets)
         {
-            std::unordered_map<DWORD, KeyShortcutUnion> remapTable;
+            SingleKeyRemapTable remapTable;
 
             // Remap left modifiers to A and right modifiers to B
             remapTable[VK_LCONTROL] = 0x41;
@@ -343,7 +343,7 @@ namespace RemappingUITests
             LoadingAndSavingRemappingHelper::PreProcessRemapTable(remapTable);
 
             // Expected unchanged table
-            std::unordered_map<DWORD, KeyShortcutUnion> expectedTable;
+            SingleKeyRemapTable expectedTable;
             expectedTable[VK_LCONTROL] = 0x41;
             expectedTable[VK_RCONTROL] = 0x42;
             expectedTable[VK_LMENU] = 0x41;
@@ -394,7 +394,7 @@ namespace RemappingUITests
             LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testState, remapBuffer, false);
 
             // Expected A remapped to B, B remapped to Ctrl+V
-            std::unordered_map<DWORD, KeyShortcutUnion> expectedTable;
+            SingleKeyRemapTable expectedTable;
             expectedTable[0x41] = 0x42;
             expectedTable[0x42] = s1;
 
@@ -418,7 +418,7 @@ namespace RemappingUITests
             LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testState, remapBuffer, false);
 
             // Expected LCtrl/RCtrl remapped to A, LAlt/RAlt to B, LShift/RShift to C, LWin/RWin to D
-            std::unordered_map<DWORD, KeyShortcutUnion> expectedTable;
+            SingleKeyRemapTable expectedTable;
             expectedTable[VK_LCONTROL] = 0x41;
             expectedTable[VK_RCONTROL] = 0x41;
             expectedTable[VK_LMENU] = 0x42;
@@ -503,12 +503,12 @@ namespace RemappingUITests
             LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(testState, remapBuffer, false);
 
             // Ctrl+A->Ctrl+B and Ctrl+C->Alt+V
-            std::map<Shortcut, RemapShortcut> expectedOSLevelTable;
+            ShortcutRemapTable expectedOSLevelTable;
             expectedOSLevelTable[src1] = RemapShortcut(dest1);
             expectedOSLevelTable[src2] = RemapShortcut(dest2);
 
             // Ctrl+F->Alt+V and Ctrl+G->Ctrl+B for testApp1
-            std::map<std::wstring, std::map<Shortcut, RemapShortcut>> expectedAppSpecificLevelTable;
+            std::map<std::wstring, ShortcutRemapTable> expectedAppSpecificLevelTable;
             expectedAppSpecificLevelTable[testApp1][src3] = RemapShortcut(dest2);
             expectedAppSpecificLevelTable[testApp1][src4] = RemapShortcut(dest1);
 

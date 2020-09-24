@@ -75,7 +75,7 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to combine remappings if the L and R version of the modifier is mapped to the same key
-    void CombineRemappings(std::unordered_map<DWORD, KeyShortcutUnion>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
+    void CombineRemappings(SingleKeyRemapTable& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
     {
         if (table.find(leftKey) != table.end() && table.find(rightKey) != table.end())
         {
@@ -90,7 +90,7 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to pre process the remap table before loading it into the UI
-    void PreProcessRemapTable(std::unordered_map<DWORD, KeyShortcutUnion>& table)
+    void PreProcessRemapTable(SingleKeyRemapTable& table)
     {
         // Pre process the table to combine L and R versions of Ctrl/Alt/Shift/Win that are mapped to the same key
         CombineRemappings(table, VK_LCONTROL, VK_RCONTROL, VK_CONTROL);
