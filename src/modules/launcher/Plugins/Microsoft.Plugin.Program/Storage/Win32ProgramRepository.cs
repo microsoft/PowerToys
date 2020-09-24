@@ -3,10 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
@@ -25,6 +28,8 @@ namespace Microsoft.Plugin.Program.Storage
         private int _numberOfPathsToWatch;
         private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", $"*{LnkExtension}", "*.appref-ms", $"*{UrlExtension}" };
 
+        private static ConcurrentQueue<string> commonEventHandlingQueue = new ConcurrentQueue<string>();
+
         public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32Program>> storage, ProgramPluginSettings settings, string[] pathsToWatch)
         {
             _fileSystemWatcherHelpers = fileSystemWatcherHelpers;
@@ -33,6 +38,37 @@ namespace Microsoft.Plugin.Program.Storage
             _pathsToWatch = pathsToWatch;
             _numberOfPathsToWatch = pathsToWatch.Length;
             InitializeFileSystemWatchers();
+
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    string currentFilePath = string.Empty;
+                    string previousFilePath = string.Empty;
+
+                    while (commonEventHandlingQueue.TryDequeue(out currentFilePath))
+                    {
+                        if (string.IsNullOrEmpty(previousFilePath) || previousFilePath.Equals(currentFilePath, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            previousFilePath = currentFilePath;
+                        }
+
+                        Thread.Sleep(500);
+                    }
+
+                    Thread.Sleep(5000);
+
+                    if (!string.IsNullOrEmpty(previousFilePath))
+                    {
+                        Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(previousFilePath);
+                        if (app != null)
+                        {
+                            Add(app);
+                        }
+
+                    }
+                }
+            }).ConfigureAwait(false);
         }
 
         private void InitializeFileSystemWatchers()
@@ -175,7 +211,7 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase))
+            if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase) && !Path.GetExtension(path).Equals(LnkExtension, StringComparison.CurrentCultureIgnoreCase))
             {
                 Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
                 if (app != null)
@@ -188,13 +224,9 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppChanged(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase))
+            if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase) || Path.GetExtension(path).Equals(LnkExtension, StringComparison.CurrentCultureIgnoreCase))
             {
-                Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
-                if (app != null)
-                {
-                    Add(app);
-                }
+                commonEventHandlingQueue.Enqueue(path);
             }
         }
 
