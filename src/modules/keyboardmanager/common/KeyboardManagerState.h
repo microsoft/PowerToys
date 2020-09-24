@@ -20,6 +20,8 @@ namespace winrt::Windows::UI::Xaml::Controls
     struct StackPanel;
 }
 
+using SingleKeyRemapBufferRow = std::pair<DWORD, KeyShortcutUnion>;
+
 // Enum type to store different states of the UI
 enum class KeyboardManagerUIState
 {
@@ -148,7 +150,7 @@ public:
     bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC);
         
     // Function to get the target of a single key remap given the source key
-    KeyShortcutUnion GetSingleKeyRemap(const DWORD& originalKey);
+    std::optional<SingleKeyRemapBufferRow> GetSingleKeyRemap(const DWORD& originalKey);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);

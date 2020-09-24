@@ -17,9 +17,8 @@ namespace KeyboardEventHandlers
         if (!(data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG))
         {
             // The mutex should be unlocked before SendInput is called to avoid re-entry into the same mutex. More details can be found at https://github.com/microsoft/PowerToys/pull/1789#issuecomment-607555837
-            std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
-            auto it = keyboardManagerState.singleKeyReMap.find(data->lParam->vkCode);
-            if (it != keyboardManagerState.singleKeyReMap.end())
+            auto it = keyboardManagerState.GetSingleKeyRemap(data->lParam->vkCode);
+            if (it)
             {
                 // Check if the remap is to a key or a shortcut
                 bool remapToKey = (it->second.index() == 0);
@@ -95,7 +94,6 @@ namespace KeyboardEventHandlers
                     }
                 }
 
-                lock.unlock();
                 UINT res = ii.SendVirtualInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
 

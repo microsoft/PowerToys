@@ -191,6 +191,19 @@ bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const
     return true;
 }
 
+// Function to get the source and target of a single key remap given the source key. Returns nullopt if it isn't remapped
+std::optional<SingleKeyRemapBufferRow> KeyboardManagerState::GetSingleKeyRemap(const DWORD& originalKey)
+{
+    std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
+    auto it = singleKeyReMap.find(originalKey);
+    if (it != singleKeyReMap.end())
+    {
+        return *it;
+    }
+
+    return std::nullopt;
+}
+
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2)
 {
