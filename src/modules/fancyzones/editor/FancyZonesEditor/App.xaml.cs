@@ -80,7 +80,7 @@ namespace FancyZonesEditor
             var sw = new StreamWriter(fileStream);
             sw.Write(FormatException((Exception)args.ExceptionObject));
             fileStream.Close();
-            MessageBox.Show("FancyZones editor crash log written to " + Path.GetFullPath(fileStream.Name));
+            MessageBox.Show("Error logged to " + Path.GetFullPath(fileStream.Name) + "\nPlease report the bug to https://aka.ms/powerToysReportBug", "FancyZones Editor Error");
         }
 
         private string FormatException(Exception ex)
