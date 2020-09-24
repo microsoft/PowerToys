@@ -125,7 +125,7 @@ void KeyboardManagerState::ClearAppSpecificShortcuts()
 }
 
 // Function to add a new OS level shortcut remapping
-bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC)
+bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC)
 {
     std::lock_guard<std::mutex> lock(osLevelShortcutReMap_mutex);
 
@@ -144,7 +144,7 @@ bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const 
 }
 
 // Function to add a new single key to key/shortcut remapping
-bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const std::variant<DWORD, Shortcut>& newRemapKey)
+bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey)
 {
     std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
 
@@ -160,7 +160,7 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const std
 }
 
 // Function to add a new App specific shortcut remapping
-bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC)
+bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC)
 {
     std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
 

@@ -91,7 +91,7 @@ public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
-    std::unordered_map<DWORD, std::variant<DWORD, Shortcut>> singleKeyReMap;
+    std::unordered_map<DWORD, KeyShortcutUnion> singleKeyReMap;
     std::mutex singleKeyReMap_mutex;
 
     // Stores keys which need to be changed from toggle behavior to modifier behavior. Eg. Caps Lock
@@ -139,13 +139,16 @@ public:
     void ClearAppSpecificShortcuts();
 
     // Function to add a new single key to key remapping
-    bool AddSingleKeyRemap(const DWORD& originalKey, const std::variant<DWORD, Shortcut>& newRemapKey);
+    bool AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
-    bool AddOSLevelShortcut(const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC);
+    bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC);
 
     // Function to add a new App specific level shortcut remapping
-    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC);
+    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC);
+        
+    // Function to get the target of a single key remap given the source key
+    KeyShortcutUnion GetSingleKeyRemap(const DWORD& originalKey);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);

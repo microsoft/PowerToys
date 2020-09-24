@@ -315,7 +315,7 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel
     {
         // Check for errors only if the current selection is a valid shortcut
         std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(keyDropDownControlObjects[i]->GetSelectedIndicesFromStackPanel(parent), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
-        std::variant<DWORD, Shortcut> currentShortcut;
+        KeyShortcutUnion currentShortcut;
         if (selectedKeyCodes.size() == 1 && isHybridControl)
         {
             currentShortcut = selectedKeyCodes[0];

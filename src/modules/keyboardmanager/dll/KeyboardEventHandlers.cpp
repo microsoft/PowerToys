@@ -59,7 +59,7 @@ namespace KeyboardEventHandlers
                 // If Ctrl/Alt/Shift is being remapped to Caps Lock, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
-                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first, target, lock);
+                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first, target);
                 }
 
                 if (remapToKey)
@@ -97,7 +97,6 @@ namespace KeyboardEventHandlers
 
                 lock.unlock();
                 UINT res = ii.SendVirtualInput(key_count, keyEventList, sizeof(INPUT));
-                lock.lock();
                 delete[] keyEventList;
 
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
@@ -108,14 +107,14 @@ namespace KeyboardEventHandlers
                     // If Caps Lock is being remapped to Ctrl/Alt/Shift, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
                     if (remapToKey)
                     {
-                        ResetIfModifierKeyForLowerLevelKeyHandlers(ii, target, it->first, lock);
+                        ResetIfModifierKeyForLowerLevelKeyHandlers(ii, target, it->first);
                     }
                     else
                     {
                         std::vector<DWORD> shortcutKeys = std::get<Shortcut>(it->second).GetKeyCodes();
                         for (auto& itSk : shortcutKeys)
                         {
-                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, itSk, it->first, lock);
+                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, itSk, it->first);
                         }
                     }
                 }
@@ -277,7 +276,7 @@ namespace KeyboardEventHandlers
                             Shortcut temp = std::get<Shortcut>(it->second.targetShortcut);
                             for (auto keys : temp.GetKeyCodes())
                             {
-                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, keys, data->lParam->vkCode, lock);
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, keys, data->lParam->vkCode);
                             }
                         }
                     }
@@ -303,7 +302,7 @@ namespace KeyboardEventHandlers
                         // Modifier state reset might be required for this key depending on the shortcut's action and target modifier - ex: Win+Caps -> Ctrl
                         if (it->first.GetCtrlKey() == NULL && it->first.GetAltKey() == NULL && it->first.GetShiftKey() == NULL)
                         {
-                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, (WORD)KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)), data->lParam->vkCode, lock);
+                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, (WORD)KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)), data->lParam->vkCode);
                         }
                     }
 
@@ -496,7 +495,7 @@ namespace KeyboardEventHandlers
                             // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps
                             if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
                             {
-                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey(), lock);
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
                                 return 1;
                             }
                         }
@@ -510,7 +509,7 @@ namespace KeyboardEventHandlers
                             // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps, Shift is pressed. System should not see Shift and Caps pressed together
                             if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
                             {
-                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey(), lock);
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
                             }
 
                             size_t key_count;
@@ -710,7 +709,7 @@ namespace KeyboardEventHandlers
     }
 
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
-    void ResetIfModifierKeyForLowerLevelKeyHandlers(InputInterface& ii, DWORD key, DWORD target, std::unique_lock<std::mutex>& currentLock)
+    void ResetIfModifierKeyForLowerLevelKeyHandlers(InputInterface& ii, DWORD key, DWORD target)
     {
         // If the target is Caps Lock and the other key is either Ctrl/Alt/Shift then reset the modifier state to lower level handlers
         if (target == VK_CAPITAL)
@@ -724,21 +723,7 @@ namespace KeyboardEventHandlers
 
                 // Use the suppress flag to ensure these are not intercepted by any remapped keys or shortcuts
                 KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)key, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
-
-                // If the current thread currently owns the mutex, unlock it
-                if (currentLock.owns_lock())
-                {
-                    currentLock.unlock();
-                }
-
                 UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
-
-                // If the current thread currently doesn't own the mutex, lock it
-                if (!currentLock.owns_lock())
-                {
-                    currentLock.lock();
-                }
-
                 delete[] keyEventList;
             }
         }

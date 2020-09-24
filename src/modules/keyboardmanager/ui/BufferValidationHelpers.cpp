@@ -193,7 +193,7 @@ namespace BufferValidationHelpers
         // After validating the shortcut, now for errors like remap to same shortcut, remap shortcut more than once, Win L and Ctrl Alt Del
         if (errorType == KeyboardManagerHelper::ErrorType::NoError)
         {
-            std::variant<DWORD, Shortcut> tempShortcut;
+            KeyShortcutUnion tempShortcut;
             if (isHybridControl && selectedKeyCodes.size() == 1)
             {
                 tempShortcut = selectedKeyCodes[0];

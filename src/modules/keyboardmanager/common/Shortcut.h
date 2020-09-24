@@ -171,6 +171,7 @@ public:
     KeyboardManagerHelper::ErrorType IsShortcutIllegal() const;
 };
 
-using RemapBufferItem = std::vector<std::variant<DWORD, Shortcut>>;
+using KeyShortcutUnion = std::variant<DWORD, Shortcut>;
+using RemapBufferItem = std::vector<KeyShortcutUnion>;
 using RemapBufferRow = std::pair<RemapBufferItem, std::wstring>;
 using RemapBuffer = std::vector<RemapBufferRow>;
