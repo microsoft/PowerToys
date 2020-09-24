@@ -39,33 +39,24 @@ namespace Microsoft.Plugin.Program.Storage
             _numberOfPathsToWatch = pathsToWatch.Length;
             InitializeFileSystemWatchers();
 
+            // This task would always run in the background trying to dequeue file paths from the queue at regular intervals.
             Task.Run(() =>
             {
                 while (true)
                 {
-                    string currentFilePath = string.Empty;
-                    string previousFilePath = string.Empty;
+                    int dequeueDelay = 500;
+                    string appPath = EventHandler.GetAppPathFromQueue(commonEventHandlingQueue, dequeueDelay);
 
-                    while (commonEventHandlingQueue.TryDequeue(out currentFilePath))
-                    {
-                        if (string.IsNullOrEmpty(previousFilePath) || previousFilePath.Equals(currentFilePath, StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            previousFilePath = currentFilePath;
-                        }
-
-                        Thread.Sleep(500);
-                    }
-
+                    // To allow for the installation process to finish.
                     Thread.Sleep(5000);
 
-                    if (!string.IsNullOrEmpty(previousFilePath))
+                    if (!string.IsNullOrEmpty(appPath))
                     {
-                        Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(previousFilePath);
+                        Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(appPath);
                         if (app != null)
                         {
                             Add(app);
                         }
-
                     }
                 }
             }).ConfigureAwait(false);
@@ -226,6 +217,8 @@ namespace Microsoft.Plugin.Program.Storage
             string path = e.FullPath;
             if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase) || Path.GetExtension(path).Equals(LnkExtension, StringComparison.CurrentCultureIgnoreCase))
             {
+                // When a url or lnk app is installed, multiple created and changed events are triggered.
+                // To prevent the code from acting on the first such event (which may still be during app installation), the events are added a common queue and dequeued by a background task at regular intervals - https://github.com/microsoft/PowerToys/issues/6429.
                 commonEventHandlingQueue.Enqueue(path);
             }
         }
