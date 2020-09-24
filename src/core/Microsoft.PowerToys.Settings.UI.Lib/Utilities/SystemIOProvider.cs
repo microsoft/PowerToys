@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
 
         public void DeleteDirectory(string path)
         {
-            Directory.Delete(path);
+            Directory.Delete(path, true);
         }
 
         public bool DirectoryExists(string path)
