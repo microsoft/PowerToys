@@ -24,6 +24,7 @@ namespace ViewModelTests
         /// </summary>
         [TestMethod]
         [DataRow("v0.20.1", "settings.json")]  //Color picker was introduced in .20
+        [DataRow("v0.21.1", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
             //Arrange
