@@ -425,8 +425,13 @@ namespace ImageResizer.Properties
                 CustomSize = jsonSettings.CustomSize;
                 SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
 
-                Sizes.AddRange(jsonSettings.Sizes);
+                if (jsonSettings.Sizes.Count > 0)
+                {
+                    Sizes.Clear();
+                    Sizes.AddRange(jsonSettings.Sizes);
+                }
             });
+
             _jsonMutex.ReleaseMutex();
         }
     }
