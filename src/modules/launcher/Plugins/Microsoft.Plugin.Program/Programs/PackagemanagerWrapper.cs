@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        Log.Error(nameof(PackageManagerWrapper), e.Message, nameof(FindPackagesForCurrentUser));
+                        Log.Error(e.Message, GetType());
                     }
                 }
             }

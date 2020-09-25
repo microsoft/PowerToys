@@ -68,7 +68,7 @@ namespace Microsoft.Plugin.Shell
                 }
                 catch (Exception e)
                 {
-                    Log.Exception($"|Microsoft.Plugin.Shell.Main.Query|Exception when query for <{query}>", e);
+                    Log.Exception($"Exception when query for <{query}>", e, GetType());
                 }
 
                 return results;

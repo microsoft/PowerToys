@@ -80,7 +80,6 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                new Mock<ISettingsUtils>().Object,
                 SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
@@ -118,7 +117,6 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                new Mock<ISettingsUtils>().Object,
                 SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
@@ -151,7 +149,6 @@ namespace ViewModelTests
 
             // Arrange
             GeneralViewModel viewModel = new GeneralViewModel(
-                new Mock<ISettingsUtils>().Object,
                 SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
@@ -185,7 +182,6 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             viewModel = new GeneralViewModel(
-                new Mock<ISettingsUtils>().Object,
                 SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
@@ -217,7 +213,6 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                new Mock<ISettingsUtils>().Object,
                 SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",

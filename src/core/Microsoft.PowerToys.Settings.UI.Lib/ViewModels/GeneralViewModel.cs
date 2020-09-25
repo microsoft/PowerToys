@@ -15,8 +15,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
-
         public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
@@ -35,11 +33,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -344,10 +341,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         // callback function to launch the URL to check for updates.
         private void CheckForUpdates_Click()
         {
-            GeneralSettings settings = _settingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
-            settings.CustomActionName = "check_for_updates";
+            GeneralSettingsConfig.CustomActionName = "check_for_updates";
 
-            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendCheckForUpdatesConfigMSG(customaction.ToString());
@@ -355,10 +351,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public void Restart_Elevated()
         {
-            GeneralSettings settings = _settingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
-            settings.CustomActionName = "restart_elevation";
+            GeneralSettingsConfig.CustomActionName = "restart_elevation";
 
-            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendRestartAsAdminConfigMSG(customaction.ToString());
