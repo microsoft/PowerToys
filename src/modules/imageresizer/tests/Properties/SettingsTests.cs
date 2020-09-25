@@ -32,6 +32,8 @@ namespace ImageResizer.Properties
             {
                 CustomSize = new CustomSize(),
             };
+
+            settings.Sizes.Clear();
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
             var result = AssertEx.Raises<NotifyCollectionChangedEventArgs>(
@@ -50,6 +52,7 @@ namespace ImageResizer.Properties
                 CustomSize = new CustomSize(),
             };
 
+            settings.Sizes.Clear();
             Assert.PropertyChanged(
                 (INotifyPropertyChanged)settings.AllSizes,
                 "Item[]",
@@ -75,6 +78,7 @@ namespace ImageResizer.Properties
             {
                 CustomSize = new CustomSize(),
             };
+            settings.Sizes.Clear();
 
             Assert.Contains(settings.CustomSize, settings.AllSizes);
         }
@@ -87,6 +91,8 @@ namespace ImageResizer.Properties
             {
                 CustomSize = originalCustomSize,
             };
+
+            settings.Sizes.Clear();
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
             var result = AssertEx.Raises<NotifyCollectionChangedEventArgs>(
@@ -124,6 +130,7 @@ namespace ImageResizer.Properties
                 SelectedSizeIndex = index,
                 CustomSize = new CustomSize(),
             };
+            settings.Sizes.Clear();
 
             var result = settings.SelectedSize;
 
@@ -257,7 +264,6 @@ namespace ImageResizer.Properties
             Assert.PropertyChanged(settings, "PngInterlaceOption", action);
             Assert.PropertyChanged(settings, "TiffCompressOption", action);
             Assert.PropertyChanged(settings, "FileName", action);
-            Assert.PropertyChanged(settings, "Sizes", action);
             Assert.PropertyChanged(settings, "KeepDateModified", action);
             Assert.PropertyChanged(settings, "FallbackEncoder", action);
             Assert.PropertyChanged(settings, "CustomSize", action);
