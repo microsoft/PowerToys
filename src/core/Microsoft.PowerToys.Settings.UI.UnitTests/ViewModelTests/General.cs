@@ -48,7 +48,6 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                mockGeneralSettingsUtils,
                 generalSettingsRepository,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
