@@ -385,7 +385,7 @@ public:
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
         // If remappings are disabled (due to the remap tables getting updated) skip the rest of the hook
-        if (keyboardManagerState.AreRemappingsEnabled())
+        if (!keyboardManagerState.AreRemappingsEnabled())
         {
             return 0;
         }
