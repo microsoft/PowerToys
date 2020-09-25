@@ -384,6 +384,12 @@ public:
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // If remappings are disabled (due to the remap tables getting updated) skip the rest of the hook
+        if (keyboardManagerState.AreRemappingsEnabled())
+        {
+            return 0;
+        }
+
         // If key has suppress flag, then suppress it
         if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
         {

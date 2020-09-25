@@ -8,7 +8,7 @@
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
-    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI1(nullptr), currentShortcutUI2(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL)
+    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI1(nullptr), currentShortcutUI2(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL), remappingsEnabled(true)
 {
     configFile_mutex = CreateMutex(
         NULL, // default security descriptor
@@ -104,7 +104,6 @@ void KeyboardManagerState::ResetUIState()
 // Function to clear the OS Level shortcut remapping table
 void KeyboardManagerState::ClearOSLevelShortcuts()
 {
-    std::lock_guard<std::mutex> lock(osLevelShortcutReMap_mutex);
     osLevelShortcutReMap.clear();
     osLevelShortcutReMapSortedKeys.clear();
 }
@@ -112,14 +111,12 @@ void KeyboardManagerState::ClearOSLevelShortcuts()
 // Function to clear the Keys remapping table.
 void KeyboardManagerState::ClearSingleKeyRemaps()
 {
-    std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
     singleKeyReMap.clear();
 }
 
 // Function to clear the App specific shortcut remapping table
 void KeyboardManagerState::ClearAppSpecificShortcuts()
 {
-    std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
     appSpecificShortcutReMap.clear();
     appSpecificShortcutReMapSortedKeys.clear();
 }
@@ -127,8 +124,6 @@ void KeyboardManagerState::ClearAppSpecificShortcuts()
 // Function to add a new OS level shortcut remapping
 bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC)
 {
-    std::lock_guard<std::mutex> lock(osLevelShortcutReMap_mutex);
-
     // Check if the shortcut is already remapped
     auto it = osLevelShortcutReMap.find(originalSC);
     if (it != osLevelShortcutReMap.end())
@@ -146,8 +141,6 @@ bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const 
 // Function to add a new single key to key/shortcut remapping
 bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey)
 {
-    std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
-
     // Check if the key is already remapped
     auto it = singleKeyReMap.find(originalKey);
     if (it != singleKeyReMap.end())
@@ -162,8 +155,6 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const Key
 // Function to add a new App specific shortcut remapping
 bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC)
 {
-    std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
-
     // Convert app name to lower case
     std::wstring process_name;
     process_name.resize(app.length());
@@ -191,30 +182,52 @@ bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const
     return true;
 }
 
-// Function to get the source and target of a single key remap given the source key. Returns nullopt if it isn't remapped
-std::optional<SingleKeyRemapBufferRow> KeyboardManagerState::GetSingleKeyRemap(const DWORD& originalKey)
+// Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
+std::optional<SingleKeyRemapTable::iterator> KeyboardManagerState::GetSingleKeyRemap(const DWORD& originalKey)
 {
-    std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
     auto it = singleKeyReMap.find(originalKey);
     if (it != singleKeyReMap.end())
     {
-        return *it;
+        return it;
     }
 
     return std::nullopt;
 }
 
-// Function to get the app specific shortcut remapping table given the target app. Returns nullopt if there are no remaps for that app
-std::optional<ShortcutRemapTable> KeyboardManagerState::GetAppSpecificShortcutRemappingTable(const std::wstring& appName)
+bool KeyboardManagerState::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
-    std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
-    auto it = appSpecificShortcutReMap.find(appName);
-    if (it != appSpecificShortcutReMap.end())
+    // Assumes appName exists in the app-specific remap table
+    ShortcutRemapTable& currentRemapTable = appName ? appSpecificShortcutReMap[*appName] : osLevelShortcutReMap;
+    for (auto& it : currentRemapTable)
     {
-        return it->second;
+        if (it.second.isShortcutInvoked)
+        {
+            return true;
+        }
     }
 
-    return std::nullopt;
+    return false;
+}
+
+std::vector<Shortcut>& KeyboardManagerState::GetSortedShortcutRemapVector(const std::optional<std::wstring>& appName)
+{
+    // Assumes appName exists in the app-specific remap table
+    return appName ? appSpecificShortcutReMapSortedKeys[*appName] : osLevelShortcutReMapSortedKeys;
+}
+
+// Function to get the source and target of a shortcut remap given the source shortcut. Returns nullopt if it isn't remapped
+ShortcutRemapTable& KeyboardManagerState::GetShortcutRemapTable(const std::optional<std::wstring>& appName)
+{
+    if (appName)
+    {
+        auto itTable = appSpecificShortcutReMap.find(*appName);
+        if (itTable != appSpecificShortcutReMap.end())
+        {
+            return itTable->second;
+        }
+    }
+
+    return osLevelShortcutReMap;
 }
 
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
@@ -494,7 +507,6 @@ bool KeyboardManagerState::SaveConfigToFile()
     json::JsonArray inProcessRemapKeysArray;
     json::JsonArray appSpecificRemapShortcutsArray;
     json::JsonArray globalRemapShortcutsArray;
-    std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
     for (const auto& it : singleKeyReMap)
     {
         json::JsonObject keys;
@@ -514,9 +526,7 @@ bool KeyboardManagerState::SaveConfigToFile()
 
         inProcessRemapKeysArray.Append(keys);
     }
-    lockSingleKeyReMap.unlock();
 
-    std::unique_lock<std::mutex> lockOsLevelShortcutReMap(osLevelShortcutReMap_mutex);
     for (const auto& it : osLevelShortcutReMap)
     {
         json::JsonObject keys;
@@ -536,9 +546,7 @@ bool KeyboardManagerState::SaveConfigToFile()
 
         globalRemapShortcutsArray.Append(keys);
     }
-    lockOsLevelShortcutReMap.unlock();
 
-    std::unique_lock<std::mutex> lockAppSpecificShortcutReMap(appSpecificShortcutReMap_mutex);
     for (const auto& itApp : appSpecificShortcutReMap)
     {
         // Iterate over apps
@@ -564,7 +572,6 @@ bool KeyboardManagerState::SaveConfigToFile()
             appSpecificRemapShortcutsArray.Append(keys);
         }
     }
-    lockAppSpecificShortcutReMap.unlock();
 
     remapShortcuts.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, globalRemapShortcutsArray);
     remapShortcuts.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, appSpecificRemapShortcutsArray);
@@ -621,4 +628,21 @@ void KeyboardManagerState::SetActivatedApp(const std::wstring& appName)
 std::wstring KeyboardManagerState::GetActivatedApp()
 {
     return activatedAppSpecificShortcutTarget;
+}
+
+bool KeyboardManagerState::AreRemappingsEnabled()
+{
+    return remappingsEnabled;
+}
+
+void KeyboardManagerState::RemappingsDisabledWrapper(std::function<void()> method)
+{
+    // Disable keyboard remappings
+    remappingsEnabled = false;
+
+    // Run the method which requires the remappings to be disabled
+    method();
+
+    // Re-enable the keyboard remappings
+    remappingsEnabled = true;
 }

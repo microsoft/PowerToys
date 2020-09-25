@@ -252,9 +252,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
 
     // Load existing remaps into UI
-    std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
     SingleKeyRemapTable singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
-    lock.unlock();
+
     LoadingAndSavingRemappingHelper::PreProcessRemapTable(singleKeyRemapCopy);
 
     for (const auto& it : singleKeyRemapCopy)
@@ -272,9 +271,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.SetLeftOf(applyButton, cancelButton);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow]() {
-        LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(keyboardManagerState, SingleKeyRemapControl::singleKeyRemapBuffer, true);
-        // Save the updated shortcuts remaps to file.
-        bool saveResult = keyboardManagerState.SaveConfigToFile();
+        // Disable the remappings while the remapping table is updated
+        keyboardManagerState.RemappingsDisabledWrapper(
+            [&keyboardManagerState]() {
+                LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(keyboardManagerState, SingleKeyRemapControl::singleKeyRemapBuffer, true);
+                // Save the updated shortcuts remaps to file.
+                bool saveResult = keyboardManagerState.SaveConfigToFile();
+            });
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     };
 

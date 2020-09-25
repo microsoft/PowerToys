@@ -508,7 +508,7 @@ namespace RemappingUITests
             expectedOSLevelTable[src2] = RemapShortcut(dest2);
 
             // Ctrl+F->Alt+V and Ctrl+G->Ctrl+B for testApp1
-            std::map<std::wstring, ShortcutRemapTable> expectedAppSpecificLevelTable;
+            AppSpecificShortcutRemapTable expectedAppSpecificLevelTable;
             expectedAppSpecificLevelTable[testApp1][src3] = RemapShortcut(dest2);
             expectedAppSpecificLevelTable[testApp1][src4] = RemapShortcut(dest1);
 

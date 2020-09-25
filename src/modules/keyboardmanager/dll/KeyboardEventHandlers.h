@@ -22,7 +22,7 @@ namespace KeyboardEventHandlers
     */
 
     // Function to a handle a shortcut remap
-    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, ShortcutRemapTable& reMap, std::vector<Shortcut>& sortedReMapKeys, std::mutex& map_mutex, KeyboardManagerState& keyboardManagerState, const std::wstring& activatedApp = KeyboardManagerConstants::NoActivatedApp) noexcept;
+    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
 
     // Function to a handle an os-level shortcut remap
     __declspec(dllexport) intptr_t HandleOSLevelShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
