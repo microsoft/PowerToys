@@ -434,6 +434,7 @@ namespace ImageResizer.Models
             {
                 SelectedSizeIndex = 0,
             };
+            settings.Sizes.Clear();
 
             settings.Sizes.Add(new ResizeSize
             {
