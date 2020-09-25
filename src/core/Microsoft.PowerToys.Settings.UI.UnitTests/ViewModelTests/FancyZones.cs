@@ -30,8 +30,9 @@ namespace ViewModelTests
         /// Test if the original settings files were modified.
         /// </summary>
         [TestMethod]
-        [DataRow("v0.20.2", "settings.json")]
         [DataRow("v0.18.2", "settings.json")]
+        [DataRow("v0.19.2", "settings.json")]
+        [DataRow("v0.20.2", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, OriginalModuleName, fileName);

@@ -23,8 +23,7 @@ namespace ViewModelTests
         /// Test if the original settings files were modified.
         /// </summary>
         [TestMethod]
-        [DataRow("v0.20.2", "settings.json")]
-        [DataRow("v0.18.2", "settings.json")]
+        [DataRow("v0.20.2", "settings.json")]  //Color picker was introduced in .20
         public void OriginalFilesModificationTest(string version, string fileName)
         {
             //Arrange
