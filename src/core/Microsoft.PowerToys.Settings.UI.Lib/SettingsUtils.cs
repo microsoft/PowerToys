@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 T deserializedSettings = GetFile<T>(powertoy, fileName);
 
                 // IF the file needs to be modified, to save the new configurations accordingly.
-                if (!deserializedSettings.UpgradeSettingsConfiguration())
+                if (deserializedSettings.UpgradeSettingsConfiguration())
                 {
                     SaveSettings(deserializedSettings.ToJsonString(), powertoy, fileName);
                 }
