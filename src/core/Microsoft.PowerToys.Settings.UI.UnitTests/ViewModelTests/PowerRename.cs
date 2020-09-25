@@ -41,6 +41,7 @@ namespace ViewModelTests
         [DataRow("v0.18.2", "power-rename-settings.json")]
         [DataRow("v0.19.2", "power-rename-settings.json")]
         [DataRow("v0.20.1", "power-rename-settings.json")]
+        [DataRow("v0.22.0", "power-rename-settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ModuleName, fileName);
