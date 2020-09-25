@@ -320,7 +320,7 @@ namespace ImageResizer.Properties
         }
 
         [JsonProperty(PropertyName = "imageresizer_sizes")]
-        public ObservableCollection<ResizeSize> Sizes { get; }
+        public ObservableCollection<ResizeSize> Sizes { get; private set; }
 
         [JsonProperty(PropertyName = "imageresizer_keepDateModified")]
         public bool KeepDateModified
