@@ -85,7 +85,7 @@ steps:
       **\Microsoft.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
       **\Wox.Test.dll
-      **\*Microsoft.PowerToys.Settings.UI.UnitTests.dll
+      **\Microsoft.PowerToys.Settings.UI.UnitTests.dll
       !**\obj\**
 # .NetFramework assemblies
 - task: VSTest@2
