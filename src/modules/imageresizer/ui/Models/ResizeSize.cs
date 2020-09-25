@@ -13,7 +13,13 @@ namespace ImageResizer.Models
     [JsonObject(MemberSerialization.OptIn)]
     public class ResizeSize : ObservableObject
     {
-        private static readonly IDictionary<string, string> _tokens;
+        private static readonly IDictionary<string, string> _tokens = new Dictionary<string, string>
+        {
+            ["$small$"] = Resources.Small,
+            ["$medium$"] = Resources.Medium,
+            ["$large$"] = Resources.Large,
+            ["$phone$"] = Resources.Phone,
+        };
 
         private string _name;
         private ResizeFit _fit = ResizeFit.Fit;
@@ -21,15 +27,6 @@ namespace ImageResizer.Models
         private double _height;
         private bool _showHeight = true;
         private ResizeUnit _unit = ResizeUnit.Pixel;
-
-        static ResizeSize()
-            => _tokens = new Dictionary<string, string>
-            {
-                ["$small$"] = Resources.Small,
-                ["$medium$"] = Resources.Medium,
-                ["$large$"] = Resources.Large,
-                ["$phone$"] = Resources.Phone,
-            };
 
         public ResizeSize(string name, ResizeFit fit, double width, double height, ResizeUnit unit)
         {

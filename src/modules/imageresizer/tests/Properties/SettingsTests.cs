@@ -30,7 +30,6 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
@@ -48,7 +47,6 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
 
@@ -63,10 +61,10 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize> { new ResizeSize() },
                 CustomSize = new CustomSize(),
             };
 
+            settings.Sizes.Add(new ResizeSize());
             Assert.Contains(settings.Sizes[0], settings.AllSizes);
         }
 
@@ -75,7 +73,6 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
 
@@ -88,7 +85,6 @@ namespace ImageResizer.Properties
             var originalCustomSize = new CustomSize();
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = originalCustomSize,
             };
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
@@ -126,7 +122,6 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 SelectedSizeIndex = index,
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
 
@@ -141,12 +136,9 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 SelectedSizeIndex = 0,
-                Sizes = new ObservableCollection<ResizeSize>
-                {
-                    new ResizeSize(),
-                },
             };
 
+            settings.Sizes.Add(new ResizeSize());
             var result = settings.SelectedSize;
 
             Assert.Same(settings.Sizes[0], result);
