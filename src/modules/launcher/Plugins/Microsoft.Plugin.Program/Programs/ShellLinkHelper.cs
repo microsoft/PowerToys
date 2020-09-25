@@ -174,6 +174,9 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
+            // To release unmanaged memory
+            Marshal.ReleaseComObject(link);
+
             return target;
         }
     }
