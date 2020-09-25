@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -20,8 +22,10 @@ namespace ViewModelTests
         public const string generalSettings_file_name = "Test\\GenealSettings";
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
-		
-		[TestInitialize]
+
+
+
+        [TestInitialize]
         public void SetUp_StubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
@@ -29,12 +33,13 @@ namespace ViewModelTests
 		
         /// </summary>
         [TestMethod]
-        public void OriginalFilesModificationTest()
+        [DataRow("v0.20.2", "settings.json")]
+        public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            // Load Originl Settings Config File
-            GeneralSettings originalGeneralSettings = mockSettingsUtils.GetSettings<GeneralSettings>();
+            var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+            var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
             // Initialise View Model with test Config files
             // Arrange
@@ -42,8 +47,8 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                mockSettingsUtils,
-                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                mockGeneralSettingsUtils,
+                generalSettingsRepository,
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -60,6 +65,10 @@ namespace ViewModelTests
             Assert.AreEqual(originalGeneralSettings.PowertoysVersion, viewModel.PowerToysVersion);
             Assert.AreEqual(originalGeneralSettings.RunElevated, viewModel.RunElevated);
             Assert.AreEqual(originalGeneralSettings.Startup, viewModel.Startup);
+
+            //Verify that the stub file was used
+            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
         [TestMethod]

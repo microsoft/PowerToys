@@ -4,11 +4,13 @@
 
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using CommonLibTest;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -28,17 +30,21 @@ namespace ViewModelTests
         /// Test if the original settings files were modified.
         /// </summary>
         [TestMethod]
-        public void OriginalFilesModificationTest()
+        [DataRow("v0.20.2", "settings.json")]
+        public void OriginalFilesModificationTest(string version, string fileName)
         {
-
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, OriginalModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            // Load Originl Settings Config File
             FancyZonesSettings originalSettings = mockSettingsUtils.GetSettings<FancyZonesSettings>(OriginalModuleName);
-            GeneralSettings originalGeneralSettings = mockSettingsUtils.GetSettings<GeneralSettings>();
+
+            var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+            var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
+            var fancyZonesRepository = new BackCompatTestProperties.MockSettingsRepository<FancyZonesSettings>(mockSettingsUtils);
 
             // Initialise View Model with test Config files
-            FancyZonesViewModel viewModel = new FancyZonesViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils), SettingsRepository<FancyZonesSettings>.GetInstance(mockSettingsUtils), ColorPickerIsEnabledByDefault_IPC);
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(generalSettingsRepository, fancyZonesRepository, ColorPickerIsEnabledByDefault_IPC);
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.FancyZones, viewModel.IsEnabled);
@@ -62,6 +68,11 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.FancyzonesZoneHighlightColor.Value, viewModel.ZoneHighlightColor);
             Assert.AreEqual(originalSettings.Properties.FancyzonesZoneSetChangeMoveWindows.Value, viewModel.ZoneSetChangeMoveWindows);
             Assert.AreEqual(originalSettings.Properties.UseCursorposEditorStartupscreen.Value, viewModel.UseCursorPosEditorStartupScreen);
+
+           //Verify that the stub file was used
+            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, OriginalModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
         private int ColorPickerIsEnabledByDefault_IPC(string msg)

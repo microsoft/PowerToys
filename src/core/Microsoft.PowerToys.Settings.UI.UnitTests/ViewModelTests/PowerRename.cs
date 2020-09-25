@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -37,24 +38,32 @@ namespace ViewModelTests
         /// Test if the original settings files were modified.
         /// </summary>
         [TestMethod]
-        public void OriginalFilesModificationTest()
+        [DataRow("v0.20.2", "power-rename-settings.json")]
+        public void OriginalFilesModificationTest(string version, string fileName)
         {
-
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            // Load Originl Settings Config File
             PowerRenameLocalProperties originalSettings = mockSettingsUtils.GetSettings<PowerRenameLocalProperties>(ModuleName);
-            GeneralSettings originalGeneralSettings = mockSettingsUtils.GetSettings<GeneralSettings>();
+
+            var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+            var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
             // Initialise View Model with test Config files
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerRenameViewModel viewModel = new PowerRenameViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils), SendMockIPCConfigMSG);
+            PowerRenameViewModel viewModel = new PowerRenameViewModel(mockSettingsUtils, generalSettingsRepository, SendMockIPCConfigMSG);
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.PowerRename, viewModel.IsEnabled);
             Assert.AreEqual(originalSettings.ExtendedContextMenuOnly, viewModel.EnabledOnContextExtendedMenu);
             Assert.AreEqual(originalSettings.MRUEnabled, viewModel.MRUEnabled);
             Assert.AreEqual(originalSettings.ShowIcon, viewModel.EnabledOnContextMenu);
+
+            //Verify that the stub file was used
+            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
         [TestMethod]

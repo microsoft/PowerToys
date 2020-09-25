@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -30,21 +31,26 @@ namespace ViewModelTests
         /// Test if the original settings files were modified.
         /// </summary>
         [TestMethod]
-        public void OriginalFilesModificationTest()
+        [DataRow("v0.20.2", "settings.json")]
+        public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, Module, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            // Load Originl Settings Config File
             PowerPreviewSettings originalSettings = mockSettingsUtils.GetSettings<PowerPreviewSettings>(Module);
+            var repository = new BackCompatTestProperties.MockSettingsRepository<PowerPreviewSettings>(mockSettingsUtils);
 
             // Initialise View Model with test Config files
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockSettingsUtils), SendMockIPCConfigMSG);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(repository, SendMockIPCConfigMSG);
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalSettings.Properties.EnableMdPreview, viewModel.MDRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgPreview, viewModel.SVGRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgThumbnail, viewModel.SVGThumbnailIsEnabled);
+
+            //Verify that the stub file was used
+            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, Module, expectedCallCount);
         }
 
 

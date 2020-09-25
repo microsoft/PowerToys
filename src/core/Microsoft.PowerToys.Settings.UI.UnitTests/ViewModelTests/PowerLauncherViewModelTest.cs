@@ -8,6 +8,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using Moq;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
+using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
+using System.Globalization;
 
 namespace ViewModelTests
 {
@@ -45,17 +47,21 @@ namespace ViewModelTests
         /// Test if the original settings files were modified.
         /// </summary>
         [TestMethod]
-        public void OriginalFilesModificationTest()
+        [DataRow("v0.20.2", "settings.json")]
+        public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, OriginalModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            // Load Originl Settings Config File
             PowerLauncherSettings originalSettings = mockSettingsUtils.GetSettings<PowerLauncherSettings>(OriginalModuleName);
-            GeneralSettings originalGeneralSettings = mockSettingsUtils.GetSettings<GeneralSettings>();
+
+            var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+            var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
             // Initialise View Model with test Config files
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockSettingsUtils), SendMockIPCConfigMSG, 32);
+            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(mockSettingsUtils, generalSettingsRepository, SendMockIPCConfigMSG, 32);
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.PowerLauncher, viewModel.EnablePowerLauncher);
@@ -69,6 +75,11 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.OverrideWinkeyS, viewModel.OverrideWinSKey);
             Assert.AreEqual(originalSettings.Properties.SearchResultPreference, viewModel.SearchResultPreference);
             Assert.AreEqual(originalSettings.Properties.SearchTypePreference, viewModel.SearchTypePreference);
+
+            //Verify that the stub file was used
+            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, OriginalModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
         [TestMethod]
