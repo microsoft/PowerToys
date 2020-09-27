@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.Indexer
                                     }
                                     catch (Exception ex)
                                     {
-                                        Log.Exception("Microsoft.Plugin.Indexer", $"Unable to launch Windows Search Settings: {ex.Message}", ex, "Query");
+                                        Log.Exception($"Unable to launch Windows Search Settings: {ex.Message}", ex, GetType());
                                     }
 
                                     return true;
@@ -163,7 +163,7 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (Exception ex)
                     {
-                        Log.Info(ex.ToString());
+                        Log.Exception("Something failed", ex, GetType());
                     }
                 }
             }

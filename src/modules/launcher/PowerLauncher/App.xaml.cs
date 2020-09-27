@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
@@ -30,7 +31,6 @@ namespace PowerLauncher
 
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed;
-        private static int _powerToysPid;
         private Settings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
@@ -40,15 +40,10 @@ namespace PowerLauncher
         private SettingsWatcher _settingsWatcher;
 
         [STAThread]
-        public static void Main(string[] args)
+        public static void Main()
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
-                if (args?.Length > 0)
-                {
-                    _ = int.TryParse(args[0], out _powerToysPid);
-                }
-
                 using (var application = new App())
                 {
                     application.InitializeComponent();
@@ -59,24 +54,37 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () =>
+            for (int i = 0; i + 1 < e.Args.Length; i++)
             {
-                try
+                if (e.Args[i] == "-powerToysPid")
                 {
-                    Dispose();
+                    int powerToysPid;
+                    if (int.TryParse(e.Args[i + 1], out powerToysPid))
+                    {
+                        RunnerHelper.WaitForPowerToysRunner(powerToysPid, () =>
+                        {
+                            try
+                            {
+                                Dispose();
+                            }
+                            finally
+                            {
+                                Environment.Exit(0);
+                            }
+                        });
+                    }
+
+                    break;
                 }
-                finally
-                {
-                    Environment.Exit(0);
-                }
-            });
+            }
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
-                Log.Info("|App.OnStartup|Begin PowerToys Run startup ----------------------------------------------------");
-                Log.Info($"|App.OnStartup|Runtime info:{ErrorReporting.RuntimeInfo()}");
+                Log.Info("Begin PowerToys Run startup ----------------------------------------------------", GetType());
+                Log.Info($"Runtime info:{ErrorReporting.RuntimeInfo()}", GetType());
+
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
@@ -85,6 +93,7 @@ namespace PowerLauncher
 
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
+                _settings.UsePowerToysRunnerKeyboardHook = e.Args.Contains("--centralized-kb-hook");
 
                 _alphabet.Initialize(_settings);
                 _stringMatcher = new StringMatcher(_alphabet);
@@ -110,7 +119,7 @@ namespace PowerLauncher
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
                 _themeManager.ThemeChanged += OnThemeChanged;
-                Log.Info("|App.OnStartup|End PowerToys Run startup ----------------------------------------------------  ");
+                Log.Info("End PowerToys Run startup ----------------------------------------------------  ", GetType());
 
                 bootTime.Stop();
 
@@ -170,7 +179,7 @@ namespace PowerLauncher
             {
                 Stopwatch.Normal("|App.OnExit|Exit cost", () =>
                 {
-                    Log.Info("|App.OnExit| Start PowerToys Run Exit----------------------------------------------------  ");
+                    Log.Info("Start PowerToys Run Exit----------------------------------------------------  ", GetType());
                     if (disposing)
                     {
                         if (_themeManager != null)
@@ -190,7 +199,7 @@ namespace PowerLauncher
                     // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                     // TODO: set large fields to null
                     _disposed = true;
-                    Log.Info("|App.OnExit| End PowerToys Run Exit ----------------------------------------------------  ");
+                    Log.Info("End PowerToys Run Exit ----------------------------------------------------  ", GetType());
                 });
             }
         }

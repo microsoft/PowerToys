@@ -5,12 +5,13 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerPreviewViewModel : Observable
     {
-        private const string ModuleName = "File Explorer";
+        private const string ModuleName = PowerPreviewSettings.ModuleName;
 
         private PowerPreviewSettings Settings { get; set; }
 
@@ -18,20 +19,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public PowerPreviewViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public PowerPreviewViewModel(ISettingsRepository<PowerPreviewSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            try
-            {
-                Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(GetSettingsSubPath());
-            }
-            catch
-            {
-                Settings = new PowerPreviewSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
-            }
+            // To obtain the PowerPreview settings if it exists.
+            // If the file does not exist, to create a new one and return the default settings configurations.
+            Settings = moduleSettingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;

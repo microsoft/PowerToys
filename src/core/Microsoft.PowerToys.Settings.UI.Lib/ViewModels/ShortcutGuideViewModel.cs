@@ -5,50 +5,38 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
         private ShortcutGuideSettings Settings { get; set; }
 
-        private const string ModuleName = "Shortcut Guide";
+        private const string ModuleName = ShortcutGuideSettings.ModuleName;
 
         private Func<string, int> SendConfigMSG { get; }
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public ShortcutGuideViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public ShortcutGuideViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            try
-            {
-                Settings = SettingsUtils.GetSettings<ShortcutGuideSettings>(GetSettingsSubPath());
-            }
-            catch
-            {
-                Settings = new ShortcutGuideSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
-            }
+            // To obtain the general PowerToys settings.
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            GeneralSettings generalSettings;
-
-            try
-            {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            }
-            catch
-            {
-                generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
-            }
+            // To obtain the shortcut guide settings, if the file exists.
+            // If not, to create a file with the default settings and to return the default configurations.
+            Settings = moduleSettingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = generalSettings.Enabled.ShortcutGuide;
+            _isEnabled = GeneralSettingsConfig.Enabled.ShortcutGuide;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
 
@@ -87,9 +75,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                    generalSettings.Enabled.ShortcutGuide = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
+
+                    // To update the status of shortcut guide in General PowerToy settings.
+                    GeneralSettingsConfig.Enabled.ShortcutGuide = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
+
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }

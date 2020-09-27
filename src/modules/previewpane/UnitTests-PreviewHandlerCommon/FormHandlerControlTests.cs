@@ -58,7 +58,7 @@ namespace UnitTests_PreviewHandlerCommon
             using (var testFormHandlerControl = new TestFormControl())
             {
                 // Act
-                var handle = testFormHandlerControl.GetHandle();
+                var handle = testFormHandlerControl.Handle;
 
                 // Assert
                 Assert.AreEqual(testFormHandlerControl.Handle, handle);

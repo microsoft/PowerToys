@@ -20,6 +20,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         private MarkdownPreviewHandlerControl _markdownPreviewHandlerControl;
         private bool disposedValue;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MarkdownPreviewHandler"/> class.
+        /// </summary>
+        public MarkdownPreviewHandler()
+        {
+            Initialize();
+        }
+
         /// <inheritdoc />
         public override void DoPreview()
         {

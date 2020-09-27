@@ -6,13 +6,17 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
+        private readonly ISettingsUtils _settingsUtils;
+
         private PowerLauncherSettings settings;
-        private GeneralSettings generalSettings;
 
         public delegate void SendCallback(PowerLauncherSettings settings);
 
@@ -20,11 +24,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerLauncherViewModel(Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
+        public PowerLauncherViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, int defaultKeyCode)
         {
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+
+            // To obtain the general Settings configurations of PowerToys
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
+
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-
             callback = (PowerLauncherSettings settings) =>
             {
                 // Propagate changes to Power Launcher through IPC
@@ -32,9 +40,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.ModuleName, JsonSerializer.Serialize(settings)));
             };
 
-            if (SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+            if (_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
             {
-                settings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                settings = _settingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
             }
             else
             {
@@ -43,15 +51,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
                 settings.Properties.MaximumNumberOfResults = 4;
                 callback(settings);
-            }
-
-            if (SettingsUtils.SettingsExists())
-            {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
-            }
-            else
-            {
-                generalSettings = new GeneralSettings();
             }
         }
 
@@ -73,16 +72,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return generalSettings.Enabled.PowerLauncher;
+                return GeneralSettingsConfig.Enabled.PowerLauncher;
             }
 
             set
             {
-                if (generalSettings.Enabled.PowerLauncher != value)
+                if (GeneralSettingsConfig.Enabled.PowerLauncher != value)
                 {
-                    generalSettings.Enabled.PowerLauncher = value;
+                    GeneralSettingsConfig.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
             }

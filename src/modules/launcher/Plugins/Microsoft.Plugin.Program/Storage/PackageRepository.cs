@@ -53,7 +53,7 @@ namespace Microsoft.Plugin.Program.Storage
                 // eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
                 catch (System.IO.FileNotFoundException e)
                 {
-                    ProgramLogger.LogException($"|UWP|OnPackageInstalling|{args.Package.InstalledLocation}|{e.Message}", e);
+                    ProgramLogger.Exception(e.Message, e, GetType(), args.Package.InstalledLocation.ToString());
                 }
             }
         }
@@ -66,6 +66,7 @@ namespace Microsoft.Plugin.Program.Storage
                 var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
                 var uwp = new UWP(packageWrapper);
                 var apps = Items.Where(a => a.Package.Equals(uwp)).ToArray();
+
                 foreach (var app in apps)
                 {
                     Remove(app);

@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,8 +17,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ImageResizerPage()
         {
             InitializeComponent();
-
-            ViewModel = new ImageResizerViewModel(ShellPage.SendDefaultIPCMessage);
+            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            ViewModel = new ImageResizerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
 

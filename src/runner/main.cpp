@@ -27,6 +27,7 @@
 
 #include <Psapi.h>
 #include <RestartManager.h>
+#include "centralized_kb_hook.h"
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -89,6 +90,7 @@ int runner(bool isProcessElevated)
 #endif
     Trace::RegisterProvider();
     start_tray_icon();
+    CentralizedKeyboardHook::Start();
 
     int result = -1;
     try
