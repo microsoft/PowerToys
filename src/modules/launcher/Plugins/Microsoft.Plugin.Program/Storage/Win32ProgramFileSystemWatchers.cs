@@ -28,8 +28,8 @@ namespace Microsoft.Plugin.Program.Storage
         {
             string[] paths = new string[]
                             {
-                               Environment.GetFolderPath(Environment.SpecialFolder.Programs),
-                               Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),
+                               Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+                               Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
                                Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                             };
             return paths;
