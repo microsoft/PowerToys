@@ -97,7 +97,7 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 ### Via GitHub with EXE [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.22.0-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.23.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
