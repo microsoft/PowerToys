@@ -24,10 +24,10 @@ namespace KeyboardEventHandlers
                 // Check if the remap is to a key or a shortcut
                 bool remapToKey = (it->second.index() == 0);
 
-                // If mapped to 0x0 then the key is disabled
+                // If mapped to DWORD(ULONG_MAX) then the key is disabled
                 if (remapToKey)
                 {
-                    if (std::get<DWORD>(it->second) == 0x0)
+                    if (std::get<DWORD>(it->second) == CommonSharedConstants::VK_DISABLED)
                     {
                         return 1;
                     }
@@ -214,7 +214,7 @@ namespace KeyboardEventHandlers
                 if (data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
                     // Check if any other keys have been pressed apart from the shortcut. If true, then check for the next shortcut. This is to be done only for shortcut to shortcut remaps
-                    if (!it->first.IsKeyboardStateClearExceptShortcut(ii) && remapToShortcut)
+                    if (!it->first.IsKeyboardStateClearExceptShortcut(ii) && (remapToShortcut || std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED))
                     {
                         continue;
                     }
@@ -296,8 +296,11 @@ namespace KeyboardEventHandlers
                         KeyboardManagerHelper::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                         // Set target key down state
-                        KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                        i++;
+                        if (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
 
                         // Modifier state reset might be required for this key depending on the shortcut's action and target modifier - ex: Win+Caps -> Ctrl
                         if (it->first.GetCtrlKey() == NULL && it->first.GetAltKey() == NULL && it->first.GetShiftKey() == NULL)

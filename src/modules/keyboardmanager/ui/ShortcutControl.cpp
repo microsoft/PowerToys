@@ -5,6 +5,7 @@
 #include "keyboardmanager/common/Helpers.h"
 #include "common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
+#include <common\shared_constants.h>
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 //Both static members are initialized to null
@@ -244,6 +245,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         if (newKeys.index() == 0)
         {
             std::vector<DWORD> shortcutListKeyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList(true);
+            shortcutListKeyCodes.insert(shortcutListKeyCodes.begin(), CommonSharedConstants::VK_DISABLED);
             auto it = std::find(shortcutListKeyCodes.begin(), shortcutListKeyCodes.end(), std::get<DWORD>(newKeys));
             if (it != shortcutListKeyCodes.end())
             {

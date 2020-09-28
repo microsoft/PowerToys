@@ -6,6 +6,7 @@
 #include "ShortcutControl.h"
 #include "common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
+#include <common\shared_constants.h>
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 //Both static members are initialized to null
@@ -107,6 +108,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         singleKeyRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ originalKey, newKey }, L""));
         std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList();
         std::vector<DWORD> shortcutListKeyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList(true);
+        shortcutListKeyCodes.insert(shortcutListKeyCodes.begin(), CommonSharedConstants::VK_DISABLED);
         auto it = std::find(keyCodes.begin(), keyCodes.end(), originalKey);
         if (it != keyCodes.end())
         {
