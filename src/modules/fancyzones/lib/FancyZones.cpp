@@ -173,7 +173,7 @@ public:
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
-    void AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept;
+    void AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -915,7 +915,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     }
 }
 
-void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
+void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) noexcept
 {
     std::unique_lock writeLock(m_lock);
 
@@ -976,33 +976,34 @@ void FancyZones::UpdateZoneWindows() noexcept
         mi.cbSize = sizeof(mi);
         if (GetMonitorInfo(monitor, &mi))
         {
-            DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
-            PCWSTR deviceId = nullptr;
+            DISPLAY_DEVICE displayDevice;
+            displayDevice.cb = sizeof(DISPLAY_DEVICE);
 
+            std::wstring deviceId;
             bool validMonitor = true;
-            if (EnumDisplayDevices(mi.szDevice, 0, &displayDevice, 1))
+            DWORD deviceIdx = 0;
+            while (EnumDisplayDevices(mi.szDevice, deviceIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
             {
-                if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
+                // Only take active monitors (presented as being "on" by the respective GDI view) into account.
+                if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE))
                 {
-                    validMonitor = FALSE;
+                    validMonitor = WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER);
+                    deviceId = std::wstring(displayDevice.DeviceID);
                 }
-                else if (displayDevice.DeviceID[0] != L'\0')
-                {
-                    deviceId = displayDevice.DeviceID;
-                }
+                ++deviceIdx;
             }
 
             if (validMonitor)
             {
-                if (!deviceId)
+                if (deviceId.empty())
                 {
                     deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
                                    L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
                                    L"\\\\?\\DISPLAY#LOCALDISPLAY#";
                 }
 
-                auto strongThis = reinterpret_cast<FancyZones*>(data);
-                strongThis->AddZoneWindow(monitor, deviceId);
+                FancyZones* fancyZones = reinterpret_cast<FancyZones*>(data);
+                fancyZones->AddZoneWindow(monitor, deviceId);
             }
         }
         return TRUE;
@@ -1010,7 +1011,7 @@ void FancyZones::UpdateZoneWindows() noexcept
 
     if (m_settings->GetSettings()->spanZonesAcrossMonitors)
     {
-        AddZoneWindow(nullptr, NULL);
+        AddZoneWindow(nullptr, {});
     }
     else
     {
