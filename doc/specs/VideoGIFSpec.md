@@ -51,18 +51,18 @@ Outcome from Using VGC for IT Guidance: A successful VGC would enable IT & admin
 | Free                                       |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Launch Application via Keyboard Shortcuts  | ![Y](./images/GIFSpec/Y.png "Yes")|![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Click-And-Drag Rectangular Section Capture |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
-| Specific Recorded Window Capture           |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Specific Recorded Window Capture           |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Full Screen Capture                        |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
-| Explicit Recording Dimensions Capture      |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Explicit Recording Dimensions Capture      |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Trim Recording                             |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Add Text Overlay to Recording              |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
-| System Audio                               |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| System Audio                               |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Optional Cursor Capture                    |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Keystroke Capture                          |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Save to MP4                                |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Save to GIF                                |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Copy Captured Media to Clipboard           |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
-| Microphone Audio                           |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
+| Microphone Audio                           |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
 | Webcam Capture                             |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
 | Frame by Frame Editing                     |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
 | Edit Out Middle Sections from Recording    |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
@@ -271,8 +271,10 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 * DRM considerations
 * Memory considerations when recording
 * File size considerations for exporting
+* Animated GIF 'copy to clipboard' functionality: Windows currently doesn't support animated GIF copying, so only a static non-animated variant can be stored on the clipboard
 * Text overlay functionality
-* PowerToys Settings menu options (ex: default encoder, cursor capture, key stroke capture, multi-monitor display behaviors, pre-recording countdown etc.)
+* PowerToys Settings menu options (ex: default encoder, cursor capture, key stroke capture, pre-recording countdown etc.)
+* Multi-monitor display behaviors and Multi-DPI compatibility
 * OS level shortcuts & hot-keys. Ex: Play, Stop, Pause, Resume, Cancel
 * Discoverability of features and settings
 * Touch & Pen interaction considerations and supporting UI
