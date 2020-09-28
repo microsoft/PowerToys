@@ -97,7 +97,7 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 ### Via GitHub with EXE [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.21.1-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.22.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -126,74 +126,74 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### August 2020 Update
+### September 2020 Update
 
-Our goals for 0.21 release cycle was to focus on stability, localization and quality of life improvements for both the development team and our end users. 
+Our goals for 0.23 release cycle was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. We have a full accessability pass being done starting end of September to audit all of PowerToys. Our localization efforts now had data flowing both directions as well.
 
-One of the longer term goal items we have made progress on is the Out of Box experience / initial onboarding experience (OOBE) improvements.[@Niels9001](https://github.com/niels9001/) created a [wicked awesome proof of concept of what the OOBE experience could be](https://github.com/microsoft/PowerToys/issues/1285#issuecomment-679268558).  We are pretty stoked about this since it handles one an important item, critical shortcut default adjustments.
+Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on.
 
 #### Highlights from August
 
-- We shipped [v0.21][github-release-link]!
-- [Video conference muting first public release][vidConfOverview]
+- We shipped [v0.23][github-release-link]! (0.24 Experiemental build coming shortly)
 
-**PT Run:**
-- Removed need for space in action keywords.  This means you now can type `>ipconfig`
-- Icon caches fixed and now has colored icons
-- Improved font rendering via ClearType (Shout out to [@AnuthaDev](https://github.com/AnuthaDev) doing the heavy lifting here)
-- Result speed improvements
-- URLs are supported 
-- Fixed bugs including calculating bugs
+**General**
 
-**FancyZone:**
-- <kbd>Win</kbd>+<kbd>Arrow key</kbd> is directional based on zone rect
-- Fixed bugs
+- Localization pipeline is flowing from our Github to the loc system and back.  0.25 should be localized now.
+- The EXE installer should be at parity now with the MSI.  Please go to the wiki for (installer args)[https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe]
 
-**Runner:**
-- Fixed toast notifications running elevated from non-admin account
+**FancyZones**
 
-**Shortcut Guide:**
-- Improved vkey catching which will fix some use cases of it not showing up
+- Fixed bug on not seeing a newly attached screen
+- Fixed spanning across monitors bug
+- Added in default layout for new users, a Priority Grid
+- Added keyboard support to grow / shrink to multiple zones
+- General bug fixes
 
-**SVG in File Explorer:**
-- Embedded image tags will now render in Explorer
+**PT Run**
 
-**Color Picker:**
-- Fixed bug where it would launch via false positive keystrokes
+- Multiple crash bugs fixed.  Prioritized any users reported along with top hits from Watson reporting
+- Stopped PT Run from interfering with an install
+- Fixed folder bug if it had a # in it (Thanks @jjw24 for the PR!)
+- Fixed a screen flicker for 
+- General bug fixes
 
-**Accessibility:**
-- Settings, PT Run and KBM undergoing improvements
+**Keyboard manager**
 
-**Localization:**
-- Pipeline is now setup and will be doing a full E2E pass on all utilities shortly.
+- Multiple crash bugs fixed.  Prioritized any users reported along with top hits from Watson reporting
+- Fixed multiple accessibility issues.
+- General bug fixes
 
-**Dev quality of life improvements:**
-- Continued warning count reduction. This release ~80 removed
-- StyleCop enabled E2E
-- FxCop starting to be added in E2E
+**Preview Pane**
 
-#### New experiential PowerToys utility - Video conference muting:
+- Added in Frontmatter and better (but still basic) latex support. 
 
-**Note:** This is only included in the [pre-release version of PowerToys installer][github-prerelease-link]. This PowerToy requires Windows 10 1903 (build 18362) or later.
+**Settings**
 
-Back in the June timeframe, we started prototyping an idea. With COVID-19, we're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer and what application has focus.
+- Fixed scaling issue for responsive design on Image Resizer
+- Fixed crash on empty color value.
+- Fixed crash for toggling FancyZones on/off
+- Fixed 0x00 NFTS crash for settings
+- Fixed multiple accessibility issues.
+- Layout adjustments (Thanks @niels9001)
+- General bug fixes
 
-The utility will mute not just your audio but your video as well with a single keystroke.  You can do audio, video both.  We knew this would impact our roadmap and goals but felt extremely strong that this is the right decision. We're all multi-tasking and trying to make the best of everything and being able to quickly mute while on a conference call is critical regardless of where you are on your computer.
+**Dev related**
 
-We know we have some issues and we have a [master tracking issue - #6246](https://github.com/microsoft/PowerToys/issues/6246). We know a certain laptops currently the video forwarding does not work and are proactively working on fixing this.
+- FxCop is being rolled out across all PowerToys. This should catch a lot of possible leaks.
+- Unified PT Run's log system
+- PT Run's calc plugin now has unit tests (Thanks @P-Storm)
+- Dev setup install script now supports VS preview (Thanks @TobiasSekan)
+- @CaelestisZ, @kameshkotwani, @adriancampos, @RahulDas782 for doc tweaks
+- Thanks @Aaron-Junker, @jay-o-way and @htcfreek for helping triage!
+- Thanks for everyone that filled an issue.  It really does help us prioritize
 
-To use:
+#### Experiential PowerToys utility - Video conference muting:
 
-- Set your camera to the PowerToys Video driver in the target application
-- <kbd>Win</kbd>+<kbd>N</kbd> to toggle both Audio and Video at the same time
-- <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd> to toggle video
-- <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> to toggle microphone
+We'll ship the 0.24 experiential build shortly which will include all improvements from 0.23 and additional fixes.
 
-For a more information, head over to the [Video conference mute overview][vidConfOverview]
+### What is being planned for 0.25
 
-### What is being planned for 0.23
-
-For [0.23](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F12), we are proactively working on:
+For [0.25](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F13), we are proactively working on:
 
 - Stability
 - Localization
@@ -202,7 +202,7 @@ For [0.23](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+
 
 ### PowerToys roadmap
 
-Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on..
+Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on.
 
 ## Developer Guidance
 
