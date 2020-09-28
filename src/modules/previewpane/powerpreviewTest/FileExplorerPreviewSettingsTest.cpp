@@ -170,7 +170,7 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.NumOfCalls, 1);
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.SubKey, preview_handlers_subkey);
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.ValueName, previewSettings.GetCLSID());
-            Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->SetRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CURRENT_USER));
+            Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->SetRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_LOCAL_MACHINE));
         }
 
         TEST_METHOD(DisablePreview_ShouldCallDeleteRegistryValueWithValidArguments_WhenCalled)
@@ -186,7 +186,7 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.NumOfCalls, 1);
             Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.SubKey, preview_handlers_subkey);
             Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.ValueName, previewSettings.GetCLSID());
-            Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->DeleteRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CURRENT_USER));
+            Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->DeleteRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_LOCAL_MACHINE));
         }
 
 		FileExplorerPreviewSettings GetSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)

@@ -10,6 +10,8 @@
 void PowerPreviewModule::destroy()
 {
     Trace::Destroyed();
+    /* Commented out as enabling/disabling via registry requires elevation
+    *
     for (auto previewHandler : this->m_previewHandlers)
     {
         if (previewHandler != NULL)
@@ -37,6 +39,7 @@ void PowerPreviewModule::destroy()
             delete thumbnailProvider;
         }
     }
+    */
 
     delete this;
 }
@@ -92,6 +95,8 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
+        /* Commented out as enabling/disabling via registry requires elevation
+        *
         for (auto previewHandler : this->m_previewHandlers)
         {
             previewHandler->UpdateState(settings, this->m_enabled);
@@ -101,6 +106,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
         {
             thumbnailProvider->UpdateState(settings, this->m_enabled);
         }
+        */
 
         settings.save_to_settings_file();
     }
@@ -113,6 +119,8 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
+    /* Commented out as enabling via registry requires elevation
+    * 
     for (auto previewHandler : this->m_previewHandlers)
     {
         if (previewHandler->GetToggleSettingState())
@@ -137,7 +145,7 @@ void PowerPreviewModule::enable()
         {
             thumbnailProvider->DisableThumbnailProvider();
         }
-    }
+    }*/
 
     if (!this->m_enabled)
     {
@@ -150,6 +158,8 @@ void PowerPreviewModule::enable()
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
+    /* Commented out as disabling via registry requires elevation
+    * 
     for (auto previewHandler : this->m_previewHandlers)
     {
         previewHandler->DisablePreview();
@@ -164,6 +174,7 @@ void PowerPreviewModule::disable()
     {
         Trace::EnabledPowerPreview(false);
     }
+    */
 
     this->m_enabled = false;
 }
@@ -183,6 +194,8 @@ void PowerPreviewModule::init_settings()
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
+        /* Commented out as enabling/disabling via registry requires elevation
+        * 
         // Load settings states.
         for (auto previewHandler : this->m_previewHandlers)
         {
@@ -193,6 +206,7 @@ void PowerPreviewModule::init_settings()
         {
             thumbnailProvider->LoadState(settings);
         }
+        */
     }
     catch (std::exception const& e)
     {

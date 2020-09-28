@@ -122,24 +122,24 @@ namespace PowerPreviewSettings
     LONG FileExplorerPreviewSettings::EnablePreview()
     {
         // Add registry value to enable preview.
-        return this->m_registryWrapper->SetRegistryValue(HKEY_CURRENT_USER, preview_handlers_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
+        return this->m_registryWrapper->SetRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
     }
 
     LONG FileExplorerPreviewSettings::DisablePreview()
     {
         // Delete the registry key to disable preview.
-        return this->m_registryWrapper->DeleteRegistryValue(HKEY_CURRENT_USER, preview_handlers_subkey, this->GetCLSID());
+        return this->m_registryWrapper->DeleteRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID());
     }
 
     LONG FileExplorerPreviewSettings::EnableThumbnailProvider()
     {
         // Add registry value to enable thumbnail provider.
-        return this->m_registryWrapper->SetRegistryValue(HKEY_CURRENT_USER, svg_thumbnail_provider_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
+        return this->m_registryWrapper->SetRegistryValue(HKEY_LOCAL_MACHINE, svg_thumbnail_provider_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
     }
 
     LONG FileExplorerPreviewSettings::DisableThumbnailProvider()
     {
         // Delete the registry key to disable thumbnail provider.
-        return this->m_registryWrapper->DeleteRegistryValue(HKEY_CURRENT_USER, svg_thumbnail_provider_subkey, this->GetCLSID());
+        return this->m_registryWrapper->DeleteRegistryValue(HKEY_LOCAL_MACHINE, svg_thumbnail_provider_subkey, this->GetCLSID());
     }
 }
