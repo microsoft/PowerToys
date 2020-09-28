@@ -111,10 +111,6 @@ namespace Wox.Plugin
         private void ChangeTheme(Theme theme)
         {
             Theme oldTheme = currentTheme;
-            if (theme == currentTheme)
-            {
-                return;
-            }
 
             if (theme == Theme.HighContrastOne)
             {
