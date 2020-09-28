@@ -9,7 +9,7 @@ using MahApps.Metro.Controls;
 
 namespace FancyZonesEditor
 {
-    public class EditorWindow : MetroWindow
+    public class EditorWindow : Window
     {
         protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
         {

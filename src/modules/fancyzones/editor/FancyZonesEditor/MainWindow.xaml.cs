@@ -15,7 +15,7 @@ namespace FancyZonesEditor
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : MetroWindow
+    public partial class MainWindow : Window
     {
         // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const int MaxZones = 40;
@@ -24,7 +24,7 @@ namespace FancyZonesEditor
         // Localizable string
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
-        public int WrapPanelItemSize { get; set; } = 262;
+        public int WrapPanelItemSize { get; set; } = 160;
 
         public MainWindow()
         {
@@ -36,7 +36,7 @@ namespace FancyZonesEditor
             if (Settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
-                WrapPanelItemSize = 180;
+                WrapPanelItemSize = 160;
             }
         }
 

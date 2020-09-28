@@ -174,8 +174,8 @@ namespace FancyZonesEditor
                         rect.Width = colInfo[maxCol].End - left;
                         rect.Height = rowInfo[maxRow].End - top;
                         rect.StrokeThickness = 1;
-                        rect.Stroke = Brushes.DarkGray;
-                        rect.Fill = Brushes.LightGray;
+                        rect.Stroke = (Brush)FindResource("ZoneBorderBrush");
+                        rect.Fill = (Brush)FindResource("ZoneBackgroundBrush");
                         frame.Children.Add(rect);
                         _zones.Add(new Int32Rect(
                             (int)left, (int)top, (int)rect.Width, (int)rect.Height));
@@ -242,8 +242,8 @@ namespace FancyZonesEditor
 
                         rect.Margin = margin;
                         rect.StrokeThickness = 1;
-                        rect.Stroke = Brushes.DarkGray;
-                        rect.Fill = Brushes.LightGray;
+                        rect.Stroke = (Brush)FindResource("ZoneBorderBrush");
+                        rect.Fill = (Brush)FindResource("ZoneBackgroundBrush");
                         Body.Children.Add(rect);
                     }
                 }
@@ -282,9 +282,9 @@ namespace FancyZonesEditor
                 Canvas.SetLeft(rect, zone.X);
                 rect.MinWidth = zone.Width;
                 rect.MinHeight = zone.Height;
-                rect.StrokeThickness = 5;
-                rect.Stroke = Brushes.DarkGray;
-                rect.Fill = Brushes.LightGray;
+                rect.StrokeThickness = 10;
+                rect.Stroke = (Brush)FindResource("ZoneBorderBrush");
+                rect.Fill = (Brush)FindResource("ZoneBackgroundBrush");
                 frame.Children.Add(rect);
             }
         }

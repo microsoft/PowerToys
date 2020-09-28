@@ -21,6 +21,8 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class App : Application
     {
+        private ThemeManager _themeManager;
+
         public Settings ZoneSettings { get; }
 
         public App()
@@ -36,6 +38,8 @@ namespace FancyZonesEditor
             {
                 Environment.Exit(0);
             });
+
+            _themeManager = new ThemeManager(this);
 
             LayoutModel foundModel = null;
 
