@@ -24,7 +24,7 @@ namespace KeyboardEventHandlers
                 // Check if the remap is to a key or a shortcut
                 bool remapToKey = (it->second.index() == 0);
 
-                // If mapped to DWORD(ULONG_MAX) then the key is disabled
+                // If mapped to VK_DISABLED then the key is disabled
                 if (remapToKey)
                 {
                     if (std::get<DWORD>(it->second) == CommonSharedConstants::VK_DISABLED)

@@ -314,5 +314,24 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
+
+        // Disable single key
+        TEST_METHOD (RemappedKeyToDisable_ShouldDisableKey_OnKeyEvent)
+        {
+            DWORD disableKey = 0x100;
+            testState.AddSingleKeyRemap(VK_LCONTROL, disableKey);
+            const int nInputs = 1;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_LCONTROL;
+
+            // Send LCtrl keydown
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // LCtrl state should be released and disable key should not be passed
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(disableKey), false);
+        }
     };
 }

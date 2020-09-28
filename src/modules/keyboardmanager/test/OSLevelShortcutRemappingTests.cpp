@@ -2004,5 +2004,59 @@ namespace RemappingLogicTests
             // Shortcut invoked state should be true
             Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
+
+        TEST_METHOD (ShortcutDisable_ShouldDisableShortcut_OnExactMatch)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = 0x100;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+
+            // send Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Check that Ctrl+A was released and Disable key was not sent
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(disableKey), false);
+        }
+
+        TEST_METHOD (ShortcutDisable_ShouldNotDisableShortcut_OnSubsetMatch)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = 0x100;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 3;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_SHIFT;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = actionKey;
+
+            // send Ctrl+Shift+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Check that Ctrl+A was not released and Disable key was not sent
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(disableKey), false);
+        }
     };
 }
