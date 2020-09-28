@@ -52,6 +52,15 @@ namespace WindowMoveHandlerUtils
         }
         return false;
     }
+
+    // MoveSize related window properties
+    struct MoveSizeWindowInfo
+    {
+        // True if from the styles the window looks like a standard window
+        bool standardWindow = false;
+        // True if the window is a top-level window that does not have a visible owner
+        bool noVisibleOwner = false;
+    };
 }
 
 class WindowMoveHandlerPrivate
@@ -82,8 +91,9 @@ public:
     void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
 
     void MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<size_t>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
-    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow);
-    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow);
+    bool MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
+    bool MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
+    bool ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
 
 private:
     void WarnIfElevationIsRequired(HWND window) noexcept;
@@ -103,9 +113,10 @@ private:
 
     HWND m_windowMoveSize{}; // The window that is being moved/sized
     bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
+    WindowMoveHandlerUtils::MoveSizeWindowInfo m_moveSizeWindowInfo; // MoveSizeWindowInfo of the window at the moment when dragging started
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
-    
+
     std::atomic<bool> m_mouseState;
     SecondaryMouseButtonsHook m_mouseHook;
     KeyState<VK_LSHIFT, VK_RSHIFT> m_shiftKeyState;
@@ -160,14 +171,19 @@ void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const std::vec
     pimpl->MoveWindowIntoZoneByIndexSet(window, indexSet, zoneWindow);
 }
 
-bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
+bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
     return pimpl->MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, cycle, zoneWindow);
 }
 
-bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
+bool WindowMoveHandler::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
     return pimpl->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle, zoneWindow);
+}
+
+bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+{
+    return pimpl->ExtendWindowByDirectionAndPosition(window, vkCode, zoneWindow);
 }
 
 void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
@@ -177,6 +193,8 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
         return;
     }
 
+    m_moveSizeWindowInfo.noVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
+    m_moveSizeWindowInfo.standardWindow = FancyZonesUtils::IsStandardWindow(window);
     m_inMoveSize = true;
 
     auto iter = zoneWindowMap.find(monitor);
@@ -303,7 +321,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
 
 void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
-    if (window != m_windowMoveSize && !FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
+    if (window != m_windowMoveSize)
     {
         return;
     }
@@ -316,7 +334,21 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     {
         auto zoneWindow = std::move(m_zoneWindowMoveSize);
         ResetWindowTransparency();
-        zoneWindow->MoveSizeEnd(m_windowMoveSize, ptScreen);
+
+        bool hasNoVisibleOwnoer = FancyZonesUtils::HasNoVisibleOwner(window);
+        bool isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
+
+        if ((isStandardWindow == false && hasNoVisibleOwnoer == false &&
+             m_moveSizeWindowInfo.standardWindow == true && m_moveSizeWindowInfo.noVisibleOwner == true) ||
+             FancyZonesUtils::IsWindowMaximized(window))
+        {
+            // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
+            // or if the window is maximized by Windows when the cursor hits the screen top border
+        }
+        else
+        {
+            zoneWindow->MoveSizeEnd(m_windowMoveSize, ptScreen);
+        }
     }
     else
     {
@@ -352,7 +384,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         }
         ::RemoveProp(window, ZonedWindowProperties::PropertyMultipleZoneID);
     }
-    
+
     m_inMoveSize = false;
     m_dragEnabled = false;
     m_mouseState = false;
@@ -376,14 +408,19 @@ void WindowMoveHandlerPrivate::MoveWindowIntoZoneByIndexSet(HWND window, const s
     }
 }
 
-bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
+bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
     return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, vkCode, cycle);
 }
 
-bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
+bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirectionAndPosition(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
     return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirectionAndPosition(window, vkCode, cycle);
+}
+
+bool WindowMoveHandlerPrivate::ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+{
+    return zoneWindow && zoneWindow->ExtendWindowByDirectionAndPosition(window, vkCode);
 }
 
 void WindowMoveHandlerPrivate::WarnIfElevationIsRequired(HWND window) noexcept

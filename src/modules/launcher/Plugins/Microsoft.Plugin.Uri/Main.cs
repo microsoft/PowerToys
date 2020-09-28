@@ -145,7 +145,7 @@ namespace Microsoft.Plugin.Uri
             catch (Exception e)
             {
                 BrowserIconPath = DefaultIconPath;
-                Log.Exception("Exception when retreiving icon", e);
+                Log.Exception("Exception when retreiving icon", e, GetType());
             }
         }
 

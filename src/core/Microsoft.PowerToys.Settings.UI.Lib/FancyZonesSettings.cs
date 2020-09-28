@@ -3,19 +3,33 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class FancyZonesSettings : BasePTModuleSettings
+    public class FancyZonesSettings : BasePTModuleSettings, ISettingsConfig
     {
+        public const string ModuleName = "FancyZones";
+
         public FancyZonesSettings()
         {
-            Version = string.Empty;
-            Name = string.Empty;
+            Version = "1.0";
+            Name = ModuleName;
             Properties = new FZConfigProperties();
         }
 
         [JsonPropertyName("properties")]
         public FZConfigProperties Properties { get; set; }
+
+        public string GetModuleName()
+        {
+            return Name;
+        }
+
+        // This can be utilized in the future if the settings.json file is to be modified/deleted.
+        public bool UpgradeSettingsConfiguration()
+        {
+            return false;
+        }
     }
 }

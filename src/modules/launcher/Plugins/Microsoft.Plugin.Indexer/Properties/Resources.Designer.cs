@@ -160,7 +160,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Indexer Plugin.
+        ///   Looks up a localized string similar to Windows Indexer.
         /// </summary>
         public static string Microsoft_plugin_indexer_plugin_name {
             get {

@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.Indexer
                                     }
                                     catch (Exception ex)
                                     {
-                                        Log.Exception("Microsoft.Plugin.Indexer", $"Unable to launch Windows Search Settings: {ex.Message}", ex, "Query");
+                                        Log.Exception($"Unable to launch Windows Search Settings: {ex.Message}", ex, GetType());
                                     }
 
                                     return true;
@@ -163,7 +163,7 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (Exception ex)
                     {
-                        Log.Info(ex.ToString());
+                        Log.Exception("Something failed", ex, GetType());
                     }
                 }
             }
@@ -206,14 +206,12 @@ namespace Microsoft.Plugin.Indexer
             UpdateIconPath(newTheme);
         }
 
-        // TODO: Localize the strings
         // Set the Plugin Title
         public string GetTranslatedPluginTitle()
         {
             return Properties.Resources.Microsoft_plugin_indexer_plugin_name;
         }
 
-        // TODO: Localize the string
         // Set the plugin Description
         public string GetTranslatedPluginDescription()
         {

@@ -5,17 +5,6 @@
 
 namespace FancyZonesUtils
 {
-    // Window properties relevant to FancyZones
-    struct FancyZonesWindowInfo
-    {
-        // True if from the styles the window looks like a standard window
-        bool standardWindow = false;
-        // True if the window is a top-level window that does not have a visible owner
-        bool noVisibleOwner = false;
-        // Path to the executable owning the window
-        std::wstring processPath;
-    };
-
     struct Rect
     {
         Rect() {}
@@ -200,7 +189,8 @@ namespace FancyZonesUtils
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
-    FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window);
+    bool HasNoVisibleOwner(HWND window) noexcept;
+    bool IsStandardWindow(HWND window);
     bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
     bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
 

@@ -4,6 +4,7 @@
 
 using System.Diagnostics.Tracing;
 
+// WARNING: THIS FILE GETS REPLACED ON THE BUILD FARM
 namespace Microsoft.PowerToys.Telemetry
 {
     /// <summary>

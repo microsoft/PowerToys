@@ -21,7 +21,8 @@ namespace Wox.Infrastructure.FileSystemHelper
             }
             catch (IOException ex)
             {
-                Log.Info($"File {path} is being accessed by another process| {ex.Message}");
+                Log.Info($"File {path} is being accessed by another process| {ex.Message}", GetType());
+
                 return new string[] { string.Empty };
             }
         }

@@ -10,11 +10,12 @@ namespace ImageResizer.Models
     public class CustomSizeTests
     {
         [Fact]
-        public void Name_works()
+        public void NameWorks()
         {
-            var size = new CustomSize();
-
-            size.Name = "Ignored";
+            var size = new CustomSize
+            {
+                Name = "Ignored",
+            };
 
             Assert.Equal(Resources.Input_Custom, size.Name);
         }
