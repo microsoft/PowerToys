@@ -12,7 +12,7 @@ steps:
   inputs:
     versionSpec: 5.5.0
   
-- template: ..\..\InstallWindowsSDK-Steps.yml
+- template: .\InstallWindowsSDK-Steps.yml
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
