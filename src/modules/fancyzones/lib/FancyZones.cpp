@@ -977,7 +977,7 @@ void FancyZones::UpdateZoneWindows() noexcept
         if (GetMonitorInfo(monitor, &mi))
         {
             DISPLAY_DEVICE displayDevice;
-            displayDevice.cb = sizeof(DISPLAY_DEVICE);
+            displayDevice.cb = sizeof(displayDevice);
 
             std::wstring deviceId;
             bool validMonitor = true;
