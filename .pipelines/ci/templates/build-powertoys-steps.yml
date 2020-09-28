@@ -11,6 +11,8 @@ steps:
   displayName: Ensure NuGet 5.5.0
   inputs:
     versionSpec: 5.5.0
+  
+- template: ..\..\InstallWindowsSDK-Steps.yml
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
