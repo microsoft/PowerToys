@@ -9,7 +9,9 @@ jobs:
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
-  pool: { vmImage: windows-2019 }
+  pool: 
+    vmImage: windows-2019
+    name: winuibuildagents
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
