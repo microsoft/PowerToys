@@ -132,7 +132,7 @@ Our goals for 0.23 release cycle was to focus on stability, accessibility, local
 
 Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on.
 
-#### Highlights from August
+#### Highlights from September
 
 - We shipped [v0.23][github-release-link]! (0.24 Experimental build coming shortly)
 
