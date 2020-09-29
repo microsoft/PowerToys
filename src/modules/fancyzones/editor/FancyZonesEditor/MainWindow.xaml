@@ -28,13 +28,13 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="286"/>
         </Grid.ColumnDefinitions>
-
+        <TextBlock Text="FancyZones Editor" FontSize="12" Margin="16,-24,0,0" />
         <StackPanel>
-            <TextBlock x:Name="dialog_Title" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource BaseTextBlockStyle}"  Margin="12,8,12,8"  />
-            <TabControl BorderThickness="0" Background="Transparent" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Converter={StaticResource BooleanToIntConverter}, Mode=OneWay}" Margin="-8,0,0,0">
+            <TextBlock x:Name="dialog_Title" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource BaseTextBlockStyle}"  Margin="16,8,16,8"  />
+            <TabControl BorderThickness="0" Background="Transparent" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Converter={StaticResource BooleanToIntConverter}, Mode=OneWay}" Margin="-4,0,0,0">
                 <TabItem Header="{x:Static props:Resources.Templates}" Style="{StaticResource TabItemPivotStyle}">
                     <StackPanel>
-                        <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,0,0,0">
+                        <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,8,0,0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Orientation="Horizontal" ItemWidth="{Binding WrapPanelItemSize, ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" ItemHeight="{Binding ItemWidth, ElementName=WrapPanel1}" x:Name="WrapPanel1" />
@@ -45,7 +45,7 @@
                                     <Border Margin="8" 
                                         BorderBrush="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
                                         BorderThickness="2"
-                                        CornerRadius="2"
+                                        CornerRadius="4"
                                         Background="{DynamicResource ItemBackgroundBrush}" 
                                         MouseDown="LayoutItem_Click">
                                         <Border.Effect>
@@ -61,7 +61,7 @@
                                             <TextBlock Padding="8,0,8,0" 
                                                    TextTrimming="CharacterEllipsis" 
                                                    DockPanel.Dock="Top"
-                                                   FontSize="14"
+                                                   FontSize="12"
                                                    Grid.Row="1"
                                                    FontWeight="SemiBold"
                                                    HorizontalAlignment="Center"
@@ -90,7 +90,7 @@
                                     <Border Margin="8" 
                                         BorderBrush="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
                                         BorderThickness="2"
-                                        CornerRadius="2"
+                                        CornerRadius="4"
                                         Background="{DynamicResource ItemBackgroundBrush}" 
                                         MouseDown="LayoutItem_Click">
                                         <Border.Effect>
@@ -106,7 +106,7 @@
                                             <TextBlock Padding="8,0,8,0" 
                                                    TextTrimming="CharacterEllipsis" 
                                                    DockPanel.Dock="Top"
-                                                   FontSize="14"
+                                                   FontSize="12"
                                                    Grid.Row="1"
                                                    FontWeight="SemiBold"
                                                    HorizontalAlignment="Center"
@@ -126,7 +126,7 @@
             </TabControl>
         </StackPanel>
         <Grid Grid.Column="1" Background="{DynamicResource SecondaryBackgroundBrush}" Margin="0,-32,0,0">
-            <StackPanel Margin="12">
+            <StackPanel Margin="16">
                 <TextBlock Text="Configuration" Style="{StaticResource BaseTextBlockStyle}" Foreground="{DynamicResource PrimaryForegroundBrush}" Margin="0,28,0,24"  />
                 <StackPanel Orientation="Vertical" Margin="0,0,0,32">
                     <TextBlock Text="Number of zones"/>
@@ -143,9 +143,9 @@
                 <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}" IsEnabled="{Binding ShowSpacing}" Margin="0,16,0,0" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
                 <TextBox x:Name="sensitivityRadiusValue" Margin="0,6,0,0" Text="{Binding SensitivityRadius, Mode=TwoWay}" Width="86" HorizontalAlignment="Left"/>
             </StackPanel>
-            <StackPanel Orientation="Vertical" Margin="12" HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
+            <StackPanel Orientation="Vertical" Margin="16" HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
                 <Button x:Name="EditCustomButton" HorizontalAlignment="Stretch" Content="{x:Static props:Resources.Edit_Selected_Layout}" Style="{StaticResource DefaultButtonStyle}" Click="EditLayout_Click"/>
-                <Button x:Name="ApplyCustomButton" HorizontalAlignment="Stretch" Margin="0,12,0,0" Content="{x:Static props:Resources.Apply}" Style="{StaticResource AccentButtonStyle}" Click="Apply_Click"/>
+                <Button x:Name="ApplyCustomButton" HorizontalAlignment="Stretch" Margin="0,8,0,0" Content="{x:Static props:Resources.Apply}" Style="{StaticResource AccentButtonStyle}" Click="Apply_Click"/>
             </StackPanel>
         </Grid>
     </Grid>

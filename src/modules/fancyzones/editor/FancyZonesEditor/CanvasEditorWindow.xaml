@@ -34,14 +34,14 @@
                 Margin="0,4,0,0" />
         </Grid>
 
-        <StackPanel Margin="12">
+        <StackPanel Margin="16">
             <TextBlock
                 Name="windowEditorDialogTitle"
                 Text="{x:Static props:Resources.Custom_Layout_Creator}"
                 Style="{StaticResource SubtitleTextBlockStyle}"  />
             <TextBlock
                 Text="{x:Static props:Resources.Name}"
-                Margin="0,12,0,0"
+                Margin="0,16,0,0"
                 Foreground="{DynamicResource PrimaryForegroundBrush}"/>
             <TextBox
                 Margin="0,6,0,0"
@@ -50,15 +50,16 @@
 
             <Button x:Name="newZoneButton"
                     HorizontalAlignment="Stretch"
-                    Height="136"
-                    Margin="0,24,0,0"
+                    Height="96"
+                    Margin="0,32,0,0"
                     Style="{StaticResource DefaultButtonStyle}"
                     Click="OnAddZone">
                 <StackPanel Orientation="Vertical">
                     <TextBlock
                         HorizontalAlignment="Center"
                         Text="&#xE109;"
-                        FontSize="48"
+                        FontSize="32"
+                        Margin="0,8,0,0"
                         FontFamily="Segoe MDL2 Assets"/>
                     <TextBlock
                         x:Name="newSoneName"
@@ -78,7 +79,7 @@
             <Grid Margin="0,48,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button

@@ -34,14 +34,14 @@
                 Margin="0,4,0,0" />
         </Grid>
         
-        <StackPanel Margin="12">
+        <StackPanel Margin="16">
             <TextBlock
                 Name="windowEditorDialogTitle"
                 Text="{x:Static props:Resources.Custom_Table_Layout}"
                 Style="{StaticResource SubtitleTextBlockStyle}"  />
             <TextBlock
                 Text="{x:Static props:Resources.Name}"
-                Margin="0,12,0,0"
+                Margin="0,16,0,0"
                 Foreground="{DynamicResource PrimaryForegroundBrush}"/>
             <TextBox
                 Margin="0,6,0,0"
@@ -49,7 +49,7 @@
                 Style="{StaticResource DefaultTextBoxStyle}"/>
             <TextBlock
                 Text="{x:Static props:Resources.Note_Custom_Table}"
-                Margin="0,12,0,0" Style="{StaticResource CaptionTextBlockStyle}"
+                Margin="0,16,0,0" Style="{StaticResource CaptionTextBlockStyle}"
                 TextWrapping="Wrap" />
             
             <!--        
@@ -63,7 +63,7 @@
             <Grid Margin="0,48,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button
