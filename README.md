@@ -139,7 +139,7 @@ Our [prioritized roadmap][roadmap] of features and utilites that the core team i
 **General**
 
 - Localization pipeline is flowing from our Github to the loc system and back.  0.25 should be localized now.
-- The EXE installer should be at parity now with the MSI.  Please go to the wiki for (installer args)[https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe]
+- The EXE installer should be at parity now with the MSI.  Please go to the wiki for [installer args](https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe)
 
 **FancyZones**
 
