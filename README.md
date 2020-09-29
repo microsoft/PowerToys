@@ -191,6 +191,12 @@ Our [prioritized roadmap][roadmap] of features and utilites that the core team i
 
 We'll ship the 0.24 experiential build shortly which will include all improvements from 0.23 and additional fixes.
 
+#### Video / GIF capture functional spec for public review
+
+Deondre Davis created our [functional spec for creating a light weight, video / GIF recording tool](https://github.com/microsoft/PowerToys/pull/6900). We encourage everyone to review it and please leave comments in the pull request so we can adjust as needed. We'll be closing it for feedback on October 12th, 2020.
+
+This is for work [post-stabilization of current roadmap work](https://github.com/microsoft/PowerToys/wiki/Roadmap#post-stabilization) and is only the spec for what we are thinking about support.  Just want to set expectations here.
+
 ### What is being planned for 0.25
 
 For [0.25](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F13), we are proactively working on:
