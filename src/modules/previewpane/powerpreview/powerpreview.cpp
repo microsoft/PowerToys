@@ -10,37 +10,6 @@
 void PowerPreviewModule::destroy()
 {
     Trace::Destroyed();
-    /* Commented out as enabling/disabling via registry requires elevation
-    *
-    for (auto previewHandler : this->m_previewHandlers)
-    {
-        if (previewHandler != NULL)
-        {
-            // Disable all the active preview handlers.
-            if (this->m_enabled && previewHandler->GetToggleSettingState())
-            {
-                previewHandler->DisablePreview();
-            }
-
-            delete previewHandler;
-        }
-    }
-
-    for (auto thumbnailProvider : this->m_thumbnailProviders)
-    {
-        if (thumbnailProvider != NULL)
-        {
-            // Disable all the active thumbnail providers.
-            if (this->m_enabled && thumbnailProvider->GetToggleSettingState())
-            {
-                thumbnailProvider->DisablePreview();
-            }
-
-            delete thumbnailProvider;
-        }
-    }
-    */
-
     delete this;
 }
 
@@ -69,20 +38,12 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC),
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
 
-    for (auto previewHandler : this->m_previewHandlers)
+    for (auto fileExplorerAddon : this->m_fileExplorerAddons)
     {
         settings.add_bool_toggle(
-            previewHandler->GetToggleSettingName(),
-            previewHandler->GetToggleSettingDescription(),
-            previewHandler->GetToggleSettingState());
-    }
-
-    for (auto thumbnailProvider : this->m_thumbnailProviders)
-    {
-        settings.add_bool_toggle(
-            thumbnailProvider->GetToggleSettingName(),
-            thumbnailProvider->GetToggleSettingDescription(),
-            thumbnailProvider->GetToggleSettingState());
+            fileExplorerAddon->GetToggleSettingName(),
+            fileExplorerAddon->GetToggleSettingDescription(),
+            fileExplorerAddon->GetToggleSettingState());
     }
 
     return settings.serialize_to_buffer(buffer, buffer_size);
@@ -95,18 +56,17 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
-        /* Commented out as enabling/disabling via registry requires elevation
-        *
-        for (auto previewHandler : this->m_previewHandlers)
+        if (is_process_elevated(false))
         {
-            previewHandler->UpdateState(settings, this->m_enabled);
+            for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+            {
+                fileExplorerAddon->UpdateState(settings, this->m_enabled);
+            }
         }
-
-        for (auto thumbnailProvider : this->m_thumbnailProviders)
+        else
         {
-            thumbnailProvider->UpdateState(settings, this->m_enabled);
+            // Show warning message if update is required
         }
-        */
 
         settings.save_to_settings_file();
     }
@@ -119,33 +79,25 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    /* Commented out as enabling via registry requires elevation
-    * 
-    for (auto previewHandler : this->m_previewHandlers)
+    if (is_process_elevated(false))
     {
-        if (previewHandler->GetToggleSettingState())
+        for (auto fileExplorerAddon : this->m_fileExplorerAddons)
         {
-            // Enable all the previews with initial state set as true.
-            previewHandler->EnablePreview();
-        }
-        else
-        {
-            previewHandler->DisablePreview();
+            if (fileExplorerAddon->GetToggleSettingState())
+            {
+                // Enable all the addons with initial state set as true.
+                fileExplorerAddon->Enable();
+            }
+            else
+            {
+                fileExplorerAddon->Disable();
+            }
         }
     }
-
-    for (auto thumbnailProvider : this->m_thumbnailProviders)
+    else
     {
-        if (thumbnailProvider->GetToggleSettingState())
-        {
-            // Enable all the thumbnail providers with initial state set as true.
-            thumbnailProvider->EnableThumbnailProvider();
-        }
-        else
-        {
-            thumbnailProvider->DisableThumbnailProvider();
-        }
-    }*/
+        // Show warning message if update is required
+    }
 
     if (!this->m_enabled)
     {
@@ -158,23 +110,22 @@ void PowerPreviewModule::enable()
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    /* Commented out as disabling via registry requires elevation
-    * 
-    for (auto previewHandler : this->m_previewHandlers)
+    if (is_process_elevated(false))
     {
-        previewHandler->DisablePreview();
+        for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+        {
+            fileExplorerAddon->Disable();
+        }
     }
-
-    for (auto thumbnailProvider : this->m_thumbnailProviders)
+    else
     {
-        thumbnailProvider->DisableThumbnailProvider();
+        // Show warning message if update is required
     }
 
     if (this->m_enabled)
     {
         Trace::EnabledPowerPreview(false);
     }
-    */
 
     this->m_enabled = false;
 }
@@ -194,22 +145,25 @@ void PowerPreviewModule::init_settings()
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
-        /* Commented out as enabling/disabling via registry requires elevation
-        * 
         // Load settings states.
-        for (auto previewHandler : this->m_previewHandlers)
+        for (auto fileExplorerAddon : this->m_fileExplorerAddons)
         {
-            previewHandler->LoadState(settings);
+            fileExplorerAddon->LoadState(settings);
         }
-
-        for (auto thumbnailProvider : this->m_thumbnailProviders)
-        {
-            thumbnailProvider->LoadState(settings);
-        }
-        */
     }
     catch (std::exception const& e)
     {
         Trace::InitSetErrorLoadingFile(e.what());
     }
 }
+
+//bool PowerPreviewModule::is_registry_update_required()
+//{
+//    for (auto previewHandler : this->m_previewHandlers)
+//    {
+//        if (previewHandler->GetToggleSettingState() != previewHandler->GetRegistryState())
+//        {
+//            return true;
+//        }
+//    }
+//}

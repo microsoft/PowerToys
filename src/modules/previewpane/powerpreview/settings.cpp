@@ -11,12 +11,6 @@ namespace PowerPreviewSettings
 {
     extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-    // Relative(HKLM/HKCU) sub key path of Preview Handlers list in registry.
-    static LPCWSTR preview_handlers_subkey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
-
-    // Relative HKCR sub key path of SVG thumbnail provider in registry
-    static LPCWSTR svg_thumbnail_provider_subkey = L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}";
-
     // Base Settings Class Implementation
     FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper) :
         m_toggleSettingEnabled(toggleSettingEnabled),
@@ -28,7 +22,7 @@ namespace PowerPreviewSettings
     {
     }
 
-    FileExplorerPreviewSettings::~FileExplorerPreviewSettings() 
+    FileExplorerPreviewSettings::~FileExplorerPreviewSettings()
     {
         if (this->m_registryWrapper != NULL)
         {
@@ -66,7 +60,7 @@ namespace PowerPreviewSettings
         return this->m_registryValueData;
     }
 
-    // Load initial state of the Preview Handler. If no inital state present initialize setting with default value.
+    // Load initial state of the file explorer addon. If no inital state present initialize setting with default value.
     void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
     {
         auto toggle = settings.get_bool_value(this->GetToggleSettingName());
@@ -77,7 +71,7 @@ namespace PowerPreviewSettings
         }
     }
 
-    // Manage change in state of Preview Handler settings.
+    // Manage change in state of file explorer addon settings.
     void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled)
     {
         auto toggle = settings.get_bool_value(this->GetToggleSettingName());
@@ -89,17 +83,17 @@ namespace PowerPreviewSettings
             {
                 this->UpdateToggleSettingState(newState);
 
-                // If global setting is enable. Add or remove the preview handler otherwise just change the UI and save the updated config.
+                // If global setting is enable. Add or remove the file explorer addon otherwise just change the UI and save the updated config.
                 if (enabled)
                 {
                     LONG err;
                     if (lastState)
                     {
-                        err = this->DisablePreview();
+                        err = this->Disable();
                     }
                     else
                     {
-                        err = this->EnablePreview();
+                        err = this->Enable();
                     }
 
                     if (err == ERROR_SUCCESS)
@@ -117,29 +111,5 @@ namespace PowerPreviewSettings
                 }
             }
         }
-    }
-
-    LONG FileExplorerPreviewSettings::EnablePreview()
-    {
-        // Add registry value to enable preview.
-        return this->m_registryWrapper->SetRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
-    }
-
-    LONG FileExplorerPreviewSettings::DisablePreview()
-    {
-        // Delete the registry key to disable preview.
-        return this->m_registryWrapper->DeleteRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID());
-    }
-
-    LONG FileExplorerPreviewSettings::EnableThumbnailProvider()
-    {
-        // Add registry value to enable thumbnail provider.
-        return this->m_registryWrapper->SetRegistryValue(HKEY_LOCAL_MACHINE, svg_thumbnail_provider_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
-    }
-
-    LONG FileExplorerPreviewSettings::DisableThumbnailProvider()
-    {
-        // Delete the registry key to disable thumbnail provider.
-        return this->m_registryWrapper->DeleteRegistryValue(HKEY_LOCAL_MACHINE, svg_thumbnail_provider_subkey, this->GetCLSID());
     }
 }

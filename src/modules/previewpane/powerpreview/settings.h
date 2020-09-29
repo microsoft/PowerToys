@@ -30,9 +30,7 @@ namespace PowerPreviewSettings
         virtual std::wstring GetRegistryValueData() const;
         virtual void LoadState(PowerToysSettings::PowerToyValues& settings);
         virtual void UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled);
-        virtual LONG EnablePreview();
-        virtual LONG DisablePreview();
-        virtual LONG EnableThumbnailProvider();
-        virtual LONG DisableThumbnailProvider();
+        virtual LONG Enable() = 0;
+        virtual LONG Disable() = 0;
     };
 }

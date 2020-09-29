@@ -3,6 +3,8 @@
 #include <common.h>
 #include "trace.h"
 #include "settings.h"
+#include "thumbnail_provider.h"
+#include "preview_handler.h"
 #include "registry_wrapper.h"
 
 using namespace PowerPreviewSettings;
@@ -16,15 +18,15 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     std::wstring m_moduleName;
-    std::vector<FileExplorerPreviewSettings*> m_previewHandlers;
+    std::vector<FileExplorerPreviewSettings*> m_fileExplorerAddons;
     std::vector<FileExplorerPreviewSettings*> m_thumbnailProviders;
 
 public:
     PowerPreviewModule() :
         m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
-        m_previewHandlers(
+        m_fileExplorerAddons(
             { // SVG Preview Handler settings object.
-              new FileExplorerPreviewSettings(
+              new PreviewHandler(
                   true,
                   L"svg-previewer-toggle-setting",
                   GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
@@ -33,22 +35,22 @@ public:
                   new RegistryWrapper()),
 
               // MarkDown Preview Handler Settings Object.
-              new FileExplorerPreviewSettings(
+              new PreviewHandler(
                   true,
                   L"md-previewer-toggle-setting",
                   GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
                   L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
                   L"Markdown Preview Handler",
-                  new RegistryWrapper()) }),
-        m_thumbnailProviders(
-            { // TODO: MOVE THIS SVG Thumbnail Provider settings object.
-              new FileExplorerPreviewSettings(
+                  new RegistryWrapper()),
+              //SVG Thumbnail Provider settings object.
+              new ThumbnailProvider(
                   true,
                   L"svg-thumbnail-toggle-setting",
                   GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                   L"{36B27788-A8BB-4698-A756-DF9F11F64F84}",
                   L"SVG Thumbnail Provider",
-                  new RegistryWrapper()) })
+                  new RegistryWrapper(),
+                  L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}") })
     {
         init_settings();
     };
@@ -61,4 +63,5 @@ public:
     virtual void disable();
     virtual bool is_enabled();
     virtual void init_settings();
+    bool is_registry_update_required();
 };
