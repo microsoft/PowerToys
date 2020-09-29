@@ -759,4 +759,7 @@
   <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
     <value>Preview Pane</value>
   </data>
+  <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
+    <value>You need to run as administrator to modify these settings</value>
+  </data>
 </root>
