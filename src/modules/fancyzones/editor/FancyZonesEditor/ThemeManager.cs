@@ -3,14 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using ControlzEx.Theming;
 using MahApps.Metro.Theming;
 using Microsoft.Win32;
 
-namespace Wox.Plugin
+namespace FancyZonesEditor
 {
     public class ThemeManager : IDisposable
     {
@@ -64,8 +63,17 @@ namespace Wox.Plugin
                     MahAppsLibraryThemeProvider.DefaultInstance));
 
             ResetTheme();
-            ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
+            ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
             ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
+            SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
+        }
+
+        private void SystemParameters_StaticPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SystemParameters.HighContrast))
+            {
+                ResetTheme();
+            }
         }
 
         public Theme GetCurrentTheme()
@@ -96,7 +104,7 @@ namespace Wox.Plugin
 
         private void ResetTheme()
         {
-            if (WindowsThemeHelper.IsHighContrastEnabled())
+            if (SystemParameters.HighContrast)
             {
                 Theme highContrastBaseType = GetHighContrastBaseType();
                 ChangeTheme(highContrastBaseType);
@@ -111,6 +119,10 @@ namespace Wox.Plugin
         private void ChangeTheme(Theme theme)
         {
             Theme oldTheme = currentTheme;
+            if (theme == currentTheme)
+            {
+                return;
+            }
 
             if (theme == Theme.HighContrastOne)
             {
@@ -162,6 +174,7 @@ namespace Wox.Plugin
                 if (disposing)
                 {
                     ControlzEx.Theming.ThemeManager.Current.ThemeChanged -= Current_ThemeChanged;
+                    SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
                     _disposed = true;
                 }
             }
