@@ -87,7 +87,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>images\FancyZonesEditor.ico</ApplicationIcon>
+    <ApplicationIcon>Images\FancyZonesEditor.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -291,14 +291,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="images\ChromeClose.png" />
-    <Resource Include="images\Delete.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\Merge.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\FancyZonesEditor.ico" />
+    <Resource Include="Images\FancyZonesEditor.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj">

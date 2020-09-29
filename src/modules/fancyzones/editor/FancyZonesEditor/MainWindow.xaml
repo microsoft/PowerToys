@@ -208,9 +208,6 @@
                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"/>
 
                                             <Button x:Name="DeleteButton" FontFamily="Segoe MDL2 Assets" Content="&#xE107;" Style="{StaticResource DefaultButtonStyle}" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" Click="OnDelete" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" BorderThickness="0" Background="Transparent"/>
-
-
-
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
