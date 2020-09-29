@@ -41,7 +41,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--<StackPanel Orientation="Vertical" 
+        <StackPanel Orientation="Vertical" 
                     x:Name="PowerPreviewView">
             <TextBlock x:Uid="FileExplorerPreview_PreviewPane_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
@@ -62,7 +62,7 @@
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
                           Margin="{StaticResource SmallTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}" />
-        </StackPanel>-->
+        </StackPanel>
         <RelativePanel x:Name="SidePanel" 
                     HorizontalAlignment="Left"
                     Width="{StaticResource SidePanelWidth}"
