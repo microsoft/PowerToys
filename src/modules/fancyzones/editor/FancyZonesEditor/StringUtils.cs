@@ -11,7 +11,7 @@ namespace FancyZonesEditor.Utils
         public static string UpperCamelCaseToDashCase(this string str)
         {
             // If it's single letter variable, leave it as it is
-            if (str.Length == 1)
+            if (str?.Length == 1)
             {
                 return str;
             }

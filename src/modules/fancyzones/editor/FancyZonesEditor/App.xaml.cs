@@ -53,7 +53,7 @@ namespace FancyZonesEditor
             {
                 foreach (LayoutModel model in Settings.CustomModels)
                 {
-                    if ("{" + model.Guid.ToString().ToUpper() + "}" == Settings.ActiveZoneSetUUid.ToUpper())
+                    if ("{" + model.Guid.ToString().ToUpperInvariant() + "}" == Settings.ActiveZoneSetUUid.ToUpperInvariant())
                     {
                         // found match
                         foundModel = model;
@@ -76,11 +76,17 @@ namespace FancyZonesEditor
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
-            var fileStream = File.OpenWrite("FZEditorCrashLog.txt");
-            var sw = new StreamWriter(fileStream);
-            sw.Write(FormatException((Exception)args.ExceptionObject));
-            fileStream.Close();
-            MessageBox.Show("Error logged to " + Path.GetFullPath(fileStream.Name) + "\nPlease report the bug to https://aka.ms/powerToysReportBug", "FancyZones Editor Error");
+            using (var fileStream = File.OpenWrite("FZEditorCrashLog.txt"))
+            {
+                using (var sw = new StreamWriter(fileStream))
+                {
+                    sw.Write(FormatException((Exception)args.ExceptionObject));
+                }
+
+                fileStream.Close();
+
+                MessageBox.Show("Error logged to " + Path.GetFullPath(fileStream.Name) + "\nPlease report the bug to https://aka.ms/powerToysReportBug", "FancyZones Editor Error");
+            }
         }
 
         private string FormatException(Exception ex)

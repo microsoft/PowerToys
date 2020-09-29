@@ -224,7 +224,7 @@ namespace FancyZonesEditor.Models
 
             GridLayoutJson jsonObj = new GridLayoutJson
             {
-                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Uuid = "{" + Guid.ToString().ToUpperInvariant() + "}",
                 Name = Name,
                 Type = ModelTypeID,
                 Info = layoutInfo,
@@ -239,7 +239,9 @@ namespace FancyZonesEditor.Models
                 string jsonString = JsonSerializer.Serialize(jsonObj, options);
                 File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 ShowExceptionMessageBox(ErrorPersistingGridLayout, ex);
             }

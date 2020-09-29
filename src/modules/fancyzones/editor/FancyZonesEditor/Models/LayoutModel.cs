@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -170,7 +171,7 @@ namespace FancyZonesEditor.Models
             if (i != -1)
             {
                 _customModels.RemoveAt(i);
-                _deletedCustomModels.Add(Guid.ToString().ToUpper());
+                _deletedCustomModels.Add(Guid.ToString().ToUpperInvariant());
             }
         }
 
@@ -196,7 +197,9 @@ namespace FancyZonesEditor.Models
                 string jsonString = JsonSerializer.Serialize(deletedLayouts, options);
                 File.WriteAllText(Settings.DeletedCustomZoneSetsTmpFile, jsonString);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 ShowExceptionMessageBox(ErrorSerializingDeletedLayouts, ex);
             }
@@ -221,7 +224,7 @@ namespace FancyZonesEditor.Models
                     string uuid = current.GetProperty(UuidJsonTag).GetString();
                     var info = current.GetProperty(InfoJsonTag);
 
-                    if (type.Equals(GridJsonTag))
+                    if (type.Equals(GridJsonTag, StringComparison.OrdinalIgnoreCase))
                     {
                         bool error = false;
 
@@ -292,14 +295,14 @@ namespace FancyZonesEditor.Models
 
                         if (error)
                         {
-                            ShowExceptionMessageBox(string.Format(ErrorLayoutMalformedData, name));
-                            _deletedCustomModels.Add(Guid.Parse(uuid).ToString().ToUpper());
+                            ShowExceptionMessageBox(string.Format(CultureInfo.CurrentCulture, ErrorLayoutMalformedData, name));
+                            _deletedCustomModels.Add(Guid.Parse(uuid).ToString().ToUpperInvariant());
                             continue;
                         }
 
                         _customModels.Add(new GridLayoutModel(uuid, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
                     }
-                    else if (type.Equals(CanvasJsonTag))
+                    else if (type.Equals(CanvasJsonTag, StringComparison.OrdinalIgnoreCase))
                     {
                         int lastWorkAreaWidth = info.GetProperty(RefWidthJsonTag).GetInt32();
                         int lastWorkAreaHeight = info.GetProperty(RefHeightJsonTag).GetInt32();
@@ -332,8 +335,8 @@ namespace FancyZonesEditor.Models
 
                         if (error)
                         {
-                            ShowExceptionMessageBox(string.Format(ErrorLayoutMalformedData, name));
-                            _deletedCustomModels.Add(Guid.Parse(uuid).ToString().ToUpper());
+                            ShowExceptionMessageBox(string.Format(CultureInfo.CurrentCulture, ErrorLayoutMalformedData, name));
+                            _deletedCustomModels.Add(Guid.Parse(uuid).ToString().ToUpperInvariant());
                             continue;
                         }
 
@@ -343,7 +346,9 @@ namespace FancyZonesEditor.Models
 
                 inputStream.Close();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 ShowExceptionMessageBox(ErrorLoadingCustomLayouts, ex);
                 return new ObservableCollection<LayoutModel>();
@@ -392,7 +397,7 @@ namespace FancyZonesEditor.Models
         {
             ActiveZoneSetWrapper activeZoneSet = new ActiveZoneSetWrapper
             {
-                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Uuid = "{" + Guid.ToString().ToUpperInvariant() + "}",
             };
 
             switch (Type)
@@ -439,7 +444,9 @@ namespace FancyZonesEditor.Models
                 string jsonString = JsonSerializer.Serialize(zoneSet, options);
                 File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 ShowExceptionMessageBox(ErrorApplyingLayout, ex);
             }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -488,7 +489,9 @@ namespace FancyZonesEditor
                     _sensitivityRadius = jsonObject.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32();
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LayoutModel.ShowExceptionMessageBox(ErrorParsingDeviceInfo, ex);
             }
@@ -503,7 +506,7 @@ namespace FancyZonesEditor
 
             if (args.Length == 2)
             {
-                if (args[1].Equals(DebugMode))
+                if (args[1].Equals(DebugMode, StringComparison.OrdinalIgnoreCase))
                 {
                     ParseDeviceInfoData(ParseDeviceMode.Debug);
                 }
@@ -525,10 +528,10 @@ namespace FancyZonesEditor
                         ((App)Application.Current).Shutdown();
                     }
 
-                    var x = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.X]);
-                    var y = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Y]);
-                    var width = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Width]);
-                    var height = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Height]);
+                    var x = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.X], CultureInfo.CurrentCulture);
+                    var y = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Y], CultureInfo.CurrentCulture);
+                    var width = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Width], CultureInfo.CurrentCulture);
+                    var height = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Height], CultureInfo.CurrentCulture);
 
                     Rect thisMonitor = new Rect(x, y, width, height);
                     if (UsedWorkAreas.Count == 0)
