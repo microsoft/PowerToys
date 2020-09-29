@@ -15,12 +15,16 @@
             x:Name="MergePanel"
             MouseUp="MergePanelMouseUp"
             Visibility="Collapsed">
+            <Canvas.Effect>
+                <DropShadowEffect BlurRadius="6" Opacity="0.32"  ShadowDepth="2" />
+            </Canvas.Effect>
             <StackPanel
                 x:Name="MergeButtons"
                 Orientation="Horizontal">
                 <Border
                     CornerRadius="2"
                     Background="{DynamicResource BackgroundBrush}">
+                    
                 <Button
                     Width="134"
                     Height="36"
@@ -33,7 +37,7 @@
                             Text="&#xE746;"
                             FontFamily="Segoe MDL2 Assets"
                             Foreground="{DynamicResource PrimaryForegroundBrush}"
-                            Margin="0,0,12,0"
+                            Margin="0,3,8,0"
                             />
                             <TextBlock Text="Merge zones" />
                     </StackPanel>
