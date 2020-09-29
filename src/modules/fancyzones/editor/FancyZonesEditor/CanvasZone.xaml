@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FancyZonesEditor"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              Background="Transparent"
              d:DesignHeight="450" d:DesignWidth="800">
 
@@ -67,7 +67,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" Background="{StaticResource CanvasZoneBackgroundBrush}" BorderThickness="1">
+    <Border BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" Background="{DynamicResource CanvasZoneBackgroundBrush}" BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
                 <RowDefinition Height="8"/>
@@ -90,7 +90,7 @@
                Canvas.Bottom="10"
                FontSize="64"
                FontFamily="Segoe UI Light"
-               Foreground="White"
+               Foreground="{DynamicResource PrimaryForegroundBrush}"
                Grid.Column="2"
                Grid.Row="2"
                VerticalContentAlignment="Center"

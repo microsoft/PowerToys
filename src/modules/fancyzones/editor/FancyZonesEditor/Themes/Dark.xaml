@@ -58,6 +58,7 @@
 
     <!-- NEW -->
     <SolidColorBrush x:Key="WindowTitleBarBackgroundBrush" Color="#FF121212" />
+    <SolidColorBrush x:Key="WindowTitleBarIconBrush" Color="#FF6e6e6e"/>
     <SolidColorBrush x:Key="BackgroundBrush" Color="#FF1b1b1b" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
@@ -65,7 +66,9 @@
 
     <SolidColorBrush x:Key="ZoneBackgroundBrush" Color="#FF3d3d3d" />
     <SolidColorBrush x:Key="ZoneBorderBrush" Color="#FF2e2e2e" />
-    
+
+    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
+    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>
 
 
 

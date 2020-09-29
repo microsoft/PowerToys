@@ -19,19 +19,38 @@
         Closed="OnClosed">
     
     <Grid>
-        <Grid Height="36" Background="{DynamicResource WindowTitleBarBackgroundBrush}" Margin="0,-36,0,0" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-            <Border Background="Red" Width="30" Height="3" CornerRadius="1.5" VerticalAlignment="Center" Margin="0,4,0,0" />
+        <Grid
+            Height="36"
+            Background="{DynamicResource WindowTitleBarBackgroundBrush}"
+            Margin="0,-36,0,0"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Stretch">
+            <Border
+                Background="{DynamicResource WindowTitleBarIconBrush}"
+                Width="30"
+                Height="3"
+                CornerRadius="1.5"
+                VerticalAlignment="Center"
+                Margin="0,4,0,0" />
         </Grid>
         
         <StackPanel Margin="12">
-            <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Table_Layout}" Style="{StaticResource SubtitleTextBlockStyle}"  />
-
-
-
-
-            <TextBlock Text="{x:Static props:Resources.Name}" Margin="0,12,0,0" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-            <TextBox Margin="0,6,0,0" Text="{Binding Name}" Style="{StaticResource DefaultTextBoxStyle}"/>
-            <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}" Margin="0,12,0,0" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" />
+            <TextBlock
+                Name="windowEditorDialogTitle"
+                Text="{x:Static props:Resources.Custom_Table_Layout}"
+                Style="{StaticResource SubtitleTextBlockStyle}"  />
+            <TextBlock
+                Text="{x:Static props:Resources.Name}"
+                Margin="0,12,0,0"
+                Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+            <TextBox
+                Margin="0,6,0,0"
+                Text="{Binding Name}"
+                Style="{StaticResource DefaultTextBoxStyle}"/>
+            <TextBlock
+                Text="{x:Static props:Resources.Note_Custom_Table}"
+                Margin="0,12,0,0" Style="{StaticResource CaptionTextBlockStyle}"
+                TextWrapping="Wrap" />
             
             <!--        
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
@@ -47,8 +66,17 @@
                     <ColumnDefinition Width="12"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button Content="{x:Static props:Resources.Cancel}" Style="{StaticResource DefaultButtonStyle}" HorizontalAlignment="Stretch" Click="OnCancel"/>
-                <Button Content="{x:Static props:Resources.Save_Apply}" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="OnSaveApplyTemplate" Grid.Column="2" />
+                <Button
+                    Content="{x:Static props:Resources.Cancel}"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    HorizontalAlignment="Stretch"
+                    Click="OnCancel"/>
+                <Button
+                    Content="{x:Static props:Resources.Save_Apply}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    HorizontalAlignment="Stretch"
+                    Click="OnSaveApplyTemplate"
+                    Grid.Column="2" />
             </Grid>
         </StackPanel>
     </Grid>

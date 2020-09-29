@@ -8,17 +8,6 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <UserControl.Resources>
-        <Style TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Background" Value="#F2F2F2" />
-            <Setter Property="Width" Value="150" />
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <Canvas x:Name="Preview" />
         <Canvas x:Name="AdornerLayer" />
@@ -26,15 +15,17 @@
             x:Name="MergePanel"
             MouseUp="MergePanelMouseUp"
             Visibility="Collapsed">
-
             <StackPanel
                 x:Name="MergeButtons"
-                Background="Gray"
                 Orientation="Horizontal">
+                <Border
+                    CornerRadius="2"
+                    Background="{DynamicResource BackgroundBrush}">
                 <Button
                     Width="134"
                     Height="36"
                     Margin="0"
+                    Style="{StaticResource DefaultButtonStyle}"
                     Click="MergeClick">
                     <StackPanel Orientation="Horizontal">
                         <Image
@@ -45,6 +36,7 @@
                         <TextBlock Text="Merge zones" />
                     </StackPanel>
                 </Button>
+                </Border>
             </StackPanel>
         </Canvas>
     </Grid>
