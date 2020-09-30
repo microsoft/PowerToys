@@ -17,7 +17,6 @@ namespace ViewModelTests
     [TestClass]
     public class PowerPreview
     {
-        private const string Module = "File Explorer";
 
         private Mock<ISettingsUtils> mockPowerPreviewSettingsUtils;
 
@@ -38,9 +37,9 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, Module, fileName);
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, PowerPreviewSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            PowerPreviewSettings originalSettings = mockSettingsUtils.GetSettings<PowerPreviewSettings>(Module);
+            PowerPreviewSettings originalSettings = mockSettingsUtils.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName);
             var repository = new BackCompatTestProperties.MockSettingsRepository<PowerPreviewSettings>(mockSettingsUtils);
 
             // Initialise View Model with test Config files
@@ -54,7 +53,7 @@ namespace ViewModelTests
 
             //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, Module, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, PowerPreviewSettings.ModuleName, expectedCallCount);
         }
 
 
@@ -70,7 +69,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -88,7 +87,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -106,7 +105,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, Module); ;
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
 
             // act
             viewModel.MDRenderIsEnabled = true;

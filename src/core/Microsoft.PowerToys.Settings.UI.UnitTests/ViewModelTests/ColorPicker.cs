@@ -16,9 +16,6 @@ namespace ViewModelTests
     [TestClass]
     public class ColorPicker
     {
-        private const string OriginalModuleName = "ColorPicker";
-
-
         /// <summary>
         /// Test if the original settings files were modified.
         /// </summary>
@@ -29,9 +26,9 @@ namespace ViewModelTests
         public void OriginalFilesModificationTest(string version, string fileName)
         {
             //Arrange
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, OriginalModuleName, fileName);
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ColorPickerSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            ColorPickerSettings originalSettings = mockSettingsUtils.GetSettings<ColorPickerSettings>(OriginalModuleName);
+            ColorPickerSettings originalSettings = mockSettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
@@ -50,7 +47,7 @@ namespace ViewModelTests
 
             //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, OriginalModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ColorPickerSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 

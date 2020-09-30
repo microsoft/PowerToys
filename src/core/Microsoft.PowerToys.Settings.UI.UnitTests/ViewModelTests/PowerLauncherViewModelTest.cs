@@ -16,10 +16,6 @@ namespace ViewModelTests
     [TestClass]
     public class PowerLauncherViewModelTest
     {
-        // This should not be changed. 
-        // Changing it will causes user's to lose their local settings configs.
-        public const string OriginalModuleName = "PowerToys Run";
-
         private class SendCallbackMock
         {
             public int TimesSent { get; set; }
@@ -54,9 +50,9 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, OriginalModuleName, fileName);
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, PowerLauncherSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            PowerLauncherSettings originalSettings = mockSettingsUtils.GetSettings<PowerLauncherSettings>(OriginalModuleName);
+            PowerLauncherSettings originalSettings = mockSettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
@@ -82,7 +78,7 @@ namespace ViewModelTests
 
             //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, OriginalModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, PowerLauncherSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 

@@ -21,10 +21,6 @@ namespace ViewModelTests
     public class FancyZones
     {
         public const string FancyZonesTestFolderName = "Test\\FancyZones";
-        // This should not be changed. 
-        // Changing it will causes user's to lose their local settings configs.
-        public const string OriginalModuleName = "FancyZones";
-
 
         /// <summary>
         /// Test if the original settings files were modified.
@@ -37,9 +33,9 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, OriginalModuleName, fileName);
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, FancyZonesSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            FancyZonesSettings originalSettings = mockSettingsUtils.GetSettings<FancyZonesSettings>(OriginalModuleName);
+            FancyZonesSettings originalSettings = mockSettingsUtils.GetSettings<FancyZonesSettings>(FancyZonesSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
@@ -75,7 +71,7 @@ namespace ViewModelTests
 
            //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, OriginalModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, FancyZonesSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 

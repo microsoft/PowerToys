@@ -17,10 +17,6 @@ namespace ViewModelTests
     [TestClass]
     public class PowerRename
     {
-        // This should not be changed. 
-        // Changing it will cause user's to lose their local settings configs.
-        public const string ModuleName = PowerRenameSettings.ModuleName;
-
         public const string generalSettings_file_name = "Test\\PowerRename";
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
@@ -44,9 +40,9 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "power-rename-settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ModuleName, fileName);
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, PowerRenameSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            PowerRenameLocalProperties originalSettings = mockSettingsUtils.GetSettings<PowerRenameLocalProperties>(ModuleName);
+            PowerRenameLocalProperties originalSettings = mockSettingsUtils.GetSettings<PowerRenameLocalProperties>(PowerRenameSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
@@ -65,7 +61,7 @@ namespace ViewModelTests
 
             //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, PowerRenameSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
