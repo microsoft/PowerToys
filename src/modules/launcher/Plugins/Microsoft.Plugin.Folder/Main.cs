@@ -5,6 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< HEAD
+=======
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Windows;
+>>>>>>> master
 using System.Windows.Controls;
 using Microsoft.Plugin.Folder.Sources;
 using Microsoft.PowerToys.Settings.UI.Lib;
@@ -60,7 +66,43 @@ namespace Microsoft.Plugin.Folder
                 .ToList();
         }
 
+<<<<<<< HEAD
         public void Init(PluginInitContext context)
+=======
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
+        public static List<Result> GetFolderPluginResults(Query query)
+        {
+            var results = GetUserFolderResults(query);
+            string search = query.Search.ToLower(CultureInfo.InvariantCulture);
+
+            if (!IsDriveOrSharedFolder(search))
+            {
+                return results;
+            }
+
+            results.AddRange(QueryInternalDirectoryExists(query));
+            return results;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and instead inform the user of the error")]
+        private static bool OpenFileOrFolder(string program, string path)
+        {
+            try
+            {
+                Process.Start(program, path);
+            }
+            catch (Exception e)
+            {
+                string messageBoxTitle = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_OpenFileOrFolder_error_message, path);
+                Log.Exception($"Failed to open {path} in explorer, {e.Message}", e, MethodBase.GetCurrentMethod().DeclaringType);
+                _context.API.ShowMsg(messageBoxTitle, e.Message);
+            }
+
+            return true;
+        }
+
+        private static bool IsDriveOrSharedFolder(string search)
+>>>>>>> master
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _contextMenuLoader = new ContextMenuLoader(context);

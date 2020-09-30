@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class KeyboardManagerSettings : BasePTModuleSettings
+    public class KeyboardManagerSettings : BasePTModuleSettings, ISettingsConfig
     {
+        public const string ModuleName = "Keyboard Manager";
+
         [JsonPropertyName("properties")]
         public KeyboardManagerProperties Properties { get; set; }
 
@@ -15,14 +18,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             Properties = new KeyboardManagerProperties();
             Version = "1";
-            Name = "_unset_";
+            Name = ModuleName;
         }
 
-        public KeyboardManagerSettings(string ptName)
+        public string GetModuleName()
         {
-            Properties = new KeyboardManagerProperties();
-            Version = "1";
-            Name = ptName;
+            return Name;
+        }
+
+        // This can be utilized in the future if the settings.json file is to be modified/deleted.
+        public bool UpgradeSettingsConfiguration()
+        {
+            return false;
         }
     }
 }

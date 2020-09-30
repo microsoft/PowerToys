@@ -38,7 +38,7 @@ namespace Wox.Infrastructure.Storage
             }
             catch (ArgumentException e)
             {
-                Log.Info($"|LisRepository.Set| Trying to insert a duplicate item", e.Message);
+                Log.Info($"Trying to insert a duplicate item {e.Message}", GetType());
             }
         }
 
@@ -51,7 +51,7 @@ namespace Wox.Infrastructure.Storage
         {
             if (!_items.TryAdd(insertedItem.GetHashCode(), insertedItem))
             {
-                Log.Error($"|ListRepository.Add| Item Already Exists <{insertedItem}>");
+                Log.Error($"Item Already Exists <{insertedItem}>", GetType());
             }
         }
 
@@ -59,7 +59,7 @@ namespace Wox.Infrastructure.Storage
         {
             if (!_items.TryRemove(removedItem.GetHashCode(), out _))
             {
-                Log.Error($"|ListRepository.Remove| Item Not Found <{removedItem}>");
+                Log.Error($"Item Not Found <{removedItem}>", GetType());
             }
         }
 

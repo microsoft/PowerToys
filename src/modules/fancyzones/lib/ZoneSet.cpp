@@ -187,7 +187,7 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
 IFACEMETHODIMP_(std::vector<size_t>)
 ZoneSet::ZonesFromPoint(POINT pt) noexcept
 {
-    const int SENSITIVITY_RADIUS = 20;
+    int sensitivityRadius = m_config.SensitivityRadius;
     std::vector<size_t> capturedZones;
     std::vector<size_t> strictlyCapturedZones;
     for (size_t i = 0; i < m_zones.size(); i++)
@@ -196,8 +196,8 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
         RECT newZoneRect = zone->GetZoneRect();
         if (newZoneRect.left < newZoneRect.right && newZoneRect.top < newZoneRect.bottom) // proper zone
         {
-            if (newZoneRect.left - SENSITIVITY_RADIUS <= pt.x && pt.x <= newZoneRect.right + SENSITIVITY_RADIUS &&
-                newZoneRect.top - SENSITIVITY_RADIUS <= pt.y && pt.y <= newZoneRect.bottom + SENSITIVITY_RADIUS)
+            if (newZoneRect.left - sensitivityRadius <= pt.x && pt.x <= newZoneRect.right + sensitivityRadius &&
+                newZoneRect.top - sensitivityRadius <= pt.y && pt.y <= newZoneRect.bottom + sensitivityRadius)
             {
                 capturedZones.emplace_back(i);
             }
@@ -227,8 +227,8 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
         {
             auto rectI = m_zones[capturedZones[i]]->GetZoneRect();
             auto rectJ = m_zones[capturedZones[j]]->GetZoneRect();
-            if (max(rectI.top, rectJ.top) + SENSITIVITY_RADIUS < min(rectI.bottom, rectJ.bottom) &&
-                max(rectI.left, rectJ.left) + SENSITIVITY_RADIUS < min(rectI.right, rectJ.right))
+            if (max(rectI.top, rectJ.top) + sensitivityRadius < min(rectI.bottom, rectJ.bottom) &&
+                max(rectI.left, rectJ.left) + sensitivityRadius < min(rectI.right, rectJ.right))
             {
                 overlap = true;
                 i = capturedZones.size() - 1;

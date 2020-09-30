@@ -272,8 +272,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
         MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
         m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), m_highlightZone);
 
-        auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
-        if (windowInfo.noVisibleOwner)
+        if (FancyZonesUtils::HasNoVisibleOwner(window))
         {
             SaveWindowProcessToZoneIndex(window);
         }
@@ -307,8 +306,7 @@ ZoneWindow::MoveWindowIntoZoneByDirectionAndIndex(HWND window, DWORD vkCode, boo
     {
         if (m_activeZoneSet->MoveWindowIntoZoneByDirectionAndIndex(window, m_window.get(), vkCode, cycle))
         {
-            auto windowInfo = FancyZonesUtils::GetFancyZonesWindowInfo(window);
-            if (windowInfo.noVisibleOwner)
+            if (FancyZonesUtils::HasNoVisibleOwner(window))
             {
                 SaveWindowProcessToZoneIndex(window);
             }
@@ -474,10 +472,13 @@ void ZoneWindow::CalculateZoneSet() noexcept
     GUID zoneSetId;
     if (SUCCEEDED_LOG(CLSIDFromString(activeZoneSet.uuid.c_str(), &zoneSetId)))
     {
+        int sensitivityRadius = deviceInfoData->sensitivityRadius;
+
         auto zoneSet = MakeZoneSet(ZoneSetConfig(
             zoneSetId,
             activeZoneSet.type,
-            m_monitor));
+            m_monitor,
+            sensitivityRadius));
         
         RECT workArea;
         if (m_monitor)
@@ -501,6 +502,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
         bool showSpacing = deviceInfoData->showSpacing;
         int spacing = showSpacing ? deviceInfoData->spacing : 0;
         int zoneCount = deviceInfoData->zoneCount;
+        
         zoneSet->CalculateZones(workArea, zoneCount, spacing);
         UpdateActiveZoneSet(zoneSet.get());        
     }

@@ -51,7 +51,7 @@ namespace Microsoft.Plugin.Calculator
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                Log.Exception($"|Microsoft.Plugin.Calculator.Main.Query|Exception when query for <{query}>", e);
+                Log.Exception("Exception when query for <{query}>", e, GetType());
             }
 
             return new List<Result>();

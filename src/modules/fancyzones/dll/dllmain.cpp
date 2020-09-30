@@ -71,7 +71,7 @@ public:
         {
             InitializeWinhookEventIds();
             Trace::FancyZones::EnableFancyZones(true);
-            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
+            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings, std::bind(&FancyZonesModule::disable, this));
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
             const bool hook_disabled = IsDebuggerPresent();
 #else
@@ -129,7 +129,7 @@ public:
     // Returns if the powertoy is enabled
     virtual bool is_enabled() override
     {
-        return (m_app != nullptr);
+        return m_app != nullptr;
     }
 
     // Destroy the powertoy and free memory

@@ -6,13 +6,16 @@ using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {
-        private const string ModuleName = "FancyZones";
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
+        private const string ModuleName = FancyZonesSettings.ModuleName;
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
 
@@ -22,19 +25,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string settingsConfigFileFolder = string.Empty;
 
-        public FancyZonesViewModel(Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
+            // To obtain the general settings configurations of PowerToys Settings.
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
             settingsConfigFileFolder = configFileSubfolder;
 
-            try
-            {
-                Settings = SettingsUtils.GetSettings<FancyZonesSettings>(GetSettingsSubPath());
-            }
-            catch
-            {
-                Settings = new FancyZonesSettings();
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
-            }
+            // To obtain the settings configurations of Fancy zones.
+            Settings = moduleSettingsRepository.SettingsConfig;
 
             LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
 
@@ -68,18 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             _zoneHighlightColor = highlightColor != string.Empty ? highlightColor : "#0078D7";
 
-            GeneralSettings generalSettings;
-            try
-            {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            }
-            catch
-            {
-                generalSettings = new GeneralSettings();
-                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
-            }
-
-            _isEnabled = generalSettings.Enabled.FancyZones;
+            _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
         }
 
         private bool _isEnabled;
@@ -117,9 +104,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                    generalSettings.Enabled.FancyZones = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
+
+                    // Set the status of FancyZones in the general settings configuration
+                    GeneralSettingsConfig.Enabled.FancyZones = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");

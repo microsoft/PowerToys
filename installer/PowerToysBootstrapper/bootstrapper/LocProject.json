@@ -1,0 +1,14 @@
+{
+    "Projects": [
+        {
+            "LanguageSet": "Azure_Languages",
+            "LocItems": [
+                {
+                    "SourceFile": "installer\\PowerToysBootstrapper\\bootstrapper\\Resources.resx",
+                    "CopyOption": "LangIDOnName",
+                    "OutputPath": "installer\\PowerToysBootstrapper\\bootstrapper"
+                }
+            ]
+        }
+    ]
+}

@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
@@ -34,6 +35,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public List<string> GetNewRemapKeys()
         {
             return MapKeys(NewRemapKeys);
+        }
+
+        public string ToJsonString()
+        {
+            return JsonSerializer.Serialize(this);
         }
     }
 }

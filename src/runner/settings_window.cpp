@@ -12,6 +12,7 @@
 #include "common/common.h"
 #include "restart_elevated.h"
 #include "update_utils.h"
+#include "centralized_kb_hook.h"
 
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
@@ -106,9 +107,11 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
 
 void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings)
 {
-    if (modules().find(module_key) != modules().end())
+    auto moduleIt = modules().find(module_key);
+    if (moduleIt != modules().end())
     {
-        modules().at(module_key)->set_config(settings.c_str());
+        moduleIt->second->set_config(settings.c_str());
+        moduleIt->second.update_hotkeys();
     }
 }
 

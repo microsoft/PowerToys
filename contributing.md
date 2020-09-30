@@ -121,6 +121,12 @@ When you'd like the team to take a look, (even if the work is not yet fully-comp
 
 Once your code has been reviewed and approved by the requisite number of team members, it will be merged into the master branch. Once merged, your PR will be automatically closed.
 
+### How can I become a collaborateur on the PowerToys team
+
+Be a great community member. Just help out a lot and make useful additions, filing bugs/suggestions, help develop fixes and features, code reviews, and always, docs. Lets continue to make the PowerToys repository a great spot to learn and make a great set of utilities.
+
+When the time comes, Microsoft will reach out and help make you a formal team member. Just make sure they can reach out to you :)
+
 ---
 
 ## Thank you

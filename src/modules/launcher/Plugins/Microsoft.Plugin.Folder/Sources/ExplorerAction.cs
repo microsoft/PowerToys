@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Wox.Infrastructure.Logger;
@@ -59,7 +60,7 @@ namespace Microsoft.Plugin.Folder.Sources
             catch (Exception e)
             {
                 string messageBoxTitle = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_OpenFileOrFolder_error_message, path);
-                Log.Exception($"|Microsoft.Plugin.Folder.Main.OpenFileOrFolder| Failed to open {path} in explorer, {e.Message}", e);
+                Log.Exception($"Failed to open {path} in {FileExplorerProgramName}, {e.Message}", e, MethodBase.GetCurrentMethod().DeclaringType);
                 contextApi.ShowMsg(messageBoxTitle, e.Message);
             }
 
