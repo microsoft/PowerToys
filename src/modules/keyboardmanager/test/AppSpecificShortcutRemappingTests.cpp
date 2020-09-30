@@ -4,6 +4,7 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/dll/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
+#include <common\shared_constants.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -321,7 +322,7 @@ namespace RemappingLogicTests
             src.SetKey(VK_CONTROL);
             WORD actionKey = 0x41;
             src.SetKey(actionKey);
-            WORD disableKey = 0x100;
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
             testState.AddAppSpecificShortcut(testApp1, src, disableKey);
 
             // Set the testApp as the foreground process

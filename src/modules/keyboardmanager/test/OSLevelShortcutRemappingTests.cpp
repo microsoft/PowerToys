@@ -2011,7 +2011,7 @@ namespace RemappingLogicTests
             src.SetKey(VK_CONTROL);
             WORD actionKey = 0x41;
             src.SetKey(actionKey);
-            WORD disableKey = 0x100;
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
 
             testState.AddOSLevelShortcut(src, disableKey);
 
@@ -2036,7 +2036,7 @@ namespace RemappingLogicTests
             src.SetKey(VK_CONTROL);
             WORD actionKey = 0x41;
             src.SetKey(actionKey);
-            WORD disableKey = 0x100;
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
 
             testState.AddOSLevelShortcut(src, disableKey);
 
@@ -2063,7 +2063,7 @@ namespace RemappingLogicTests
             src.SetKey(VK_CONTROL);
             WORD actionKey = 0x41;
             src.SetKey(actionKey);
-            WORD disableKey = 0x100;
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
 
             testState.AddOSLevelShortcut(src, disableKey);
 

@@ -50,13 +50,6 @@ private:
 
     // Function to set accessible name for combobox
     static void SetAccessibleNameForComboBox(ComboBox dropDown, int index);
-
-    // Get keys code list depending if Disable is in dropdown
-    static std::vector<DWORD> GetKeyCodeList(bool isShortcut, bool renderDisable);
-
-    // Get keys name list depending if Disable is in dropdown
-    static std::vector<std::wstring> GetKeyNameList(bool isShortcut, bool renderDisable);
-
 public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
@@ -97,4 +90,10 @@ public:
 
     // Function to add a shortcut to the UI control as combo boxes
     static void AddShortcutToControl(Shortcut shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
+
+    // Get keys code list depending if Disable is in dropdown
+    static std::vector<DWORD> GetKeyCodeList(bool isShortcut, bool renderDisable);
+
+    // Get keys name list depending if Disable is in dropdown
+    static std::vector<std::wstring> GetKeyNameList(bool isShortcut, bool renderDisable);
 };

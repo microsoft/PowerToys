@@ -4,6 +4,7 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include "BufferValidationHelpers.h"
 #include <common\shared_constants.h>
+#include <common\keyboard_layout_impl.h>
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -26,7 +27,7 @@ std::vector<std::wstring> KeyDropDownControl::GetKeyNameList(bool isShortcut, bo
     auto list = keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut);
     if (renderDisable)
     {
-        list.insert(list.begin(), L"Disable");
+        list.insert(list.begin(), keyboardManagerState->keyboardMap.GetKeyName(CommonSharedConstants::VK_DISABLED));
     }
 
     return list;

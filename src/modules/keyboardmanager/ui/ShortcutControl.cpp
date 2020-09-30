@@ -244,8 +244,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
 
         if (newKeys.index() == 0)
         {
-            std::vector<DWORD> shortcutListKeyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList(true);
-            shortcutListKeyCodes.insert(shortcutListKeyCodes.begin(), CommonSharedConstants::VK_DISABLED);
+            std::vector<DWORD> shortcutListKeyCodes = KeyDropDownControl::GetKeyCodeList(true, true);
             auto it = std::find(shortcutListKeyCodes.begin(), shortcutListKeyCodes.end(), std::get<DWORD>(newKeys));
             if (it != shortcutListKeyCodes.end())
             {
