@@ -189,8 +189,7 @@ Our [prioritized roadmap][roadmap] of features and utilites that the core team i
 
 #### Experiential PowerToys utility - Video conference muting:
 
-We'll ship the 0.24 experiential build shortly which will include all improvements from 0.23 and additional fixes.
-
+We'll ship the 0.24 experiential build shortly which will include all improvements from 0.23 in addition to the Video conference utility.
 #### Video / GIF capture functional spec for public review
 
 Deondre Davis created our [functional spec for creating a light weight, video / GIF recording tool](https://github.com/microsoft/PowerToys/pull/6900). We encourage everyone to review it and please leave comments in the pull request so we can adjust as needed. We'll be closing it for feedback on October 12th, 2020.
