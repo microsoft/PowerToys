@@ -60,7 +60,7 @@ namespace PowerPreviewSettings
         return this->m_registryValueData;
     }
 
-    // Load initial state of the file explorer addon. If no inital state present initialize setting with default value.
+    // Load initial state of the file explorer module. If no inital state present initialize setting with default value.
     void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
     {
         auto toggle = settings.get_bool_value(this->GetToggleSettingName());
@@ -71,7 +71,7 @@ namespace PowerPreviewSettings
         }
     }
 
-    // Manage change in state of file explorer addon settings.
+    // Manage change in state of file explorer module settings.
     bool FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled)
     {
         auto toggle = settings.get_bool_value(this->GetToggleSettingName());
@@ -83,11 +83,11 @@ namespace PowerPreviewSettings
             {
                 this->UpdateToggleSettingState(newState);
 
-                // If global setting is enable. Add or remove the file explorer addon otherwise just change the UI and save the updated config.
+                // If global setting is enable. Add or remove the file explorer module otherwise just change the UI and save the updated config.
                 if (enabled)
                 {
-                    // Check if the registry state matches the last state, registry needs to be modified
-                    if (this->CheckRegistryState() == lastState)
+                    // Check if the registry state does not match the new state, registry needs to be modified
+                    if (this->CheckRegistryState() != newState)
                     {
                         if (is_process_elevated(false))
                         {
@@ -116,7 +116,7 @@ namespace PowerPreviewSettings
                             return false;
                         }
                     }
-                    // If it doesn't match the last state, it will match the new state (since toggles are bool), so no update to registry is required
+                    // If it matches the new state, no update to registry is required
                 }
                 else
                 {

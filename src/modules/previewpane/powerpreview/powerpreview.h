@@ -18,13 +18,22 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     std::wstring m_moduleName;
-    std::vector<FileExplorerPreviewSettings*> m_fileExplorerAddons;
+    std::vector<FileExplorerPreviewSettings*> m_fileExplorerModules;
     std::vector<FileExplorerPreviewSettings*> m_thumbnailProviders;
+
+    // Function to check if the registry states need to be updated
+    bool is_registry_update_required();
+
+    // Function to warn the user that PowerToys needs to run as administrator for changes to take effect
+    void show_update_warning_message();
+
+    // Function that checks if a registry method is required and if so checks if the process is elevated and accordingly executes the method or shows a warning
+    void elevation_check_wrapper(std::function<void()> method);
 
 public:
     PowerPreviewModule() :
         m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
-        m_fileExplorerAddons(
+        m_fileExplorerModules(
             { // SVG Preview Handler settings object.
               new PreviewHandler(
                   true,
@@ -63,5 +72,4 @@ public:
     virtual void disable();
     virtual bool is_enabled();
     virtual void init_settings();
-    bool is_registry_update_required();
 };

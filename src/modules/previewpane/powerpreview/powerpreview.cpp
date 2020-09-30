@@ -38,12 +38,12 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC),
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
 
-    for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+    for (auto fileExplorerModule : this->m_fileExplorerModules)
     {
         settings.add_bool_toggle(
-            fileExplorerAddon->GetToggleSettingName(),
-            fileExplorerAddon->GetToggleSettingDescription(),
-            fileExplorerAddon->GetToggleSettingState());
+            fileExplorerModule->GetToggleSettingName(),
+            fileExplorerModule->GetToggleSettingDescription(),
+            fileExplorerModule->GetToggleSettingState());
     }
 
     return settings.serialize_to_buffer(buffer, buffer_size);
@@ -57,18 +57,14 @@ void PowerPreviewModule::set_config(const wchar_t* config)
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
         bool updateSuccess = true;
-        for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+        for (auto fileExplorerModule : this->m_fileExplorerModules)
         {
-            updateSuccess = updateSuccess && fileExplorerAddon->UpdateState(settings, this->m_enabled);
+            updateSuccess = updateSuccess && fileExplorerModule->UpdateState(settings, this->m_enabled);
         }
 
         if (!updateSuccess)
         {
-            // Show warning message if update is required
-            MessageBoxW(NULL,
-                        L"Restart as admin",
-                        L"Failed",
-                        MB_OK | MB_ICONERROR);
+            show_update_warning_message();
         }
 
         settings.save_to_settings_file();
@@ -82,32 +78,20 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    if (is_registry_update_required())
-    {
-        if (is_process_elevated(false))
+    elevation_check_wrapper([this]() {
+        for (auto fileExplorerModule : this->m_fileExplorerModules)
         {
-            for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+            if (fileExplorerModule->GetToggleSettingState())
             {
-                if (fileExplorerAddon->GetToggleSettingState())
-                {
-                    // Enable all the addons with initial state set as true.
-                    fileExplorerAddon->Enable();
-                }
-                else
-                {
-                    fileExplorerAddon->Disable();
-                }
+                // Enable all the modules with initial state set as true.
+                fileExplorerModule->Enable();
+            }
+            else
+            {
+                fileExplorerModule->Disable();
             }
         }
-        else
-        {
-            // Show warning message if update is required
-            MessageBoxW(NULL,
-                        L"Restart as admin",
-                        L"Failed",
-                        MB_OK | MB_ICONERROR);
-        }
-    }
+    });
 
     if (!this->m_enabled)
     {
@@ -120,24 +104,12 @@ void PowerPreviewModule::enable()
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    if (is_registry_update_required())
-    {
-        if (is_process_elevated(false))
+    elevation_check_wrapper([this]() {
+        for (auto fileExplorerModule : this->m_fileExplorerModules)
         {
-            for (auto fileExplorerAddon : this->m_fileExplorerAddons)
-            {
-                fileExplorerAddon->Disable();
-            }
+            fileExplorerModule->Disable();
         }
-        else
-        {
-            // Show warning message if update is required
-            MessageBoxW(NULL,
-                        L"Restart as admin",
-                        L"Failed",
-                        MB_OK | MB_ICONERROR);
-        }
-    }
+    });
 
     if (this->m_enabled)
     {
@@ -163,9 +135,9 @@ void PowerPreviewModule::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
-        for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+        for (auto fileExplorerModule : this->m_fileExplorerModules)
         {
-            fileExplorerAddon->LoadState(settings);
+            fileExplorerModule->LoadState(settings);
         }
     }
     catch (std::exception const& e)
@@ -174,15 +146,45 @@ void PowerPreviewModule::init_settings()
     }
 }
 
+// Function to check if the registry states need to be updated
 bool PowerPreviewModule::is_registry_update_required()
 {
-    for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+    for (auto fileExplorerModule : this->m_fileExplorerModules)
     {
-        if (fileExplorerAddon->GetToggleSettingState() != fileExplorerAddon->CheckRegistryState())
+        if (fileExplorerModule->GetToggleSettingState() != fileExplorerModule->CheckRegistryState())
         {
             return true;
         }
     }
 
     return false;
+}
+
+// Function to warn the user that PowerToys needs to run as administrator for changes to take effect
+void PowerPreviewModule::show_update_warning_message()
+{
+    // Show warning message if update is required
+    MessageBoxW(NULL,
+                GET_RESOURCE_STRING(IDS_FILEEXPLORER_ADMIN_RESTART_WARNING_DESCRIPTION).c_str(),
+                GET_RESOURCE_STRING(IDS_FILEEXPLORER_ADMIN_RESTART_WARNING_TITLE).c_str(),
+                MB_OK | MB_ICONWARNING);
+}
+
+// Function that checks if a registry method is required and if so checks if the process is elevated and accordingly executes the method or shows a warning
+void PowerPreviewModule::elevation_check_wrapper(std::function<void()> method)
+{
+    // Check if a registry update is required
+    if (is_registry_update_required())
+    {
+        // Check if the process is elevated in order to have permissions to modify HKLM registry
+        if (is_process_elevated(false))
+        {
+            method();
+        }
+        // Show a warning if it doesn't have permissions
+        else
+        {
+            show_update_warning_message();
+        }
+    }
 }
