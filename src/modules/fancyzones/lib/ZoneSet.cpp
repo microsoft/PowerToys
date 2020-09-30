@@ -360,7 +360,6 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND windowZone, DWO
     {
         if (!cycle)
         {
-            MoveWindowIntoZoneByIndexSet(window, windowZone, {});
             return false;
         }
         else
