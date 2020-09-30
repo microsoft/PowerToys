@@ -72,7 +72,7 @@ namespace PowerPreviewSettings
     }
 
     // Manage change in state of file explorer addon settings.
-    void FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled)
+    bool FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled)
     {
         auto toggle = settings.get_bool_value(this->GetToggleSettingName());
         if (toggle)
@@ -86,24 +86,37 @@ namespace PowerPreviewSettings
                 // If global setting is enable. Add or remove the file explorer addon otherwise just change the UI and save the updated config.
                 if (enabled)
                 {
-                    LONG err;
-                    if (lastState)
+                    // Check if the registry state matches the last state, registry needs to be modified
+                    if (this->CheckRegistryState() == lastState)
                     {
-                        err = this->Disable();
-                    }
-                    else
-                    {
-                        err = this->Enable();
-                    }
+                        if (is_process_elevated(false))
+                        {
+                            LONG err;
+                            if (lastState)
+                            {
+                                err = this->Disable();
+                            }
+                            else
+                            {
+                                err = this->Enable();
+                            }
 
-                    if (err == ERROR_SUCCESS)
-                    {
-                        Trace::PowerPreviewSettingsUpdated(this->GetToggleSettingName().c_str(), lastState, newState, enabled);
+                            if (err == ERROR_SUCCESS)
+                            {
+                                Trace::PowerPreviewSettingsUpdated(this->GetToggleSettingName().c_str(), lastState, newState, enabled);
+                            }
+                            else
+                            {
+                                Trace::PowerPreviewSettingsUpdateFailed(this->GetToggleSettingName().c_str(), lastState, newState, enabled);
+                            }
+                        }
+                        // If process is not elevated, return false as it is not possible to update the registry
+                        else
+                        {
+                            return false;
+                        }
                     }
-                    else
-                    {
-                        Trace::PowerPreviewSettingsUpdateFailed(this->GetToggleSettingName().c_str(), lastState, newState, enabled);
-                    }
+                    // If it doesn't match the last state, it will match the new state (since toggles are bool), so no update to registry is required
                 }
                 else
                 {
@@ -111,5 +124,7 @@ namespace PowerPreviewSettings
                 }
             }
         }
+
+        return true;
     }
 }

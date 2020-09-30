@@ -18,16 +18,39 @@ namespace PowerPreviewSettings
 
         LONG Enable()
         {
-            //// Add registry value to enable preview.
-            //return this->m_registryWrapper->SetRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
-            return 0;
+            // Add registry value to enable preview.
+            return this->m_registryWrapper->SetRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
         }
 
         LONG Disable()
         {
-            //// Delete the registry key to disable preview.
-            //return this->m_registryWrapper->DeleteRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID());
-            return 0;
+            // Delete the registry key to disable preview.
+            return this->m_registryWrapper->DeleteRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID());
+        }
+
+        bool CheckRegistryState()
+        {
+            DWORD dataType;
+            DWORD byteCount;
+            wchar_t regValue[255] = { 0 };
+
+            LONG errorCode = this->m_registryWrapper->GetRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID(), &dataType, regValue, &byteCount);
+
+            // Registry value was found
+            if (errorCode == ERROR_SUCCESS)
+            {
+                // Check if the value type is string
+                if (dataType == REG_SZ)
+                {
+                    // Check if the current registry value matches the expected value
+                    if (wcscmp(regValue, this->GetRegistryValueData().c_str()) == 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     };
 }

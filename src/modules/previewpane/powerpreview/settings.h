@@ -15,12 +15,14 @@ namespace PowerPreviewSettings
         std::wstring m_toggleSettingName;
         std::wstring m_toggleSettingDescription;
         std::wstring m_registryValueData;
-        RegistryWrapperIface * m_registryWrapper;
         LPCWSTR m_clsid;
+
+    protected:
+        RegistryWrapperIface* m_registryWrapper;
 
     public:
         FileExplorerPreviewSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper);
-        ~ FileExplorerPreviewSettings();
+        ~FileExplorerPreviewSettings();
 
         virtual bool GetToggleSettingState() const;
         virtual void UpdateToggleSettingState(bool state);
@@ -29,8 +31,9 @@ namespace PowerPreviewSettings
         virtual LPCWSTR GetCLSID() const;
         virtual std::wstring GetRegistryValueData() const;
         virtual void LoadState(PowerToysSettings::PowerToyValues& settings);
-        virtual void UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled);
+        virtual bool UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled);
         virtual LONG Enable() = 0;
         virtual LONG Disable() = 0;
+        virtual bool CheckRegistryState() = 0;
     };
 }

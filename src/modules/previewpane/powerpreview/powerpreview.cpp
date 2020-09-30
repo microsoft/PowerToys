@@ -56,16 +56,19 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
-        if (is_process_elevated(false))
+        bool updateSuccess = true;
+        for (auto fileExplorerAddon : this->m_fileExplorerAddons)
         {
-            for (auto fileExplorerAddon : this->m_fileExplorerAddons)
-            {
-                fileExplorerAddon->UpdateState(settings, this->m_enabled);
-            }
+            updateSuccess = updateSuccess && fileExplorerAddon->UpdateState(settings, this->m_enabled);
         }
-        else
+
+        if (!updateSuccess)
         {
             // Show warning message if update is required
+            MessageBoxW(NULL,
+                        L"Restart as admin",
+                        L"Failed",
+                        MB_OK | MB_ICONERROR);
         }
 
         settings.save_to_settings_file();
@@ -79,24 +82,31 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    if (is_process_elevated(false))
+    if (is_registry_update_required())
     {
-        for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+        if (is_process_elevated(false))
         {
-            if (fileExplorerAddon->GetToggleSettingState())
+            for (auto fileExplorerAddon : this->m_fileExplorerAddons)
             {
-                // Enable all the addons with initial state set as true.
-                fileExplorerAddon->Enable();
-            }
-            else
-            {
-                fileExplorerAddon->Disable();
+                if (fileExplorerAddon->GetToggleSettingState())
+                {
+                    // Enable all the addons with initial state set as true.
+                    fileExplorerAddon->Enable();
+                }
+                else
+                {
+                    fileExplorerAddon->Disable();
+                }
             }
         }
-    }
-    else
-    {
-        // Show warning message if update is required
+        else
+        {
+            // Show warning message if update is required
+            MessageBoxW(NULL,
+                        L"Restart as admin",
+                        L"Failed",
+                        MB_OK | MB_ICONERROR);
+        }
     }
 
     if (!this->m_enabled)
@@ -110,16 +120,23 @@ void PowerPreviewModule::enable()
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    if (is_process_elevated(false))
+    if (is_registry_update_required())
     {
-        for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+        if (is_process_elevated(false))
         {
-            fileExplorerAddon->Disable();
+            for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+            {
+                fileExplorerAddon->Disable();
+            }
         }
-    }
-    else
-    {
-        // Show warning message if update is required
+        else
+        {
+            // Show warning message if update is required
+            MessageBoxW(NULL,
+                        L"Restart as admin",
+                        L"Failed",
+                        MB_OK | MB_ICONERROR);
+        }
     }
 
     if (this->m_enabled)
@@ -157,13 +174,15 @@ void PowerPreviewModule::init_settings()
     }
 }
 
-//bool PowerPreviewModule::is_registry_update_required()
-//{
-//    for (auto previewHandler : this->m_previewHandlers)
-//    {
-//        if (previewHandler->GetToggleSettingState() != previewHandler->GetRegistryState())
-//        {
-//            return true;
-//        }
-//    }
-//}
+bool PowerPreviewModule::is_registry_update_required()
+{
+    for (auto fileExplorerAddon : this->m_fileExplorerAddons)
+    {
+        if (fileExplorerAddon->GetToggleSettingState() != fileExplorerAddon->CheckRegistryState())
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
