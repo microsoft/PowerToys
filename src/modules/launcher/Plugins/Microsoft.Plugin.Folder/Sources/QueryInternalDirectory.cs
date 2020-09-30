@@ -65,7 +65,6 @@ namespace Microsoft.Plugin.Folder.Sources
 
                 // Remove everything after the last \ and add *
                 incompleteName = search.Substring(index + 1)
-                    .Replace(">", string.Empty, StringComparison.Ordinal)
                     .ToLower(CultureInfo.InvariantCulture) + "*";
                 search = search.Substring(0, index + 1);
                 if (!_queryFileSystemInfo.Exists(search))
@@ -100,7 +99,7 @@ namespace Microsoft.Plugin.Folder.Sources
             }
 
             var (search, incompleteName) = processed;
-            var searchOption = GetSearchOptions(querySearch);
+            var searchOption = GetSearchOptions(incompleteName);
 
             if (searchOption == SearchOption.AllDirectories)
             {
