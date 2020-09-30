@@ -24,5 +24,8 @@ namespace PowerPreviewSettings
 
         // Function to check if the thumbnail provider is enabled in registry
         bool CheckRegistryState();
+
+        // Function to retrieve the registry subkey
+        LPCWSTR GetSubkey();
     };
 }

@@ -42,4 +42,10 @@ namespace PowerPreviewSettings
 
         return false;
     }
+
+    // Function to retrieve the registry subkey
+    LPCWSTR ThumbnailProvider::GetSubkey()
+    {
+        return thumbnail_provider_subkey;
+    }
 }

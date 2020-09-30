@@ -72,7 +72,7 @@ namespace PowerPreviewSettings
     }
 
     // Manage change in state of file explorer module settings.
-    bool FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled)
+    bool FileExplorerPreviewSettings::UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled, bool isElevated)
     {
         auto toggle = settings.get_bool_value(this->GetToggleSettingName());
         if (toggle)
@@ -89,7 +89,7 @@ namespace PowerPreviewSettings
                     // Check if the registry state does not match the new state, registry needs to be modified
                     if (this->CheckRegistryState() != newState)
                     {
-                        if (is_process_elevated(false))
+                        if (isElevated)
                         {
                             LONG err;
                             if (lastState)

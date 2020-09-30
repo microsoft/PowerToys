@@ -57,9 +57,10 @@ void PowerPreviewModule::set_config(const wchar_t* config)
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
         bool updateSuccess = true;
+        bool isElevated = is_process_elevated(false);
         for (auto fileExplorerModule : this->m_fileExplorerModules)
         {
-            updateSuccess = updateSuccess && fileExplorerModule->UpdateState(settings, this->m_enabled);
+            updateSuccess = updateSuccess && fileExplorerModule->UpdateState(settings, this->m_enabled, isElevated);
         }
 
         if (!updateSuccess)

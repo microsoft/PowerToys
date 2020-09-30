@@ -19,7 +19,6 @@ private:
     bool m_enabled = false;
     std::wstring m_moduleName;
     std::vector<FileExplorerPreviewSettings*> m_fileExplorerModules;
-    std::vector<FileExplorerPreviewSettings*> m_thumbnailProviders;
 
     // Function to check if the registry states need to be updated
     bool is_registry_update_required();

@@ -24,5 +24,8 @@ namespace PowerPreviewSettings
 
         // Function to check if the preview handler is enabled in registry
         bool CheckRegistryState();
+
+        // Function to retrieve the registry subkey
+        static LPCWSTR GetSubkey();
     };
 }

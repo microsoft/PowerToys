@@ -31,7 +31,7 @@ namespace PowerPreviewSettings
         virtual LPCWSTR GetCLSID() const;
         virtual std::wstring GetRegistryValueData() const;
         virtual void LoadState(PowerToysSettings::PowerToyValues& settings);
-        virtual bool UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled);
+        virtual bool UpdateState(PowerToysSettings::PowerToyValues& settings, bool enabled, bool isElevated);
         virtual LONG Enable() = 0;
         virtual LONG Disable() = 0;
         virtual bool CheckRegistryState() = 0;
