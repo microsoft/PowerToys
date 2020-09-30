@@ -20,7 +20,6 @@ namespace ViewModelTests
     [TestClass]
     public class ImageResizer
     {
-        public const string Module = "ImageResizer";
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
 
@@ -45,9 +44,9 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, Module, fileName);
+            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ImageResizerSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
-            ImageResizerSettings originalSettings = mockSettingsUtils.GetSettings<ImageResizerSettings>(Module);
+            ImageResizerSettings originalSettings = mockSettingsUtils.GetSettings<ImageResizerSettings>(ImageResizerSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
@@ -70,7 +69,7 @@ namespace ViewModelTests
 
             //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, Module, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ImageResizerSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
@@ -170,7 +169,7 @@ namespace ViewModelTests
             var expectedSettingsString = new ImageResizerSettings() { Properties = new ImageResizerProperties() { ImageresizerKeepDateModified = new BoolProperty() { Value = true } } }.ToJsonString();
             settingUtils.Setup(x => x.SaveSettings(
                                         It.Is<string>(content => content.Equals(expectedSettingsString, StringComparison.Ordinal)),
-                                        It.Is<string>(module => module.Equals(Module, StringComparison.Ordinal)),
+                                        It.Is<string>(module => module.Equals(ImageResizerSettings.ModuleName, StringComparison.Ordinal)),
                                         It.IsAny<string>()))
                                      .Verifiable();
 
