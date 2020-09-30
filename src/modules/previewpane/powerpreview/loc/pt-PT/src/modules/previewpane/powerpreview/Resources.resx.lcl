@@ -43,6 +43,9 @@
       <Item ItemId=";Module_Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[File Explorer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Explorador de Ficheiros]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
