@@ -63,11 +63,20 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             AppType = Win32Program.ApplicationType.Win32Application,
         };
 
-        private static readonly Win32Program _fileExplorer = new Win32Program
+        private static readonly Win32Program _fileExplorerLink = new Win32Program
         {
             Name = "File Explorer",
             ExecutableName = "File Explorer.lnk",
             FullPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\file explorer.lnk",
+            LnkResolvedPath = null,
+            AppType = Win32Program.ApplicationType.Win32Application,
+        };
+
+        private static readonly Win32Program _fileExplorer = new Win32Program
+        {
+            Name = "File Explorer",
+            ExecutableName = "explorer.exe",
+            FullPath = "c:\\windows\\explorer.exe",
             LnkResolvedPath = null,
             AppType = Win32Program.ApplicationType.Win32Application,
         };
@@ -273,7 +282,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Arrange
             List<Win32Program> prgms = new List<Win32Program>
             {
-                _fileExplorer,
+                _fileExplorerLink,
             };
 
             // Act
@@ -401,6 +410,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
         {
             // Even if there is an exact match in the name or exe name, win32 applications should never be filtered
             Assert.IsTrue(_commandPrompt.QueryEqualsNameForRunCommands(query));
+        }
+
+        [TestCase("explorer")]
+        [TestCase("explorer.exe")]
+        public void Win32ApplicationsShouldNotFilterWhenExecutingNameOrNameIsUsed(string query)
+        {
+            // Even if there is an exact match in the name or exe name, win32 applications should never be filtered
+            Assert.IsTrue(_fileExplorer.QueryEqualsNameForRunCommands(query));
         }
 
         [TestCase("cmd")]

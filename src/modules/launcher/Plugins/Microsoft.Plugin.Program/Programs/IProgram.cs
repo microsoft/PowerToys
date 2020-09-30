@@ -20,5 +20,6 @@ namespace Microsoft.Plugin.Program.Programs
         string Description { get; set; }
 
         string Location { get; }
+        bool Enabled { get; set; }
     }
 }

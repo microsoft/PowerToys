@@ -170,10 +170,12 @@ namespace Microsoft.Plugin.Program.Programs
 
         public bool QueryEqualsNameForRunCommands(string query)
         {
-            if (query != null && AppType == ApplicationType.RunCommand
-                && !query.Equals(Name, StringComparison.OrdinalIgnoreCase))
+            if (query != null && AppType == ApplicationType.RunCommand)
             {
-                return false;
+                if (!query.Equals(Name, StringComparison.OrdinalIgnoreCase) && !query.Equals(ExecutableName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
             }
 
             return true;
