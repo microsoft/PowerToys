@@ -10,6 +10,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace RemappingLogicTests
 {
     TEST_CLASS (AppSpecificShortcutRemappingTests)
+    
     {
     private:
         MockedInput mockedInputHandler;
@@ -339,7 +340,6 @@ namespace RemappingLogicTests
             // Check if Ctrl+A is released and disable key was not send
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(disableKey), false);
         }
     };
 }

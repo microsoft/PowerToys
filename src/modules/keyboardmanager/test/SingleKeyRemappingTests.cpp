@@ -331,7 +331,6 @@ namespace RemappingLogicTests
 
             // LCtrl state should be released and disable key should not be passed
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(disableKey), false);
         }
     };
 }

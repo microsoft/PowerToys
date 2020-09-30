@@ -25,7 +25,7 @@ private:
 public:
     MockedInput()
     {
-        keyboardState.resize(257, false);
+        keyboardState.resize(256, false);
     }
 
     // Set the keyboard hook procedure to be tested
