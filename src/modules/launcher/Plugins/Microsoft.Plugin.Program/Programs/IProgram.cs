@@ -9,7 +9,7 @@ namespace Microsoft.Plugin.Program.Programs
 {
     public interface IProgram
     {
-        List<ContextMenuResult> ContextMenus(IPublicAPI api);
+        List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api);
 
         Result Result(string query, string queryArguments, IPublicAPI api);
 
