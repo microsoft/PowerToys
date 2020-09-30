@@ -158,6 +158,7 @@ Our [prioritized roadmap][roadmap] of features and utilites that the core team i
 - Fixed folder bug if it had a # in it (Thanks @jjw24 for the PR!)
 - Fixed a screen flicker for 
 - General bug fixes
+- Allow Command Line args in PowerToys Run (Thanks @@royvou)
 
 **Keyboard manager**
 
