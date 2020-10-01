@@ -142,6 +142,15 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File: {0}.
+        /// </summary>
+        public static string wox_plugin_folder_select_file_result_subtitle {
+            get {
+                return ResourceManager.GetString("wox_plugin_folder_select_file_result_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use &gt; to search within the directory. Use * to search for file extensions. Or use both &gt;*.
         /// </summary>
         public static string wox_plugin_folder_select_folder_first_result_subtitle {
@@ -165,6 +174,15 @@ namespace Microsoft.Plugin.Folder.Properties {
         public static string wox_plugin_folder_select_folder_OpenFileOrFolder_error_message {
             get {
                 return ResourceManager.GetString("wox_plugin_folder_select_folder_OpenFileOrFolder_error_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder: {0}.
+        /// </summary>
+        public static string wox_plugin_folder_select_folder_result_subtitle {
+            get {
+                return ResourceManager.GetString("wox_plugin_folder_select_folder_result_subtitle", resourceCulture);
             }
         }
     }

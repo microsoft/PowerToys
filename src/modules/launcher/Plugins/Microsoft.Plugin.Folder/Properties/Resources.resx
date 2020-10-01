@@ -153,4 +153,10 @@
   <data name="wox_plugin_folder_select_folder_OpenFileOrFolder_error_message" xml:space="preserve">
     <value>Could not start</value>
   </data>
+  <data name="wox_plugin_folder_select_file_result_subtitle" xml:space="preserve">
+    <value>File: {0}</value>
+  </data>
+  <data name="wox_plugin_folder_select_folder_result_subtitle" xml:space="preserve">
+    <value>Folder: {0}</value>
+  </data>
 </root>
