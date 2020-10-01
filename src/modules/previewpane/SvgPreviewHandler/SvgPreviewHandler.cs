@@ -20,6 +20,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private SvgPreviewControl _svgPreviewControl;
         private bool disposedValue;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SvgPreviewHandler"/> class.
+        /// </summary>
+        public SvgPreviewHandler()
+        {
+            Initialize();
+        }
+
         /// <inheritdoc/>
         public override void DoPreview()
         {

@@ -41,7 +41,7 @@ namespace Wox.Infrastructure
                 // force pinyin library static constructor initialize
                 PinyinHelper.toHanyuPinyinStringArray('T', _pinyinFormat);
             });
-            Log.Info($"|Wox.Infrastructure.Alphabet.Initialize|Number of preload pinyin combination<{_pinyinCache.Count}>");
+            Log.Info($"Number of preload pinyin combination<{_pinyinCache.Count}>", GetType());
         }
 
         public string Translate(string str)

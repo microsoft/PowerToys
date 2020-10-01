@@ -7,23 +7,29 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ImageResizerViewModel : Observable
     {
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
         private readonly ISettingsUtils _settingsUtils;
 
         private ImageResizerSettings Settings { get; set; }
 
+        // NOTE: Not using ImageResizerSettings.ModuleName ("Image Resizer") to be backward compatible.
         private const string ModuleName = "ImageResizer";
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public ImageResizerViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc)
+        public ImageResizerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+
+            // To obtain the general settings configurations of PowerToys.
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             try
             {
@@ -35,22 +41,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
-            GeneralSettings generalSettings;
-
-            try
-            {
-                generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            }
-            catch
-            {
-                generalSettings = new GeneralSettings();
-                _settingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
-            }
-
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = generalSettings.Enabled.ImageResizer;
+            _isEnabled = GeneralSettingsConfig.Enabled.ImageResizer;
             _advancedSizes = Settings.Properties.ImageresizerSizes.Value;
             _jpegQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
             _pngInterlaceOption = Settings.Properties.ImageresizerPngInterlaceOption.Value;
@@ -88,10 +82,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value != _isEnabled)
                 {
+                    // To set the status of ImageResizer in the General PowerToys settings.
                     _isEnabled = value;
-                    GeneralSettings generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                    generalSettings.Enabled.ImageResizer = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
+                    GeneralSettingsConfig.Enabled.ImageResizer = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
+
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged("IsEnabled");
                 }

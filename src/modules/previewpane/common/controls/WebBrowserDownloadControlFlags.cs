@@ -9,6 +9,7 @@ using System;
 /// Values of flags are defined in mshtmdid.h in distributed Windows Sdk.
 /// </summary>
 [Flags]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop, keeping stuff in sync")]
 public enum WebBrowserDownloadControlFlags : int
 {
     /// <summary>

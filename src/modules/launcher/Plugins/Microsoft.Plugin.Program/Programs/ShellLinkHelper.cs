@@ -142,7 +142,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (System.IO.FileNotFoundException ex)
             {
-                ProgramLogger.LogException($"|Win32| ShellLinkHelper.retrieveTargetPath | {path} | Path could not be retrieved", ex);
+                ProgramLogger.Exception("Path could not be retrieved", ex, GetType(), path);
                 return string.Empty;
             }
 
@@ -173,6 +173,9 @@ namespace Microsoft.Plugin.Program.Programs
                     HasArguments = true;
                 }
             }
+
+            // To release unmanaged memory
+            Marshal.ReleaseComObject(link);
 
             return target;
         }

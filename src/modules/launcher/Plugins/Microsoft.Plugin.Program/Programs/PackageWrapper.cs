@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using Microsoft.Plugin.Program.Logger;
 using Package = Windows.ApplicationModel.Package;
 
@@ -51,7 +52,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             catch (Exception e) when (e is ArgumentException || e is FileNotFoundException || e is DirectoryNotFoundException)
             {
-                ProgramLogger.LogException($"PackageWrapper", "GetWrapperFromPackage", "Path could not be determined", $"Exception {package.Id.Name}", e);
+                ProgramLogger.Exception($"Exception {package.Id.Name}", e, MethodBase.GetCurrentMethod().DeclaringType, "Path could not be determined");
                 return new PackageWrapper(
                     package.Id.Name,
                     package.Id.FullName,

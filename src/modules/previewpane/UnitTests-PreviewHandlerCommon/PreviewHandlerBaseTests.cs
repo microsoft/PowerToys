@@ -10,15 +10,20 @@ using Common.ComInterlop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace UnitTests_PreviewHandlerCommon
+namespace PreviewHandlerCommonUnitTests
 {
     [TestClass]
     public class PreviewHandlerBaseTests
     {
         private static IPreviewHandlerControl previewHandlerControl;
 
-        public class TestPreviewHandler : PreviewHandlerBase
+        internal class TestPreviewHandler : PreviewHandlerBase
         {
+            public TestPreviewHandler()
+            {
+                Initialize();
+            }
+
             public override void DoPreview()
             {
                 throw new NotImplementedException();
@@ -31,7 +36,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldCallPreviewControlSetWindow_WhenSetWindowCalled()
+        public void PreviewHandlerBaseShouldCallPreviewControlSetWindowWhenSetWindowCalled()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -61,7 +66,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldCallPreviewControlSetrect_WhenSetRectCalled()
+        public void PreviewHandlerBaseShouldCallPreviewControlSetrectWhenSetRectCalled()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -87,7 +92,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldCallPreviewControlUnload_WhenUnloadCalled()
+        public void PreviewHandlerBaseShouldCallPreviewControlUnloadWhenUnloadCalled()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -103,7 +108,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldCallPreviewControlSetBackgroundColor_WhenSetBackgroundColorCalled()
+        public void PreviewHandlerBaseShouldCallPreviewControlSetBackgroundColorWhenSetBackgroundColorCalled()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -120,7 +125,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldCallPreviewControlSetTextColor_WhenSetTextColorCalled()
+        public void PreviewHandlerBaseShouldCallPreviewControlSetTextColorWhenSetTextColorCalled()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -137,7 +142,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldCallPreviewControlSetFont_WhenSetFontCalled()
+        public void PreviewHandlerBaseShouldCallPreviewControlSetFontWhenSetFontCalled()
         {
             // Arrange
             Font actualFont = null;
@@ -161,7 +166,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldCallPreviewControlSetFocus_WhenSetFocusCalled()
+        public void PreviewHandlerBaseShouldCallPreviewControlSetFocusWhenSetFocusCalled()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -177,7 +182,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldSetHandleOnQueryFocus_WhenPreviewControlsReturnValidHandle()
+        public void PreviewHandlerBaseShouldSetHandleOnQueryFocusWhenPreviewControlsReturnValidHandle()
         {
             // Arrange
             var hwnd = new IntPtr(5);
@@ -197,7 +202,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldThrowOnQueryFocus_WhenPreviewControlsReturnNotValidHandle()
+        public void PreviewHandlerBaseShouldThrowOnQueryFocusWhenPreviewControlsReturnNotValidHandle()
         {
             // Arrange
             var hwnd = IntPtr.Zero;
@@ -225,7 +230,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldDirectKeyStrokesToIPreviewHandlerFrame_IfIPreviewHandlerFrameIsSet()
+        public void PreviewHandlerBaseShouldDirectKeyStrokesToIPreviewHandlerFrameIfIPreviewHandlerFrameIsSet()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -246,7 +251,7 @@ namespace UnitTests_PreviewHandlerCommon
         [DataTestMethod]
         [DataRow(0U)]
         [DataRow(1U)]
-        public void PreviewHandlerBase_ShouldReturnIPreviewHandlerFrameResponse_IfIPreviewHandlerFrameIsSet(uint resultCode)
+        public void PreviewHandlerBaseShouldReturnIPreviewHandlerFrameResponseIfIPreviewHandlerFrameIsSet(uint resultCode)
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -268,7 +273,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldReturnS_FALSE_IfIPreviewHandlerFrameIsNotSet()
+        public void PreviewHandlerBaseShouldReturnUintFalseIfIPreviewHandlerFrameIsNotSet()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -286,12 +291,12 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldReturnPreviewControlHandle_IfGetWindowCalled()
+        public void PreviewHandlerBaseShouldReturnPreviewControlHandleIfGetWindowCalled()
         {
             // Arrange
             var previewControlHandle = new IntPtr(5);
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
-            mockPreviewControl.Setup(x => x.GetHandle())
+            mockPreviewControl.Setup(x => x.GetWindowHandle())
                 .Returns(previewControlHandle);
 
             previewHandlerControl = mockPreviewControl.Object;
@@ -308,7 +313,7 @@ namespace UnitTests_PreviewHandlerCommon
         [DataTestMethod]
         [DataRow(true)]
         [DataRow(false)]
-        public void PreviewHandlerBase_ShouldThrowNotImplementedException_IfContextSensitiveHelpCalled(bool fEnterMode)
+        public void PreviewHandlerBaseShouldThrowNotImplementedExceptionIfContextSensitiveHelpCalled(bool fEnterMode)
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -332,7 +337,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void PreviewHandlerBase_ShouldReturnSite_WhenGetSiteCalled()
+        public void PreviewHandlerBaseShouldReturnSiteWhenGetSiteCalled()
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
@@ -341,19 +346,18 @@ namespace UnitTests_PreviewHandlerCommon
             var testPreviewHandler = new TestPreviewHandler();
             var site = new Mock<IPreviewHandlerFrame>().Object;
             testPreviewHandler.SetSite(site);
-            object actualSite = null;
             var riid = Guid.Empty;
 
             // Act
-            testPreviewHandler.GetSite(ref riid, out actualSite);
+            testPreviewHandler.GetSite(ref riid, out object actualSite);
 
             // Assert
             Assert.AreEqual(actualSite, site);
         }
 
-        private LOGFONT GetLogFont()
+        private static LOGFONT GetLogFont()
         {
-            var logFont = new LOGFONT
+            return new LOGFONT
             {
                 LfHeight = 12,
                 LfWidth = 0,
@@ -369,21 +373,17 @@ namespace UnitTests_PreviewHandlerCommon
                 LfPitchAndFamily = Convert.ToByte(0),
                 LfFaceName = "valid-font",
             };
-
-            return logFont;
         }
 
-        private RECT GetRectangle(int left, int top, int right, int bottom)
+        private static RECT GetRectangle(int left, int top, int right, int bottom)
         {
-            var rect = new RECT
+            return new RECT
             {
                 Left = left,
                 Top = top,
                 Right = right,
                 Bottom = bottom,
             };
-
-            return rect;
         }
 
         private static IPreviewHandlerControl GetMockPreviewHandlerControl()

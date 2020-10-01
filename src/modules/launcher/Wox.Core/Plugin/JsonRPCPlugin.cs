@@ -43,7 +43,7 @@ namespace Wox.Core.Plugin
             }
             catch (Exception e)
             {
-                Log.Exception($"|JsonRPCPlugin.Query|Exception when query <{query}>", e);
+                Log.Exception($"Exception when query <{query}>", e, GetType());
                 return null;
             }
         }
@@ -61,7 +61,7 @@ namespace Wox.Core.Plugin
             }
             catch (Exception e)
             {
-                Log.Exception($"|JsonRPCPlugin.LoadContextMenus| THIS IS A BUG - Exception on result <{selectedResult}>", e);
+                Log.Exception($"THIS IS A BUG - Exception on result <{selectedResult}>", e, GetType());
                 return null;
             }
         }
@@ -179,12 +179,14 @@ namespace Wox.Core.Plugin
                                     var error = standardError.ReadToEnd();
                                     if (!string.IsNullOrEmpty(error))
                                     {
-                                        Log.Error($"|JsonRPCPlugin.Execute|{error}");
+                                        Log.Error(error, GetType());
+
                                         return string.Empty;
                                     }
                                     else
                                     {
-                                        Log.Error("|JsonRPCPlugin.Execute|Empty standard output and standard error.");
+                                        Log.Error("Empty standard output and standard error.", GetType());
+
                                         return string.Empty;
                                     }
                                 }
@@ -192,6 +194,7 @@ namespace Wox.Core.Plugin
                             else if (result.StartsWith("DEBUG:"))
                             {
                                 MessageBox.Show(new Form { TopMost = true }, result.Substring(6));
+
                                 return string.Empty;
                             }
                             else
@@ -202,14 +205,16 @@ namespace Wox.Core.Plugin
                     }
                     else
                     {
-                        Log.Error("|JsonRPCPlugin.Execute|Can't start new process");
+                        Log.Error("Can't start new process", GetType());
+
                         return string.Empty;
                     }
                 }
             }
             catch (Exception e)
             {
-                Log.Exception($"|JsonRPCPlugin.Execute|Exception for filename <{startInfo.FileName}> with argument <{startInfo.Arguments}>", e);
+                Log.Exception($"Exception for filename <{startInfo.FileName}> with argument <{startInfo.Arguments}>", e, GetType());
+
                 return string.Empty;
             }
         }
