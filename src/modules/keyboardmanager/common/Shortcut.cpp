@@ -79,12 +79,9 @@ bool Shortcut::IsValidShortcut() const
 {
     if (actionKey != NULL)
     {
-        if (actionKey != CommonSharedConstants::VK_DISABLED)
+        if (winKey != ModifierKey::Disabled || ctrlKey != ModifierKey::Disabled || altKey != ModifierKey::Disabled || shiftKey != ModifierKey::Disabled)
         {
-            if (winKey != ModifierKey::Disabled || ctrlKey != ModifierKey::Disabled || altKey != ModifierKey::Disabled || shiftKey != ModifierKey::Disabled)
-            {
-                return true;
-            }
+            return true;
         }
     }
 
