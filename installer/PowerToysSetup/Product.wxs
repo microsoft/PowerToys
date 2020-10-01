@@ -844,7 +844,7 @@
     </ComponentGroup>
   </Fragment>
   <Fragment>
-    <Component Id="Module_FastDelete" Directory="FastDeleteInstallFolder">
+    <Component Id="Module_FastDelete" Directory="FastDeleteInstallFolder" Guid="39d38d7d-47dc-468a-9edf-3820677fa781">
       <!--<File Source="$(var.BinX64Dir)modules\FastDelete\FastDelete.dll" />-->
       <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.dll" />
       <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.deps.json" />
