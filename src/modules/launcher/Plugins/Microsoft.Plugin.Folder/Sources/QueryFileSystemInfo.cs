@@ -12,41 +12,22 @@ namespace Microsoft.Plugin.Folder.Sources
 {
     public class QueryFileSystemInfo : DirectoryWrapper,  IQueryFileSystemInfo
     {
-        public IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, SearchOption searchOption)
+        public IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, bool isRecursive)
         {
             // search folder and add results
             var directoryInfo = new DirectoryInfo(search);
-            var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, searchOption);
-
-            return SafeEnumerateFileSystemInfos(fileSystemInfos)
-                .Where(fileSystemInfo => (fileSystemInfo.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden)
-                .Select(CreateDisplayFileInfo);
-        }
-
-        private static IEnumerable<FileSystemInfo> SafeEnumerateFileSystemInfos(IEnumerable<FileSystemInfo> fileSystemInfos)
-        {
-            using (var enumerator = fileSystemInfos.GetEnumerator())
+            var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, new EnumerationOptions()
             {
-                while (true)
-                {
-                    FileSystemInfo currentFileSystemInfo;
-                    try
-                    {
-                        if (!enumerator.MoveNext())
-                        {
-                            break;
-                        }
+                MatchType = MatchType.Simple,
+                RecurseSubdirectories = isRecursive,
+                IgnoreInaccessible = true,
+                ReturnSpecialDirectories = false,
+                AttributesToSkip = FileAttributes.Hidden,
+                MatchCasing = MatchCasing.PlatformDefault,
+            });
 
-                        currentFileSystemInfo = enumerator.Current;
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        continue;
-                    }
-
-                    yield return currentFileSystemInfo;
-                }
-            }
+            return fileSystemInfos
+                .Select(CreateDisplayFileInfo);
         }
 
         private static DisplayFileInfo CreateDisplayFileInfo(FileSystemInfo fileSystemInfo)
