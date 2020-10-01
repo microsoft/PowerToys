@@ -79,7 +79,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    elevation_check_wrapper([this]() {
+    registry_and_elevation_check_wrapper([this]() {
         for (auto fileExplorerModule : this->m_fileExplorerModules)
         {
             if (fileExplorerModule->GetToggleSettingState())
@@ -172,20 +172,26 @@ void PowerPreviewModule::show_update_warning_message()
 }
 
 // Function that checks if a registry method is required and if so checks if the process is elevated and accordingly executes the method or shows a warning
-void PowerPreviewModule::elevation_check_wrapper(std::function<void()> method)
+void PowerPreviewModule::registry_and_elevation_check_wrapper(std::function<void()> method)
 {
     // Check if a registry update is required
     if (is_registry_update_required())
     {
-        // Check if the process is elevated in order to have permissions to modify HKLM registry
-        if (is_process_elevated(false))
-        {
-            method();
-        }
-        // Show a warning if it doesn't have permissions
-        else
-        {
-            show_update_warning_message();
-        }
+        elevation_check_wrapper(method);
+    }
+}
+
+// Function that checks if the process is elevated and accordingly executes the method or shows a warning
+void PowerPreviewModule::elevation_check_wrapper(std::function<void()> method)
+{
+    // Check if the process is elevated in order to have permissions to modify HKLM registry
+    if (is_process_elevated(false))
+    {
+        method();
+    }
+    // Show a warning if it doesn't have permissions
+    else
+    {
+        show_update_warning_message();
     }
 }

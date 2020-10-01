@@ -27,6 +27,9 @@ private:
     void show_update_warning_message();
 
     // Function that checks if a registry method is required and if so checks if the process is elevated and accordingly executes the method or shows a warning
+    void registry_and_elevation_check_wrapper(std::function<void()> method);
+
+    // Function that checks if the process is elevated and accordingly executes the method or shows a warning
     void elevation_check_wrapper(std::function<void()> method);
 
 public:
