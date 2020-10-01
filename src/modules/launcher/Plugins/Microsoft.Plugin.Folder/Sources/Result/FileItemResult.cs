@@ -23,7 +23,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
             var result = new Wox.Plugin.Result
             {
                 Title = Title,
-                SubTitle = "Folder: " + FilePath,
+                SubTitle = "File: " + FilePath,
                 IcoPath = FilePath,
                 TitleHighlightData = StringMatcher.FuzzySearch(Search, Path.GetFileName(FilePath)).MatchData,
                 Action = c => ExplorerAction.Execute(FilePath, contextApi),
