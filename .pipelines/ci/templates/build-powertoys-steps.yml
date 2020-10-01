@@ -81,6 +81,7 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
+      **\Microsoft.Plugin.Folder.UnitTest.dll
       **\Microsoft.Plugin.Program.UnitTests.dll
       **\Microsoft.Plugin.Calculator.UnitTest.dll
       **\Microsoft.Plugin.Uri.UnitTests.dll
