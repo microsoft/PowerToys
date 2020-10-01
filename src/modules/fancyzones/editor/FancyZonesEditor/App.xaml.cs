@@ -21,6 +21,32 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class App : Application
     {
+        // Localizable strings
+        private const string CrashReportMessageBoxTextPart1 = "Error logged to ";
+        private const string CrashReportMessageBoxTextPart2 = "Please report the bug to ";
+        private const string CrashReportMessageBoxCaption = "Error";
+
+        // Non-localizable strings
+        private const string CrashReportMessageBoxCaptionFZEditor = "FancyZones Editor ";
+        private const string CrashReportLogFile = "FZEditorCrashLog.txt";
+        private const string PowerToysIssuesURL = "https://aka.ms/powerToysReportBug";
+
+        private const string CrashReportExceptionTag = "Exception";
+        private const string CrashReportSourceTag = "Source: ";
+        private const string CrashReportTargetAssemblyTag = "TargetAssembly: ";
+        private const string CrashReportTargetModuleTag = "TargetModule: ";
+        private const string CrashReportTargetSiteTag = "TargetSite: ";
+        private const string CrashReportEnvironmentTag = "Environment";
+        private const string CrashReportCommandLineTag = "* Command Line: ";
+        private const string CrashReportTimestampTag = "* Timestamp: ";
+        private const string CrashReportOSVersionTag = "* OS Version: ";
+        private const string CrashReportIntPtrLengthTag = "* IntPtr Length: ";
+        private const string CrashReportx64Tag = "* x64: ";
+        private const string CrashReportCLRVersionTag = "* CLR Version: ";
+        private const string CrashReportAssembliesTag = "Assemblies - ";
+        private const string CrashReportDynamicAssemblyTag = "dynamic assembly doesn't has location";
+        private const string CrashReportLocationNullTag = "location is null or empty";
+
         public Settings ZoneSettings { get; }
 
         public App()
@@ -76,18 +102,20 @@ namespace FancyZonesEditor
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
-            var fileStream = File.OpenWrite("FZEditorCrashLog.txt");
+            var fileStream = File.OpenWrite(CrashReportLogFile);
             var sw = new StreamWriter(fileStream);
             sw.Write(FormatException((Exception)args.ExceptionObject));
             fileStream.Close();
-            MessageBox.Show("Error logged to " + Path.GetFullPath(fileStream.Name) + "\nPlease report the bug to https://aka.ms/powerToysReportBug", "FancyZones Editor Error");
+            MessageBox.Show(
+                CrashReportMessageBoxTextPart1 + Path.GetFullPath(fileStream.Name) + "\n" + CrashReportMessageBoxTextPart2 + PowerToysIssuesURL,
+                CrashReportMessageBoxCaptionFZEditor + CrashReportMessageBoxCaption);
         }
 
         private string FormatException(Exception ex)
         {
             var sb = new StringBuilder();
             sb.AppendLine();
-            sb.AppendLine("## Exception");
+            sb.AppendLine("## " + CrashReportExceptionTag);
             sb.AppendLine();
             sb.AppendLine("```");
 
@@ -101,17 +129,17 @@ namespace FancyZonesEditor
                 exsb.AppendLine(ex.Message);
                 if (ex.Source != null)
                 {
-                    exsb.Append("   Source: ");
+                    exsb.Append("   " + CrashReportSourceTag);
                     exsb.AppendLine(ex.Source);
                 }
 
                 if (ex.TargetSite != null)
                 {
-                    exsb.Append("   TargetAssembly: ");
+                    exsb.Append("   " + CrashReportTargetAssemblyTag);
                     exsb.AppendLine(ex.TargetSite.Module.Assembly.ToString());
-                    exsb.Append("   TargetModule: ");
+                    exsb.Append("   " + CrashReportTargetModuleTag);
                     exsb.AppendLine(ex.TargetSite.Module.ToString());
-                    exsb.Append("   TargetSite: ");
+                    exsb.Append("   " + CrashReportTargetSiteTag);
                     exsb.AppendLine(ex.TargetSite.ToString());
                 }
 
@@ -129,14 +157,14 @@ namespace FancyZonesEditor
             sb.AppendLine("```");
             sb.AppendLine();
 
-            sb.AppendLine("## Environment");
-            sb.AppendLine($"* Command Line: {Environment.CommandLine}");
-            sb.AppendLine($"* Timestamp: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
-            sb.AppendLine($"* OS Version: {Environment.OSVersion.VersionString}");
-            sb.AppendLine($"* IntPtr Length: {IntPtr.Size}");
-            sb.AppendLine($"* x64: {Environment.Is64BitOperatingSystem}");
-            sb.AppendLine($"* CLR Version: {Environment.Version}");
-            sb.AppendLine("## Assemblies - " + AppDomain.CurrentDomain.FriendlyName);
+            sb.AppendLine("## " + CrashReportEnvironmentTag);
+            sb.AppendLine(CrashReportCommandLineTag + Environment.CommandLine);
+            sb.AppendLine(CrashReportTimestampTag + DateTime.Now.ToString(CultureInfo.InvariantCulture));
+            sb.AppendLine(CrashReportOSVersionTag + Environment.OSVersion.VersionString);
+            sb.AppendLine(CrashReportIntPtrLengthTag + IntPtr.Size);
+            sb.AppendLine(CrashReportx64Tag + Environment.Is64BitOperatingSystem);
+            sb.AppendLine(CrashReportCLRVersionTag + Environment.Version);
+            sb.AppendLine("## " + CrashReportAssembliesTag + AppDomain.CurrentDomain.FriendlyName);
             sb.AppendLine();
             foreach (var ass in AppDomain.CurrentDomain.GetAssemblies().OrderBy(o => o.GlobalAssemblyCache ? 50 : 0))
             {
@@ -146,11 +174,11 @@ namespace FancyZonesEditor
 
                 if (ass.IsDynamic)
                 {
-                    sb.Append("dynamic assembly doesn't has location");
+                    sb.Append(CrashReportDynamicAssemblyTag);
                 }
                 else if (string.IsNullOrEmpty(ass.Location))
                 {
-                    sb.Append("location is null or empty");
+                    sb.Append(CrashReportLocationNullTag);
                 }
                 else
                 {
