@@ -335,10 +335,10 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         auto zoneWindow = std::move(m_zoneWindowMoveSize);
         ResetWindowTransparency();
 
-        bool hasNoVisibleOwnoer = FancyZonesUtils::HasNoVisibleOwner(window);
+        bool hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
         bool isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
 
-        if ((isStandardWindow == false && hasNoVisibleOwnoer == false &&
+        if ((isStandardWindow == false && hasNoVisibleOwner == true &&
              m_moveSizeWindowInfo.standardWindow == true && m_moveSizeWindowInfo.noVisibleOwner == true) ||
              FancyZonesUtils::IsWindowMaximized(window))
         {
