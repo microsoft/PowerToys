@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BufferValidationHelpers.h"
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <common\shared_constants.h>
 
 namespace BufferValidationHelpers
 {
@@ -120,6 +121,11 @@ namespace BufferValidationHelpers
                         // warn and reset the drop down
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutOneActionKey;
                     }
+                }
+                // Disable can not be selected if one modifier key has already been selected
+                else if (keyCodeList[selectedKeyIndex] == CommonSharedConstants::VK_DISABLED && dropDownIndex)
+                {
+                    errorType = KeyboardManagerHelper::ErrorType::ShortcutDisableAsActionKey;
                 }
                 // If none of the above, then the action key will be set
             }
