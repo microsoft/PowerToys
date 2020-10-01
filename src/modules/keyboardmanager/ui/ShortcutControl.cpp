@@ -367,19 +367,24 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
                     onPressEnter();
                 });
         },
-        [onReleaseEnter](DWORD) {
-            onReleaseEnter();
+        [onReleaseEnter, detectShortcutBox](DWORD) {
+            detectShortcutBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [onReleaseEnter]() {
+                    onReleaseEnter();
+                });
         });
 
     TextBlock cancelButtonText;
     cancelButtonText.Text(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
 
-    Button cancelButton;
-    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    cancelButton.Margin({ 2, 2, 2, 2 });
-    cancelButton.Content(cancelButtonText);
-    // Cancel button
-    cancelButton.Click([detectShortcutBox, unregisterKeys, &keyboardManagerState, isSingleKeyWindow, parentWindow](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    auto onCancel = [&keyboardManagerState,
+                     detectShortcutBox,
+                     unregisterKeys,
+                     isSingleKeyWindow,
+                     parentWindow] {
+        detectShortcutBox.Hide();
+
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
         if (isSingleKeyWindow)
@@ -393,31 +398,26 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
             keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
         }
         unregisterKeys();
-        detectShortcutBox.Hide();
+    };
+
+    Button cancelButton;
+    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
+    cancelButton.Margin({ 2, 2, 2, 2 });
+    cancelButton.Content(cancelButtonText);
+    // Cancel button
+    cancelButton.Click([onCancel](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        onCancel();
     });
 
     keyboardManagerState.RegisterKeyDelay(
         VK_ESCAPE,
         selectDetectedShortcutAndResetKeys,
-        [&keyboardManagerState, detectShortcutBox, unregisterKeys, isSingleKeyWindow, parentWindow](DWORD) {
+        [onCancel, detectShortcutBox](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [detectShortcutBox] {
-                    detectShortcutBox.Hide();
+                [onCancel] {
+                    onCancel();
                 });
-
-            keyboardManagerState.ResetUIState();
-            if (isSingleKeyWindow)
-            {
-                // Revert UI state back to Edit Keyboard window
-                keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
-            }
-            else
-            {
-                // Revert UI state back to Edit Shortcut window
-                keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
-            }
-            unregisterKeys();
         },
         nullptr);
 
