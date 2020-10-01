@@ -355,6 +355,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
         onAccept();
     });
 
+    // NOTE: UnregisterKeys should never be called on the DelayThread, as it will re-enter the mutex. To avoid this it is run on the dispatcher thread
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         selectDetectedShortcutAndResetKeys,
@@ -409,6 +410,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
         onCancel();
     });
 
+    // NOTE: UnregisterKeys should never be called on the DelayThread, as it will re-enter the mutex. To avoid this it is run on the dispatcher thread
     keyboardManagerState.RegisterKeyDelay(
         VK_ESCAPE,
         selectDetectedShortcutAndResetKeys,
