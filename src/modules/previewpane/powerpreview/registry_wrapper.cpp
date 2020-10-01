@@ -61,4 +61,3 @@ namespace PowerPreviewSettings
         return err;
     }
 }
-    

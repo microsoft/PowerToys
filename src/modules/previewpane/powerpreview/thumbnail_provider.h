@@ -3,7 +3,7 @@
 
 namespace PowerPreviewSettings
 {
-    class ThumbnailProvider :
+    class ThumbnailProviderSettings :
         public FileExplorerPreviewSettings
     {
     private:
@@ -11,7 +11,7 @@ namespace PowerPreviewSettings
         LPCWSTR thumbnail_provider_subkey;
 
     public:
-        ThumbnailProvider(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper, LPCWSTR subkey) :
+        ThumbnailProviderSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper, LPCWSTR subkey) :
             FileExplorerPreviewSettings(toggleSettingEnabled, toggleSettingName, toggleSettingDescription, clsid, registryValueData, registryWrapper), thumbnail_provider_subkey(subkey)
         {
         }

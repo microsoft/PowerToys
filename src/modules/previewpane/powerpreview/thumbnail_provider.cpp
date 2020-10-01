@@ -4,21 +4,21 @@
 namespace PowerPreviewSettings
 {
     // Function to enable the thumbnail provider in registry
-    LONG ThumbnailProvider::Enable()
+    LONG ThumbnailProviderSettings::Enable()
     {
         // Add registry value to enable thumbnail provider.
         return this->m_registryWrapper->SetRegistryValue(HKEY_CLASSES_ROOT, thumbnail_provider_subkey, nullptr, REG_SZ, (LPBYTE)this->GetCLSID(), (DWORD)(wcslen(this->GetCLSID()) * sizeof(wchar_t)));
     }
 
     // Function to disable the thumbnail provider in registry
-    LONG ThumbnailProvider::Disable()
+    LONG ThumbnailProviderSettings::Disable()
     {
         // Delete the registry key to disable thumbnail provider.
         return this->m_registryWrapper->DeleteRegistryValue(HKEY_CLASSES_ROOT, thumbnail_provider_subkey, nullptr);
     }
 
     // Function to check if the thumbnail provider is enabled in registry
-    bool ThumbnailProvider::CheckRegistryState()
+    bool ThumbnailProviderSettings::CheckRegistryState()
     {
         DWORD dataType;
         DWORD byteCount = 255;
@@ -44,7 +44,7 @@ namespace PowerPreviewSettings
     }
 
     // Function to retrieve the registry subkey
-    LPCWSTR ThumbnailProvider::GetSubkey()
+    LPCWSTR ThumbnailProviderSettings::GetSubkey()
     {
         return thumbnail_provider_subkey;
     }

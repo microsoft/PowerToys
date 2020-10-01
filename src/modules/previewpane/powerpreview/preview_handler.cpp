@@ -3,24 +3,24 @@
 
 namespace PowerPreviewSettings
 {
-    const LPCWSTR PreviewHandler::preview_handlers_subkey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
+    const LPCWSTR PreviewHandlerSettings::preview_handlers_subkey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
 
     // Function to enable the preview handler in registry
-    LONG PreviewHandler::Enable()
+    LONG PreviewHandlerSettings::Enable()
     {
         // Add registry value to enable preview.
         return this->m_registryWrapper->SetRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID(), REG_SZ, (LPBYTE)this->GetRegistryValueData().c_str(), (DWORD)(this->GetRegistryValueData().length() * sizeof(wchar_t)));
     }
 
     // Function to disable the preview handler in registry
-    LONG PreviewHandler::Disable()
+    LONG PreviewHandlerSettings::Disable()
     {
         // Delete the registry key to disable preview.
         return this->m_registryWrapper->DeleteRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID());
     }
 
     // Function to check if the preview handler is enabled in registry
-    bool PreviewHandler::CheckRegistryState()
+    bool PreviewHandlerSettings::CheckRegistryState()
     {
         DWORD dataType;
         DWORD byteCount = 255;
@@ -46,7 +46,7 @@ namespace PowerPreviewSettings
     }
 
     // Function to retrieve the registry subkey
-    LPCWSTR PreviewHandler::GetSubkey()
+    LPCWSTR PreviewHandlerSettings::GetSubkey()
     {
         return preview_handlers_subkey;
     }

@@ -3,7 +3,7 @@
 
 namespace PowerPreviewSettings
 {
-    class PreviewHandler :
+    class PreviewHandlerSettings :
         public FileExplorerPreviewSettings
     {
     private:
@@ -11,7 +11,7 @@ namespace PowerPreviewSettings
         static const LPCWSTR preview_handlers_subkey;
 
     public:
-        PreviewHandler(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper) :
+        PreviewHandlerSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper) :
             FileExplorerPreviewSettings(toggleSettingEnabled, toggleSettingName, toggleSettingDescription, clsid, registryValueData, registryWrapper)
         {
         }

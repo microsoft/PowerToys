@@ -12,7 +12,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace PowerToysSettings;
 using namespace PowerPreviewSettings;
 
-namespace PreviewHandlerSettingsTest
+namespace FileExplorerPreviewSettingsTest
 {
     extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -81,7 +81,7 @@ namespace PreviewHandlerSettingsTest
             // Arrange
             bool defaultState = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(defaultState, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(defaultState, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
 
             // Act
@@ -96,7 +96,7 @@ namespace PreviewHandlerSettingsTest
             // Arrange
             bool defaultState = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(defaultState, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(defaultState, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\"}");
 
             // Act
@@ -106,13 +106,13 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual(previewSettings.GetToggleSettingState(), defaultState);
         }
 
-        TEST_METHOD (PreviewHandlerUpdateState_ShouldDisableInRegistry_IfPreviewsAreEnabledAndNewSettingsStateIsFalseAndPowerToysIsElevatedAndRegistryContainsThePreview)
+        TEST_METHOD (PreviewHandlerSettingsUpdateState_ShouldDisableInRegistry_IfPreviewsAreEnabledAndNewSettingsStateIsFalseAndPowerToysIsElevatedAndRegistryContainsThePreview)
         {
             // Arrange
             bool enabled = true;
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
             previewSettings.UpdateToggleSettingState(true);
             // Add expected data in registry
@@ -127,13 +127,13 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual(mockRegistryWrapper->GetRegistryMockProperties.NumOfCalls, 1);
         }
 
-        TEST_METHOD (ThumbnailProviderUpdateState_ShouldDisableInRegistry_IfPreviewsAreEnabledAndNewSettingsStateIsFalseAndPowerToysIsElevatedAndRegistryContainsThePreview)
+        TEST_METHOD (ThumbnailProviderSettingsUpdateState_ShouldDisableInRegistry_IfPreviewsAreEnabledAndNewSettingsStateIsFalseAndPowerToysIsElevatedAndRegistryContainsThePreview)
         {
             // Arrange
             bool enabled = true;
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            ThumbnailProvider thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
+            ThumbnailProviderSettings thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(thumbnailSettings.GetToggleSettingName(), L"false"));
             thumbnailSettings.UpdateToggleSettingState(true);
             // Add expected data in registry
@@ -154,7 +154,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = true;
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
             previewSettings.UpdateToggleSettingState(true);
 
@@ -173,7 +173,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = true;
             bool elevated = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
             previewSettings.UpdateToggleSettingState(true);
 
@@ -192,7 +192,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = true;
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"));
             previewSettings.UpdateToggleSettingState(false);
 
@@ -204,13 +204,13 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual(mockRegistryWrapper->GetRegistryMockProperties.NumOfCalls, 1);
         }
 
-        TEST_METHOD (PreviewHandlerUpdateState_ShouldNotEnableInRegistry_IfPreviewsAreEnabledAndNewSettingsStateIsTrueAndPowerToysIsElevatedAndRegistryContainsThePreview)
+        TEST_METHOD (PreviewHandlerSettingsUpdateState_ShouldNotEnableInRegistry_IfPreviewsAreEnabledAndNewSettingsStateIsTrueAndPowerToysIsElevatedAndRegistryContainsThePreview)
         {
             // Arrange
             bool enabled = true;
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"));
             previewSettings.UpdateToggleSettingState(false);
             // Add expected data in registry
@@ -224,13 +224,13 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual(mockRegistryWrapper->GetRegistryMockProperties.NumOfCalls, 1);
         }
 
-        TEST_METHOD (ThumbnailProviderUpdateState_ShouldNotEnableInRegistry_IfPreviewsAreEnabledAndNewSettingsStateIsTrueAndPowerToysIsElevatedAndRegistryContainsThePreview)
+        TEST_METHOD (ThumbnailProviderSettingsUpdateState_ShouldNotEnableInRegistry_IfPreviewsAreEnabledAndNewSettingsStateIsTrueAndPowerToysIsElevatedAndRegistryContainsThePreview)
         {
             // Arrange
             bool enabled = true;
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            ThumbnailProvider thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
+            ThumbnailProviderSettings thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(thumbnailSettings.GetToggleSettingName(), L"true"));
             thumbnailSettings.UpdateToggleSettingState(false);
             // Add expected data in registry
@@ -250,7 +250,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = true;
             bool elevated = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"));
             previewSettings.UpdateToggleSettingState(false);
 
@@ -268,7 +268,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = false;
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
 
             // Act
@@ -284,7 +284,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = false;
             bool elevated = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
 
             // Act
@@ -300,7 +300,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = false;
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
 
             // Act
@@ -318,7 +318,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = false;
             bool elevated = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
             auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
 
             // Act
@@ -334,7 +334,7 @@ namespace PreviewHandlerSettingsTest
         {
             // Arrange
             bool updatedState = false;
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, new RegistryMock());
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, new RegistryMock());
 
             // Act
             previewSettings.UpdateToggleSettingState(updatedState);
@@ -343,18 +343,18 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual(previewSettings.GetToggleSettingState(), updatedState);
         }
 
-        TEST_METHOD (PreviewHandlerEnable_ShouldCallSetRegistryValueWithValidArguments_WhenCalled)
+        TEST_METHOD (PreviewHandlerSettingsEnable_ShouldCallSetRegistryValueWithValidArguments_WhenCalled)
         {
             // Arrange
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
 
             // Act
             previewSettings.Enable();
 
             // Assert
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.NumOfCalls, 1);
-            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.SubKey, PreviewHandler::GetSubkey());
+            Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.SubKey, PreviewHandlerSettings::GetSubkey());
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.ValueName, previewSettings.GetCLSID());
             Assert::AreEqual(mockRegistryWrapper->SetRegistryMockProperties.ValueData, previewSettings.GetRegistryValueData().c_str());
             Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->SetRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_LOCAL_MACHINE));
@@ -364,23 +364,23 @@ namespace PreviewHandlerSettingsTest
         {
             // Arrange
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            PreviewHandler previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
+            PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
 
             // Act
             previewSettings.Disable();
 
             // Assert
             Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.NumOfCalls, 1);
-            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.SubKey, PreviewHandler::GetSubkey());
+            Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.SubKey, PreviewHandlerSettings::GetSubkey());
             Assert::AreEqual(mockRegistryWrapper->DeleteRegistryMockProperties.ValueName, previewSettings.GetCLSID());
             Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->DeleteRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_LOCAL_MACHINE));
         }
 
-        TEST_METHOD (ThumbnailProviderEnable_ShouldCallSetRegistryValueWithValidArguments_WhenCalled)
+        TEST_METHOD (ThumbnailProviderSettingsEnable_ShouldCallSetRegistryValueWithValidArguments_WhenCalled)
         {
             // Arrange
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            ThumbnailProvider thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
+            ThumbnailProviderSettings thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
 
             // Act
             thumbnailSettings.Enable();
@@ -393,11 +393,11 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->SetRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CLASSES_ROOT));
         }
 
-        TEST_METHOD (ThumbnailProviderDisable_ShouldCallDeleteRegistryValueWithValidArguments_WhenCalled)
+        TEST_METHOD (ThumbnailProviderSettingsDisable_ShouldCallDeleteRegistryValueWithValidArguments_WhenCalled)
         {
             // Arrange
             RegistryMock* mockRegistryWrapper = new RegistryMock();
-            ThumbnailProvider thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
+            ThumbnailProviderSettings thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
 
             // Act
             thumbnailSettings.Disable();
@@ -409,9 +409,9 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->DeleteRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CLASSES_ROOT));
         }
 
-        PreviewHandler GetPreviewHandlerSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
+        PreviewHandlerSettings GetPreviewHandlerSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
         {
-            return PreviewHandler(
+            return PreviewHandlerSettings(
                 defaultState,
                 L"valid-name",
                 L"valid-description",
@@ -420,9 +420,9 @@ namespace PreviewHandlerSettingsTest
                 registryMock);
         }
 
-        ThumbnailProvider GetThumbnailProviderSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
+        ThumbnailProviderSettings GetThumbnailProviderSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
         {
-            return ThumbnailProvider(
+            return ThumbnailProviderSettings(
                 defaultState,
                 L"valid-name",
                 L"valid-description",

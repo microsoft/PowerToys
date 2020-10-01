@@ -34,7 +34,7 @@ public:
         m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
         m_fileExplorerModules(
             { // SVG Preview Handler settings object.
-              new PreviewHandler(
+              new PreviewHandlerSettings(
                   true,
                   L"svg-previewer-toggle-setting",
                   GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
@@ -43,7 +43,7 @@ public:
                   new RegistryWrapper()),
 
               // MarkDown Preview Handler Settings Object.
-              new PreviewHandler(
+              new PreviewHandlerSettings(
                   true,
                   L"md-previewer-toggle-setting",
                   GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
@@ -51,7 +51,7 @@ public:
                   L"Markdown Preview Handler",
                   new RegistryWrapper()),
               //SVG Thumbnail Provider settings object.
-              new ThumbnailProvider(
+              new ThumbnailProviderSettings(
                   true,
                   L"svg-thumbnail-toggle-setting",
                   GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
