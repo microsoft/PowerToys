@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include <common/common.h>
+#include <common/on_thread_executor.h>
 
 #include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
@@ -128,6 +129,7 @@ private:
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
     
+    OnThreadExecutor m_paintExecutor;
     ULONG_PTR gdiplusToken;
 };
 
@@ -543,21 +545,25 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     case WM_PRINTCLIENT:
     case WM_PAINT:
     {
-        PAINTSTRUCT ps;
-        wil::unique_hdc hdc{ reinterpret_cast<HDC>(wparam) };
-        if (!hdc)
-        {
-            hdc.reset(BeginPaint(m_window.get(), &ps));
-        }
+        m_paintExecutor.submit(OnThreadExecutor::task_t{
+            [&]() {
+                PAINTSTRUCT ps;
+                wil::unique_hdc hdc{ reinterpret_cast<HDC>(wparam) };
+                if (!hdc)
+                {
+                    hdc.reset(BeginPaint(m_window.get(), &ps));
+                }
 
-        OnPaint(hdc);
+                OnPaint(hdc);
 
-        if (wparam == 0)
-        {
-            EndPaint(m_window.get(), &ps);
-        }
+                if (wparam == 0)
+                {
+                    EndPaint(m_window.get(), &ps);
+                }
 
-        hdc.release();
+                hdc.release();
+            } });
+        
     }
     break;
 
