@@ -536,7 +536,7 @@ namespace PowerLauncher.ViewModel
 
                                     currentCancellationToken.ThrowIfCancellationRequested();
                                     Results.Sort();
-                                    Results.SelectedItem = Results.Results[0];
+                                    Results.SelectedItem = Results.Results.FirstOrDefault();
                                 }
                             }
 
@@ -574,7 +574,7 @@ namespace PowerLauncher.ViewModel
 
                                                         currentCancellationToken.ThrowIfCancellationRequested();
                                                         Results.Sort();
-                                                        Results.SelectedItem = Results.Results[0];
+                                                        Results.SelectedItem = Results.Results.FirstOrDefault();
                                                     }
                                                 }
 
