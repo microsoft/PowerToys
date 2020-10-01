@@ -37,7 +37,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
             {
                 Title = Title,
                 IcoPath = Path,
-                SubTitle = string.Format(CultureInfo.InvariantCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Subtitle),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Subtitle),
                 QueryTextDisplay = Path,
                 TitleHighlightData = StringMatcher.FuzzySearch(Search, Title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Path },

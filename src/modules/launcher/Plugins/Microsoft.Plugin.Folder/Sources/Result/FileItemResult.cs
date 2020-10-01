@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
             var result = new Wox.Plugin.Result
             {
                 Title = Title,
-                SubTitle = string.Format(CultureInfo.InvariantCulture, Properties.Resources.wox_plugin_folder_select_file_result_subtitle, FilePath),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_file_result_subtitle, FilePath),
                 IcoPath = FilePath,
                 TitleHighlightData = StringMatcher.FuzzySearch(Search, Path.GetFileName(FilePath)).MatchData,
                 Action = c => ExplorerAction.Execute(FilePath, contextApi),

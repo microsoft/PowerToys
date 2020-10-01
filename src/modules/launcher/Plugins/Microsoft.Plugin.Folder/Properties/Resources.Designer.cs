@@ -106,7 +106,7 @@ namespace Microsoft.Plugin.Folder.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Showing {0} of {1} results.
+        ///   Looks up a localized string similar to Showing {0:N0} of {1:N0} results.
         /// </summary>
         public static string Microsoft_plugin_folder_truncation_warning_subtitle {
             get {

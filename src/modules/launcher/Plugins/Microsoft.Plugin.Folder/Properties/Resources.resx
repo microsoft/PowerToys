@@ -136,7 +136,7 @@
     <value>Warning: Folder Plugin Results truncated.</value>
   </data>
   <data name="Microsoft_plugin_folder_truncation_warning_subtitle" xml:space="preserve">
-    <value>Showing {0} of {1} results</value>
+    <value>Showing {0:N0} of {1:N0} results</value>
   </data>
   <data name="Microsoft_plugin_folder_clipboard_failed" xml:space="preserve">
     <value>Fail to set text in clipboard</value>
