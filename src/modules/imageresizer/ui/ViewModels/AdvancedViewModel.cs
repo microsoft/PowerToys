@@ -16,9 +16,7 @@ namespace ImageResizer.ViewModels
 {
     public class AdvancedViewModel : ViewModelBase
     {
-        private static readonly IDictionary<Guid, string> _encoderMap;
-
-        static AdvancedViewModel()
+        private static Dictionary<Guid, string> InitEncoderMap()
         {
             var bmpCodec = new BmpBitmapEncoder().CodecInfo;
             var gifCodec = new GifBitmapEncoder().CodecInfo;
@@ -27,7 +25,7 @@ namespace ImageResizer.ViewModels
             var tiffCodec = new TiffBitmapEncoder().CodecInfo;
             var wmpCodec = new WmpBitmapEncoder().CodecInfo;
 
-            _encoderMap = new Dictionary<Guid, string>
+            return new Dictionary<Guid, string>
             {
                 [bmpCodec.ContainerFormat] = bmpCodec.FriendlyName,
                 [gifCodec.ContainerFormat] = gifCodec.FriendlyName,
@@ -45,17 +43,15 @@ namespace ImageResizer.ViewModels
             Settings = settings;
         }
 
-        public static IDictionary<Guid, string> EncoderMap
-            => _encoderMap;
+        public static IDictionary<Guid, string> EncoderMap { get; } = InitEncoderMap();
 
         public Settings Settings { get; }
 
-        public string Version
+        public static string Version
             => typeof(AdvancedViewModel).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 ?.InformationalVersion;
 
-        public IEnumerable<Guid> Encoders
-            => _encoderMap.Keys;
+        public static IEnumerable<Guid> Encoders => EncoderMap.Keys;
 
         public ICommand RemoveSizeCommand { get; }
 
