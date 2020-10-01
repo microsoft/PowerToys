@@ -101,7 +101,7 @@ Once the team have approved an issue/spec, development can proceed. If no develo
 
 ---
 
-## Development
+### Development
 
 ### Fork, Clone, Branch and Create your PR
 
