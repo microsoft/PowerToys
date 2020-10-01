@@ -422,7 +422,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var mock = new Mock<IPublicAPI>();
 
             // Act
-            List<ContextMenuResult> contextMenuResults = _pinnedWebpage.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _pinnedWebpage.ContextMenus(string.Empty, mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
@@ -438,7 +438,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var mock = new Mock<IPublicAPI>();
 
             // Act
-            List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
@@ -453,7 +453,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var mock = new Mock<IPublicAPI>();
 
             // Act
-            List<ContextMenuResult> contextMenuResults = _chrome.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _chrome.ContextMenus(string.Empty, mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
@@ -469,7 +469,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var mock = new Mock<IPublicAPI>();
 
             // Act
-            List<ContextMenuResult> contextMenuResults = _cmdRunCommand.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _cmdRunCommand.ContextMenus(string.Empty, mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
@@ -485,7 +485,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var mock = new Mock<IPublicAPI>();
 
             // Act
-            List<ContextMenuResult> contextMenuResults = _dummyAppRefApp.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _dummyAppRefApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
@@ -501,7 +501,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var mock = new Mock<IPublicAPI>();
 
             // Act
-            List<ContextMenuResult> contextMenuResults = _dummyShortcutApp.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _dummyShortcutApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
@@ -517,7 +517,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var mock = new Mock<IPublicAPI>();
 
             // Act
-            List<ContextMenuResult> contextMenuResults = _dummyFolderApp.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _dummyFolderApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
@@ -532,7 +532,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var mock = new Mock<IPublicAPI>();
 
             // Act
-            List<ContextMenuResult> contextMenuResults = _dummyGenericFileApp.ContextMenus(mock.Object);
+            List<ContextMenuResult> contextMenuResults = _dummyGenericFileApp.ContextMenus(string.Empty, mock.Object);
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
@@ -568,6 +568,21 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // Act
             return Win32Program.GetAppTypeFromPath(path);
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("ping 1.1.1.1")]
+        public void EmptyArgumentsShouldNotThrow(string argument)
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(argument, mock.Object);
+
+            // Assert (Should always return if the above does not throw any exception)
+            Assert.True(true);
         }
     }
 }
