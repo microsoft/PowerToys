@@ -224,13 +224,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
                 Action = e =>
                 {
-                    var info = new ProcessStartInfo
-                    {
-                        FileName = LnkResolvedPath ?? FullPath,
-                        WorkingDirectory = ParentDirectory,
-                        UseShellExecute = true,
-                        Arguments = queryArguments,
-                    };
+                    var info = GetProcessStartInfo(queryArguments);
 
                     Main.StartProcess(Process.Start, info);
 
@@ -271,15 +265,7 @@ namespace Microsoft.Plugin.Program.Programs
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
-                        var info = new ProcessStartInfo
-                        {
-                            FileName = FullPath,
-                            WorkingDirectory = ParentDirectory,
-                            Arguments = queryArguments,
-                            Verb = "runas",
-                            UseShellExecute = true,
-                        };
-
+                        var info = GetProcessStartInfo(queryArguments, true);
                         Task.Run(() => Main.StartProcess(Process.Start, info));
 
                         return true;
@@ -328,6 +314,18 @@ namespace Microsoft.Plugin.Program.Programs
                 });
 
             return contextMenus;
+        }
+
+        private ProcessStartInfo GetProcessStartInfo(string programArguments, bool runAsAdmin = false)
+        {
+            return new ProcessStartInfo
+            {
+                FileName = LnkResolvedPath ?? FullPath,
+                WorkingDirectory = ParentDirectory,
+                UseShellExecute = true,
+                Arguments = programArguments,
+                Verb = runAsAdmin ? "runas" : string.Empty,
+            };
         }
 
         public override string ToString()
