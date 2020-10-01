@@ -21,7 +21,7 @@ namespace PowerPreviewSettings
     bool ThumbnailProvider::CheckRegistryState()
     {
         DWORD dataType;
-        DWORD byteCount;
+        DWORD byteCount = 255;
         wchar_t regValue[255] = { 0 };
 
         LONG errorCode = this->m_registryWrapper->GetRegistryValue(HKEY_CLASSES_ROOT, thumbnail_provider_subkey, nullptr, &dataType, regValue, &byteCount);

@@ -23,7 +23,7 @@ namespace PowerPreviewSettings
     bool PreviewHandler::CheckRegistryState()
     {
         DWORD dataType;
-        DWORD byteCount;
+        DWORD byteCount = 255;
         wchar_t regValue[255] = { 0 };
 
         LONG errorCode = this->m_registryWrapper->GetRegistryValue(HKEY_LOCAL_MACHINE, preview_handlers_subkey, this->GetCLSID(), &dataType, regValue, &byteCount);
