@@ -67,8 +67,8 @@ void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const
         return;
     }
 
-    m_moveSizeWindowInfo.noVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
-    m_moveSizeWindowInfo.standardWindow = FancyZonesUtils::IsStandardWindow(window);
+    m_moveSizeWindowInfo.hasNoVisibleOwner = FancyZonesUtils::HasNoVisibleOwner(window);
+    m_moveSizeWindowInfo.isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
     m_inMoveSize = true;
 
     auto iter = zoneWindowMap.find(monitor);
@@ -213,7 +213,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
         bool isStandardWindow = FancyZonesUtils::IsStandardWindow(window);
 
         if ((isStandardWindow == false && hasNoVisibleOwner == true &&
-             m_moveSizeWindowInfo.standardWindow == true && m_moveSizeWindowInfo.noVisibleOwner == true) ||
+             m_moveSizeWindowInfo.isStandardWindow == true && m_moveSizeWindowInfo.hasNoVisibleOwner == true) ||
              FancyZonesUtils::IsWindowMaximized(window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
