@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.Win32;
 using ExplorerCommandLib;
 
@@ -40,9 +41,16 @@ namespace FastDelete.ShellExtension
 
         public override void Invoke(IEnumerable<string> selectedFiles)
         {
-            FastDeleteForm form = new FastDeleteForm();
-            form.DirectoryToDelete = new DirectoryInfo(selectedFiles.Single());
-            form.ShowDialog();
+            void ThreadProc()
+            {
+                FastDeleteForm form = new FastDeleteForm();
+                form.DirectoryToDelete = new DirectoryInfo(selectedFiles.Single());
+                form.ShowDialog();
+            }
+
+            Thread thread = new Thread(ThreadProc);
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
         }
     }
 }
