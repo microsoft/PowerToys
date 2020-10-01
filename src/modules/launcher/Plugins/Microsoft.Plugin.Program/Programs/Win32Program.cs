@@ -623,34 +623,49 @@ namespace Microsoft.Plugin.Program.Programs
             do
             {
                 var currentDirectory = folderQueue.Dequeue();
-                foreach (var suffix in suffixes)
+                try
                 {
-                    try
+                    foreach (var suffix in suffixes)
                     {
-                        files.AddRange(Directory.EnumerateFiles(currentDirectory, $"*.{suffix}", SearchOption.TopDirectoryOnly));
-                    }
-                    catch (Exception e)
-                    {
-                        ProgramLogger.Exception("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                        try
+                        {
+                            files.AddRange(Directory.EnumerateFiles(currentDirectory, $"*.{suffix}", SearchOption.TopDirectoryOnly));
+                        }
+                        catch (DirectoryNotFoundException e)
+                        {
+                            ProgramLogger.Exception("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                        }
                     }
                 }
-
-                // If the search is set to be non-recursive, then do not enqueue the child directories.
-                if (!recursiveSearch)
+                catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
                 {
-                    continue;
+                    ProgramLogger.Exception($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                }
+                catch (Exception e)
+                {
+                    ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
                 }
 
                 try
                 {
+                    // If the search is set to be non-recursive, then do not enqueue the child directories.
+                    if (!recursiveSearch)
+                    {
+                        continue;
+                    }
+
                     foreach (var childDirectory in Directory.EnumerateDirectories(currentDirectory, "*", SearchOption.TopDirectoryOnly))
                     {
                         folderQueue.Enqueue(childDirectory);
                     }
                 }
+                catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+                {
+                    ProgramLogger.Exception($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                }
                 catch (Exception e)
                 {
-                    ProgramLogger.Exception("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
+                    ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
                 }
             }
             while (folderQueue.Any());
