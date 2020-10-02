@@ -16,7 +16,9 @@ namespace ViewModelTests
         {
             public int TimesSent { get; set; }
 
-            public void OnSend(PowerLauncherSettings settings)
+            // PowerLauncherSettings is unused, but required according to SendCallback's signature.
+            // Naming parameter with discard symbol to suppress FxCop warnings.
+            public void OnSend(PowerLauncherSettings _)
             {
                 TimesSent++;
             }
@@ -36,7 +38,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void SearchPreference_ShouldUpdatePreferences()
+        public void SearchPreferenceShouldUpdatePreferences()
         {
             viewModel.SearchResultPreference = "SearchOptionsAreNotValidated";
             viewModel.SearchTypePreference = "SearchOptionsAreNotValidated";
@@ -46,17 +48,23 @@ namespace ViewModelTests
             Assert.IsTrue(mockSettings.Properties.SearchTypePreference == "SearchOptionsAreNotValidated");
         }
 
-        public void AssertHotkeySettings(HotkeySettings setting, bool win, bool ctrl, bool alt, bool shift, int code)
+        public static void AssertHotkeySettings(HotkeySettings setting, bool win, bool ctrl, bool alt, bool shift, int code)
         {
-            Assert.AreEqual(win, setting.Win);
-            Assert.AreEqual(ctrl, setting.Ctrl);
-            Assert.AreEqual(alt, setting.Alt);
-            Assert.AreEqual(shift, setting.Shift);
-            Assert.AreEqual(code, setting.Code);
+            if (setting != null)
+            {
+                Assert.AreEqual(win, setting.Win);
+                Assert.AreEqual(ctrl, setting.Ctrl);
+                Assert.AreEqual(alt, setting.Alt);
+                Assert.AreEqual(shift, setting.Shift);
+                Assert.AreEqual(code, setting.Code);
+            } else
+            {
+                Assert.Fail("setting parameter is null");
+            }
         }
 
         [TestMethod]
-        public void Hotkeys_ShouldUpdateHotkeys()
+        public void HotkeysShouldUpdateHotkeys()
         {
             var openPowerLauncher = new HotkeySettings();
             openPowerLauncher.Win = true;
@@ -104,7 +112,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void Override_ShouldUpdateOverrides()
+        public void OverrideShouldUpdateOverrides()
         {
             viewModel.OverrideWinRKey = true;
             viewModel.OverrideWinSKey = false;
@@ -116,7 +124,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void DriveDetectionViewModel_WhenSet_MustUpdateOverrides()
+        public void DriveDetectionViewModelWhenSetMustUpdateOverrides()
         {
             // Act
             viewModel.DisableDriveDetectionWarning = true;
