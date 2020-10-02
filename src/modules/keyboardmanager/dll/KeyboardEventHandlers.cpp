@@ -648,6 +648,7 @@ namespace KeyboardEventHandlers
                             delete[] keyEventList;
                             return 1;
                         }
+                        // All modifier keys and action key will be pressed down because if they are not pressed that means that handler has already been  invoked on key release
                         else if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
                         {
                             // Key down for original shortcut modifiers and action key, dummy key, and current key press

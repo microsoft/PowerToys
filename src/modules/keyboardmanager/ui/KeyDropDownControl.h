@@ -1,6 +1,6 @@
 #pragma once
 #include <keyboardmanager/common/Shortcut.h>
-#include<vector>
+#include <vector>
 class KeyboardManagerState;
 
 namespace winrt::Windows

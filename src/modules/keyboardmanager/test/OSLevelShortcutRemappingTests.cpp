@@ -2077,13 +2077,9 @@ namespace RemappingLogicTests
             // send Ctrl+A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // Check that Ctrl+A was released
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), false);
-
             input[0].type = INPUT_KEYBOARD;
             input[0].ki.wVk = 0x42;
-            // send Ctrl+B
+            // send B
             mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
 
             // Check that Ctrl+A+B was pressed
