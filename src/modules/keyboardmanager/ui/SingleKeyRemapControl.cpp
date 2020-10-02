@@ -269,6 +269,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         onAccept();
     });
 
+    // NOTE: UnregisterKeys should never be called on the DelayThread, as it will re-enter the mutex. To avoid this it is run on the dispatcher thread
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         std::bind(&KeyboardManagerState::SelectDetectedRemapKey, &keyboardManagerState, std::placeholders::_1),
@@ -281,41 +282,48 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
                     onPressEnter();
                 });
         },
-        [onReleaseEnter](DWORD) {
-            onReleaseEnter();
+        [onReleaseEnter, detectRemapKeyBox](DWORD) {
+            detectRemapKeyBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [onReleaseEnter]() {
+                    onReleaseEnter();
+                });
         });
 
     TextBlock cancelButtonText;
     cancelButtonText.Text(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
+
+    auto onCancel = [&keyboardManagerState,
+                     detectRemapKeyBox,
+                     unregisterKeys] {
+        detectRemapKeyBox.Hide();
+
+        // Reset the keyboard manager UI state
+        keyboardManagerState.ResetUIState();
+        // Revert UI state back to Edit Keyboard window
+        keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, EditKeyboardWindowHandle);
+        unregisterKeys();
+    };
 
     Button cancelButton;
     cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
     cancelButton.Margin({ 2, 2, 2, 2 });
     cancelButton.Content(cancelButtonText);
     // Cancel button
-    cancelButton.Click([detectRemapKeyBox, unregisterKeys, &keyboardManagerState](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        // Reset the keyboard manager UI state
-        keyboardManagerState.ResetUIState();
-        // Revert UI state back to Edit Keyboard window
-        keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, EditKeyboardWindowHandle);
-        unregisterKeys();
-        detectRemapKeyBox.Hide();
+    cancelButton.Click([onCancel](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        onCancel();
     });
 
+    // NOTE: UnregisterKeys should never be called on the DelayThread, as it will re-enter the mutex. To avoid this it is run on the dispatcher thread
     keyboardManagerState.RegisterKeyDelay(
         VK_ESCAPE,
         std::bind(&KeyboardManagerState::SelectDetectedRemapKey, &keyboardManagerState, std::placeholders::_1),
-        [&keyboardManagerState, detectRemapKeyBox, unregisterKeys](DWORD) {
+        [onCancel, detectRemapKeyBox](DWORD) {
             detectRemapKeyBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [detectRemapKeyBox] {
-                    detectRemapKeyBox.Hide();
+                [onCancel] {
+                    onCancel();
                 });
-
-            keyboardManagerState.ResetUIState();
-            // Revert UI state back to Edit Keyboard window
-            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, EditKeyboardWindowHandle);
-            unregisterKeys();
         },
         nullptr);
 
