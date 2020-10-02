@@ -72,8 +72,8 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
 
     // Create new ShortcutControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<ShortcutControl>> newrow;
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 0, targetAppTextBox))));
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 1, targetAppTextBox))));
+    newrow.emplace_back(std::make_unique<ShortcutControl>(parent, 0, targetAppTextBox));
+    newrow.emplace_back(std::make_unique<ShortcutControl>(parent, 1, targetAppTextBox));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
