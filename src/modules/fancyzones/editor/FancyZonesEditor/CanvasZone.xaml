@@ -15,7 +15,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Border x:Name="ThumbBorder" Opacity="0" BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                        <Border x:Name="ThumbBorder" Opacity="0" BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates" >
                                     <VisualStateGroup.Transitions>
@@ -52,7 +52,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsDefaulted" Value="true">
-                                <Setter Property="BorderBrush" TargetName="border" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource SystemControlBackgroundAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter Property="Opacity" TargetName="contentPresenter" Value="0.6"/>
@@ -67,7 +67,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" Background="{DynamicResource CanvasZoneBackgroundBrush}" BorderThickness="1">
+    <Border BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" Background="{DynamicResource CanvasZoneBackgroundBrush}" BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
                 <RowDefinition Height="8"/>

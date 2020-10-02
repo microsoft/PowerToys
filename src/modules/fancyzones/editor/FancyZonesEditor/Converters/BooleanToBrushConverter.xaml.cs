@@ -11,7 +11,7 @@ namespace FancyZonesEditor.Converters
 {
     public class BooleanToBrushConverter : IValueConverter
     {
-        private static readonly Brush _selectedBrush = SystemParameters.WindowGlassBrush;
+        private static readonly Brush _selectedBrush = Application.Current.FindResource("SystemControlBackgroundAccentBrush") as SolidColorBrush;
         private static readonly Brush _normalBrush = new SolidColorBrush(Colors.Transparent);
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

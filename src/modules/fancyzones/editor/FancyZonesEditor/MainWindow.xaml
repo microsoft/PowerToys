@@ -127,7 +127,13 @@
                 </TabItem>
             </TabControl>
         </StackPanel>
-        <Grid Grid.Column="1" Background="{DynamicResource SecondaryBackgroundBrush}" Margin="0,-32,0,0">
+        <Border
+            Grid.Column="1"
+            Background="{DynamicResource SecondaryBackgroundBrush}"
+            BorderBrush="{DynamicResource PanelBorderBrush}"
+            BorderThickness="2,0,0,0"
+            Margin="0,-32,0,0">
+        <Grid>
             <StackPanel Margin="16">
                 <TextBlock Text="Configuration" Style="{StaticResource BaseTextBlockStyle}" Foreground="{DynamicResource PrimaryForegroundBrush}" Margin="0,28,0,24"  />
 
@@ -142,5 +148,6 @@
                 <Button x:Name="ApplyCustomButton" HorizontalAlignment="Stretch" Margin="0,8,0,0" Content="{x:Static props:Resources.Apply}" Style="{StaticResource AccentButtonStyle}" Click="Apply_Click"/>
             </StackPanel>
         </Grid>
+        </Border>
     </Grid>
 </Window>
