@@ -15,8 +15,8 @@
     <ProjectGuid>{b74f620a-d038-40e3-9082-295f767c69f5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AltDragModule</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>ModuleTemplate</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <ProjectName>AltDragModule</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -51,6 +51,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
+    <TargetName>AltDrag</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -99,8 +100,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="trace.h" />
+    <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -110,15 +110,14 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)src\common\common.vcxproj">
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="AltDragModule.rc" />
+    <ProjectReference Include="..\..\lib\AltDrag\AltDrag.vcxproj">
+      <Project>{c9ca357e-903c-448a-897b-4870e0dfc6a0}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

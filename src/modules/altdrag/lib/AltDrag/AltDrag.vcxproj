@@ -23,7 +23,7 @@
     <ProjectGuid>{C9CA357E-903C-448A-897B-4870E0DFC6A0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AltDrag</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AltDrag.cpp" />
@@ -154,6 +155,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="trace.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AltDrag.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\common.vcxproj">
+      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
