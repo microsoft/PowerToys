@@ -9,8 +9,25 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public enum ColorRepresentationType
     {
+        /// <summary>
+        /// Color presentation as hexadecimal color value (e.g. #0055FF)
+        /// </summary>
         HEX = 0,
+
+        /// <summary>
+        /// Color presentation as RGB color value (red[0..255], green[0..255], blue[0..255])
+        /// </summary>
         RGB = 1,
+
+        /// <summary>
+        /// Color presentation as HSL color value (hue[0°..360°], saturation[0..100%], lightness[0%..100%])
+        /// </summary>
+        HSL = 2,
+
+        /// <summary>
+        /// Color presentation as HSV color value (hue[0°..360°], saturation[0%..100%], value[0%..100%])
+        /// </summary>
+        HSV = 3,
     }
 
     public class ColorPickerProperties

@@ -25,7 +25,7 @@
             <Border Grid.RowSpan="2" Grid.ColumnSpan="2" Grid.Column="1" Background="Transparent" BorderThickness="1" BorderBrush="Black" CornerRadius="2"/>
             
             <TextBlock Margin="7,5,5,5" Foreground="White" Grid.Row="0" Grid.Column="2" Text="{Binding HexColor}"/>
-            <TextBlock Margin="7,0,0,0" Foreground="White" Grid.Row="1" Grid.Column="2" Text="{Binding RgbColor}"/>
+            <TextBlock Margin="7,0,0,0" Foreground="White" Grid.Row="1" Grid.Column="2" Text="{Binding OtherColorText}"/>
         </Grid>
     </Grid>
 </UserControl>

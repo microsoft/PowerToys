@@ -269,6 +269,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder.UnitTests\Microsoft.Plugin.Folder.UnitTests.csproj", "{4FA206A5-F69F-4193-BF8F-F6EEB496734C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest-ColorPickerUI", "UnitTest-ColorPickerUI\UnitTest-ColorPickerUI.csproj", "{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -543,6 +545,10 @@ Global
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Debug|x64.Build.0 = Debug|x64
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Release|x64.ActiveCfg = Release|x64
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Release|x64.Build.0 = Release|x64
+		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Debug|x64.ActiveCfg = Release|x64
+		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Debug|x64.Build.0 = Release|x64
+		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Release|x64.ActiveCfg = Release|x64
+		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -621,6 +627,7 @@ Global
 		{0F85E674-34AE-443D-954C-8321EB8B93B1} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{632BBE62-5421-49EA-835A-7FFA4F499BD6} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1} = {1D78B84B-CA39-406C-98F4-71F7EC266CC0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
