@@ -62,7 +62,8 @@ namespace ViewModelTests
 
             // Arrange
             ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
-            Assert.AreEqual(1, viewModel.ThemeIndex);
+            // Initialize shortcut guide settings theme to 'system' to be in sync with shortcut_guide.h.
+            Assert.AreEqual(2, viewModel.ThemeIndex);
 
             // Act
             viewModel.ThemeIndex = 0;

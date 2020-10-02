@@ -109,7 +109,7 @@
     <Compile Include="Models\ResizeSize.cs" />
     <Compile Include="Models\ResizeUnit.cs" />
     <Compile Include="Utilities\MathHelpers.cs" />
-    <Compile Include="Utilities\Win32Helpers.cs" />
+    <Compile Include="Utilities\NativeMethods.cs" />
     <Compile Include="ViewModels\AdvancedViewModel.cs" />
     <Compile Include="ViewModels\InputViewModel.cs" />
     <Compile Include="ViewModels\ITabViewModel.cs" />
@@ -213,6 +213,11 @@
     <Resource Include="Resources\ImageResizer.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>3.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="MvvmLightLibs">
       <Version>5.4.1.1</Version>
     </PackageReference>

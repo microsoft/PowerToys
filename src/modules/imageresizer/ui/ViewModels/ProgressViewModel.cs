@@ -15,7 +15,7 @@ using ImageResizer.Views;
 
 namespace ImageResizer.ViewModels
 {
-    public class ProgressViewModel : ViewModelBase
+    public class ProgressViewModel : ViewModelBase, IDisposable
     {
         private readonly MainViewModel _mainViewModel;
         private readonly ResizeBatch _batch;
@@ -25,6 +25,7 @@ namespace ImageResizer.ViewModels
 
         private double _progress;
         private TimeSpan _timeRemaining;
+        private bool disposedValue;
 
         public ProgressViewModel(
             ResizeBatch batch,
@@ -56,37 +57,61 @@ namespace ImageResizer.ViewModels
         public ICommand StopCommand { get; }
 
         public void Start()
-            => Task.Factory.StartNew(
-                () =>
+        {
+            _ = Task.Factory.StartNew(StartExecutingWork, _cancellationTokenSource.Token, TaskCreationOptions.None, TaskScheduler.Current);
+        }
+
+        private void StartExecutingWork()
+        {
+            _stopwatch.Restart();
+            var errors = _batch.Process(
+                (completed, total) =>
                 {
-                    _stopwatch.Restart();
-                    var errors = _batch.Process(
-                        _cancellationTokenSource.Token,
-                        (completed, total) =>
-                        {
-                            var progress = completed / total;
-                            Progress = progress;
-                            _mainViewModel.Progress = progress;
+                    var progress = completed / total;
+                    Progress = progress;
+                    _mainViewModel.Progress = progress;
 
-                            TimeRemaining = _stopwatch.Elapsed.Multiply((total - completed) / completed);
-                        });
-
-                    if (errors.Any())
-                    {
-                        _mainViewModel.Progress = 0;
-                        _mainViewModel.CurrentPage = new ResultsViewModel(_mainView, errors);
-                    }
-                    else
-                    {
-                        _mainView.Close();
-                    }
+                    TimeRemaining = _stopwatch.Elapsed.Multiply((total - completed) / completed);
                 },
                 _cancellationTokenSource.Token);
+
+            if (errors.Any())
+            {
+                _mainViewModel.Progress = 0;
+                _mainViewModel.CurrentPage = new ResultsViewModel(_mainView, errors);
+            }
+            else
+            {
+                _mainView.Close();
+            }
+        }
 
         public void Stop()
         {
             _cancellationTokenSource.Cancel();
             _mainView.Close();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _cancellationTokenSource.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

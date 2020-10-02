@@ -44,7 +44,7 @@
     <ProjectGuid>{748417CA-F17E-487F-9411-CAFB6D3F4877}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UnitTests_PreviewHandlerCommon</RootNamespace>
+    <RootNamespace>PreviewHandlerCommonUnitTests</RootNamespace>
     <AssemblyName>UnitTests-PreviewHandlerCommon</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -82,7 +82,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -98,6 +97,7 @@
     </Compile>
     <Compile Include="FileBasedPreviewHandlerTests.cs" />
     <Compile Include="FormHandlerControlTests.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="PreviewHandlerBaseTests.cs" />
     <Compile Include="StreamBasedPreviewHandlerTests.cs" />
     <Compile Include="StreamWrapperTests.cs" />
@@ -114,6 +114,11 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>3.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
