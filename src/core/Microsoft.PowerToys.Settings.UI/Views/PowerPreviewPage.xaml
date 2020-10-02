@@ -43,18 +43,25 @@
 
         <StackPanel Orientation="Vertical" 
                     x:Name="PowerPreviewView">
+            <TextBlock x:Uid="FileExplorerPreview_PreviewPane_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
+                       Foreground="{x:Bind Mode=OneWay, Path=IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
-
-            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}" />
+                          IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
                           Margin="{StaticResource SmallTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}" />
-
+            
+            <TextBlock x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}" />
         </StackPanel>
         <RelativePanel x:Name="SidePanel" 
                     HorizontalAlignment="Left"

@@ -12,6 +12,7 @@ namespace winrt::Windows::UI::Xaml
         struct StackPanel;
         struct Grid;
         struct TextBox;
+        struct Button;
     }
 }
 
@@ -26,6 +27,12 @@ private:
 
     // StackPanel to parent the above controls
     winrt::Windows::Foundation::IInspectable shortcutControlLayout;
+
+    // Function to set the accessible name of the target app text box
+    static void SetAccessibleNameForTextBox(TextBox targetAppTextBox, int rowIndex);
+
+    // Function to set the accessible names for all the controls in a row
+    static void UpdateAccessibleNames(StackPanel sourceColumn, StackPanel mappedToColumn, TextBox targetAppTextBox, Button deleteButton, int rowIndex);
 
 public:
     // Handle to the current Edit Shortcuts Window

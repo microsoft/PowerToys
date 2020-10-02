@@ -189,7 +189,7 @@ namespace PowerLauncher.ViewModel
                     catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        Log.Exception($"|ResultViewModel.Image|IcoPath is empty and exception when calling Icon() for result <{Result.Title}> of plugin <{Result.PluginDirectory}>", e);
+                        Log.Exception($"IcoPath is empty and exception when calling Icon() for result <{Result.Title}> of plugin <{Result.PluginDirectory}>", e, GetType());
                         imagePath = ImageLoader.ErrorIconPath;
                     }
                 }
@@ -272,8 +272,7 @@ namespace PowerLauncher.ViewModel
 
         public string SearchBoxDisplayText()
         {
-            var display = string.IsNullOrEmpty(Result.QueryTextDisplay) ? Result.Title : Result.QueryTextDisplay;
-            return display;
+            return Result.QueryTextDisplay;
         }
 
         public override string ToString()

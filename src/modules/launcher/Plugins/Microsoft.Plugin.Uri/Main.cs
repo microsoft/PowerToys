@@ -84,12 +84,12 @@ namespace Microsoft.Plugin.Uri
 
         public string GetTranslatedPluginTitle()
         {
-            return "Url Handler";
+            return Properties.Resources.Microsoft_plugin_uri_plugin_name;
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return "Handles urls";
+            return Properties.Resources.Microsoft_plugin_uri_plugin_description;
         }
 
         public void Save()
@@ -145,7 +145,7 @@ namespace Microsoft.Plugin.Uri
             catch (Exception e)
             {
                 BrowserIconPath = DefaultIconPath;
-                Log.Exception("Exception when retreiving icon", e);
+                Log.Exception("Exception when retreiving icon", e, GetType());
             }
         }
 

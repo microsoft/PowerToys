@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.Indexer
                                     }
                                     catch (Exception ex)
                                     {
-                                        Log.Exception("Microsoft.Plugin.Indexer", $"Unable to launch Windows Search Settings: {ex.Message}", ex, "Query");
+                                        Log.Exception($"Unable to launch Windows Search Settings: {ex.Message}", ex, GetType());
                                     }
 
                                     return true;
@@ -119,7 +119,7 @@ namespace Microsoft.Plugin.Indexer
 
                             Result r = new Result();
                             r.Title = searchResult.Title;
-                            r.SubTitle = "Search: " + path;
+                            r.SubTitle = Properties.Resources.Microsoft_plugin_indexer_subtitle_header + ": " + path;
                             r.IcoPath = path;
                             r.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
                             r.Action = c =>
@@ -138,7 +138,7 @@ namespace Microsoft.Plugin.Indexer
                                 catch (Win32Exception)
                                 {
                                     var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                    var msg = "Can't Open this file";
+                                    var msg = Properties.Resources.Microsoft_plugin_indexer_file_open_failed;
                                     _context.API.ShowMsg(name, msg, string.Empty);
                                     hide = false;
                                 }
@@ -163,7 +163,7 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (Exception ex)
                     {
-                        Log.Info(ex.ToString());
+                        Log.Exception("Something failed", ex, GetType());
                     }
                 }
             }
@@ -206,18 +206,16 @@ namespace Microsoft.Plugin.Indexer
             UpdateIconPath(newTheme);
         }
 
-        // TODO: Localize the strings
         // Set the Plugin Title
         public string GetTranslatedPluginTitle()
         {
-            return "Windows Indexer Plugin";
+            return Properties.Resources.Microsoft_plugin_indexer_plugin_name;
         }
 
-        // TODO: Localize the string
         // Set the plugin Description
         public string GetTranslatedPluginDescription()
         {
-            return "Returns files and folders";
+            return Properties.Resources.Microsoft_plugin_indexer_plugin_description;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)

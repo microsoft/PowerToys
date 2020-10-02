@@ -6,6 +6,7 @@
 #include <common/common.h>
 #include <common/settings_objects.h>
 #include <common/debug_control.h>
+#include <sstream>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -84,8 +85,8 @@ namespace
         // For now, since ShortcutGuide can only disable entire "Windows Controls"
         // group, we require that the window supports all the options.
         result.snappable = ((style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX) &&
-                            ((style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX) &&
-                            ((style & WS_THICKFRAME) == WS_THICKFRAME);
+                           ((style & WS_MINIMIZEBOX) == WS_MINIMIZEBOX) &&
+                           ((style & WS_THICKFRAME) == WS_THICKFRAME);
         return result;
     }
 }
@@ -224,7 +225,10 @@ void OverlayWindow::enable()
             hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
             if (!hook_handle)
             {
-                MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - Shortcut Guide", MB_OK | MB_ICONERROR);
+                DWORD errorCode = GetLastError();
+                show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Shortcut Guide");
+                auto errorMessage = get_last_error_message(errorCode);
+                Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"OverlayWindow.enable.SetWindowsHookEx");
             }
         }
         RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);

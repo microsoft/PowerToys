@@ -20,7 +20,7 @@ namespace ImageResizer.Models
         private static readonly string EOL = Environment.NewLine;
 
         [Fact]
-        public void FromCommandLine_works()
+        public void FromCommandLineWorks()
         {
             var standardInput =
                 "Image1.jpg" + EOL +
@@ -56,13 +56,13 @@ namespace ImageResizer.Models
         }*/
 
         [Fact]
-        public void Process_aggregates_errors()
+        public void ProcessAggregatesErrors()
         {
             var batch = CreateBatch(file => throw new Exception("Error: " + file));
             batch.Files.Add("Image1.jpg");
             batch.Files.Add("Image2.jpg");
 
-            var errors = batch.Process(CancellationToken.None, (_, __) => { }).ToList();
+            var errors = batch.Process((_, __) => { }, CancellationToken.None).ToList();
 
             Assert.Equal(2, errors.Count);
 
@@ -81,7 +81,7 @@ namespace ImageResizer.Models
         }
 
         [Fact]
-        public void Process_reports_progress()
+        public void ProcessReportsProgress()
         {
             var batch = CreateBatch(_ => { });
             batch.Files.Add("Image1.jpg");
@@ -89,8 +89,8 @@ namespace ImageResizer.Models
             var calls = new ConcurrentBag<(int i, double count)>();
 
             batch.Process(
-                CancellationToken.None,
-                (i, count) => calls.Add((i, count)));
+                (i, count) => calls.Add((i, count)),
+                CancellationToken.None);
 
             Assert.Equal(2, calls.Count);
             Assert.Contains(calls, c => c.i == 1 && c.count == 2);

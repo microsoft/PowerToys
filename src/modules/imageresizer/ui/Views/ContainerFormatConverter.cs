@@ -15,7 +15,7 @@ namespace ImageResizer.Views
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             => AdvancedViewModel.EncoderMap.TryGetValue((Guid)value, out var result)
                 ? result
-                : value.ToString();
+                : value?.ToString();
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();

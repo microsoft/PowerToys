@@ -89,7 +89,7 @@ namespace Wox.Infrastructure.UserSettings
                 }
                 catch (ArgumentException e)
                 {
-                    Logger.Log.Exception(nameof(Settings), "Failed to load QuerySearchPrecisionString value from Settings file", e);
+                    Logger.Log.Exception("Failed to load QuerySearchPrecisionString value from Settings file", e, GetType());
 
                     QuerySearchPrecision = StringMatcher.SearchPrecisionScore.Regular;
                     StringMatcher.Instance.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.Regular;
@@ -171,6 +171,8 @@ namespace Wox.Infrastructure.UserSettings
         public bool RememberLastLaunchLocation { get; set; }
 
         public bool IgnoreHotkeysOnFullscreen { get; set; }
+
+        public bool UsePowerToysRunnerKeyboardHook { get; set; }
 
         public HttpProxy Proxy { get; set; } = new HttpProxy();
 

@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PreviewHandlerCommon;
 
-namespace UnitTests_PreviewHandlerCommon
+namespace PreviewHandlerCommonUnitTests
 {
     [TestClass]
     public class WebBrowserExtUnitTests : WebBrowserExt
@@ -14,7 +14,7 @@ namespace UnitTests_PreviewHandlerCommon
         private const string DISPIDAMBIENTDLCONTROL = "[DISPID=-5512]";
 
         [TestMethod]
-        public void InvokeMember_ShouldSetValidFlags_WhenCalledWithValidDispId()
+        public void InvokeMemberShouldSetValidFlagsWhenCalledWithValidDispId()
         {
             // Arrange
             var extendedSite = CreateWebBrowserSiteBase() as WebBrowserSiteExt;
@@ -37,7 +37,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void InvokeMember_ShouldOnlySetValidFlags_WhenCalledWithValidDispId()
+        public void InvokeMemberShouldOnlySetValidFlagsWhenCalledWithValidDispId()
         {
             // Arrange
             var extendedSite = CreateWebBrowserSiteBase() as WebBrowserSiteExt;

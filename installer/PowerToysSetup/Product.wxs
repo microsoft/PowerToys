@@ -423,52 +423,52 @@
         <!-- Added a separate component for Per-User registry changes -->
         <!-- Registry Key for Class Registration of Svg Preview Handler -->
         <RegistryKey Root="HKCR" Key="CLSID\{ddee2b8a-6807-48a6-bb20-2338174ff779}">
-          <RegistryValue Type="string" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
           <RegistryValue Type="string" Name="DisplayName" Value="Svg Preview Handler" />
           <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
           <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
           <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
           <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]SvgPreviewHandler.dll" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Svg.SvgPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]SvgPreviewHandler.dll" />
         </RegistryKey>
         <!-- Registry Key for Class Registration of Svg Thumbnail Provider -->
         <RegistryKey Root="HKCR" Key="CLSID\{36B27788-A8BB-4698-A756-DF9F11F64F84}">
-            <RegistryValue Type="string" Value="SvgThumbnailProvider.SvgThumbnailProvider" />
+            <RegistryValue Type="string" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
             <RegistryValue Type="string" Name="DisplayName" Value="Svg Thumbnail Provider" />
             <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
             <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
             <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
             <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
-            <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="SvgThumbnailProvider.SvgThumbnailProvider" />
+            <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
             <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
             <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
             <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]SvgThumbnailProvider.dll" />
             <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgThumbnailProvider, Version=$(var.Version).0, Culture=neutral" />
-            <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="SvgThumbnailProvider.SvgThumbnailProvider" />
+            <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.ThumbnailHandler.Svg.SvgThumbnailProvider" />
             <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
             <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]SvgThumbnailProvider.dll" />
         </RegistryKey>
         <!-- Registry Key for Class Registration of Markdown Preview Handler -->
         <RegistryKey Root="HKCR" Key="CLSID\{45769bcc-e8fd-42d0-947e-02beef77a1f5}">
-          <RegistryValue Type="string" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Name="DisplayName" Value="Markdown Preview Handler" />
           <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
           <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
           <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]MarkdownPreviewHandler.dll" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
-          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="Microsoft.PowerToys.PreviewHandler.Markdown.MarkdownPreviewHandler" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
           <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[FileExplorerPreviewInstallFolder]MarkdownPreviewHandler.dll" />
         </RegistryKey>
@@ -668,7 +668,7 @@
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.exe"/>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.exe"/>
         <!-- dll -->
-        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Runtime.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Telemetry.dll;ManagedCommon.dll?>
+        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Telemetry.dll;ManagedCommon.dll?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\$(var.File)" />
         <?endforeach?>
         <!-- json -->
@@ -868,7 +868,7 @@
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;PropertyChanged.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll;ManagedCommon.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll;ManagedCommon.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />

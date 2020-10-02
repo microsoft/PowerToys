@@ -271,6 +271,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FastDelete.ShellExtension",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FastDelete", "src\modules\fastdelete\FastDelete\FastDelete.vcxproj", "{D65D35A2-02B4-45E7-8B14-9A5CF116568E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.Plugin.Calculator.UnitTest\Microsoft.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder.UnitTests\Microsoft.Plugin.Folder.UnitTests.csproj", "{4FA206A5-F69F-4193-BF8F-F6EEB496734C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -693,6 +697,14 @@ Global
 		{D65D35A2-02B4-45E7-8B14-9A5CF116568E}.Release|x64.Build.0 = Release|x64
 		{D65D35A2-02B4-45E7-8B14-9A5CF116568E}.Release|x86.ActiveCfg = Release|Win32
 		{D65D35A2-02B4-45E7-8B14-9A5CF116568E}.Release|x86.Build.0 = Release|Win32
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6}.Debug|x64.ActiveCfg = Debug|x64
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6}.Debug|x64.Build.0 = Debug|x64
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6}.Release|x64.ActiveCfg = Release|x64
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6}.Release|x64.Build.0 = Release|x64
+		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Debug|x64.ActiveCfg = Debug|x64
+		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Debug|x64.Build.0 = Debug|x64
+		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Release|x64.ActiveCfg = Release|x64
+		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -772,6 +784,8 @@ Global
 		{19AB1788-9228-4137-AA63-B8BD583C61DD} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{61CB5FC5-3D80-400B-B118-1B29D9DECA28} = {19AB1788-9228-4137-AA63-B8BD583C61DD}
 		{D65D35A2-02B4-45E7-8B14-9A5CF116568E} = {19AB1788-9228-4137-AA63-B8BD583C61DD}
+		{632BBE62-5421-49EA-835A-7FFA4F499BD6} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{4FA206A5-F69F-4193-BF8F-F6EEB496734C} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

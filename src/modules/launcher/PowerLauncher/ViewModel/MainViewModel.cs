@@ -55,7 +55,6 @@ namespace PowerLauncher.ViewModel
 
         public MainViewModel(Settings settings)
         {
-            HotkeyManager = new HotkeyManager();
             _saved = false;
             _queryTextBeforeLeaveResults = string.Empty;
             _currentQuery = _emptyQuery;
@@ -78,27 +77,36 @@ namespace PowerLauncher.ViewModel
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
 
-            _settings.PropertyChanged += (s, e) =>
+            if (settings != null && settings.UsePowerToysRunnerKeyboardHook)
             {
-                if (e.PropertyName == nameof(Settings.Hotkey))
+                NativeEventWaiter.WaitForEventLoop(Constants.PowerLauncherSharedEvent(), OnHotkey);
+                _hotkeyHandle = 0;
+            }
+            else
+            {
+                HotkeyManager = new HotkeyManager();
+                _settings.PropertyChanged += (s, e) =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    if (e.PropertyName == nameof(Settings.Hotkey))
                     {
-                        if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            HotkeyManager.UnregisterHotkey(_hotkeyHandle);
-                        }
+                            if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
+                            {
+                                HotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                            }
 
-                        if (!string.IsNullOrEmpty(_settings.Hotkey))
-                        {
-                            SetHotkey(_settings.Hotkey, OnHotkey);
-                        }
-                    });
-                }
-            };
+                            if (!string.IsNullOrEmpty(_settings.Hotkey))
+                            {
+                                SetHotkey(_settings.Hotkey, OnHotkey);
+                            }
+                        });
+                    }
+                };
 
-            SetHotkey(_settings.Hotkey, OnHotkey);
-            SetCustomPluginHotkey();
+                SetHotkey(_settings.Hotkey, OnHotkey);
+                SetCustomPluginHotkey();
+            }
         }
 
         private void RegisterResultsUpdatedEvent()
@@ -115,6 +123,60 @@ namespace PowerLauncher.ViewModel
                         UpdateResultView(e.Results, e.Query.RawQuery, _updateToken);
                     }, _updateToken);
                 };
+            }
+        }
+
+        private void OpenResultsEvent(object index, bool isMouseClick)
+        {
+            var results = SelectedResults;
+
+            if (index != null)
+            {
+                results.SelectedIndex = int.Parse(index.ToString(), CultureInfo.InvariantCulture);
+            }
+
+            if (results.SelectedItem != null)
+            {
+                bool executeResultRequired = false;
+
+                if (isMouseClick)
+                {
+                    executeResultRequired = true;
+                }
+                else
+                {
+                    // If there is a context button selected fire the action for that button instead, and the main command will not be executed
+                    executeResultRequired = !results.SelectedItem.ExecuteSelectedContextButton();
+                }
+
+                if (executeResultRequired)
+                {
+                    var result = results.SelectedItem.Result;
+
+                    // SelectedItem returns null if selection is empty.
+                    if (result != null && result.Action != null)
+                    {
+                        MainWindowVisibility = Visibility.Collapsed;
+
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            result.Action(new ActionContext
+                            {
+                                SpecialKeyState = KeyboardHelper.CheckModifiers(),
+                            });
+                        });
+
+                        if (SelectedIsFromQueryResults())
+                        {
+                            _userSelectedRecord.Add(result);
+                            _history.Add(result.OriginQuery.RawQuery);
+                        }
+                        else
+                        {
+                            SelectedResults = Results;
+                        }
+                    }
+                }
             }
         }
 
@@ -181,49 +243,14 @@ namespace PowerLauncher.ViewModel
                 Process.Start("https://aka.ms/PowerToys/");
             });
 
-            OpenResultCommand = new RelayCommand(index =>
+            OpenResultWithKeyboardCommand = new RelayCommand(index =>
             {
-                var results = SelectedResults;
+                OpenResultsEvent(index, false);
+            });
 
-                if (index != null)
-                {
-                    results.SelectedIndex = int.Parse(index.ToString(), CultureInfo.InvariantCulture);
-                }
-
-                if (results.SelectedItem != null)
-                {
-                    // If there is a context button selected fire the action for that button before the main command.
-                    bool didExecuteContextButton = results.SelectedItem.ExecuteSelectedContextButton();
-
-                    if (!didExecuteContextButton)
-                    {
-                        var result = results.SelectedItem.Result;
-
-                        // SelectedItem returns null if selection is empty.
-                        if (result != null && result.Action != null)
-                        {
-                            MainWindowVisibility = Visibility.Collapsed;
-
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                result.Action(new ActionContext
-                                {
-                                    SpecialKeyState = KeyboardHelper.CheckModifiers(),
-                                });
-                            });
-
-                            if (SelectedIsFromQueryResults())
-                            {
-                                _userSelectedRecord.Add(result);
-                                _history.Add(result.OriginQuery.RawQuery);
-                            }
-                            else
-                            {
-                                SelectedResults = Results;
-                            }
-                        }
-                    }
-                }
+            OpenResultWithMouseCommand = new RelayCommand(index =>
+            {
+                OpenResultsEvent(index, true);
             });
 
             LoadContextMenuCommand = new RelayCommand(_ =>
@@ -391,7 +418,9 @@ namespace PowerLauncher.ViewModel
 
         public ICommand LoadHistoryCommand { get; set; }
 
-        public ICommand OpenResultCommand { get; set; }
+        public ICommand OpenResultWithKeyboardCommand { get; set; }
+
+        public ICommand OpenResultWithMouseCommand { get; set; }
 
         public ICommand ClearQueryCommand { get; set; }
 
@@ -507,6 +536,7 @@ namespace PowerLauncher.ViewModel
 
                                     currentCancellationToken.ThrowIfCancellationRequested();
                                     Results.Sort();
+                                    Results.SelectedItem = Results.Results.FirstOrDefault();
                                 }
                             }
 
@@ -544,6 +574,7 @@ namespace PowerLauncher.ViewModel
 
                                                         currentCancellationToken.ThrowIfCancellationRequested();
                                                         Results.Sort();
+                                                        Results.SelectedItem = Results.Results.FirstOrDefault();
                                                     }
                                                 }
 

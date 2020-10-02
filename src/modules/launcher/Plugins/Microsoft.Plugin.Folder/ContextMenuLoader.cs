@@ -54,7 +54,7 @@ namespace Microsoft.Plugin.Folder
                         catch (Exception e)
                         {
                             var message = Properties.Resources.Microsoft_plugin_folder_clipboard_failed;
-                            LogException(message, e);
+                            Log.Exception(message, e, GetType());
                             _context.API.ShowMsg(message);
                             return false;
                         }
@@ -87,7 +87,8 @@ namespace Microsoft.Plugin.Folder
                         }
                         catch (Exception e)
                         {
-                            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenuLoader.LoadContextMenus| Failed to open {record.FullPath} in console, {e.Message}", e);
+                            Log.Exception($"Failed to open {record.FullPath} in console, {e.Message}", e, GetType());
+
                             return false;
                         }
                     },
@@ -116,20 +117,16 @@ namespace Microsoft.Plugin.Folder
                     }
                     catch (Exception e)
                     {
-                        var message = $"Fail to open file at {record.FullPath}";
-                        LogException(message, e);
+                        var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.FullPath}";
+                        Log.Exception(message, e, GetType());
                         _context.API.ShowMsg(message);
+
                         return false;
                     }
 
                     return true;
                 },
             };
-        }
-
-        public static void LogException(string message, Exception e)
-        {
-            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenu|{message}", e);
         }
     }
 
