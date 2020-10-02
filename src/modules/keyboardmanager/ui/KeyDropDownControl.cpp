@@ -3,12 +3,38 @@
 #include "keyboardmanager/common/Helpers.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include "BufferValidationHelpers.h"
+#include <common\shared_constants.h>
+#include <common\keyboard_layout_impl.h>
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
 
+// Get keys code list depending if Disable is in dropdown
+std::vector<DWORD> KeyDropDownControl::GetKeyCodeList(bool isShortcut, bool renderDisable)
+{
+    auto list = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
+    if (renderDisable)
+    {
+        list.insert(list.begin(), CommonSharedConstants::VK_DISABLED);
+    }
+
+    return list;
+}
+
+// Get keys name list depending if Disable is in dropdown
+std::vector<std::wstring> KeyDropDownControl::GetKeyNameList(bool isShortcut, bool renderDisable)
+{
+    auto list = keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut);
+    if (renderDisable)
+    {
+        list.insert(list.begin(), keyboardManagerState->keyboardMap.GetKeyName(CommonSharedConstants::VK_DISABLED));
+    }
+
+    return list;
+}
+
 // Function to set properties apart from the SelectionChanged event handler
-void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
+void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisable)
 {
     dropDown = ComboBox();
     warningFlyout = Flyout();
@@ -25,12 +51,12 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
     dropDown.as<ComboBox>().MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
-    keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
-    dropDown.as<ComboBox>().ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut)));
+    keyCodeList = GetKeyCodeList(isShortcut, renderDisable);
+    dropDown.as<ComboBox>().ItemsSource(KeyboardManagerHelper::ToBoxValue(GetKeyNameList(isShortcut, renderDisable)));
     // drop down open handler - to reload the items with the latest layout
     dropDown.as<ComboBox>().DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
-        CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut);
+        CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut, renderDisable);
     });
 
     // Attach flyout to the drop down
@@ -48,7 +74,7 @@ void KeyDropDownControl::SetAccessibleNameForComboBox(ComboBox dropDown, int ind
 }
 
 // Function to check if the layout has changed and accordingly update the drop down list
-void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut)
+void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut, bool renderDisable)
 {
     // Get keyboard layout for current thread
     HKL layout = GetKeyboardLayout(0);
@@ -56,8 +82,8 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
     // Check if the layout has changed
     if (previousLayout != layout)
     {
-        keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
-        currentDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut)));
+        keyCodeList = GetKeyCodeList(isShortcut, renderDisable);
+        currentDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(GetKeyNameList(isShortcut, renderDisable)));
         previousLayout = layout;
     }
 }
@@ -203,7 +229,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutCon
             }
 
             // Reset the buffer based on the new selected drop down items. Use static key code list since the KeyDropDownControl object might be deleted
-            std::vector selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(GetSelectedIndicesFromStackPanel(parent), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
+            std::vector selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(GetSelectedIndicesFromStackPanel(parent), GetKeyCodeList(true, colIndex == 1));
             if (!isHybridControl)
             {
                 std::get<Shortcut>(shortcutRemapBuffer[validationResult.second].first[colIndex]).SetKeyCodes(selectedKeyCodes);
@@ -283,7 +309,7 @@ ComboBox KeyDropDownControl::GetComboBox()
 // Function to add a drop down to the shortcut stack panel
 void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, bool ignoreWarning)
 {
-    keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true, ignoreWarning))));
+    keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true, ignoreWarning, colIndex == 1))));
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
     keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
     parent.UpdateLayout();
@@ -314,7 +340,7 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel
     for (int i = 0; i < keyDropDownControlObjects.size(); i++)
     {
         // Check for errors only if the current selection is a valid shortcut
-        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(keyDropDownControlObjects[i]->GetSelectedIndicesFromStackPanel(parent), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
+        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(keyDropDownControlObjects[i]->GetSelectedIndicesFromStackPanel(parent), GetKeyCodeList(true, colIndex == 1));
         std::variant<DWORD, Shortcut> currentShortcut;
         if (selectedKeyCodes.size() == 1 && isHybridControl)
         {
@@ -352,7 +378,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, Grid table, Sta
     keyDropDownControlObjects.clear();
 
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
-    std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
+    std::vector<DWORD> keyCodeList = GetKeyCodeList(true, colIndex == 1);
     if (shortcutKeyCodes.size() != 0)
     {
         bool ignoreWarning = false;
