@@ -61,16 +61,7 @@ namespace FastDelete.ShellExtension
             try
             {
                 token.ThrowIfCancellationRequested();
-                ProcessStartInfo stage1proc = new ProcessStartInfo("C:\\Windows\\System32\\cmd.exe",
-                    "/c del /f/q/s *.* > nul");
-                stage1proc.WorkingDirectory = form.DirectoryToDelete.FullName;
-                Process.Start(stage1proc).WaitForExit();
-
-                token.ThrowIfCancellationRequested();
-                ProcessStartInfo stage2proc = new ProcessStartInfo("C:\\Windows\\System32\\cmd.exe",
-                    $"/c rmdir /s/q \"{form.DirectoryToDelete.FullName}\"");
-                Process.Start(stage2proc).WaitForExit();
-
+                form.DirectoryToDelete.Delete(true);
                 form.Invoke((Action)delegate { form.DeletionSuccess(); });
             }
             catch (OperationCanceledException)
@@ -91,8 +82,13 @@ namespace FastDelete.ShellExtension
 
         private void DeletionException(Exception ex)
         {
-            MessageBox.Show(this, $"Unhandled exception during deletion: {ex.Message}", "FastDelete Error",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            string message;
+            if (ex is UnauthorizedAccessException) message = $"{DirectoryToDelete.Name} contains a read-only file.";
+            else if (ex is DirectoryNotFoundException) message = $"{DirectoryToDelete.Name} was not found.";
+            else if (ex is IOException) message = $"{DirectoryToDelete.Name} is read-only, or an I/O error occurred.";
+            else message = $"Unhandled exception during deletion: {ex.Message}";
+
+            MessageBox.Show(this, message, "FastDelete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             mConfirmButton.Visible = true;
             mInstructionLabel.Visible = true;
