@@ -71,7 +71,7 @@ public:
         {
             InitializeWinhookEventIds();
             Trace::FancyZones::EnableFancyZones(true);
-            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
+            m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings, std::bind(&FancyZonesModule::disable, this));
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
             const bool hook_disabled = IsDebuggerPresent();
 #else
@@ -82,10 +82,10 @@ public:
                 s_llKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
                 if (!s_llKeyboardHook)
                 {
-                    MessageBoxW(NULL,
-                                GET_RESOURCE_STRING(IDS_KEYBOARD_LISTENER_ERROR).c_str(),
-                                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                                MB_OK | MB_ICONERROR);
+                    DWORD errorCode = GetLastError();
+                    show_last_error_message(L"SetWindowsHookEx", errorCode, GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str());
+                    auto errorMessage = get_last_error_message(errorCode);
+                    Trace::FancyZones::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"enable.SetWindowsHookEx");
                 }
             }
 
@@ -129,7 +129,7 @@ public:
     // Returns if the powertoy is enabled
     virtual bool is_enabled() override
     {
-        return (m_app != nullptr);
+        return m_app != nullptr;
     }
 
     // Destroy the powertoy and free memory

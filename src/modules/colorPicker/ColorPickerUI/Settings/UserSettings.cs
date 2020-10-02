@@ -15,16 +15,20 @@ namespace ColorPicker.Settings
     [Export(typeof(IUserSettings))]
     public class UserSettings : IUserSettings
     {
+        private readonly ISettingsUtils _settingsUtils;
         private const string ColorPickerModuleName = "ColorPicker";
         private const string DefaultActivationShortcut = "Ctrl + Break";
         private const int MaxNumberOfRetry = 5;
-        private FileSystemWatcher _watcher;
 
-        private object _loadingSettingsLock = new object();
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
+        private readonly FileSystemWatcher _watcher;
+
+        private readonly object _loadingSettingsLock = new object();
 
         [ImportingConstructor]
         public UserSettings()
         {
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);
@@ -54,14 +58,14 @@ namespace ColorPicker.Settings
                         {
                             retryCount++;
 
-                            if (!SettingsUtils.SettingsExists(ColorPickerModuleName))
+                            if (!_settingsUtils.SettingsExists(ColorPickerModuleName))
                             {
                                 Logger.LogInfo("ColorPicker settings.json was missing, creating a new one");
                                 var defaultColorPickerSettings = new ColorPickerSettings();
-                                defaultColorPickerSettings.Save();
+                                defaultColorPickerSettings.Save(_settingsUtils);
                             }
 
-                            var settings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
+                            var settings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
                             if (settings != null)
                             {
                                 ChangeCursor.Value = settings.Properties.ChangeCursor;
@@ -81,7 +85,9 @@ namespace ColorPicker.Settings
                             Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
+#pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             if (retryCount > MaxNumberOfRetry)
                             {

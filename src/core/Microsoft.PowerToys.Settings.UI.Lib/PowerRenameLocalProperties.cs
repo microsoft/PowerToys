@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class PowerRenameLocalProperties
+    public class PowerRenameLocalProperties : ISettingsConfig
     {
         public PowerRenameLocalProperties()
         {
@@ -50,6 +51,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
+        }
+
+        // This function is required to implement the ISettingsConfig interface and obtain the settings configurations.
+        public string GetModuleName()
+        {
+            string moduleName = PowerRenameSettings.ModuleName;
+            return moduleName;
+        }
+
+        // This can be utilized in the future if the settings.json file is to be modified/deleted.
+        public bool UpgradeSettingsConfiguration()
+        {
+            return false;
         }
     }
 }

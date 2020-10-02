@@ -62,7 +62,10 @@
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
                       Padding="0"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      SelectionMode="None">
+                      SelectionMode="None"
+                      ScrollViewer.HorizontalScrollMode="Enabled"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.IsHorizontalRailEnabled="True">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -207,16 +210,12 @@
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
             </ComboBox>
 
-            <TextBlock Name="ImageResizer_Encoding"
-                x:Uid="ImageResizer_Encoding"
-                Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
-            <muxc:NumberBox Minimum="0"
+            <muxc:NumberBox x:Uid="ImageResizer_Encoding"
+                            Minimum="0"
                             Maximum="100"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
                             Width="240"
-                            Margin="{StaticResource HeaderTextTopMargin}"
+                            Margin="{StaticResource SmallTopMargin}"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"

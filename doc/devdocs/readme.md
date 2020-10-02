@@ -40,7 +40,7 @@ Contains the source code of the PowerToys installer.
 
 ### The [`src`](/src) folder
 
-Contains the source code of the PowerToys runner and of all of the PowerToys modules. **This is where the most of the magic happens.**
+Contains the source code of the PowerToys runner and of all of the PowerToys modules. **This is where most of the magic happens.**
 
 ### The [`tools`](/tools) folder
 
@@ -57,6 +57,7 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 ```shell
 cd "%ProgramFiles(x86)%\Microsoft Visual Studio\2019"
 SET targetFolder="\"
+IF EXIST Preview\NUL (SET targetFolder=Preview)
 IF EXIST Enterprise\NUL (SET targetFolder=Enterprise)
 IF EXIST Professional\NUL (SET targetFolder=Professional)
 IF EXIST Community\NUL (SET targetFolder=Community)
@@ -80,7 +81,11 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 - The PowerToys binaries will be in your repo under `x64\Release`.
 - If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
 
-## Building the Installer (.MSI)
+## Building the Installers
+
+Our installer is two parts, an EXE and an MSI.  The EXE contains the MSI and handles more complex install logic. 
+- The EXE installs all prerequisites and installs PowerToys via the MSI. Also has additional features, such as silent installation flags
+- The MSI installs PowerToys.
 
 ### Prerequisites Building the Installer (.MSI)
 
@@ -91,6 +96,15 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 
 - From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+
+### Compiling Bootstraper Installer (.EXE)
+
+- MSI Installer needs to be built in release mode
+- Build `PowerToysBootstrapper` solution (`installer\PowerToysBootstrapper\`)
+
+#### Supported arguments for EXE installer:
+
+Head over to the wiki to get the [full list of supported installer arguments][installerArgWiki].
 
 ## Debugging
 
@@ -105,8 +119,8 @@ To run and debug PowerToys from Visual Studio when the user is a member of the A
 
 ## How to create new PowerToys
 
-See the instructions on [how to install the PowerToys Module project template](tools/project_template). <br />
-Specifications for the [PowerToys settings API](doc/specs/PowerToys-settings.md).
+See the instructions on [how to install the PowerToys Module project template](/tools/project_template). <br />
+Specifications for the [PowerToys settings API](/doc/devdocs/settings.md).
 
 ## Implementation details
 
@@ -134,7 +148,7 @@ The common lib, as the name suggests, contains code shared by multiple PowerToys
 
 WebView project for editing the PowerToys settings.
 
-The html portion of the project that is shown in the WebView is contained in [`settings-html`](/src/settings/settings-heml).
+The html portion of the project that is shown in the WebView is contained in [`settings-html`](/src/settings/settings-html).
 Instructions on how build a new version and update this project are in the [Web project for the Settings UI](./settings-web.md).
 
 While developing, it's possible to connect the WebView to the development server running in localhost by setting the `_DEBUG_WITH_LOCALHOST` flag to `1` and following the instructions near it in `./main.cpp`.
@@ -164,3 +178,5 @@ This module has a setting to serve as an example for each of the currently imple
 - CustomAction property
 
 ![Image of the Options](/doc/images/settings/example_settings.png)
+
+[installerArgWiki]: https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe

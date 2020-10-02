@@ -148,7 +148,7 @@
     <value>Show zones on all monitors while dragging a window</value>
   </data>
   <data name="Setting_Description_Span_Zones_Across_Monitors" xml:space="preserve">
-    <value>Allow zones to span across monitors</value>
+    <value>Allow zones to span across monitors (all monitors must have the same DPI scaling)</value>
   </data>
   <data name="Setting_Description_Make_Dragged_Window_Transparent" xml:space="preserve">
     <value>Make dragged window transparent</value>
@@ -205,12 +205,27 @@
     <value>Don't show again</value>
   </data>
   <data name="Keyboard_Listener_Error" xml:space="preserve">
-    <value>Cannot install keyboard listener.</value>
+    <value>Failed to install keyboard listener.</value>
   </data>
   <data name="Window_Event_Listener_Error" xml:space="preserve">
-    <value>Cannot install Windows event listener.</value>
+    <value>Failed to install Windows event listener.</value>
   </data>
   <data name="Powertoys_FancyZones" xml:space="preserve">
     <value>PowerToys - FancyZones</value>
+  </data>
+  <data name="Span_Across_Zones_Warning" xml:space="preserve">
+    <value>The 'Allow zones to span across monitors' option requires all monitors to have the same DPI scaling to work properly.</value>
+  </data>
+  <data name="FancyZones_Data_Error" xml:space="preserve">
+    <value>FancyZones persisted data path not found. Please report the bug to</value>
+  </data>
+  <data name="FancyZones_Editor_Launch_Error" xml:space="preserve">
+    <value>The FancyZones editor failed to start. Please report the bug to</value>
+  </data>
+  <data name="FancyZones_Settings_Load_Error" xml:space="preserve">
+    <value>Failed to load the FancyZones settings. Default settings will be used.</value>
+  </data>
+  <data name="FancyZones_Settings_Save_Error" xml:space="preserve">
+    <value>Failed to save the FancyZones settings. Please retry again later, if the problem persists report the bug to</value>
   </data>
 </root>

@@ -2,7 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Windows.Data.Json;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -42,6 +46,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets view model.
         /// </summary>
         public ShellViewModel ViewModel { get; } = new ShellViewModel();
+
+        /// <summary>
+        /// Gets a collection of functions that handle IPC responses.
+        /// </summary>
+        public List<System.Action<JsonObject>> IPCResponseHandleList { get; } = new List<System.Action<JsonObject>>();
 
         public static bool IsElevated { get; set; }
 

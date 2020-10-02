@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -62,7 +63,8 @@ namespace Wox.Infrastructure.Image
                         Load(x.Key);
                     });
                 });
-                Log.Info($"|ImageLoader.Initialize|Number of preload images is <{ImageCache.Usage.Count}>, Images Number: {ImageCache.CacheSize()}, Unique Items {ImageCache.UniqueImagesInCache()}");
+
+                Log.Info($"Number of preload images is <{ImageCache.Usage.Count}>, Images Number: {ImageCache.CacheSize()}, Unique Items {ImageCache.UniqueImagesInCache()}", MethodBase.GetCurrentMethod().DeclaringType);
             });
         }
 
@@ -188,7 +190,7 @@ namespace Wox.Infrastructure.Image
             }
             catch (System.Exception e)
             {
-                Log.Exception($"|ImageLoader.Load|Failed to get thumbnail for {path}", e);
+                Log.Exception($"Failed to get thumbnail for {path}", e, MethodBase.GetCurrentMethod().DeclaringType);
                 type = ImageType.Error;
                 image = ImageCache[ErrorIconPath];
                 ImageCache[path] = image;

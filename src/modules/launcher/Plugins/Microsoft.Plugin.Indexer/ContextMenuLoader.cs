@@ -72,8 +72,9 @@ namespace Microsoft.Plugin.Indexer
                         }
                         catch (Exception e)
                         {
-                            var message = "Fail to set text in clipboard";
-                            LogException(message, e);
+                            var message = Properties.Resources.Microsoft_plugin_indexer_clipboard_failed;
+                            Log.Exception(message, e, GetType());
+
                             _context.API.ShowMsg(message);
                             return false;
                         }
@@ -105,7 +106,7 @@ namespace Microsoft.Plugin.Indexer
                         }
                         catch (Exception e)
                         {
-                            Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenuLoader.LoadContextMenus| Failed to open {record.Path} in console, {e.Message}", e);
+                            Log.Exception($"Failed to open {record.Path} in console, {e.Message}", e, GetType());
                             return false;
                         }
                     },
@@ -136,7 +137,7 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenu| Failed to run {record.Path} as admin, {e.Message}", e);
+                        Log.Exception($"Failed to run {record.Path} as admin, {e.Message}", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return false;
                     }
                 },
@@ -177,8 +178,9 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (Exception e)
                     {
-                        var message = $"Fail to open file at {record.Path}";
-                        LogException(message, e);
+                        var message = $"{Properties.Resources.Microsoft_plugin_indexer_folder_open_failed} {record.Path}";
+                        Log.Exception(message, e, GetType());
+
                         _context.API.ShowMsg(message);
                         return false;
                     }
@@ -186,11 +188,6 @@ namespace Microsoft.Plugin.Indexer
                     return true;
                 },
             };
-        }
-
-        public static void LogException(string message, Exception e)
-        {
-            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenu|{message}", e);
         }
     }
 }

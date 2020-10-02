@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Program.Programs
             return Properties.Resources.powertoys_run_plugin_program_packaged_application;
         }
 
-        public Result Result(string query, IPublicAPI api)
+        public Result Result(string query, string queryArguments, IPublicAPI api)
         {
             if (api == null)
             {
@@ -100,7 +100,7 @@ namespace Microsoft.Plugin.Program.Programs
                 ContextData = this,
                 Action = e =>
                 {
-                    Launch(api);
+                    Launch(api, queryArguments);
                     return true;
                 },
             };
@@ -185,7 +185,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|Microsoft.Plugin.Program.UWP.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
+                        Log.Exception($"Failed to open {Name} in console, {e.Message}", e, GetType());
                         return false;
                     }
                 },
@@ -195,21 +195,20 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive, and showing the user an error message")]
-        private async void Launch(IPublicAPI api)
+        private async void Launch(IPublicAPI api, string queryArguments)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
-            const string noArgs = "";
             const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;
             await Task.Run(() =>
             {
                 try
                 {
-                    appManager.ActivateApplication(UserModelId, noArgs, noFlags, out uint unusedPid);
+                    appManager.ActivateApplication(UserModelId, queryArguments, noFlags, out var unusedPid);
                 }
                 catch (Exception)
                 {
-                    var name = "Plugin: Program";
-                    var message = $"Can't start UWP: {DisplayName}";
+                    var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
+                    var message = $"{Properties.Resources.powertoys_run_plugin_program_uwp_failed}: {DisplayName}";
                     api.ShowMsg(name, message, string.Empty);
                 }
             }).ConfigureAwait(false);
@@ -311,9 +310,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException(
-                            $"|UWP|ResourceFromPri|{Package.Location}|Can't load null or empty result "
-                                                    + $"pri {source} in uwp location {Package.Location}", new NullReferenceException());
+                        ProgramLogger.Exception($"Can't load null or empty result pri {source} in uwp location {Package.Location}", new NullReferenceException(), GetType(), Package.Location);
+
                         return string.Empty;
                     }
                 }
@@ -326,7 +324,8 @@ namespace Microsoft.Plugin.Program.Programs
                     // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
                     // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
                     var e = Marshal.GetExceptionForHR((int)hResult);
-                    ProgramLogger.LogException($"|UWP|ResourceFromPri|{Package.Location}|Load pri failed {source} with HResult {hResult} and location {Package.Location}", e);
+                    ProgramLogger.Exception($"Load pri failed {source} with HResult {hResult} and location {Package.Location}", e, GetType(), Package.Location);
+
                     return string.Empty;
                 }
             }
@@ -570,9 +569,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 LogoPath = string.Empty;
                 LogoType = LogoType.Error;
-                ProgramLogger.LogException(
-                            $"|UWP|LogoPathFromUri|{Package.Location}" +
-                            $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
+                ProgramLogger.Exception($"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException(), GetType(), Package.Location);
             }
         }
 
@@ -589,6 +586,8 @@ namespace Microsoft.Plugin.Program.Programs
                 return ImageFromPath(LogoPath);
             }
         }
+
+        private const int _dpiScale100 = 96;
 
         private ImageSource PlatedImage(BitmapImage image)
         {
@@ -631,21 +630,21 @@ namespace Microsoft.Plugin.Program.Programs
                     var context = visual.RenderOpen();
                     context.DrawDrawing(group);
                     context.Close();
-                    const int dpiScale100 = 96;
+
                     var bitmap = new RenderTargetBitmap(
                         Convert.ToInt32(width),
                         Convert.ToInt32(height),
-                        dpiScale100,
-                        dpiScale100,
+                        _dpiScale100,
+                        _dpiScale100,
                         PixelFormats.Pbgra32);
+
                     bitmap.Render(visual);
+
                     return bitmap;
                 }
                 else
                 {
-                    ProgramLogger.LogException(
-                        $"|UWP|PlatedImage|{Package.Location}|Unable to convert background string {BackgroundColor} " +
-                                                $"to color for {Package.Location}", new InvalidOperationException());
+                    ProgramLogger.Exception($"Unable to convert background string {BackgroundColor} to color for {Package.Location}", new InvalidOperationException(), GetType(), Package.Location);
 
                     return new BitmapImage(new Uri(Constant.ErrorIcon));
                 }
@@ -675,9 +674,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                ProgramLogger.LogException(
-                    $"|UWP|ImageFromPath|{path}|Unable to get logo for {UserModelId} from {path} and" +
-                                                $" located in {Package.Location}", new FileNotFoundException());
+                ProgramLogger.Exception($"Unable to get logo for {UserModelId} from {path} and located in {Package.Location}", new FileNotFoundException(), GetType(), path);
                 return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
             }
         }

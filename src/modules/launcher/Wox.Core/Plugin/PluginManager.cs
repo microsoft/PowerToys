@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
@@ -103,11 +104,11 @@ namespace Wox.Core.Plugin
                         });
                     });
                     pair.Metadata.InitTime += milliseconds;
-                    Log.Info($"|PluginManager.InitializePlugins|Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>");
+                    Log.Info($"Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>", MethodBase.GetCurrentMethod().DeclaringType);
                 }
                 catch (Exception e)
                 {
-                    Log.Exception(nameof(PluginManager), $"Fail to Init plugin: {pair.Metadata.Name}", e);
+                    Log.Exception($"Fail to Init plugin: {pair.Metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
                     pair.Metadata.Disabled = true;
                     failedPlugins.Enqueue(pair);
                 }
@@ -172,17 +173,38 @@ namespace Wox.Core.Plugin
                     if (results != null)
                     {
                         UpdatePluginMetadata(results, metadata, query);
+                        UpdateResultWithActionKeyword(results, query);
                     }
                 });
+
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;
+
                 return results;
             }
             catch (Exception e)
             {
-                Log.Exception($"|PluginManager.QueryForPlugin|Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e);
+                Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+
                 return new List<Result>();
             }
+        }
+
+        private static List<Result> UpdateResultWithActionKeyword(List<Result> results, Query query)
+        {
+            foreach (Result result in results)
+            {
+                if (!string.IsNullOrEmpty(result.QueryTextDisplay))
+                {
+                    result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
+                }
+                else
+                {
+                    result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.Title);
+                }
+            }
+
+            return results;
         }
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
@@ -227,11 +249,13 @@ namespace Wox.Core.Plugin
                 try
                 {
                     var results = plugin.LoadContextMenus(result);
+
                     return results;
                 }
                 catch (Exception e)
                 {
-                    Log.Exception($"|PluginManager.GetContextMenusForPlugin|Can't load context menus for plugin <{metadata.Name}>", e);
+                    Log.Exception($"Can't load context menus for plugin <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+
                     return new List<ContextMenuResult>();
                 }
             }

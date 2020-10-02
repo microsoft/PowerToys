@@ -56,21 +56,16 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <TextBlock Name="ShortcutGuide_PressTime"
-                x:Uid="ShortcutGuide_PressTime"
-                Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
-            <muxc:NumberBox Minimum="100"
+            <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
+                            Minimum="100"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource HeaderTextTopMargin}"
+                            Margin="{StaticResource SmallTopMargin}"
                             Width="240"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" 
                             SmallChange="50" 
-                            LargeChange="100"
-                            AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_PressTime}"/>
+                            LargeChange="100"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
                 <Slider x:Uid="ShortcutGuide_OverlayOpacity"
@@ -100,7 +95,7 @@
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
-                               Margin="{StaticResource HeaderTextTopMargin}"
+                               Margin="{StaticResource XXSmallTopMargin}"
                                AutomationProperties.LabeledBy="{Binding ElementName=ShortcutGuide_Theme}">
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark" />
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" />

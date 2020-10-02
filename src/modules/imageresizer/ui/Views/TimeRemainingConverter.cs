@@ -36,7 +36,7 @@ namespace ImageResizer.Views
 
             return string.Format(
                 culture,
-                Resources.ResourceManager.GetString(builder.ToString()),
+                Resources.ResourceManager.GetString(builder.ToString(), culture),
                 timeRemaining.Hours,
                 timeRemaining.Minutes,
                 timeRemaining.Seconds);

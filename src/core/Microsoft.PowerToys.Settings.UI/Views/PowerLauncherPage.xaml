@@ -126,19 +126,14 @@
                       IsEnabled="False"
                       />-->
 
-            <TextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
-                       x:Name="PowerLauncher_MaximumNumberOfResults"
-                Margin="{StaticResource SmallTopMargin}"
-                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
-            <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
+            <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults"
+                            Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
                             Width="240"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Minimum="1"
-                            Margin="{StaticResource HeaderTextTopMargin}"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                            AutomationProperties.LabeledBy="{Binding ElementName=PowerLauncher_MaximumNumberOfResults}"/>
+                            Margin="{StaticResource SmallTopMargin}"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
             <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch"
                       Margin="{StaticResource SmallTopMargin}"

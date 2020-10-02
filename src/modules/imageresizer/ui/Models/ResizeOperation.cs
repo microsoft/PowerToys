@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -175,6 +176,7 @@ namespace ImageResizer.Models
             }
 
             var fileName = string.Format(
+                CultureInfo.CurrentCulture,
                 _settings.FileNameFormat,
                 originalFileName,
                 _settings.SelectedSize.Name,

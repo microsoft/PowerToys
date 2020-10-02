@@ -62,6 +62,14 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
     singleKeyRemapControlLayout.as<StackPanel>().UpdateLayout();
 }
 
+// Function to set the accessible names for all the controls in a row
+void SingleKeyRemapControl::UpdateAccessibleNames(StackPanel sourceColumn, StackPanel mappedToColumn, Button deleteButton, int rowIndex)
+{
+    sourceColumn.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_EDITKEYBOARD_SOURCEHEADER)));
+    mappedToColumn.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_EDITKEYBOARD_TARGETHEADER)));
+    deleteButton.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_AUTOMATIONPROPERTIES_ROW) + std::to_wstring(rowIndex) + L", " + GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+}
+
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
 void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const std::variant<DWORD, Shortcut> newKey)
 {
@@ -136,13 +144,31 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         uint32_t index;
         // Get index of delete button
         UIElementCollection children = parent.Children();
-        children.IndexOf(currentButton, index);
+        bool indexFound = children.IndexOf(currentButton, index);
+
+        // IndexOf could fail if the the row got deleted and the button handler was invoked twice. In this case it should return
+        if (!indexFound)
+        {
+            return;
+        }
+
         uint32_t lastIndexInRow = index + ((KeyboardManagerConstants::RemapTableColCount - 1) - KeyboardManagerConstants::RemapTableRemoveColIndex);
         // Change the row index of elements appearing after the current row, as we will delete the row definition
         for (uint32_t i = lastIndexInRow + 1; i < children.Size(); i++)
         {
             int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
             parent.SetRow(children.GetAt(i).as<FrameworkElement>(), elementRowIndex - 1);
+        }
+
+        // Update accessible names for each row after the deleted row
+        for (uint32_t i = lastIndexInRow + 1; i < children.Size(); i += KeyboardManagerConstants::RemapTableColCount)
+        {
+            // Get row index from grid
+            int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
+            StackPanel sourceCol = children.GetAt(i + KeyboardManagerConstants::RemapTableOriginalColIndex).as<StackPanel>();
+            StackPanel targetCol = children.GetAt(i + KeyboardManagerConstants::RemapTableNewColIndex).as<StackPanel>();
+            Button delButton = children.GetAt(i + KeyboardManagerConstants::RemapTableRemoveColIndex).as<Button>();
+            UpdateAccessibleNames(sourceCol, targetCol, delButton, elementRowIndex);
         }
 
         for (int i = 0; i < KeyboardManagerConstants::RemapTableColCount; i++)
@@ -159,10 +185,15 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
     });
+    // To set the accessible name of the delete button
+    deleteRemapKeys.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
     parent.SetColumn(deleteRemapKeys, KeyboardManagerConstants::RemapTableRemoveColIndex);
     parent.SetRow(deleteRemapKeys, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteRemapKeys);
     parent.UpdateLayout();
+
+    // Set accessible names
+    UpdateAccessibleNames(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl(), keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl(), deleteRemapKeys, parent.RowDefinitions().Size() - 1);
 }
 
 // Function to return the stack panel element of the SingleKeyRemapControl. This is the externally visible UI element which can be used to add it to other layouts
@@ -187,10 +218,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     ComboBox linkedRemapDropDown = KeyboardManagerHelper::getSiblingElement(sender).as<ComboBox>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
-        std::thread t1(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_ESCAPE);
-        std::thread t2(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_RETURN);
-        t1.detach();
-        t2.detach();
+        keyboardManagerState.ClearRegisteredKeyDelays();
     };
 
     auto onPressEnter = [linkedRemapDropDown,

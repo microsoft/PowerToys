@@ -61,15 +61,6 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to About.
-        /// </summary>
-        public static string about {
-            get {
-                return ResourceManager.GetString("about", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You have activated Wox {0} times.
         /// </summary>
         public static string about_activate_times {
@@ -79,119 +70,11 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use * if you don&apos;t want to specify an action keyword.
-        /// </summary>
-        public static string actionkeyword_tips {
-            get {
-                return ResourceManager.GetString("actionkeyword_tips", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Action keywords.
-        /// </summary>
-        public static string actionKeywords {
-            get {
-                return ResourceManager.GetString("actionKeywords", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add.
-        /// </summary>
-        public static string add {
-            get {
-                return ResourceManager.GetString("add", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Application Icon.
         /// </summary>
         public static string AppIcon {
             get {
                 return ResourceManager.GetString("AppIcon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Author.
-        /// </summary>
-        public static string author {
-            get {
-                return ResourceManager.GetString("author", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Auto Update.
-        /// </summary>
-        public static string autoUpdates {
-            get {
-                return ResourceManager.GetString("autoUpdates", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Find more plugins.
-        /// </summary>
-        public static string browserMorePlugins {
-            get {
-                return ResourceManager.GetString("browserMorePlugins", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Browse for more themes.
-        /// </summary>
-        public static string browserMoreThemes {
-            get {
-                return ResourceManager.GetString("browserMoreThemes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cancel.
-        /// </summary>
-        public static string cancel {
-            get {
-                return ResourceManager.GetString("cancel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cancel topmost in this query.
-        /// </summary>
-        public static string cancelTopMostInThisQuery {
-            get {
-                return ResourceManager.GetString("cancelTopMostInThisQuery", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Can&apos;t find specified plugin.
-        /// </summary>
-        public static string cannotFindSpecifiedPlugin {
-            get {
-                return ResourceManager.GetString("cannotFindSpecifiedPlugin", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Check for Updates.
-        /// </summary>
-        public static string checkUpdates {
-            get {
-                return ResourceManager.GetString("checkUpdates", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Check updates failed, please check your connection and proxy settings to api.github.com..
-        /// </summary>
-        public static string checkUpdatesFailed {
-            get {
-                return ResourceManager.GetString("checkUpdatesFailed", resourceCulture);
             }
         }
         
@@ -232,83 +115,20 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not start {0}.
+        ///   Looks up a localized string similar to Settings will be reset to default and program will continue to function..
         /// </summary>
-        public static string couldnotStartCmd {
+        public static string deseralization_error_message {
             get {
-                return ResourceManager.GetString("couldnotStartCmd", resourceCulture);
+                return ResourceManager.GetString("deseralization_error_message", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Custom Query Hotkey.
+        ///   Looks up a localized string similar to Powertoys Run deserialization error.
         /// </summary>
-        public static string customQueryHotkey {
+        public static string deseralization_error_title {
             get {
-                return ResourceManager.GetString("customQueryHotkey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delete.
-        /// </summary>
-        public static string delete {
-            get {
-                return ResourceManager.GetString("delete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to delete {0} plugin hotkey?.
-        /// </summary>
-        public static string deleteCustomHotkeyWarning {
-            get {
-                return ResourceManager.GetString("deleteCustomHotkeyWarning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Disable.
-        /// </summary>
-        public static string disable {
-            get {
-                return ResourceManager.GetString("disable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Done.
-        /// </summary>
-        public static string done {
-            get {
-                return ResourceManager.GetString("done", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not show new version notifications.
-        /// </summary>
-        public static string dontPromptUpdateMsg {
-            get {
-                return ResourceManager.GetString("dontPromptUpdateMsg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Edit.
-        /// </summary>
-        public static string edit {
-            get {
-                return ResourceManager.GetString("edit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable HTTP Proxy.
-        /// </summary>
-        public static string enableProxy {
-            get {
-                return ResourceManager.GetString("enableProxy", resourceCulture);
+                return ResourceManager.GetString("deseralization_error_title", resourceCulture);
             }
         }
         
@@ -322,371 +142,11 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to General.
-        /// </summary>
-        public static string general {
-            get {
-                return ResourceManager.GetString("general", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hello Wox.
-        /// </summary>
-        public static string helloWox {
-            get {
-                return ResourceManager.GetString("helloWox", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hide tray icon.
-        /// </summary>
-        public static string hideNotifyIcon {
-            get {
-                return ResourceManager.GetString("hideNotifyIcon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hide Wox on startup.
-        /// </summary>
-        public static string hideOnStartup {
-            get {
-                return ResourceManager.GetString("hideOnStartup", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hide Wox when focus is lost.
-        /// </summary>
-        public static string hideWoxWhenLoseFocus {
-            get {
-                return ResourceManager.GetString("hideWoxWhenLoseFocus", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hotkey.
-        /// </summary>
-        public static string hotkey {
-            get {
-                return ResourceManager.GetString("hotkey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hotkey is unavailable, please select a new hotkey.
-        /// </summary>
-        public static string hotkeyIsNotUnavailable {
-            get {
-                return ResourceManager.GetString("hotkeyIsNotUnavailable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hotkey unavailable.
-        /// </summary>
-        public static string hotkeyUnavailable {
-            get {
-                return ResourceManager.GetString("hotkeyUnavailable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to About.
-        /// </summary>
-        public static string iconTrayAbout {
-            get {
-                return ResourceManager.GetString("iconTrayAbout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Exit.
-        /// </summary>
-        public static string iconTrayExit {
-            get {
-                return ResourceManager.GetString("iconTrayExit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Open.
-        /// </summary>
-        public static string iconTrayOpen {
-            get {
-                return ResourceManager.GetString("iconTrayOpen", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Settings.
-        /// </summary>
-        public static string iconTraySettings {
-            get {
-                return ResourceManager.GetString("iconTraySettings", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Ignore hotkeys in fullscreen mode.
-        /// </summary>
-        public static string ignoreHotkeysOnFullscreen {
-            get {
-                return ResourceManager.GetString("ignoreHotkeysOnFullscreen", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid plugin hotkey.
-        /// </summary>
-        public static string invalidPluginHotkey {
-            get {
-                return ResourceManager.GetString("invalidPluginHotkey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid port format.
-        /// </summary>
-        public static string invalidPortFormat {
-            get {
-                return ResourceManager.GetString("invalidPortFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid Wox plugin file format.
-        /// </summary>
-        public static string invalidWoxPluginFileFormat {
-            get {
-                return ResourceManager.GetString("invalidWoxPluginFileFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Language.
-        /// </summary>
-        public static string language {
-            get {
-                return ResourceManager.GetString("language", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Last execution time: {0}.
         /// </summary>
         public static string lastExecuteTime {
             get {
                 return ResourceManager.GetString("lastExecuteTime", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Empty last Query.
-        /// </summary>
-        public static string LastQueryEmpty {
-            get {
-                return ResourceManager.GetString("LastQueryEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Last Query Style.
-        /// </summary>
-        public static string lastQueryMode {
-            get {
-                return ResourceManager.GetString("lastQueryMode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Preserve Last Query.
-        /// </summary>
-        public static string LastQueryPreserved {
-            get {
-                return ResourceManager.GetString("LastQueryPreserved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Select last Query.
-        /// </summary>
-        public static string LastQuerySelected {
-            get {
-                return ResourceManager.GetString("LastQuerySelected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Maximum results shown.
-        /// </summary>
-        public static string maxShowResults {
-            get {
-                return ResourceManager.GetString("maxShowResults", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to New Action Keyword.
-        /// </summary>
-        public static string newActionKeywords {
-            get {
-                return ResourceManager.GetString("newActionKeywords", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to New Action Keyword can&apos;t be empty.
-        /// </summary>
-        public static string newActionKeywordsCannotBeEmpty {
-            get {
-                return ResourceManager.GetString("newActionKeywordsCannotBeEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to New Action Keywords have been assigned to another plugin, please assign other new action keyword.
-        /// </summary>
-        public static string newActionKeywordsHasBeenAssigned {
-            get {
-                return ResourceManager.GetString("newActionKeywordsHasBeenAssigned", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to New version {0} is available, please restart Wox..
-        /// </summary>
-        public static string newVersionTips {
-            get {
-                return ResourceManager.GetString("newVersionTips", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Old Action Keyword.
-        /// </summary>
-        public static string oldActionKeywords {
-            get {
-                return ResourceManager.GetString("oldActionKeywords", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Opacity.
-        /// </summary>
-        public static string opacity {
-            get {
-                return ResourceManager.GetString("opacity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Password.
-        /// </summary>
-        public static string password {
-            get {
-                return ResourceManager.GetString("password", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please select an item.
-        /// </summary>
-        public static string pleaseSelectAnItem {
-            get {
-                return ResourceManager.GetString("pleaseSelectAnItem", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Plugin.
-        /// </summary>
-        public static string plugin {
-            get {
-                return ResourceManager.GetString("plugin", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Init time: {0}ms.
-        /// </summary>
-        public static string plugin_init_time {
-            get {
-                return ResourceManager.GetString("plugin_init_time", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Query time: {0}ms.
-        /// </summary>
-        public static string plugin_query_time {
-            get {
-                return ResourceManager.GetString("plugin_query_time", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Plugin Directory.
-        /// </summary>
-        public static string pluginDirectory {
-            get {
-                return ResourceManager.GetString("pluginDirectory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Port.
-        /// </summary>
-        public static string port {
-            get {
-                return ResourceManager.GetString("port", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Port field can&apos;t be empty.
-        /// </summary>
-        public static string portCantBeEmpty {
-            get {
-                return ResourceManager.GetString("portCantBeEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Preview.
-        /// </summary>
-        public static string preview {
-            get {
-                return ResourceManager.GetString("preview", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to HTTP Proxy.
-        /// </summary>
-        public static string proxy {
-            get {
-                return ResourceManager.GetString("proxy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Proxy connection failed.
-        /// </summary>
-        public static string proxyConnectFailed {
-            get {
-                return ResourceManager.GetString("proxyConnectFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Proxy configured correctly.
-        /// </summary>
-        public static string proxyIsCorrect {
-            get {
-                return ResourceManager.GetString("proxyIsCorrect", resourceCulture);
             }
         }
         
@@ -700,47 +160,11 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Query Box Font.
-        /// </summary>
-        public static string queryBoxFont {
-            get {
-                return ResourceManager.GetString("queryBoxFont", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Query Search Precision.
-        /// </summary>
-        public static string querySearchPrecision {
-            get {
-                return ResourceManager.GetString("querySearchPrecision", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Failed to register hotkey: {0}.
         /// </summary>
         public static string registerHotkeyFailed {
             get {
                 return ResourceManager.GetString("registerHotkeyFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Release Notes:.
-        /// </summary>
-        public static string releaseNotes {
-            get {
-                return ResourceManager.GetString("releaseNotes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remember last launch location.
-        /// </summary>
-        public static string rememberLastLocation {
-            get {
-                return ResourceManager.GetString("rememberLastLocation", resourceCulture);
             }
         }
         
@@ -799,38 +223,11 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Result Item Font.
-        /// </summary>
-        public static string resultItemFont {
-            get {
-                return ResourceManager.GetString("resultItemFont", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Results.
         /// </summary>
         public static string Results {
             get {
                 return ResourceManager.GetString("Results", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Save.
-        /// </summary>
-        public static string save {
-            get {
-                return ResourceManager.GetString("save", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Proxy configuration saved successfully.
-        /// </summary>
-        public static string saveProxySuccessfully {
-            get {
-                return ResourceManager.GetString("saveProxySuccessfully", resourceCulture);
             }
         }
         
@@ -844,56 +241,11 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to HTTP Server.
-        /// </summary>
-        public static string server {
-            get {
-                return ResourceManager.GetString("server", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Server field can&apos;t be empty.
-        /// </summary>
-        public static string serverCantBeEmpty {
-            get {
-                return ResourceManager.GetString("serverCantBeEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Set as topmost in this query.
-        /// </summary>
-        public static string setAsTopMostInThisQuery {
-            get {
-                return ResourceManager.GetString("setAsTopMostInThisQuery", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Should Use Pinyin.
-        /// </summary>
-        public static string ShouldUsePinyin {
-            get {
-                return ResourceManager.GetString("ShouldUsePinyin", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Start typing....
         /// </summary>
         public static string startTyping {
             get {
                 return ResourceManager.GetString("startTyping", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Start Wox on system startup.
-        /// </summary>
-        public static string startWoxOnSystemStartup {
-            get {
-                return ResourceManager.GetString("startWoxOnSystemStartup", resourceCulture);
             }
         }
         
@@ -907,191 +259,11 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Success.
-        /// </summary>
-        public static string success {
-            get {
-                return ResourceManager.GetString("success", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Test Proxy.
-        /// </summary>
-        public static string testProxy {
-            get {
-                return ResourceManager.GetString("testProxy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Theme.
-        /// </summary>
-        public static string theme {
-            get {
-                return ResourceManager.GetString("theme", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fail to load theme {0}, fallback to default theme.
-        /// </summary>
-        public static string theme_load_failure_parse_error {
-            get {
-                return ResourceManager.GetString("theme_load_failure_parse_error", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Theme {0} not exists, fallback to default theme.
-        /// </summary>
-        public static string theme_load_failure_path_not_exists {
-            get {
-                return ResourceManager.GetString("theme_load_failure_path_not_exists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Title.
         /// </summary>
         public static string Title {
             get {
                 return ResourceManager.GetString("Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Update.
-        /// </summary>
-        public static string update {
-            get {
-                return ResourceManager.GetString("update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Update.
-        /// </summary>
-        public static string update_wox_update {
-            get {
-                return ResourceManager.GetString("update_wox_update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cancel.
-        /// </summary>
-        public static string update_wox_update_cancel {
-            get {
-                return ResourceManager.GetString("update_wox_update_cancel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while trying to install software updates.
-        /// </summary>
-        public static string update_wox_update_error {
-            get {
-                return ResourceManager.GetString("update_wox_update_error", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Update files.
-        /// </summary>
-        public static string update_wox_update_files {
-            get {
-                return ResourceManager.GetString("update_wox_update_files", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to New Wox release {0} is now available.
-        /// </summary>
-        public static string update_wox_update_new_version_available {
-            get {
-                return ResourceManager.GetString("update_wox_update_new_version_available", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This upgrade will restart Wox.
-        /// </summary>
-        public static string update_wox_update_restart_wox_tip {
-            get {
-                return ResourceManager.GetString("update_wox_update_restart_wox_tip", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Update description.
-        /// </summary>
-        public static string update_wox_update_upadte_description {
-            get {
-                return ResourceManager.GetString("update_wox_update_upadte_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Following files will be updated.
-        /// </summary>
-        public static string update_wox_update_upadte_files {
-            get {
-                return ResourceManager.GetString("update_wox_update_upadte_files", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User Name.
-        /// </summary>
-        public static string userName {
-            get {
-                return ResourceManager.GetString("userName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Version.
-        /// </summary>
-        public static string version {
-            get {
-                return ResourceManager.GetString("version", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Website.
-        /// </summary>
-        public static string website {
-            get {
-                return ResourceManager.GetString("website", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Window Mode.
-        /// </summary>
-        public static string windowMode {
-            get {
-                return ResourceManager.GetString("windowMode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Wox Settings.
-        /// </summary>
-        public static string wox_settings {
-            get {
-                return ResourceManager.GetString("wox_settings", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Wox Hotkey.
-        /// </summary>
-        public static string woxHotkey {
-            get {
-                return ResourceManager.GetString("woxHotkey", resourceCulture);
             }
         }
     }

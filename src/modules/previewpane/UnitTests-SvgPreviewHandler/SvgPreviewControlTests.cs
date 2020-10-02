@@ -4,15 +4,14 @@
 
 using System;
 using System.Drawing;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Windows.Forms;
+using Microsoft.PowerToys.PreviewHandler.Svg;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using PreviewHandlerCommon;
-using SvgPreviewHandler;
 
 namespace SvgPreviewHandlerUnitTests
 {
