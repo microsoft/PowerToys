@@ -77,7 +77,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
     newrow.emplace_back(std::make_unique<SingleKeyRemapControl>(parent, 0));
-    newrow.push_back(std::make_unique<SingleKeyRemapControl>(parent, 1));
+    newrow.emplace_back(std::make_unique<SingleKeyRemapControl>(parent, 1));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
