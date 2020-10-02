@@ -129,6 +129,7 @@ build:
             - 'modules\launcher\Plugins\Microsoft.Plugin.Uri\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Uri\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Uri\Telemetry.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.UnitConverter\Microsoft.Plugin.UnitConverter.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Plugin.dll'

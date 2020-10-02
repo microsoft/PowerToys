@@ -1,0 +1,12 @@
+﻿{
+    "ID": "aa0ee9daff654fb7be452c2d77c471b9", //Plugin ID，32 bit UUID
+    "ActionKeyword": "*", //Plugin default action keyword
+    "Name": "Unit Converter", //Plugin name
+    "Description": "Provides unit conversion (2 ft in cm).", //Plugin description
+    "Author": "ThiefZero", //Plugin Author
+    "Version": "0.0.1", //Plugin version，must be x.x.x format
+    "Language": "csharp", //Plugin language，we support csharp,python and executable now
+    "Website": "https://aka.ms/powertoys", //Plugin website or author website
+    "IcoPath": "Images\\calculator.dark.png", //Plugin icon, relative path to the pluign folder
+    "ExecuteFileName": "Microsoft.Plugin.UnitConverter.dll" //Execution entry. Dll name for c# plugin, and python file for python plugin
+}

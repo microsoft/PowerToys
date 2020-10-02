@@ -324,6 +324,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorLibrar
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorTest", "src\modules\keyboardmanager\KeyboardManagerEditorTest\KeyboardManagerEditorTest.vcxproj", "{62173D9A-6724-4C00-A1C8-FB646480A9EC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.UnitConverter", "src\modules\launcher\Plugins\Microsoft.Plugin.UnitConverter\Microsoft.Plugin.UnitConverter.csproj", "{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
