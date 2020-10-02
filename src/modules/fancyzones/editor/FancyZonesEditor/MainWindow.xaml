@@ -34,6 +34,11 @@
             <TabControl BorderThickness="0" Background="Transparent" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Converter={StaticResource BooleanToIntConverter}, Mode=OneWay}" Margin="-4,0,0,0">
                 <TabItem Header="{x:Static props:Resources.Templates}" Style="{StaticResource TabItemPivotStyle}">
                     <StackPanel>
+                        <StackPanel Margin="0,6,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="decrementZones" Width="32" Height="32" Content="&#xE949;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource DefaultButtonStyle}" Click="DecrementZones_Click"/>
+                            <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" TextAlignment="Center" FontSize="16" Width="48" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Button x:Name="incrementZones" Width="32" Height="32" Content="&#xE948;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource DefaultButtonStyle}" Click="IncrementZones_Click"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,8,0,0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -78,32 +83,31 @@
 
 
                 <TabItem Header="{x:Static props:Resources.Custom}" Style="{StaticResource TabItemPivotStyle}">
-                    <StackPanel>
-                        <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal" ItemWidth="{Binding WrapPanelItemSize, ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" ItemHeight="{Binding ItemWidth, ElementName=WrapPanel2}" x:Name="WrapPanel2" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="8" 
+                    <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" ItemWidth="{Binding WrapPanelItemSize, ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" ItemHeight="{Binding ItemWidth, ElementName=WrapPanel2}" x:Name="WrapPanel2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="8" 
                                         BorderBrush="{Binding IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
                                         BorderThickness="2"
                                         CornerRadius="4"
                                         Background="{DynamicResource ItemBackgroundBrush}" 
                                         MouseDown="LayoutItem_Click">
-                                        <Border.Effect>
-                                            <DropShadowEffect BlurRadius="4" Opacity="0.18"  ShadowDepth="1" />
-                                        </Border.Effect>
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="*"/>
-                                                <RowDefinition Height="32"/>
-                                            </Grid.RowDefinitions>
-                                            <local:LayoutPreview Margin="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="4" Opacity="0.18"  ShadowDepth="1" />
+                                    </Border.Effect>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="32"/>
+                                        </Grid.RowDefinitions>
+                                        <local:LayoutPreview Margin="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
 
-                                            <TextBlock Padding="8,0,8,0" 
+                                        <TextBlock Padding="8,0,8,0" 
                                                    TextTrimming="CharacterEllipsis" 
                                                    DockPanel.Dock="Top"
                                                    FontSize="12"
@@ -114,30 +118,20 @@
                                                    Text="{Binding Name}"
                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"/>
 
-                                            <Button x:Name="DeleteButton" FontFamily="Segoe MDL2 Assets" Content="&#xE107;" Style="{StaticResource DefaultButtonStyle}" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" Click="OnDelete" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" BorderThickness="0" Background="Transparent"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                    </StackPanel>
+                                        <Button x:Name="DeleteButton" FontFamily="Segoe MDL2 Assets" Content="&#xE107;" Style="{StaticResource DefaultButtonStyle}" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" Click="OnDelete" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" BorderThickness="0" Background="Transparent"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </TabItem>
             </TabControl>
         </StackPanel>
         <Grid Grid.Column="1" Background="{DynamicResource SecondaryBackgroundBrush}" Margin="0,-32,0,0">
             <StackPanel Margin="16">
                 <TextBlock Text="Configuration" Style="{StaticResource BaseTextBlockStyle}" Foreground="{DynamicResource PrimaryForegroundBrush}" Margin="0,28,0,24"  />
-                <StackPanel Orientation="Vertical" Margin="0,0,0,32">
-                    <TextBlock Text="Number of zones"/>
-                    <StackPanel Margin="0,6,0,0" Orientation="Horizontal" HorizontalAlignment="Left">
-                        <Button x:Name="decrementZones" Width="32" Height="32" Content="&#xE949;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource DefaultButtonStyle}" Click="DecrementZones_Click"/>
-                        <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" TextAlignment="Center" FontSize="16" Width="48" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Button x:Name="incrementZones" Width="32" Height="32" Content="&#xE948;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource DefaultButtonStyle}" Click="IncrementZones_Click"/>
-                    </StackPanel>
-                </StackPanel>
 
-                <ui:ToggleSwitch x:Name="spaceAroundSetting" Header="{x:Static props:Resources.Show_Space_Zones}"  IsOn="{Binding ShowSpacing}"/>
+                <ui:ToggleSwitch x:Name="spaceAroundSetting" Header="{x:Static props:Resources.Show_Space_Zones}" IsOn="{Binding ShowSpacing}"/>
                 <TextBlock Text="{x:Static props:Resources.Space_Around_Zones}" IsEnabled="{Binding ShowSpacing}" Margin="0,8,0,0" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
                 <TextBox x:Name="paddingValue" Margin="0,6,0,0" IsEnabled="{Binding ShowSpacing}" Text="{Binding Spacing, Mode=TwoWay}" Width="86" HorizontalAlignment="Left"/>
                 <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}" IsEnabled="{Binding ShowSpacing}" Margin="0,16,0,0" Foreground="{DynamicResource PrimaryForegroundBrush}"/>

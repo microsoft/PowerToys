@@ -57,15 +57,18 @@
     <SolidColorBrush x:Key="ToolTipBackgroundBrushKey" Color="#FF2B2B2B" />
 
     <!-- NEW -->
-    <SolidColorBrush x:Key="WindowTitleBarBackgroundBrush" Color="#FF121212" />
-    <SolidColorBrush x:Key="WindowTitleBarIconBrush" Color="#FF6e6e6e"/>
+    <SolidColorBrush x:Key="DialogWindowTitleBarBackgroundBrush" Color="#FF121212" />
+    <SolidColorBrush x:Key="DialogWindowBackgroundBrush" Color="#FF1b1b1b" />
+    <SolidColorBrush x:Key="DialogWindowTitleBarForegroundBrush" Color="#FF6e6e6e"/>
+    
     <SolidColorBrush x:Key="BackgroundBrush" Color="#FF1b1b1b" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FFa1a1a1" />
     <SolidColorBrush x:Key="ItemBackgroundBrush" Color="#FF2e2e2e" />
 
-    <SolidColorBrush x:Key="ZoneBackgroundBrush" Color="#FF3d3d3d" />
-    <SolidColorBrush x:Key="ZoneBorderBrush" Color="#FF2e2e2e" />
+    <SolidColorBrush x:Key="ZonePreviewBackgroundBrush" Color="#FF656565" />
+    <SolidColorBrush x:Key="ZonePreviewBorderBrush" Color="#FF2e2e2e" />
 
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>

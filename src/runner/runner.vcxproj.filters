@@ -140,13 +140,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="runner.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="PowerToys.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="runner.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="Generated Files/runner.rc" />
   </ItemGroup>
 </Project>

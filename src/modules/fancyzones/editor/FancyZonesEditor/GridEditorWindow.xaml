@@ -12,7 +12,7 @@
         Title="" 
         Width="528"
         SizeToContent="Height"            
-        Background="{DynamicResource BackgroundBrush}"
+        Background="{DynamicResource DialogWindowBackgroundBrush}"
         BorderThickness="0"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
@@ -21,12 +21,12 @@
     <Grid>
         <Grid
             Height="36"
-            Background="{DynamicResource WindowTitleBarBackgroundBrush}"
+            Background="{DynamicResource DialogWindowTitleBarBackgroundBrush}"
             Margin="0,-36,0,0"
             VerticalAlignment="Top"
             HorizontalAlignment="Stretch">
             <Border
-                Background="{DynamicResource WindowTitleBarIconBrush}"
+                Background="{DynamicResource DialogWindowTitleBarForegroundBrush}"
                 Width="30"
                 Height="3"
                 CornerRadius="1.5"
@@ -49,7 +49,9 @@
                 Style="{StaticResource DefaultTextBoxStyle}"/>
             <TextBlock
                 Text="{x:Static props:Resources.Note_Custom_Table}"
-                Margin="0,16,0,0" Style="{StaticResource CaptionTextBlockStyle}"
+                Margin="0,16,0,0"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Foreground="{DynamicResource SecondaryForegroundBrush}"
                 TextWrapping="Wrap" />
             
             <!--        
