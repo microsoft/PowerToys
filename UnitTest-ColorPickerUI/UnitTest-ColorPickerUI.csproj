@@ -3,8 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>UnitTest_ColorPickerUI</RootNamespace>
-
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

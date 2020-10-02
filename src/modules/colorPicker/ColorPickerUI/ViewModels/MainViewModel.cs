@@ -133,19 +133,12 @@ namespace ColorPicker.ViewModels
             HexColor = ColorToHex(color);
             RgbColor = ColorToRGB(color);
 
-            switch (_userSettings.CopiedColorRepresentation.Value)
+            OtherColorText = _userSettings.CopiedColorRepresentation.Value switch
             {
-                case ColorRepresentationType.HEX:
-                case ColorRepresentationType.RGB:
-                    OtherColorText = ColorToRGB(color);
-                    break;
-                case ColorRepresentationType.HSL:
-                    OtherColorText = ColorToHSL(color);
-                    break;
-                case ColorRepresentationType.HSV:
-                    OtherColorText = ColorToHSV(color);
-                    break;
-            }
+                ColorRepresentationType.HSL => ColorToHSL(color),
+                ColorRepresentationType.HSV => ColorToHSV(color),
+                _ => ColorToRGB(color),
+            };
         }
 
         private void MouseInfoProvider_OnMouseDown(object sender, System.Drawing.Point p)
