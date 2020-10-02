@@ -59,6 +59,56 @@ namespace ZoneWindowUtils
 
         return result;
     }
+
+    void PaintZoneWindowAsync(HDC hdc,
+                              HWND window,
+                              bool hasActiveZoneSet,
+                              COLORREF hostZoneColor,
+                              COLORREF hostZoneBorderColor,
+                              COLORREF hostZoneHighlightColor,
+                              int hostZoneHighlightOpacity,
+                              std::vector<winrt::com_ptr<IZone>> zones,
+                              std::vector<size_t> highlightZone,
+                              bool flashMode,
+                              bool drawHints)
+    {
+        PAINTSTRUCT ps;
+        HDC oldHdc = hdc;
+        if (!hdc)
+        {
+            hdc = BeginPaint(window, &ps);
+        }
+
+        RECT clientRect;
+        GetClientRect(window, &clientRect);
+
+        wil::unique_hdc hdcMem;
+        HPAINTBUFFER bufferedPaint = BeginBufferedPaint(hdc, &clientRect, BPBF_TOPDOWNDIB, nullptr, &hdcMem);
+        if (bufferedPaint)
+        {
+            ZoneWindowDrawing::DrawBackdrop(hdcMem, clientRect);
+
+            if (hasActiveZoneSet)
+            {
+                ZoneWindowDrawing::DrawActiveZoneSet(hdcMem,
+                                                     hostZoneColor,
+                                                     hostZoneBorderColor,
+                                                     hostZoneHighlightColor,
+                                                     hostZoneHighlightOpacity,
+                                                     zones,
+                                                     highlightZone,
+                                                     flashMode,
+                                                     drawHints);
+            }
+
+            EndBufferedPaint(bufferedPaint, TRUE);
+        }
+
+        if (!oldHdc)
+        {
+            EndPaint(window, &ps);
+        }
+    }
 }
 
 struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
@@ -545,25 +595,42 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     case WM_PRINTCLIENT:
     case WM_PAINT:
     {
+        HDC hdc = reinterpret_cast<HDC>(wparam);
+        HWND window = m_window.get();
+        bool hasActiveZoneSet = m_activeZoneSet && m_host;
+        COLORREF hostZoneColor{};
+        COLORREF hostZoneBorderColor{};
+        COLORREF hostZoneHighlightColor{};
+        int hostZoneHighlightOpacity{};
+        std::vector<winrt::com_ptr<IZone>> zones{};
+        std::vector<size_t> highlightZone = m_highlightZone;
+        bool flashMode = m_flashMode;
+        bool drawHints = m_drawHints;
+
+        if (hasActiveZoneSet)
+        {
+            hostZoneColor = m_host->GetZoneColor();
+            hostZoneBorderColor = m_host->GetZoneBorderColor();
+            hostZoneHighlightColor = m_host->GetZoneHighlightColor();
+            hostZoneHighlightOpacity = m_host->GetZoneHighlightOpacity();
+            zones = m_activeZoneSet->GetZones();
+        }
+
+        m_paintExecutor.cancel();
         m_paintExecutor.submit(OnThreadExecutor::task_t{
-            [&]() {
-                PAINTSTRUCT ps;
-                wil::unique_hdc hdc{ reinterpret_cast<HDC>(wparam) };
-                if (!hdc)
-                {
-                    hdc.reset(BeginPaint(m_window.get(), &ps));
-                }
-
-                OnPaint(hdc);
-
-                if (wparam == 0)
-                {
-                    EndPaint(m_window.get(), &ps);
-                }
-
-                hdc.release();
+            [=]() {
+                ZoneWindowUtils::PaintZoneWindowAsync(hdc,
+                                                      window,
+                                                      hasActiveZoneSet,
+                                                      hostZoneColor,
+                                                      hostZoneBorderColor,
+                                                      hostZoneHighlightColor,
+                                                      hostZoneHighlightOpacity,
+                                                      zones,
+                                                      highlightZone,
+                                                      flashMode,
+                                                      drawHints);
             } });
-        
     }
     break;
 
