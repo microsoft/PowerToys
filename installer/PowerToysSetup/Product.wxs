@@ -248,7 +248,7 @@
             </Directory>
             <Directory Id="LauncherInstallFolder" Name="launcher">
 				<!-- Resource file directories -->
-				<?foreach Language in cd;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
+				<?foreach Language in cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
 				<!--NB: Ids can't contain hyphens-->
 				<?if $(var.Language) = pt-BR?>
 				<?define IdSafeLanguage = pt_BR?>
