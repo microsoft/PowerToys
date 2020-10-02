@@ -21,13 +21,7 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class App : Application
     {
-        // Localizable strings
-        private const string CrashReportMessageBoxTextPart1 = "Error logged to ";
-        private const string CrashReportMessageBoxTextPart2 = "Please report the bug to ";
-        private const string CrashReportMessageBoxCaption = "Error";
-
         // Non-localizable strings
-        private const string CrashReportMessageBoxCaptionFZEditor = "FancyZones Editor ";
         private const string CrashReportLogFile = "FZEditorCrashLog.txt";
         private const string PowerToysIssuesURL = "https://aka.ms/powerToysReportBug";
 
@@ -44,7 +38,7 @@ namespace FancyZonesEditor
         private const string CrashReportx64Tag = "* x64: ";
         private const string CrashReportCLRVersionTag = "* CLR Version: ";
         private const string CrashReportAssembliesTag = "Assemblies - ";
-        private const string CrashReportDynamicAssemblyTag = "dynamic assembly doesn't has location";
+        private const string CrashReportDynamicAssemblyTag = "dynamic assembly doesn't have location";
         private const string CrashReportLocationNullTag = "location is null or empty";
 
         public Settings ZoneSettings { get; }
@@ -107,8 +101,12 @@ namespace FancyZonesEditor
             sw.Write(FormatException((Exception)args.ExceptionObject));
             fileStream.Close();
             MessageBox.Show(
-                CrashReportMessageBoxTextPart1 + Path.GetFullPath(fileStream.Name) + "\n" + CrashReportMessageBoxTextPart2 + PowerToysIssuesURL,
-                CrashReportMessageBoxCaptionFZEditor + CrashReportMessageBoxCaption);
+                FancyZonesEditor.Properties.Resources.Crash_Report_Message_Box_Text_Part1 +
+                Path.GetFullPath(fileStream.Name) +
+                "\n" +
+                FancyZonesEditor.Properties.Resources.Crash_Report_Message_Box_Text_Part2 +
+                PowerToysIssuesURL,
+                FancyZonesEditor.Properties.Resources.Fancy_Zones_Editor_App_Title);
         }
 
         private string FormatException(Exception ex)
