@@ -611,7 +611,13 @@ namespace PowerLauncher.ViewModel
                 _currentQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Visibility = Visibility.Hidden;
-                Results.Clear();
+                Task.Run(() =>
+                {
+                    lock (_addResultsLock)
+                    {
+                        Results.Clear();
+                    }
+                });
             }
         }
 
