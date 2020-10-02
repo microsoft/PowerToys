@@ -17,11 +17,6 @@ namespace FastDelete.ShellExtension
         public FastDeleteForm()
         {
             InitializeComponent();
-
-            // Gets the handle of the control to create the control on the VI thread. Invoking the Control.Handle get accessor forces the creation of the underlying window for the control.
-            // This is important, because the thread that instantiates the preview handler component and calls its constructor is a single-threaded apartment (STA) thread, but the thread that calls into the interface members later on is a multithreaded apartment (MTA) thread. Windows Forms controls are meant to run on STA threads.
-            // More details: https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers.
-            _ = this.Handle;
         }
 
         private Thread deleteThread = null;
