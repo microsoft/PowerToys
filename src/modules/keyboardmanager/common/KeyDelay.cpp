@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "KeyDelay.h"
 
+// NOTE: The destructor should never be called on the DelayThread, i.e. from any of shortPress, longPress or longPressReleased, as it will re-enter the mutex. Even if the mutex is removed it will deadlock because of the join statement
 KeyDelay::~KeyDelay()
 {
     std::unique_lock<std::mutex> l(_queueMutex);
