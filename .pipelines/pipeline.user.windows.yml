@@ -41,6 +41,15 @@ restore:
 
 build:
   commands:
+      # Localize the files after the build procedure to avoid existing localized files from getting overwritten. To be moved before the Build PowerToys step once the lcl files have been checked in. Tracked at https://github.com/microsoft/PowerToys/issues/6046
+    - !!buildcommand
+      name: 'Localize Power Toys'
+      command: '.pipelines\build-localization.cmd'
+      artifacts:
+        - from: 'out\loc'
+          to: 'loc'
+          include:
+            - '**/*'
     - !!buildcommand
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
@@ -75,6 +84,23 @@ build:
             - 'modules\ImageResizer\sk\ImageResizer.resources.dll'
             - 'modules\ImageResizer\tr\ImageResizer.resources.dll'
             - 'modules\ImageResizer\zh-Hans\ImageResizer.resources.dll'
+            - 'modules\launcher\cs\PowerLauncher.resources.dll'
+            - 'modules\launcher\de\PowerLauncher.resources.dll'
+            - 'modules\launcher\es\PowerLauncher.resources.dll'
+            - 'modules\launcher\fr\PowerLauncher.resources.dll'
+            - 'modules\launcher\hu\PowerLauncher.resources.dll'
+            - 'modules\launcher\it\PowerLauncher.resources.dll'
+            - 'modules\launcher\ja\PowerLauncher.resources.dll'
+            - 'modules\launcher\ko\PowerLauncher.resources.dll'
+            - 'modules\launcher\nl\PowerLauncher.resources.dll'
+            - 'modules\launcher\pl\PowerLauncher.resources.dll'
+            - 'modules\launcher\pt-BR\PowerLauncher.resources.dll'
+            - 'modules\launcher\pt-PT\PowerLauncher.resources.dll'
+            - 'modules\launcher\ru\PowerLauncher.resources.dll'
+            - 'modules\launcher\sv\PowerLauncher.resources.dll'
+            - 'modules\launcher\tr\PowerLauncher.resources.dll'
+            - 'modules\launcher\zh-Hans\PowerLauncher.resources.dll'
+            - 'modules\launcher\zh-Hant\PowerLauncher.resources.dll'
             - 'modules\FancyZones\fancyzones.dll'
             - 'modules\FancyZones\FancyZonesEditor.exe'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
@@ -152,15 +178,6 @@ build:
             - 'PowerToysSetup-*.exe'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-    # Localize the files after the build procedure to avoid existing localized files from getting overwritten. To be moved before the Build PowerToys step once the lcl files have been checked in. Tracked at https://github.com/microsoft/PowerToys/issues/6046
-    - !!buildcommand
-      name: 'Localize Power Toys'
-      command: '.pipelines\build-localization.cmd'
-      artifacts:
-        - from: 'out\loc'
-          to: 'loc'
-          include:
-            - '**/*'
 
 
 #package:
