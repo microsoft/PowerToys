@@ -15,13 +15,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Company Name"
-            VALUE "FileDescription", "$projectname$ Module"
+            VALUE "CompanyName", "Anurag Thakur"
+            VALUE "FileDescription", "AltDrag Module"
             VALUE "FileVersion", "0.1.0.0"
-            VALUE "InternalName", "$projectname$"
-            VALUE "LegalCopyright", "Copyright (C) 2019 Company Name"
-            VALUE "OriginalFilename", "$projectname$.dll"
-            VALUE "ProductName", "$projectname$"
+            VALUE "InternalName", "AltDrag"
+            VALUE "LegalCopyright", "Copyright (C) 2020 Anurag Thakur"
+            VALUE "OriginalFilename", "AltDrag.dll"
+            VALUE "ProductName", "AltDrag"
             VALUE "ProductVersion", "0.1.0.0"
         END
     END

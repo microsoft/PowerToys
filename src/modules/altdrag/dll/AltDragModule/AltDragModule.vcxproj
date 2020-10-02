@@ -12,9 +12,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{6ae71643-c043-4b84-98a4-db3cc8766701}</ProjectGuid>
+    <ProjectGuid>{b74f620a-d038-40e3-9082-295f767c69f5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>AltDrag</RootNamespace>
+    <RootNamespace>AltDragModule</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>ModuleTemplate</ProjectName>
   </PropertyGroup>
@@ -118,7 +118,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="AltDrag.rc" />
+    <ResourceCompile Include="AltDragModule.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,7 +1,5 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
 
@@ -46,7 +44,7 @@ struct ModuleSettings
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class $safeprojectname$ : public PowertoyModuleIface
+class AltDragModule : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -57,7 +55,7 @@ private:
 
 public:
     // Constructor
-    $safeprojectname$()
+    AltDragModule()
     {
         init_settings();
     };
@@ -74,22 +72,6 @@ public:
         return MODULE_NAME;
     }
 
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
-    // list.
-    virtual const wchar_t** get_events() override
-    {
-        static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
-        // static const wchar_t* events[] = { ll_keyboard,
-        //                                   win_hook_event,
-        //                                   nullptr };
-
-        return events;
-    }
 
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
@@ -228,44 +210,16 @@ public:
     {
         return m_enabled;
     }
-
-    // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        if (wcscmp(name, ll_keyboard) == 0)
-        {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-            // otherwise return 0.
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
-        {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-            // Return value is ignored
-            return 0;
-        }
-        return 0;
-    }
-
-    // This methods are part of an experimental features not fully supported yet
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
-    {
-    }
-
-    virtual void signal_system_menu_action(const wchar_t* name) override
-    {
-    }
 };
 
 // Load the settings file.
-void $safeprojectname$::init_settings()
+void AltDragModule::init_settings()
 {
     try
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(AltDragModule::get_name());
 
         // Load a bool property.
         //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
@@ -334,5 +288,5 @@ void $safeprojectname$::init_settings()
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new $safeprojectname$();
+    return new AltDragModule();
 }
