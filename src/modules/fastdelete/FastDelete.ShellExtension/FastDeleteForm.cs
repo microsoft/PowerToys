@@ -50,7 +50,7 @@ namespace FastDelete.ShellExtension
 
             deleteThread = new Thread(DeleteThreadProc);
             deleteThread.SetApartmentState(ApartmentState.STA);
-            deleteThread.Start();
+            deleteThread.Start(this);
         }
 
         private static void DeleteThreadProc(object param)
