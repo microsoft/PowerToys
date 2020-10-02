@@ -500,6 +500,9 @@ namespace PowerLauncher.ViewModel
                     {
                         Thread.Sleep(20);
 
+                        // Keep track of total number of results for telemetry
+                        var numResults = 0;
+
                         // Contains all the plugins for which this raw query is valid
                         var plugins = pluginQueryPairs.Keys.ToList();
 
@@ -535,6 +538,7 @@ namespace PowerLauncher.ViewModel
                                     }
 
                                     currentCancellationToken.ThrowIfCancellationRequested();
+                                    numResults = Results.Results.Count;
                                     Results.Sort();
                                     Results.SelectedItem = Results.Results.FirstOrDefault();
                                 }
@@ -573,6 +577,7 @@ namespace PowerLauncher.ViewModel
                                                         UpdateResultView(results, queryText, currentCancellationToken);
 
                                                         currentCancellationToken.ThrowIfCancellationRequested();
+                                                        numResults = Results.Results.Count;
                                                         Results.Sort();
                                                         Results.SelectedItem = Results.Results.FirstOrDefault();
                                                     }
@@ -598,7 +603,7 @@ namespace PowerLauncher.ViewModel
                         var queryEvent = new LauncherQueryEvent()
                         {
                             QueryTimeMs = queryTimer.ElapsedMilliseconds,
-                            NumResults = Results.Results.Count,
+                            NumResults = numResults,
                             QueryLength = queryText.Length,
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
