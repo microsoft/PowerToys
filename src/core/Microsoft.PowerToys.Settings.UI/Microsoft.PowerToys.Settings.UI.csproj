@@ -10,6 +10,7 @@
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
