@@ -241,7 +241,25 @@
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
-            <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
+            <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" >
+				<!-- Resource file directories -->
+				<?foreach Language in cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
+				<!--NB: Ids can't contain hyphens-->
+				<?if $(var.Language) = pt-BR?>
+				<?define IdSafeLanguage = pt_BR?>
+				<?elseif $(var.Language) = pt-PT?>
+				<?define IdSafeLanguage = pt_PT?>
+				<?elseif $(var.Language) = zh-Hans?>
+				<?define IdSafeLanguage = zh_Hans?>
+				<?elseif $(var.Language) = zh-Hant?>
+				<?define IdSafeLanguage = zh_Hant?>
+				<?else?>
+				<?define IdSafeLanguage = $(var.Language)?>
+				<?endif?>
+				<Directory Id="FancyZonesEditorRes$(var.IdSafeLanguage)Folder" Name="$(var.Language)" />
+				<?undef IdSafeLanguage?>
+				<?endforeach?>
+			</Directory>
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
@@ -871,6 +889,9 @@
 	    <?endif?>
 		<Component Id="Launcher_Res_$(var.IdSafeLanguage)_Component" Directory="LauncherRes$(var.IdSafeLanguage)Folder">
 			<File Id="Resources_Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerLauncher.resources.dll" />
+		</Component>
+		<Component Id="FancyZonesEditor_Res_$(var.IdSafeLanguage)_Component" Directory="FancyZonesEditorRes$(var.IdSafeLanguage)Folder">
+			<File Id="Resources_FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\FancyZonesEditor.resources.dll" />
 		</Component>
 	    <?undef IdSafeLanguage?>
 	    <?endforeach?>
