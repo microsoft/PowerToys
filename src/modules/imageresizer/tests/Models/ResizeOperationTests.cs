@@ -31,6 +31,18 @@ namespace ImageResizer.Models
         }
 
         [Fact]
+        public void ExecuteCopiesFrameMetadataExceptWhenMetadataCannotBeCloned()
+        {
+            var operation = new ResizeOperation("TestMetadataIssue2447.jpg", _directory, Settings());
+
+            operation.Execute();
+
+            AssertEx.Image(
+                _directory.File(),
+                image => Assert.Null(((BitmapMetadata)image.Frames[0].Metadata).CameraModel));
+        }
+
+        [Fact]
         public void ExecuteKeepsDateModified()
         {
             var operation = new ResizeOperation("Test.png", _directory, Settings(s => s.KeepDateModified = true));
