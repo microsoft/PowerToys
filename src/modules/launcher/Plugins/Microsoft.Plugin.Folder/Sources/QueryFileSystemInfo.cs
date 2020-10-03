@@ -18,7 +18,7 @@ namespace Microsoft.Plugin.Folder.Sources
             var directoryInfo = new DirectoryInfo(search);
             var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, new EnumerationOptions()
             {
-                MatchType = MatchType.Simple,
+                MatchType = MatchType.Win32,
                 RecurseSubdirectories = isRecursive,
                 IgnoreInaccessible = true,
                 ReturnSpecialDirectories = false,
