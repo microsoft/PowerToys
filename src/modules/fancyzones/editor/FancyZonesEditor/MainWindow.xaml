@@ -28,21 +28,59 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="286"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="FancyZones Editor" FontSize="12" Margin="16,-24,0,0" />
+        <TextBlock
+            Text="{x:Static props:Resources.FancyZones_Editor}"
+            FontSize="12"
+            Foreground="{DynamicResource PrimaryForegroundBrush}"
+            Margin="16,-24,0,0" />
         <StackPanel>
-            <TextBlock x:Name="dialog_Title" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource BaseTextBlockStyle}"  Margin="16,8,16,8"  />
-            <TabControl BorderThickness="0" Background="Transparent" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Converter={StaticResource BooleanToIntConverter}, Mode=OneWay}" Margin="-4,0,0,0">
-                <TabItem Header="{x:Static props:Resources.Templates}" Style="{StaticResource TabItemPivotStyle}">
+            <TextBlock x:Name="dialog_Title"
+                       Text="{x:Static props:Resources.Choose_Layout}"
+                       Style="{StaticResource BaseTextBlockStyle}"
+                       Margin="16,8,16,8"  />
+            
+            <TabControl BorderThickness="0"
+                        Background="Transparent"
+                        x:Name="TemplateTab"
+                        SelectedIndex="{Binding IsCustomLayoutActive, Converter={StaticResource BooleanToIntConverter}, Mode=OneWay}"
+                        Margin="-4,0,0,0">
+                <TabItem Header="{x:Static props:Resources.Templates}"
+                         Style="{StaticResource TabItemPivotStyle}">
                     <StackPanel>
-                        <StackPanel Margin="0,6,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="decrementZones" Width="32" Height="32" Content="&#xE949;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource DefaultButtonStyle}" Click="DecrementZones_Click"/>
-                            <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" TextAlignment="Center" FontSize="16" Width="48" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <Button x:Name="incrementZones" Width="32" Height="32" Content="&#xE948;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource DefaultButtonStyle}" Click="IncrementZones_Click"/>
+                        <StackPanel Margin="0,6,0,0"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+                            <Button x:Name="decrementZones"
+                                    Width="32"
+                                    Height="32"
+                                    Content="&#xE949;"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Style="{StaticResource DefaultButtonStyle}"
+                                    Click="DecrementZones_Click"/>
+                            <TextBlock x:Name="zoneCount"
+                                       Text="{Binding ZoneCount}"
+                                       TextAlignment="Center"
+                                       FontSize="16"
+                                       Width="48"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                            <Button x:Name="incrementZones"
+                                    Width="32"
+                                    Height="32"
+                                    Content="&#xE948;"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Style="{StaticResource DefaultButtonStyle}"
+                                    Click="IncrementZones_Click"/>
                         </StackPanel>
-                        <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,8,0,0">
+                        <ItemsControl ItemsSource="{Binding DefaultModels}"
+                                      Margin="8,8,0,0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal" ItemWidth="{Binding WrapPanelItemSize, ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" ItemHeight="{Binding ItemWidth, ElementName=WrapPanel1}" x:Name="WrapPanel1" />
+                                    <WrapPanel Orientation="Horizontal"
+                                               ItemWidth="{Binding WrapPanelItemSize, ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                               ItemHeight="{Binding ItemWidth, ElementName=WrapPanel1}" x:Name="WrapPanel1" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
@@ -54,14 +92,19 @@
                                         Background="{DynamicResource ItemBackgroundBrush}" 
                                         MouseDown="LayoutItem_Click">
                                         <Border.Effect>
-                                            <DropShadowEffect BlurRadius="4" Opacity="0.18"  ShadowDepth="1" />
+                                            <DropShadowEffect
+                                                BlurRadius="4"
+                                                Opacity="0.18"
+                                                ShadowDepth="1" />
                                         </Border.Effect>
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="*"/>
                                                 <RowDefinition Height="32"/>
                                             </Grid.RowDefinitions>
-                                            <local:LayoutPreview Margin="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                                            <local:LayoutPreview Margin="16"
+                                                                 VerticalAlignment="Stretch"
+                                                                 HorizontalAlignment="Stretch"/>
 
                                             <TextBlock Padding="8,0,8,0" 
                                                    TextTrimming="CharacterEllipsis" 
@@ -82,11 +125,16 @@
                 </TabItem>
 
 
-                <TabItem Header="{x:Static props:Resources.Custom}" Style="{StaticResource TabItemPivotStyle}">
-                    <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
+                <TabItem Header="{x:Static props:Resources.Custom}"
+                         Style="{StaticResource TabItemPivotStyle}">
+                    <ItemsControl ItemsSource="{Binding CustomModels}"
+                                  Margin="8,8,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" ItemWidth="{Binding WrapPanelItemSize, ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" ItemHeight="{Binding ItemWidth, ElementName=WrapPanel2}" x:Name="WrapPanel2" />
+                                <WrapPanel Orientation="Horizontal"
+                                           ItemWidth="{Binding WrapPanelItemSize, ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                           ItemHeight="{Binding ItemWidth, ElementName=WrapPanel2}"
+                                           x:Name="WrapPanel2" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -98,14 +146,19 @@
                                         Background="{DynamicResource ItemBackgroundBrush}" 
                                         MouseDown="LayoutItem_Click">
                                     <Border.Effect>
-                                        <DropShadowEffect BlurRadius="4" Opacity="0.18"  ShadowDepth="1" />
+                                        <DropShadowEffect
+                                            BlurRadius="4"
+                                            Opacity="0.18"
+                                            ShadowDepth="1" />
                                     </Border.Effect>
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="*"/>
                                             <RowDefinition Height="32"/>
                                         </Grid.RowDefinitions>
-                                        <local:LayoutPreview Margin="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                                        <local:LayoutPreview Margin="16"
+                                                             VerticalAlignment="Stretch"
+                                                             HorizontalAlignment="Stretch"/>
 
                                         <TextBlock Padding="8,0,8,0" 
                                                    TextTrimming="CharacterEllipsis" 
@@ -118,7 +171,17 @@
                                                    Text="{Binding Name}"
                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"/>
 
-                                        <Button x:Name="DeleteButton" FontFamily="Segoe MDL2 Assets" Content="&#xE107;" Style="{StaticResource DefaultButtonStyle}" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" Click="OnDelete" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" BorderThickness="0" Background="Transparent"/>
+                                        <Button x:Name="DeleteButton"
+                                                FontFamily="Segoe MDL2 Assets"
+                                                Content="&#xE107;"
+                                                Style="{StaticResource DefaultButtonStyle}"
+                                                Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}"
+                                                Click="OnDelete"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Margin="8"
+                                                BorderThickness="0"
+                                                Background="Transparent"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -133,21 +196,53 @@
             BorderBrush="{DynamicResource PanelBorderBrush}"
             BorderThickness="2,0,0,0"
             Margin="0,-32,0,0">
-        <Grid>
-            <StackPanel Margin="16">
-                <TextBlock Text="Configuration" Style="{StaticResource BaseTextBlockStyle}" Foreground="{DynamicResource PrimaryForegroundBrush}" Margin="0,28,0,24"  />
+            <Grid>
+                <StackPanel Margin="16">
+                    <TextBlock Text="{x:Static props:Resources.Configuration}"
+                           Style="{StaticResource BaseTextBlockStyle}"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                           Margin="0,28,0,24"  />
 
-                <ui:ToggleSwitch x:Name="spaceAroundSetting" Header="{x:Static props:Resources.Show_Space_Zones}" IsOn="{Binding ShowSpacing}"/>
-                <TextBlock Text="{x:Static props:Resources.Space_Around_Zones}" IsEnabled="{Binding ShowSpacing}" Margin="0,8,0,0" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                <TextBox x:Name="paddingValue" Margin="0,6,0,0" IsEnabled="{Binding ShowSpacing}" Text="{Binding Spacing, Mode=TwoWay}" Width="86" HorizontalAlignment="Left"/>
-                <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}" IsEnabled="{Binding ShowSpacing}" Margin="0,16,0,0" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                <TextBox x:Name="sensitivityRadiusValue" Margin="0,6,0,0" Text="{Binding SensitivityRadius, Mode=TwoWay}" Width="86" HorizontalAlignment="Left"/>
-            </StackPanel>
-            <StackPanel Orientation="Vertical" Margin="16" HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
-                <Button x:Name="EditCustomButton" HorizontalAlignment="Stretch" Content="{x:Static props:Resources.Edit_Selected_Layout}" Style="{StaticResource DefaultButtonStyle}" Click="EditLayout_Click"/>
-                <Button x:Name="ApplyCustomButton" HorizontalAlignment="Stretch" Margin="0,8,0,0" Content="{x:Static props:Resources.Apply}" Style="{StaticResource AccentButtonStyle}" Click="Apply_Click"/>
-            </StackPanel>
-        </Grid>
+                    <ui:ToggleSwitch x:Name="spaceAroundSetting"
+                                 Header="{x:Static props:Resources.Show_Space_Zones}"
+                                 IsOn="{Binding ShowSpacing}"/>
+                    <TextBlock Text="{x:Static props:Resources.Space_Around_Zones}"
+                           IsEnabled="{Binding ShowSpacing}"
+                           Margin="0,8,0,0"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                    <TextBox x:Name="paddingValue"
+                         Margin="0,6,0,0"
+                         IsEnabled="{Binding ShowSpacing}"
+                         Text="{Binding Spacing, Mode=TwoWay}"
+                         Width="86"
+                         HorizontalAlignment="Left"/>
+                    <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
+                           IsEnabled="{Binding ShowSpacing}"
+                           Margin="0,16,0,0"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                    <TextBox x:Name="sensitivityRadiusValue"
+                         Margin="0,6,0,0"
+                         Text="{Binding SensitivityRadius, Mode=TwoWay}"
+                         Width="86"
+                         HorizontalAlignment="Left"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical"
+                        Margin="16"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Bottom">
+                    <Button x:Name="EditCustomButton"
+                        HorizontalAlignment="Stretch"
+                        Content="{x:Static props:Resources.Edit_Selected_Layout}"
+                        Style="{StaticResource DefaultButtonStyle}"
+                        Click="EditLayout_Click"/>
+                    <Button x:Name="ApplyCustomButton"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,8,0,0"
+                        Content="{x:Static props:Resources.Apply}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Click="Apply_Click"/>
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </Window>

@@ -97,6 +97,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Configuration.
+        /// </summary>
+        public static string Configuration {
+            get {
+                return ResourceManager.GetString("Configuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom.
         /// </summary>
         public static string Custom {
@@ -138,6 +147,15 @@ namespace FancyZonesEditor.Properties {
         public static string Edit_Selected_Layout {
             get {
                 return ResourceManager.GetString("Edit_Selected_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor.
+        /// </summary>
+        public static string FancyZones_Editor {
+            get {
+                return ResourceManager.GetString("FancyZones_Editor", resourceCulture);
             }
         }
         

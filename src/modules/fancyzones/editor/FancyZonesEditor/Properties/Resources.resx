@@ -129,6 +129,9 @@
   <data name="Choose_Layout" xml:space="preserve">
     <value>Choose your layout for this desktop</value>
   </data>
+  <data name="Configuration" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
   <data name="Custom" xml:space="preserve">
     <value>Custom</value>
   </data>
@@ -143,6 +146,9 @@
   </data>
   <data name="Edit_Selected_Layout" xml:space="preserve">
     <value>Edit selected layout</value>
+  </data>
+  <data name="FancyZones_Editor" xml:space="preserve">
+    <value>FancyZones Editor</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Name</value>

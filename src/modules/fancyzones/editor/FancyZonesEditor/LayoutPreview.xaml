@@ -6,7 +6,8 @@
              xmlns:local="clr-namespace:FancyZonesEditor"
              mc:Ignorable="d" 
              Loaded="OnLoaded"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450"
+             d:DesignWidth="800">
     <Grid x:Name="Body">
             
     </Grid>
