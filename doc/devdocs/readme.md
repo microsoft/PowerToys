@@ -84,13 +84,13 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 
 When you use the Toolset v142 (came  typical with Visual Studio 16.8) and you cannot build the C++ project `common-md-flag` you can try one of the follow solutions.
 
-Add two compiler switch `/await` and `/Zc:twoPhase-` to the `common-md-flag` project
+Add the two compiler switches `/await` and `/Zc:twoPhase-` to the `common-md-flag` project.
 
 ![Project property change](/doc/images/v142PropertyChange.png)
 
-Or add compiler switch `/await` to the `common-md-flag` project and change the Windows SDK Version of the project to version `10.1.18362.0`
+or add the compiler switch `/await` to the `common-md-flag` project and change the Windows SDK version of the project to version `10.1.18362.0`.
 
-Note: you must install the [Windows SDK 10.1.18362.0](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/) before you can switch to it
+Note: You must install the [Windows SDK 10.1.18362.0](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/) before you can switch to it.
 
 ![Project SDK version change](/doc/images/v142SdkVersionChange.png)
 
