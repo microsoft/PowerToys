@@ -256,7 +256,7 @@ namespace ColorPicker.ViewModels
 
             return $"cmyk({cyan.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {magenta.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {yellow.ToString(CultureInfo.InvariantCulture)}%)"
+                 + $", {yellow.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {blackKey.ToString(CultureInfo.InvariantCulture)}%)";
         }
     }
