@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         RGB = 1,
 
         /// <summary>
-        /// Color presentation as CMYL color value (cyan[0%..100%], magenta[0%..100%], yellow[0%..100%], black key[0%..100%])
+        /// Color presentation as CMYK color value (cyan[0%..100%], magenta[0%..100%], yellow[0%..100%], black key[0%..100%])
         /// </summary>
         CMYK = 2,
 
