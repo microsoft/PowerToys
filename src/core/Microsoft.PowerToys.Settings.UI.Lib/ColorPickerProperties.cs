@@ -20,14 +20,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         RGB = 1,
 
         /// <summary>
+        /// Color presentation as CMYL color value (cyan[0%..100%], magenta[0%..100%], yellow[0%..100%], black key[0%..100%])
+        /// </summary>
+        CMYK = 2,
+
+        /// <summary>
         /// Color presentation as HSL color value (hue[0°..360°], saturation[0..100%], lightness[0%..100%])
         /// </summary>
-        HSL = 2,
+        HSL = 3,
 
         /// <summary>
         /// Color presentation as HSV color value (hue[0°..360°], saturation[0%..100%], value[0%..100%])
         /// </summary>
-        HSV = 3,
+        HSV = 4,
     }
 
     public class ColorPickerProperties

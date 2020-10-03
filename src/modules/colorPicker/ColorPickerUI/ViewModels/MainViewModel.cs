@@ -135,6 +135,7 @@ namespace ColorPicker.ViewModels
 
             OtherColorText = _userSettings.CopiedColorRepresentation.Value switch
             {
+                ColorRepresentationType.CMYK => ColorToCYMK(color),
                 ColorRepresentationType.HSL => ColorToHSL(color),
                 ColorRepresentationType.HSV => ColorToHSV(color),
                 _ => ColorToRGB(color),
@@ -237,6 +238,26 @@ namespace ColorPicker.ViewModels
             return $"hsv({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {value.ToString(CultureInfo.InvariantCulture)}%)";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation of a HSV color
+        /// </summary>
+        /// <param name="color">The color for the HSV color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a HSV color</returns>
+        private static string ColorToCYMK(System.Drawing.Color color)
+        {
+            var (cyan, magenta, yellow, blackKey) = ColorHelper.ConvertToCMYKColor(color);
+
+            cyan = Math.Round(cyan * 100);
+            magenta = Math.Round(magenta * 100);
+            yellow = Math.Round(yellow * 100);
+            blackKey = Math.Round(blackKey * 100);
+
+            return $"cmyk({cyan.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {magenta.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {yellow.ToString(CultureInfo.InvariantCulture)}%)"
+                 + $", {blackKey.ToString(CultureInfo.InvariantCulture)}%)";
         }
     }
 }

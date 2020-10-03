@@ -69,6 +69,7 @@
                           IsEnabled="{Binding IsEnabled}">
                 <ComboBoxItem Content="HEX - #FFAA00"/>
                 <ComboBoxItem Content="RGB - rgb(100, 50, 75)"/>
+                <ComboBoxItem Content="CYMK - cymk(100%, 50%, 75%, 0%)"/>
                 <ComboBoxItem Content="HSL - hsl(100, 50%, 75%)"/>
                 <ComboBoxItem Content="HSV - hsv(100, 50%, 75%)"/>
             </ComboBox>

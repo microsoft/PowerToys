@@ -107,5 +107,52 @@ namespace UnitTest_ColorPickerUI.Helpers
             // value[0..1]
             Assert.InRange(result.value * 100, value - 0.2, value + 0.2);
         }
+
+        [Theory]
+        [InlineData(000, 000, 000, 100, 000, 000, 000)]     // Black
+        [InlineData(000, 000, 000, 000, 255, 255, 255)]     // White
+        [InlineData(000, 100, 100, 000, 255, 000, 000)]     // Red
+        [InlineData(000, 075, 100, 000, 255, 064, 000)]     // Vermilion/Cinnabar
+        [InlineData(000, 050, 075, 064, 092, 046, 023)]     // Brown
+        [InlineData(000, 050, 100, 000, 255, 128, 000)]     // Orange
+        [InlineData(000, 025, 100, 000, 255, 192, 000)]     // Saffron
+        [InlineData(000, 000, 100, 000, 255, 255, 000)]     // Yellow
+        [InlineData(025, 000, 100, 000, 192, 255, 000)]     // Light green-yellow
+        [InlineData(050, 000, 100, 000, 128, 255, 000)]     // Green-yellow
+        [InlineData(075, 000, 100, 000, 064, 255, 000)]     // Lime
+        [InlineData(100, 000, 100, 050, 000, 128, 000)]     // Dark green
+        [InlineData(100, 000, 100, 000, 000, 255, 000)]     // Green
+        [InlineData(100, 000, 075, 000, 000, 255, 064)]     // Light blue-green
+        [InlineData(100, 000, 050, 000, 000, 255, 128)]     // Blue-green
+        [InlineData(100, 000, 025, 000, 000, 255, 192)]     // Green-cyan
+        [InlineData(100, 000, 000, 000, 000, 255, 255)]     // Cyan
+        [InlineData(100, 025, 000, 000, 000, 192, 255)]     // Blue-cyan
+        [InlineData(100, 050, 000, 000, 000, 128, 255)]     // Green-blue
+        [InlineData(100, 075, 000, 000, 000, 064, 255)]     // Light green-blue
+        [InlineData(100, 100, 000, 000, 000, 000, 255)]     // Blue
+        [InlineData(075, 100, 000, 000, 064, 000, 255)]     // Indigo
+        [InlineData(050, 100, 000, 000, 128, 000, 255)]     // Purple
+        [InlineData(025, 100, 000, 000, 192, 000, 255)]     // Blue-magenta
+        [InlineData(000, 100, 000, 000, 255, 000, 255)]     // Magenta
+        [InlineData(000, 100, 025, 000, 255, 000, 192)]     // Red-magenta
+        [InlineData(000, 100, 050, 000, 255, 000, 128)]     // Blue-red
+        [InlineData(000, 100, 075, 000, 255, 000, 064)]     // Light blue-red
+        public void ColorRGBtoCMYK(byte cyan, byte magenta, byte yellow, byte blackKey, int red, int green, int blue)
+        {
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorHelper.ConvertToCMYKColor(color);
+
+            // cyan[0..1]
+            Assert.InRange(result.cyan * 100, cyan - 0.5, cyan + 0.5);
+
+            // magenta[0..1]
+            Assert.InRange(result.magenta * 100, magenta - 0.5, magenta + 0.5);
+
+            // yellow[0..1]
+            Assert.InRange(result.yellow * 100, yellow - 0.5, yellow + 0.5);
+
+            // black[0..1]
+            Assert.InRange(result.blackKey * 100, blackKey - 0.5, blackKey + 0.5);
+        }
     }
 }
