@@ -80,9 +80,24 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 - The PowerToys binaries will be in your repo under `x64\Release`.
 - If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
 
+### Temporary build-fix for Toolset v142 (Visual Studio 2019 Version 16.8)
+
+When you use the Toolset v142 (came  typical with Visual Studio 16.8) and you cannot build the C++ project `common-md-flag` you can try one of the follow solutions.
+
+Add two compiler switch `/await` and `/Zc:twoPhase-` to the `common-md-flag` project
+
+![Project property change](/doc/images/v142PropertyChange.png)
+
+Or add compiler switch `/await` to the `common-md-flag` project and change the Windows SDK Version of the project to version `10.1.18362.0`
+
+Note: you must install the [Windows SDK 10.1.18362.0](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/) before you can switch to it
+
+![Project SDK version change](/doc/images/v142SdkVersionChange.png)
+
 ## Building the Installers
 
-Our installer is two parts, an EXE and an MSI.  The EXE contains the MSI and handles more complex install logic. 
+Our installer is two parts, an EXE and an MSI.  The EXE contains the MSI and handles more complex install logic.
+
 - The EXE installs all prerequisites and installs PowerToys via the MSI. Also has additional features, such as silent installation flags
 - The MSI installs PowerToys.
 
@@ -153,17 +168,22 @@ Instructions on how build a new version and update this project are in the [Web 
 While developing, it's possible to connect the WebView to the development server running in localhost by setting the `_DEBUG_WITH_LOCALHOST` flag to `1` and following the instructions near it in `./main.cpp`.
 
 ### [`Settings-web`](settings-web.md)
+
 This project generates the web UI shown in the [PowerToys Settings](/src/editor).
 It's a `ReactJS` project created using [Fluent UI](https://developer.microsoft.com/en-us/fluentui#/).
 
 ## Current modules
+
 ### [`FancyZones`](modules/fancyzones.md)
+
 The FancyZones PowerToy that allows users to create custom zones on the screen, to which the windows will snap when moved.
 
 ### [`PowerRename`](modules/powerrename.md)
+
 PowerRename is a Windows Shell Context Menu Extension for advanced bulk renaming using simple search and replace or more powerful regular expression matching.
 
 ### [`Shortcut Guide`](modules/shortcut_guide.md)
+
 The Windows Shortcut Guide, displayed when the WinKey is held for some time.
 
 #### Options
