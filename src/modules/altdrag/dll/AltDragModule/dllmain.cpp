@@ -35,6 +35,7 @@ struct ModuleSettings
     // - int
     // - bool
     // - string
+    std::wstring hotkey = L"Alt";
 
     //bool bool_prop = true;
     //int int_prop = 10;
@@ -196,6 +197,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+
         m_enabled = true;
     }
 

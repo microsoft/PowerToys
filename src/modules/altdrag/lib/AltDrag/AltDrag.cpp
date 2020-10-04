@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tchar.h>
+#include <functional>
 
 // Global variables
 
@@ -224,4 +225,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 
     return 0;
+}
+
+winrt::com_ptr<IAltDrag> MakeFancyZones(HINSTANCE hinstance,
+                                           const winrt::com_ptr<IAltDragSettings>& settings,
+                                           std::function<void()> disableCallback) noexcept
+{
+    if (!settings)
+    {
+        return nullptr;
+    }
+
+    return winrt::make_self<AltDrag>(hinstance, settings, disableCallback);
 }
