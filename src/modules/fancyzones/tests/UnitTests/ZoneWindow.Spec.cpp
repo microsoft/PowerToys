@@ -657,7 +657,7 @@ namespace FancyZonesUnitTests
             Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
             auto window = Mocks::WindowCreate(m_hInst);
-            auto zone = MakeZone(RECT{ 0, 0, 100, 100 });
+            auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
 
             zoneWindow->SaveWindowProcessToZoneIndex(window);
@@ -684,7 +684,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(std::vector<size_t>{ 0 } == appHistoryArray1[0].zoneIndexSet);
 
             // add zone without window
-            const auto zone = MakeZone(RECT{ 0, 0, 100, 100 });
+            const auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
 
             zoneWindow->SaveWindowProcessToZoneIndex(window);
@@ -704,7 +704,7 @@ namespace FancyZonesUnitTests
             const auto deviceId = zoneWindow->UniqueId();
             const auto zoneSetId = zoneWindow->ActiveZoneSet()->Id();
 
-            auto zone = MakeZone(RECT{ 0, 0, 100, 100 });
+            auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
             zoneWindow->MoveWindowIntoZoneByIndex(window, 0);
 
@@ -737,7 +737,7 @@ namespace FancyZonesUnitTests
             SetWindowPos(window, nullptr, 150, 150, originalWidth, originalHeight, SWP_SHOWWINDOW);
             SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
 
-            auto zone = MakeZone(RECT{ 50, 50, 300, 300 });
+            auto zone = MakeZone(RECT{ 50, 50, 300, 300 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
 
             zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, VK_LEFT, true);
