@@ -31,6 +31,7 @@ namespace Microsoft.Plugin.Program.Storage
                                Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
                                Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
                                Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                               Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
                             };
             return paths;
         }
