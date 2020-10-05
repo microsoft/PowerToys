@@ -171,7 +171,7 @@ std::optional<FancyZonesDataTypes::CustomZoneSetData> FancyZonesData::FindCustom
     return it != end(customZoneSetsMap) ? std::optional{ it->second } : std::nullopt;
 }
 
-void FancyZonesData::AddDevice(const std::wstring& deviceId)
+bool FancyZonesData::AddDevice(const std::wstring& deviceId)
 {
     using namespace FancyZonesDataTypes;
 
@@ -192,7 +192,11 @@ void FancyZonesData::AddDevice(const std::wstring& deviceId)
         {
             deviceInfoMap[deviceId] = DeviceInfoData{ ZoneSetData{ NonLocalizable::NullStr, ZoneSetLayoutType::Blank } };
         }
+
+        return true;
     }
+
+    return false;
 }
 
 void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)
