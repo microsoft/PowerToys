@@ -157,7 +157,7 @@ private:
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    void OnPaint(wil::unique_hdc& hdc) noexcept;
+    void OnPaint(HDC hdc) noexcept;
     void OnKeyUp(WPARAM wparam) noexcept;
     std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
     void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
@@ -179,6 +179,7 @@ private:
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
     
+    std::atomic<bool> m_animating;
     OnThreadExecutor m_paintExecutor;
     ULONG_PTR gdiplusToken;
 };
@@ -454,6 +455,7 @@ ZoneWindow::ShowZoneWindow() noexcept
     SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
 
     std::thread{ [this, strong_this{ get_strong() }]() {
+        m_animating = true;
         auto window = m_window.get();
         AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
         InvalidateRect(window, nullptr, true);
@@ -461,6 +463,7 @@ ZoneWindow::ShowZoneWindow() noexcept
         {
             HideZoneWindow();
         }
+        m_animating = false;
     } }.detach();
 }
 
@@ -597,42 +600,7 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     case WM_PRINTCLIENT:
     case WM_PAINT:
     {
-        HDC hdc = reinterpret_cast<HDC>(wparam);
-        HWND window = m_window.get();
-        bool hasActiveZoneSet = m_activeZoneSet && m_host;
-        COLORREF hostZoneColor{};
-        COLORREF hostZoneBorderColor{};
-        COLORREF hostZoneHighlightColor{};
-        int hostZoneHighlightOpacity{};
-        std::vector<winrt::com_ptr<IZone>> zones{};
-        std::vector<size_t> highlightZone = m_highlightZone;
-        bool flashMode = m_flashMode;
-        bool drawHints = m_drawHints;
-
-        if (hasActiveZoneSet)
-        {
-            hostZoneColor = m_host->GetZoneColor();
-            hostZoneBorderColor = m_host->GetZoneBorderColor();
-            hostZoneHighlightColor = m_host->GetZoneHighlightColor();
-            hostZoneHighlightOpacity = m_host->GetZoneHighlightOpacity();
-            zones = m_activeZoneSet->GetZones();
-        }
-
-        m_paintExecutor.cancel();
-        m_paintExecutor.submit(OnThreadExecutor::task_t{
-            [=]() {
-                ZoneWindowUtils::PaintZoneWindowAsync(hdc,
-                                                      window,
-                                                      hasActiveZoneSet,
-                                                      hostZoneColor,
-                                                      hostZoneBorderColor,
-                                                      hostZoneHighlightColor,
-                                                      hostZoneHighlightOpacity,
-                                                      zones,
-                                                      highlightZone,
-                                                      flashMode,
-                                                      drawHints);
-            } });
+        OnPaint(reinterpret_cast<HDC>(wparam));
     }
     break;
 
@@ -644,31 +612,51 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     return 0;
 }
 
-void ZoneWindow::OnPaint(wil::unique_hdc& hdc) noexcept
+void ZoneWindow::OnPaint(HDC hdc) noexcept
 {
-    RECT clientRect;
-    GetClientRect(m_window.get(), &clientRect);
+    HWND window = m_window.get();
+    bool hasActiveZoneSet = m_activeZoneSet && m_host;
+    COLORREF hostZoneColor{};
+    COLORREF hostZoneBorderColor{};
+    COLORREF hostZoneHighlightColor{};
+    int hostZoneHighlightOpacity{};
+    std::vector<winrt::com_ptr<IZone>> zones{};
+    std::vector<size_t> highlightZone = m_highlightZone;
+    bool flashMode = m_flashMode;
+    bool drawHints = m_drawHints;
 
-    wil::unique_hdc hdcMem;
-    HPAINTBUFFER bufferedPaint = BeginBufferedPaint(hdc.get(), &clientRect, BPBF_TOPDOWNDIB, nullptr, &hdcMem);
-    if (bufferedPaint)
+    if (hasActiveZoneSet)
     {
-        ZoneWindowDrawing::DrawBackdrop(hdcMem, clientRect);
+        hostZoneColor = m_host->GetZoneColor();
+        hostZoneBorderColor = m_host->GetZoneBorderColor();
+        hostZoneHighlightColor = m_host->GetZoneHighlightColor();
+        hostZoneHighlightOpacity = m_host->GetZoneHighlightOpacity();
+        zones = m_activeZoneSet->GetZones();
+    }
 
-        if (m_activeZoneSet && m_host)
-        {
-            ZoneWindowDrawing::DrawActiveZoneSet(hdcMem,
-                                                   m_host->GetZoneColor(),
-                                                   m_host->GetZoneBorderColor(),
-                                                   m_host->GetZoneHighlightColor(),
-                                                   m_host->GetZoneHighlightOpacity(),
-                                                   m_activeZoneSet->GetZones(),
-                                                   m_highlightZone,
-                                                   m_flashMode,
-                                                   m_drawHints);
-        }
+    OnThreadExecutor::task_t task{
+        [=]() {
+        ZoneWindowUtils::PaintZoneWindowAsync(hdc,
+                                              window,
+                                              hasActiveZoneSet,
+                                              hostZoneColor,
+                                              hostZoneBorderColor,
+                                              hostZoneHighlightColor,
+                                              hostZoneHighlightOpacity,
+                                              zones,
+                                              highlightZone,
+                                              flashMode,
+                                              drawHints);
+        } };
 
-        EndBufferedPaint(bufferedPaint, TRUE);
+    if (m_animating)
+    {
+        task();
+    }
+    else
+    {
+        m_paintExecutor.cancel();
+        m_paintExecutor.submit(std::move(task));
     }
 }
 
