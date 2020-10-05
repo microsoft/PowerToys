@@ -219,69 +219,16 @@
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
-            <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
-              <!-- Resource file directories -->
-              <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
-              <!--NB: Ids can't contain hyphens-->
-              <?if $(var.Language) = eu-ES?>
-              <?define IdSafeLanguage = eu_ES?>
-              <?elseif $(var.Language) = nb-NO?>
-              <?define IdSafeLanguage = nb_NO?>
-              <?elseif $(var.Language) = pt-BR?>
-              <?define IdSafeLanguage = pt_BR?>
-              <?elseif $(var.Language) = zh-Hans?>
-              <?define IdSafeLanguage = zh_Hans?>
-              <?else?>
-              <?define IdSafeLanguage = $(var.Language)?>
-              <?endif?>
-              <Directory Id="Resources$(var.IdSafeLanguage)Folder" Name="$(var.Language)" />
-              <?undef IdSafeLanguage?>
-              <?endforeach?>
-            </Directory>
+			<Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
-            <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" >
-				<!-- Resource file directories -->
-				<?foreach Language in cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
-				<!--NB: Ids can't contain hyphens-->
-				<?if $(var.Language) = pt-BR?>
-				<?define IdSafeLanguage = pt_BR?>
-				<?elseif $(var.Language) = pt-PT?>
-				<?define IdSafeLanguage = pt_PT?>
-				<?elseif $(var.Language) = zh-Hans?>
-				<?define IdSafeLanguage = zh_Hans?>
-				<?elseif $(var.Language) = zh-Hant?>
-				<?define IdSafeLanguage = zh_Hant?>
-				<?else?>
-				<?define IdSafeLanguage = $(var.Language)?>
-				<?endif?>
-				<Directory Id="FancyZonesEditorRes$(var.IdSafeLanguage)Folder" Name="$(var.Language)" />
-				<?undef IdSafeLanguage?>
-				<?endforeach?>
-			</Directory>
+			<Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
             </Directory>
             <Directory Id="LauncherInstallFolder" Name="launcher">
-				<!-- Resource file directories -->
-				<?foreach Language in cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
-				<!--NB: Ids can't contain hyphens-->
-				<?if $(var.Language) = pt-BR?>
-				<?define IdSafeLanguage = pt_BR?>
-				<?elseif $(var.Language) = pt-PT?>
-				<?define IdSafeLanguage = pt_PT?>
-				<?elseif $(var.Language) = zh-Hans?>
-				<?define IdSafeLanguage = zh_Hans?>
-				<?elseif $(var.Language) = zh-Hant?>
-				<?define IdSafeLanguage = zh_Hant?>
-				<?else?>
-				<?define IdSafeLanguage = $(var.Language)?>
-				<?endif?>
-				<Directory Id="LauncherRes$(var.IdSafeLanguage)Folder" Name="$(var.Language)" />
-				<?undef IdSafeLanguage?>
-				<?endforeach?>
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />               
               <Directory Id="LauncherpinyindbFolder" Name="pinyindb" />
@@ -852,31 +799,43 @@
       <ComponentRef Id="settings_js_bundle" />
     </ComponentGroup>
   </Fragment>
+
+  <!-- Languages for localization on build farm -->
+  <?define LocLanguageList = cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
+	
+  <Fragment>
+	  <!-- Resource directories should be added only if the installer is built on the build farm -->
+	  <?ifndef env.IsPipeline?>
+	      <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder?>
+	          <DirectoryRef Id="$(var.ParentDirectory)">
+		          <!-- Resource file directories -->
+		          <?foreach Language in $(var.LocLanguageList)?>
+		              <!--NB: Ids can't contain hyphens-->
+		              <?if $(var.Language) = pt-BR?>
+		                <?define IdSafeLanguage = pt_BR?>
+		              <?elseif $(var.Language) = pt-PT?>
+		                <?define IdSafeLanguage = pt_PT?>
+		              <?elseif $(var.Language) = zh-Hans?>
+		                <?define IdSafeLanguage = zh_Hans?>
+		              <?elseif $(var.Language) = zh-Hant?>
+		                <?define IdSafeLanguage = zh_Hant?>
+		              <?else?>
+		                <?define IdSafeLanguage = $(var.Language)?>
+		              <?endif?>
+		              <Directory Id="Resource$(var.IdSafeLanguage)$(var.ParentDirectory)" Name="$(var.Language)" />
+		              <?undef IdSafeLanguage?>
+		          <?endforeach?>
+	          </DirectoryRef>
+	      <?endforeach?>
+	  <?endif?>
+  </Fragment>
+
   <Fragment>
     <ComponentGroup Id="ResourcesComponents">
-	    <!-- Resource components should be added only if the installer is built on the build farm -->
-		<?ifdef env.IsPipeline?>
+        <!-- Resource components should be added only if the installer is built on the build farm -->
+        <?ifndef env.IsPipeline?>
             <!-- Components for adding resource files -->
-            <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
-                <!--NB: Ids can't contain hyphens-->
-                <?if $(var.Language) = eu-ES?>
-                    <?define IdSafeLanguage = eu_ES?>
-                <?elseif $(var.Language) = nb-NO?>
-                    <?define IdSafeLanguage = nb_NO?>
-                <?elseif $(var.Language) = pt-BR?>
-                    <?define IdSafeLanguage = pt_BR?>
-                <?elseif $(var.Language) = zh-Hans?>
-                    <?define IdSafeLanguage = zh_Hans?>
-                <?else?>
-                    <?define IdSafeLanguage = $(var.Language)?>
-                <?endif?>
-                <Component Id="Resources_$(var.IdSafeLanguage)_Component" Directory="Resources$(var.IdSafeLanguage)Folder">
-	                <File Id="Resources_ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />
-                </Component>
-                <?undef IdSafeLanguage?>
-            <?endforeach?>
-            <!-- Launcher resource components -->
-            <?foreach Language in cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
+            <?foreach Language in $(var.LocLanguageList)?>
                 <!--NB: Ids can't contain hyphens-->
                 <?if $(var.Language) = pt-BR?>
                     <?define IdSafeLanguage = pt_BR?>
@@ -889,12 +848,15 @@
                 <?else?>
                     <?define IdSafeLanguage = $(var.Language)?>
                 <?endif?>
-                <Component Id="Launcher_Res_$(var.IdSafeLanguage)_Component" Directory="LauncherRes$(var.IdSafeLanguage)Folder">
-	                <File Id="Resources_Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerLauncher.resources.dll" />
+                <Component Id="Launcher_Res_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder">
+                    <File Id="Resources_Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerLauncher.resources.dll" />
                 </Component>
-                <Component Id="FancyZonesEditor_Res_$(var.IdSafeLanguage)_Component" Directory="FancyZonesEditorRes$(var.IdSafeLanguage)Folder">
-	                <File Id="Resources_FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\FancyZonesEditor.resources.dll" />
+                <Component Id="FancyZonesEditor_Res_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder">
+                    <File Id="Resources_FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\FancyZonesEditor.resources.dll" />
                 </Component>
+		        <Component Id="Resources_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder">
+			        <File Id="Resources_ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />
+		        </Component>
                 <?undef IdSafeLanguage?>
             <?endforeach?>
         <?endif?>
