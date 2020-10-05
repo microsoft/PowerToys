@@ -1,11 +1,15 @@
 #include "pch.h"
+#include "AltDrag.h"
 #include "framework.h"
 #include <windows.h>
 #include <windowsx.h>
 #include <stdlib.h>
+#include "Settings.h"
 #include <string.h>
 #include <tchar.h>
 #include <functional>
+#include <mutex>
+#include <shared_mutex>
 
 // Global variables
 
@@ -34,59 +38,240 @@ HWND GetRealParent(HWND hwnd)
     return GetAncestor(hwnd, GA_ROOT);
 }
 
-LRESULT CALLBACK keyboard_hook(int nCode, WPARAM wParam, LPARAM lParam)
+struct AltDrag : public winrt::implements<AltDrag, IAltDrag, IAltDragCallback>
 {
-    if (nCode == HC_ACTION)
+public:
+    AltDrag(HINSTANCE hinstance, const winrt::com_ptr<IAltDragSettings>& settings, std::function<void()> disableModuleCallback) noexcept :
+        m_hinstance(hinstance),
+        m_settings(settings)
     {
-        switch (wParam)
+        m_settings->SetCallback(this);
+
+        this->disableModuleCallback = std::move(disableModuleCallback);
+    }
+
+    // IAltDrag
+    IFACEMETHODIMP_(void)
+    Run() noexcept;
+    IFACEMETHODIMP_(void)
+    Destroy() noexcept;
+
+    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
+    {
+        std::unique_lock writeLock(m_lock);
+        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
         {
-        case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-        {
-            PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT)lParam;
-            if (p->vkCode == VK_LMENU)
-            {
-                if (altpressed == false)
-                {
-                    POINT cursorpos;
-                    GetCursorPos(&cursorpos);
-                    oldmsx = cursorpos.x;
-                    oldmsy = cursorpos.y;
-                    yummyhwnd = WindowFromPoint(cursorpos);
-                    yummyhwnd = GetRealParent(yummyhwnd);
-                    SetWindowPos(globalhwnd, 0, cursorpos.x - 100, cursorpos.y - 100, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-                    ShowWindow(globalhwnd, SW_SHOWNA);
-                    altpressed = true;
-                    return 1;
-                }
-                else
-                {
-                    return 1;
-                }
-            }
+            monitor = NULL;
         }
-        case WM_KEYUP:
-        case WM_SYSKEYUP:
+        //m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
+    }
+
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
+    {
+        std::unique_lock writeLock(m_lock);
+        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
         {
-            PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT)lParam;
-            if (p->vkCode == VK_LMENU)
+            monitor = NULL;
+        }
+        //m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
+    }
+
+    void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
+    {
+        std::unique_lock writeLock(m_lock);
+        //m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
+    }
+
+    IFACEMETHODIMP_(bool)
+    OnKeyEvent(LowlevelKeyboardEvent* info) noexcept;
+    IFACEMETHODIMP_(bool)
+    OnMouseEvent(LowlevelMouseEvent* info) noexcept;
+    IFACEMETHODIMP_(void)
+    SettingsChanged() noexcept;
+
+private:
+    struct require_read_lock
+    {
+        template<typename T>
+        require_read_lock(const std::shared_lock<T>& lock)
+        {
+            lock;
+        }
+
+        template<typename T>
+        require_read_lock(const std::unique_lock<T>& lock)
+        {
+            lock;
+        }
+    };
+
+    struct require_write_lock
+    {
+        template<typename T>
+        require_write_lock(const std::unique_lock<T>& lock)
+        {
+            lock;
+        }
+    };
+
+    const HINSTANCE m_hinstance{};
+
+    mutable std::shared_mutex m_lock;
+    HWND m_window{};
+
+    winrt::com_ptr<IAltDragSettings> m_settings{};
+
+    // If non-recoverable error occurs, trigger disabling of entire FancyZones.
+    static std::function<void()> disableModuleCallback;
+
+};
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+        break;
+    }
+
+    return 0;
+}
+
+winrt::com_ptr<IAltDrag> MakeAltDrag(HINSTANCE hinstance,
+                                     const winrt::com_ptr<IAltDragSettings>& settings,
+                                     std::function<void()> disableCallback) noexcept
+{
+    if (!settings)
+    {
+        return nullptr;
+    }
+
+    return winrt::make_self<AltDrag>(hinstance, settings, disableCallback);
+}
+
+IFACEMETHODIMP_(void)
+AltDrag::Run() noexcept
+{
+    std::unique_lock writeLock(m_lock);
+
+    WNDCLASSEX wcex;
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = WS_OVERLAPPED;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = m_hinstance;
+    wcex.hIcon = NULL;
+    wcex.hCursor = LoadCursor(NULL, IDC_HAND);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = szWindowClass;
+    wcex.hIconSm = NULL;
+
+    RegisterClassEx(&wcex);
+
+    // Store instance handle in our global variable
+    hInst = m_hinstance;
+
+    HWND hWnd = CreateWindowEx(
+        WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_LAYERED,
+        szWindowClass,
+        NULL,
+        WS_POPUP,
+        0,
+        0,
+        200,
+        200,
+        NULL,
+        NULL,
+        m_hinstance,
+        NULL);
+
+    if (!hWnd)
+    {
+        MessageBox(NULL,
+                   L"Call to CreateWindow failed!",
+                   L"Windows Desktop Guided Tour",
+                   NULL);
+
+        return;
+    }
+    globalhwnd = hWnd;
+
+    // Main message loop:
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return;
+}
+
+IFACEMETHODIMP_(bool)
+AltDrag::OnKeyEvent(LowlevelKeyboardEvent* info) noexcept
+{
+    // Return true to swallow the keyboard event
+    //bool const alt = GetAsyncKeyState(VK_LMENU) & 0x8000;
+    switch (info->wParam)
+    {
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+    {
+        if (info->lParam->vkCode == VK_LMENU)
+        {
+            if (altpressed == false)
             {
-                ShowWindow(globalhwnd, 0);
-                altpressed = false;
+                POINT cursorpos;
+                GetCursorPos(&cursorpos);
+                oldmsx = cursorpos.x;
+                oldmsy = cursorpos.y;
+                yummyhwnd = WindowFromPoint(cursorpos);
+                yummyhwnd = GetRealParent(yummyhwnd);
+                SetWindowPos(globalhwnd, 0, cursorpos.x - 100, cursorpos.y - 100, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+                ShowWindow(globalhwnd, SW_SHOWNA);
+                altpressed = true;
+                return 1;
+            }
+            else
+            {
                 return 1;
             }
         }
-        default:
-            break;
-        }
+        break;
     }
 
-    return CallNextHookEx(NULL, nCode, wParam, lParam);
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+    {
+    
+        if (info->lParam->vkCode == VK_LMENU)
+        {
+            ShowWindow(globalhwnd, 0);
+            altpressed = false;
+            return 1;
+        }
+        break;
+    }
+    
+    default:
+        break;    
+    }
+
+
+    return false;
 }
 
-LRESULT CALLBACK mouse_hook(int nCode, WPARAM wParam, LPARAM lParam)
+IFACEMETHODIMP_(bool)
+AltDrag::OnMouseEvent(LowlevelMouseEvent* info) noexcept
 {
-    switch (wParam)
+    switch (info->wParam)
     {
     case WM_LBUTTONDOWN:
     {
@@ -112,8 +297,7 @@ LRESULT CALLBACK mouse_hook(int nCode, WPARAM wParam, LPARAM lParam)
     {
         if (altpressed)
         {
-            PMSLLHOOKSTRUCT p = (PMSLLHOOKSTRUCT)lParam;
-            POINT pt = p->pt;
+            POINT pt = info->lParam->pt;
             int xpos = pt.x;
             int deltax = xpos - oldmsx;
             oldmsx = xpos;
@@ -141,100 +325,4 @@ LRESULT CALLBACK mouse_hook(int nCode, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    return CallNextHookEx(NULL, nCode, wParam, lParam);
-}
-
-int CALLBACK WinMain(
-    _In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPSTR lpCmdLine,
-    _In_ int nCmdShow)
-{
-    WNDCLASSEX wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style = WS_OVERLAPPED;
-    wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
-    wcex.hIcon = NULL;
-    wcex.hCursor = LoadCursor(NULL, IDC_HAND);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = NULL;
-    wcex.lpszClassName = szWindowClass;
-    wcex.hIconSm = NULL;
-
-    RegisterClassEx(&wcex);
-
-    // Store instance handle in our global variable
-    hInst = hInstance;
-
-    HWND hWnd = CreateWindowEx(
-        WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_LAYERED,
-        szWindowClass,
-        NULL,
-        WS_POPUP,
-        0,
-        0,
-        200,
-        200,
-        NULL,
-        NULL,
-        hInstance,
-        NULL);
-
-    if (!hWnd)
-    {
-        MessageBox(NULL,
-                   L"Call to CreateWindow failed!",
-                   L"Windows Desktop Guided Tour",
-                   NULL);
-
-        return 1;
-    }
-
-    llkbdhook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboard_hook, hInstance, 0);
-    llmshook = SetWindowsHookEx(WH_MOUSE_LL, mouse_hook, hInstance, 0);
-    globalhwnd = hWnd;
-
-    // Main message loop:
-    MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-    UnhookWindowsHookEx(llkbdhook);
-    UnhookWindowsHookEx(llmshook);
-
-    return (int)msg.wParam;
-}
-
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-        break;
-    }
-
-    return 0;
-}
-
-winrt::com_ptr<IAltDrag> MakeFancyZones(HINSTANCE hinstance,
-                                           const winrt::com_ptr<IAltDragSettings>& settings,
-                                           std::function<void()> disableCallback) noexcept
-{
-    if (!settings)
-    {
-        return nullptr;
-    }
-
-    return winrt::make_self<AltDrag>(hinstance, settings, disableCallback);
 }

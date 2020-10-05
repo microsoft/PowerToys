@@ -132,6 +132,7 @@
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="LowlevelKeyboardEvent.h" />
+    <ClInclude Include="LowlevelMouseEvent.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="processApi.h" />
     <ClInclude Include="RcResource.h" />
