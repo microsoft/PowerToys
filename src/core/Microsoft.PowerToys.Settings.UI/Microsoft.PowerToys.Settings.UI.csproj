@@ -200,7 +200,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Include="Strings\en-us\Resources.resw" />
+    <PRIResource Include="Strings\*\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\HotkeySettingsControl.xaml">
