@@ -60,7 +60,7 @@ namespace ZoneWindowUtils
         return result;
     }
 
-    void PaintZoneWindowAsync(HDC hdc,
+    void PaintZoneWindow(HDC hdc,
                               HWND window,
                               bool hasActiveZoneSet,
                               COLORREF hostZoneColor,
@@ -598,9 +598,13 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
         return 1;
 
     case WM_PRINTCLIENT:
-    case WM_PAINT:
     {
         OnPaint(reinterpret_cast<HDC>(wparam));
+    }
+    break;
+    case WM_PAINT:
+    {
+        OnPaint(NULL);
     }
     break;
 
@@ -636,17 +640,17 @@ void ZoneWindow::OnPaint(HDC hdc) noexcept
 
     OnThreadExecutor::task_t task{
         [=]() {
-        ZoneWindowUtils::PaintZoneWindowAsync(hdc,
-                                              window,
-                                              hasActiveZoneSet,
-                                              hostZoneColor,
-                                              hostZoneBorderColor,
-                                              hostZoneHighlightColor,
-                                              hostZoneHighlightOpacity,
-                                              zones,
-                                              highlightZone,
-                                              flashMode,
-                                              drawHints);
+        ZoneWindowUtils::PaintZoneWindow(hdc,
+                                         window,
+                                         hasActiveZoneSet,
+                                         hostZoneColor,
+                                         hostZoneBorderColor,
+                                         hostZoneHighlightColor,
+                                         hostZoneHighlightOpacity,
+                                         zones,
+                                         highlightZone,
+                                         flashMode,
+                                         drawHints);
         } };
 
     if (m_animating)
