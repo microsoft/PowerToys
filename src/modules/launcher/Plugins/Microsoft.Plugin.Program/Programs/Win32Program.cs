@@ -756,7 +756,9 @@ namespace Microsoft.Plugin.Program.Programs
         private static ParallelQuery<Win32Program> DesktopPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            List<string> indexLocation = new List<string>() { directory1 };
+            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
+
+            List<string> indexLocation = new List<string>() { directory1, directory2 };
 
             return IndexPath(suffixes, indexLocation);
         }
