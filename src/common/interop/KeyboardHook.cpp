@@ -11,6 +11,9 @@ using namespace System::Runtime::InteropServices;
 using namespace System;
 using namespace System::Diagnostics;
 
+// A keyboard event sent with this value in the extra Information field should be ignored by the hook so that it can be captured by the system instead.
+const int IGNORE_FLAG = 0x5555;
+
 KeyboardHook::KeyboardHook(
     KeyboardEventCallback ^ keyboardEventCallback,
     IsActiveCallback ^ isActiveCallback,
@@ -60,7 +63,10 @@ LRESULT __clrcall KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam
         KeyboardEvent ^ ev = gcnew KeyboardEvent();
         ev->message = wParam;
         ev->key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->vkCode;
-        if (filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev))
+
+        ev->dwExtraInfo = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->dwExtraInfo;
+
+        if ((filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev)) || (ev->dwExtraInfo == IGNORE_FLAG))
         {
             return CallNextHookEx(hookHandle, nCode, wParam, lParam);
         }

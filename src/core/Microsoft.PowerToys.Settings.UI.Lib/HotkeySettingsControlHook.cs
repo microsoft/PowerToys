@@ -22,12 +22,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         private KeyEvent _keyUp;
         private IsActive _isActive;
 
-        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive)
+        private FilterAccessibleKeyboardEvents _filterKeyboardEvent;
+
+        public delegate bool FilterAccessibleKeyboardEvents(int key);
+
+        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
         {
             _keyDown = keyDown;
             _keyUp = keyUp;
             _isActive = isActive;
-            _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, null);
+            _filterKeyboardEvent = filterAccessibleKeyboardEvents;
+            _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, FilterKeyboardEvents);
             _hook.Start();
         }
 
@@ -49,6 +54,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     _keyUp(ev.key);
                     break;
             }
+        }
+
+        private bool FilterKeyboardEvents(KeyboardEvent ev)
+        {
+            return _filterKeyboardEvent(ev.key);
         }
 
         public void Dispose()

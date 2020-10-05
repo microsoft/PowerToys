@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -12,6 +13,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class HotkeySettingsControl : UserControl
     {
+        private bool _shiftKeyDownOnEntering = false;
+
+        private bool _shiftToggled = false;
+
         public string Header { get; set; }
 
         public string Keys { get; set; }
@@ -93,7 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             HotkeyTextBox.GettingFocus += HotkeyTextBox_GettingFocus;
             HotkeyTextBox.LosingFocus += HotkeyTextBox_LosingFocus;
             HotkeyTextBox.Unloaded += HotkeyTextBox_Unloaded;
-            hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive);
+            hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
         }
 
         private void HotkeyTextBox_Unloaded(object sender, RoutedEventArgs e)
@@ -123,6 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 case Windows.System.VirtualKey.Shift:
                 case Windows.System.VirtualKey.LeftShift:
                 case Windows.System.VirtualKey.RightShift:
+                    _shiftToggled = true;
                     internalSettings.Shift = matchValue;
                     break;
                 case Windows.System.VirtualKey.Escape:
@@ -133,6 +139,84 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     internalSettings.Code = matchValueCode;
                     break;
             }
+        }
+
+        private bool FilterAccessibleKeyboardEvents(int key)
+        {
+            if (key == 0x09)
+            {
+                // TODO: Others should not be pressed
+                if (!internalSettings.Shift && !_shiftKeyDownOnEntering)
+                {
+                    return false;
+                }
+
+                // shift was not pressed while entering but it was pressed while leaving the hotkey
+                else if (internalSettings.Shift && !_shiftKeyDownOnEntering)
+                {
+                    internalSettings.Shift = false;
+
+                    NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
+                    {
+                        type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
+                        data = new NativeKeyboardHelper.InputUnion
+                        {
+                            ki = new NativeKeyboardHelper.KEYBDINPUT
+                            {
+                                wVk = 0x10,
+                                dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyDown,
+                                dwExtraInfo = (UIntPtr)0x5555,
+                            },
+                        },
+                    };
+
+                    NativeKeyboardHelper.INPUT[] inputs = new NativeKeyboardHelper.INPUT[] { inputShift };
+
+                    _ = NativeMethods.SendInput(1, inputs, NativeKeyboardHelper.INPUT.Size);
+
+                    return false;
+                }
+
+                // Shift was pressed on entering and remained pressed
+                else if (!internalSettings.Shift && _shiftKeyDownOnEntering && !_shiftToggled)
+                {
+                    return false;
+                }
+
+                // Shift was pressed on entering but it was released and later pressed again
+                else if (internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled)
+                {
+                    internalSettings.Shift = false;
+
+                    return false;
+                }
+
+                // Shift was pressed on entering and was later released
+                else if (!internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled)
+                {
+                    NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
+                    {
+                        type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
+                        data = new NativeKeyboardHelper.InputUnion
+                        {
+                            ki = new NativeKeyboardHelper.KEYBDINPUT
+                            {
+                                wVk = 0x10,
+                                dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyUp,
+                                dwExtraInfo = (UIntPtr)0x5555,
+                            },
+                        },
+                    };
+
+                    NativeKeyboardHelper.INPUT[] inputs = new NativeKeyboardHelper.INPUT[] { inputShift };
+
+                    _ = NativeMethods.SendInput(1, inputs, NativeKeyboardHelper.INPUT.Size);
+
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private async void Hotkey_KeyDown(int key)
@@ -163,6 +247,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void HotkeyTextBox_GettingFocus(object sender, RoutedEventArgs e)
         {
+            _shiftKeyDownOnEntering = false;
+            _shiftToggled = false;
+
+            if ((NativeMethods.GetAsyncKeyState(0x10) & 0x8000) != 0)
+            {
+                _shiftKeyDownOnEntering = true;
+            }
+
             _isActive = true;
         }
 
