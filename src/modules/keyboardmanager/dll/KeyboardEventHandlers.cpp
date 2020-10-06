@@ -671,7 +671,7 @@ namespace KeyboardEventHandlers
                             {
                                 keyboardManagerState.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                             }
-                            lock.unlock();
+
                             UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
                             delete[] keyEventList;
                             return 1;
