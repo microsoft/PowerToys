@@ -213,7 +213,6 @@ void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstr
         return;
     }
 
-    // Clone information from source device if destination device is uninitialized (Blank).
     deviceInfoMap[destination] = deviceInfoMap[source];
 }
 
