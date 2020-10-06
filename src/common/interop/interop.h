@@ -127,9 +127,6 @@ public
     {
     public:
         literal int VK_WIN_BOTH = CommonSharedConstants::VK_WIN_BOTH;
-
-        // A keyboard event sent with this value in the extra Information field should be ignored by the hook so that it can be captured by the system instead.
-        literal DWORD IGNORE_KEYEVENT_FLAG = 0x5555;
         
         static String^ PowerLauncherSharedEvent()
         {

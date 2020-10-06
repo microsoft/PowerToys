@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
     public delegate bool IsActive();
 
-    public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr ignoreExtraInfoEvent);
+    public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo);
 
     public class HotkeySettingsControlHook
     {
@@ -27,11 +27,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         private FilterAccessibleKeyboardEvents _filterKeyboardEvent;
 
-        private UIntPtr _ignoreKeyEventFlag;
-
         public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
         {
-            _ignoreKeyEventFlag = (UIntPtr)interop.Constants.IGNORE_KEYEVENT_FLAG;
             _keyDown = keyDown;
             _keyUp = keyUp;
             _isActive = isActive;
@@ -62,7 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         private bool FilterKeyboardEvents(KeyboardEvent ev)
         {
-            return _filterKeyboardEvent(ev.key, _ignoreKeyEventFlag);
+            return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo);
         }
 
         public void Dispose()

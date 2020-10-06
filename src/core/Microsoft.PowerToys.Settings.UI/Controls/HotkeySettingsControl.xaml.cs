@@ -15,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     {
         private const int VKSHIFT = 0x10;
 
+        private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
+
         private bool _shiftKeyDownOnEntering = false;
 
         private bool _shiftToggled = false;
@@ -144,8 +146,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-        private bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfoIgnoreKeyEvent)
+        private bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo)
         {
+            // A keyboard event sent with this value in the extra Information field should be ignored by the hook so that it can be captured by the system instead.
+            if (extraInfo == ignoreKeyEventFlag)
+            {
+                return false;
+            }
+
             // If the current key press is tab, based on the other keys ignore the key press so as to shift focus out of the hotkey control.
             if ((Windows.System.VirtualKey)key == Windows.System.VirtualKey.Tab)
             {
@@ -172,7 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                                 dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyDown,
 
                                 // Any keyevent with the extraInfo set to this value will be ignored by the keyboard hook and sent to the system instead.
-                                dwExtraInfo = (UIntPtr)extraInfoIgnoreKeyEvent,
+                                dwExtraInfo = ignoreKeyEventFlag,
                             },
                         },
                     };
@@ -214,7 +222,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                             {
                                 wVk = 0x10,
                                 dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyUp,
-                                dwExtraInfo = (UIntPtr)extraInfoIgnoreKeyEvent,
+                                dwExtraInfo = ignoreKeyEventFlag,
                             },
                         },
                     };
