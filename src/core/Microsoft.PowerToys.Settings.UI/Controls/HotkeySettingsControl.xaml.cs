@@ -13,8 +13,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class HotkeySettingsControl : UserControl
     {
-        private const int VKSHIFT = 0x10;
-
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
 
         private bool _shiftKeyDownOnEntering = false;
