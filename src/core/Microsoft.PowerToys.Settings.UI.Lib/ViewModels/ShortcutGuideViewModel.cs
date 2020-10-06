@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
-                    OnPropertyChanged("IsEnabled");
+                    OnPropertyChanged(nameof(IsEnabled));
                 }
             }
         }

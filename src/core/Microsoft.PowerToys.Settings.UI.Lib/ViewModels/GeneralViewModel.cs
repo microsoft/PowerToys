@@ -159,8 +159,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_isElevated != value)
                 {
                     _isElevated = value;
-                    OnPropertyChanged("IsElevated");
-                    OnPropertyChanged("IsAdminButtonEnabled");
+                    OnPropertyChanged(nameof(IsElevated));
+                    OnPropertyChanged(nameof(IsAdminButtonEnabled));
                     OnPropertyChanged("RunningAsAdminText");
                 }
             }
@@ -175,7 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                OnPropertyChanged("IsAdminButtonEnabled");
+                OnPropertyChanged(nameof(IsAdminButtonEnabled));
             }
         }
 
