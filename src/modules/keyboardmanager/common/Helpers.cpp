@@ -192,7 +192,7 @@ namespace KeyboardManagerHelper
         }
         keyEventArray[index].ki.dwExtraInfo = extraInfo;
 
-        // Set wScan to the value from MapVirtualKey as some applications may use the scan code for handling input. Windows Terminal ignores input which has scancode set to 0
+        // Set wScan to the value from MapVirtualKey as some applications may use the scan code for handling input. Windows Terminal ignores input which has scancode set to 0. MapVirtualKey returns 0 if the key code does not correspond to a physical key (such as unassigned/reserved keys)
         keyEventArray[index].ki.wScan = (WORD)MapVirtualKey(keyCode, MAPVK_VK_TO_VSC);
     }
 
