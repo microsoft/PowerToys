@@ -45,6 +45,9 @@ private:
     // The PowerToy name that will be shown in the settings.
     const std::wstring app_name = GET_RESOURCE_STRING(IDS_KEYBOARDMANAGER);
 
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
+
     // Low level hook handles
     static HHOOK hook_handle;
 
@@ -69,6 +72,8 @@ public:
 
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
+
+        app_key = L"Keyboard Manager";
     };
 
     // Load config from the saved settings.
@@ -227,10 +232,16 @@ public:
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
+    // Return the localized display name of the powertoy
     virtual const wchar_t* get_name() override
     {
         return app_name.c_str();
+    }
+
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
+    {
+        return app_key.c_str();
     }
 
     // Return JSON with the configuration options.

@@ -59,6 +59,9 @@ private:
     //contains the name of the powerToys
     std::wstring app_name;
 
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
+
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
 
@@ -76,6 +79,7 @@ public:
     Microsoft_Launcher()
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
+        app_key = L"PowerToys Run";
         init_settings();
 
         SECURITY_ATTRIBUTES sa;
@@ -100,10 +104,16 @@ public:
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
+    // Return the localized display name of the powertoy
     virtual const wchar_t* get_name() override
     {
         return app_name.c_str();
+    }
+
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
+    {
+        return app_key.c_str();
     }
 
     // Return JSON with the configuration options.

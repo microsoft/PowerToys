@@ -94,12 +94,20 @@ namespace
 OverlayWindow::OverlayWindow()
 {
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
+    app_key = L"Shortcut Guide";
     init_settings();
 }
 
+// Return the localized display name of the powertoy
 const wchar_t* OverlayWindow::get_name()
 {
     return app_name.c_str();
+}
+
+// Return the non localized key of the powertoy, this will be cached by the runner
+const wchar_t* OverlayWindow::get_key()
+{
+    return app_key.c_str();
 }
 
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)

@@ -41,10 +41,16 @@ void PowerPreviewModule::destroy()
     delete this;
 }
 
-// Return the display name of the powertoy, this will be cached.
+// Return the localized display name of the powertoy
 const wchar_t* PowerPreviewModule::get_name()
 {
     return m_moduleName.c_str();
+}
+
+// Return the non localized key of the powertoy, this will be cached by the runner
+const wchar_t* PowerPreviewModule::get_key()
+{
+    return app_key.c_str();
 }
 
 // Return JSON with the configuration options.

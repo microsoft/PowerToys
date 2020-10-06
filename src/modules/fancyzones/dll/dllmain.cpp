@@ -37,10 +37,16 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 class FancyZonesModule : public PowertoyModuleIface
 {
 public:
-    // Return the display name of the powertoy, this will be cached
+    // Return the localized display name of the powertoy
     virtual PCWSTR get_name() override
     {
         return app_name.c_str();
+    }
+
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
+    {
+        return app_key.c_str();
     }
 
     // Return JSON with the configuration options.
@@ -142,6 +148,7 @@ public:
     FancyZonesModule()
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
+        app_key = L"FancyZones";
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
         FancyZonesDataInstance().LoadFancyZonesData();
         s_instance = this;
@@ -190,6 +197,8 @@ private:
     winrt::com_ptr<IFancyZones> m_app;
     winrt::com_ptr<IFancyZonesSettings> m_settings;
     std::wstring app_name;
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
 
     static inline FancyZonesModule* s_instance;
     static inline HHOOK s_llKeyboardHook;

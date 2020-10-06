@@ -155,12 +155,20 @@ private:
     // Enabled by default
     bool m_enabled = true;
     std::wstring app_name;
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
 
 public:
-    // Return the display name of the powertoy, this will be cached
+    // Return the localized display name of the powertoy
     virtual PCWSTR get_name() override
     {
         return app_name.c_str();
+    }
+
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
+    {
+        return app_key.c_str();
     }
 
     // Enable the powertoy
@@ -282,6 +290,7 @@ public:
     {
         init_settings();
         app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
+        app_key = L"PowerRename";
     }
 
     ~PowerRenameModule(){};
