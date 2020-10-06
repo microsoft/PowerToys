@@ -191,6 +191,9 @@ namespace KeyboardManagerHelper
             keyEventArray[index].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
         }
         keyEventArray[index].ki.dwExtraInfo = extraInfo;
+
+        // Set wScan to the value from MapVirtualKey as some applications may use the scan code for handling input. Windows Terminal ignores input which has scancode set to 0
+        keyEventArray[index].ki.wScan = (WORD)MapVirtualKey(keyCode, MAPVK_VK_TO_VSC);
     }
 
     // Function to return window handle for a full screen UWP app
