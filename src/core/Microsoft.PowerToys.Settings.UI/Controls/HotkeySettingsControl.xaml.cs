@@ -13,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class HotkeySettingsControl : UserControl
     {
+        private const int VKSHIFT = 0x10;
+
         private bool _shiftKeyDownOnEntering = false;
 
         private bool _shiftToggled = false;
@@ -143,17 +145,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfoIgnoreKeyEvent)
         {
-            if (key == 0x09)
+            // If the current key press is tab, based on the other keys ignore the key press so as to shift focus out of the hotkey control.
+            if ((Windows.System.VirtualKey)key == Windows.System.VirtualKey.Tab)
             {
-                // TODO: Others should not be pressed
+                // Shift was not pressed while entering and Shift is not pressed while leaving the hotkey control, treat it as a normal tab key press.
                 if (!internalSettings.Shift && !_shiftKeyDownOnEntering && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     return false;
                 }
 
-                // shift was not pressed while entering but it was pressed while leaving the hotkey
+                // Shift was not pressed while entering but it was pressed while leaving the hotkey, therefore simulate a shift key press as the system does not know about shift being pressed in the hotkey.
                 else if (internalSettings.Shift && !_shiftKeyDownOnEntering && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
+                    // This is to reset the shift key press within the control as it was not used within the control but rather was used to leave the hotkey.
                     internalSettings.Shift = false;
 
                     NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
@@ -165,6 +169,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                             {
                                 wVk = 0x10,
                                 dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyDown,
+
+                                // Any keyevent with the extraInfo set to this value will be ignored by the keyboard hook and sent to the system instead.
                                 dwExtraInfo = (UIntPtr)extraInfoIgnoreKeyEvent,
                             },
                         },
@@ -177,13 +183,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     return false;
                 }
 
-                // Shift was pressed on entering and remained pressed
+                // Shift was pressed on entering and remained pressed, therefore only ignore the tab key so that it can be passed to the system.
+                // As the shift key is already assumed to be pressed by the system while it entered the hotkey control, shift would still remain pressed, hence ignoring the tab input would simulate a Shift+Tab key press.
                 else if (!internalSettings.Shift && _shiftKeyDownOnEntering && !_shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     return false;
                 }
 
-                // Shift was pressed on entering but it was released and later pressed again
+                // Shift was pressed on entering but it was released and later pressed again.
+                // Ignore the tab key and the system already has the shift key pressed, therefore this would simulate Shift+Tab.
+                // However, since the last shift key was only used to move out of the control, reset the status of shift within the control.
                 else if (internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     internalSettings.Shift = false;
@@ -191,7 +200,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     return false;
                 }
 
-                // Shift was pressed on entering and was later released
+                // Shift was pressed on entering and was later released.
+                // The system still has shift in the key pressed status, therefore pass a Shift KeyUp message to the system, to release the shift key, therefore simulating only the Tab key press.
                 else if (!internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
@@ -247,10 +257,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void HotkeyTextBox_GettingFocus(object sender, RoutedEventArgs e)
         {
+            // Reset the status on entering the hotkey each time.
             _shiftKeyDownOnEntering = false;
             _shiftToggled = false;
 
-            if ((NativeMethods.GetAsyncKeyState(0x10) & 0x8000) != 0)
+            // To keep track of the shift key, whether it was pressed on entering.
+            if ((NativeMethods.GetAsyncKeyState(VKSHIFT) & 0x8000) != 0)
             {
                 _shiftKeyDownOnEntering = true;
             }

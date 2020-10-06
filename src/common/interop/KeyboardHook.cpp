@@ -64,6 +64,7 @@ LRESULT __clrcall KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam
 
         ev->dwExtraInfo = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->dwExtraInfo;
 
+        // Ignore the keyboard hook if either the ignore flag is set or if the FilterkeyboardEvent returns false.
         if ((filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev)) || (ev->dwExtraInfo == interop::Constants::IGNORE_KEYEVENT_FLAG))
         {
             return CallNextHookEx(hookHandle, nCode, wParam, lParam);
