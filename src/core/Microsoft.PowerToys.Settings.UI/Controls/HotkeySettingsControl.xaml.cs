@@ -230,14 +230,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 KeyEventHandler(key, true, key, Lib.Utilities.Helper.GetKeyName((uint)key));
-                if (internalSettings.Code > 0)
+
+                // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
+                if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
                 {
-                    // Display all key presses except Tab and Shift+Tab.
-                    if (!internalSettings.IsAccessibleShortcut())
-                    {
-                        HotkeyTextBox.Text = internalSettings.ToString();
-                        lastValidSettings = internalSettings.Clone();
-                    }
+                    HotkeyTextBox.Text = internalSettings.ToString();
+                    lastValidSettings = internalSettings.Clone();
                 }
             });
         }
