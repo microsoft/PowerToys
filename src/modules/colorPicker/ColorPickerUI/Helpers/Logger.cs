@@ -5,22 +5,23 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
+using System.IO.Abstractions;
 
 namespace ColorPicker.Helpers
 {
     public static class Logger
     {
-        private static readonly string ApplicationLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ColorPicker");
+        private static readonly IFileSystem _fileSystem = new FileSystem();
+        private static readonly string ApplicationLogPath = _fileSystem.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ColorPicker");
 
         static Logger()
         {
-            if (!Directory.Exists(ApplicationLogPath))
+            if (!_fileSystem.Directory.Exists(ApplicationLogPath))
             {
-                Directory.CreateDirectory(ApplicationLogPath);
+                _fileSystem.Directory.CreateDirectory(ApplicationLogPath);
             }
 
-            var logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.CurrentCulture) + ".txt");
+            var logFilePath = _fileSystem.Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.CurrentCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 

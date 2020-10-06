@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
@@ -18,18 +19,28 @@ namespace Wox.Infrastructure.Storage
     /// </summary>
     public class BinaryStorage<T> : IStorage<T>
     {
+        private readonly IFileSystem _fileSystem;
+
         // This storage helper returns whether or not to delete the binary storage items
         private static readonly int _binaryStorage = 0;
         private StoragePowerToysVersionInfo _storageHelper;
 
         public BinaryStorage(string filename)
+            : this(filename, new FileSystem())
         {
+        }
+
+        public BinaryStorage(string filename, IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+
             const string directoryName = "Cache";
-            var directoryPath = Path.Combine(Constant.DataDirectory, directoryName);
+            var path = _fileSystem.Path;
+            var directoryPath = path.Combine(Constant.DataDirectory, directoryName);
             Helper.ValidateDirectory(directoryPath);
 
             const string fileSuffix = ".cache";
-            FilePath = Path.Combine(directoryPath, $"{filename}{fileSuffix}");
+            FilePath = path.Combine(directoryPath, $"{filename}{fileSuffix}");
         }
 
         public string FilePath { get; }
@@ -41,17 +52,17 @@ namespace Wox.Infrastructure.Storage
             // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
             if (_storageHelper.ClearCache)
             {
-                if (File.Exists(FilePath))
+                if (_fileSystem.File.Exists(FilePath))
                 {
-                    File.Delete(FilePath);
+                    _fileSystem.File.Delete(FilePath);
 
                     Log.Info($"Deleting cached data at <{FilePath}>", GetType());
                 }
             }
 
-            if (File.Exists(FilePath))
+            if (_fileSystem.File.Exists(FilePath))
             {
-                if (new FileInfo(FilePath).Length == 0)
+                if (_fileSystem.FileInfo.FromFileName(FilePath).Length == 0)
                 {
                     Log.Error($"Zero length cache file <{FilePath}>", GetType());
 
@@ -59,7 +70,7 @@ namespace Wox.Infrastructure.Storage
                     return defaultData;
                 }
 
-                using (var stream = new FileStream(FilePath, FileMode.Open))
+                using (var stream = _fileSystem.FileStream.Create(FilePath, FileMode.Open))
                 {
                     var d = Deserialize(stream, defaultData);
                     return d;
@@ -74,7 +85,7 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private T Deserialize(FileStream stream, T defaultData)
+        private T Deserialize(Stream stream, T defaultData)
         {
             // http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;

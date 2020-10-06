@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -19,6 +19,8 @@ namespace Microsoft.Plugin.Program.Programs
     [Serializable]
     public partial class UWP
     {
+        private static readonly IPath Path = new FileSystem().Path;
+
         public string Name { get; }
 
         public string FullName { get; }

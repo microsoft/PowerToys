@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -53,8 +53,8 @@ namespace ViewModelTests
         public void JPEGQualityLevel_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(mockFileSystem);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
@@ -70,8 +70,8 @@ namespace ViewModelTests
         public void PngInterlaceOption_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(mockFileSystem);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
@@ -87,8 +87,8 @@ namespace ViewModelTests
         public void TiffCompressOption_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(mockFileSystem);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
@@ -104,8 +104,8 @@ namespace ViewModelTests
         public void FileName_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(mockFileSystem);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             string expectedValue = "%1 (%3)";
@@ -145,8 +145,8 @@ namespace ViewModelTests
         public void Encoder_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(mockFileSystem);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 

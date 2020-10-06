@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
@@ -25,11 +27,8 @@ namespace CommonLibTest
         public void ToJsonString_ShouldReturnValidJSONOfModel_WhenSuccessful()
         {
             //Mock Disk access
-            string saveContent = string.Empty;
-            string savePath = string.Empty;
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-
-            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
 
             // Arrange
             string file_name = "test\\BasePTModuleSettingsTest";

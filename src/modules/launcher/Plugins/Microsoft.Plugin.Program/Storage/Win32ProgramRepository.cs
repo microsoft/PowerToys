@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
 using Wox.Infrastructure.Logger;
@@ -18,6 +19,9 @@ namespace Microsoft.Plugin.Program.Storage
 {
     internal class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+
         private const string LnkExtension = ".lnk";
         private const string UrlExtension = ".url";
 

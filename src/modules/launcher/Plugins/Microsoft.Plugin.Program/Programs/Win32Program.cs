@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Security;
@@ -20,12 +21,19 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
+using FileWrapper = Wox.Infrastructure.FileSystemHelper.FileWrapper;
 
 namespace Microsoft.Plugin.Program.Programs
 {
     [Serializable]
     public class Win32Program : IProgram
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         public string Name { get; set; }
 
         public string UniqueIdentifier { get; set; }

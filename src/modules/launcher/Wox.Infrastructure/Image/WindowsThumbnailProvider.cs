@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -24,6 +24,9 @@ namespace Wox.Infrastructure.Image
 
     public class WindowsThumbnailProvider
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+
         // Based on https://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows
         private const string IShellItem2Guid = "7E9FB0D3-919F-4307-AB2E-9B1860310C93";
 

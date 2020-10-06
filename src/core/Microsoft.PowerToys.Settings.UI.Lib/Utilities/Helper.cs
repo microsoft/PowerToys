@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.PowerToys.Settings.UI.Lib.CustomAction;
@@ -47,22 +48,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             return sendCustomAction.ToJsonString();
         }
 
-        public static FileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback)
+        public static IFileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback)
         {
-            var path = Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+            var path = FileSystem.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
 
-            if (!Directory.Exists(path))
+            if (!FileSystem.Directory.Exists(path))
             {
-                Directory.CreateDirectory(path);
+                FileSystem.Directory.CreateDirectory(path);
             }
 
-            var watcher = new FileSystemWatcher
-            {
-                Path = path,
-                Filter = fileName,
-                NotifyFilter = NotifyFilters.LastWrite,
-                EnableRaisingEvents = true,
-            };
+            var watcher = FileSystem.FileSystemWatcher.CreateNew();
+            watcher.Path = path;
+            watcher.Filter = fileName;
+            watcher.NotifyFilter = NotifyFilters.LastWrite;
+            watcher.EnableRaisingEvents = true;
 
             watcher.Changed += (o, e) => onChangedCallback();
 
@@ -78,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
         private static extern bool AllowSetForegroundWindow(int dwProcessId);
 
         private static readonly interop.LayoutMapManaged LayoutMap = new interop.LayoutMapManaged();
+        public static readonly IFileSystem FileSystem = new FileSystem();
 
         public static string GetKeyName(uint key)
         {

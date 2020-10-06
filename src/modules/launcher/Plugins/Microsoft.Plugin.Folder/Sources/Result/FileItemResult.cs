@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using System.IO;
+using System.IO.Abstractions;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
@@ -11,11 +11,12 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class FileItemResult : IItemResult
     {
+        private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly IExplorerAction ExplorerAction = new ExplorerAction();
 
         public string FilePath { get; set; }
 
-        public string Title => Path.GetFileName(FilePath);
+        public string Title => _fileSystem.Path.GetFileName(FilePath);
 
         public string Search { get; set; }
 
@@ -26,7 +27,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 Title = Title,
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_file_result_subtitle, FilePath),
                 IcoPath = FilePath,
-                TitleHighlightData = StringMatcher.FuzzySearch(Search, Path.GetFileName(FilePath)).MatchData,
+                TitleHighlightData = StringMatcher.FuzzySearch(Search, _fileSystem.Path.GetFileName(FilePath)).MatchData,
                 Action = c => ExplorerAction.Execute(FilePath, contextApi),
                 ContextData = new SearchResult { Type = ResultType.File, FullPath = FilePath },
             };

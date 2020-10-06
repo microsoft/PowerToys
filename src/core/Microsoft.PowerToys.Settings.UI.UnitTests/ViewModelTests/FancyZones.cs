@@ -4,9 +4,7 @@
 
 using System;
 using System.Drawing;
-using System.IO;
 using System.Text.Json;
-using CommonLibTest;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;

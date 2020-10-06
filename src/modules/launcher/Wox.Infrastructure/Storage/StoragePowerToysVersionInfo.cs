@@ -3,12 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
 
 namespace Wox.Infrastructure.Storage
 {
     public class StoragePowerToysVersionInfo
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
+
         // This detail is accessed by the storage items and is used to decide if the cache must be deleted or not
         public bool ClearCache { get; set; } = false;
 

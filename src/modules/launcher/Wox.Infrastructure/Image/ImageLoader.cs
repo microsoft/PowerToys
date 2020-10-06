@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -19,6 +19,11 @@ namespace Wox.Infrastructure.Image
 {
     public static class ImageLoader
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         private static readonly ImageCache ImageCache = new ImageCache();
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
 

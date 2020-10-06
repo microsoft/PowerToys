@@ -3,6 +3,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
 {
@@ -15,22 +16,10 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
         /// <returns></returns>
         internal static Mock<IIOProvider> GetMockIOProviderForSaveLoadExists()
         {
+            Assert.Fail("Remove");
             string savePath = string.Empty;
             string saveContent = string.Empty;
             var mockIOProvider = new Mock<IIOProvider>();
-            mockIOProvider.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
-                          .Callback<string, string>((path, content) =>
-                          {
-                              savePath = path;
-                              saveContent = content;
-                          });
-            mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
-                          .Returns(() => saveContent);
-
-            mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
-                          .Returns(true);
-            mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => !x.Equals(savePath, StringComparison.Ordinal))))
-                          .Returns(false);
 
             return mockIOProvider;
         }

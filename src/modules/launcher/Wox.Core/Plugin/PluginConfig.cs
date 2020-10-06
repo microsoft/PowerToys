@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -15,6 +15,11 @@ namespace Wox.Core.Plugin
 {
     internal abstract class PluginConfig
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         private const string PluginConfigName = "plugin.json";
         private static readonly List<PluginMetadata> PluginMetadatas = new List<PluginMetadata>();
 

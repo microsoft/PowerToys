@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
@@ -23,6 +23,8 @@ namespace Microsoft.Plugin.Indexer
 {
     internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable, IDelayedExecutionPlugin
     {
+        private static readonly IFileSystem _fileSystem = new FileSystem();
+
         // This variable contains metadata about the Plugin
         private PluginInitContext _context;
 
@@ -114,7 +116,7 @@ namespace Microsoft.Plugin.Indexer
                             string workingDir = null;
                             if (_settings.UseLocationAsWorkingDir)
                             {
-                                workingDir = Path.GetDirectoryName(path);
+                                workingDir = _fileSystem.Path.GetDirectoryName(path);
                             }
 
                             Result r = new Result();
@@ -148,7 +150,7 @@ namespace Microsoft.Plugin.Indexer
                             r.ContextData = searchResult;
 
                             // If the result is a directory, then it's display should show a directory.
-                            if (Directory.Exists(path))
+                            if (_fileSystem.Directory.Exists(path))
                             {
                                 r.QueryTextDisplay = path;
                             }

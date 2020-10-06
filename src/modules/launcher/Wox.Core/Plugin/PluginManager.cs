@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -22,6 +22,9 @@ namespace Wox.Core.Plugin
     /// </summary>
     public static class PluginManager
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
         /// <summary>

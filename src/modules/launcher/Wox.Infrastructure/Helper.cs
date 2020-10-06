@@ -4,7 +4,7 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -14,6 +14,12 @@ namespace Wox.Infrastructure
 {
     public static class Helper
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IFileInfoFactory FileInfo = FileSystem.FileInfo;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         /// <summary>
         /// http://www.yinwang.org/blog-cn/2015/11/21/programming-philosophy
         /// </summary>
@@ -54,8 +60,8 @@ namespace Wox.Infrastructure
                 }
                 else
                 {
-                    var time1 = new FileInfo(bundledDataPath).LastWriteTimeUtc;
-                    var time2 = new FileInfo(dataPath).LastWriteTimeUtc;
+                    var time1 = FileInfo.FromFileName(bundledDataPath).LastWriteTimeUtc;
+                    var time2 = FileInfo.FromFileName(dataPath).LastWriteTimeUtc;
                     if (time1 != time2)
                     {
                         File.Copy(bundledDataPath, dataPath, true);

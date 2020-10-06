@@ -1,4 +1,4 @@
-using System.IO;
+using System.IO.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -9,6 +9,9 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesEditorOpeningTests : FancyZonesEditor
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
         void RemoveSettingsFile()
         {
             File.Delete(_zoneSettingsPath);

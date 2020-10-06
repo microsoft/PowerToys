@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Logger;
 
@@ -15,6 +16,10 @@ namespace Wox.Infrastructure.Storage
     /// </summary>
     public class JsonStorage<T>
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         private readonly JsonSerializerSettings _serializerSettings;
         private T _data;
 

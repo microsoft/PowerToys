@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -21,6 +22,9 @@ namespace PowerLauncher
 {
     internal partial class ReportWindow
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
+
         public ReportWindow(Exception exception)
         {
             InitializeComponent();

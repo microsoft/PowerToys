@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private const string PowerToyName = "Keyboard Manager";
 
         private readonly CoreDispatcher dispatcher;
-        private readonly FileSystemWatcher watcher;
+        private readonly IFileSystemWatcher watcher;
 
         public KeyboardManagerViewModel ViewModel { get; }
 

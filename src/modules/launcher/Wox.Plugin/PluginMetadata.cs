@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using Newtonsoft.Json;
 
 namespace Wox.Plugin
@@ -12,6 +12,9 @@ namespace Wox.Plugin
     [JsonObject(MemberSerialization.OptOut)]
     public class PluginMetadata : BaseModel
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+
         private string _pluginDirectory;
 
         public string ID { get; set; }

@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Lib;
@@ -25,12 +26,12 @@ namespace PowerLauncher
 
         private const int MaxRetries = 10;
         private static readonly object _watcherSyncObject = new object();
-        private readonly FileSystemWatcher _watcher;
+        private readonly IFileSystemWatcher _watcher;
         private readonly Settings _settings;
 
         public SettingsWatcher(Settings settings)
         {
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = new SettingsUtils();
             _settings = settings;
 
             // Set up watcher

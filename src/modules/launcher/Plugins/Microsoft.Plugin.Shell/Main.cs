@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
@@ -22,6 +23,11 @@ namespace Microsoft.Plugin.Shell
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         private readonly ShellPluginSettings _settings;
         private readonly PluginJsonStorage<ShellPluginSettings> _storage;
 

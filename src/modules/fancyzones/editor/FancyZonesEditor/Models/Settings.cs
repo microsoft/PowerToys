@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
@@ -38,6 +39,8 @@ namespace FancyZonesEditor
             Prod,
             Debug,
         }
+
+        private static readonly IFileSystem _fileSystem = new FileSystem();
 
         private static CanvasLayoutModel _blankCustomModel;
         private readonly CanvasLayoutModel _focusModel;
@@ -135,7 +138,7 @@ namespace FancyZonesEditor
 
         public Settings()
         {
-            string tmpDirPath = Path.GetTempPath();
+            string tmpDirPath = _fileSystem.Path.GetTempPath();
 
             ActiveZoneSetTmpFile = tmpDirPath + ActiveZoneSetsTmpFileName;
             AppliedZoneSetTmpFile = tmpDirPath + AppliedZoneSetsTmpFileName;
@@ -439,9 +442,9 @@ namespace FancyZonesEditor
                 ActiveZoneSetUUid = NullUuidStr;
                 JsonElement jsonObject = default(JsonElement);
 
-                if (File.Exists(Settings.ActiveZoneSetTmpFile))
+                if (_fileSystem.File.Exists(Settings.ActiveZoneSetTmpFile))
                 {
-                    FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
+                    Stream inputStream = _fileSystem.File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
                     jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
                     inputStream.Close();
                     UniqueKey = jsonObject.GetProperty(DeviceIdJsonTag).GetString();

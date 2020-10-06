@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using ColorPicker.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
@@ -21,7 +22,7 @@ namespace ColorPicker.Settings
         private const int MaxNumberOfRetry = 5;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
-        private readonly FileSystemWatcher _watcher;
+        private readonly IFileSystemWatcher _watcher;
 
         private readonly object _loadingSettingsLock = new object();
 

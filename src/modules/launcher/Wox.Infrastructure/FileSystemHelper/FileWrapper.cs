@@ -3,12 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
+using System.IO.Abstractions;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure.FileSystemHelper
 {
     public class FileWrapper : IFileWrapper
     {
+        private readonly IFile _file = new FileSystem().File;
+
         public FileWrapper()
         {
         }
@@ -17,7 +20,7 @@ namespace Wox.Infrastructure.FileSystemHelper
         {
             try
             {
-                return File.ReadAllLines(path);
+                return _file.ReadAllLines(path);
             }
             catch (IOException ex)
             {

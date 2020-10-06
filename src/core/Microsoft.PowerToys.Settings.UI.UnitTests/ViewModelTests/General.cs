@@ -3,14 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Moq;
-using NuGet.Frameworks;
 
 namespace ViewModelTests
 {

@@ -4,13 +4,17 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 
 namespace Wox.Infrastructure
 {
     public static class Constant
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         public const string ExeFileName = "PowerLauncher";
         public const string ModuleLocation = "Microsoft\\PowerToys\\PowerToys Run";
         public const string Plugins = "Plugins";

@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,9 +24,9 @@ namespace CommonLibTest
         public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
         {
             // Arrange
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
-            
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
+
             string file_name = "\\test";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
@@ -44,8 +44,8 @@ namespace CommonLibTest
         public void SaveSettings_ShouldCreateFile_WhenFilePathIsNotFound()
         {
             // Arrange
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
             string file_name = "test\\Test Folder";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
@@ -62,8 +62,8 @@ namespace CommonLibTest
         public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
         {
             // Arrange
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
             string file_name_random = "test\\" + RandomString();
             string file_name_exists = "test\\exists";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";

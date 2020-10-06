@@ -5,17 +5,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
-using Wox.Infrastructure.FileSystemHelper;
+using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
     public class QueryFileSystemInfo : DirectoryWrapper,  IQueryFileSystemInfo
     {
+        private readonly IFileSystem _fileSystem = new FileSystem();
+
         public IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, SearchOption searchOption)
         {
             // search folder and add results
-            var directoryInfo = new DirectoryInfo(search);
+            var directoryInfo = _fileSystem.DirectoryInfo.FromDirectoryName(search);
             var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, searchOption);
 
             return SafeEnumerateFileSystemInfos(fileSystemInfos)
@@ -23,13 +26,13 @@ namespace Microsoft.Plugin.Folder.Sources
                 .Select(CreateDisplayFileInfo);
         }
 
-        private static IEnumerable<FileSystemInfo> SafeEnumerateFileSystemInfos(IEnumerable<FileSystemInfo> fileSystemInfos)
+        private static IEnumerable<IFileSystemInfo> SafeEnumerateFileSystemInfos(IEnumerable<IFileSystemInfo> fileSystemInfos)
         {
             using (var enumerator = fileSystemInfos.GetEnumerator())
             {
                 while (true)
                 {
-                    FileSystemInfo currentFileSystemInfo;
+                    IFileSystemInfo currentFileSystemInfo;
                     try
                     {
                         if (!enumerator.MoveNext())
@@ -49,7 +52,7 @@ namespace Microsoft.Plugin.Folder.Sources
             }
         }
 
-        private static DisplayFileInfo CreateDisplayFileInfo(FileSystemInfo fileSystemInfo)
+        private static DisplayFileInfo CreateDisplayFileInfo(IFileSystemInfo fileSystemInfo)
         {
             return new DisplayFileInfo()
             {
@@ -59,9 +62,9 @@ namespace Microsoft.Plugin.Folder.Sources
             };
         }
 
-        private static DisplayType GetDisplayType(FileSystemInfo fileSystemInfo)
+        private static DisplayType GetDisplayType(IFileSystemInfo fileSystemInfo)
         {
-            if (fileSystemInfo is DirectoryInfo)
+            if (fileSystemInfo is IDirectoryInfo)
             {
                 return DisplayType.Directory;
             }

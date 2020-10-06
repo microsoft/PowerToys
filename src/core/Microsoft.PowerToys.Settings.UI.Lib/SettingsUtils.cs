@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
@@ -13,26 +14,31 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         private const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";
-        private IIOProvider _ioProvider;
+        private readonly IFileSystem _fileSystem;
 
-        public SettingsUtils(IIOProvider ioProvider)
+        public SettingsUtils()
+            : this(new FileSystem())
         {
-            _ioProvider = ioProvider ?? throw new ArgumentNullException(nameof(ioProvider));
+        }
+
+        public SettingsUtils(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         private bool SettingsFolderExists(string powertoy)
         {
-            return _ioProvider.DirectoryExists(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            return _fileSystem.Directory.Exists(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
         }
 
         private void CreateSettingsFolder(string powertoy)
         {
-            _ioProvider.CreateDirectory(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            _fileSystem.Directory.CreateDirectory(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
         }
 
         public void DeleteSettings(string powertoy = "")
         {
-            _ioProvider.DeleteDirectory(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            _fileSystem.Directory.Delete(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
         }
 
         /// <summary>
@@ -55,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public bool SettingsExists(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
-            return _ioProvider.FileExists(GetSettingsPath(powertoy, fileName));
+            return _fileSystem.File.Exists(GetSettingsPath(powertoy, fileName));
         }
 
         /// <summary>
@@ -95,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             // Look at issue https://github.com/microsoft/PowerToys/issues/6413 you'll see the file has a large sum of \0 to fill up a 4096 byte buffer for writing to disk
             // This, while not totally ideal, does work around the problem by trimming the end.
             // The file itself did write the content correctly but something is off with the actual end of the file, hence the 0x00 bug
-            var jsonSettingsString = _ioProvider.ReadAllText(GetSettingsPath(powertoyFolderName, fileName)).Trim('\0');
+            var jsonSettingsString = _fileSystem.File.ReadAllText(GetSettingsPath(powertoyFolderName, fileName)).Trim('\0');
             return JsonSerializer.Deserialize<T>(jsonSettingsString);
         }
 
@@ -111,7 +117,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                         CreateSettingsFolder(powertoy);
                     }
 
-                    _ioProvider.WriteAllText(GetSettingsPath(powertoy, fileName), jsonSettings);
+                    _fileSystem.File.WriteAllText(GetSettingsPath(powertoy, fileName), jsonSettings);
                 }
             }
             catch

@@ -4,18 +4,27 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 
 namespace Wox.Infrastructure.FileSystemHelper
 {
     public class FileVersionInfoWrapper : IFileVersionInfoWrapper
     {
+        private readonly IFile _file;
+
         public FileVersionInfoWrapper()
+            : this(new FileSystem().File)
         {
+        }
+
+        public FileVersionInfoWrapper(IFile file)
+        {
+            _file = file;
         }
 
         public FileVersionInfo GetVersionInfo(string path)
         {
-            if (File.Exists(path))
+            if (_file.Exists(path))
             {
                 return FileVersionInfo.GetVersionInfo(path);
             }

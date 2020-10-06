@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -40,6 +41,8 @@ namespace FancyZonesEditor
         private const string CrashReportAssembliesTag = "Assemblies - ";
         private const string CrashReportDynamicAssemblyTag = "dynamic assembly doesn't have location";
         private const string CrashReportLocationNullTag = "location is null or empty";
+
+        private readonly IFileSystem _fileSystem = new FileSystem();
 
         public Settings ZoneSettings { get; }
 
