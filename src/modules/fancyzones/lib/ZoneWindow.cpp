@@ -443,8 +443,8 @@ ZoneWindow::ClearSelectedZones() noexcept
 
 void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
 {
-    // If there is not defined zone layout for this work area, created default entry.
     bool deviceAdded = FancyZonesDataInstance().AddDevice(m_uniqueId);
+    // If the device has been added, check if it should inherit the parent's layout
     if (deviceAdded && !parentUniqueId.empty())
     {
         FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
