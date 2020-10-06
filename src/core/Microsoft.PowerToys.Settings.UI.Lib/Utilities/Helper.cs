@@ -98,7 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
                 var v1 = version1.Substring(1).Split('.').Select(int.Parse).ToArray();
                 var v2 = version2.Substring(1).Split('.').Select(int.Parse).ToArray();
 
-                if (v1.Count() != 3 || v2.Count() != 3)
+                if (v1.Length != 3 || v2.Length != 3)
                 {
                     throw new FormatException();
                 }

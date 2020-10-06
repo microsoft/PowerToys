@@ -197,7 +197,7 @@ namespace ViewModelTests
 
             // Assert
             viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
-            Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", viewModel.GetEncoderGuid(viewModel.Encoder));
+            Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", ImageResizerViewModel.GetEncoderGuid(viewModel.Encoder));
             Assert.AreEqual(3, viewModel.Encoder);
         }
 

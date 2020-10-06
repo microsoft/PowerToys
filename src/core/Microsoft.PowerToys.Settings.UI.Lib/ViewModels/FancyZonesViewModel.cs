@@ -518,7 +518,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
-        private string ToRGBHex(string color)
+        private static string ToRGBHex(string color)
         {
             try
             {

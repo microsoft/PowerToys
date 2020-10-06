@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("newRemapKeys")]
         public string NewRemapKeys { get; set; }
 
-        private List<string> MapKeys(string stringOfKeys)
+        private static List<string> MapKeys(string stringOfKeys)
         {
             return stringOfKeys
                 .Split(';')
