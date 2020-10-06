@@ -430,19 +430,19 @@ namespace ImageResizer.Models
 
         private static Settings Settings(Action<Settings> action = null)
         {
-            var settings = new Settings
+            var settings = new Settings()
             {
-                Sizes = new ObservableCollection<ResizeSize>
-                {
-                    new ResizeSize
-                    {
-                        Name = "Test",
-                        Width = 96,
-                        Height = 96,
-                    },
-                },
                 SelectedSizeIndex = 0,
             };
+            settings.Sizes.Clear();
+
+            settings.Sizes.Add(new ResizeSize
+            {
+                Name = "Test",
+                Width = 96,
+                Height = 96,
+            });
+
             action?.Invoke(settings);
 
             return settings;

@@ -57,6 +57,7 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 ```shell
 cd "%ProgramFiles(x86)%\Microsoft Visual Studio\2019"
 SET targetFolder="\"
+IF EXIST Preview\NUL (SET targetFolder=Preview)
 IF EXIST Enterprise\NUL (SET targetFolder=Enterprise)
 IF EXIST Professional\NUL (SET targetFolder=Professional)
 IF EXIST Community\NUL (SET targetFolder=Community)

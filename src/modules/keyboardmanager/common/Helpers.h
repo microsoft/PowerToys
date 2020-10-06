@@ -48,7 +48,8 @@ namespace KeyboardManagerHelper
         ShortcutAtleast2Keys,
         ShortcutOneActionKey,
         ShortcutNotMoreThanOneActionKey,
-        ShortcutMaxShortcutSizeOneActionKey
+        ShortcutMaxShortcutSizeOneActionKey,
+        ShortcutDisableAsActionKey
     };
 
     // Enum type to store possible decision for input in the low level hook
