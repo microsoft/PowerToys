@@ -172,7 +172,7 @@ namespace ViewModelTests
             viewModel.AddRow();
 
             // Assert
-            Assert.AreEqual(viewModel.Sizes.Count, sizeOfOriginalArray + 1);
+            Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);
         }
 
         [TestMethod]
@@ -189,7 +189,7 @@ namespace ViewModelTests
             viewModel.DeleteImageSize(0);
 
             // Assert
-            Assert.AreEqual(viewModel.Sizes.Count, sizeOfOriginalArray - 1);
+            Assert.AreEqual(sizeOfOriginalArray - 1, viewModel.Sizes.Count);
             Assert.IsFalse(viewModel.Sizes.Contains(deleteCandidate));
         }
 

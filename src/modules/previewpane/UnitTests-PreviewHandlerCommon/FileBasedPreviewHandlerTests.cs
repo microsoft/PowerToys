@@ -38,7 +38,7 @@ namespace PreviewHandlerCommonUnitTests
             fileBasedPreviewHandler.Initialize(filePath, grfMode);
 
             // Assert
-            Assert.AreEqual(fileBasedPreviewHandler.FilePath, filePath);
+            Assert.AreEqual(filePath, fileBasedPreviewHandler.FilePath);
         }
     }
 }
