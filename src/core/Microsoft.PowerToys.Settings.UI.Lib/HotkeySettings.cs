@@ -102,9 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public bool IsValid()
         {
-            // Tab and Shift+Tab are not valid settings to meet the accessibility criteria.
-            if ((!Alt && !Ctrl && !Win && Shift && Code == VKTAB)
-                || (!Alt && !Ctrl && !Win && !Shift && Code == VKTAB))
+            if (IsAccessibleShortcut())
             {
                 return false;
             }
@@ -115,6 +113,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public bool IsEmpty()
         {
             return !Alt && !Ctrl && !Win && !Shift && Code == 0;
+        }
+
+        public bool IsAccessibleShortcut()
+        {
+            // Shift+Tab and Tab are accessible shortcuts
+            if ((!Alt && !Ctrl && !Win && Shift && Code == VKTAB)
+                || (!Alt && !Ctrl && !Win && !Shift && Code == VKTAB))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

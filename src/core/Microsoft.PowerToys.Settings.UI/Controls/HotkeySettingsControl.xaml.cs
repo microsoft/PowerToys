@@ -73,7 +73,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private HotkeySettings hotkeySettings;
         private HotkeySettings internalSettings;
         private HotkeySettings lastValidSettings;
-        private HotkeySettings latestSettings;
         private HotkeySettingsControlHook hook;
         private bool _isActive;
 
@@ -245,12 +244,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 KeyEventHandler(key, true, key, Lib.Utilities.Helper.GetKeyName((uint)key));
                 if (internalSettings.Code > 0)
                 {
-                    latestSettings = internalSettings.Clone();
-
-                    if (latestSettings != null && (latestSettings.IsValid() || latestSettings.IsEmpty()))
+                    // Display all key presses except Tab and Shift+Tab.
+                    if (!internalSettings.IsAccessibleShortcut())
                     {
-                        HotkeyTextBox.Text = latestSettings.ToString();
-                        lastValidSettings = latestSettings.Clone();
+                        HotkeyTextBox.Text = internalSettings.ToString();
+                        lastValidSettings = internalSettings.Clone();
                     }
                 }
             });
