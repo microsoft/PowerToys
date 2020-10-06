@@ -13,7 +13,7 @@
     - call powertoy_create() to create the PowerToy.
 
   On the received object, the runner will call:
-    - get_name() to get the name of the PowerToy,
+    - get_key() to get the non localized ID of the PowerToy,
     - enable() to initialize the PowerToy.
     - get_hotkeys() to register the hotkeys the PowerToy uses.
 
