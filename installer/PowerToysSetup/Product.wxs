@@ -219,11 +219,11 @@
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
-			<Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
+            <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
-			<Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
+            <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
             <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
               <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
