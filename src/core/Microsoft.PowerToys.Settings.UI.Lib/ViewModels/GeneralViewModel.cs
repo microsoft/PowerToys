@@ -77,15 +77,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _isAdmin = isAdmin;
         }
 
-        private bool _packaged = false;
-        private bool _startup = false;
-        private bool _isElevated = false;
-        private bool _runElevated = false;
-        private bool _isAdmin = false;
-        private bool _isDarkThemeRadioButtonChecked = false;
-        private bool _isLightThemeRadioButtonChecked = false;
-        private bool _isSystemThemeRadioButtonChecked = false;
-        private bool _autoDownloadUpdates = false;
+        private bool _packaged;
+        private bool _startup;
+        private bool _isElevated;
+        private bool _runElevated;
+        private bool _isAdmin;
+        private bool _isDarkThemeRadioButtonChecked;
+        private bool _isLightThemeRadioButtonChecked;
+        private bool _isSystemThemeRadioButtonChecked;
+        private bool _autoDownloadUpdates;
 
         private string _latestAvailableVersion = string.Empty;
 

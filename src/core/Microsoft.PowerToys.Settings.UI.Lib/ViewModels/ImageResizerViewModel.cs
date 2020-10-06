@@ -61,14 +61,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
-        private bool _isEnabled = false;
+        private bool _isEnabled;
         private ObservableCollection<ImageSize> _advancedSizes = new ObservableCollection<ImageSize>();
-        private int _jpegQualityLevel = 0;
+        private int _jpegQualityLevel;
         private int _pngInterlaceOption;
         private int _tiffCompressOption;
         private string _fileName;
         private bool _keepDateModified;
-        private int _encoderGuidId = 0;
+        private int _encoderGuidId;
 
         public bool IsEnabled
         {
