@@ -38,11 +38,21 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                            <Border x:Name="border" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" SnapsToDevicePixels="True">
-                                <ScrollViewer x:Name="PART_ContentHost" Background="{TemplateBinding Background}" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    SnapsToDevicePixels="True">
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              Background="{TemplateBinding Background}"
+                                              Focusable="false"
+                                              HorizontalScrollBarVisibility="Hidden"
+                                              VerticalScrollBarVisibility="Hidden">
                                     <ScrollViewer.ContentTemplate>
                                         <DataTemplate>
-                                            <Grid Background="{Binding Background, ElementName=PART_ContentHost}" RenderOptions.ClearTypeHint="Enabled" TextOptions.TextFormattingMode="Display">
+                                            <Grid
+                                                Background="{Binding Background, ElementName=PART_ContentHost}"
+                                                RenderOptions.ClearTypeHint="Enabled" TextOptions.TextFormattingMode="Display">
                                                 <ContentPresenter Content="{Binding Path=Content, ElementName=PART_ContentHost}"/>
                                             </Grid>
                                         </DataTemplate>
