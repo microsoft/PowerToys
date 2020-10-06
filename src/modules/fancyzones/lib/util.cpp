@@ -45,7 +45,7 @@ namespace FancyZonesUtils
         // We're interested in the unique part between the first and last #'s
         // Example input: \\?\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
         // Example output: DELA026#5&10a58c63&0&UID16777488
-        const std::wstring defaultDeviceId = L"FallbackDevice";
+        static const std::wstring defaultDeviceId = L"FallbackDevice";
         if (deviceId.empty())
         {
             return defaultDeviceId;

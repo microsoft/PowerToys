@@ -974,37 +974,33 @@ void FancyZones::UpdateZoneWindows() noexcept
     auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
-        if (GetMonitorInfo(monitor, &mi))
+        if (GetMonitorInfoW(monitor, &mi))
         {
-            DISPLAY_DEVICE displayDevice;
-            displayDevice.cb = sizeof(displayDevice);
+            DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
 
-            std::wstring deviceId;
-            bool validMonitor = true;
+            std::wstring deviceId{};
             DWORD deviceIdx = 0;
-            while (EnumDisplayDevices(mi.szDevice, deviceIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
+            while (EnumDisplayDevicesW(mi.szDevice, deviceIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
             {
-                // Only take active monitors (presented as being "on" by the respective GDI view) into account.
-                if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE))
+                // Only take active monitors (presented as being "on" by the respective GDI view) and monitors that don't
+                // represent a pseudo device used to mirror application drawing.
+                if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
+                    WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
                 {
-                    validMonitor = WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER);
-                    deviceId = std::wstring(displayDevice.DeviceID);
+                    deviceId = displayDevice.DeviceID;
                 }
                 ++deviceIdx;
             }
 
-            if (validMonitor)
+            if (deviceId.empty())
             {
-                if (deviceId.empty())
-                {
-                    deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
-                                   L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
-                                   L"\\\\?\\DISPLAY#LOCALDISPLAY#";
-                }
-
-                FancyZones* fancyZones = reinterpret_cast<FancyZones*>(data);
-                fancyZones->AddZoneWindow(monitor, deviceId);
+                deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
+                                L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
+                                L"\\\\?\\DISPLAY#LOCALDISPLAY#";
             }
+
+            FancyZones* fancyZones = reinterpret_cast<FancyZones*>(data);
+            fancyZones->AddZoneWindow(monitor, deviceId);
         }
         return TRUE;
     };
