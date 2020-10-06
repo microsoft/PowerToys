@@ -1438,5 +1438,26 @@ namespace RemappingUITests
                 Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
             });
         }
+
+        // Return error on Disable as second modifier key or action key
+        TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnDisableAsActionKeyError_OnSettingSecondDropdownAsDisable)
+        {
+            std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
+            keyList.insert(keyList.begin(), CommonSharedConstants::VK_DISABLED);
+            // Arrange
+            RemapBuffer remapBuffer;
+            remapBuffer.push_back(std::make_pair(RemapBufferItem{ std::vector<DWORD>{ VK_SHIFT, CommonSharedConstants::VK_DISABLED }, Shortcut() }, testApp1));
+            std::vector<int32_t> selectedIndices = { 
+                GetDropDownIndexFromDropDownList(VK_SHIFT, keyList),
+                GetDropDownIndexFromDropDownList(CommonSharedConstants::VK_DISABLED, keyList)
+            };
+
+            // Act
+            std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(0, 1, 1, selectedIndices, testApp1, true, keyList, remapBuffer, true);
+
+            // Assert
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::ShortcutDisableAsActionKey);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+        }
     };
 }
