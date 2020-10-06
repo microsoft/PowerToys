@@ -58,13 +58,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
 
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
-            _zoneInActiveColor = inactiveColor != string.Empty ? inactiveColor : "#F5FCFF";
+            _zoneInActiveColor = !string.IsNullOrEmpty(inactiveColor) ? inactiveColor : "#F5FCFF";
 
             string borderColor = Settings.Properties.FancyzonesBorderColor.Value;
-            _zoneBorderColor = borderColor != string.Empty ? borderColor : "#FFFFFF";
+            _zoneBorderColor = !string.IsNullOrEmpty(borderColor) ? borderColor : "#FFFFFF";
 
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
-            _zoneHighlightColor = highlightColor != string.Empty ? highlightColor : "#0078D7";
+            _zoneHighlightColor = !string.IsNullOrEmpty(highlightColor) ? highlightColor : "#0078D7";
 
             _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
         }
