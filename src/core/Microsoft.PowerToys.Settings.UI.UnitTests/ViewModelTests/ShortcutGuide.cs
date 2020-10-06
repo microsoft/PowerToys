@@ -23,14 +23,14 @@ namespace ViewModelTests
         private Mock<ISettingsUtils> mockShortcutGuideSettingsUtils;
 
         [TestInitialize]
-        public void SetUp_StubSettingUtils()
+        public void SetUpStubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
             mockShortcutGuideSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ShortcutGuideSettings>();
         }
 
         [TestMethod]
-        public void IsEnabled_ShouldEnableModule_WhenSuccessful()
+        public void IsEnabledShouldEnableModuleWhenSuccessful()
         {
             // Assert
             // Initialize mock function of sending IPC message.
@@ -49,7 +49,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ThemeIndex_ShouldSetThemeToDark_WhenSuccessful()
+        public void ThemeIndexShouldSetThemeToDarkWhenSuccessful()
         {
             // Assert
             // Initialize mock function of sending IPC message.
@@ -70,7 +70,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void PressTime_ShouldSetPressTimeToOneHundred_WhenSuccessful()
+        public void PressTimeShouldSetPressTimeToOneHundredWhenSuccessful()
         {
             // Assert
             // Initialize mock function of sending IPC message.
@@ -90,7 +90,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void OverlayOpacity_ShouldSeOverlayOpacityToOneHundred_WhenSuccessful()
+        public void OverlayOpacityShouldSeOverlayOpacityToOneHundredWhenSuccessful()
         {
             // Assert
             // Initialize mock function of sending IPC message.
