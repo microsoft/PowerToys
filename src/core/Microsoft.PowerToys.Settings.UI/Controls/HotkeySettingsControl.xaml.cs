@@ -141,7 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-        private bool FilterAccessibleKeyboardEvents(int key)
+        private bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfoIgnoreKeyEvent)
         {
             if (key == 0x09)
             {
@@ -165,7 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                             {
                                 wVk = 0x10,
                                 dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyDown,
-                                dwExtraInfo = (UIntPtr)0x5555,
+                                dwExtraInfo = (UIntPtr)extraInfoIgnoreKeyEvent,
                             },
                         },
                     };
@@ -203,7 +203,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                             {
                                 wVk = 0x10,
                                 dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyUp,
-                                dwExtraInfo = (UIntPtr)0x5555,
+                                dwExtraInfo = (UIntPtr)extraInfoIgnoreKeyEvent,
                             },
                         },
                     };

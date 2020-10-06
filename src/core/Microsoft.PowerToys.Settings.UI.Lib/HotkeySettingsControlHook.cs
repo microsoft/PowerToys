@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
@@ -9,6 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     public delegate void KeyEvent(int key);
 
     public delegate bool IsActive();
+
+    public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr ignoreExtraInfoEvent);
 
     public class HotkeySettingsControlHook
     {
@@ -24,10 +27,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         private FilterAccessibleKeyboardEvents _filterKeyboardEvent;
 
-        public delegate bool FilterAccessibleKeyboardEvents(int key);
+        private UIntPtr _ignoreKeyEventFlag;
 
         public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
         {
+            _ignoreKeyEventFlag = (UIntPtr)interop.Constants.IGNORE_KEYEVENT_FLAG;
             _keyDown = keyDown;
             _keyUp = keyUp;
             _isActive = isActive;
@@ -58,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         private bool FilterKeyboardEvents(KeyboardEvent ev)
         {
-            return _filterKeyboardEvent(ev.key);
+            return _filterKeyboardEvent(ev.key, _ignoreKeyEventFlag);
         }
 
         public void Dispose()

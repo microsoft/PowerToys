@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "KeyboardHook.h"
+#include "interop.h"
 #include <exception>
 #include <msclr\marshal.h>
 #include <msclr\marshal_cppstd.h>
@@ -10,9 +11,6 @@ using namespace interop;
 using namespace System::Runtime::InteropServices;
 using namespace System;
 using namespace System::Diagnostics;
-
-// A keyboard event sent with this value in the extra Information field should be ignored by the hook so that it can be captured by the system instead.
-const int IGNORE_FLAG = 0x5555;
 
 KeyboardHook::KeyboardHook(
     KeyboardEventCallback ^ keyboardEventCallback,
@@ -66,7 +64,7 @@ LRESULT __clrcall KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam
 
         ev->dwExtraInfo = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->dwExtraInfo;
 
-        if ((filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev)) || (ev->dwExtraInfo == IGNORE_FLAG))
+        if ((filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev)) || (ev->dwExtraInfo == interop::Constants::IGNORE_KEYEVENT_FLAG))
         {
             return CallNextHookEx(hookHandle, nCode, wParam, lParam);
         }
