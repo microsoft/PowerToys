@@ -146,13 +146,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             if (key == 0x09)
             {
                 // TODO: Others should not be pressed
-                if (!internalSettings.Shift && !_shiftKeyDownOnEntering)
+                if (!internalSettings.Shift && !_shiftKeyDownOnEntering && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     return false;
                 }
 
                 // shift was not pressed while entering but it was pressed while leaving the hotkey
-                else if (internalSettings.Shift && !_shiftKeyDownOnEntering)
+                else if (internalSettings.Shift && !_shiftKeyDownOnEntering && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     internalSettings.Shift = false;
 
@@ -178,13 +178,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 }
 
                 // Shift was pressed on entering and remained pressed
-                else if (!internalSettings.Shift && _shiftKeyDownOnEntering && !_shiftToggled)
+                else if (!internalSettings.Shift && _shiftKeyDownOnEntering && !_shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     return false;
                 }
 
                 // Shift was pressed on entering but it was released and later pressed again
-                else if (internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled)
+                else if (internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     internalSettings.Shift = false;
 
@@ -192,7 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 }
 
                 // Shift was pressed on entering and was later released
-                else if (!internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled)
+                else if (!internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
                     NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
                     {
