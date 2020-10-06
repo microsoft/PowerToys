@@ -145,6 +145,30 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
+        // Function to send a single key event to the system which would be ignored by the hotkey control.
+        private void SendSingleKeyboardInput(short keyCode, uint keyStatus)
+        {
+            NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
+            {
+                type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
+                data = new NativeKeyboardHelper.InputUnion
+                {
+                    ki = new NativeKeyboardHelper.KEYBDINPUT
+                    {
+                        wVk = keyCode,
+                        dwFlags = keyStatus,
+
+                        // Any keyevent with the extraInfo set to this value will be ignored by the keyboard hook and sent to the system instead.
+                        dwExtraInfo = ignoreKeyEventFlag,
+                    },
+                },
+            };
+
+            NativeKeyboardHelper.INPUT[] inputs = new NativeKeyboardHelper.INPUT[] { inputShift };
+
+            _ = NativeMethods.SendInput(1, inputs, NativeKeyboardHelper.INPUT.Size);
+        }
+
         private bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo)
         {
             // A keyboard event sent with this value in the extra Information field should be ignored by the hook so that it can be captured by the system instead.
@@ -168,25 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     // This is to reset the shift key press within the control as it was not used within the control but rather was used to leave the hotkey.
                     internalSettings.Shift = false;
 
-                    NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
-                    {
-                        type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
-                        data = new NativeKeyboardHelper.InputUnion
-                        {
-                            ki = new NativeKeyboardHelper.KEYBDINPUT
-                            {
-                                wVk = (int)Windows.System.VirtualKey.Shift,
-                                dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyDown,
-
-                                // Any keyevent with the extraInfo set to this value will be ignored by the keyboard hook and sent to the system instead.
-                                dwExtraInfo = ignoreKeyEventFlag,
-                            },
-                        },
-                    };
-
-                    NativeKeyboardHelper.INPUT[] inputs = new NativeKeyboardHelper.INPUT[] { inputShift };
-
-                    _ = NativeMethods.SendInput(1, inputs, NativeKeyboardHelper.INPUT.Size);
+                    SendSingleKeyboardInput((short)Windows.System.VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyDown);
 
                     return false;
                 }
@@ -212,23 +218,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 // The system still has shift in the key pressed status, therefore pass a Shift KeyUp message to the system, to release the shift key, therefore simulating only the Tab key press.
                 else if (!internalSettings.Shift && _shiftKeyDownOnEntering && _shiftToggled && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
                 {
-                    NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
-                    {
-                        type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
-                        data = new NativeKeyboardHelper.InputUnion
-                        {
-                            ki = new NativeKeyboardHelper.KEYBDINPUT
-                            {
-                                wVk = (int)Windows.System.VirtualKey.Shift,
-                                dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyUp,
-                                dwExtraInfo = ignoreKeyEventFlag,
-                            },
-                        },
-                    };
-
-                    NativeKeyboardHelper.INPUT[] inputs = new NativeKeyboardHelper.INPUT[] { inputShift };
-
-                    _ = NativeMethods.SendInput(1, inputs, NativeKeyboardHelper.INPUT.Size);
+                    SendSingleKeyboardInput((short)Windows.System.VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
 
                     return false;
                 }
