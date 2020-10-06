@@ -176,7 +176,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         {
                             ki = new NativeKeyboardHelper.KEYBDINPUT
                             {
-                                wVk = 0x10,
+                                wVk = (int)Windows.System.VirtualKey.Shift,
                                 dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyDown,
 
                                 // Any keyevent with the extraInfo set to this value will be ignored by the keyboard hook and sent to the system instead.
@@ -220,7 +220,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         {
                             ki = new NativeKeyboardHelper.KEYBDINPUT
                             {
-                                wVk = 0x10,
+                                wVk = (int)Windows.System.VirtualKey.Shift,
                                 dwFlags = (uint)NativeKeyboardHelper.KeyEventF.KeyUp,
                                 dwExtraInfo = ignoreKeyEventFlag,
                             },
@@ -276,7 +276,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _shiftToggled = false;
 
             // To keep track of the shift key, whether it was pressed on entering.
-            if ((NativeMethods.GetAsyncKeyState(VKSHIFT) & 0x8000) != 0)
+            if ((NativeMethods.GetAsyncKeyState((int)Windows.System.VirtualKey.Shift) & 0x8000) != 0)
             {
                 _shiftKeyDownOnEntering = true;
             }
