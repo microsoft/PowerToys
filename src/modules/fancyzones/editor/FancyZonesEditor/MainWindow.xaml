@@ -29,7 +29,7 @@
             <ColumnDefinition Width="286"/>
         </Grid.ColumnDefinitions>
         <TextBlock
-            Text="{x:Static props:Resources.FancyZones_Editor}"
+            Text="{x:Static props:Resources.Fancy_Zones_Editor_App_Title}"
             FontSize="12"
             Foreground="{DynamicResource PrimaryForegroundBrush}"
             Margin="16,-24,0,0" />
@@ -127,7 +127,8 @@
 
                 <TabItem Header="{x:Static props:Resources.Custom}"
                          Style="{StaticResource TabItemPivotStyle}">
-                    <ItemsControl ItemsSource="{Binding CustomModels}"
+                    <ScrollViewer Height="512" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding CustomModels}"
                                   Margin="8,8,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -187,6 +188,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                   </ScrollViewer>
                 </TabItem>
             </TabControl>
         </StackPanel>
