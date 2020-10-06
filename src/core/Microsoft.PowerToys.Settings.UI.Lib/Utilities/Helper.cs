@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             if (processes.Length > 0)
             {
                 var pid = processes[0].Id;
-                result = AllowSetForegroundWindow(pid);
+                result = NativeMethods.AllowSetForegroundWindow(pid);
             }
 
             return result;
@@ -73,9 +73,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
-
-        [DllImport("user32.dll")]
-        private static extern bool AllowSetForegroundWindow(int dwProcessId);
 
         private static readonly interop.LayoutMapManaged LayoutMap = new interop.LayoutMapManaged();
 
