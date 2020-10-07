@@ -41,13 +41,18 @@ namespace Microsoft.Plugin.Calculator
             }
 
             var decimalResult = Convert.ToDecimal(result, cultureInfo);
-            var roundedResult = Math.Round(decimalResult, RoundingDigits, MidpointRounding.AwayFromZero);
+            var roundedResult = Round(decimalResult);
 
             return new CalculateResult()
             {
                 Result = decimalResult,
                 RoundedResult = roundedResult,
             };
+        }
+
+        public static decimal Round(decimal value)
+        {
+            return Math.Round(value, RoundingDigits, MidpointRounding.AwayFromZero);
         }
 
         private static object TransformResult(object result)
