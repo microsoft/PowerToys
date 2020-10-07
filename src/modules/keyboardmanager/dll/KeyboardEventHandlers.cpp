@@ -357,13 +357,13 @@ namespace KeyboardEventHandlers
                         // if the released key is present in both shortcuts' modifiers (i.e part of the common modifiers)
                         if (std::get<Shortcut>(it->second.targetShortcut).CheckWinKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckCtrlKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckAltKey(data->lParam->vkCode) || std::get<Shortcut>(it->second.targetShortcut).CheckShiftKey(data->lParam->vkCode))
                         {
-                            // release all new shortcut keys and the common released modifier except the other common modifiers, and add all original shortcut modifiers except the common ones
-                            key_count = (dest_size - commonKeys) + (src_size - 1 - commonKeys);
+                            // release all new shortcut keys and the common released modifier except the other common modifiers, and add all original shortcut modifiers except the common ones, and dummy key
+                            key_count = (dest_size - commonKeys) + (src_size - 1 - commonKeys) + 1;
                         }
                         else
                         {
-                            // release all new shortcut keys except the common modifiers and add all original shortcut modifiers except the common ones
-                            key_count = (dest_size - 1) + (src_size - 2) - (2 * (size_t)commonKeys);
+                            // release all new shortcut keys except the common modifiers and add all original shortcut modifiers except the common ones, and dummy key
+                            key_count = (dest_size - 1) + (src_size - 2) - (2 * (size_t)commonKeys) + 1;
                         }
 
                         // If the target shortcut's action key is pressed, then it should be released
@@ -388,11 +388,15 @@ namespace KeyboardEventHandlers
 
                         // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
                         KeyboardManagerHelper::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
+
+                        // Send dummy key to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->Ctrl+V, press Win+Ctrl+A and release A then Ctrl
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
                     }
                     else
                     {
-                        // 1 for releasing new key and original shortcut modifiers except the one released
-                        key_count = dest_size + src_size - 2;
+                        // 1 for releasing new key and original shortcut modifiers except the one released and dummy key
+                        key_count = dest_size + src_size - 2 + 1;
                         // Do not send Disable key up
                         if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
                         {
@@ -412,6 +416,10 @@ namespace KeyboardEventHandlers
 
                         // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
                         KeyboardManagerHelper::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
+
+                        // Send dummy key to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->V, press Win+Ctrl+A and release A then Ctrl
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
                     }
 
                     // Reset the remap state
@@ -575,7 +583,7 @@ namespace KeyboardEventHandlers
                             // If the original shortcut is a subset of the new shortcut
                             if (commonKeys == src_size - 1)
                             {
-                                key_count = dest_size - commonKeys + 1;
+                                key_count = dest_size - commonKeys;
 
                                 // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
                                 bool isActionKeyPressed = false;
@@ -607,14 +615,12 @@ namespace KeyboardEventHandlers
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, 0);
                                 i++;
 
-                                // Send dummy key since the current key pressed could be a modifier
-                                KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                i++;
+                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after shortcut to shortcut is released to open start menu
                             }
                             else
                             {
-                                // Key up for all new shortcut keys, key down for original shortcut modifiers, dummy key and current key press but common keys aren't repeated
-                                key_count = (dest_size) + (src_size - 1) + 1 - (2 * (size_t)commonKeys);
+                                // Key up for all new shortcut keys, key down for original shortcut modifiers and current key press but common keys aren't repeated
+                                key_count = (dest_size) + (src_size - 1) - (2 * (size_t)commonKeys);
 
                                 // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
                                 bool isActionKeyPressed = false;
@@ -650,9 +656,7 @@ namespace KeyboardEventHandlers
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, 0);
                                 i++;
 
-                                // Send dummy key
-                                KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                i++;
+                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after shortcut to shortcut is released to open start menu
                             }
 
                             // Reset the remap state
@@ -691,8 +695,8 @@ namespace KeyboardEventHandlers
 
                             if (isRemapToDisable || !isOriginalActionKeyPressed)
                             {
-                                // Key down for original shortcut modifiers and action key, dummy key, and current key press
-                                size_t key_count = src_size + 1 + 1;
+                                // Key down for original shortcut modifiers and action key, and current key press
+                                size_t key_count = src_size + 1;
 
                                 LPINPUT keyEventList = new INPUT[key_count]();
                                 memset(keyEventList, 0, sizeof(keyEventList));
@@ -717,9 +721,7 @@ namespace KeyboardEventHandlers
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, 0);
                                 i++;
 
-                                // Send dummy key
-                                KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                i++;
+                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after another shortcut to key remap is released to open start menu
 
                                 // Reset the remap state
                                 it->second.isShortcutInvoked = false;
