@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -48,20 +49,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
-            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme.ToLower());
+
+            // Using InvariantCulture here as these are internal strings. However, FxCop
+            // also expects strings to be normalized to uppercase, so just for the
+            // purposes of this method we will operate on uppercase strings.
+            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture));
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            switch (GeneralSettingsConfig.Theme.ToLower())
+            switch (GeneralSettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture))
             {
-                case "light":
+                case "LIGHT":
                     _isLightThemeRadioButtonChecked = true;
                     break;
-                case "dark":
+                case "DARK":
                     _isDarkThemeRadioButtonChecked = true;
                     break;
-                case "system":
+                case "SYSTEM":
                     _isSystemThemeRadioButtonChecked = true;
                     break;
             }

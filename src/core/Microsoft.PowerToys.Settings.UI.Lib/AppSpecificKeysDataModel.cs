@@ -24,7 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public bool Compare(AppSpecificKeysDataModel arg)
         {
-            return OriginalKeys.Equals(arg.OriginalKeys) && NewRemapKeys.Equals(arg.NewRemapKeys) && TargetApp.Equals(arg.TargetApp);
+            // Using InvariantCulture for internal text
+            return OriginalKeys.Equals(arg.OriginalKeys, System.StringComparison.InvariantCulture) &&
+                NewRemapKeys.Equals(arg.NewRemapKeys, System.StringComparison.InvariantCulture) &&
+                TargetApp.Equals(arg.TargetApp, System.StringComparison.InvariantCulture);
         }
     }
 }

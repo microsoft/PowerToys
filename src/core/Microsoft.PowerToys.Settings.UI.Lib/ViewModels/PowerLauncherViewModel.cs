@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
@@ -36,8 +37,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             callback = (PowerLauncherSettings settings) =>
             {
                 // Propagate changes to Power Launcher through IPC
+                // Using InvariantCulture as this is an IPC message
                 SendConfigMSG(
-                    string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.ModuleName, JsonSerializer.Serialize(settings)));
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                        PowerLauncherSettings.ModuleName,
+                        JsonSerializer.Serialize(settings)));
             };
 
             if (_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))

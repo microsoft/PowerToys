@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -382,6 +383,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
+        // For the following setters we use OrdinalIgnoreCase string comparison since
+        // we expect value to be a hex code.
         public string ZoneHighlightColor
         {
             get
@@ -392,7 +395,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             set
             {
                 value = ToRGBHex(value);
-                if (!value.Equals(_zoneHighlightColor))
+                if (!value.Equals(_zoneHighlightColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneHighlightColor = value;
                     Settings.Properties.FancyzonesZoneHighlightColor.Value = value;
@@ -430,7 +433,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             set
             {
                 value = ToRGBHex(value);
-                if (!value.Equals(_zoneInActiveColor))
+                if (!value.Equals(_zoneInActiveColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneInActiveColor = value;
                     Settings.Properties.FancyzonesInActiveColor.Value = value;
@@ -522,9 +525,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             try
             {
-                int argb = int.Parse(color.Replace("#", string.Empty), System.Globalization.NumberStyles.HexNumber);
+                // Using InvariantCulture as these are expected to be hex codes.
+                int argb = int.Parse(
+                    color.Replace("#", string.Empty),
+                    System.Globalization.NumberStyles.HexNumber,
+                    CultureInfo.InvariantCulture);
                 Color clr = Color.FromArgb(argb);
-                return "#" + clr.R.ToString("X2") + clr.G.ToString("X2") + clr.B.ToString("X2");
+                return "#" + clr.R.ToString("X2", CultureInfo.InvariantCulture) +
+                    clr.G.ToString("X2", CultureInfo.InvariantCulture) +
+                    clr.B.ToString("X2", CultureInfo.InvariantCulture);
             }
             catch (Exception)
             {
