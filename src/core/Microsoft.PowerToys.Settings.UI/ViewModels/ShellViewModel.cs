@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -34,6 +35,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get { return isBackEnabled; }
             set { Set(ref isBackEnabled, value); }
+        }
+
+        public bool IsVideoConferenceBuild
+        {
+            get
+            {
+                return File.Exists("modules/VideoConference/VideoConferenceModule.dll");
+            }
         }
 
         public WinUI.NavigationViewItem Selected

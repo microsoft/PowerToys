@@ -203,7 +203,7 @@ namespace PowerToysSettings
                 if (output_bytes == 1 && output[0] >= 'a' && output[0] <= 'z')
                 {
                     // Make Latin letters keys capital, as it looks better
-                    output[0] = toupper(output[0]);
+                    output[0] = static_cast<wchar_t>(toupper(output[0]));
                 }
                 return output.data();
             }

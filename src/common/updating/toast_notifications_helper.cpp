@@ -50,7 +50,7 @@ namespace updating
         {
             auto current_version_to_next_version = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
             current_version_to_next_version += L" -> ";
-            current_version_to_next_version += info.version_string;
+            current_version_to_next_version += info.version.toWstring();
             return current_version_to_next_version;
         }
 
@@ -70,14 +70,14 @@ namespace updating
             ::notifications::show_toast_with_activations(std::move(contents),
                                                          TOAST_TITLE,
                                                          {},
-                                                         { ::notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://download_and_install_update/" }, ::notifications::link_button{ GITHUB_NEW_VERSION_MORE_INFO, info.release_page_uri.ToString().c_str() } },
+                                                         { ::notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://download_and_install_update/" }, ::notifications::link_button{ GITHUB_NEW_VERSION_MORE_INFO, info.release_page_url.ToString().c_str() } },
                                                          std::move(toast_params));
         }
 
         void show_download_start(const updating::new_version_download_info& info)
         {
             ::notifications::progress_bar_params progress_bar_params;
-            std::wstring progress_title{ info.version_string };
+            std::wstring progress_title{ info.version.toWstring() };
             progress_title += L' ';
             progress_title += localized_strings::DOWNLOAD_IN_PROGRESS;
 
@@ -99,7 +99,7 @@ namespace updating
             ::notifications::show_toast_with_activations(std::move(contents),
                                                          TOAST_TITLE,
                                                          {},
-                                                         { ::notifications::link_button{ GITHUB_NEW_VERSION_VISIT, info.release_page_uri.ToString().c_str() } },
+                                                         { ::notifications::link_button{ GITHUB_NEW_VERSION_VISIT, info.release_page_url.ToString().c_str() } },
                                                          std::move(toast_params));
         }
 
@@ -111,7 +111,7 @@ namespace updating
             ::notifications::show_toast_with_activations(std::move(contents),
                                                          TOAST_TITLE,
                                                          {},
-                                                         { ::notifications::link_button{ GITHUB_NEW_VERSION_VISIT, info.release_page_uri.ToString().c_str() } },
+                                                         { ::notifications::link_button{ GITHUB_NEW_VERSION_VISIT, info.release_page_url.ToString().c_str() } },
                                                          std::move(toast_params));
         }
 
@@ -139,7 +139,7 @@ namespace updating
         {
             ::notifications::progress_bar_params progress_bar_params;
 
-            std::wstring progress_title{ info.version_string };
+            std::wstring progress_title{ info.version.toWstring() };
             progress_title += L' ';
             progress_title += progress < 1 ? localized_strings::DOWNLOAD_IN_PROGRESS : localized_strings::DOWNLOAD_COMPLETE;
             progress_bar_params.progress_title = progress_title;

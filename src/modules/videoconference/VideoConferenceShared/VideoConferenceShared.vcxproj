@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <Import Project="..\..\..\hasWDK.props" />
+
+  <Import Project="WDK_VideoConferenceShared.vcxproj" Condition="$(HasWDK)==true" />
+  <Import Project="..\..\..\wdk_skip.vcxproj" Condition="$(HasWDK)==false" />
+  
+  <PropertyGroup Label="Globals">
+    <IntDirSharingDetected>None</IntDirSharingDetected>
+  </PropertyGroup>
+</Project>

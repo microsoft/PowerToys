@@ -36,6 +36,12 @@
     <ClInclude Include="..\os-detect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\MicrophoneDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VideoCaptureDeviceList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\keyboard_layout.cpp">
@@ -51,6 +57,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\os-detect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MicrophoneDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VideoCaptureDeviceList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
