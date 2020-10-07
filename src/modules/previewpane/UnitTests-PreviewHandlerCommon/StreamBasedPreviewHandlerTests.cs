@@ -39,7 +39,7 @@ namespace PreviewHandlerCommonUnitTests
             streamBasedPreviewHandler.Initialize(stream, grfMode);
 
             // Assert
-            Assert.AreEqual(streamBasedPreviewHandler.Stream, stream);
+            Assert.AreEqual(stream, streamBasedPreviewHandler.Stream);
         }
     }
 }

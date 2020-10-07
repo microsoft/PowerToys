@@ -256,7 +256,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(apps.Length, 1);
+            Assert.AreEqual(1, apps.Length);
         }
 
         [Test]
@@ -273,7 +273,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(apps.Length, 1);
+            Assert.AreEqual(1, apps.Length);
         }
 
         [Test]
@@ -289,7 +289,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(apps.Length, 1);
+            Assert.AreEqual(1, apps.Length);
         }
 
         [Test]
@@ -306,7 +306,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(apps.Length, 1);
+            Assert.AreEqual(1, apps.Length);
             Assert.IsTrue(!string.IsNullOrEmpty(apps[0].LnkResolvedPath));
         }
 
@@ -325,7 +325,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Win32Program[] apps = Win32Program.DeduplicatePrograms(prgms.AsParallel());
 
             // Assert
-            Assert.AreEqual(apps.Length, 3);
+            Assert.AreEqual(3, apps.Length);
         }
 
         [Test]
@@ -442,10 +442,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _pinnedWebpage.ContextMenus(mock.Object);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 3);
-            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
-            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
+            Assert.AreEqual(3, contextMenuResults.Count);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[1].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[2].Title);
         }
 
         [Test]
@@ -458,9 +458,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(mock.Object);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 2);
-            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_in_console);
+            Assert.AreEqual(2, contextMenuResults.Count);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[0].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[1].Title);
         }
 
         [Test]
@@ -473,10 +473,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _chrome.ContextMenus(mock.Object);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 3);
-            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
-            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
+            Assert.AreEqual(3, contextMenuResults.Count);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[1].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[2].Title);
         }
 
         [Test]
@@ -489,10 +489,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _cmdRunCommand.ContextMenus(mock.Object);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 3);
-            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
-            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
+            Assert.AreEqual(3, contextMenuResults.Count);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[1].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[2].Title);
         }
 
         [Test]
@@ -505,10 +505,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyAppRefApp.ContextMenus(mock.Object);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 3);
-            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
-            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
+            Assert.AreEqual(3, contextMenuResults.Count);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[1].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[2].Title);
         }
 
         [Test]
@@ -521,10 +521,10 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyShortcutApp.ContextMenus(mock.Object);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 3);
-            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_run_as_administrator);
-            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[2].Title, Properties.Resources.wox_plugin_program_open_in_console);
+            Assert.AreEqual(3, contextMenuResults.Count);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_run_as_administrator, contextMenuResults[0].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[1].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[2].Title);
         }
 
         [Test]
@@ -537,9 +537,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyFolderApp.ContextMenus(mock.Object);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 2);
-            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_in_console);
+            Assert.AreEqual(2, contextMenuResults.Count);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[0].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[1].Title);
         }
 
         [Test]
@@ -552,9 +552,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             List<ContextMenuResult> contextMenuResults = _dummyGenericFileApp.ContextMenus(mock.Object);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 2);
-            Assert.AreEqual(contextMenuResults[0].Title, Properties.Resources.wox_plugin_program_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[1].Title, Properties.Resources.wox_plugin_program_open_in_console);
+            Assert.AreEqual(2, contextMenuResults.Count);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_containing_folder, contextMenuResults[0].Title);
+            Assert.AreEqual(Properties.Resources.wox_plugin_program_open_in_console, contextMenuResults[1].Title);
         }
 
         [Test]
