@@ -1287,8 +1287,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
         }
 
-        // Test if keyboard state is reverted for a shortcut to a single key remap (target key is not a part of the shortcut) on key down followed by releasing the action key
-        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsNotInShortcut_ShouldSetOriginalModifier_OnReleasingActionKey)
+        // Test if keyboard state is not reverted for a shortcut to a single key remap (target key is not a part of the shortcut) on key down followed by releasing the action key
+        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsNotInShortcut_ShouldNotSetOriginalModifier_OnReleasingActionKey)
         {
             // Remap Ctrl+A to Alt
             Shortcut src;
@@ -1309,14 +1309,14 @@ namespace RemappingLogicTests
             // Press Ctrl+A, release A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // A, Alt should be false, Ctrl should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            // Ctrl, A, Alt should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
         }
 
-        // Test if keyboard state is reverted for a shortcut to a single key remap (target key is a modifier in the shortcut) on key down followed by releasing the action key
-        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsAModifierInShortcut_ShouldSetOriginalModifier_OnReleasingActionKey)
+        // Test if keyboard state is not reverted for a shortcut to a single key remap (target key is a modifier in the shortcut) on key down followed by releasing the action key
+        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsAModifierInShortcut_ShouldNotSetOriginalModifier_OnReleasingActionKey)
         {
             // Remap Ctrl+A to Ctrl
             Shortcut src;
@@ -1337,13 +1337,13 @@ namespace RemappingLogicTests
             // Press Ctrl+A, release A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // A should be false, Ctrl should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            // Both A and Ctrl should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
         }
 
-        // Test if keyboard state is reverted for a shortcut to a single key remap (target key is the action key in the shortcut) on key down followed by releasing the action key
-        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsActionKeyInShortcut_ShouldSetOriginalModifier_OnReleasingActionKey)
+        // Test if keyboard state is not reverted for a shortcut to a single key remap (target key is the action key in the shortcut) on key down followed by releasing the action key
+        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsActionKeyInShortcut_ShouldNotSetOriginalModifier_OnReleasingActionKey)
         {
             // Remap Ctrl+A to A
             Shortcut src;
@@ -1364,8 +1364,8 @@ namespace RemappingLogicTests
             // Press Ctrl+A, release A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // A should be false, Ctrl should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            // Ctrl, A should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
         }
 
