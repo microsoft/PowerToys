@@ -66,7 +66,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             {
                 PowertoysVersion = DefaultPowertoysVersion();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PowertoysVersion = "v0.0.0";
             }

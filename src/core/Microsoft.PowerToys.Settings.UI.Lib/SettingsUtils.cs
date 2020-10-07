@@ -114,7 +114,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     _ioProvider.WriteAllText(GetSettingsPath(powertoy, fileName), jsonSettings);
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
         }
