@@ -33,12 +33,12 @@ namespace ViewModelTests
 		
         /// </summary>
         [TestMethod]
-        [DataRow("v0.18.2", "settings.json")]
-        [DataRow("v0.19.2", "settings.json")]
-        [DataRow("v0.20.1", "settings.json")]
-        [DataRow("v0.21.1", "settings.json")]
-        [DataRow("v0.22.0", "settings.json")]
-        public void OriginalFilesModificationTest(string version, string fileName)
+        [DataRow("v0.18.2")]
+        [DataRow("v0.19.2")]
+        [DataRow("v0.20.1")]
+        [DataRow("v0.21.1")]
+        [DataRow("v0.22.0")]
+        public void OriginalFilesModificationTest(string version)
         {
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);

@@ -37,7 +37,7 @@ namespace ViewModelTests
 
             //Act
             // Initialise View Model with test Config files
-            ColorPickerViewModel viewModel = new ColorPickerViewModel(mockSettingsUtils, generalSettingsRepository, ColorPickerIsEnabledByDefault_IPC);
+            ColorPickerViewModel viewModel = new ColorPickerViewModel(mockSettingsUtils, generalSettingsRepository, ColorPickerIsEnabledByDefaultIPC);
 
             //Assert
             // Verifiy that the old settings persisted
@@ -55,12 +55,12 @@ namespace ViewModelTests
         public void ColorPickerIsEnabledByDefault()
         {
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>();
-            var viewModel = new ColorPickerViewModel(ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object), ColorPickerIsEnabledByDefault_IPC);
+            var viewModel = new ColorPickerViewModel(ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object), ColorPickerIsEnabledByDefaultIPC);
 
             Assert.IsTrue(viewModel.IsEnabled);
         }
 
-        public int ColorPickerIsEnabledByDefault_IPC(string msg)
+        private static int ColorPickerIsEnabledByDefaultIPC(string msg)
         {
             OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
             Assert.IsTrue(snd.GeneralSettings.Enabled.ColorPicker);

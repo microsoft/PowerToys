@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
         internal class MockSettingsRepository<T> : ISettingsRepository<T> where T : ISettingsConfig, new()
         {
             T _settingsConfig;
-            ISettingsUtils _settingsUtils;
+            readonly ISettingsUtils _settingsUtils;
             public MockSettingsRepository( ISettingsUtils settingsUtils)
             {
                 _settingsUtils = settingsUtils;
@@ -47,14 +47,19 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
         {
             
             var stubSettingsPath = string.Format(CultureInfo.InvariantCulture, BackCompatTestProperties.RootPathStubFiles, version, module, fileName);
-            Expression<Func<string, bool>> filterExpression = (string s) => s.Contains(module);
+            Expression<Func<string, bool>> filterExpression = (string s) => s.Contains(module, StringComparison.Ordinal);
             var mockIOProvider = IIOProviderMocks.GetMockIOReadWithStubFile(stubSettingsPath, filterExpression);
             return mockIOProvider;
         }
 
         public static void VerifyModuleIOProviderWasRead(Mock<IIOProvider> provider, string module,  int expectedCallCount)
         {
-            Expression<Func<string, bool>> filterExpression = (string s) => s.Contains(module);
+            if(provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            Expression<Func<string, bool>> filterExpression = (string s) => s.Contains(module, StringComparison.Ordinal);
 
             IIOProviderMocks.VerifyIOReadWithStubFile(provider, filterExpression, expectedCallCount);
         }
@@ -62,14 +67,19 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
         public static Mock<IIOProvider> GetGeneralSettingsIOProvider(string version)
         {
             var stubGeneralSettingsPath = string.Format(CultureInfo.InvariantCulture, BackCompatTestProperties.RootPathStubFiles, version, string.Empty, "settings.json");
-            Expression<Func<string, bool>> filterExpression = (string s) => s.Contains("Microsoft\\PowerToys\\settings.json");
+            Expression<Func<string, bool>> filterExpression = (string s) => s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
             var mockGeneralIOProvider = IIOProviderMocks.GetMockIOReadWithStubFile(stubGeneralSettingsPath, filterExpression);
             return mockGeneralIOProvider;
         }
 
         public static void VerifyGeneralSettingsIOProviderWasRead(Mock<IIOProvider> provider, int expectedCallCount)
         {
-            Expression<Func<string, bool>> filterExpression = (string s) => s.Contains("Microsoft\\PowerToys\\settings.json");
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            Expression<Func<string, bool>> filterExpression = (string s) => s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
             IIOProviderMocks.VerifyIOReadWithStubFile(provider, filterExpression, expectedCallCount);
         }
 
