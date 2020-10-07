@@ -27,10 +27,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _settingsConfigFileFolder = configFileSubfolder;
 
             // To obtain the general PowerToys settings.
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // To obtain the shortcut guide settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
+            if (moduleSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(moduleSettingsRepository));
+            }
+
             Settings = moduleSettingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.

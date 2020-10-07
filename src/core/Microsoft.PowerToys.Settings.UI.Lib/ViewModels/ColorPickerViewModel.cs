@@ -25,6 +25,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public ColorPickerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // Obtain the general PowerToy settings configurations
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));

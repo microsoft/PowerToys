@@ -28,6 +28,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             // To obtain the general settings configurations of PowerToys.
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             try

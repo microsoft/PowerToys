@@ -29,10 +29,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // To obtain the general settings configurations of PowerToys Settings.
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             settingsConfigFileFolder = configFileSubfolder;
 
             // To obtain the settings configurations of Fancy zones.
+            if (moduleSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(moduleSettingsRepository));
+            }
+
             Settings = moduleSettingsRepository.SettingsConfig;
 
             LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
@@ -394,7 +404,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                value = ToRGBHex(value);
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
                 if (!value.Equals(_zoneHighlightColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneHighlightColor = value;
@@ -413,7 +426,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                value = ToRGBHex(value);
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
                 if (!value.Equals(_zoneBorderColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneBorderColor = value;
@@ -432,7 +448,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                value = ToRGBHex(value);
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
                 if (!value.Equals(_zoneInActiveColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneInActiveColor = value;
@@ -471,7 +490,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value != _editorHotkey)
                 {
-                    if (value.IsEmpty())
+                    if (value == null || value.IsEmpty())
                     {
                         _editorHotkey = FZConfigProperties.DefaultHotkeyValue;
                     }

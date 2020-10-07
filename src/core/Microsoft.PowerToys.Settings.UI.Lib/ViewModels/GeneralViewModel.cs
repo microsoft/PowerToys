@@ -40,6 +40,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
