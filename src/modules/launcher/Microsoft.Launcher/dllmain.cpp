@@ -60,7 +60,7 @@ private:
     std::wstring app_name;
 
     //contains the non localized key of the powertoy
-    std::wstring app_key;
+    std::wstring app_key = L"PowerToys Run";
 
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
@@ -79,7 +79,6 @@ public:
     Microsoft_Launcher()
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
-        app_key = L"PowerToys Run";
         init_settings();
 
         SECURITY_ATTRIBUTES sa;

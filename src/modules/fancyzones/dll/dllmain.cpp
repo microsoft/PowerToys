@@ -148,7 +148,6 @@ public:
     FancyZonesModule()
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
-        app_key = L"FancyZones";
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
         FancyZonesDataInstance().LoadFancyZonesData();
         s_instance = this;
@@ -198,7 +197,7 @@ private:
     winrt::com_ptr<IFancyZonesSettings> m_settings;
     std::wstring app_name;
     //contains the non localized key of the powertoy
-    std::wstring app_key;
+    std::wstring app_key = L"FancyZones";
 
     static inline FancyZonesModule* s_instance;
     static inline HHOOK s_llKeyboardHook;

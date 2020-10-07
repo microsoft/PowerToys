@@ -46,7 +46,7 @@ private:
     const std::wstring app_name = GET_RESOURCE_STRING(IDS_KEYBOARDMANAGER);
 
     //contains the non localized key of the powertoy
-    std::wstring app_key;
+    std::wstring app_key = L"Keyboard Manager";
 
     // Low level hook handles
     static HHOOK hook_handle;
@@ -72,8 +72,6 @@ public:
 
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
-
-        app_key = L"Keyboard Manager";
     };
 
     // Load config from the saved settings.

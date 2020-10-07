@@ -39,7 +39,7 @@ private:
     std::wstring app_name;
 
     //contains the non localized key of the powertoy
-    std::wstring app_key;
+    std::wstring app_key = L"ColorPicker";
 
     HANDLE m_hProcess;
 
@@ -50,7 +50,6 @@ public:
     ColorPicker()
     {
         app_name = GET_RESOURCE_STRING(IDS_COLORPICKER_NAME);
-        app_key = L"ColorPicker";
     }
 
     ~ColorPicker()

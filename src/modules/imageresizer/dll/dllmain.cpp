@@ -33,7 +33,7 @@ private:
     bool m_enabled = true;
     std::wstring app_name;
     //contains the non localized key of the powertoy
-    std::wstring app_key;
+    std::wstring app_key = L"Image Resizer";
 
 public:
     // Constructor
@@ -41,7 +41,6 @@ public:
     {
         m_enabled = CSettingsInstance().GetEnabled();
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
-        app_key = L"Image Resizer";
     };
 
     // Destroy the powertoy and free memory

@@ -94,7 +94,6 @@ namespace
 OverlayWindow::OverlayWindow()
 {
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
-    app_key = L"Shortcut Guide";
     init_settings();
 }
 

@@ -17,7 +17,7 @@ private:
     bool m_enabled = false;
     std::wstring m_moduleName;
     //contains the non localized key of the powertoy
-    std::wstring app_key;
+    std::wstring app_key = L"File Explorer";
     std::vector<FileExplorerPreviewSettings*> m_previewHandlers;
     std::vector<FileExplorerPreviewSettings*> m_thumbnailProviders;
 
@@ -53,7 +53,6 @@ public:
                   new RegistryWrapper()) })
     {
         init_settings();
-        app_key = L"File Explorer";
     };
 
     virtual void destroy();
