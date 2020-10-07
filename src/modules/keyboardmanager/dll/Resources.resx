@@ -279,4 +279,7 @@
   <data name="AutomationProperties_Row" xml:space="preserve">
     <value>Row </value>
   </data>
+  <data name="ERRORMESSAGE_DISABLEASACTIONKEY" xml:space="preserve">
+    <value>Disable can not be an action or a modifier key</value>
+  </data>
 </root>

@@ -25,14 +25,14 @@ namespace ViewModelTests
         private Mock<ISettingsUtils> mockImgResizerSettingsUtils;
 
         [TestInitialize]
-        public void SetUp_StubSettingUtils()
+        public void SetUpStubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
             mockImgResizerSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
         }
 
         [TestMethod]
-        public void IsEnabled_ShouldEnableModule_WhenSuccessful()
+        public void IsEnabledShouldEnableModuleWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -50,7 +50,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void JPEGQualityLevel_ShouldSetValueToTen_WhenSuccessful()
+        public void JPEGQualityLevelShouldSetValueToTenWhenSuccessful()
         {
             // arrange
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
@@ -67,7 +67,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void PngInterlaceOption_ShouldSetValueToTen_WhenSuccessful()
+        public void PngInterlaceOptionShouldSetValueToTenWhenSuccessful()
         {
             // arrange
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
@@ -84,7 +84,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void TiffCompressOption_ShouldSetValueToTen_WhenSuccessful()
+        public void TiffCompressOptionShouldSetValueToTenWhenSuccessful()
         {
             // arrange
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
@@ -101,7 +101,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void FileName_ShouldUpdateValue_WhenSuccessful()
+        public void FileNameShouldUpdateValueWhenSuccessful()
         {
             // arrange
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
@@ -119,7 +119,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void KeepDateModified_ShouldUpdateValue_WhenSuccessful()
+        public void KeepDateModifiedShouldUpdateValueWhenSuccessful()
         {
             // arrange
             var settingUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
@@ -142,7 +142,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void Encoder_ShouldUpdateValue_WhenSuccessful()
+        public void EncoderShouldUpdateValueWhenSuccessful()
         {
             // arrange
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
@@ -160,7 +160,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AddRow_ShouldAddEmptyImageSize_WhenSuccessful()
+        public void AddRowShouldAddEmptyImageSizeWhenSuccessful()
         {
             // arrange
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
@@ -176,7 +176,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void DeleteImageSize_ShouldDeleteImageSize_WhenSuccessful()
+        public void DeleteImageSizeShouldDeleteImageSizeWhenSuccessful()
         {
             // arrange
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
@@ -194,7 +194,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void UpdateWidthAndHeight_ShouldUpateSize_WhenCorrectValuesAreProvided()
+        public void UpdateWidthAndHeightShouldUpateSizeWhenCorrectValuesAreProvided()
         {
             // arrange
             ImageSize imageSize = new ImageSize()

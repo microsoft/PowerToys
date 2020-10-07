@@ -194,13 +194,14 @@ namespace Wox.Core.Plugin
         {
             foreach (Result result in results)
             {
-                if (!string.IsNullOrEmpty(result.QueryTextDisplay))
+                if (string.IsNullOrEmpty(result.QueryTextDisplay))
+                {
+                    result.QueryTextDisplay = result.Title;
+                }
+
+                if (!string.IsNullOrEmpty(query.ActionKeyword))
                 {
                     result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
-                }
-                else
-                {
-                    result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.Title);
                 }
             }
 

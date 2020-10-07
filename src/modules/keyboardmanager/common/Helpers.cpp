@@ -173,6 +173,8 @@ namespace KeyboardManagerHelper
             return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_SHORTCUTMAXONEACTIONKEY).c_str();
         case ErrorType::ShortcutMaxShortcutSizeOneActionKey:
             return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAXSHORTCUTSIZE).c_str();
+        case ErrorType::ShortcutDisableAsActionKey:
+            return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_DISABLEASACTIONKEY).c_str();
         default:
             return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_DEFAULT).c_str();
         }
