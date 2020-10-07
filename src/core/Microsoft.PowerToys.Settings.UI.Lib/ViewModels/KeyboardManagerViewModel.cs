@@ -129,28 +129,31 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
+        // Note: FxCop suggests calling ConfigureAwait() for the following methods,
+        // and calling ConfigureAwait(true) has the same behavior as not explicitly
+        // calling it (continuations are scheduled on the task-creating thread)
         private async void OnRemapKeyboard()
         {
-            await Task.Run(() => OnRemapKeyboardBackground());
+            await Task.Run(() => OnRemapKeyboardBackground()).ConfigureAwait(true);
         }
 
         private async void OnEditShortcut()
         {
-            await Task.Run(() => OnEditShortcutBackground());
+            await Task.Run(() => OnEditShortcutBackground()).ConfigureAwait(true);
         }
 
         private async Task OnRemapKeyboardBackground()
         {
             Helper.AllowRunnerToForeground();
             SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, RemapKeyboardActionName, RemapKeyboardActionValue));
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(true);
         }
 
         private async Task OnEditShortcutBackground()
         {
             Helper.AllowRunnerToForeground();
             SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, EditShortcutActionName, EditShortcutActionValue));
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(true);
         }
 
         public void NotifyFileChanged()
