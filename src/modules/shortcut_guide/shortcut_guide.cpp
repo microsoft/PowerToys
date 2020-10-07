@@ -149,7 +149,7 @@ void OverlayWindow::set_config(const wchar_t* config)
     {
         // save configuration
         PowerToysSettings::PowerToyValues _values =
-            PowerToysSettings::PowerToyValues::from_json_string(config);
+            PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
         _values.save_to_settings_file();
         Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
 
@@ -338,7 +338,7 @@ void OverlayWindow::init_settings()
     try
     {
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(OverlayWindow::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(OverlayWindow::get_key());
         if (const auto val = settings.get_int_value(pressTime.name))
         {
             pressTime.value = *val;

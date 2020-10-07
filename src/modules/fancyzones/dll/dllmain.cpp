@@ -148,7 +148,7 @@ public:
     FancyZonesModule()
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
-        m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
+        m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name(), FancyZonesModule::get_key());
         FancyZonesDataInstance().LoadFancyZonesData();
         s_instance = this;
     }

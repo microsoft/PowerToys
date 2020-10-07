@@ -80,7 +80,7 @@ public:
         try
         {
             PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
             auto current_config = settings.get_string_value(KeyboardManagerConstants::ActiveConfigurationSettingName);
 
             if (current_config)
@@ -295,7 +295,7 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:

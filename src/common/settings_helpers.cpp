@@ -46,15 +46,15 @@ namespace PTSettingsHelper
         return get_root_save_folder_location() + settings_filename;
     }
 
-    void save_module_settings(std::wstring_view powertoy_name, json::JsonObject& settings)
+    void save_module_settings(std::wstring_view powertoy_key, json::JsonObject& settings)
     {
-        const std::wstring save_file_location = get_module_save_file_location(powertoy_name);
+        const std::wstring save_file_location = get_module_save_file_location(powertoy_key);
         json::to_file(save_file_location, settings);
     }
 
-    json::JsonObject load_module_settings(std::wstring_view powertoy_name)
+    json::JsonObject load_module_settings(std::wstring_view powertoy_key)
     {
-        const std::wstring save_file_location = get_module_save_file_location(powertoy_name);
+        const std::wstring save_file_location = get_module_save_file_location(powertoy_key);
         auto saved_settings = json::from_file(save_file_location);
         return saved_settings.has_value() ? std::move(*saved_settings) : json::JsonObject{};
     }

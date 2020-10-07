@@ -96,7 +96,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 {
     try
     {
-        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
+        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
         for (auto previewHandler : this->m_previewHandlers)
         {
@@ -187,7 +187,7 @@ void PowerPreviewModule::init_settings()
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_key());
 
         // Load settings states.
         for (auto previewHandler : this->m_previewHandlers)

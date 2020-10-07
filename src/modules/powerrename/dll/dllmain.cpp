@@ -244,7 +244,7 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             CSettingsInstance().SetPersistState(values.get_bool_value(L"bool_persist_input").value());
             CSettingsInstance().SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());

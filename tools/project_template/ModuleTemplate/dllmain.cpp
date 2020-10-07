@@ -218,7 +218,7 @@ void $safeprojectname$::init_settings()
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_key());
 
         // Load a bool property.
         //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
