@@ -27,12 +27,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 .ToList();
         }
 
-        public List<string> GetOriginalKeys()
+        // Renamed from GetOriginalKeys -> GetMappedOriginalKeys to avoid confusion with
+        // property names (FxCop rule CA1721).
+        public List<string> GetMappedOriginalKeys()
         {
             return MapKeys(OriginalKeys);
         }
 
-        public List<string> GetNewRemapKeys()
+        // Renamed from GetNewRemapKeys -> GetMappedNewRemapKeys to avoid confusion with
+        // property names (FxCop rule CA1721).
+        public List<string> GetMappedNewRemapKeys()
         {
             return MapKeys(NewRemapKeys);
         }
