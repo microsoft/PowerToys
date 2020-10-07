@@ -129,6 +129,18 @@
     <ClInclude Include="string_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="naming.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="user.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MicrophoneDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoCaptureDeviceList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>    
     <ClInclude Include="toast_dont_show_again.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -202,6 +214,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="comUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="naming.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="user.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MicrophoneDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoCaptureDeviceList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="toast_dont_show_again.cpp">

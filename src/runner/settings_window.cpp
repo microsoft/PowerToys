@@ -80,13 +80,14 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    std::wstring latestVersion = check_for_updates();
-                    VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
-                    bool isRunningLatest = latestVersion.compare(current_version.toWstring()) == 0;
+                    auto new_version_info = check_for_updates();
+                    const VersionHelper latestVersion =
+                        new_version_info ? new_version_info->version :
+                                           VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION };
 
                     json::JsonObject json;
-                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(latestVersion));
-                    json.SetNamedValue(L"isVersionLatest", json::JsonValue::CreateBooleanValue(isRunningLatest));
+                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(latestVersion.toWstring()));
+                    json.SetNamedValue(L"isVersionLatest", json::JsonValue::CreateBooleanValue(!new_version_info));
 
                     result.emplace(json.Stringify());
                 }

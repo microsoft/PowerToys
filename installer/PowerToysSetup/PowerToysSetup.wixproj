@@ -2,8 +2,9 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\WiX.3.11.2\build\wix.props" Condition="Exists('..\packages\WiX.3.11.2\build\wix.props')" />
   <Import Project="..\..\src\Version.props" />
+  <Import Project="..\..\src\hasWDK.props" />
   <PropertyGroup>
-    <DefineConstants>Version=$(Version);</DefineConstants>
+    <DefineConstants>Version=$(Version);HasWDK=$(HasWDK)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>

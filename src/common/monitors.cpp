@@ -72,3 +72,23 @@ MonitorInfo MonitorInfo::GetPrimaryMonitor()
     EnumDisplayMonitors(NULL, NULL, GetPrimaryDisplayEnumCb, reinterpret_cast<LPARAM>(&primary));
     return primary;
 }
+
+MonitorInfo MonitorInfo::GetFromWindow(HWND hwnd)
+{
+    auto monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    return GetFromHandle(monitor);
+}
+
+MonitorInfo MonitorInfo::GetFromPoint(POINT p)
+{
+    auto monitor = MonitorFromPoint(p, MONITOR_DEFAULTTONEAREST);
+    return GetFromHandle(monitor);
+}
+
+MonitorInfo MonitorInfo::GetFromHandle(HMONITOR monitor)
+{
+    MONITORINFOEX monitor_info;
+    monitor_info.cbSize = sizeof(MONITORINFOEX);
+    GetMonitorInfo(monitor, &monitor_info);
+    return MonitorInfo(monitor, monitor_info.rcWork);
+}

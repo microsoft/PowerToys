@@ -31,7 +31,6 @@ echo ^</Project^> >> !settingsPublishProfile!
 rem In case of Release we should not use Debug CRT in VCRT forwarders
 msbuild !PTRoot!\src\core\Microsoft.PowerToys.Settings.UI.Runner\Microsoft.PowerToys.Settings.UI.Runner.csproj -t:Publish -p:Configuration="Release" -p:Platform="x64" -p:AppxBundle=Never -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=!settingsProfileFileName!
 
-
 rem Publish Launcher
 SET launcherProfileFolderName=!PTRoot!\src\modules\launcher\PowerLauncher\Properties\PublishProfiles\
 

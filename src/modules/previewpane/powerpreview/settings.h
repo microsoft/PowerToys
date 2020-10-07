@@ -1,5 +1,4 @@
 #pragma once
-#include <pch.h>
 #include <string>
 #include "Generated Files/resource.h"
 #include <settings_objects.h>

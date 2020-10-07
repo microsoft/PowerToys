@@ -5,3 +5,4 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <Shlwapi.h>
 #include <ProjectTelemetry.h>
+#include <functional>

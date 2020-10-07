@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <Target Name="AssembleCabFile" AfterTargets="Build">
+    <Exec Command="powershell -NonInteractive $(SolutionDir)tools\build\video_conference_make_cab.ps1 -arch $(Platform) -configuration $(Configuration)" />
+  </Target>
+  <ItemGroup>
+    <ClCompile Include="Device.c" />
+    <ClCompile Include="Driver.c" />
+    <ClCompile Include="Queue.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Device.h" />
+    <ClInclude Include="Driver.h" />
+    <ClInclude Include="Public.h" />
+    <ClInclude Include="Queue.h" />
+    <ClInclude Include="Trace.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Inf Include="VideoConferenceVirtualDriver.inf" />
+  </ItemGroup>
+  <ItemGroup>
+    <FilesToPackage Include="$(OutDir)\VideoConferenceCustomMediaSource.dll">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
+    <FilesToPackage Include="$(OutDir)\VideoConferenceVirtualDriver.dll">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VideoConferenceCustomMediaSource\VideoConferenceCustomMediaSource.vcxproj">
+      <Project>{43ad9bf7-e765-48fe-9826-71a8f2cb12dd}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3098C6BF-E96E-4793-A70E-FB09B741580A}</ProjectGuid>
+    <TemplateGuid>{32909489-7be5-497b-aafa-db6669d9b44b}</TemplateGuid>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
+    <Configuration>Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">Win32</Platform>
+    <RootNamespace>VideoConferenceVirtualDriver</RootNamespace>
+    <ProjectName>VideoConferenceVirtualDriver</ProjectName>
+    <WindowsTargetPlatformVersion>$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>WindowsUserModeDriver10.0</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <DriverTargetPlatform>Desktop</DriverTargetPlatform>
+  </PropertyGroup>
+  <PropertyGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformToolset>WindowsUserModeDriver10.0</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <DriverTargetPlatform>Desktop</DriverTargetPlatform>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <TargetVersion>
+    </TargetVersion>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <UMDF_VERSION_MAJOR>2</UMDF_VERSION_MAJOR>
+    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <TargetVersion>
+    </TargetVersion>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <UMDF_VERSION_MAJOR>2</UMDF_VERSION_MAJOR>
+    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\VideoConference\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WppEnabled>true</WppEnabled>
+      <WppRecorderEnabled>true</WppRecorderEnabled>
+      <WppScanConfigurationData Condition="'%(ClCompile.ScanConfigurationData)' == ''">trace.h</WppScanConfigurationData>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies);$(SDK_LIB_PATH)\OneCoreUAP.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WppEnabled>true</WppEnabled>
+      <WppRecorderEnabled>true</WppRecorderEnabled>
+      <WppScanConfigurationData Condition="'%(ClCompile.ScanConfigurationData)' == ''">trace.h</WppScanConfigurationData>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies);$(SDK_LIB_PATH)\OneCoreUAP.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

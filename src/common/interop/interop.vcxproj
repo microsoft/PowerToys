@@ -23,6 +23,7 @@
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>interop</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <ProjectName>PowerToysInterop</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -73,7 +74,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;Mf.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>
       </DelayLoadDLLs>
     </Link>
@@ -87,7 +88,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;Mf.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>
       </DelayLoadDLLs>
     </Link>
@@ -129,7 +130,6 @@
   </Target>
   <ItemGroup>
     <ClInclude Include="HotkeyManager.h" />
-    <ClInclude Include="interop.h" />
     <ClInclude Include="KeyboardHook.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
@@ -152,11 +152,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\common-md-flag\common-md-flag.vcxproj">
       <Project>{985b3f2f-ceed-4c0a-a249-69257e719145}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
+  </Target>
 </Project>

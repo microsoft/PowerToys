@@ -37,6 +37,8 @@
 #include <common/settings_helpers.h>
 #include <common/logger/logger.h>
 
+#include <gdiplus.h>
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 extern updating::notifications::strings Strings;
 
@@ -117,7 +119,7 @@ int runner(bool isProcessElevated)
         chdir_current_executable();
         // Load Powertoys DLLs
 
-        const std::array<std::wstring_view, 8> knownModules = {
+        std::vector<std::wstring_view> knownModules = {
             L"modules/FancyZones/fancyzones.dll",
             L"modules/FileExplorerPreview/powerpreview.dll",
             L"modules/ImageResizer/ImageResizerExt.dll",
@@ -126,6 +128,7 @@ int runner(bool isProcessElevated)
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuide.dll",
             L"modules/ColorPicker/ColorPicker.dll",
+            L"modules/VideoConference/VideoConferenceModule.dll"
         };
 
         for (const auto& moduleSubdir : knownModules)
@@ -277,6 +280,10 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    Gdiplus::GdiplusStartupInput gpStartupInput;
+    ULONG_PTR gpToken;
+    GdiplusStartup(&gpToken, &gpStartupInput, NULL);
+
     winrt::init_apartment();
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
@@ -449,5 +456,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
     }
     stop_tray_icon();
+    Gdiplus::GdiplusShutdown(gpToken);
     return result;
 }

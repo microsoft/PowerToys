@@ -82,6 +82,13 @@
                         <FontIcon Glyph="&#xEDA7;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem x:Uid="Shell_VideoConference" helpers:NavHelper.NavigateTo="views:VideoConferencePage" IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE714;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
             </winui:NavigationView.MenuItems>
             <i:Interaction.Behaviors>
                 <behaviors:NavigationViewHeaderBehavior

@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="CVolumeNotification.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Toolbar.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="VideoConferenceModule.cpp" />
+    <ClCompile Include="trace.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CVolumeNotification.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="Toolbar.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="VideoConferenceModule.h" />
+    <ClInclude Include="trace.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="black.bmp" />
+    <Image Include="Icons\Off-NotInUse Dark.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\Off-NotInUse Light.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\Off-Off Dark.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\Off-Off Light.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\Off-On Dark.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\Off-On Light.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\On-NotInUse Dark.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\On-NotInUse Light.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\On-Off Dark.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\On-Off Light.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\On-On Dark.png">
+      <Filter>Icons</Filter>
+    </Image>
+    <Image Include="Icons\On-On Light.png">
+      <Filter>Icons</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Icons\Off-NotInUse Dark.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\Off-NotInUse Light.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\Off-Off Dark.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\Off-Off Light.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\Off-On Dark.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\Off-On Light.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\On-NotInUse Dark.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\On-NotInUse Light.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\On-Off Dark.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\On-Off Light.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\On-On Dark.svg">
+      <Filter>Icons</Filter>
+    </None>
+    <None Include="Icons\On-On Light.svg">
+      <Filter>Icons</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Icons">
+      <UniqueIdentifier>{735361e2-82fa-4034-b9c9-cd6aa099eaa5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

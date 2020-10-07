@@ -1,4 +1,4 @@
-#include <pch.h>
+#include "pch.h"
 #include "registry_wrapper.h"
 
 namespace PowerPreviewSettings
