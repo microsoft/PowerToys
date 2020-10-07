@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Choose>
+    <When Condition="Exists('$(VCTargetsPath)\Microsoft.Cpp.WDK.props')">
+      <PropertyGroup>
+        <HasWDK>true</HasWDK>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <HasWDK>false</HasWDK>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+</Project>

@@ -1,0 +1,100 @@
+environment:
+  host:
+    os: 'windows'
+    flavor: 'server'
+    version: '2019'
+  runtime:
+    provider: 'appcontainer'
+    image: 'cdpxwin1809.azurecr.io/global/vse2019:latest'
+    source_mode: 'map'
+
+version:
+  name: 'PowerToys'
+  major: 1
+  minor: 0
+
+signing_options:
+  profile: 'external_distribution'
+
+package_sources:
+  nuget:
+    feeds:
+      'Nuget': 'https://api.nuget.org/v3/index.json'
+      'Toolset': 'https://msazure.pkgs.visualstudio.com/_packaging/Toolset/nuget/v3/index.json'
+      'PipelineBuildSupplement': 'https://msazure.pkgs.visualstudio.com/_packaging/PipelineBuildSupplement/nuget/v3/index.json'
+
+restore:
+  commands:
+    - !!defaultcommand
+      name: 'Restore Power Toys Telemetry'
+      command: '.pipelines\restore-telemetry.cmd'  
+    - !!defaultcommand
+      name: 'Restore Power Toys'
+      command: '.pipelines\restore.cmd'
+    - !!defaultcommand
+      name: 'Restore Localization packages'
+      command: '.pipelines\restore-localization.cmd'
+
+
+build:
+  commands:
+    - !!buildcommand
+      name: 'Build Power Toys'
+      command: '.pipelines\build-videoconference.cmd'
+      artifacts:
+        - to: 'Symbols'
+          include:
+            - 'x64/**/*.pdb'
+          exclude:
+            - 'x64/Release/obj/**/*.pdb'
+        - from: 'x64/Release'
+          to: 'Build_Output'
+          include:
+            - 'modules\VideoConference\VideoConferenceModule.dll'
+            - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.dll'
+            - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceCustomMediaSource.dll'
+            - 'modules\VideoConference\VideoConferenceVirtualDriver\videoconferencevirtualdriver.cat'
+            - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.inf'
+            - 'modules\VideoConference\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.cab'
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
+    - !!buildcommand
+      name: 'Localize Power Toys'
+      command: '.pipelines\build-localization.cmd'
+      artifacts:
+        - from: 'out\loc'
+          to: 'loc'
+          include:
+            - '**/*'
+
+
+#package:
+#  commands:
+#    - !!buildcommand
+#      name: 'Build MSIX package'
+#      command: 'installer\msix\build_msix_cdpx.cmd'
+#      artifacts:
+#        - from: 'installer\msix\bin'
+#          to: 'Build_MSIX_Package_Output'
+#          include:
+#            - '*.msix'
+#            - '*.msixbundle'
+#          signing_options:
+#            profile: '400'
+
+static_analysis_options:                             
+  binskim_options:  
+    files_to_scan:
+      - from: 'installer/packages'
+        exclude:
+          - 'WiX.*/**/*.dll'
+          - 'Wix.*/**/*.exe'
+  moderncop_options:           
+    files_to_scan:
+      - from: 'src'          
+        exclude:                           
+          - '**/just.config.js'
+          - '**/webpack.config.js'
+          - '**/webpack.serve.config.js'
+          - '**/dist/bundle.js' 
+        

@@ -95,19 +95,23 @@
     <ClInclude Include="..\common.h" />
     <ClInclude Include="..\keyboard_layout.h" />
     <ClInclude Include="..\keyboard_layout_impl.h" />
+    <ClInclude Include="..\MicrophoneDevice.h" />
     <ClInclude Include="..\os-detect.h" />
     <ClInclude Include="..\pch.h" />
     <ClInclude Include="..\two_way_pipe_message_ipc.h" />
     <ClInclude Include="..\two_way_pipe_message_ipc_impl.h" />
+    <ClInclude Include="..\VideoCaptureDeviceList.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common.cpp" />
     <ClCompile Include="..\keyboard_layout.cpp" />
+    <ClCompile Include="..\MicrophoneDevice.cpp" />
     <ClCompile Include="..\os-detect.cpp" />
     <ClCompile Include="..\pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="..\VideoCaptureDeviceList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

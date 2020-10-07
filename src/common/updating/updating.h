@@ -20,17 +20,17 @@ namespace updating
 
     struct new_version_download_info
     {
-        winrt::Windows::Foundation::Uri release_page_uri;
-        std::wstring version_string;
+        winrt::Windows::Foundation::Uri release_page_url;
+        VersionHelper version;
         winrt::Windows::Foundation::Uri installer_download_url;
         std::wstring installer_filename;
     };
 
-    std::future<std::optional<new_version_download_info>> get_new_github_version_info_async();
+    // TODO(yuyoyuppe): !! when merging to master, we must set the default value to false !!
+    std::future<std::optional<new_version_download_info>> get_new_github_version_info_async(const bool prerelease = true);
     std::future<void> try_autoupdate(const bool download_updates_automatically);
     std::filesystem::path get_pending_updates_path();
 
-    std::future<std::wstring> check_new_version_available();
     std::future<std::wstring> download_update();
 
     // non-localized

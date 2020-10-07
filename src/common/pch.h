@@ -1,7 +1,12 @@
 #define NOMINMAX
+#include <Windows.h>
+#include <Unknwn.h>
+
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.Collections.h>
-#include <Windows.h>
+#include <wil/resource.h>
+#include <wil/com.h>
+
 #include <dxgi1_3.h>
 #include <d3d11_2.h>
 #include <d2d1_3.h>

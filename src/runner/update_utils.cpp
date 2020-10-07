@@ -6,6 +6,7 @@
 
 #include <common/timeutil.h>
 #include <common/updating/updating.h>
+#include <common/updating/toast_notifications_helper.h>
 #include <runner/general_settings.h>
 
 bool start_msi_uninstallation_sequence()
@@ -66,17 +67,24 @@ void github_update_worker()
     }
 }
 
-std::wstring check_for_updates()
+std::optional<updating::new_version_download_info> check_for_updates()
 {
     try
     {
-        return updating::check_new_version_available().get();
+        const auto new_version = updating::get_new_github_version_info_async().get();
+        if (!new_version)
+        {
+            updating::notifications::show_unavailable();
+        }
+
+        updating::notifications::show_available(new_version.value());
+        return new_version;
     }
     catch (...)
     {
         // Couldn't autoupdate
-        return std::wstring();
     }
+    return std::nullopt;
 }
 
 bool launch_pending_update()

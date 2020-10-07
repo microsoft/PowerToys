@@ -29,5 +29,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             return JsonSerializer.Serialize(this);
         }
+
+        public static implicit operator StringProperty(string v)
+        {
+            return new StringProperty(v);
+        }
     }
 }
