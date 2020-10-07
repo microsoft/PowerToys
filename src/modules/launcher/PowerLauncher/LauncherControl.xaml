@@ -41,7 +41,7 @@
                             <Border x:Name="border"
                                     Background="{TemplateBinding Background}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderBrush="{TemplateBinding DialogBorderBrush}"
                                     SnapsToDevicePixels="True">
                                 <ScrollViewer x:Name="PART_ContentHost"
                                               Background="{TemplateBinding Background}"
