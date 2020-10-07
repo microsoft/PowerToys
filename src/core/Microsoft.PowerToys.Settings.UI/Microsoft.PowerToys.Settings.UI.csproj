@@ -10,6 +10,7 @@
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
     <AssemblyProduct>PowerToys</AssemblyProduct>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
@@ -185,7 +186,7 @@
       <Version>6.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.5.0-prerelease.200812001</Version>
+      <Version>2.5.0-prerelease.200923002</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>

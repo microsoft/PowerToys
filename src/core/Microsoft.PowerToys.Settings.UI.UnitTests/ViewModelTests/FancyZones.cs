@@ -87,14 +87,14 @@ namespace ViewModelTests
         private Mock<ISettingsUtils> mockFancyZonesSettingsUtils;
 
         [TestInitialize]
-        public void SetUp_StubSettingUtils()
+        public void SetUpStubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
             mockFancyZonesSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<FancyZonesSettings>();
         }
 
         [TestMethod]
-        public void IsEnabled_ShouldDisableModule_WhenSuccessful()
+        public void IsEnabledShouldDisableModuleWhenSuccessful()
         {
             Func<string, int> SendMockIPCConfigMSG = msg =>
             {
@@ -112,7 +112,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ShiftDrag_ShouldSetValue2False_WhenSuccessful()
+        public void ShiftDragShouldSetValue2FalseWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -131,7 +131,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void OverrideSnapHotkeys_ShouldSetValue2True_WhenSuccessful()
+        public void OverrideSnapHotkeysShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -150,7 +150,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void MoveWindowsBasedOnPosition_ShouldSetValue2True_WhenSuccessful()
+        public void MoveWindowsBasedOnPositionShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -169,7 +169,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ZoneSetChangeFlashZones_ShouldSetValue2False_WhenSuccessful()
+        public void ZoneSetChangeFlashZonesShouldSetValue2FalseWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -188,7 +188,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void MouseSwitch_ShouldSetValue2True_WhenSuccessful()
+        public void MouseSwitchShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -207,7 +207,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void DisplayChangeMoveWindows_ShouldSetValue2True_WhenSuccessful()
+        public void DisplayChangeMoveWindowsShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -226,7 +226,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ZoneSetChangeMoveWindows_ShouldSetValue2True_WhenSuccessful()
+        public void ZoneSetChangeMoveWindowsShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -245,7 +245,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AppLastZoneMoveWindows_ShouldSetValue2True_WhenSuccessful()
+        public void AppLastZoneMoveWindowsShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -263,7 +263,7 @@ namespace ViewModelTests
             viewModel.AppLastZoneMoveWindows = true;
         }
 
-        public void OpenWindowOnActiveMonitor_ShouldSetValue2True_WhenSuccessful()
+        public void OpenWindowOnActiveMonitorShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -282,7 +282,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void RestoreSize_ShouldSetValue2True_WhenSuccessful()
+        public void RestoreSizeShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -301,7 +301,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void UseCursorPosEditorStartupScreen_ShouldSetValue2False_WhenSuccessful()
+        public void UseCursorPosEditorStartupScreenShouldSetValue2FalseWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -320,7 +320,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ShowOnAllMonitors_ShouldSetValue2True_WhenSuccessful()
+        public void ShowOnAllMonitorsShouldSetValue2TrueWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -339,7 +339,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ZoneHighlightColor_ShouldSetColorValue2White_WhenSuccessful()
+        public void ZoneHighlightColorShouldSetColorValue2WhiteWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -358,7 +358,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ZoneBorderColor_ShouldSetColorValue2White_WhenSuccessful()
+        public void ZoneBorderColorShouldSetColorValue2WhiteWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -377,7 +377,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ZoneInActiveColor_ShouldSetColorValue2White_WhenSuccessful()
+        public void ZoneInActiveColorShouldSetColorValue2WhiteWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -396,7 +396,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ExcludedApps_ShouldSetColorValue2White_WhenSuccessful()
+        public void ExcludedAppsShouldSetColorValue2WhiteWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -415,7 +415,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void HighlightOpacity_ShouldSetOpacityValueTo60_WhenSuccessful()
+        public void HighlightOpacityShouldSetOpacityValueTo60WhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -431,11 +431,6 @@ namespace ViewModelTests
 
             // act
             viewModel.HighlightOpacity = 60;
-        }
-
-        private string ToRGBHex(Color color)
-        {
-            return "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }
     }
 }

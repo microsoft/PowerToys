@@ -60,14 +60,14 @@ namespace ViewModelTests
         private Mock<ISettingsUtils> mockShortcutGuideSettingsUtils;
 
         [TestInitialize]
-        public void SetUp_StubSettingUtils()
+        public void SetUpStubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
             mockShortcutGuideSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ShortcutGuideSettings>();
         }
 
         [TestMethod]
-        public void IsEnabled_ShouldEnableModule_WhenSuccessful()
+        public void IsEnabledShouldEnableModuleWhenSuccessful()
         {
             // Assert
             // Initialize mock function of sending IPC message.
@@ -86,7 +86,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ThemeIndex_ShouldSetThemeToDark_WhenSuccessful()
+        public void ThemeIndexShouldSetThemeToDarkWhenSuccessful()
         {
             // Assert
             // Initialize mock function of sending IPC message.
@@ -99,14 +99,15 @@ namespace ViewModelTests
 
             // Arrange
             ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
-            Assert.AreEqual(1, viewModel.ThemeIndex);
+            // Initialize shortcut guide settings theme to 'system' to be in sync with shortcut_guide.h.
+            Assert.AreEqual(2, viewModel.ThemeIndex);
 
             // Act
             viewModel.ThemeIndex = 0;
         }
 
         [TestMethod]
-        public void PressTime_ShouldSetPressTimeToOneHundred_WhenSuccessful()
+        public void PressTimeShouldSetPressTimeToOneHundredWhenSuccessful()
         {
             // Assert
             // Initialize mock function of sending IPC message.
@@ -126,7 +127,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void OverlayOpacity_ShouldSeOverlayOpacityToOneHundred_WhenSuccessful()
+        public void OverlayOpacityShouldSeOverlayOpacityToOneHundredWhenSuccessful()
         {
             // Assert
             // Initialize mock function of sending IPC message.

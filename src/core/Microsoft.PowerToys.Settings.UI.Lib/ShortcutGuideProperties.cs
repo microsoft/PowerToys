@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             OverlayOpacity = new IntProperty(90);
             PressTime = new IntProperty(900);
-            Theme = new StringProperty("light");
+            Theme = new StringProperty("system");
         }
 
         [JsonPropertyName("overlay_opacity")]

@@ -21,7 +21,7 @@ namespace ViewModelTests
         private Mock<ISettingsUtils> mockPowerPreviewSettingsUtils;
 
         [TestInitialize]
-        public void SetUp_StubSettingUtils()
+        public void SetUpStubSettingUtils()
         {
             mockPowerPreviewSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<PowerPreviewSettings>();
         }
@@ -58,7 +58,7 @@ namespace ViewModelTests
 
 
         [TestMethod]
-        public void SVGRenderIsEnabled_ShouldPrevHandler_WhenSuccessful()
+        public void SVGRenderIsEnabledShouldPrevHandlerWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -76,7 +76,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void SVGThumbnailIsEnabled_ShouldPrevHandler_WhenSuccessful()
+        public void SVGThumbnailIsEnabledShouldPrevHandlerWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -94,7 +94,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void MDRenderIsEnabled_ShouldPrevHandler_WhenSuccessful()
+        public void MDRenderIsEnabledShouldPrevHandlerWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>

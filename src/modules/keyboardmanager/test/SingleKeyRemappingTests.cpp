@@ -58,8 +58,8 @@ namespace RemappingLogicTests
         // Test if key is suppressed if a key is disabled by single key remap
         TEST_METHOD (RemappedKeyDisabled_ShouldNotChangeKeyState_OnKeyEvent)
         {
-            // Remap A to 0x0 (disabled)
-            testState.AddSingleKeyRemap(0x41, 0x0);
+            // Remap A to VK_DISABLE (disabled)
+            testState.AddSingleKeyRemap(0x41, CommonSharedConstants::VK_DISABLED);
             const int nInputs = 1;
 
             INPUT input[nInputs] = {};

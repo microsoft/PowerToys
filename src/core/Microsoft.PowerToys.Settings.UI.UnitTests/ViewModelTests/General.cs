@@ -19,14 +19,14 @@ namespace ViewModelTests
     [TestClass]
     public class General
     {
-        public const string generalSettings_file_name = "Test\\GenealSettings";
+        public const string generalSettingsFileName = "Test\\GenealSettings";
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
 
 
 
         [TestInitialize]
-        public void SetUp_StubSettingUtils()
+        public void SetUpStubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
         }
@@ -75,7 +75,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void IsElevated_ShouldUpdateRunasAdminStatusAttrs_WhenSuccessful()
+        public void IsElevatedShouldUpdateRunasAdminStatusAttrsWhenSuccessful()
         {
             // Arrange
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
@@ -91,7 +91,7 @@ namespace ViewModelTests
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
                 SendCheckForUpdatesIPCMessage,
-                generalSettings_file_name);
+                generalSettingsFileName);
 
             Assert.AreEqual(viewModel.RunningAsUserDefaultText, viewModel.RunningAsText);
             Assert.IsFalse(viewModel.IsElevated);
@@ -105,7 +105,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void Startup_ShouldEnableRunOnStartUp_WhenSuccessful()
+        public void StartupShouldEnableRunOnStartUpWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -128,7 +128,7 @@ namespace ViewModelTests
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
                 SendCheckForUpdatesIPCMessage,
-                generalSettings_file_name);
+                generalSettingsFileName);
             Assert.IsFalse(viewModel.Startup);
 
             // act
@@ -136,7 +136,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void RunElevated_ShouldEnableAlwaysRunElevated_WhenSuccessful()
+        public void RunElevatedShouldEnableAlwaysRunElevatedWhenSuccessful()
         {
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
@@ -160,7 +160,7 @@ namespace ViewModelTests
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
                 SendCheckForUpdatesIPCMessage,
-                generalSettings_file_name);
+                generalSettingsFileName);
 
             Assert.IsFalse(viewModel.RunElevated);
 
@@ -169,7 +169,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void IsLightThemeRadioButtonChecked_ShouldThemeToLight_WhenSuccessful()
+        public void IsLightThemeRadioButtonCheckedShouldThemeToLightWhenSuccessful()
         {
             // Arrange
             GeneralViewModel viewModel = null;
@@ -193,7 +193,7 @@ namespace ViewModelTests
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
                 SendCheckForUpdatesIPCMessage,
-                generalSettings_file_name);
+                generalSettingsFileName);
             Assert.IsFalse(viewModel.IsLightThemeRadioButtonChecked);
 
             // act
@@ -201,7 +201,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void IsDarkThemeRadioButtonChecked_ShouldThemeToDark_WhenSuccessful()
+        public void IsDarkThemeRadioButtonCheckedShouldThemeToDarkWhenSuccessful()
         {
             // Arrange
             // Assert
@@ -224,7 +224,7 @@ namespace ViewModelTests
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
                 SendCheckForUpdatesIPCMessage,
-                generalSettings_file_name);
+                generalSettingsFileName);
             Assert.IsFalse(viewModel.IsDarkThemeRadioButtonChecked);
 
 
@@ -251,7 +251,7 @@ namespace ViewModelTests
             Assert.IsTrue(modules.ColorPicker);
         }
 
-        public int UpdateUIThemeMethod(string themeName)
+        public static int UpdateUIThemeMethod(string themeName)
         {
             return 0;
         }

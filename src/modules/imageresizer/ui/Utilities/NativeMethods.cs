@@ -11,7 +11,7 @@ namespace ImageResizer.Utilities
 {
     // Win32 functions required for temporary workaround for issue #1273
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Naming used in Win32 dll")]
-    internal class Win32Helpers
+    internal class NativeMethods
     {
         [DllImport("user32.dll")]
         internal static extern bool SetForegroundWindow(IntPtr hWnd);

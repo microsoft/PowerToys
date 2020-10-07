@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,37 +71,40 @@ namespace Microsoft.Plugin.Program
 
         public List<Result> Query(Query query)
         {
-            foreach (var programArgumentParser in _programArgumentParsers)
-            {
-                if (!programArgumentParser.Enabled)
-                {
-                    continue;
-                }
+            var sources = _programArgumentParsers
+                .Where(programArgumentParser => programArgumentParser.Enabled);
 
+            foreach (var programArgumentParser in sources)
+            {
                 if (!programArgumentParser.TryParse(query, out var program, out var programArguments))
                 {
                     continue;
                 }
 
-                var results1 = _win32ProgramRepository.AsParallel()
-                    .Where(p => p.Enabled)
-                    .Select(p => p.Result(program, programArguments, _context.API));
-
-                var results2 = _packageRepository.AsParallel()
-                    .Where(p => p.Enabled)
-                    .Select(p => p.Result(program, programArguments, _context.API));
-
-                var result = results1.Concat(results2).Where(r => r != null && r.Score > 0);
-                if (result.Any())
-                {
-                    var maxScore = result.Max(x => x.Score);
-                    result = result.Where(x => x.Score > Settings.MinScoreThreshold * maxScore);
-                }
-
-                return result.ToList();
+                return Query(program, programArguments).ToList();
             }
 
             return new List<Result>(0);
+        }
+
+        private IEnumerable<Result> Query(string program, string programArguments)
+        {
+            var result = _win32ProgramRepository
+                .Concat<IProgram>(_packageRepository)
+                .AsParallel()
+                .Where(p => p.Enabled)
+                .Select(p => p.Result(program, programArguments, _context.API))
+                .Where(r => r?.Score > 0)
+                .ToArray();
+
+            if (result.Any())
+            {
+                var maxScore = result.Max(x => x.Score);
+                return result
+                    .Where(x => x.Score > Settings.MinScoreThreshold * maxScore);
+            }
+
+            return Enumerable.Empty<Result>();
         }
 
         public void Init(PluginInitContext context)
