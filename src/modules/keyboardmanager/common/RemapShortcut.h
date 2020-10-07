@@ -9,14 +9,16 @@ public:
     std::variant<DWORD, Shortcut> targetShortcut;
     bool isShortcutInvoked;
     ModifierKey winKeyInvoked;
+    // This bool value is only required for remapping shortcuts to Disable
+    bool isOriginalActionKeyPressed;
 
     RemapShortcut(const std::variant<DWORD, Shortcut>& sc) :
-        targetShortcut(sc), isShortcutInvoked(false), winKeyInvoked(ModifierKey::Disabled)
+        targetShortcut(sc), isShortcutInvoked(false), winKeyInvoked(ModifierKey::Disabled), isOriginalActionKeyPressed(false)
     {
     }
 
     RemapShortcut() :
-        targetShortcut(Shortcut()), isShortcutInvoked(false), winKeyInvoked(ModifierKey::Disabled)
+        targetShortcut(Shortcut()), isShortcutInvoked(false), winKeyInvoked(ModifierKey::Disabled), isOriginalActionKeyPressed(false)
     {
     }
 
