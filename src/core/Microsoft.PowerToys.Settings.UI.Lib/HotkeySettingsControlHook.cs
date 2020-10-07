@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
     public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo);
 
-    public class HotkeySettingsControlHook
+    public class HotkeySettingsControlHook : IDisposable
     {
         private const int WmKeyDown = 0x100;
         private const int WmKeyUp = 0x101;
@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         private KeyEvent _keyDown;
         private KeyEvent _keyUp;
         private IsActive _isActive;
+        private bool disposedValue;
 
         private FilterAccessibleKeyboardEvents _filterKeyboardEvent;
 
@@ -62,10 +63,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // Dispose the KeyboardHook object to terminate the hook threads
+                    _hook.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
         public void Dispose()
         {
-            // Dispose the KeyboardHook object to terminate the hook threads
-            _hook.Dispose();
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
