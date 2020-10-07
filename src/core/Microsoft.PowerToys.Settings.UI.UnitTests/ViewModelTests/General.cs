@@ -50,17 +50,17 @@ namespace ViewModelTests
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
-            GeneralViewModel viewModel = new GeneralViewModel(
-                generalSettingsRepository,
-                "GeneralSettings_RunningAsAdminText",
-                "GeneralSettings_RunningAsUserText",
-                false,
-                false,
-                UpdateUIThemeMethod,
-                SendMockIPCConfigMSG,
-                SendRestartAdminIPCMessage,
-                SendCheckForUpdatesIPCMessage,
-                string.Empty);
+            var viewModel = new GeneralViewModel(
+                settingsRepository: generalSettingsRepository,
+                runAsAdminText: "GeneralSettings_RunningAsAdminText",
+                runAsUserText: "GeneralSettings_RunningAsUserText",
+                isElevated: false,
+                isAdmin: false,
+                updateTheme: UpdateUIThemeMethod,
+                ipcMSGCallBackFunc: SendMockIPCConfigMSG,
+                ipcMSGRestartAsAdminMSGCallBackFunc: SendRestartAdminIPCMessage,
+                ipcMSGCheckForUpdatesCallBackFunc: SendCheckForUpdatesIPCMessage,
+                configFileSubfolder: string.Empty);
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.AutoDownloadUpdates, viewModel.AutoDownloadUpdates);
