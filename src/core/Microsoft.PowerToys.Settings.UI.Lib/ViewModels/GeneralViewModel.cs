@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
             CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
-            RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
+            RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -354,7 +354,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             SendCheckForUpdatesConfigMSG(customaction.ToString());
         }
 
-        public void Restart_Elevated()
+        public void RestartElevated()
         {
             GeneralSettingsConfig.CustomActionName = "restart_elevation";
 

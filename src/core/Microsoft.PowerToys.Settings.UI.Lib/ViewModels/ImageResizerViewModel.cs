@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 size.Id = i;
                 i++;
-                size.PropertyChanged += Size_PropertyChanged;
+                size.PropertyChanged += SizePropertyChanged;
             }
         }
 
@@ -224,7 +224,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             ObservableCollection<ImageSize> imageSizes = Sizes;
             int maxId = imageSizes.Count > 0 ? imageSizes.OrderBy(x => x.Id).Last().Id : -1;
             ImageSize newSize = new ImageSize(maxId + 1);
-            newSize.PropertyChanged += Size_PropertyChanged;
+            newSize.PropertyChanged += SizePropertyChanged;
             imageSizes.Add(newSize);
             _advancedSizes = imageSizes;
             SavesImageSizes(imageSizes);
@@ -329,7 +329,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             return -1;
         }
 
-        public void Size_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        public void SizePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ImageSize modifiedSize = (ImageSize)sender;
             ObservableCollection<ImageSize> imageSizes = Sizes;
