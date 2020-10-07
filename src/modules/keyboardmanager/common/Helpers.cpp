@@ -6,6 +6,7 @@
 #include "../../common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
 #include "../common/keyboard_layout.h"
+#include "KeyboardManagerConstants.h"
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
@@ -191,6 +192,15 @@ namespace KeyboardManagerHelper
             keyEventArray[index].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
         }
         keyEventArray[index].ki.dwExtraInfo = extraInfo;
+    }
+
+    // Function to set the dummy key events used for remapping shortcuts, required to ensure releasing a modifier doesn't trigger another action (For example, Win->Start Menu or Alt->Menu bar)
+    void SetDummyKeyEvent(LPINPUT keyEventArray, int& index, ULONG_PTR extraInfo)
+    {
+        SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, 0, extraInfo);
+        index++;
+        SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, extraInfo);
+        index++;
     }
 
     // Function to return window handle for a full screen UWP app
