@@ -15,18 +15,15 @@
           <Val><![CDATA[Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures.]]></Val>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[This text is displayed if image is blocked from being displayed.]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";MarkdownNotPreviewedError" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The markdown could not be preview due to an internal error.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[내부 오류로 인해 Markdown을 미리 볼 수 없습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[This text is displayed if markdown fails to preview]]></Cmt>
-        </Cmts>
       </Item>
     </Item>
   </Item>
