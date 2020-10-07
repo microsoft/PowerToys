@@ -106,12 +106,6 @@ namespace UnitTestsCommonLib
             Assert::ExpectException<winrt::hresult_error>(func);
         }
 
-        TEST_METHOD (LoadFromInvalidString_NameMissed)
-        {
-            auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L"{\"properties\" : {\"bool_toggle_true\":{\"value\":true},\"bool_toggle_false\":{\"value\":false},\"color_picker\" : {\"value\":\"#ff8d12\"},\"int_spinner\" : {\"value\":10},\"string_text\" : {\"value\":\"a quick fox\"}},\"version\" : \"1.0\" }", L"Module Key"); };
-            Assert::ExpectException<winrt::hresult_error>(func);
-        }
-
         TEST_METHOD (LoadFromInvalidString_VersionMissed)
         {
             PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}}", L"Module Key");
