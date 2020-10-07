@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
 {
-    public class Helper
+    public static class Helper
     {
         public static bool AllowRunnerToForeground()
         {
