@@ -55,6 +55,9 @@
       <Item ItemId=";powertoys_run_plugin_program_packaged_application" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Packaged application]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Csomagolt alkalmazás]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -106,6 +109,9 @@
       <Item ItemId=";wox_plugin_program_open_in_console" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open path in console (Ctrl+Shift+C)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Elérési út megnyitása a konzolon (Ctrl+Shift+C)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -127,6 +133,9 @@
       <Item ItemId=";wox_plugin_program_run_as_administrator" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Run as administrator (Ctrl+Shift+Enter)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Futtatás rendszergazdaként (Ctrl+Shift+Enter)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

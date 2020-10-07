@@ -19,6 +19,9 @@
       <Item ItemId=";Resize_Pictures" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resize pictures]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Képek átméretezése]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -13,6 +13,9 @@
       <Item ItemId=";Cant_Drag_Elevated" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[We've detected an application running with administrator privileges. This blocks some functionality in PowerToys. Visit our wiki page to learn more.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[관리자 권한으로 실행되는 애플리케이션을 검색했습니다. 이로 인해 PowerToys의 일부 기능이 차단됩니다. 자세한 내용은 Wiki 페이지를 방문하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -46,12 +49,18 @@
       <Item ItemId=";FancyZones_Data_Error" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[FancyZones persisted data path not found. Please report the bug to]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[FancyZones 지속형 데이터 경로를 찾을 수 없습니다. 다음에 버그를 신고하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FancyZones_Editor_Launch_Error" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The FancyZones editor failed to start. Please report the bug to]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[FancyZones 편집기를 시작하지 못했습니다. 다음에 버그를 신고하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -67,6 +76,9 @@
       <Item ItemId=";FancyZones_Settings_Save_Error" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to save the FancyZones settings. Please retry again later, if the problem persists report the bug to]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[FancyZones 설정을 저장하지 못했습니다. 나중에 다시 시도하세요. 문제가 계속되면 다음에 버그를 신고하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -136,12 +148,18 @@
       <Item ItemId=";Setting_Description_Move_Window_Across_Monitors" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Move windows between zones across all monitors when snapping with (Win + Arrow)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[맞출 때 모든 모니터의 영역 간 창 이동(Win+화살표)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Setting_Description_Move_Windows_Based_On_Position" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Move windows based on their position when snapping with (Win + Arrow)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[맞출 때 위치를 기준으로 창 이동(Win+화살표)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -157,6 +175,9 @@
       <Item ItemId=";Setting_Description_Override_Snap_Hotkeys" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap hotkeys (Win + Arrow) to move windows between zones]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows 맞추기 핫키(Win+화살표)를 재정의하여 영역 간 창 이동]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -172,6 +193,9 @@
       <Item ItemId=";Setting_Description_ShiftDrag" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Hold Shift key to activate zones while dragging]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[&lt;Shift&gt; 키를 누른 채로 끌어와서 영역 활성화]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -187,6 +211,9 @@
       <Item ItemId=";Setting_Description_Span_Zones_Across_Monitors" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[영역이 모니터 간에 확장되도록 허용(모든 모니터의 DPI 조정이 동일해야 함)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -247,6 +274,9 @@
       <Item ItemId=";Setting_Excluded_Apps_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[영역에 맞추기에서 애플리케이션을 제외하려면 여기에 해당 이름을 추가하세요(줄마다 하나씩). 제외된 앱은 다른 모든 설정과 관계없이 Windows 맞추기에 반응합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -262,6 +292,9 @@
       <Item ItemId=";Setting_Launch_Editor_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[To launch the zone editor, select the Edit zones button below or press the zone editor hotkey anytime]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[영역 편집기를 시작하려면 언제든지 아래의 [영역 편집]5D; 단추를 선택하거나 영역 편집기 핫키를 누르세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -295,6 +328,9 @@
       <Item ItemId=";Span_Across_Zones_Warning" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The 'Allow zones to span across monitors' option requires all monitors to have the same DPI scaling to work properly.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA['영역이 모니터 간에 확장되도록 허용' 옵션이 제대로 작동하려면 모든 모니터의 DPI 조정이 동일해야 합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

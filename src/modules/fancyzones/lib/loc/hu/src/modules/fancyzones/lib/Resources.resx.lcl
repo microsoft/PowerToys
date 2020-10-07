@@ -157,6 +157,9 @@
       <Item ItemId=";Setting_Description_Use_CursorPos_Editor_StartupScreen" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Follow mouse cursor instead of focus when launching editor in a multi screen environment]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Az egérmutató követése a fókusz helyett a szerkesztő többképernyős környezetben való indításakor]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -199,6 +202,9 @@
       <Item ItemId=";Setting_Launch_Editor_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Edit zones]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zónák szerkesztése]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -217,6 +223,9 @@
       <Item ItemId=";Setting_Launch_Editor_Label" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone configuration]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zóna konfigurációja]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

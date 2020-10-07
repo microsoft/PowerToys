@@ -25,6 +25,9 @@
       <Item ItemId=";Explr_Svg_Settings_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Render SVG images]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SVG-képek megjelenítése]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

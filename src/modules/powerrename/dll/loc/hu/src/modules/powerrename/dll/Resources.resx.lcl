@@ -25,6 +25,9 @@
       <Item ItemId=";Icon_Context_Menu" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Show icon on context menu.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ikon megjelenítése a helyi menüben.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
