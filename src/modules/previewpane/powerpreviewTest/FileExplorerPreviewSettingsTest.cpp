@@ -69,7 +69,7 @@ namespace PreviewHandlerSettingsTest
             bool defaultState = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             FileExplorerPreviewSettings previewSettings = GetSettingsObject(defaultState, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.LoadState(settings);
@@ -84,7 +84,7 @@ namespace PreviewHandlerSettingsTest
             bool defaultState = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             FileExplorerPreviewSettings previewSettings = GetSettingsObject(defaultState, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\"}");
+            auto settings = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\"}", L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.LoadState(settings);
@@ -99,7 +99,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
             previewSettings.UpdateToggleSettingState(true);
 
             // Act
@@ -116,7 +116,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"), L"FileExplorerPreviewTests");
             previewSettings.UpdateToggleSettingState(false);
 
             // Act
@@ -133,7 +133,7 @@ namespace PreviewHandlerSettingsTest
             bool enabled = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             FileExplorerPreviewSettings previewSettings = GetSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.UpdateState(settings, enabled);
