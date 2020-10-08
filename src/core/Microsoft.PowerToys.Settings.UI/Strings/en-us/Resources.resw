@@ -760,7 +760,7 @@
     <value>Preview Pane</value>
   </data>
   <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>You need to run as administrator to modify these settings.</value>
+    <value>You need to run as administrator to modify these settings</value>
   </data>
   <data name="FileExplorerPreview_AffectsAllUsers.Text" xml:space="preserve">
     <value>The settings on this page affect all users on the system.</value>
