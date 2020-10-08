@@ -6,6 +6,7 @@
 #include "../../common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
 #include "../common/keyboard_layout.h"
+#include "KeyboardManagerConstants.h"
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
@@ -195,6 +196,15 @@ namespace KeyboardManagerHelper
         // Set wScan to the value from MapVirtualKey as some applications may use the scan code for handling input, for instance, Windows Terminal ignores non-character input which has scancode set to 0. 
         // MapVirtualKey returns 0 if the key code does not correspond to a physical key (such as unassigned/reserved keys). More details at https://github.com/microsoft/PowerToys/pull/7143#issue-498877747
         keyEventArray[index].ki.wScan = (WORD)MapVirtualKey(keyCode, MAPVK_VK_TO_VSC);
+    }
+
+    // Function to set the dummy key events used for remapping shortcuts, required to ensure releasing a modifier doesn't trigger another action (For example, Win->Start Menu or Alt->Menu bar)
+    void SetDummyKeyEvent(LPINPUT keyEventArray, int& index, ULONG_PTR extraInfo)
+    {
+        SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, 0, extraInfo);
+        index++;
+        SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, extraInfo);
+        index++;
     }
 
     // Function to return window handle for a full screen UWP app

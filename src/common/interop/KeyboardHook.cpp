@@ -60,7 +60,10 @@ LRESULT __clrcall KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam
         KeyboardEvent ^ ev = gcnew KeyboardEvent();
         ev->message = wParam;
         ev->key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->vkCode;
-        if (filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev))
+        ev->dwExtraInfo = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->dwExtraInfo;
+
+        // Ignore the keyboard hook if the FilterkeyboardEvent returns false.
+        if ((filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev)))
         {
             return CallNextHookEx(hookHandle, nCode, wParam, lParam);
         }

@@ -87,6 +87,9 @@ namespace KeyboardManagerHelper
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
 
+    // Function to set the dummy key events used for remapping shortcuts, required to ensure releasing a modifier doesn't trigger another action (For example, Win->Start Menu or Alt->Menu bar)
+    void SetDummyKeyEvent(LPINPUT keyEventArray, int& index, ULONG_PTR extraInfo);
+
     // Function to return window handle for a full screen UWP app
     HWND GetFullscreenUWPWindowHandle();
 

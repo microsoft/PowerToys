@@ -24,7 +24,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void Helper_CompareVersions_ShouldBeEqual_WhenSuccessful()
+        public void HelperCompareVersionsShouldBeEqualWhenSuccessful()
         {
             TestStringsAreEqual("v0.0.0", "v0.0.0");
             TestStringsAreEqual("v0.1.1", "v0.1.1");
@@ -33,7 +33,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void Helper_CompareVersions_ShouldBeSmaller_WhenSuccessful()
+        public void HelperCompareVersionsShouldBeSmallerWhenSuccessful()
         {
             TestStringIsSmaller("v0.0.0", "v0.0.1");
             TestStringIsSmaller("v0.0.0", "v0.1.0");
@@ -47,28 +47,28 @@ namespace CommonLibTest
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
-        public void Helper_CompareVersions_ShouldThrowBadFormat_WhenNoVersionString()
+        public void HelperCompareVersionsShouldThrowBadFormatWhenNoVersionString()
         {
             Helper.CompareVersions("v0.0.1", string.Empty);
         }
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
-        public void Helper_CompareVersions_ShouldThrowBadFormat_WhenShortVersionString()
+        public void HelperCompareVersionsShouldThrowBadFormatWhenShortVersionString()
         {
             Helper.CompareVersions("v0.0.1", "v0.1");
         }
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
-        public void Helper_CompareVersions_ShouldThrowBadFormat_WhenLongVersionString()
+        public void HelperCompareVersionsShouldThrowBadFormatWhenLongVersionString()
         {
             Helper.CompareVersions("v0.0.1", "v0.0.0.1");
         }
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
-        public void Helper_CompareVersions_ShouldThrowBadFormat_WhenItIsNotAVersionString()
+        public void HelperCompareVersionsShouldThrowBadFormatWhenItIsNotAVersionString()
         {
             Helper.CompareVersions("v0.0.1", "HelloWorld");
         }
