@@ -42,7 +42,7 @@ public:
                   L"svg-previewer-toggle-setting",
                   GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
                   L"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
-                  L"SVG Preview Handler",
+                  L"Svg Preview Handler",
                   new RegistryWrapper()),
 
               // MarkDown Preview Handler Settings Object.
@@ -59,7 +59,7 @@ public:
                   L"svg-thumbnail-toggle-setting",
                   GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                   L"{36B27788-A8BB-4698-A756-DF9F11F64F84}",
-                  L"SVG Thumbnail Provider",
+                  L"Svg Thumbnail Provider",
                   new RegistryWrapper(),
                   L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}") })
     {
