@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "KeyboardHook.h"
-#include "interop.h"
 #include <exception>
 #include <msclr\marshal.h>
 #include <msclr\marshal_cppstd.h>
