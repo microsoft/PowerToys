@@ -4,7 +4,6 @@
 #include "trace.h"
 #include <iostream>
 #include <atlstr.h>
-#include <common/os-detect.h>
 
 using namespace std;
 
@@ -84,8 +83,8 @@ namespace PowerPreviewSettings
             {
                 this->UpdateToggleSettingState(newState);
 
-                // If global setting is enable or the user is using the new settings interface, as it does not have a toggle to modify enabled. Add or remove the file explorer module otherwise just change the UI and save the updated config.
-                if (enabled || UseNewSettings())
+                // If global setting is enable. Add or remove the file explorer module otherwise just change the UI and save the updated config.
+                if (enabled)
                 {
                     // Check if the registry state does not match the new state, registry needs to be modified
                     if (this->CheckRegistryState() != newState)

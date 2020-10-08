@@ -33,38 +33,7 @@ private:
     void elevation_check_wrapper(std::function<void()> method);
 
 public:
-    PowerPreviewModule() :
-        m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
-        m_fileExplorerModules(
-            { // SVG Preview Handler settings object.
-              new PreviewHandlerSettings(
-                  true,
-                  L"svg-previewer-toggle-setting",
-                  GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
-                  L"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
-                  L"Svg Preview Handler",
-                  new RegistryWrapper()),
-
-              // MarkDown Preview Handler Settings Object.
-              new PreviewHandlerSettings(
-                  true,
-                  L"md-previewer-toggle-setting",
-                  GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
-                  L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
-                  L"Markdown Preview Handler",
-                  new RegistryWrapper()),
-              //SVG Thumbnail Provider settings object.
-              new ThumbnailProviderSettings(
-                  true,
-                  L"svg-thumbnail-toggle-setting",
-                  GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
-                  L"{36B27788-A8BB-4698-A756-DF9F11F64F84}",
-                  L"Svg Thumbnail Provider",
-                  new RegistryWrapper(),
-                  L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}") })
-    {
-        init_settings();
-    };
+    PowerPreviewModule();
 
     virtual void destroy();
     virtual const wchar_t* get_name();

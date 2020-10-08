@@ -5,6 +5,61 @@
 #include "trace.h"
 #include "settings.h"
 #include "Generated Files/resource.h"
+#include <common\os-detect.h>
+
+// Constructor
+PowerPreviewModule::PowerPreviewModule() :
+    m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
+    m_fileExplorerModules(
+        { // SVG Preview Handler settings object.
+          new PreviewHandlerSettings(
+              true,
+              L"svg-previewer-toggle-setting",
+              GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
+              L"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
+              L"Svg Preview Handler",
+              new RegistryWrapper()),
+
+          // MarkDown Preview Handler Settings Object.
+          new PreviewHandlerSettings(
+              true,
+              L"md-previewer-toggle-setting",
+              GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
+              L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
+              L"Markdown Preview Handler",
+              new RegistryWrapper()),
+          //SVG Thumbnail Provider settings object.
+          new ThumbnailProviderSettings(
+              true,
+              L"svg-thumbnail-toggle-setting",
+              GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+              L"{36B27788-A8BB-4698-A756-DF9F11F64F84}",
+              L"Svg Thumbnail Provider",
+              new RegistryWrapper(),
+              L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}") })
+{
+    // Initialize the toggle states for each module
+    init_settings();
+
+    // If the user is on the new settings interface, File Explorer might be disabled if they updated from old to new settings, so initialize the registry state in the constructor as PowerPreviewModule::enable/disable will not be called on startup
+    if (UseNewSettings())
+    {
+        registry_and_elevation_check_wrapper([this]() {
+            for (auto fileExplorerModule : this->m_fileExplorerModules)
+            {
+                if (fileExplorerModule->GetToggleSettingState())
+                {
+                    // Enable all the modules with initial state set as true.
+                    fileExplorerModule->Enable();
+                }
+                else
+                {
+                    fileExplorerModule->Disable();
+                }
+            }
+        });
+    }
+}
 
 // Destroy the powertoy and free memory.
 void PowerPreviewModule::destroy()
@@ -60,7 +115,8 @@ void PowerPreviewModule::set_config(const wchar_t* config)
         bool isElevated = is_process_elevated(false);
         for (auto fileExplorerModule : this->m_fileExplorerModules)
         {
-            updateSuccess = updateSuccess && fileExplorerModule->UpdateState(settings, this->m_enabled, isElevated);
+            // If the user is using the new settings interface, as it does not have a toggle to modify enabled consider File Explorer to always be enabled
+            updateSuccess = updateSuccess && fileExplorerModule->UpdateState(settings, this->m_enabled || UseNewSettings(), isElevated);
         }
 
         if (!updateSuccess)
@@ -79,20 +135,24 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    registry_and_elevation_check_wrapper([this]() {
-        for (auto fileExplorerModule : this->m_fileExplorerModules)
-        {
-            if (fileExplorerModule->GetToggleSettingState())
+    // Should only be done for old settings as it is already done for new settings in the constructor.
+    if (!UseNewSettings())
+    {
+        registry_and_elevation_check_wrapper([this]() {
+            for (auto fileExplorerModule : this->m_fileExplorerModules)
             {
-                // Enable all the modules with initial state set as true.
-                fileExplorerModule->Enable();
+                if (fileExplorerModule->GetToggleSettingState())
+                {
+                    // Enable all the modules with initial state set as true.
+                    fileExplorerModule->Enable();
+                }
+                else
+                {
+                    fileExplorerModule->Disable();
+                }
             }
-            else
-            {
-                fileExplorerModule->Disable();
-            }
-        }
-    });
+        });
+    }
 
     if (!this->m_enabled)
     {
