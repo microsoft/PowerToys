@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_packaged != value)
                 {
                     _packaged = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -131,7 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _startup = value;
                     GeneralSettingsConfig.Startup = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -203,7 +203,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _runElevated = value;
                     GeneralSettingsConfig.RunElevated = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -230,7 +230,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _autoDownloadUpdates = value;
                     GeneralSettingsConfig.AutoDownloadUpdates = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -258,7 +258,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -286,7 +286,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -314,7 +314,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -345,12 +345,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_latestAvailableVersion != value)
                 {
                     _latestAvailableVersion = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);

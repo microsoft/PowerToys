@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to dark.
                         Settings.Properties.Theme.Value = "dark";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
 
                     if (value == 1)
@@ -120,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to light.
                         Settings.Properties.Theme.Value = "light";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
 
                     if (value == 2)
@@ -128,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to system default.
                         Settings.Properties.Theme.Value = "system";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
                 }
             }
@@ -147,7 +147,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _pressTime = value;
                     Settings.Properties.PressTime.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -165,7 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _opacity = value;
                     Settings.Properties.OverlayOpacity.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -175,7 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             return _settingsConfigFileFolder + "\\" + ModuleName;
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
             SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);

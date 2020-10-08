@@ -148,7 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _shiftDrag = value;
                     Settings.Properties.FancyzonesShiftDrag.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _mouseSwitch = value;
                     Settings.Properties.FancyzonesMouseSwitch.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -189,7 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _overrideSnapHotkeys = value;
                     Settings.Properties.FancyzonesOverrideSnapHotkeys.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                     OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
                 }
             }
@@ -208,7 +208,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _moveWindowsAcrossMonitors = value;
                     Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -226,7 +226,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _moveWindowsBasedOnPosition = value;
                     Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -244,7 +244,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _displayChangemoveWindows = value;
                     Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -262,7 +262,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _zoneSetChangeMoveWindows = value;
                     Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -280,7 +280,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _appLastZoneMoveWindows = value;
                     Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -298,7 +298,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _openWindowOnActiveMonitor = value;
                     Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -316,7 +316,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _restoreSize = value;
                     Settings.Properties.FancyzonesRestoreSize.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -334,7 +334,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _useCursorPosEditorStartupScreen = value;
                     Settings.Properties.UseCursorposEditorStartupscreen.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -352,7 +352,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _showOnAllMonitors = value;
                     Settings.Properties.FancyzonesShowOnAllMonitors.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -370,7 +370,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _spanZonesAcrossMonitors = value;
                     Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -388,7 +388,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _makeDraggedWindowTransparent = value;
                     Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -412,7 +412,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _zoneHighlightColor = value;
                     Settings.Properties.FancyzonesZoneHighlightColor.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -434,7 +434,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _zoneBorderColor = value;
                     Settings.Properties.FancyzonesBorderColor.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -456,7 +456,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _zoneInActiveColor = value;
                     Settings.Properties.FancyzonesInActiveColor.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -474,7 +474,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _highlightOpacity = value;
                     Settings.Properties.FancyzonesHighlightOpacity.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -500,7 +500,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     }
 
                     Settings.Properties.FancyzonesEditorHotkey.Value = _editorHotkey;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -518,7 +518,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _excludedApps = value;
                     Settings.Properties.FancyzonesExcludedApps.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -529,7 +529,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             SendConfigMSG("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
             if (SendConfigMSG != null)
