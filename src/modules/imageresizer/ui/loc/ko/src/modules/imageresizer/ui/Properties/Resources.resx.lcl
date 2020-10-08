@@ -157,6 +157,9 @@
       <Item ItemId=";Advanced_PngInterlaceOption" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[_PNG interlacing:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PNG 인터레이스(_P):]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -217,6 +220,9 @@
       <Item ItemId=";ImageResizer" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Image Resizer]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -295,6 +301,9 @@
       <Item ItemId=";Input_ShrinkOnly" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[_Make pictures smaller but not larger]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[그림 크기 축소(_M)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -302,7 +311,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Large]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[크게]]></Val>
+            <Val><![CDATA[대형]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -311,7 +320,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Medium]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[보통]]></Val>
+            <Val><![CDATA[중형]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -391,6 +400,9 @@
       <Item ItemId=";Progress_TimeRemaining_HourMinute" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[About {0} hour, {1} minute remaining.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[약 {0}시간 {1}분 남음]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -406,6 +418,9 @@
       <Item ItemId=";Progress_TimeRemaining_HoursMinute" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[About {0} hours, {1} minute remaining.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[약 {0}시간 {1}분 남음]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -421,24 +436,36 @@
       <Item ItemId=";Progress_TimeRemaining_MinuteSecond" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[About {1} minute, {2} second remaining.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[약 {1}분 {2}초 남음]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Progress_TimeRemaining_MinuteSeconds" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[About {1} minute, {2} seconds remaining.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[약 {1}분 {2}초 남음]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Progress_TimeRemaining_MinutesSecond" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[About {1} minutes, {2} second remaining.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[약 {1}분 {2}초 남음]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Progress_TimeRemaining_MinutesSeconds" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[About {1} minutes, {2} seconds remaining.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[약 {1}분 {2}초 남음]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -490,6 +517,9 @@
       <Item ItemId=";ResizeFit_Fit_ThirdPersonSingular" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[fits within]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[내부 맞춤 대상]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -505,6 +535,9 @@
       <Item ItemId=";ResizeFit_Stretch_ThirdPersonSingular" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[stretches to]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[늘이기 대상]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -566,7 +599,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Small]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[작게]]></Val>
+            <Val><![CDATA[소형]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -629,7 +662,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zip]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[우편 번호]]></Val>
+            <Val><![CDATA[Zip]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

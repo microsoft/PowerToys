@@ -49,6 +49,9 @@
       <Item ItemId=";wox_plugin_calculator_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Allows you to do mathematical calculations. (Try 5*3-2 in PowerToys Run)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[수학적 계산을 할 수 있습니다. PowerToys Run에서 5*3-2를 시도해 보세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
