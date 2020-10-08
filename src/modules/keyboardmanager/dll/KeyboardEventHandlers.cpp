@@ -660,6 +660,9 @@ namespace KeyboardEventHandlers
                         // For remap to key, if the original action key is not currently pressed, we should revert the keyboard state to the physical keys. If it is pressed we should not suppress the event so that shortcut to key remaps can be pressed with other keys. Example use-case: Alt+D->Win, allows Alt+D+A to perform Win+A
                         else
                         {
+                            // Modifier state reset might be required for this key depending on the target key - ex: Ctrl+A -> Caps, Shift is pressed. System should not see Shift and Caps pressed together
+                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)));
+
                             // If the shortcut is remapped to Disable then we have to revert the keyboard state to the physical keys
                             bool isRemapToDisable = (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED);
                             bool isOriginalActionKeyPressed = false;
