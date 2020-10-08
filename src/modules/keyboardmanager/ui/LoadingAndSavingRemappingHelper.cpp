@@ -11,11 +11,11 @@ namespace LoadingAndSavingRemappingHelper
     KeyboardManagerHelper::ErrorType CheckIfRemappingsAreValid(const RemapBuffer& remappings)
     {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
-        std::map<std::wstring, std::set<std::variant<DWORD, Shortcut>>> ogKeys;
+        std::map<std::wstring, std::set<KeyShortcutUnion>> ogKeys;
         for (int i = 0; i < remappings.size(); i++)
         {
-            std::variant<DWORD, Shortcut> ogKey = remappings[i].first[0];
-            std::variant<DWORD, Shortcut> newKey = remappings[i].first[1];
+            KeyShortcutUnion ogKey = remappings[i].first[0];
+            KeyShortcutUnion newKey = remappings[i].first[1];
             std::wstring appName = remappings[i].second;
 
             bool ogKeyValidity = (ogKey.index() == 0 && std::get<DWORD>(ogKey) != NULL) || (ogKey.index() == 1 && std::get<Shortcut>(ogKey).IsValidShortcut());
@@ -24,7 +24,7 @@ namespace LoadingAndSavingRemappingHelper
             // Add new set for a new target app name
             if (ogKeys.find(appName) == ogKeys.end())
             {
-                ogKeys[appName] = std::set<std::variant<DWORD, Shortcut>>();
+                ogKeys[appName] = std::set<KeyShortcutUnion>();
             }
 
             if (ogKeyValidity && newKeyValidity && ogKeys[appName].find(ogKey) == ogKeys[appName].end())
@@ -52,7 +52,7 @@ namespace LoadingAndSavingRemappingHelper
         for (int i = 0; i < remappings.size(); i++)
         {
             DWORD ogKey = std::get<DWORD>(remappings[i].first[0]);
-            std::variant<DWORD, Shortcut> newKey = remappings[i].first[1];
+            KeyShortcutUnion newKey = remappings[i].first[1];
 
             if (ogKey != NULL && ((newKey.index() == 0 && std::get<DWORD>(newKey) != 0) || (newKey.index() == 1 && std::get<Shortcut>(newKey).IsValidShortcut())))
             {
@@ -75,7 +75,7 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to combine remappings if the L and R version of the modifier is mapped to the same key
-    void CombineRemappings(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
+    void CombineRemappings(SingleKeyRemapTable& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
     {
         if (table.find(leftKey) != table.end() && table.find(rightKey) != table.end())
         {
@@ -90,7 +90,7 @@ namespace LoadingAndSavingRemappingHelper
     }
 
     // Function to pre process the remap table before loading it into the UI
-    void PreProcessRemapTable(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table)
+    void PreProcessRemapTable(SingleKeyRemapTable& table)
     {
         // Pre process the table to combine L and R versions of Ctrl/Alt/Shift/Win that are mapped to the same key
         CombineRemappings(table, VK_LCONTROL, VK_RCONTROL, VK_CONTROL);
@@ -109,7 +109,7 @@ namespace LoadingAndSavingRemappingHelper
         for (int i = 0; i < remappings.size(); i++)
         {
             DWORD originalKey = std::get<DWORD>(remappings[i].first[0]);
-            std::variant<DWORD, Shortcut> newKey = remappings[i].first[1];
+            KeyShortcutUnion newKey = remappings[i].first[1];
 
             if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !std::get<Shortcut>(newKey).IsValidShortcut()))
             {
@@ -177,7 +177,7 @@ namespace LoadingAndSavingRemappingHelper
         for (int i = 0; i < remappings.size(); i++)
         {
             Shortcut originalShortcut = std::get<Shortcut>(remappings[i].first[0]);
-            std::variant<DWORD, Shortcut> newShortcut = remappings[i].first[1];
+            KeyShortcutUnion newShortcut = remappings[i].first[1];
 
             if (originalShortcut.IsValidShortcut() && ((newShortcut.index() == 0 && std::get<DWORD>(newShortcut) != NULL) || (newShortcut.index() == 1 && std::get<Shortcut>(newShortcut).IsValidShortcut())))
             {

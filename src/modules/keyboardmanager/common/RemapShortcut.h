@@ -6,11 +6,11 @@
 class RemapShortcut
 {
 public:
-    std::variant<DWORD, Shortcut> targetShortcut;
+    KeyShortcutUnion targetShortcut;
     bool isShortcutInvoked;
     ModifierKey winKeyInvoked;
 
-    RemapShortcut(const std::variant<DWORD, Shortcut>& sc) :
+    RemapShortcut(const KeyShortcutUnion& sc) :
         targetShortcut(sc), isShortcutInvoked(false), winKeyInvoked(ModifierKey::Disabled)
     {
     }
