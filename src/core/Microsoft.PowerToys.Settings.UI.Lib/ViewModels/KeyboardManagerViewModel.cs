@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 

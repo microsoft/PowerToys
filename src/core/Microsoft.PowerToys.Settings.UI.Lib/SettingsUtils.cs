@@ -6,7 +6,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
-using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib

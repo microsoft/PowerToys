@@ -6,7 +6,7 @@ using System;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {

@@ -5,7 +5,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {

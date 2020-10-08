@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
