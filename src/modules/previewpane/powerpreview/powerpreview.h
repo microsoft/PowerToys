@@ -4,6 +4,7 @@
 #include "trace.h"
 #include "settings.h"
 #include "registry_wrapper.h"
+#include <powerpreview\powerpreviewConstants.h>
 
 using namespace PowerPreviewSettings;
 
@@ -17,13 +18,14 @@ private:
     bool m_enabled = false;
     std::wstring m_moduleName;
     //contains the non localized key of the powertoy
-    std::wstring app_key = L"File Explorer";
+    std::wstring app_key;
     std::vector<FileExplorerPreviewSettings*> m_previewHandlers;
     std::vector<FileExplorerPreviewSettings*> m_thumbnailProviders;
 
 public:
     PowerPreviewModule() :
         m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
+        app_key(powerpreviewConstants::ModuleKey),
         m_previewHandlers(
             { // SVG Preview Handler settings object.
               new FileExplorerPreviewSettings(

@@ -6,6 +6,7 @@
 #include "trace.h"
 #include "Generated Files/resource.h"
 #include <common/os-detect.h>
+#include <launcher\Microsoft.Launcher\LauncherConstants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -60,7 +61,7 @@ private:
     std::wstring app_name;
 
     //contains the non localized key of the powertoy
-    std::wstring app_key = L"PowerToys Run";
+    std::wstring app_key;
 
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
@@ -79,6 +80,7 @@ public:
     Microsoft_Launcher()
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
+        app_key = LauncherConstants::ModuleKey;
         init_settings();
 
         SECURITY_ATTRIBUTES sa;

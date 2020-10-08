@@ -39,7 +39,7 @@ public:
 private:
     std::wstring app_name;
     //contains the non localized key of the powertoy
-    std::wstring app_key = L"Shortcut Guide";
+    std::wstring app_key;
     std::unique_ptr<TargetState> target_state;
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
     bool _enabled = false;

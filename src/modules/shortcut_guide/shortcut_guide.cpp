@@ -7,6 +7,7 @@
 #include <common/settings_objects.h>
 #include <common/debug_control.h>
 #include <sstream>
+#include <modules\shortcut_guide\ShortcutGuideConstants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -94,6 +95,7 @@ namespace
 OverlayWindow::OverlayWindow()
 {
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
+    app_key = ShortcutGuideConstants::ModuleKey;
     init_settings();
 }
 
