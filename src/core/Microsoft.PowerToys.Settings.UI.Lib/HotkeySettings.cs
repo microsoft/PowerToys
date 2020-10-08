@@ -10,6 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class HotkeySettings
     {
+        private const int VKTAB = 0x09;
+
         public HotkeySettings()
         {
             Win = false;
@@ -100,12 +102,29 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public bool IsValid()
         {
+            if (IsAccessibleShortcut())
+            {
+                return false;
+            }
+
             return (Alt || Ctrl || Win || Shift) && Code != 0;
         }
 
         public bool IsEmpty()
         {
             return !Alt && !Ctrl && !Win && !Shift && Code == 0;
+        }
+
+        public bool IsAccessibleShortcut()
+        {
+            // Shift+Tab and Tab are accessible shortcuts
+            if ((!Alt && !Ctrl && !Win && Shift && Code == VKTAB)
+                || (!Alt && !Ctrl && !Win && !Shift && Code == VKTAB))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
