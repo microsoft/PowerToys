@@ -55,7 +55,8 @@
 
             <TextBlock x:Uid="FileExplorerPreview_AffectsAllUsers"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
-                       Margin="{StaticResource SmallBottomMargin}"/>
+                       Margin="{StaticResource SmallBottomMargin}"
+                       FontWeight="SemiBold"/>
 
             <TextBlock x:Uid="FileExplorerPreview_PreviewPane_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
@@ -77,7 +78,8 @@
 
             <TextBlock x:Uid="FileExplorerPreview_RebootRequired"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
-                       Margin="{StaticResource SmallBottomMargin}"/>
+                       Margin="{StaticResource SmallTopBottomMargin}"
+                       FontWeight="SemiBold"/>
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
                           Margin="{StaticResource SmallTopMargin}"
