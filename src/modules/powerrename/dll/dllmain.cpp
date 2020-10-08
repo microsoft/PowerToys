@@ -7,6 +7,7 @@
 #include <common/common.h>
 #include "Generated Files/resource.h"
 #include <atomic>
+#include <dll\PowerRenameConstants.h>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
 HINSTANCE g_hInst = 0;
@@ -156,7 +157,7 @@ private:
     bool m_enabled = true;
     std::wstring app_name;
     //contains the non localized key of the powertoy
-    std::wstring app_key = L"PowerRename";
+    std::wstring app_key;
 
 public:
     // Return the localized display name of the powertoy
@@ -290,6 +291,7 @@ public:
     {
         init_settings();
         app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
+        app_key = PowerRenameConstants::ModuleKey;
     }
 
     ~PowerRenameModule(){};
