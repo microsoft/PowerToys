@@ -40,7 +40,7 @@ namespace KeyboardEventHandlers
                 }
                 else
                 {
-                    key_count = std::get<Shortcut>(it->second).Size() + KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
+                    key_count = std::get<Shortcut>(it->second).Size();
                 }
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
@@ -82,11 +82,11 @@ namespace KeyboardEventHandlers
                         KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                         i++;
                         KeyboardManagerHelper::SetModifierKeyEvents(targetShortcut, ModifierKey::Disabled, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                        KeyboardManagerHelper::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        // Dummy key is not required here since SetModifierKeyEvents will only add key-up events for the modifiers here, and the action key key-up is already sent before it
                     }
                     else
                     {
-                        KeyboardManagerHelper::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        // Dummy key is not required here since SetModifierKeyEvents will only add key-down events for the modifiers here, and the action key key-down is already sent after it
                         KeyboardManagerHelper::SetModifierKeyEvents(targetShortcut, ModifierKey::Disabled, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                         KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetActionKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                         i++;
@@ -248,7 +248,7 @@ namespace KeyboardEventHandlers
                             keyEventList = new INPUT[key_count]();
                             memset(keyEventList, 0, sizeof(keyEventList));
 
-                            // Send dummy key
+                            // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->Ctrl+V, press Win+A, since Win will be released here we need to send a dummy event before it
                             int i = 0;
                             KeyboardManagerHelper::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
@@ -286,7 +286,7 @@ namespace KeyboardEventHandlers
                         keyEventList = new INPUT[key_count]();
                         memset(keyEventList, 0, sizeof(keyEventList));
 
-                        // Send dummy key
+                        // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->V, press Win+A, since Win will be released here we need to send a dummy event before it
                         int i = 0;
                         KeyboardManagerHelper::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
@@ -379,7 +379,7 @@ namespace KeyboardEventHandlers
                         // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
                         KeyboardManagerHelper::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
 
-                        // Send dummy key to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->Ctrl+V, press Win+Ctrl+A and release A then Ctrl
+                        // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->Ctrl+V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
                         KeyboardManagerHelper::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                     }
                     else
@@ -406,7 +406,7 @@ namespace KeyboardEventHandlers
                         // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
                         KeyboardManagerHelper::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
 
-                        // Send dummy key to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->V, press Win+Ctrl+A and release A then Ctrl
+                        // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
                         KeyboardManagerHelper::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                     }
 
@@ -506,7 +506,7 @@ namespace KeyboardEventHandlers
                                 // Set original shortcut key down state except the action key and the released modifier
                                 KeyboardManagerHelper::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
-                                // Send dummy key
+                                // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->V, press Shift+Win+A and release A, since Win will be pressed here we need to send a dummy event after it
                                 KeyboardManagerHelper::SetDummyKeyEvent(keyEventList, i, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                                 // Reset the remap state
