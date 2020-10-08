@@ -42,10 +42,13 @@
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Showing {0} of {1} results]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Showing {0:N0} of {1:N0} results]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[{0} aplicações correspondentes à sua pesquisa]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Showing {0} of {1} results]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -70,6 +73,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";wox_plugin_folder_select_file_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ficheiro: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";wox_plugin_folder_select_folder_OpenFileOrFolder_error_message" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Could not start]]></Val>
@@ -87,6 +99,15 @@
           <Val><![CDATA[Open]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Em aberto]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";wox_plugin_folder_select_folder_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Folder: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pasta: {0}]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

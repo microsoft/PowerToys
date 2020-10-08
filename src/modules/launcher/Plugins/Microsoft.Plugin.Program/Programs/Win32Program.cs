@@ -780,8 +780,8 @@ namespace Microsoft.Plugin.Program.Programs
 
         private static ParallelQuery<Win32Program> StartMenuPrograms(IList<string> suffixes)
         {
-            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
+            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
+            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu);
             List<string> indexLocation = new List<string>() { directory1, directory2 };
 
             return IndexPath(suffixes, indexLocation);
@@ -790,7 +790,9 @@ namespace Microsoft.Plugin.Program.Programs
         private static ParallelQuery<Win32Program> DesktopPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            List<string> indexLocation = new List<string>() { directory1 };
+            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
+
+            List<string> indexLocation = new List<string>() { directory1, directory2 };
 
             return IndexPath(suffixes, indexLocation);
         }
