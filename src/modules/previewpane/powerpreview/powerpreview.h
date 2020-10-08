@@ -32,6 +32,9 @@ private:
     // Function that checks if the process is elevated and accordingly executes the method or shows a warning
     void elevation_check_wrapper(std::function<void()> method);
 
+    // Function that updates the registry state to match the toggle states
+    void update_registry_to_match_toggles();
+
 public:
     PowerPreviewModule();
 

@@ -44,20 +44,7 @@ PowerPreviewModule::PowerPreviewModule() :
     // If the user is on the new settings interface, File Explorer might be disabled if they updated from old to new settings, so initialize the registry state in the constructor as PowerPreviewModule::enable/disable will not be called on startup
     if (UseNewSettings())
     {
-        registry_and_elevation_check_wrapper([this]() {
-            for (auto fileExplorerModule : this->m_fileExplorerModules)
-            {
-                if (fileExplorerModule->GetToggleSettingState())
-                {
-                    // Enable all the modules with initial state set as true.
-                    fileExplorerModule->Enable();
-                }
-                else
-                {
-                    fileExplorerModule->Disable();
-                }
-            }
-        });
+        update_registry_to_match_toggles();
     }
 }
 
@@ -138,20 +125,7 @@ void PowerPreviewModule::enable()
     // Should only be done for old settings as it is already done for new settings in the constructor.
     if (!UseNewSettings())
     {
-        registry_and_elevation_check_wrapper([this]() {
-            for (auto fileExplorerModule : this->m_fileExplorerModules)
-            {
-                if (fileExplorerModule->GetToggleSettingState())
-                {
-                    // Enable all the modules with initial state set as true.
-                    fileExplorerModule->Enable();
-                }
-                else
-                {
-                    fileExplorerModule->Disable();
-                }
-            }
-        });
+        update_registry_to_match_toggles();
     }
 
     if (!this->m_enabled)
@@ -254,4 +228,23 @@ void PowerPreviewModule::elevation_check_wrapper(std::function<void()> method)
     {
         show_update_warning_message();
     }
+}
+
+// Function that updates the registry state to match the toggle states
+void PowerPreviewModule::update_registry_to_match_toggles()
+{
+    registry_and_elevation_check_wrapper([this]() {
+        for (auto fileExplorerModule : this->m_fileExplorerModules)
+        {
+            if (fileExplorerModule->GetToggleSettingState())
+            {
+                // Enable all the modules with initial state set as true.
+                fileExplorerModule->Enable();
+            }
+            else
+            {
+                fileExplorerModule->Disable();
+            }
+        }
+    });
 }
