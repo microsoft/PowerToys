@@ -266,6 +266,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\core\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.Plugin.Calculator.UnitTest\Microsoft.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VideoConference", "VideoConference", "{05BE6150-D5B3-48F0-AEB9-C44096950C6D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoConferenceCustomMediaSource", "src\modules\videoconference\VideoConferenceCustomMediaSource\VideoConferenceCustomMediaSource.vcxproj", "{43AD9BF7-E765-48FE-9826-71A8F2CB12DD}"
