@@ -4,8 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+    </Page.Resources>
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
@@ -43,25 +48,43 @@
 
         <StackPanel Orientation="Vertical" 
                     x:Name="PowerPreviewView">
+            <TextBlock x:Uid="FileExplorerPreview_RunAsAdminRequired"
+                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                       Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Margin="{StaticResource SmallBottomMargin}"/>
+
+            <TextBlock x:Uid="FileExplorerPreview_AffectsAllUsers"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Margin="{StaticResource SmallBottomMargin}"
+                       FontWeight="SemiBold"/>
+
             <TextBlock x:Uid="FileExplorerPreview_PreviewPane_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
-                       Foreground="{x:Bind Mode=OneWay, Path=IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
+                          IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}"                          
+                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}" />
-            
+                          IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}"
+                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
+
             <TextBlock x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-            
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <TextBlock x:Uid="FileExplorerPreview_RebootRequired"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Margin="{StaticResource SmallTopBottomMargin}"
+                       FontWeight="SemiBold"/>
+
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}" />
+                          IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}"
+                          IsEnabled="{Binding Mode=OneWay, Path=IsElevated}"/>
         </StackPanel>
         <RelativePanel x:Name="SidePanel" 
                     HorizontalAlignment="Left"
