@@ -419,8 +419,8 @@
 
 	<DirectoryRef Id="AltDragInstallFolder" FileSource="$(var.BinX64Dir)modules\">
 		  <Component Id="Module_AltDrag" Guid="C6B5272E-6ED4-4B80-C1E7-2FF0355D8CF4" Win64="yes">
-			  <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\AltDragModule.dll" KeyPath="yes" />
-			  <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\AltDrag.lib" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.AltDragProjectName)\AltDragModule.dll" KeyPath="yes" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.AltDragProjectName)\AltDrag.lib" />
 		  </Component>
 	</DirectoryRef>
 
