@@ -82,7 +82,7 @@ namespace Wox.Core.Plugin
             _metadatas = PluginConfig.Parse(Directories);
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Settings.UpdatePluginSettings(_metadatas);
-            AllPlugins = PluginsLoader.Plugins(_metadatas, Settings);
+            AllPlugins = PluginsLoader.Plugins(_metadatas);
         }
 
         /// <summary>
