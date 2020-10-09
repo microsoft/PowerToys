@@ -5,54 +5,32 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
-using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
+using Wox.Infrastructure.FileSystemHelper;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
     public class QueryFileSystemInfo : DirectoryWrapper,  IQueryFileSystemInfo
     {
-        private readonly IFileSystem _fileSystem = new FileSystem();
-
-        public IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, SearchOption searchOption)
+        public IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, bool isRecursive)
         {
             // search folder and add results
-            var directoryInfo = _fileSystem.DirectoryInfo.FromDirectoryName(search);
-            var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, searchOption);
+            var directoryInfo = new DirectoryInfo(search);
+            var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, new EnumerationOptions()
+            {
+                MatchType = MatchType.Win32,
+                RecurseSubdirectories = isRecursive,
+                IgnoreInaccessible = true,
+                ReturnSpecialDirectories = false,
+                AttributesToSkip = FileAttributes.Hidden,
+                MatchCasing = MatchCasing.PlatformDefault,
+            });
 
-            return SafeEnumerateFileSystemInfos(fileSystemInfos)
-                .Where(fileSystemInfo => (fileSystemInfo.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden)
+            return fileSystemInfos
                 .Select(CreateDisplayFileInfo);
         }
 
-        private static IEnumerable<IFileSystemInfo> SafeEnumerateFileSystemInfos(IEnumerable<IFileSystemInfo> fileSystemInfos)
-        {
-            using (var enumerator = fileSystemInfos.GetEnumerator())
-            {
-                while (true)
-                {
-                    IFileSystemInfo currentFileSystemInfo;
-                    try
-                    {
-                        if (!enumerator.MoveNext())
-                        {
-                            break;
-                        }
-
-                        currentFileSystemInfo = enumerator.Current;
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        continue;
-                    }
-
-                    yield return currentFileSystemInfo;
-                }
-            }
-        }
-
-        private static DisplayFileInfo CreateDisplayFileInfo(IFileSystemInfo fileSystemInfo)
+        private static DisplayFileInfo CreateDisplayFileInfo(FileSystemInfo fileSystemInfo)
         {
             return new DisplayFileInfo()
             {
@@ -62,9 +40,9 @@ namespace Microsoft.Plugin.Folder.Sources
             };
         }
 
-        private static DisplayType GetDisplayType(IFileSystemInfo fileSystemInfo)
+        private static DisplayType GetDisplayType(FileSystemInfo fileSystemInfo)
         {
-            if (fileSystemInfo is IDirectoryInfo)
+            if (fileSystemInfo is DirectoryInfo)
             {
                 return DisplayType.Directory;
             }

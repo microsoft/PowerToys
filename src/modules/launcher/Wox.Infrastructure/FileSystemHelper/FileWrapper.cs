@@ -2,16 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
-using System.IO.Abstractions;
+using System.Security;
 using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure.FileSystemHelper
 {
     public class FileWrapper : IFileWrapper
     {
-        private readonly IFile _file = new FileSystem().File;
-
         public FileWrapper()
         {
         }
@@ -20,11 +19,11 @@ namespace Wox.Infrastructure.FileSystemHelper
         {
             try
             {
-                return _file.ReadAllLines(path);
+                return File.ReadAllLines(path);
             }
-            catch (IOException ex)
+            catch (System.Exception ex) when (ex is SecurityException || ex is UnauthorizedAccessException || ex is IOException)
             {
-                Log.Info($"File {path} is being accessed by another process| {ex.Message}", GetType());
+                Log.Info($"Unable to read File: {path}| {ex.Message}", GetType());
 
                 return new string[] { string.Empty };
             }

@@ -21,7 +21,7 @@ namespace CommonLibTest
 
 
         [TestMethod]
-        public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
+        public void SaveSettingsSaveSettingsToFileWhenFilePathExists()
         {
             // Arrange
             var mockFileSystem = new MockFileSystem();
@@ -41,7 +41,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void SaveSettings_ShouldCreateFile_WhenFilePathIsNotFound()
+        public void SaveSettingsShouldCreateFileWhenFilePathIsNotFound()
         {
             // Arrange
             var mockFileSystem = new MockFileSystem();
@@ -59,7 +59,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
+        public void SettingsFolderExistsShouldReturnFalseWhenFilePathIsNotFound()
         {
             // Arrange
             var mockFileSystem = new MockFileSystem();

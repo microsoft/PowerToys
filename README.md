@@ -6,7 +6,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 For a video overview of PowerToys, including install steps and a walkthrough of the available utilities, check out the [PowerToys: Utilities to customize Windows 10](https://www.youtube.com/watch?v=F-d7KiwpnMA) episode of Tabs vs Spaces on YouTube.
 
-[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing) | [Known issues](#known-issues)
+[Downloading & Release notes][github-release-link]   |   [What's Happening](#whats-happening)   |   [Contributing to PowerToys](#contributing)   |   [Known issues](#known-issues)
 
 ## Build status
 
@@ -99,7 +99,7 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 ### Via GitHub with EXE [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.23.0-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.23.2-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -193,6 +193,7 @@ Our [prioritized roadmap][roadmap] of features and utilites that the core team i
 #### Experiential PowerToys utility - Video conference muting:
 
 We'll ship the 0.24 experiential build shortly which will include all improvements from 0.23 in addition to the Video conference utility.
+
 #### Video / GIF capture functional spec for public review
 
 Deondre Davis created our [functional spec for creating a light weight, video / GIF recording tool](https://github.com/microsoft/PowerToys/pull/6900). We encourage everyone to review it and please leave comments in the pull request so we can adjust as needed. We'll be closing it for feedback on October 12th, 2020.

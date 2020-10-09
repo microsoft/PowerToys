@@ -100,6 +100,9 @@ namespace KeyboardManagerConstants
     // Dummy key event used in between key up and down events to prevent certain global events from happening
     inline const DWORD DUMMY_KEY = 0xFF;
 
+    // Number of key messages required while sending a dummy key event
+    inline const size_t DUMMY_KEY_EVENT_SIZE = 2;
+
     // String constant for the default app name in Remap shortcuts
     inline const std::wstring DefaultAppName = GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);
 
