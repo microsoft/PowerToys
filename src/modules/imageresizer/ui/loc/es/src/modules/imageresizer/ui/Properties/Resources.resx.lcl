@@ -436,6 +436,9 @@
       <Item ItemId=";Progress_TimeRemaining_MinuteSecond" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[About {1} minute, {2} second remaining.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Queda {1} minuto y {2} segundo aproximadamente.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

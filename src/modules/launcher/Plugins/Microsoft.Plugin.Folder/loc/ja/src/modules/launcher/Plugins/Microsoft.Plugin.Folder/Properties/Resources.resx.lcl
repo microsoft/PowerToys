@@ -58,8 +58,8 @@
       <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Showing {0:N0} of {1:N0} results]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[{1} 件の結果の {0} を表示しています]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[{1:N0} 個中 {0:N0} 個の結果を表示]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Showing {0} of {1} results]]></Val>
