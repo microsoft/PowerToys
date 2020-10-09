@@ -63,7 +63,6 @@ private:
     // Also checks for overflow conditions.
     bool CheckIfMillisHaveElapsed(DWORD64 first, DWORD64 last, DWORD64 duration);
 
-    std::thread _delayThread;
     bool _quit;
     KeyDelayState _state;
 
@@ -85,6 +84,9 @@ private:
 
     // Virtual Key provided in the constructor. Passed to callback functions.
     DWORD _key;
+
+    // Declare _delayThread after all other members so that it is the last to be initialized by the constructor
+    std::thread _delayThread;
 
     static const DWORD64 LONG_PRESS_DELAY_MILLIS = 900;
     static const DWORD64 ON_HOLD_WAIT_TIMEOUT_MILLIS = 50;
