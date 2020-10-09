@@ -860,7 +860,7 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
                 long right = columnInfo[maxCol].End;
                 long bottom = rowInfo[maxRow].End;
 
-                auto zone = MakeZone(RECT{ left, top, right, bottom }, i + 1);
+                auto zone = MakeZone(RECT{ left, top, right, bottom }, m_zones.size() + 1);
                 if (zone)
                 {
                     AddZone(zone);
