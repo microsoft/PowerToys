@@ -10,6 +10,7 @@ public
     {
         WPARAM message;
         int key;
+        DWORD dwExtraInfo;
     };
 
 public

@@ -98,7 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             try
             {
-                if (Helper.CompareVersions(PowertoysVersion, Helper.GetProductVersion()) < 0)
+                if (Helper.CompareVersions(PowertoysVersion, Helper.GetProductVersion()) != 0)
                 {
                     // Update settings
                     PowertoysVersion = Helper.GetProductVersion();

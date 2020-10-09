@@ -25,6 +25,9 @@
       <Item ItemId=";wox_plugin_cmd_command_not_found" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Command not found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Befehl wurde nicht gefunden.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -43,6 +46,9 @@
       <Item ItemId=";wox_plugin_cmd_plugin_name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shell]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Shell]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

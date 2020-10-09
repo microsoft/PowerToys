@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -171,8 +172,8 @@ namespace FancyZonesEditor
                             maxCol++;
                         }
 
-                        rect.Width = colInfo[maxCol].End - left;
-                        rect.Height = rowInfo[maxRow].End - top;
+                        rect.Width = Math.Max(0, colInfo[maxCol].End - left);
+                        rect.Height = Math.Max(0, rowInfo[maxRow].End - top);
                         rect.StrokeThickness = 1;
                         rect.Stroke = Brushes.DarkGray;
                         rect.Fill = Brushes.LightGray;
