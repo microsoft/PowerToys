@@ -158,7 +158,7 @@ namespace Wox.Core.Plugin
         /// <param name="overWrite">overwrite</param>
         private static void UnZip(string zippedFile, string strDirectory, bool overWrite)
         {
-            if (strDirectory == string.Empty)
+            if (string.IsNullOrEmpty(strDirectory))
             {
                 strDirectory = Directory.GetCurrentDirectory();
             }
@@ -179,7 +179,7 @@ namespace Wox.Core.Plugin
                     string pathToZip = string.Empty;
                     pathToZip = theEntry.Name;
 
-                    if (pathToZip != string.Empty)
+                    if (!string.IsNullOrEmpty(pathToZip))
                     {
                         directoryName = Path.GetDirectoryName(pathToZip) + "\\";
                     }
@@ -188,7 +188,7 @@ namespace Wox.Core.Plugin
 
                     Directory.CreateDirectory(strDirectory + directoryName);
 
-                    if (fileName != string.Empty)
+                    if (!string.IsNullOrEmpty(fileName))
                     {
                         if ((File.Exists(strDirectory + directoryName + fileName) && overWrite) || (!File.Exists(strDirectory + directoryName + fileName)))
                         {
