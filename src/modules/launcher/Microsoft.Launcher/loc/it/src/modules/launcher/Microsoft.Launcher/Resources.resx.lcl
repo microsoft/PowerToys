@@ -19,6 +19,9 @@
       <Item ItemId=";Launcher_Settings_Desc" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[This feature requires Windows 10 version 1903 or higher]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Questa funzionalità richiede Windows 10 versione 1903 o successiva]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
