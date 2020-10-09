@@ -192,6 +192,10 @@ namespace KeyboardManagerHelper
             keyEventArray[index].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
         }
         keyEventArray[index].ki.dwExtraInfo = extraInfo;
+
+        // Set wScan to the value from MapVirtualKey as some applications may use the scan code for handling input, for instance, Windows Terminal ignores non-character input which has scancode set to 0. 
+        // MapVirtualKey returns 0 if the key code does not correspond to a physical key (such as unassigned/reserved keys). More details at https://github.com/microsoft/PowerToys/pull/7143#issue-498877747
+        keyEventArray[index].ki.wScan = (WORD)MapVirtualKey(keyCode, MAPVK_VK_TO_VSC);
     }
 
     // Function to set the dummy key events used for remapping shortcuts, required to ensure releasing a modifier doesn't trigger another action (For example, Win->Start Menu or Alt->Menu bar)

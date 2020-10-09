@@ -3,7 +3,8 @@
                     xmlns:markup="clr-namespace:MahApps.Metro.Markup;assembly=MahApps.Metro"
                     xmlns:markupWithAssembly="clr-namespace:MahApps.Metro.Markup;assembly=MahApps.Metro"
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options" xmlns:system="clr-namespace:System;assembly=System.Runtime"
+                    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime"
                     mc:Ignorable="options">
 
     <!--  Metadata  -->
@@ -28,7 +29,8 @@
     <SolidColorBrush x:Key="ControlTextBrushKey" Color="Black" />
     <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FF434343" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="Black" />
-    <SolidColorBrush x:Key="BorderBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="DialogBorderBrush" Color="#FFf7f7f7" />
+    
     <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="#FF7a7a7a" />
     <Color x:Key="ScrollBarThumbPointerOver">#FFa0a0a0</Color>
     <Color x:Key="ScrollBarThumbPointerPressed">#FF747474</Color>

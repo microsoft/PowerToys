@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NuGet.Frameworks;
 
@@ -21,10 +23,55 @@ namespace ViewModelTests
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
 
+
+
         [TestInitialize]
         public void SetUpStubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
+        }
+		
+        /// </summary>
+        [TestMethod]
+        [DataRow("v0.18.2")]
+        [DataRow("v0.19.2")]
+        [DataRow("v0.20.1")]
+        [DataRow("v0.21.1")]
+        [DataRow("v0.22.0")]
+        public void OriginalFilesModificationTest(string version)
+        {
+            var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+            var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
+
+            // Initialise View Model with test Config files
+            // Arrange
+            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
+            Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
+            Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
+            var viewModel = new GeneralViewModel(
+                settingsRepository: generalSettingsRepository,
+                runAsAdminText: "GeneralSettings_RunningAsAdminText",
+                runAsUserText: "GeneralSettings_RunningAsUserText",
+                isElevated: false,
+                isAdmin: false,
+                updateTheme: UpdateUIThemeMethod,
+                ipcMSGCallBackFunc: SendMockIPCConfigMSG,
+                ipcMSGRestartAsAdminMSGCallBackFunc: SendRestartAdminIPCMessage,
+                ipcMSGCheckForUpdatesCallBackFunc: SendCheckForUpdatesIPCMessage,
+                configFileSubfolder: string.Empty);
+
+            // Verifiy that the old settings persisted
+            Assert.AreEqual(originalGeneralSettings.AutoDownloadUpdates, viewModel.AutoDownloadUpdates);
+            Assert.AreEqual(originalGeneralSettings.Packaged, viewModel.Packaged);
+            Assert.AreEqual(originalGeneralSettings.PowertoysVersion, viewModel.PowerToysVersion);
+            Assert.AreEqual(originalGeneralSettings.RunElevated, viewModel.RunElevated);
+            Assert.AreEqual(originalGeneralSettings.Startup, viewModel.Startup);
+
+            //Verify that the stub file was used
+            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
         [TestMethod]
