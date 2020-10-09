@@ -971,16 +971,26 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 
 void FancyZones::UpdateZoneWindows() noexcept
 {
+    // Mapping between display device name and device index (operating system identifies each display device in the current session with an index value).
+    std::unordered_map<std::wstring, DWORD> displayDeviceIdx;
+    struct capture
+    {
+        FancyZones* fancyZones;
+        std::unordered_map<std::wstring, DWORD>* displayDeviceIdx;
+    };
+
     auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
+        capture* params = reinterpret_cast<capture*>(data);
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
         if (GetMonitorInfoW(monitor, &mi))
         {
-            DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
+            auto& displayDeviceIdx = *(params->displayDeviceIdx);
+            FancyZones* fancyZones = params->fancyZones;
 
+            DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
             std::wstring deviceId{};
-            DWORD deviceIdx = 0;
-            while (EnumDisplayDevicesW(mi.szDevice, deviceIdx, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
+            while (EnumDisplayDevicesW(mi.szDevice, displayDeviceIdx[mi.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
             {
                 // Only take active monitors (presented as being "on" by the respective GDI view) and monitors that don't
                 // represent a pseudo device used to mirror application drawing.
@@ -988,8 +998,9 @@ void FancyZones::UpdateZoneWindows() noexcept
                     WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
                 {
                     deviceId = displayDevice.DeviceID;
+                    fancyZones->AddZoneWindow(monitor, deviceId);
                 }
-                ++deviceIdx;
+                ++displayDeviceIdx[mi.szDevice];
             }
 
             if (deviceId.empty())
@@ -997,10 +1008,9 @@ void FancyZones::UpdateZoneWindows() noexcept
                 deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
                                 L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
                                 L"\\\\?\\DISPLAY#LOCALDISPLAY#";
-            }
 
-            FancyZones* fancyZones = reinterpret_cast<FancyZones*>(data);
-            fancyZones->AddZoneWindow(monitor, deviceId);
+                fancyZones->AddZoneWindow(monitor, deviceId);
+            }
         }
         return TRUE;
     };
@@ -1011,7 +1021,8 @@ void FancyZones::UpdateZoneWindows() noexcept
     }
     else
     {
-        EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this));
+        capture capture{ this, &displayDeviceIdx };
+        EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(&capture));
     }
 }
 
