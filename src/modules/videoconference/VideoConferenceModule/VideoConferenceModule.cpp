@@ -147,7 +147,6 @@ VideoConferenceModule::VideoConferenceModule()
     }
     sendSourceCameraNameUpdate();
     sendOverlayImageUpdate();
-    toolbar.show(settings.toolbarPositionString, settings.toolbarMonitorString);
 }
 
 inline VideoConferenceModule::~VideoConferenceModule()
