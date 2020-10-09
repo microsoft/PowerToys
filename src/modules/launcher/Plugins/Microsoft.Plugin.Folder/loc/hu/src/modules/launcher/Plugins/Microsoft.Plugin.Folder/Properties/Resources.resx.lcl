@@ -139,15 +139,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";wox_plugin_folder_select_folder_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Folder: {0}]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mappa: {0}]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
     </Item>
   </Item>
 </LCX>
