@@ -22,7 +22,7 @@ namespace Wox.Test.Plugins
             res.ToolTipData = new ToolTipData(toolTipText, string.Empty);
 
             // Assert
-            Assert.AreEqual(res.ToolTipVisibility, Visibility.Visible);
+            Assert.AreEqual(Visibility.Visible, res.ToolTipVisibility);
         }
 
         [Test]
@@ -32,7 +32,7 @@ namespace Wox.Test.Plugins
             Result res = new Result();
 
             // Assert
-            Assert.AreEqual(res.ToolTipVisibility, Visibility.Collapsed);
+            Assert.AreEqual(Visibility.Collapsed, res.ToolTipVisibility);
         }
     }
 }

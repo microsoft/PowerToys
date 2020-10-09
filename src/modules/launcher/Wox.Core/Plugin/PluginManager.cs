@@ -27,7 +27,7 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Gets directories that will hold Wox plugin directory
         /// </summary>
-        public static List<PluginPair> AllPlugins { get; private set; }
+        public static List<PluginPair> AllPlugins { get; private set; } = new List<PluginPair>();
 
         public static IPublicAPI API { get; private set; }
 

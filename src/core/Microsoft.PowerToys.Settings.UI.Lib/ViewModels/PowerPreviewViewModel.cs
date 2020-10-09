@@ -19,10 +19,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public PowerPreviewViewModel(ISettingsRepository<PowerPreviewSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
+        public PowerPreviewViewModel(ISettingsRepository<PowerPreviewSettings> moduleSettingsRepository, ISettingsRepository<GeneralSettings> generalSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
+
+            // To obtain the general Settings configurations of PowerToys
+            GeneralSettingsConfig = generalSettingsRepository.SettingsConfig;
 
             // To obtain the PowerPreview settings if it exists.
             // If the file does not exist, to create a new one and return the default settings configurations.
@@ -97,6 +102,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public string GetSettingsSubPath()
         {
             return _settingsConfigFileFolder + "\\" + ModuleName;
+        }
+
+        public bool IsElevated
+        {
+            get
+            {
+                return GeneralSettingsConfig.IsElevated;
+            }
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)

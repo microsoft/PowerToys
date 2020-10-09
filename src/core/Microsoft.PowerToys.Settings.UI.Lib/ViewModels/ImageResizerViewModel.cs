@@ -19,8 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private ImageResizerSettings Settings { get; set; }
 
-        // NOTE: Not using ImageResizerSettings.ModuleName ("Image Resizer") to be backward compatible.
-        private const string ModuleName = "ImageResizer";
+        private const string ModuleName = ImageResizerSettings.ModuleName;
 
         private Func<string, int> SendConfigMSG { get; }
 

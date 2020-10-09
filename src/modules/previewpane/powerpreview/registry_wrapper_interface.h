@@ -10,5 +10,5 @@ public:
     virtual LONG DeleteRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName) = 0;
 
     // Reads a registry value.
-    virtual LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData) = 0;
+    virtual LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData) = 0;
 };

@@ -309,7 +309,7 @@ ComboBox KeyDropDownControl::GetComboBox()
 // Function to add a drop down to the shortcut stack panel
 void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, bool ignoreWarning)
 {
-    keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true, ignoreWarning, colIndex == 1))));
+    keyDropDownControlObjects.emplace_back(std::make_unique<KeyDropDownControl>(true, ignoreWarning, colIndex == 1));
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
     keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
     parent.UpdateLayout();
@@ -341,7 +341,7 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel
     {
         // Check for errors only if the current selection is a valid shortcut
         std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(keyDropDownControlObjects[i]->GetSelectedIndicesFromStackPanel(parent), GetKeyCodeList(true, colIndex == 1));
-        std::variant<DWORD, Shortcut> currentShortcut;
+        KeyShortcutUnion currentShortcut;
         if (selectedKeyCodes.size() == 1 && isHybridControl)
         {
             currentShortcut = selectedKeyCodes[0];

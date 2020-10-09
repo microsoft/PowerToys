@@ -42,8 +42,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             string pathFromQueue = EventHandler.GetAppPathFromQueue(eventHandlingQueue, dequeueDelay);
 
             // Assert
-            Assert.AreEqual(pathFromQueue, appPath);
-            Assert.AreEqual(eventHandlingQueue.Count, 0);
+            Assert.AreEqual(appPath, pathFromQueue);
+            Assert.AreEqual(0, eventHandlingQueue.Count);
         }
 
         [TestCase(5)]
@@ -68,8 +68,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             string pathFromQueue = EventHandler.GetAppPathFromQueue(eventHandlingQueue, dequeueDelay);
 
             // Assert
-            Assert.AreEqual(pathFromQueue, firstAppPath);
-            Assert.AreEqual(eventHandlingQueue.Count, itemCount);
+            Assert.AreEqual(firstAppPath, pathFromQueue);
+            Assert.AreEqual(itemCount, eventHandlingQueue.Count);
         }
 
         [TestCase(5)]
@@ -99,8 +99,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             string pathFromQueue = EventHandler.GetAppPathFromQueue(eventHandlingQueue, dequeueDelay);
 
             // Assert
-            Assert.AreEqual(pathFromQueue, firstAppPath);
-            Assert.AreEqual(eventHandlingQueue.Count, itemCount * 2);
+            Assert.AreEqual(firstAppPath, pathFromQueue);
+            Assert.AreEqual(itemCount * 2, eventHandlingQueue.Count);
         }
     }
 }

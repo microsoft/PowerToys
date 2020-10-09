@@ -29,7 +29,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
     // Key column
     if (colIndex == 0)
     {
-        keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(false))));
+        keyDropDownControlObjects.emplace_back(std::make_unique<KeyDropDownControl>(false));
         singleKeyRemapControlLayout.as<StackPanel>().Children().Append(keyDropDownControlObjects[0]->GetComboBox());
         // Set selection handler for the drop down
         keyDropDownControlObjects[0]->SetSelectionHandler(table, singleKeyRemapControlLayout.as<StackPanel>(), colIndex, singleKeyRemapBuffer);
@@ -72,12 +72,12 @@ void SingleKeyRemapControl::UpdateAccessibleNames(StackPanel sourceColumn, Stack
 }
 
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const std::variant<DWORD, Shortcut> newKey)
+void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const KeyShortcutUnion newKey)
 {
     // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
-    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 0))));
-    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 1))));
+    newrow.emplace_back(std::make_unique<SingleKeyRemapControl>(parent, 0));
+    newrow.emplace_back(std::make_unique<SingleKeyRemapControl>(parent, 1));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid

@@ -226,17 +226,20 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, _hWndEditShortcutsWindow);
 
     // Load existing os level shortcuts into UI
-    std::unique_lock<std::mutex> lockOSLevel(keyboardManagerState.osLevelShortcutReMap_mutex);
-    for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
+    // Create copy of the remaps to avoid concurrent access
+    ShortcutRemapTable osLevelShortcutReMapCopy = keyboardManagerState.osLevelShortcutReMap;
+
+    for (const auto& it : osLevelShortcutReMapCopy)
     {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut);
     }
-    lockOSLevel.unlock();
 
     // Load existing app-specific shortcuts into UI
-    std::unique_lock<std::mutex> lockAppSpecific(keyboardManagerState.appSpecificShortcutReMap_mutex);
+    // Create copy of the remaps to avoid concurrent access
+    AppSpecificShortcutRemapTable appSpecificShortcutReMapCopy = keyboardManagerState.appSpecificShortcutReMap;
+
     // Iterate through all the apps
-    for (const auto& itApp : keyboardManagerState.appSpecificShortcutReMap)
+    for (const auto& itApp : appSpecificShortcutReMapCopy)
     {
         // Iterate through shortcuts for each app
         for (const auto& itShortcut : itApp.second)
@@ -244,7 +247,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, itShortcut.first, itShortcut.second.targetShortcut, itApp.first);
         }
     }
-    lockAppSpecific.unlock();
 
     // Apply button
     Button applyButton;
@@ -256,9 +258,13 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     header.SetLeftOf(applyButton, cancelButton);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditShortcutsWindow]() {
-        LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerState, ShortcutControl::shortcutRemapBuffer, true);
-        // Save the updated key remaps to file.
-        bool saveResult = keyboardManagerState.SaveConfigToFile();
+        // Disable the remappings while the remapping table is updated
+        keyboardManagerState.RemappingsDisabledWrapper(
+            [&keyboardManagerState]() {
+                LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(keyboardManagerState, ShortcutControl::shortcutRemapBuffer, true);
+                // Save the updated key remaps to file.
+                bool saveResult = keyboardManagerState.SaveConfigToFile();
+            });
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     };
 

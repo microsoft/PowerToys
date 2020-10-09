@@ -67,6 +67,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ERRORMESSAGE_DISABLEASACTIONKEY" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Disable can not be an action or a modifier key]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";EditKeyboard_Info" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select the key you want to change (Key) and then the key or shortcut you want it to become (Mapped To).]]></Val>
@@ -148,6 +154,9 @@
       <Item ItemId=";EditShortcuts_TargetAppHeader" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Target App:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[App di destinazione:]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -283,6 +292,9 @@
       <Item ItemId=";KeyboardManager" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keyboard Manager]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gestione tastiera]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -313,18 +325,27 @@
       <Item ItemId=";Settings_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[This feature requires Windows 10 version 1903 or higher]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Questa funzionalità richiede Windows 10 versione 1903 o successiva]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";TypeKey_Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key Pressed:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tasto premuto:]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";TypeKey_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press a key on selected keyboard:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Premere un tasto sulla tastiera selezionata:]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -53,12 +53,14 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("round(2 * pi)", 6D)]
         [TestCase("1 == 2", default(double))]
         [TestCase("pi * ( sin ( cos ( 2)))", -1.26995475603563D)]
-        [TestCase("5.6/2",  2.8D)]
+        [TestCase("5.6/2", 2.8D)]
         [TestCase("123 * 4.56", 560.88D)]
         [TestCase("1 - 9.0 / 10", 0.1D)]
         [TestCase("0.5 * ((2*-395.2)+198.2)", -296.1D)]
         [TestCase("2+2.11", 4.11D)]
-        public void Interpret_NoErrors_WhenCalled(string input, decimal expectedResult)
+        [TestCase("8.43 + 4.43 - 12.86", 0D)]
+        [TestCase("8.43 + 4.43 - 12.8", 0.06D)]
+        public void Interpret_NoErrors_WhenCalledWithRounding(string input, decimal expectedResult)
         {
             // Arrange
             var engine = new CalculateEngine();
@@ -68,7 +70,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(expectedResult, result.Result);
+            Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
         }
 
         [TestCase("0.100000000000000000000", 0.00776627963145224D)] // BUG: Because data structure
@@ -101,7 +103,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(expectedResult, result.Result);
+            Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
         }
 
         [TestCase("ceil(2 * (pi ^ 2))", true)]

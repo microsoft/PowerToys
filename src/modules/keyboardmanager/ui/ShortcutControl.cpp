@@ -65,15 +65,15 @@ void ShortcutControl::UpdateAccessibleNames(StackPanel sourceColumn, StackPanel 
 }
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const std::variant<DWORD, Shortcut>& newKeys, const std::wstring& targetAppName)
+void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutUnion& newKeys, const std::wstring& targetAppName)
 {
     // Textbox for target application
     TextBox targetAppTextBox;
 
     // Create new ShortcutControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<ShortcutControl>> newrow;
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 0, targetAppTextBox))));
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 1, targetAppTextBox))));
+    newrow.emplace_back(std::make_unique<ShortcutControl>(parent, 0, targetAppTextBox));
+    newrow.emplace_back(std::make_unique<ShortcutControl>(parent, 1, targetAppTextBox));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
