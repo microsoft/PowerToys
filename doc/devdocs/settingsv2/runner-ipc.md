@@ -9,9 +9,3 @@
 
 ## Settings File creation
  - Settings Repository
-
-
-
-
-
-
