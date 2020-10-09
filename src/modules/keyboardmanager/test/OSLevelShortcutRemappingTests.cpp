@@ -2257,12 +2257,6 @@ namespace RemappingLogicTests
             // send Ctrl+A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // Check that no keys are pressed
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), false);
-            // Shortcut invoked state should be true
-            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
-
             input[0].type = INPUT_KEYBOARD;
             input[0].ki.wVk = 0x42;
             // send B
