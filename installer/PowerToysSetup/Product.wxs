@@ -4,6 +4,7 @@
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
   <?define FancyZonesProjectName="FancyZones"?>
+  <?define AltDragProjectName="AltDrag"?>
   <?define ImageResizerProjectName="ImageResizer"?>
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
@@ -239,6 +240,7 @@
               <?endforeach?>
             </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
+			<Directory Id="AltDragInstallFolder" Name="$(var.AltDragProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
@@ -414,6 +416,13 @@
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Telemetry.dll" />
       </Component>
     </DirectoryRef>
+
+	<DirectoryRef Id="AltDragInstallFolder" FileSource="$(var.BinX64Dir)modules\">
+		  <Component Id="Module_AltDrag" Guid="C6B5272E-6ED4-4B80-C1E7-2FF0355D8CF4" Win64="yes">
+			  <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\AltDragModule.dll" KeyPath="yes" />
+			  <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\AltDrag.lib" />
+		  </Component>
+	</DirectoryRef>
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       
@@ -794,6 +803,7 @@
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
+      <ComponentRef Id="Module_AltDrag" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
       <ComponentRef Id="Module_ImageResizer" />

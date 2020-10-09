@@ -17,15 +17,7 @@
 struct Settings
 {
     // The values specified here are the defaults
-    bool spanZonesAcrossMonitors = false;
-    bool makeDraggedWindowTransparent = true;
-    std::wstring zoneColor = L"#F5FCFF";
-    std::wstring zoneBorderColor = L"#FFFFFF";
-    std::wstring zoneHighlightColor = L"#008CFF";
-    int zoneHighlightOpacity = 50;
-    PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
-    std::wstring excludedApps = L"";
-    std::vector<std::wstring> excludedAppsArray;
+    std::wstring hotkey = L"#F5FCFF";
 };
 
 interface IAltDragSettings : public IUnknown

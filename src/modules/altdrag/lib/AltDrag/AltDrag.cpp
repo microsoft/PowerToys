@@ -59,20 +59,20 @@ public:
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
-        {
-            monitor = NULL;
-        }
+        //if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+       //{
+        //    monitor = NULL;
+        //}
         //m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
 
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
-        {
-            monitor = NULL;
-        }
+       // if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+        //{
+         //   monitor = NULL;
+       // }
         //m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
 
@@ -152,6 +152,11 @@ winrt::com_ptr<IAltDrag> MakeAltDrag(HINSTANCE hinstance,
 
     return winrt::make_self<AltDrag>(hinstance, settings, disableCallback);
 }
+
+
+std::function<void()> AltDrag::disableModuleCallback = {};
+
+
 
 IFACEMETHODIMP_(void)
 AltDrag::Run() noexcept
@@ -324,5 +329,31 @@ AltDrag::OnMouseEvent(LowlevelMouseEvent* info) noexcept
     default:
         break;
     }
+    return false;
+}
 
+
+IFACEMETHODIMP_(void)
+AltDrag::SettingsChanged() noexcept
+{
+    return;
+}
+
+
+// IFancyZones
+IFACEMETHODIMP_(void)
+AltDrag::Destroy() noexcept
+{
+    //std::unique_lock writeLock(m_lock);
+    //m_workAreaHandler.Clear();
+    //BufferedPaintUnInit();
+    if (m_window)
+    {
+        DestroyWindow(m_window);
+        m_window = nullptr;
+    }
+    //if (m_terminateVirtualDesktopTrackerEvent)
+    //{
+      //  SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
+    //}
 }

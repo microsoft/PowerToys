@@ -5,11 +5,11 @@
 #include "pch.h"
 #include <functional>
 
-interface IAltDragSettings;
+interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6B13150C3A}"))  IAltDragSettings;
 
 struct WinHookEvent;
 
-interface IAltDrag : public IUnknown
+interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6B23150C3A}")) IAltDrag : public IUnknown
 {
     /**
      * Start and initialize AltDrag.
@@ -26,7 +26,7 @@ interface IAltDrag : public IUnknown
 /**
  * Core AltDrag functionality.
  */
-interface IAltDragCallback : public IUnknown
+interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6B32150C3A}"))  IAltDragCallback : public IUnknown
 {
     /**
      * Process keyboard event.
