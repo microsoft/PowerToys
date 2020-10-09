@@ -80,7 +80,7 @@ namespace Wox.Core.Plugin
         public static void LoadPlugins(PluginSettings settings)
         {
             _metadatas = PluginConfig.Parse(Directories);
-            Settings = settings;
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Settings.UpdatePluginSettings(_metadatas);
             AllPlugins = PluginsLoader.Plugins(_metadatas, Settings);
         }
@@ -90,7 +90,7 @@ namespace Wox.Core.Plugin
         /// </summary>
         public static void InitializePlugins(IPublicAPI api)
         {
-            API = api;
+            API = api ?? throw new ArgumentNullException(nameof(api));
             var failedPlugins = new ConcurrentQueue<PluginPair>();
             Parallel.ForEach(AllPlugins, pair =>
             {
@@ -145,6 +145,11 @@ namespace Wox.Core.Plugin
 
         public static List<PluginPair> ValidPluginsForQuery(Query query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             if (NonGlobalPlugins.ContainsKey(query.ActionKeyword))
             {
                 var plugin = NonGlobalPlugins[query.ActionKeyword];
@@ -158,6 +163,11 @@ namespace Wox.Core.Plugin
 
         public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {
+            if (pair == null)
+            {
+                throw new ArgumentNullException(nameof(pair));
+            }
+
             try
             {
                 List<Result> results = null;
@@ -216,6 +226,16 @@ namespace Wox.Core.Plugin
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException(nameof(results));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             foreach (var r in results)
             {
                 r.PluginDirectory = metadata.PluginDirectory;

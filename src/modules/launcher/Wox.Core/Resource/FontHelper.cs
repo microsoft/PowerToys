@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -76,6 +77,11 @@ namespace Wox.Core.Resource
 
         public static FamilyTypeface ChooseRegularFamilyTypeface(this FontFamily family)
         {
+            if (family == null)
+            {
+                throw new ArgumentNullException(nameof(family));
+            }
+
             return family.FamilyTypefaces.OrderBy(o =>
             {
                 return (Math.Abs(o.Stretch.ToOpenTypeStretch() - FontStretches.Normal.ToOpenTypeStretch()) * 100) +
@@ -86,6 +92,11 @@ namespace Wox.Core.Resource
 
         public static FamilyTypeface ConvertFromInvariantStringsOrNormal(this FontFamily family, string style, string weight, string stretch)
         {
+            if (family == null)
+            {
+                throw new ArgumentNullException(nameof(family));
+            }
+
             var styleObj = GetFontStyleFromInvariantStringOrNormal(style);
             var weightObj = GetFontWeightFromInvariantStringOrNormal(weight);
             var stretchObj = GetFontStretchFromInvariantStringOrNormal(stretch);

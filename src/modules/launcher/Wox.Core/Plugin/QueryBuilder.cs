@@ -13,6 +13,16 @@ namespace Wox.Core.Plugin
     {
         public static Dictionary<PluginPair, Query> Build(ref string text, Dictionary<string, PluginPair> nonGlobalPlugins)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            if (nonGlobalPlugins == null)
+            {
+                throw new ArgumentNullException(nameof(nonGlobalPlugins));
+            }
+
             // replace multiple white spaces with one white space
             var terms = text.Split(new[] { Query.TermSeparator }, StringSplitOptions.RemoveEmptyEntries);
             if (terms.Length == 0)
