@@ -59,7 +59,7 @@ namespace ViewModelTests
 
             // Verifiy that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ImageResizer, viewModel.IsEnabled);
-            Assert.AreEqual(viewModel.GetEncoderIndex(originalSettings.Properties.ImageresizerFallbackEncoder.Value), viewModel.Encoder);
+            Assert.AreEqual(ImageResizerViewModel.GetEncoderIndex(originalSettings.Properties.ImageresizerFallbackEncoder.Value), viewModel.Encoder);
             Assert.AreEqual(originalSettings.Properties.ImageresizerFileName.Value, viewModel.FileName);
             Assert.AreEqual(originalSettings.Properties.ImageresizerJpegQualityLevel.Value, viewModel.JPEGQualityLevel);
             Assert.AreEqual(originalSettings.Properties.ImageresizerKeepDateModified.Value, viewModel.KeepDateModified);
@@ -197,7 +197,7 @@ namespace ViewModelTests
 
             // Assert
             viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
-            Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", ImageResizerViewModel.GetEncoderGuid(viewModel.Encoder));
+            Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", viewModel.EncoderGuid);
             Assert.AreEqual(3, viewModel.Encoder);
         }
 

@@ -219,6 +219,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
+        public string EncoderGuid
+        {
+            get
+            {
+                return ImageResizerViewModel.GetEncoderGuid(_encoderGuidId);
+            }
+        }
+
         public void AddRow()
         {
             ObservableCollection<ImageSize> imageSizes = Sizes;
