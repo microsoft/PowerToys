@@ -12,15 +12,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("targetApp")]
         public string TargetApp { get; set; }
 
-        // Renamed from GetOriginalKeys -> GetMappedOriginalKeys to avoid confusion with
-        // property names (FxCop rule CA1721).
         public new List<string> GetMappedOriginalKeys()
         {
             return base.GetMappedOriginalKeys();
         }
 
-        // Renamed from GetNewRemapKeys -> GetMappedNewRemapKeys to avoid confusion with
-        // property names (FxCop rule CA1721).
         public new List<string> GetMappedNewRemapKeys()
         {
             return base.GetMappedNewRemapKeys();

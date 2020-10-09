@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
+        public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
-            CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
+            CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
@@ -344,7 +344,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         }
 
         // callback function to launch the URL to check for updates.
-        private void CheckForUpdates_Click()
+        private void CheckForUpdatesClick()
         {
             GeneralSettingsConfig.CustomActionName = "check_for_updates";
 
