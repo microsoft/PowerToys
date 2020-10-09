@@ -28,7 +28,7 @@ namespace Wox.Core.Plugin
         public static IEnumerable<PluginPair> CSharpPlugins(List<PluginMetadata> source)
         {
             var plugins = new List<PluginPair>();
-            var metadatas = source.Where(o => o.Language.ToUpper() == AllowedLanguage.CSharp);
+            var metadatas = source.Where(o => o.Language.ToUpperInvariant() == AllowedLanguage.CSharp);
 
             foreach (var metadata in metadatas)
             {
@@ -45,7 +45,9 @@ namespace Wox.Core.Plugin
                     {
                         assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(metadata.ExecuteFilePath);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Infrastructure.Logger.Log.Exception($"Couldn't load assembly for {metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
@@ -68,7 +70,9 @@ namespace Wox.Core.Plugin
                     {
                         plugin = (IPlugin)Activator.CreateInstance(type);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Infrastructure.Logger.Log.Exception($"Can't create instance for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
@@ -89,7 +93,7 @@ namespace Wox.Core.Plugin
 
         public static IEnumerable<PluginPair> ExecutablePlugins(IEnumerable<PluginMetadata> source)
         {
-            var metadatas = source.Where(o => o.Language.ToUpper() == AllowedLanguage.Executable);
+            var metadatas = source.Where(o => o.Language.ToUpperInvariant() == AllowedLanguage.Executable);
 
             var plugins = metadatas.Select(metadata => new PluginPair
             {

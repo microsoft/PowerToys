@@ -32,7 +32,8 @@ namespace Wox.Core.Plugin
 
             foreach (string pluginActionKeyword in nonGlobalPlugins.Keys)
             {
-                if (possibleActionKeyword.StartsWith(pluginActionKeyword))
+                // Using InvariantCulture since this is a command line arg
+                if (possibleActionKeyword.StartsWith(pluginActionKeyword, StringComparison.InvariantCulture))
                 {
                     if (nonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
                     {

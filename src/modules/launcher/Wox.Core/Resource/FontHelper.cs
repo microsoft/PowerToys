@@ -24,7 +24,9 @@ namespace Wox.Core.Resource
             {
                 return (FontWeight)_fontWeightConverter.ConvertFromInvariantString(value);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return FontWeights.Normal;
             }
@@ -43,7 +45,9 @@ namespace Wox.Core.Resource
             {
                 return (FontStyle)_fontStyleConverter.ConvertFromInvariantString(value);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return FontStyles.Normal;
             }
@@ -62,7 +66,9 @@ namespace Wox.Core.Resource
             {
                 return (FontStretch)_fontStretchConverter.ConvertFromInvariantString(value);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return FontStretches.Normal;
             }

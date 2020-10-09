@@ -41,15 +41,16 @@ namespace Wox.Core.Plugin
 
                 string pluginFolderPath = Infrastructure.Constant.PluginsDirectory;
 
+                // Using InvariantCulture since this is a command line arg
                 string newPluginName = plugin.Name
-                    .Replace("/", "_")
-                    .Replace("\\", "_")
-                    .Replace(":", "_")
-                    .Replace("<", "_")
-                    .Replace(">", "_")
-                    .Replace("?", "_")
-                    .Replace("*", "_")
-                    .Replace("|", "_")
+                    .Replace("/", "_", StringComparison.InvariantCulture)
+                    .Replace("\\", "_", StringComparison.InvariantCulture)
+                    .Replace(":", "_", StringComparison.InvariantCulture)
+                    .Replace("<", "_", StringComparison.InvariantCulture)
+                    .Replace(">", "_", StringComparison.InvariantCulture)
+                    .Replace("?", "_", StringComparison.InvariantCulture)
+                    .Replace("*", "_", StringComparison.InvariantCulture)
+                    .Replace("|", "_", StringComparison.InvariantCulture)
                     + "-" + Guid.NewGuid();
                 string newPluginPath = Path.Combine(pluginFolderPath, newPluginName);
                 string content = $"Do you want to install following plugin?{Environment.NewLine}{Environment.NewLine}" +
@@ -162,7 +163,8 @@ namespace Wox.Core.Plugin
                 strDirectory = Directory.GetCurrentDirectory();
             }
 
-            if (!strDirectory.EndsWith("\\"))
+            // Using InvariantCulture since this is a command line arg
+            if (!strDirectory.EndsWith("\\", StringComparison.InvariantCulture))
             {
                 strDirectory += "\\";
             }

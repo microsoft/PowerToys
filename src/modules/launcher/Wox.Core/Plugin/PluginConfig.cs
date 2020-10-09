@@ -43,7 +43,9 @@ namespace Wox.Core.Plugin
                     {
                         Directory.Delete(directory, true);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Log.Exception($"Can't delete <{directory}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                     }
@@ -81,7 +83,9 @@ namespace Wox.Core.Plugin
                 // for plugin still use old ActionKeyword
                 metadata.ActionKeyword = metadata.ActionKeywords?[0];
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception($"|PluginConfig.GetPluginMetadata|invalid json for config <{configPath}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return null;

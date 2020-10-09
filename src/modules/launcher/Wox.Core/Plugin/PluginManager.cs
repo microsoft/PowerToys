@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -106,7 +107,9 @@ namespace Wox.Core.Plugin
                     pair.Metadata.InitTime += milliseconds;
                     Log.Info($"Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>", MethodBase.GetCurrentMethod().DeclaringType);
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     Log.Exception($"Fail to Init plugin: {pair.Metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
                     pair.Metadata.Disabled = true;
@@ -182,7 +185,9 @@ namespace Wox.Core.Plugin
 
                 return results;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -201,7 +206,8 @@ namespace Wox.Core.Plugin
 
                 if (!string.IsNullOrEmpty(query.ActionKeyword))
                 {
-                    result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
+                    // Using InvariantCulture since this is a command line arg
+                    result.QueryTextDisplay = string.Format(CultureInfo.InvariantCulture, "{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
                 }
             }
 
@@ -253,7 +259,9 @@ namespace Wox.Core.Plugin
 
                     return results;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     Log.Exception($"Can't load context menus for plugin <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
 
