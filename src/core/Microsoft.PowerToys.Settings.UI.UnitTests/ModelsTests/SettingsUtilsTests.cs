@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -37,7 +37,11 @@ namespace CommonLibTest
             BasePTSettingsTest actual_json = settingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
             // Assert
-            Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
+            Assert.AreEqual(expected_json.Name, actual_json.Name);
+            Assert.AreEqual(expected_json.Version, actual_json.Version);
+            Assert.AreEqual(expected_json.Name, "powertoy module name");
+            Assert.AreEqual(expected_json.Version, "powertoy version");
+
         }
 
         [TestMethod]
@@ -55,7 +59,10 @@ namespace CommonLibTest
             BasePTSettingsTest actual_json = settingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
             // Assert
-            Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
+            Assert.AreEqual(expected_json.Name, actual_json.Name);
+            Assert.AreEqual(expected_json.Version, actual_json.Version);
+            Assert.AreEqual(expected_json.Name, "powertoy module name");
+            Assert.AreEqual(expected_json.Version, "powertoy version");
         }
 
         [TestMethod]

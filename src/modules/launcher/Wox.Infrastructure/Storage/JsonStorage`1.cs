@@ -29,6 +29,7 @@ namespace Wox.Infrastructure.Storage
         // This storage helper returns whether or not to delete the json storage items
         private static readonly int _jsonStorage = 1;
         private StoragePowerToysVersionInfo _storageHelper;
+        private JsonSerializer _jsonSerializer;
 
         internal JsonStorage()
         {
@@ -38,7 +39,9 @@ namespace Wox.Infrastructure.Storage
             {
                 ObjectCreationHandling = ObjectCreationHandling.Replace,
                 NullValueHandling = NullValueHandling.Ignore,
+                Formatting = Formatting.Indented,
             };
+            _jsonSerializer = JsonSerializer.CreateDefault(_serializerSettings);
         }
 
         public T Load()
@@ -57,8 +60,8 @@ namespace Wox.Infrastructure.Storage
 
             if (File.Exists(FilePath))
             {
-                var serialized = File.ReadAllText(FilePath);
-                if (!string.IsNullOrWhiteSpace(serialized))
+                var serialized = File.OpenRead(FilePath);
+                if (serialized.Length > 1)
                 {
                     Deserialize(serialized);
                 }
@@ -75,11 +78,15 @@ namespace Wox.Infrastructure.Storage
             return _data.NonNull();
         }
 
-        private void Deserialize(string serialized)
+        private void Deserialize(Stream serialized)
         {
             try
             {
-                _data = JsonConvert.DeserializeObject<T>(serialized, _serializerSettings);
+                using (var sr = new StreamReader(serialized))
+                using (var jsonTextReader = new JsonTextReader(sr))
+                {
+                    _data = (T)_jsonSerializer.Deserialize(jsonTextReader, typeof(T));
+                }
             }
             catch (JsonException e)
             {
@@ -120,8 +127,13 @@ namespace Wox.Infrastructure.Storage
         {
             try
             {
-                string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
-                File.WriteAllText(FilePath, serialized);
+                using (var fileStream = File.OpenWrite(FilePath))
+                using (var streamWriter = new StreamWriter(fileStream))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
+                {
+                    _jsonSerializer.Serialize(jsonWriter, _data, typeof(T));
+                }
+
                 _storageHelper.Close();
 
                 Log.Info($"Saving cached data at <{FilePath}>", GetType());

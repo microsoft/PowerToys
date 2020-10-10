@@ -15,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         private const string DefaultModuleName = "";
         private IIOProvider _ioProvider;
 
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions() { WriteIndented = true };
+
         public SettingsUtils(IIOProvider ioProvider)
         {
             _ioProvider = ioProvider ?? throw new ArgumentNullException(nameof(ioProvider));
@@ -64,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// </summary>
         /// <returns>Deserialized json settings object.</returns>
         public T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
-            where T : ISettingsConfig, new()
+            where T : class, ISettingsConfig, new()
         {
             if (SettingsExists(powertoy, fileName))
             {
@@ -74,7 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 // IF the file needs to be modified, to save the new configurations accordingly.
                 if (deserializedSettings.UpgradeSettingsConfiguration())
                 {
-                    SaveSettings(deserializedSettings.ToJsonString(), powertoy, fileName);
+                    SaveSettings<T>(deserializedSettings, powertoy, fileName);
                 }
 
                 return deserializedSettings;
@@ -83,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             {
                 // If the settings file does not exist, to create a new object with default parameters and save it to a newly created settings file.
                 T newSettingsItem = new T();
-                SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
+                SaveSettings<T>(newSettingsItem, powertoy, fileName);
                 return newSettingsItem;
             }
         }
@@ -95,11 +97,31 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             // Look at issue https://github.com/microsoft/PowerToys/issues/6413 you'll see the file has a large sum of \0 to fill up a 4096 byte buffer for writing to disk
             // This, while not totally ideal, does work around the problem by trimming the end.
             // The file itself did write the content correctly but something is off with the actual end of the file, hence the 0x00 bug
-            var jsonSettingsString = _ioProvider.ReadAllText(GetSettingsPath(powertoyFolderName, fileName)).Trim('\0');
-            return JsonSerializer.Deserialize<T>(jsonSettingsString);
+            var jsonSettingsBytes = _ioProvider.ReadAllBytes(GetSettingsPath(powertoyFolderName, fileName));
+            return JsonSerializer.Deserialize<T>(jsonSettingsBytes, JsonSerializerOptions);
         }
 
-        // Save settings to a json file.
+        public void SaveSettings<T>(T settingsObject, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+            where T : class, new()
+        {
+            try
+            {
+                if (settingsObject != null)
+                {
+                    if (!SettingsFolderExists(powertoy))
+                    {
+                        CreateSettingsFolder(powertoy);
+                    }
+
+                    var jsonSettings = JsonSerializer.SerializeToUtf8Bytes(settingsObject, JsonSerializerOptions);
+                    _ioProvider.WriteAllBytes(GetSettingsPath(powertoy, fileName), jsonSettings);
+                }
+            }
+            catch
+            {
+            }
+        }
+
         public void SaveSettings(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             try

@@ -1,10 +1,10 @@
-﻿using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
-using Moq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Unicode;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Moq;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
 {
@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
         {
             string savePath = string.Empty;
             string saveContent = string.Empty;
+
             var mockIOProvider = new Mock<IIOProvider>();
             mockIOProvider.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
                           .Callback<string, string>((path, content) =>
@@ -26,8 +27,16 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
                               savePath = path;
                               saveContent = content;
                           });
+            mockIOProvider.Setup(x => x.WriteAllBytes(It.IsAny<string>(), It.IsAny<byte[]>()))
+                .Callback<string, byte[]>((path, contentBytes) =>
+                {
+                    savePath = path;
+                    saveContent = Encoding.UTF8.GetString(contentBytes);
+                });
             mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
                           .Returns(() => saveContent);
+            mockIOProvider.Setup(x => x.ReadAllBytes(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
+                .Returns(() => Encoding.UTF8.GetBytes(saveContent));
 
             mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
                           .Returns(true);
@@ -55,7 +64,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
             mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(filterExpression)))
                          .Returns(() => saveContent).Verifiable();
 
-            
+            mockIOProvider.Setup(x => x.ReadAllBytes(It.Is<string>(filterExpression)))
+                .Returns(() => Encoding.UTF8.GetBytes(saveContent)).Verifiable();
+
             mockIOProvider.Setup(x => x.FileExists(It.Is<string>(filterExpression)))
                           .Returns(true);
 
@@ -64,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
 
         internal static void VerifyIOReadWithStubFile(Mock<IIOProvider> mockIOProvider, Expression<Func<string, bool>> filterExpression, int expectedCallCount)
         {
-            mockIOProvider.Verify(x => x.ReadAllText(It.Is<string>(filterExpression)), Times.Exactly(expectedCallCount));
+            mockIOProvider.Verify(x => x.ReadAllBytes(It.Is<string>(filterExpression)), Times.Exactly(expectedCallCount));
         }
     }
 }

@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             catch
             {
                 Settings = new ImageResizerSettings();
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                _settingsUtils.SaveSettings(Settings, ModuleName);
             }
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -120,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _jpegQualityLevel = value;
                     Settings.Properties.ImageresizerJpegQualityLevel.Value = value;
-                    _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    _settingsUtils.SaveSettings(Settings, ModuleName);
                     OnPropertyChanged(nameof(JPEGQualityLevel));
                 }
             }
@@ -139,7 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _pngInterlaceOption = value;
                     Settings.Properties.ImageresizerPngInterlaceOption.Value = value;
-                    _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    _settingsUtils.SaveSettings(Settings, ModuleName);
                     OnPropertyChanged(nameof(PngInterlaceOption));
                 }
             }
@@ -158,7 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _tiffCompressOption = value;
                     Settings.Properties.ImageresizerTiffCompressOption.Value = value;
-                    _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    _settingsUtils.SaveSettings(Settings, ModuleName);
                     OnPropertyChanged(nameof(TiffCompressOption));
                 }
             }
@@ -177,7 +177,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _fileName = value;
                     Settings.Properties.ImageresizerFileName.Value = value;
-                    _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    _settingsUtils.SaveSettings(Settings, ModuleName);
                     OnPropertyChanged(nameof(FileName));
                 }
             }
@@ -194,7 +194,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 _keepDateModified = value;
                 Settings.Properties.ImageresizerKeepDateModified.Value = value;
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                _settingsUtils.SaveSettings(Settings, ModuleName);
                 OnPropertyChanged(nameof(KeepDateModified));
             }
         }
@@ -211,9 +211,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_encoderGuidId != value)
                 {
                     _encoderGuidId = value;
-                    _settingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
+                    _settingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes, ModuleName, "sizes.json");
                     Settings.Properties.ImageresizerFallbackEncoder.Value = GetEncoderGuid(value);
-                    _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    _settingsUtils.SaveSettings(Settings, ModuleName);
                     OnPropertyChanged(nameof(Encoder));
                 }
             }
@@ -250,9 +250,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public void SavesImageSizes(ObservableCollection<ImageSize> imageSizes)
         {
-            _settingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
+            _settingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes, ModuleName, "sizes.json");
             Settings.Properties.ImageresizerSizes = new ImageResizerSizes(imageSizes);
-            _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+            _settingsUtils.SaveSettings(Settings, ModuleName);
         }
 
         public static string GetEncoderGuid(int value)

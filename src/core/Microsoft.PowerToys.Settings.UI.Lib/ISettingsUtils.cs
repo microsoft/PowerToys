@@ -9,9 +9,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     public interface ISettingsUtils
     {
         T GetSettings<T>(string powertoy = "", string fileName = "settings.json")
-            where T : ISettingsConfig, new();
+            where T : class, ISettingsConfig, new();
 
-        void SaveSettings(string jsonSettings, string powertoy = "", string fileName = "settings.json");
+        void SaveSettings<T>(T settingsObject, string powertoy = "", string fileName = "settings.json")
+            where T : class, new();
 
         bool SettingsExists(string powertoy = "", string fileName = "settings.json");
 

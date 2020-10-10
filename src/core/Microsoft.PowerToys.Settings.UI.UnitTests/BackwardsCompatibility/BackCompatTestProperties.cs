@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
     {
         public const string RootPathStubFiles = "..\\..\\..\\..\\src\\core\\Microsoft.PowerToys.Settings.UI.UnitTests\\BackwardsCompatibility\\TestFiles\\{0}\\Microsoft\\PowerToys\\{1}\\{2}";
 
-        internal class MockSettingsRepository<T> : ISettingsRepository<T> where T : ISettingsConfig, new()
+        internal class MockSettingsRepository<T> : ISettingsRepository<T> where T : class, ISettingsConfig, new()
         {
             T _settingsConfig;
             readonly ISettingsUtils _settingsUtils;

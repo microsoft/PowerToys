@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
@@ -73,12 +72,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             Enabled = new EnabledModules();
             CustomActionName = string.Empty;
-        }
-
-        // converts the current to a json string.
-        public string ToJsonString()
-        {
-            return JsonSerializer.Serialize(this);
         }
 
         private static string DefaultPowertoysVersion()

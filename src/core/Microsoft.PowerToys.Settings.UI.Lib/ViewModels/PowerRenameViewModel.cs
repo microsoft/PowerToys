@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 PowerRenameLocalProperties localSettings = new PowerRenameLocalProperties();
                 Settings = new PowerRenameSettings(localSettings);
-                _settingsUtils.SaveSettings(localSettings.ToJsonString(), GetSettingsSubPath(), "power-rename-settings.json");
+                _settingsUtils.SaveSettings(localSettings, GetSettingsSubPath(), "power-rename-settings.json");
             }
 
             // set the callback functions value to hangle outgoing IPC message.

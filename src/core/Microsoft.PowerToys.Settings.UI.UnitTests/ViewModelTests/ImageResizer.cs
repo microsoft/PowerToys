@@ -166,9 +166,9 @@ namespace ViewModelTests
             // arrange
             var settingUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
 
-            var expectedSettingsString = new ImageResizerSettings() { Properties = new ImageResizerProperties() { ImageresizerKeepDateModified = new BoolProperty() { Value = true } } }.ToJsonString();
+            var expectedSettingsString = new ImageResizerSettings() { Properties = new ImageResizerProperties() { ImageresizerKeepDateModified = new BoolProperty() { Value = true } } };
             settingUtils.Setup(x => x.SaveSettings(
-                                        It.Is<string>(content => content.Equals(expectedSettingsString, StringComparison.Ordinal)),
+                                        It.IsAny<ImageResizerSettings>(),
                                         It.Is<string>(module => module.Equals(ImageResizerSettings.ModuleName, StringComparison.Ordinal)),
                                         It.IsAny<string>()))
                                      .Verifiable();

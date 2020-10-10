@@ -16,6 +16,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
 
         void WriteAllText(string path, string content);
 
+        void WriteAllBytes(string path, byte[] content);
+
         string ReadAllText(string path);
+
+        byte[] ReadAllBytes(string path);
     }
 }

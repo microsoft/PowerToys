@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -193,8 +193,8 @@ namespace FancyZonesEditor.Models
 
             try
             {
-                string jsonString = JsonSerializer.Serialize(deletedLayouts, options);
-                File.WriteAllText(Settings.DeletedCustomZoneSetsTmpFile, jsonString);
+                byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(deletedLayouts, options);
+                File.WriteAllBytes(Settings.DeletedCustomZoneSetsTmpFile, jsonBytes);
             }
             catch (Exception ex)
             {
@@ -436,8 +436,8 @@ namespace FancyZonesEditor.Models
 
             try
             {
-                string jsonString = JsonSerializer.Serialize(zoneSet, options);
-                File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
+                byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(zoneSet, options);
+                File.WriteAllBytes(Settings.ActiveZoneSetTmpFile, jsonBytes);
             }
             catch (Exception ex)
             {

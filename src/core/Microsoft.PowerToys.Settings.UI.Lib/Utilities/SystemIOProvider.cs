@@ -34,9 +34,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             return File.ReadAllText(path);
         }
 
+        public byte[] ReadAllBytes(string path)
+        {
+            return File.ReadAllBytes(path);
+        }
+
         public void WriteAllText(string path, string content)
         {
             File.WriteAllText(path, content);
+        }
+
+        public void WriteAllBytes(string path, byte[] content)
+        {
+            File.WriteAllBytes(path, content);
         }
     }
 }

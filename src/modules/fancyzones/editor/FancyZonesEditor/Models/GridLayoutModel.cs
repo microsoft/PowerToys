@@ -236,8 +236,8 @@ namespace FancyZonesEditor.Models
 
             try
             {
-                string jsonString = JsonSerializer.Serialize(jsonObj, options);
-                File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
+                byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(jsonObj, options);
+                File.WriteAllBytes(Settings.AppliedZoneSetTmpFile, jsonBytes);
             }
             catch (Exception ex)
             {

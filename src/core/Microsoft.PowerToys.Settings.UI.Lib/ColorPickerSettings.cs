@@ -24,13 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public virtual void Save(ISettingsUtils settingsUtils)
         {
-            // Save settings to file
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
+            settingsUtils.SaveSettings(this, ModuleName);
         }
 
         public string GetModuleName()

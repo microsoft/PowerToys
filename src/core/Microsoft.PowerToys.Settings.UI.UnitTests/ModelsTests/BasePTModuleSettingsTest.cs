@@ -1,8 +1,9 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
@@ -48,12 +49,12 @@ namespace CommonLibTest
                 'additionalProperties': false
                 }";
 
-            string testSettingsConfigs = new BasePTSettingsTest().ToJsonString();
+            var testSettingsConfigs = new BasePTSettingsTest();
             settingsUtils.SaveSettings(testSettingsConfigs, file_name);
             JsonSchema expectedSchema = JsonSchema.Parse(expectedSchemaText);
 
             // Act
-            JObject actualSchema = JObject.Parse(settingsUtils.GetSettings<BasePTSettingsTest>(file_name).ToJsonString());
+            JObject actualSchema = JObject.Parse(JsonSerializer.Serialize(settingsUtils.GetSettings<BasePTSettingsTest>(file_name), typeof(BasePTSettingsTest)));
             bool valid = actualSchema.IsValid(expectedSchema);
 
             // Assert

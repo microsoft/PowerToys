@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -119,7 +120,7 @@ namespace Wox.Infrastructure.Storage
         public void Close()
         {
             // Update the Version file to the current version of powertoys
-            File.WriteAllText(FilePath, currentPowerToysVersion);
+            File.WriteAllBytes(FilePath, Encoding.UTF8.GetBytes(currentPowerToysVersion));
         }
     }
 }

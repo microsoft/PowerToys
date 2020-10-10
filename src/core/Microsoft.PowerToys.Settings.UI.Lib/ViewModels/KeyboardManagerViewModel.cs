@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             else
             {
                 Settings = new KeyboardManagerSettings();
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
+                _settingsUtils.SaveSettings(Settings, PowerToyName);
             }
         }
 
