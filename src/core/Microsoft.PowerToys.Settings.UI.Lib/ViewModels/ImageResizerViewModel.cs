@@ -57,18 +57,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 size.Id = i;
                 i++;
-                size.PropertyChanged += Size_PropertyChanged;
+                size.PropertyChanged += SizePropertyChanged;
             }
         }
 
-        private bool _isEnabled = false;
+        private bool _isEnabled;
         private ObservableCollection<ImageSize> _advancedSizes = new ObservableCollection<ImageSize>();
-        private int _jpegQualityLevel = 0;
+        private int _jpegQualityLevel;
         private int _pngInterlaceOption;
         private int _tiffCompressOption;
         private string _fileName;
         private bool _keepDateModified;
-        private int _encoderGuidId = 0;
+        private int _encoderGuidId;
 
         public bool IsEnabled
         {
@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
-                    OnPropertyChanged("IsEnabled");
+                    OnPropertyChanged(nameof(IsEnabled));
                 }
             }
         }
@@ -103,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 SavesImageSizes(value);
                 _advancedSizes = value;
-                OnPropertyChanged("Sizes");
+                OnPropertyChanged(nameof(Sizes));
             }
         }
 
@@ -121,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _jpegQualityLevel = value;
                     Settings.Properties.ImageresizerJpegQualityLevel.Value = value;
                     _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-                    OnPropertyChanged("JPEGQualityLevel");
+                    OnPropertyChanged(nameof(JPEGQualityLevel));
                 }
             }
         }
@@ -140,7 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _pngInterlaceOption = value;
                     Settings.Properties.ImageresizerPngInterlaceOption.Value = value;
                     _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-                    OnPropertyChanged("PngInterlaceOption");
+                    OnPropertyChanged(nameof(PngInterlaceOption));
                 }
             }
         }
@@ -159,7 +159,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _tiffCompressOption = value;
                     Settings.Properties.ImageresizerTiffCompressOption.Value = value;
                     _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-                    OnPropertyChanged("TiffCompressOption");
+                    OnPropertyChanged(nameof(TiffCompressOption));
                 }
             }
         }
@@ -178,7 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _fileName = value;
                     Settings.Properties.ImageresizerFileName.Value = value;
                     _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-                    OnPropertyChanged("FileName");
+                    OnPropertyChanged(nameof(FileName));
                 }
             }
         }
@@ -195,7 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _keepDateModified = value;
                 Settings.Properties.ImageresizerKeepDateModified.Value = value;
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-                OnPropertyChanged("KeepDateModified");
+                OnPropertyChanged(nameof(KeepDateModified));
             }
         }
 
@@ -214,8 +214,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _settingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
                     Settings.Properties.ImageresizerFallbackEncoder.Value = GetEncoderGuid(value);
                     _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-                    OnPropertyChanged("Encoder");
+                    OnPropertyChanged(nameof(Encoder));
                 }
+            }
+        }
+
+        public string EncoderGuid
+        {
+            get
+            {
+                return ImageResizerViewModel.GetEncoderGuid(_encoderGuidId);
             }
         }
 
@@ -224,7 +232,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             ObservableCollection<ImageSize> imageSizes = Sizes;
             int maxId = imageSizes.Count > 0 ? imageSizes.OrderBy(x => x.Id).Last().Id : -1;
             ImageSize newSize = new ImageSize(maxId + 1);
-            newSize.PropertyChanged += Size_PropertyChanged;
+            newSize.PropertyChanged += SizePropertyChanged;
             imageSizes.Add(newSize);
             _advancedSizes = imageSizes;
             SavesImageSizes(imageSizes);
@@ -247,7 +255,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
 
-        public string GetEncoderGuid(int value)
+        public static string GetEncoderGuid(int value)
         {
             // PNG Encoder guid
             if (value == 0)
@@ -288,40 +296,40 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             return null;
         }
 
-        public int GetEncoderIndex(string guid)
+        public static int GetEncoderIndex(string value)
         {
             // PNG Encoder guid
-            if (guid == "1b7cfaf4-713f-473c-bbcd-6137425faeaf")
+            if (value == "1b7cfaf4-713f-473c-bbcd-6137425faeaf")
             {
                 return 0;
             }
 
             // Bitmap Encoder guid
-            else if (guid == "0af1d87e-fcfe-4188-bdeb-a7906471cbe3")
+            else if (value == "0af1d87e-fcfe-4188-bdeb-a7906471cbe3")
             {
                 return 1;
             }
 
             // JPEG Encoder guid
-            else if (guid == "19e4a5aa-5662-4fc5-a0c0-1758028e1057")
+            else if (value == "19e4a5aa-5662-4fc5-a0c0-1758028e1057")
             {
                 return 2;
             }
 
             // Tiff encoder guid.
-            else if (guid == "163bcc30-e2e9-4f0b-961d-a3e9fdb788a3")
+            else if (value == "163bcc30-e2e9-4f0b-961d-a3e9fdb788a3")
             {
                 return 3;
             }
 
             // Tiff encoder guid.
-            else if (guid == "57a37caa-367a-4540-916b-f183c5093a4b")
+            else if (value == "57a37caa-367a-4540-916b-f183c5093a4b")
             {
                 return 4;
             }
 
             // Gif encoder guid.
-            else if (guid == "1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5")
+            else if (value == "1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5")
             {
                 return 5;
             }
@@ -329,7 +337,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             return -1;
         }
 
-        public void Size_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        public void SizePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ImageSize modifiedSize = (ImageSize)sender;
             ObservableCollection<ImageSize> imageSizes = Sizes;

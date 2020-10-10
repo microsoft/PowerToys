@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             return JsonSerializer.Serialize(this);
         }
 
-        private string DefaultPowertoysVersion()
+        private static string DefaultPowertoysVersion()
         {
             return interop.CommonManaged.GetProductVersion();
         }

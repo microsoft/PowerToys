@@ -41,9 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
         }
 
-        private bool _svgRenderIsEnabled = false;
-        private bool _mdRenderIsEnabled = false;
-        private bool _svgThumbnailIsEnabled = false;
+        private bool _svgRenderIsEnabled;
+        private bool _mdRenderIsEnabled;
+        private bool _svgThumbnailIsEnabled;
 
         public bool SVGRenderIsEnabled
         {
