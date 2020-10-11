@@ -3,10 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:ColorPicker.Views"
              xmlns:viewModel="clr-namespace:ColorPicker.ViewModels"
+             xmlns:constants="clr-namespace:ColorPicker.Constants"
              mc:Ignorable="d" 
-             d:DesignHeight="50" d:DesignWidth="180" 
+             d:DesignHeight="50" d:DesignWidth="{x:Static constants:WindowConstant.PickerWindowWidth}"
              d:DataContext="{d:DesignInstance viewModel:MainViewModel, IsDesignTimeCreatable=True}">
     <Grid Background="Transparent" >
         <Grid>
