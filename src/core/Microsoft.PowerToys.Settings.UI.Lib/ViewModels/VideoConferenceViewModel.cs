@@ -26,7 +26,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private const string ModuleName = "Video Conference";
-        private const string ProxyCameraName = "PowerToys VideoConference";
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -80,11 +79,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _selectedMicrophoneIndex = MicrophoneNames.FindIndex(name => name == Settings.Properties.SelectedMicrophone.Value);
             }
 
-            if (shouldSaveSettings)
-            {
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-            }
-
             _isEnabled = GeneralSettingsConfig.Enabled.VideoConference;
             _cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
             _mirophoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
@@ -126,6 +120,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case "All monitors":
                     _toolbarMonitorIndex = 1;
                     break;
+            }
+
+            if (shouldSaveSettings)
+            {
+                _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
         }
 
@@ -259,7 +258,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _cameraAndMicrophoneMuteHotkey = value;
                     Settings.Properties.MuteCameraAndMicrophoneHotkey.Value = value;
-                    RaisePropertyChanged();
+                    RaisePropertyChanged("CameraAndMicrophoneMuteHotkey");
                 }
             }
         }
@@ -277,7 +276,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _mirophoneMuteHotkey = value;
                     Settings.Properties.MuteMicrophoneHotkey.Value = value;
-                    RaisePropertyChanged();
+                    RaisePropertyChanged("MicrophoneMuteHotkey");
                 }
             }
         }
@@ -295,7 +294,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _cameraMuteHotkey = value;
                     Settings.Properties.MuteCameraHotkey.Value = value;
-                    RaisePropertyChanged();
+                    RaisePropertyChanged("CameraMuteHotkey");
                 }
             }
         }
@@ -316,34 +315,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         case 0:
                             Settings.Properties.ToolbarPosition.Value = "Top left corner";
-                            RaisePropertyChanged();
                             break;
 
                         case 1:
                             Settings.Properties.ToolbarPosition.Value = "Top center";
-                            RaisePropertyChanged();
                             break;
 
                         case 2:
                             Settings.Properties.ToolbarPosition.Value = "Top right corner";
-                            RaisePropertyChanged();
                             break;
 
                         case 3:
                             Settings.Properties.ToolbarPosition.Value = "Bottom left corner";
-                            RaisePropertyChanged();
                             break;
 
                         case 4:
                             Settings.Properties.ToolbarPosition.Value = "Bottom center";
-                            RaisePropertyChanged();
                             break;
 
                         case 5:
                             Settings.Properties.ToolbarPosition.Value = "Bottom right corner";
-                            RaisePropertyChanged();
                             break;
                     }
+
+                    RaisePropertyChanged("ToolbarPostionIndex");
                 }
             }
         }
@@ -364,14 +359,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         case 0:
                             Settings.Properties.ToolbarMonitor.Value = "Main monitor";
-                            RaisePropertyChanged();
                             break;
 
                         case 1:
                             Settings.Properties.ToolbarMonitor.Value = "All monitors";
-                            RaisePropertyChanged();
                             break;
                     }
+
+                    RaisePropertyChanged("ToolbarMonitorIndex");
                 }
             }
         }
@@ -389,7 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _hideToolbarWhenUnmuted = value;
                     Settings.Properties.HideToolbarWhenUnmuted.Value = value;
-                    RaisePropertyChanged();
+                    RaisePropertyChanged("HideToolbarWhenUnmuted");
                 }
             }
         }
