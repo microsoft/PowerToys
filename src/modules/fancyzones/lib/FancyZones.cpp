@@ -972,7 +972,7 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 void FancyZones::UpdateZoneWindows() noexcept
 {
     // Mapping between display device name and device index (operating system identifies each display device in the current session with an index value).
-    std::unordered_map<std::wstring, DWORD> displayDeviceIdx;
+    std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
     struct capture
     {
         FancyZones* fancyZones;
@@ -981,16 +981,15 @@ void FancyZones::UpdateZoneWindows() noexcept
 
     auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
         capture* params = reinterpret_cast<capture*>(data);
-        MONITORINFOEX mi;
-        mi.cbSize = sizeof(mi);
+        MONITORINFOEX mi{ { .cbSize = sizeof(mi)} };
         if (GetMonitorInfoW(monitor, &mi))
         {
-            auto& displayDeviceIdx = *(params->displayDeviceIdx);
+            auto& displayDeviceIdxMap = *(params->displayDeviceIdx);
             FancyZones* fancyZones = params->fancyZones;
 
             DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
-            std::wstring deviceId{};
-            while (EnumDisplayDevicesW(mi.szDevice, displayDeviceIdx[mi.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
+            std::wstring deviceId;
+            while (EnumDisplayDevicesW(mi.szDevice, displayDeviceIdxMap[mi.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
             {
                 // Only take active monitors (presented as being "on" by the respective GDI view) and monitors that don't
                 // represent a pseudo device used to mirror application drawing.
@@ -1000,7 +999,7 @@ void FancyZones::UpdateZoneWindows() noexcept
                     deviceId = displayDevice.DeviceID;
                     fancyZones->AddZoneWindow(monitor, deviceId);
                 }
-                ++displayDeviceIdx[mi.szDevice];
+                ++displayDeviceIdxMap[mi.szDevice];
             }
 
             if (deviceId.empty())
@@ -1021,7 +1020,7 @@ void FancyZones::UpdateZoneWindows() noexcept
     }
     else
     {
-        capture capture{ this, &displayDeviceIdx };
+        capture capture{ this, &displayDeviceIdxMap };
         EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(&capture));
     }
 }
