@@ -192,4 +192,8 @@ static_analysis_options:
           - '**/webpack.config.js'
           - '**/webpack.serve.config.js'
           - '**/dist/bundle.js' 
+  policheck_options:
+    files_to_scan:
+      - exclude:                         
+        - '**/*.lcl'
         
