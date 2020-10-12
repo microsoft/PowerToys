@@ -52,12 +52,8 @@ void VideoConferenceModule::reverseMicrophoneMute()
     if (muted)
     {
         Trace::MicrophoneMuted();
-        toolbar.setMicrophoneMute(true);
     }
-    else
-    {
-        toolbar.setMicrophoneMute(false);
-    }
+    toolbar.setMicrophoneMute(muted);
 }
 
 bool VideoConferenceModule::getMicrophoneMuteState()
@@ -67,27 +63,23 @@ bool VideoConferenceModule::getMicrophoneMuteState()
 
 void VideoConferenceModule::reverseVirtualCameraMuteState()
 {
-    bool camera_muted = false;
+    bool muted = false;
     if (!instance->_settingsUpdateChannel.has_value())
     {
         return;
     }
 
-    instance->_settingsUpdateChannel->access([&camera_muted](auto settingsMemory) {
+    instance->_settingsUpdateChannel->access([&muted](auto settingsMemory) {
         auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory._data);
         settings->useOverlayImage = !settings->useOverlayImage;
-        camera_muted = settings->useOverlayImage;
+        muted = settings->useOverlayImage;
     });
 
-    if (camera_muted)
+    if (muted)
     {
         Trace::CameraMuted();
-        toolbar.setCameraMute(true);
     }
-    else
-    {
-        toolbar.setCameraMute(false);
-    }
+    toolbar.setCameraMute(muted);
 }
 
 bool VideoConferenceModule::getVirtualCameraMuteState()
