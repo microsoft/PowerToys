@@ -47,6 +47,7 @@ public:
     void sendSourceCameraNameUpdate();
     void sendOverlayImageUpdate();
 
+    static void unmuteAll();
     static void reverseMicrophoneMute();
     static bool getMicrophoneMuteState();
     static void reverseVirtualCameraMuteState();
@@ -54,7 +55,6 @@ public:
     static bool getVirtualCameraInUse();
 
 private:
-    void unmuteAll();
     void init_settings();
     void updateControlledMicrophones(const std::wstring_view new_mic);
     //  all callback methods and used by callback have to be static

@@ -42,6 +42,7 @@ private:
 
     bool cameraMuted = false;
     bool cameraInUse = false;
+    bool previouscameraInUse = false;
     bool microphoneMuted = false;
 
     std::wstring theme = L"system";

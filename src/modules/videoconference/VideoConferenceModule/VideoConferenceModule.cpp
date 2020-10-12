@@ -179,7 +179,7 @@ VideoConferenceModule::VideoConferenceModule()
 
 inline VideoConferenceModule::~VideoConferenceModule()
 {
-    unmuteAll();
+    instance->unmuteAll();
     toolbar.hide();
 }
 
@@ -408,7 +408,7 @@ void VideoConferenceModule::disable()
             }
         }
 
-        unmuteAll();
+        instance->unmuteAll();
         toolbar.hide();
 
         _enabled = false;
