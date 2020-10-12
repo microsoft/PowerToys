@@ -20,36 +20,35 @@ class Toolbar
 public:
     Toolbar();
 
-    static void show(std::wstring position, std::wstring monitorString);
-    static void hide();
+    void show(std::wstring position, std::wstring monitorString);
+    void hide();
 
-    bool static getCameraMute();
-    void static setCameraMute(bool mute);
-    bool static getMicrophoneMute();
-    void static setMicrophoneMute(bool mute);
+    bool getCameraMute();
+    void setCameraMute(bool mute);
+    bool getMicrophoneMute();
+    void setMicrophoneMute(bool mute);
 
-    void static setTheme(std::wstring theme);
-    void static setHideToolbarWhenUnmuted(bool hide);
+    void setTheme(std::wstring theme);
+    void setHideToolbarWhenUnmuted(bool hide);
 
 private:
     static LRESULT CALLBACK WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
     // Window callback can't be non-static so this members can't as well
-    static std::vector<HWND> hwnds;
+    std::vector<HWND> hwnds;
 
-    static ToolbarImages darkImages;
-    static ToolbarImages lightImages;
+    ToolbarImages darkImages;
+    ToolbarImages lightImages;
 
-    static bool valueUpdated;
-    static bool cameraMuted;
-    static bool cameraInUse;
-    static bool microphoneMuted;
+    bool cameraMuted = false;
+    bool cameraInUse = false;
+    bool microphoneMuted = false;
 
-    static std::wstring theme;
+    std::wstring theme = L"system";
 
-    static bool HideToolbarWhenUnmuted;
+    bool HideToolbarWhenUnmuted = true;
 
-    static unsigned __int64 lastTimeCamOrMicMuteStateChanged;
+    uint64_t lastTimeCamOrMicMuteStateChanged;
 
-    static UINT_PTR nTimerId;
+    UINT_PTR nTimerId;
 };

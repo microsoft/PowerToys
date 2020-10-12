@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public SndVideoConferenceSettings(VideoConferenceSettings settings)
         {
-            this.VideoConference = settings;
+            VideoConference = settings;
         }
 
         public string ToJsonString()

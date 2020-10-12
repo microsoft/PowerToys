@@ -7,23 +7,7 @@
 
 #include "VideoConferenceModule.h"
 
-ToolbarImages Toolbar::darkImages;
-ToolbarImages Toolbar::lightImages;
-
-bool Toolbar::valueUpdated = false;
-bool Toolbar::cameraMuted = false;
-bool Toolbar::cameraInUse = false;
-bool Toolbar::microphoneMuted = false;
-
-std::wstring Toolbar::theme = L"system";
-
-bool Toolbar::HideToolbarWhenUnmuted = true;
-
-std::vector<HWND> Toolbar::hwnds;
-
-UINT_PTR Toolbar::nTimerId;
-
-unsigned __int64 Toolbar::lastTimeCamOrMicMuteStateChanged;
+Toolbar* toolbar = nullptr;
 
 const int REFRESH_RATE = 100;
 const int OVERLAY_SHOW_TIME = 500;
@@ -31,6 +15,7 @@ const int BORDER_OFFSET = 12;
 
 Toolbar::Toolbar()
 {
+    toolbar = this;
     darkImages.camOnMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-On Dark.png");
     darkImages.camOffMicOn = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/On-Off Dark.png");
     darkImages.camOnMicOff = Gdiplus::Image::FromFile(L"modules/VideoConference/Icons/Off-On Dark.png");
@@ -64,10 +49,9 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         else
         {
             VideoConferenceModule::reverseVirtualCameraMuteState();
-            setCameraMute(VideoConferenceModule::getVirtualCameraMuteState());
         }
 
-        return DefWindowProc(hwnd, msg, wparam, lparam);
+        return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
     case WM_CREATE:
     case WM_PAINT:
@@ -79,96 +63,103 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
 
         Gdiplus::Graphics graphic(hdc);
 
-        ToolbarImages* themeImages = &darkImages;
+        ToolbarImages* themeImages = &toolbar->darkImages;
 
-        if (theme == L"light" || (theme == L"system" && !WindowsColors::is_dark_mode()))
+        if (toolbar->theme == L"light" || (toolbar->theme == L"system" && !WindowsColors::is_dark_mode()))
         {
-            themeImages = &lightImages;
+            themeImages = &toolbar->lightImages;
         }
         else
         {
-            themeImages = &darkImages;
+            themeImages = &toolbar->darkImages;
         }
-
-        if (!cameraInUse)
+        Gdiplus::Image* toolbarImage = nullptr;
+        if (!toolbar->cameraInUse)
         {
-            if (microphoneMuted)
+            if (toolbar->microphoneMuted)
             {
-                graphic.DrawImage(themeImages->camUnusedMicOff, 0, 0, themeImages->camUnusedMicOff->GetWidth(), themeImages->camUnusedMicOff->GetHeight());
+                toolbarImage = themeImages->camUnusedMicOff;
             }
             else
             {
-                graphic.DrawImage(themeImages->camUnusedMicOn, 0, 0, themeImages->camUnusedMicOn->GetWidth(), themeImages->camUnusedMicOn->GetHeight());
+                toolbarImage = themeImages->camUnusedMicOn;
             }
         }
-        else if (microphoneMuted )
+        else if (toolbar->microphoneMuted)
         {
-            if (cameraMuted)
+            if (toolbar->cameraMuted)
             {
-                graphic.DrawImage(themeImages->camOffMicOff, 0, 0, themeImages->camOffMicOff->GetWidth(), themeImages->camOffMicOff->GetHeight());
+                toolbarImage = themeImages->camOffMicOff;
             }
             else
             {
-                graphic.DrawImage(themeImages->camOnMicOff, 0, 0, themeImages->camOnMicOff->GetWidth(), themeImages->camOnMicOff->GetHeight());
+                toolbarImage = themeImages->camOnMicOff;
             }
         }
         else
         {
-            if (cameraMuted)
+            if (toolbar->cameraMuted)
             {
-                graphic.DrawImage(themeImages->camOffMicOn, 0, 0, themeImages->camOffMicOn->GetWidth(), themeImages->camOffMicOn->GetHeight());
+                toolbarImage = themeImages->camOffMicOn;
             }
             else
             {
-                graphic.DrawImage(themeImages->camOnMicOn, 0, 0, themeImages->camOnMicOn->GetWidth(), themeImages->camOnMicOn->GetHeight());
+                toolbarImage = themeImages->camOnMicOn;
             }
         }
+        graphic.DrawImage(toolbarImage, 0, 0, toolbarImage->GetWidth(), toolbarImage->GetHeight());
 
         EndPaint(hwnd, &ps);
         break;
     }
     case WM_TIMER:
     {
-        cameraInUse = VideoConferenceModule::getVirtualCameraInUse();
+        toolbar->cameraInUse = VideoConferenceModule::getVirtualCameraInUse();
 
         InvalidateRect(hwnd, NULL, NULL);
-        using namespace std::chrono;
 
-        if (cameraInUse || microphoneMuted || !HideToolbarWhenUnmuted)
+        using namespace std::chrono;
+        const auto nowMillis = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        const bool showOverlayTimeout = nowMillis - toolbar->lastTimeCamOrMicMuteStateChanged > OVERLAY_SHOW_TIME;
+
+        bool show = false;
+
+        if (toolbar->cameraInUse)
+        {
+            show = toolbar->HideToolbarWhenUnmuted ? toolbar->microphoneMuted || toolbar->cameraMuted : true;
+        }
+        else
+        {
+            show = toolbar->microphoneMuted;
+        }
+        show = show || !showOverlayTimeout;
+        if (show)
         {
             ShowWindow(hwnd, SW_SHOW);
         }
         else
         {
-            if (duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - lastTimeCamOrMicMuteStateChanged > OVERLAY_SHOW_TIME || !valueUpdated)
-            {
-                ShowWindow(hwnd, SW_HIDE);
-            }
-            else
-            {
-                ShowWindow(hwnd, SW_SHOW);
-            }
+            ShowWindow(hwnd, SW_HIDE);
         }
 
-        KillTimer(hwnd, nTimerId);
+        KillTimer(hwnd, toolbar->nTimerId);
 
         break;
     }
     default:
-        return DefWindowProc(hwnd, msg, wparam, lparam);
+        return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
 
-    nTimerId = SetTimer(hwnd, 101, REFRESH_RATE, NULL);
+    toolbar->nTimerId = SetTimer(hwnd, 101, REFRESH_RATE, nullptr);
 
-    return DefWindowProc(hwnd, msg, wparam, lparam);
+    return DefWindowProcW(hwnd, msg, wparam, lparam);
 }
 
 void Toolbar::show(std::wstring position, std::wstring monitorString)
 {
-    valueUpdated = false;
     for (auto& hwnd : hwnds)
     {
-        PostMessage(hwnd, WM_CLOSE, 0, 0);
+        PostMessageW(hwnd, WM_CLOSE, 0, 0);
     }
     hwnds.clear();
 
@@ -178,12 +169,12 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
     // Register the window class
     LPCWSTR CLASS_NAME = L"MuteNotificationWindowClass";
     WNDCLASS wc{};
-    wc.hInstance = GetModuleHandle(NULL);
+    wc.hInstance = GetModuleHandleW(nullptr);
     wc.lpszClassName = CLASS_NAME;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
     wc.lpfnWndProc = WindowProcessMessages;
-    RegisterClass(&wc);
+    RegisterClassW(&wc);
 
     // Create the window
     DWORD dwExtStyle = 0;
@@ -237,7 +228,7 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
         }
 
         HWND hwnd;
-        hwnd = CreateWindowEx(
+        hwnd = CreateWindowExW(
             WS_EX_TOOLWINDOW | WS_EX_LAYERED,
             CLASS_NAME,
             CLASS_NAME,
@@ -246,10 +237,10 @@ void Toolbar::show(std::wstring position, std::wstring monitorString)
             positionY,
             overlayWidth,
             overlayHeight,
-            NULL,
-            NULL,
-            GetModuleHandle(NULL),
-            NULL);
+            nullptr,
+            nullptr,
+            GetModuleHandleW(nullptr),
+            nullptr);
 
         auto transparrentColorKey = RGB(0, 0, 255);
         HBRUSH brush = CreateSolidBrush(transparrentColorKey);
@@ -279,8 +270,10 @@ bool Toolbar::getCameraMute()
 
 void Toolbar::setCameraMute(bool mute)
 {
-    valueUpdated = true;
-    lastTimeCamOrMicMuteStateChanged = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    if (mute != cameraMuted)
+    {
+        lastTimeCamOrMicMuteStateChanged = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    }
     cameraMuted = mute;
 }
 
@@ -293,7 +286,6 @@ void Toolbar::setMicrophoneMute(bool mute)
 {
     if (mute != microphoneMuted)
     {
-        valueUpdated = true;
         lastTimeCamOrMicMuteStateChanged = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     }
 

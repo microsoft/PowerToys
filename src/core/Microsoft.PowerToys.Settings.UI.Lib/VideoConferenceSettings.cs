@@ -20,19 +20,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("properties")]
         public VideoConferenceConfigProperties Properties { get; set; }
 
-        string ISettingsConfig.GetModuleName()
+        public string GetModuleName()
         {
-            throw new System.NotImplementedException();
-        }
-
-        string ISettingsConfig.ToJsonString()
-        {
-            throw new System.NotImplementedException();
+            return Name;
         }
 
         bool ISettingsConfig.UpgradeSettingsConfiguration()
         {
-            throw new System.NotImplementedException();
+            return false;
         }
     }
 }

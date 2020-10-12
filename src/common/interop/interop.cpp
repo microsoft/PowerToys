@@ -141,9 +141,14 @@ public
                 auto names = gcnew List<String ^>();
                 VideoCaptureDeviceList vcdl;
                 vcdl.EnumerateDevices();
+
                 for (UINT32 i = 0; i < vcdl.Count(); ++i)
                 {
-                    names->Add(gcnew String(vcdl.GetDeviceName(i).data()));
+                    auto name = gcnew String(vcdl.GetDeviceName(i).data());
+                    if (name != L"PowerToys VideoConference")
+                    {
+                        names->Add(name);
+                    }
                 }
                 return names;
             }

@@ -42,9 +42,21 @@ bool VideoConferenceModule::isHotkeyPressed(DWORD code, PowerToysSettings::Hotke
 
 void VideoConferenceModule::reverseMicrophoneMute()
 {
+    bool muted = false;
     for (auto& controlledMic : instance->_controlledMicrophones)
     {
+        const bool was_muted = controlledMic.muted();
         controlledMic.toggle_muted();
+        muted = muted || !was_muted;
+    }
+    if (muted)
+    {
+        Trace::MicrophoneMuted();
+        toolbar.setMicrophoneMute(true);
+    }
+    else
+    {
+        toolbar.setMicrophoneMute(false);
     }
 }
 
@@ -70,6 +82,11 @@ void VideoConferenceModule::reverseVirtualCameraMuteState()
     if (camera_muted)
     {
         Trace::CameraMuted();
+        toolbar.setCameraMute(true);
+    }
+    else
+    {
+        toolbar.setCameraMute(false);
     }
 }
 
@@ -112,11 +129,31 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
 
             if (isHotkeyPressed(kbd->vkCode, settings.cameraAndMicrophoneMuteHotkey))
             {
-                reverseMicrophoneMute();
-                if (toolbar.getCameraMute() != toolbar.getMicrophoneMute())
+                const bool cameraInUse = getVirtualCameraInUse();
+                const bool microphoneIsMuted = getMicrophoneMuteState();
+                const bool cameraIsMuted = cameraInUse && getVirtualCameraMuteState();
+                if (cameraInUse)
                 {
-                    reverseVirtualCameraMuteState();
-                    toolbar.setCameraMute(getVirtualCameraMuteState());
+                    // we're likely on a video call, so we must mute the unmuted cam/mic or reverse the mute state
+                    // of everything, if cam and mic mute states are the same
+                    if (microphoneIsMuted == cameraIsMuted)
+                    {
+                        reverseMicrophoneMute();
+                        reverseVirtualCameraMuteState();
+                    }
+                    else if (cameraIsMuted)
+                    {
+                        reverseMicrophoneMute();
+                    }
+                    else if (microphoneIsMuted)
+                    {
+                        reverseVirtualCameraMuteState();
+                    }
+                }
+                else
+                {
+                    // if the camera is not in use, we just mute/unmute the mic
+                    reverseMicrophoneMute();
                 }
             }
             else if (isHotkeyPressed(kbd->vkCode, settings.microphoneMuteHotkey))
@@ -126,7 +163,6 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             else if (isHotkeyPressed(kbd->vkCode, settings.cameraMuteHotkey))
             {
                 reverseVirtualCameraMuteState();
-                toolbar.setCameraMute(getVirtualCameraMuteState());
             }
         }
     }
@@ -151,17 +187,7 @@ VideoConferenceModule::VideoConferenceModule()
 
 inline VideoConferenceModule::~VideoConferenceModule()
 {
-    if (toolbar.getCameraMute())
-    {
-        reverseVirtualCameraMuteState();
-        toolbar.setCameraMute(getVirtualCameraMuteState());
-    }
-
-    if (toolbar.getMicrophoneMute())
-    {
-        reverseMicrophoneMute();
-    }
-
+    unmuteAll();
     toolbar.hide();
 }
 
@@ -217,7 +243,7 @@ void VideoConferenceModule::set_config(const wchar_t* config)
             }
             if (const auto val = values.get_bool_value(L"hide_toolbar_when_unmuted"))
             {
-                Toolbar::setHideToolbarWhenUnmuted(val.value());
+                toolbar.setHideToolbarWhenUnmuted(val.value());
             }
             if (const auto val = values.get_string_value(L"selected_mic"))
             {
@@ -270,7 +296,7 @@ void VideoConferenceModule::init_settings()
         }
         if (const auto val = powerToysSettings.get_bool_value(L"hide_toolbar_when_unmuted"))
         {
-            Toolbar::setHideToolbarWhenUnmuted(val.value());
+            toolbar.setHideToolbarWhenUnmuted(val.value());
         }
         if (const auto val = powerToysSettings.get_string_value(L"selected_mic"); *val != settings.selectedMicrophone)
         {
@@ -291,7 +317,7 @@ void VideoConferenceModule::init_settings()
         {
             settings_theme = L"system";
         }
-        Toolbar::setTheme(settings_theme);
+        toolbar.setTheme(settings_theme);
     }
     catch (...)
     {
@@ -336,10 +362,10 @@ void VideoConferenceModule::updateControlledMicrophones(const std::wstring_view 
     }
     if (_microphoneTrackedInUI)
     {
-        _microphoneTrackedInUI->set_mute_changed_callback([](const bool muted) {
-            Toolbar::setMicrophoneMute(muted);
+        _microphoneTrackedInUI->set_mute_changed_callback([&](const bool muted) {
+            toolbar.setMicrophoneMute(muted);
         });
-        Toolbar::setMicrophoneMute(_microphoneTrackedInUI->muted());
+        toolbar.setMicrophoneMute(_microphoneTrackedInUI->muted());
     }
 }
 
@@ -364,6 +390,19 @@ void VideoConferenceModule::enable()
     }
 }
 
+void VideoConferenceModule::unmuteAll()
+{
+    if (getVirtualCameraMuteState())
+    {
+        reverseVirtualCameraMuteState();
+    }
+
+    if (getMicrophoneMuteState())
+    {
+        reverseMicrophoneMute();
+    }
+}
+
 void VideoConferenceModule::disable()
 {
     if (_enabled)
@@ -377,17 +416,7 @@ void VideoConferenceModule::disable()
             }
         }
 
-        if (toolbar.getCameraMute()) // TODO: unmute
-        {
-            reverseVirtualCameraMuteState();
-            toolbar.setCameraMute(getVirtualCameraMuteState());
-        }
-
-        if (toolbar.getMicrophoneMute())
-        {
-            reverseMicrophoneMute();
-        }
-
+        unmuteAll();
         toolbar.hide();
 
         _enabled = false;
@@ -401,8 +430,8 @@ bool VideoConferenceModule::is_enabled()
 
 void VideoConferenceModule::destroy()
 {
-    delete this;
     instance = nullptr;
+    delete this;
 }
 
 void VideoConferenceModule::sendSourceCameraNameUpdate()
@@ -426,10 +455,10 @@ void VideoConferenceModule::sendOverlayImageUpdate()
     }
     _imageOverlayChannel.reset();
 
-    TCHAR* powertoysDirectory = new TCHAR[255];
+    wchar_t powertoysDirectory[MAX_PATH + 1];
 
-    DWORD length = GetModuleFileName(NULL, powertoysDirectory, 255);
-    PathRemoveFileSpec(powertoysDirectory);
+    DWORD length = GetModuleFileNameW(nullptr, powertoysDirectory, MAX_PATH);
+    PathRemoveFileSpecW(powertoysDirectory);
 
     std::wstring blankImagePath(powertoysDirectory);
     blankImagePath += L"\\modules\\VideoConference\\black.bmp";
