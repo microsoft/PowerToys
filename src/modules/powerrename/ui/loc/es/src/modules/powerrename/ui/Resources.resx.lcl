@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerRename]]></Val>
+            <Val><![CDATA[Cambio de nombre avanzado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make Lowercase]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Convertir en minúsculas]]></Val>
+            <Val><![CDATA[Minúsculas]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make Titlecase]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Convertir en mayúsculas]]></Val>
+            <Val><![CDATA[Mayúscula inicial en todas las palabras]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +158,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make Uppercase]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Convertir en mayúsculas]]></Val>
+            <Val><![CDATA[Mayúsculas]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

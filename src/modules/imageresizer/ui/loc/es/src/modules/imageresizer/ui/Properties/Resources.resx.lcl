@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre]]></Val>
+            <Val><![CDATA[Acerca de]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -221,7 +221,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cambio de tamaño de imagen]]></Val>
+            <Val><![CDATA[Cambio de tamaño de imágenes]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -599,7 +599,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Small]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pequeño]]></Val>
+            <Val><![CDATA[Pequeña]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -662,7 +662,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zip]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Código postal]]></Val>
+            <Val><![CDATA[ZIP]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

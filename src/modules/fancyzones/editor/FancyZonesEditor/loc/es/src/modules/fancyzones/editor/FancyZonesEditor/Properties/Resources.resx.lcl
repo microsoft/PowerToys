@@ -112,6 +112,9 @@
       <Item ItemId=";Fancy_Zones_Editor_App_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[FancyZones Editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Editor de Diseños sofisticados]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -128,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nota: Mantenga presionada la tecla Mayús para cambiar la orientación del separador. Para combinar zonas, selecciónelas y haga clic en "combinar".]]></Val>
+            <Val><![CDATA[Nota: Mantenga presionada la tecla Mayús para cambiar la orientación del separador. Para combinar zonas, selecciónelas y haga clic en "Combinar".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

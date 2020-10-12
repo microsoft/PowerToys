@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Convertir en transparente la ventana arrastrada]]></Val>
+            <Val><![CDATA[Hacer transparente la ventana arrastrada]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Move windows between zones across all monitors when snapping with (Win + Arrow)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mover las ventanas entre zonas en todos los monitores al acoplarlas con el acceso directo Windows + Flecha]]></Val>
+            <Val><![CDATA[Mover las ventanas entre zonas en todos los monitores al acoplarlas con el acceso directo Windows + flecha]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +158,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Move windows based on their position when snapping with (Win + Arrow)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mover las ventanas según su posición al acoplarlas con el acceso directo Windows + Flecha]]></Val>
+            <Val><![CDATA[Mover las ventanas según su posición al acoplarlas con el acceso directo Windows + flecha]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -176,7 +176,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap hotkeys (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Permite reemplazar las teclas de acceso rápido de Windows Snap (Win + Flecha) para mover las ventanas entre zonas.]]></Val>
+            <Val><![CDATA[Permite reemplazar las teclas de acceso rápido de la característica Acoplar de Windows (Win + flecha) para mover las ventanas entre zonas.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Permitir que las zonas se expandan entre los monitores (todos los monitores deben tener el mismo ajuste de PPP).]]></Val>
+            <Val><![CDATA[Permitir que las zonas se expandan entre los monitores (todos los monitores deben tener el mismo ajuste de PPP)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Flash zones when the active FancyZones layout changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Permite intercambiar las zonas cuando cambia el diseño activo de Diseños sofisticados]]></Val>
+            <Val><![CDATA[Permite intercambiar las zonas cuando cambia el diseño activo de Diseños sofisticados.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -275,7 +275,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Para evitar que una aplicación se acople a las zonas, agregue su nombre aquí (uno por línea). Las aplicaciones excluidas reaccionarán a Windows Snap, independientemente del resto de configuraciones.]]></Val>
+            <Val><![CDATA[Para evitar que una aplicación se acople a las zonas, agregue su nombre aquí (uno por línea). Las aplicaciones excluidas reaccionarán a la característica Acoplar de Windows, independientemente del resto de configuraciones.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

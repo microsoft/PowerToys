@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cambio de tamaño de imagen]]></Val>
+            <Val><![CDATA[Cambio de tamaño de imágenes]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resize pictures]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cambiar el tamaño de imágenes]]></Val>
+            <Val><![CDATA[Cambiar el tamaño de las imágenes]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for bulk image resizing.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Extensión de shell de Windows para el cambio de tamaño masivo de imágenes.]]></Val>
+            <Val><![CDATA[Extensión de Windows Shell para el cambio de tamaño masivo de imágenes.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

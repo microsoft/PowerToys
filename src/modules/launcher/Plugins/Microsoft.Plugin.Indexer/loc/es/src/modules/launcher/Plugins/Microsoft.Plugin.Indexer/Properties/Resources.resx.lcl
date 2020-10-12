@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Click to go to Windows Search settings to fix.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Haga clic aquí para ir a la configuración de Windows Search y corregirla.]]></Val>
+            <Val><![CDATA[Haga clic aquí para ir a la configuración de la Búsqueda de Windows y corregirla.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Windows Indexer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Permitir el indexador de Windows]]></Val>
+            <Val><![CDATA[Indexador de Windows]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
