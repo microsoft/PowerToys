@@ -991,6 +991,7 @@ void FancyZones::UpdateZoneWindows() noexcept
             std::wstring deviceId;
             while (EnumDisplayDevicesW(mi.szDevice, displayDeviceIdxMap[mi.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
             {
+                ++displayDeviceIdxMap[mi.szDevice];
                 // Only take active monitors (presented as being "on" by the respective GDI view) and monitors that don't
                 // represent a pseudo device used to mirror application drawing.
                 if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
@@ -998,8 +999,8 @@ void FancyZones::UpdateZoneWindows() noexcept
                 {
                     deviceId = displayDevice.DeviceID;
                     fancyZones->AddZoneWindow(monitor, deviceId);
+                    break;
                 }
-                ++displayDeviceIdxMap[mi.szDevice];
             }
 
             if (deviceId.empty())
