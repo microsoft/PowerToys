@@ -61,16 +61,16 @@ namespace ZoneWindowUtils
     }
 
     void PaintZoneWindow(HDC hdc,
-                              HWND window,
-                              bool hasActiveZoneSet,
-                              COLORREF hostZoneColor,
-                              COLORREF hostZoneBorderColor,
-                              COLORREF hostZoneHighlightColor,
-                              int hostZoneHighlightOpacity,
-                              std::vector<winrt::com_ptr<IZone>> zones,
-                              std::vector<size_t> highlightZone,
-                              bool flashMode,
-                              bool drawHints)
+                         HWND window,
+                         bool hasActiveZoneSet,
+                         COLORREF hostZoneColor,
+                         COLORREF hostZoneBorderColor,
+                         COLORREF hostZoneHighlightColor,
+                         int hostZoneHighlightOpacity,
+                         std::vector<winrt::com_ptr<IZone>> zones,
+                         std::vector<size_t> highlightZone,
+                         bool flashMode,
+                         bool drawHints)
     {
         PAINTSTRUCT ps;
         HDC oldHdc = hdc;
