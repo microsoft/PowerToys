@@ -128,6 +128,10 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         {
             show = toolbar->HideToolbarWhenUnmuted ? toolbar->microphoneMuted || toolbar->cameraMuted : true;
         }
+        else if (toolbar->previouscameraInUse)
+        {
+            VideoConferenceModule::unmuteAll();
+        }
         else
         {
             show = toolbar->microphoneMuted;
@@ -143,7 +147,7 @@ LRESULT Toolbar::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
         }
 
         KillTimer(hwnd, toolbar->nTimerId);
-
+        toolbar->previouscameraInUse = toolbar->cameraInUse;
         break;
     }
     default:
