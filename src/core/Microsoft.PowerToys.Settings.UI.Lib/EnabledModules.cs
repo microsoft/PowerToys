@@ -143,6 +143,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
         }
 
+        private bool altDrag = true;
+
+        [JsonPropertyName("AltDrag")]
+        public bool AltDrag
+        {
+            get => altDrag;
+            set
+            {
+                if (altDrag != value)
+                {
+                    LogTelemetryEvent(value);
+                    altDrag = value;
+                }
+            }
+        }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

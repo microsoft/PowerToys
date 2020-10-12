@@ -129,7 +129,7 @@ int runner(bool isProcessElevated)
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuide.dll",
             L"modules/ColorPicker/ColorPicker.dll",
-            L"modules/AltDrag/AltDrag.dll",
+            L"modules/AltDrag/AltDragModule.dll",
         };
 
         for (const auto& moduleSubdir : knownModules)

@@ -161,6 +161,13 @@
     <value>Color Picker</value>
     <comment>Navigation view item name for Color Picker</comment>
   </data>
+  <data name="Shell_AltDrag.Content" xml:space="preserve">
+    <value>AltDrag</value>
+    <comment>Drag Windows</comment>
+  </data>
+    <data name="AltDrag_Description.Text" xml:space="preserve">
+    <value>Drag windows</value>
+  </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Navigation view item name for Keyboard Manager</comment>
@@ -635,6 +642,9 @@
   </data>
   <data name="GeneralSettings_RunningAsAdminText" xml:space="preserve">
     <value>Running as administrator</value>
+  </data>
+  <data name="About_AltDrag.Text" xml:space="preserve">
+    <value>About AltDrag</value>
   </data>
   <data name="About_FancyZones.Text" xml:space="preserve">
     <value>About FancyZones</value>
