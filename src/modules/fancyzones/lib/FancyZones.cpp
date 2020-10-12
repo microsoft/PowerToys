@@ -971,7 +971,7 @@ LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam,
 
 void FancyZones::UpdateZoneWindows() noexcept
 {
-    // Mapping between display device name and device index (operating system identifies each display device in the current session with an index value).
+    // Mapping between display device name and device index (operating system identifies each display device with an index value).
     std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
     struct capture
     {
