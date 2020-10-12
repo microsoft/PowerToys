@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib
+namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class FancyZonesSettings : BasePTModuleSettings, ISettingsConfig
     {

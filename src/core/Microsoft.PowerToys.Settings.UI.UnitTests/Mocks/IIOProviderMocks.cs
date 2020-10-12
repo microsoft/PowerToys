@@ -1,4 +1,4 @@
-﻿using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+﻿using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Moq;
 using System;
 using System.Collections.Generic;

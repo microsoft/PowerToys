@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib
+namespace Microsoft.PowerToys.Settings.UI.Library
 {
     // This Singleton class is a wrapper around the settings configurations that are accessed by viewmodels.
     // This class can have only one instance and therefore the settings configurations are common to all.

@@ -5,7 +5,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib
+namespace Microsoft.PowerToys.Settings.UI.Library
 {
     // Represents a powertoys module settings setnt to the runner.
     public class SndModuleSettings<T>

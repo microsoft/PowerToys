@@ -5,7 +5,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib.CustomAction
+namespace Microsoft.PowerToys.Settings.UI.Library.CustomAction
 {
     public class SendCustomAction
     {

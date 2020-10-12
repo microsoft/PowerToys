@@ -5,7 +5,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib.Helpers
+namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
     public class Observable : INotifyPropertyChanged
     {

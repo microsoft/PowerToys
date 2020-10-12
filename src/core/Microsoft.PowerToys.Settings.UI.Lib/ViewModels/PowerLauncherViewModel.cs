@@ -6,10 +6,10 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {

@@ -4,9 +4,9 @@
 
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib
+namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class HotkeySettings
     {

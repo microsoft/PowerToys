@@ -6,12 +6,12 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
-using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class FancyZonesViewModel : Observable
     {

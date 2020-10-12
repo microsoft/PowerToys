@@ -5,7 +5,7 @@
 using System;
 using interop;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib
+namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public delegate void KeyEvent(int key);
 
