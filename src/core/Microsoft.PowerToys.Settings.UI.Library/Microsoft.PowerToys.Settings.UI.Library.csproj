@@ -8,7 +8,7 @@
     <Version>$(Version).0</Version>
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
-    <Description>PowerToys Settings UI Lib</Description>
+    <Description>PowerToys Settings UI Library</Description>
     <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
@@ -42,9 +42,9 @@
     </PackageReference>
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-        <Version>3.3.0</Version>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        <PrivateAssets>all</PrivateAssets>
+      <Version>3.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 
