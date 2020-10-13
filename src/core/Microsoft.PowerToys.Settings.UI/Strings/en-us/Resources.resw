@@ -759,4 +759,13 @@
   <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
     <value>Preview Pane</value>
   </data>
+  <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
+    <value>You need to run as administrator to modify these settings</value>
+  </data>
+  <data name="FileExplorerPreview_AffectsAllUsers.Text" xml:space="preserve">
+    <value>The settings on this page affect all users on the system</value>
+  </data>
+  <data name="FileExplorerPreview_RebootRequired.Text" xml:space="preserve">
+    <value>A reboot may be required for changes to these settings to take effect</value>
+  </data>
 </root>

@@ -15,13 +15,18 @@ namespace Wox.Test
     [TestFixture]
     public class PluginManagerTest
     {
-        [Test]
-        public void QueryForPlugin_SetsActionKeyword_WhenQueryTextDisplayIsSet()
+        [TestCase(">", "dummyQueryText", "dummyTitle", "> dummyQueryText")]
+        [TestCase(">", null, "dummyTitle", "> dummyTitle")]
+        [TestCase(">", "", "dummyTitle", "> dummyTitle")]
+        [TestCase("", "dummyQueryText", "dummyTitle", "dummyQueryText")]
+        [TestCase("", null, "dummyTitle", "dummyTitle")]
+        [TestCase("", "", "dummyTitle", "dummyTitle")]
+        [TestCase(null, "dummyQueryText", "dummyTitle", "dummyQueryText")]
+        [TestCase(null, null, "dummyTitle", "dummyTitle")]
+        [TestCase(null, "", "dummyTitle", "dummyTitle")]
+        public void QueryForPlugin_SetsActionKeyword_WhenQueryTextDisplayIsEmpty(string actionKeyword, string queryTextDisplay, string title, string expectedResult)
         {
             // Arrange
-            var actionKeyword = ">";
-            var title = "dummyTitle";
-            var queryTextDisplay = "dummyQueryTextDisplay";
             var query = new Query
             {
                 ActionKeyword = actionKeyword,
@@ -51,46 +56,7 @@ namespace Wox.Test
             var queryOutput = PluginManager.QueryForPlugin(pluginPair, query);
 
             // Assert
-            Assert.AreEqual(string.Format("{0} {1}", ">", queryTextDisplay), queryOutput[0].QueryTextDisplay);
-        }
-
-        [TestCase("")]
-        [TestCase(null)]
-        public void QueryForPlugin_SetsActionKeyword_WhenQueryTextDisplayIsEmpty(string queryTextDisplay)
-        {
-            // Arrange
-            var actionKeyword = ">";
-            var title = "dummyTitle";
-            var query = new Query
-            {
-                ActionKeyword = actionKeyword,
-            };
-            var metadata = new PluginMetadata
-            {
-                ID = "dummyName",
-                IcoPath = "dummyIcoPath",
-                ExecuteFileName = "dummyExecuteFileName",
-                PluginDirectory = "dummyPluginDirectory",
-            };
-            var result = new Result()
-            {
-                QueryTextDisplay = queryTextDisplay,
-                Title = title,
-            };
-            var results = new List<Result>() { result };
-            var pluginMock = new Mock<IPlugin>();
-            pluginMock.Setup(r => r.Query(query)).Returns(results);
-            var pluginPair = new PluginPair
-            {
-                Plugin = pluginMock.Object,
-                Metadata = metadata,
-            };
-
-            // Act
-            var queryOutput = PluginManager.QueryForPlugin(pluginPair, query);
-
-            // Assert
-            Assert.AreEqual(string.Format("{0} {1}", ">", title), queryOutput[0].QueryTextDisplay);
+            Assert.AreEqual(expectedResult, queryOutput[0].QueryTextDisplay);
         }
     }
 }

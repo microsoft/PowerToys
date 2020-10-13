@@ -100,9 +100,9 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
             const auto element = powertoy_element.Value().Stringify();
             modules().at(name)->call_custom_action(element.c_str());
         }
-
-        return result;
     }
+
+    return result;
 }
 
 void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings)

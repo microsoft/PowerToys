@@ -1,5 +1,6 @@
 #pragma once
 #include <keyboardmanager/common/Shortcut.h>
+#include <vector>
 class KeyboardManagerState;
 
 namespace winrt::Windows
@@ -42,23 +43,22 @@ private:
     bool ignoreKeyToShortcutWarning;
 
     // Function to set properties apart from the SelectionChanged event handler
-    void SetDefaultProperties(bool isShortcut);
+    void SetDefaultProperties(bool isShortcut, bool renderDisable);
 
     // Function to check if the layout has changed and accordingly update the drop down list
-    void CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut);
+    void CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut, bool renderDisable);
 
     // Function to set accessible name for combobox
     static void SetAccessibleNameForComboBox(ComboBox dropDown, int index);
-
 public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
 
     // Constructor - the last default parameter should be passed as false only if it originates from Type shortcut or when an old shortcut is reloaded
-    KeyDropDownControl(bool isShortcut, bool fromAddShortcutToControl = false) :
+    KeyDropDownControl(bool isShortcut, bool fromAddShortcutToControl = false, bool renderDisable = false) :
         ignoreKeyToShortcutWarning(fromAddShortcutToControl)
     {
-        SetDefaultProperties(isShortcut);
+        SetDefaultProperties(isShortcut, renderDisable);
     }
 
     // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
@@ -90,4 +90,10 @@ public:
 
     // Function to add a shortcut to the UI control as combo boxes
     static void AddShortcutToControl(Shortcut shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
+
+    // Get keys code list depending if Disable is in dropdown
+    static std::vector<DWORD> GetKeyCodeList(bool isShortcut, bool renderDisable);
+
+    // Get keys name list depending if Disable is in dropdown
+    static std::vector<std::wstring> GetKeyNameList(bool isShortcut, bool renderDisable);
 };

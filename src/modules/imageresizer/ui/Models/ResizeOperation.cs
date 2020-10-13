@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -63,11 +64,25 @@ namespace ImageResizer.Models
 
                 foreach (var originalFrame in decoder.Frames)
                 {
+                    BitmapMetadata metadata = (BitmapMetadata)originalFrame.Metadata;
+                    if (metadata != null)
+                    {
+                        try
+                        {
+                            // Detect whether metadata can copied successfully
+                            _ = metadata.Clone();
+                        }
+                        catch (ArgumentException)
+                        {
+                            metadata = null;
+                        }
+                    }
+
                     encoder.Frames.Add(
                         BitmapFrame.Create(
                             Transform(originalFrame),
                             thumbnail: null,
-                            (BitmapMetadata)originalFrame.Metadata, // TODO: Add an option to strip any metadata that doesn't affect rendering (issue #3)
+                            metadata, // TODO: Add an option to strip any metadata that doesn't affect rendering (issue #3)
                             colorContexts: null));
                 }
 
@@ -175,6 +190,7 @@ namespace ImageResizer.Models
             }
 
             var fileName = string.Format(
+                CultureInfo.CurrentCulture,
                 _settings.FileNameFormat,
                 originalFileName,
                 _settings.SelectedSize.Name,

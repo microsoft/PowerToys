@@ -30,9 +30,10 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
+
+            settings.Sizes.Clear();
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
             var result = AssertEx.Raises<NotifyCollectionChangedEventArgs>(
@@ -48,10 +49,10 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
 
+            settings.Sizes.Clear();
             Assert.PropertyChanged(
                 (INotifyPropertyChanged)settings.AllSizes,
                 "Item[]",
@@ -63,10 +64,10 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize> { new ResizeSize() },
                 CustomSize = new CustomSize(),
             };
 
+            settings.Sizes.Add(new ResizeSize());
             Assert.Contains(settings.Sizes[0], settings.AllSizes);
         }
 
@@ -75,9 +76,9 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
+            settings.Sizes.Clear();
 
             Assert.Contains(settings.CustomSize, settings.AllSizes);
         }
@@ -88,9 +89,10 @@ namespace ImageResizer.Properties
             var originalCustomSize = new CustomSize();
             var settings = new Settings
             {
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = originalCustomSize,
             };
+
+            settings.Sizes.Clear();
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
             var result = AssertEx.Raises<NotifyCollectionChangedEventArgs>(
@@ -126,9 +128,9 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 SelectedSizeIndex = index,
-                Sizes = new ObservableCollection<ResizeSize>(),
                 CustomSize = new CustomSize(),
             };
+            settings.Sizes.Clear();
 
             var result = settings.SelectedSize;
 
@@ -141,12 +143,9 @@ namespace ImageResizer.Properties
             var settings = new Settings
             {
                 SelectedSizeIndex = 0,
-                Sizes = new ObservableCollection<ResizeSize>
-                {
-                    new ResizeSize(),
-                },
             };
 
+            settings.Sizes.Add(new ResizeSize());
             var result = settings.SelectedSize;
 
             Assert.Same(settings.Sizes[0], result);
@@ -265,7 +264,6 @@ namespace ImageResizer.Properties
             Assert.PropertyChanged(settings, "PngInterlaceOption", action);
             Assert.PropertyChanged(settings, "TiffCompressOption", action);
             Assert.PropertyChanged(settings, "FileName", action);
-            Assert.PropertyChanged(settings, "Sizes", action);
             Assert.PropertyChanged(settings, "KeepDateModified", action);
             Assert.PropertyChanged(settings, "FallbackEncoder", action);
             Assert.PropertyChanged(settings, "CustomSize", action);

@@ -58,10 +58,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
-        private bool _isEnabled = false;
-        private int _themeIndex = 0;
-        private int _pressTime = 0;
-        private int _opacity = 0;
+        private bool _isEnabled;
+        private int _themeIndex;
+        private int _pressTime;
+        private int _opacity;
 
         public bool IsEnabled
         {
@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
-                    OnPropertyChanged("IsEnabled");
+                    OnPropertyChanged(nameof(IsEnabled));
                 }
             }
         }

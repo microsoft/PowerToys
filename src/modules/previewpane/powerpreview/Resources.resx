@@ -156,4 +156,10 @@
   <data name="Explr_Svg_Settings_Description" xml:space="preserve">
     <value>Render SVG images</value>
   </data>
+  <data name="FileExplorer_Admin_Restart_Warning_Description" xml:space="preserve">
+    <value>Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.</value>
+  </data>
+  <data name="FileExplorer_Admin_Restart_Warning_Title" xml:space="preserve">
+    <value>Failed to modify File Explorer modules</value>
+  </data>
 </root>

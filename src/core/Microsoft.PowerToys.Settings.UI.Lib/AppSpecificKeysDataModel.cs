@@ -12,14 +12,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("targetApp")]
         public string TargetApp { get; set; }
 
-        public new List<string> GetOriginalKeys()
+        public new List<string> GetMappedOriginalKeys()
         {
-            return base.GetOriginalKeys();
+            return base.GetMappedOriginalKeys();
         }
 
-        public new List<string> GetNewRemapKeys()
+        public new List<string> GetMappedNewRemapKeys()
         {
-            return base.GetNewRemapKeys();
+            return base.GetMappedNewRemapKeys();
         }
 
         public bool Compare(AppSpecificKeysDataModel arg)
