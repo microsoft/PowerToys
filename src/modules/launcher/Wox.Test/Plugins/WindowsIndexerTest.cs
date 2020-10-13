@@ -440,7 +440,7 @@ namespace Wox.Test.Plugins
             var windowsSearchAPIResults = api.Search("file", searchManager, true);
 
             // Assert
-            Assert.IsTrue(windowsSearchAPIResults.Count() == 0);
+            Assert.IsTrue(!windowsSearchAPIResults.Any());
         }
     }
 }
