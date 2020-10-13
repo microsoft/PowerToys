@@ -24,7 +24,7 @@ namespace Wox.Test
         private const string OneOneOneOne = "1111";
         private const string MicrosoftSqlServerManagementStudio = "Microsoft SQL Server Management Studio";
 
-        public List<string> GetSearchStrings()
+        public static List<string> GetSearchStrings()
             => new List<string>
             {
                 Chrome,
@@ -37,7 +37,7 @@ namespace Wox.Test
                 OneOneOneOne,
             };
 
-        public List<int> GetPrecisionScores()
+        public static List<int> GetPrecisionScores()
         {
             var listToReturn = new List<int>();
 

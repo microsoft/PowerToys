@@ -12,7 +12,7 @@ namespace Wox.Test
 {
     public class QueryBuilderTest
     {
-        private bool AreEqual(Query firstQuery, Query secondQuery)
+        private static bool AreEqual(Query firstQuery, Query secondQuery)
         {
             // Using InvariantCulture since this is a command line arg
             return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.InvariantCulture)

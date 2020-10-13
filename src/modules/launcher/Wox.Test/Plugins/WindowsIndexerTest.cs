@@ -18,14 +18,14 @@ namespace Wox.Test.Plugins
     [TestFixture]
     public class WindowsIndexerTest
     {
-        private WindowsSearchAPI GetWindowsSearchAPI()
+        private static WindowsSearchAPI GetWindowsSearchAPI()
         {
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query("dummy-connection-string", "dummy-query")).Returns(new List<OleDBResult>());
             return new WindowsSearchAPI(mock.Object);
         }
 
-        private ISearchManager GetMockSearchManager()
+        private static ISearchManager GetMockSearchManager()
         {
             var sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE CONTAINS(System.FileName,'\"FilePath\"',1033) AND scope='file:' ORDER BY System.DateModified DESC";
             var mockSearchManager = new Mock<ISearchManager>();
