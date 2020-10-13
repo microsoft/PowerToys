@@ -27,24 +27,26 @@ using namespace FancyZonesUtils;
 
 namespace ZoneWindowUtils
 {
-    std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId)
+    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& deviceId, const std::wstring& virtualDesktopId)
     {
-        wchar_t uniqueId[256]{}; // Parsed deviceId + resolution + virtualDesktopId
-
         MONITORINFOEXW mi;
         mi.cbSize = sizeof(mi);
-        if (virtualDesktopId && GetMonitorInfo(monitor, &mi))
+        if (!virtualDesktopId.empty() && GetMonitorInfo(monitor, &mi))
         {
-            wchar_t parsedId[256]{};
-            ParseDeviceId(deviceId, parsedId, 256);
-
             Rect const monitorRect(mi.rcMonitor);
-            StringCchPrintf(uniqueId, ARRAYSIZE(uniqueId), L"%s_%d_%d_%s", parsedId, monitorRect.width(), monitorRect.height(), virtualDesktopId);
+            // Unique identifier format: <parsed-device-id>_<width>_<height>_<virtual-desktop-id>
+            return ParseDeviceId(deviceId) +
+                   L'_' +
+                   std::to_wstring(monitorRect.width()) +
+                   L'_' +
+                   std::to_wstring(monitorRect.height()) +
+                   L'_' +
+                   virtualDesktopId;
         }
-        return std::wstring{ uniqueId };
+        return {};
     }
 
-    std::wstring GenerateUniqueIdAllMonitorsArea(PCWSTR virtualDesktopId)
+    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId)
     {
         std::wstring result{ ZonedWindowProperties::MultiMonitorDeviceID };
 
