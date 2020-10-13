@@ -70,8 +70,9 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("LIKE", StringComparison.InvariantCulture));
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains", StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -88,8 +89,9 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE", StringComparison.InvariantCulture));
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains", StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -106,8 +108,9 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE", StringComparison.InvariantCulture));
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains", StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -124,8 +127,9 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE", StringComparison.InvariantCulture));
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains", StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -142,8 +146,9 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE", StringComparison.InvariantCulture));
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains", StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -160,8 +165,9 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("LIKE", StringComparison.InvariantCulture));
+            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("Contains", StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -220,7 +226,8 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2", StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -237,7 +244,8 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2", StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -257,7 +265,8 @@ namespace Wox.Test.Plugins
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2", StringComparison.InvariantCulture));
         }
 
         [TestCase("item.exe")]

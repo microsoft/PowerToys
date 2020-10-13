@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Wox.Core.Plugin;
@@ -13,9 +14,10 @@ namespace Wox.Test
     {
         private bool AreEqual(Query firstQuery, Query secondQuery)
         {
-            return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword)
-                && firstQuery.Search.Equals(secondQuery.Search)
-                && firstQuery.RawQuery.Equals(secondQuery.RawQuery);
+            // Using InvariantCulture since this is a command line arg
+            return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.InvariantCulture)
+                && firstQuery.Search.Equals(secondQuery.Search, StringComparison.InvariantCulture)
+                && firstQuery.RawQuery.Equals(secondQuery.RawQuery, StringComparison.InvariantCulture);
         }
 
         [Test]
@@ -144,8 +146,9 @@ namespace Wox.Test
             var secondQuery = secondPluginQueryPairs.GetValueOrDefault(plugin);
 
             // Assert
-            Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search));
-            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword));
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search, StringComparison.InvariantCulture));
+            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.InvariantCulture));
         }
 
         [Test]
@@ -194,8 +197,9 @@ namespace Wox.Test
             var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
 
             // Assert
-            Assert.IsTrue(firstQuery.Terms[0].Equals("cd") && firstQuery.Terms[1].Equals("efgh") && firstQuery.Terms.Length == 2);
-            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh") && secondQuery.Terms.Length == 1);
+            // Using InvariantCulture since this is a command line arg
+            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.InvariantCulture) && firstQuery.Terms[1].Equals("efgh", StringComparison.InvariantCulture) && firstQuery.Terms.Length == 2);
+            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.InvariantCulture) && secondQuery.Terms.Length == 1);
         }
     }
 }

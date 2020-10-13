@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 using Wox.Infrastructure;
@@ -117,7 +118,8 @@ namespace Wox.Test
                 Debug.WriteLine("SEARCHTERM: " + searchTerm + ", GreaterThanSearchPrecisionScore: " + precisionScore);
                 foreach (var item in filteredResult)
                 {
-                    Debug.WriteLine("SCORE: " + item.Score.ToString() + ", FoundString: " + item.Title);
+                    // Using InvariantCulture since this is a command line arg
+                    Debug.WriteLine("SCORE: " + item.Score.ToString(CultureInfo.InvariantCulture) + ", FoundString: " + item.Title);
                 }
 
                 Debug.WriteLine("###############################################");
