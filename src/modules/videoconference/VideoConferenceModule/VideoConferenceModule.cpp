@@ -422,8 +422,8 @@ bool VideoConferenceModule::is_enabled()
 
 void VideoConferenceModule::destroy()
 {
-    instance = nullptr;
     delete this;
+    instance = nullptr;
 }
 
 void VideoConferenceModule::sendSourceCameraNameUpdate()
