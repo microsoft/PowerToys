@@ -34,7 +34,14 @@ void LogToFile(std::string what, const bool verbose)
     std::lock_guard lock{ logMutex };
     std::wstring logFilePath = tempPath;
     logFilePath += L"\\PowerToysVideoConference.log";
-    const size_t logSizeMBs = std::filesystem::file_size(logFilePath) >> 20;
+    size_t logSizeMBs = 0;
+    try
+    {
+        logSizeMBs = std::filesystem::file_size(logFilePath) >> 20;
+    }
+    catch(...)
+    {
+    }
     if (logSizeMBs > maxLogSizeMegabytes)
     {
         std::error_code _;
