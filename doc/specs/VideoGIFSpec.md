@@ -16,8 +16,8 @@ Goals:
 Non-goals:
 
 * End to end complex editor
-* Transcode existing items to GIF
-* Transcode GIF to video
+* Transcode *existing* video files to GIFs
+* Transcode *existing* GIF files to videos
 * Ability to open/edit prior recordings
 
 ### 1.3. Key Definitions/Concepts
@@ -273,9 +273,10 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 * File size considerations for exporting
 * Animated GIF 'copy to clipboard' functionality: Windows currently doesn't support animated GIF copying, so only a static non-animated variant can be stored on the clipboard
 * Text overlay functionality
-* PowerToys Settings menu options (ex: default encoder, cursor capture, key stroke capture, pre-recording countdown etc.)
+* PowerToys Settings menu options (ex: default encoder, cursor capture, click/touch capture, key stroke capture, pre-recording countdown, etc.)
 * Multi-monitor display behaviors and Multi-DPI compatibility
 * OS level shortcuts & hot-keys. Ex: Play, Stop, Pause, Resume, Cancel
+* Command line/API
 * Discoverability of features and settings
 * Touch & Pen interaction considerations and supporting UI
 * Supported export formats
