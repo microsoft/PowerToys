@@ -337,7 +337,7 @@
     <value>Open zones editor</value>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
-    <value>Set Shortcut</value>
+    <value>Enter shortcut</value>
   </data>
   <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
@@ -767,5 +767,14 @@
   </data>
   <data name="FileExplorerPreview_RebootRequired.Text" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
+  </data>
+  <data name="ColorPicker_ActivationShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Open Color Picker</value>
+  </data>
+  <data name="FancyZones_HotkeyEditorControl.AutomationProperties.Name" xml:space="preserve">
+    <value>Open zones editor</value>
+  </data>
+  <data name="PowerLauncher_OpenPowerLauncher.AutomationProperties.Name" xml:space="preserve">
+    <value>Open PowerToys Run</value>
   </data>
 </root>
