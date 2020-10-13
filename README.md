@@ -82,7 +82,7 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 [<img align="left" src="https://aka.ms/powerToysVideoConferenceImageSmall" />](https://aka.ms/PowerToysOverview_VideoConference)  [Video Conference Mute](https://aka.ms/PowerToysOverview_VideoConference) is a quick and easy way to do a global "mute" of both your microphone and webcam via <kbd>Win</kbd>+<kbd>N</kbd>. Just set your webcam in the target application to the PowerToys VideoConference camera.
 
-**Note:** This is only included in the [pre-release version of PowerToys installer][github-prerelease-link]. This PowerToy requires Windows 10 1903 (build 18362) or later.
+**Note:** This is only included in the [pre-release experimental version of PowerToys installer][github-prerelease-link]. This PowerToy requires Windows 10 1903 (build 18362) or later.
 <br/>
 <br/>
 <br/>
@@ -109,6 +109,10 @@ Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/release
 ```powershell
 WinGet install powertoys
 ```
+
+#### Experiential PowerToys utility with Video conference muting:
+
+Install the [pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from 0.23 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
 ### Other install methods
 
@@ -190,10 +194,6 @@ Our [prioritized roadmap][roadmap] of features and utilites that the core team i
 - Thanks @Aaron-Junker, @jay-o-way and @htcfreek for helping triage!
 - Thanks for everyone that filled an issue.  It really does help us prioritize
 
-#### Experiential PowerToys utility - Video conference muting:
-
-We'll ship the 0.24 experiential build shortly which will include all improvements from 0.23 in addition to the Video conference utility.
-
 #### Video / GIF capture functional spec for public review
 
 Deondre Davis created our [functional spec for creating a light weight, video / GIF recording tool](https://github.com/microsoft/PowerToys/pull/6900). We encourage everyone to review it and please leave comments in the pull request so we can adjust as needed. We'll be closing it for feedback on October 12th, 2020.
@@ -242,7 +242,7 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.22.0-Experimental
+[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.24.0-Experimental
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
