@@ -55,6 +55,9 @@
       <Item ItemId=";Crash_Report_Message_Box_Text_Part2" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please report the bug to ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zgłoś usterkę do ]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
