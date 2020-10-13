@@ -45,7 +45,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void AnyVariable_MustCallOnPropertyChanged_WhenSet()
+        public void AnyVariableMustCallOnPropertyChangedWhenSet()
         {
             // Arrange
             DummyTestClass testClass = new DummyTestClass();

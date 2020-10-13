@@ -130,7 +130,7 @@ namespace Wox.Test
         }
 
         [TestCase("vim", "Vim", "ignoreDescription", "ignore.exe", "Vim Diff", "ignoreDescription", "ignore.exe")]
-        public void WhenMultipleResults_ExactMatchingResult_ShouldHaveGreatestScore(string queryString, string firstName, string firstDescription, string firstExecutableName, string secondName, string secondDescription, string secondExecutableName)
+        public void WhenMultipleResultsExactMatchingResultShouldHaveGreatestScore(string queryString, string firstName, string firstDescription, string firstExecutableName, string secondName, string secondDescription, string secondExecutableName)
         {
             // Act
             var matcher = new StringMatcher();
@@ -230,7 +230,7 @@ namespace Wox.Test
 
         [TestCase("Windows Terminal", "Windows_Terminal", "term")]
         [TestCase("Windows Terminal", "WindowsTerminal", "term")]
-        public void FuzzyMatchingScore_ShouldBeHigher_WhenPreceedingCharacterIsSpace(string firstCompareStr, string secondCompareStr, string query)
+        public void FuzzyMatchingScoreShouldBeHigherWhenPreceedingCharacterIsSpace(string firstCompareStr, string secondCompareStr, string query)
         {
             // Arrange
             var matcher = new StringMatcher();

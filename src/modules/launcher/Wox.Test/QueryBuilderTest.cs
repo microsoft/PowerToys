@@ -21,7 +21,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldRemoveExtraSpaces_ForNonGlobalPlugin()
+        public void QueryBuilderShouldRemoveExtraSpacesForNonGlobalPlugin()
         {
             // Arrange
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
@@ -38,7 +38,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldRemoveExtraSpaces_ForDisabledNonGlobalPlugin()
+        public void QueryBuilderShouldRemoveExtraSpacesForDisabledNonGlobalPlugin()
         {
             // Arrange
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
@@ -55,7 +55,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldRemoveExtraSpaces_ForGlobalPlugin()
+        public void QueryBuilderShouldRemoveExtraSpacesForGlobalPlugin()
         {
             // Arrange
             string searchQuery = "file.txt  file2  file3";
@@ -68,7 +68,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldGenerateSameQuery_IfEitherActionKeywordOrActionKeywordsListIsSet()
+        public void QueryBuilderShouldGenerateSameQueryIfEitherActionKeywordOrActionKeywordsListIsSet()
         {
             // Arrange
             string searchQuery = "> query";
@@ -100,7 +100,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldGenerateCorrectQueries_ForPluginsWithMultipleActionKeywords()
+        public void QueryBuilderShouldGenerateCorrectQueriesForPluginsWithMultipleActionKeywords()
         {
             // Arrange
             var plugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { "a", "b" } } };
@@ -126,7 +126,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuild_ShouldGenerateSameSearchQuery_WithOrWithoutSpaceAfterActionKeyword()
+        public void QueryBuildShouldGenerateSameSearchQueryWithOrWithoutSpaceAfterActionKeyword()
         {
             // Arrange
             var plugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { "a" } } };
@@ -152,7 +152,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuild_ShouldGenerateCorrectQuery_ForPluginsWhoseActionKeywordsHaveSamePrefix()
+        public void QueryBuildShouldGenerateCorrectQueryForPluginsWhoseActionKeywordsHaveSamePrefix()
         {
             // Arrange
             string searchQuery = "abcdefgh";
@@ -177,7 +177,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldSetTermsCorrently_WhenCalled()
+        public void QueryBuilderShouldSetTermsCorrentlyWhenCalled()
         {
             // Arrange
             string searchQuery = "abcd efgh";

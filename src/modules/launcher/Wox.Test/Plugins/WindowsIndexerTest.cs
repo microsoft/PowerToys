@@ -40,7 +40,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void InitQueryHelper_ShouldInitialize_WhenFunctionIsCalled()
+        public void InitQueryHelperShouldInitializeWhenFunctionIsCalled()
         {
             // Arrange
             int maxCount = 10;
@@ -57,7 +57,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternIsAsterisk()
+        public void ModifyQueryHelperShouldSetQueryHelperWhenPatternIsAsterisk()
         {
             // Arrange
             ISearchQueryHelper queryHelper;
@@ -76,7 +76,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternContainsAsterisk()
+        public void ModifyQueryHelperShouldSetQueryHelperWhenPatternContainsAsterisk()
         {
             // Arrange
             ISearchQueryHelper queryHelper;
@@ -95,7 +95,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternContainsPercent()
+        public void ModifyQueryHelperShouldSetQueryHelperWhenPatternContainsPercent()
         {
             // Arrange
             ISearchQueryHelper queryHelper;
@@ -114,7 +114,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternContainsUnderScore()
+        public void ModifyQueryHelperShouldSetQueryHelperWhenPatternContainsUnderScore()
         {
             // Arrange
             ISearchQueryHelper queryHelper;
@@ -133,7 +133,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternContainsQuestionMark()
+        public void ModifyQueryHelperShouldSetQueryHelperWhenPatternContainsQuestionMark()
         {
             // Arrange
             ISearchQueryHelper queryHelper;
@@ -152,7 +152,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternDoesNotContainSplSymbols()
+        public void ModifyQueryHelperShouldSetQueryHelperWhenPatternDoesNotContainSplSymbols()
         {
             // Arrange
             ISearchQueryHelper queryHelper;
@@ -171,7 +171,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldReturnResults_WhenSearchWasExecuted()
+        public void WindowsSearchAPIShouldReturnResultsWhenSearchWasExecuted()
         {
             // Arrange
             OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt" });
@@ -192,7 +192,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldNotReturnResultsWithNullValue_WhenDbResultHasANullColumn()
+        public void WindowsSearchAPIShouldNotReturnResultsWithNullValueWhenDbResultHasANullColumn()
         {
             // Arrange
             OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value });
@@ -213,7 +213,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldRequestNormalRequest_WhenDisplayHiddenFilesIsTrue()
+        public void WindowsSearchAPIShouldRequestNormalRequestWhenDisplayHiddenFilesIsTrue()
         {
             ISearchQueryHelper queryHelper;
             string pattern = "notepad";
@@ -231,7 +231,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldRequestFilteredRequest_WhenDisplayHiddenFilesIsFalse()
+        public void WindowsSearchAPIShouldRequestFilteredRequestWhenDisplayHiddenFilesIsFalse()
         {
             ISearchQueryHelper queryHelper;
             string pattern = "notepad";
@@ -249,7 +249,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldRequestNormalRequest_WhenDisplayHiddenFilesIsTrue_AfterRuntimeSwap()
+        public void WindowsSearchAPIShouldRequestNormalRequestWhenDisplayHiddenFilesIsTrueAfterRuntimeSwap()
         {
             ISearchQueryHelper queryHelper;
             string pattern = "notepad";
@@ -273,7 +273,7 @@ namespace Wox.Test.Plugins
         [TestCase("item.bat")]
         [TestCase("item.appref-ms")]
         [TestCase("item.lnk")]
-        public void LoadContextMenus_MustLoadAllItems_WhenFileIsAnApp(string path)
+        public void LoadContextMenusMustLoadAllItemsWhenFileIsAnApp(string path)
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
@@ -301,7 +301,7 @@ namespace Wox.Test.Plugins
         [TestCase("item.xls")]
         [TestCase("item.ppt")]
         [TestCase("C:/DummyFile.cs")]
-        public void LoadContextMenus_MustNotLoadRunAsAdmin_WhenFileIsAnNotApp(string path)
+        public void LoadContextMenusMustNotLoadRunAsAdminWhenFileIsAnNotApp(string path)
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
@@ -326,7 +326,7 @@ namespace Wox.Test.Plugins
 
         [TestCase("C:/DummyFolder")]
         [TestCase("TestFolder")]
-        public void LoadContextMenus_MustNotLoadRunAsAdminAndOpenContainingFolder_ForFolder(string path)
+        public void LoadContextMenusMustNotLoadRunAsAdminAndOpenContainingFolderForFolder(string path)
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
@@ -352,7 +352,7 @@ namespace Wox.Test.Plugins
         [TestCase(0, true, ExpectedResult = false)]
         [TestCase(1, false, ExpectedResult = false)]
         [TestCase(1, true, ExpectedResult = false)]
-        public bool DriveDetection_MustDisplayWarning_WhenEnhancedModeIsOffAndWhenWarningIsNotDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus)
+        public bool DriveDetectionMustDisplayWarningWhenEnhancedModeIsOffAndWhenWarningIsNotDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus)
         {
             // Arrange
             var mockRegistry = new Mock<IRegistryWrapper>();
@@ -366,7 +366,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void SimplifyQuery_ShouldRemoveLikeQuery_WhenSQLQueryUsesLIKESyntax()
+        public void SimplifyQueryShouldRemoveLikeQueryWhenSQLQueryUsesLIKESyntax()
         {
             // Arrange
             string sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (System.FileName LIKE 'abcd.%' OR CONTAINS(System.FileName,'\"abcd.*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
@@ -381,7 +381,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void SimplifyQuery_ShouldReturnArgument_WhenSQLQueryDoesNotUseLIKESyntax()
+        public void SimplifyQueryShouldReturnArgumentWhenSQLQueryDoesNotUseLIKESyntax()
         {
             // Arrange
             string sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE CONTAINS(System.FileName,'\"abcd*\"',1033) AND scope='file:' ORDER BY System.DateModified DESC";
@@ -394,7 +394,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void SimplifyQuery_ShouldRemoveAllOccurrencesOfLikeQuery_WhenSQLQueryUsesLIKESyntaxMultipleTimes()
+        public void SimplifyQueryShouldRemoveAllOccurrencesOfLikeQueryWhenSQLQueryUsesLIKESyntaxMultipleTimes()
         {
             // Arrange
             string sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\", \"System.FileExtension\" FROM \"SystemIndex\" WHERE (System.FileName LIKE 'ab.%' OR CONTAINS(System.FileName,'\"ab.*\"',1033)) AND (System.FileExtension LIKE '.cd%' OR CONTAINS(System.FileName,'\".cd*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
@@ -409,7 +409,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void SimplifyQuery_ShouldRemoveLikeQuery_WhenSQLQueryUsesLIKESyntaxAndContainsEscapedSingleQuotationMarks()
+        public void SimplifyQueryShouldRemoveLikeQueryWhenSQLQueryUsesLIKESyntaxAndContainsEscapedSingleQuotationMarks()
         {
             // Arrange
             string sqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (System.FileName LIKE '''ab.cd''%' OR CONTAINS(System.FileName,'\"'ab.cd'*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
@@ -424,7 +424,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldReturnEmptyResults_WhenIsFullQueryIsTrueAndTheQueryDoesNotRequireLIKESyntax()
+        public void WindowsSearchAPIShouldReturnEmptyResultsWhenIsFullQueryIsTrueAndTheQueryDoesNotRequireLIKESyntax()
         {
             // Arrange
             OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value });
