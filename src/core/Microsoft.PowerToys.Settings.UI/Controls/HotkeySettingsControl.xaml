@@ -5,16 +5,18 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    AutomationProperties.Name="{x:Bind Header, Mode=OneTime}"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
     <StackPanel Orientation="Vertical">
         <ToolTipService.ToolTip>
             <ToolTip>
-                <StackPanel Orientation="Vertical">
-                    <TextBlock x:Uid="ShortcutWarningLabel"/>
-                    <TextBlock Text="{x:Bind Keys, Mode=OneTime}" FontWeight="SemiBold"/>
-                </StackPanel>
+                <TextBlock x:Name="ShortcutWarningLabelText">
+                        <Run x:Uid="ShortcutWarningLabel"/>
+                        <LineBreak/>
+                        <Run Text="{x:Bind Keys, Mode=OneTime}" FontWeight="SemiBold"/>
+                </TextBlock>
             </ToolTip>
         </ToolTipService.ToolTip>
 
@@ -24,7 +26,7 @@
                        Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
                        />
 
-            <TextBlock x:Uid="SettingsPage_SetShortcut_Glyph"
+            <TextBlock AutomationProperties.LabeledBy="{Binding ElementName=ShortcutWarningLabelText}"
                        x:Name="TitleGlyph" Text="&#xE946;"
                        FontFamily="Segoe MDL2 Assets"
                        Margin="4,4,0,0"
