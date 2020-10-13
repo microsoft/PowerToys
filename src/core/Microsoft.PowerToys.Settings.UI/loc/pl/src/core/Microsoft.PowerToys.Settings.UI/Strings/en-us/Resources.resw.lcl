@@ -508,12 +508,18 @@
       <Item ItemId=";FileExplorerPreview_RebootRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A reboot may be required for changes to these settings to take effect]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aby zmiany tych ustawień zaczęły obowiązywać, może być wymagane ponowne uruchomienie]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FileExplorerPreview_RunAsAdminRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You need to run as administrator to modify these settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aby zmodyfikować te ustawienia, należy uruchomić program jako administrator]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

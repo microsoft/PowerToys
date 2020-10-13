@@ -49,6 +49,9 @@
       <Item ItemId=";Crash_Report_Message_Box_Text_Part1" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Error logged to ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Błąd został zarejestrowany w ]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -109,6 +112,9 @@
       <Item ItemId=";Fancy_Zones_Editor_App_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[FancyZones Editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Edytor Fantazyjnych stref]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
