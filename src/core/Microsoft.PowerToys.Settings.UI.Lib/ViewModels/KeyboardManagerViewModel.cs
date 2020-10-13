@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -112,12 +113,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public static List<AppSpecificKeysDataModel> CombineShortcutLists(List<KeysDataModel> globalShortcutList, List<AppSpecificKeysDataModel> appSpecificShortcutList)
         {
-            if (globalShortcutList == null)
+            if (globalShortcutList == null && appSpecificShortcutList == null)
             {
-                throw new ArgumentNullException(nameof(globalShortcutList));
+                return new List<AppSpecificKeysDataModel>();
             }
-
-            return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).Concat(appSpecificShortcutList).ToList();
+            else if (globalShortcutList == null)
+            {
+                return appSpecificShortcutList;
+            }
+            else if (appSpecificShortcutList == null)
+            {
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).ToList();
+            }
+            else
+            {
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).Concat(appSpecificShortcutList).ToList();
+            }
         }
 
         public List<AppSpecificKeysDataModel> RemapShortcuts
