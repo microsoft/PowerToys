@@ -116,7 +116,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use > to search within the directory. Use * to search for file extensions. Or use both >*]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Use el símbolo > para realizar una búsqueda en el directorio y el símbolo *, para buscar extensiones de archivo. También puede usar ambos (>*).]]></Val>
+            <Val><![CDATA[Use el símbolo > para realizar una búsqueda en el directorio y el símbolo *, para buscar extensiones de archivo. También puede usarlos combinados (>*).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
