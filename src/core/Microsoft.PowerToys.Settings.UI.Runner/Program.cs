@@ -84,7 +84,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                         "The application cannot be run as a standalone process. Please start the application through the runner.",
                         "Forbidden",
                         MessageBoxButton.OK);
-                    app.Shutdown();
+
+                    // app.Shutdown();
                 }
             }
         }

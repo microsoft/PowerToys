@@ -18,6 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             // ActivationShortcut = new HotkeySettings(true, false, false, true, 0x43);
             // ChangeCursor = false;
+            HotkeyColor = new StringProperty("#F5FCFF");
         }
 
         // public HotkeySettings ActivationShortcut { get; set; }

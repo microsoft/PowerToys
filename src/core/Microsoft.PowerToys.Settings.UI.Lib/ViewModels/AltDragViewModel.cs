@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 _altDragSettings = new AltDragSettings();
             }
 
-            _isEnabled = GeneralSettingsConfig.Enabled.ColorPicker;
+            _isEnabled = GeneralSettingsConfig.Enabled.AltDrag;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -56,8 +56,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
 
-                    // Set the status of ColorPicker in the general settings
-                    GeneralSettingsConfig.Enabled.ColorPicker = value;
+                    // Set the status of AltDrag in the general settings
+                    GeneralSettingsConfig.Enabled.AltDrag = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());

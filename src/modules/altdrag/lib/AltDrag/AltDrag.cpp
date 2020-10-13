@@ -117,7 +117,6 @@ private:
     const HINSTANCE m_hinstance{};
 
     mutable std::shared_mutex m_lock;
-    HWND m_window{};
 
     winrt::com_ptr<IAltDragSettings> m_settings{};
 
@@ -347,10 +346,10 @@ AltDrag::Destroy() noexcept
     //std::unique_lock writeLock(m_lock);
     //m_workAreaHandler.Clear();
     //BufferedPaintUnInit();
-    if (m_window)
+    if (globalhwnd)
     {
-        DestroyWindow(m_window);
-        m_window = nullptr;
+        DestroyWindow(globalhwnd);
+        globalhwnd = nullptr;
     }
     //if (m_terminateVirtualDesktopTrackerEvent)
     //{
