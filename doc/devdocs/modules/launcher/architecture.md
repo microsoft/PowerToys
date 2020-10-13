@@ -1,7 +1,7 @@
 # Architecture 
 
 ## Overview
-`PowerToys Run` is a plugin-based .net core desktop application. It is written in WPF using MVVM structural design pattern. This article provides an overview of `PowerToys Run` architecture and introduces major components in the data flow.
+`PowerToys Run` is a plugin-based .net core desktop application. It is written in WPF using `Model-View-ViewModel (MVVM)` structural design pattern. This article provides an overview of `PowerToys Run` architecture and introduces major components in the data flow.
 
 
 Note : We refer to base application without plugins as `PowerLauncher`, which matches the name of startup WPF project. 
@@ -17,7 +17,7 @@ PowerToys Run UI is written in the WPF framework. The UI code is present in the 
 3. **`ResultList.xaml`**: This control implements the UI component for displaying results (marked in green in Fig 1). It consists of a `ListView` WPF control with a custom `ItemTemplate` to display application logo, name, tooltip text, and context menu.
 
 ## Data flow
-The backend code is written using the `Model-View-ViewModel (MVVM)` design pattern. Plugins act as `Model` in this projects. A detailed overview of the project's structure is given [here](/doc/devdocs/modules/launcher/project_structure.md).
+The backend code is written using the `Model-View-ViewModel (MVVM)` structural design pattern. Plugins act as `Model` in this projects. A detailed overview of the project's structure is given [here](/doc/devdocs/modules/launcher/project_structure.md).
 
 #### Flow of data between UI(view) and ViewModels
 Data flow between View and ViewModel follows typical `MVVM` scheme. Properties in viewModels are bound to WPF controls and when these properties are updated, `INotifyPropertyChanged` handler is invoked, which in turn updates UI. The diagram below provides a rough sketch of components involved.
