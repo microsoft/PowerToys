@@ -517,7 +517,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="VideoConference_SelectedMicrophone.Header" xml:space="preserve">
     <value>Selected microphone</value>
-  </data>  
+  </data>
   <data name="VideoConference_CameraOverlayImagePathHeader.Text" xml:space="preserve">
     <value>Camera overlay image</value>
   </data>
@@ -823,7 +823,7 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="VideoConference_Microphone.Text" xml:space="preserve">
     <value>Microphone</value>
-  </data>  
+  </data>
   <data name="VideoConference_Toolbar.Text" xml:space="preserve">
     <value>Toolbar</value>
   </data>
@@ -841,5 +841,14 @@ Disabling this module or closing PowerToys will unmute the microphone and camera
   </data>
   <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
     <value>Preview Pane</value>
+  </data>
+  <data name="VideoConference_CameraOverlayImageAlt.AutomationProperties.Name" xml:space="preserve">
+    <value>Camera overlay image preview</value>
+  </data>
+  <data name="VideoConference_CameraOverlayImageBrowse.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="VideoConference_CameraOverlayImageClear.Content" xml:space="preserve">
+    <value>Clear</value>
   </data>
 </root>

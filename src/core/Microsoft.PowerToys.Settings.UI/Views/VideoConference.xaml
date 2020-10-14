@@ -107,24 +107,29 @@
             <TextBlock x:Uid="VideoConference_CameraOverlayImagePathHeader"
                        Margin="{StaticResource SmallTopMargin}"/>
 
-            <Border CornerRadius="4" Background="Yellow"
+            <Border CornerRadius="4"
                     HorizontalAlignment="Left"
                     Margin="{StaticResource XXSmallTopMargin}">
-                        <Image Width="240"
-                               Source="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"/>
+                <Image Width="240"
+                       x:Uid="VideoConference_CameraOverlayImageAlt"
+                       ToolTipService.ToolTip="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"
+                       Source="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"/>
             </Border>
 
-            <StackPanel Orientation="Horizontal" Padding="0" Spacing="4" Margin="{StaticResource XXSmallTopMargin}">
-                <Button
-                        Height="32"
+            <StackPanel Orientation="Horizontal"
+                        Padding="0"
+                        Spacing="8"
+                        Margin="{StaticResource SmallTopMargin}">
+                <Button Height="32"
                         IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                        Content="Browse"
+                        x:Uid="VideoConference_CameraOverlayImageBrowse"
                         Command="{Binding Mode=OneWay, Path=SelectOverlayImage}"
                         HorizontalContentAlignment="Left"
                         HorizontalAlignment="Left" />
+                
                 <Button IsEnabled="{Binding Mode=TwoWay, Path=IsEnabled}"
                         Height="32"
-                        Content="Clear"
+                        x:Uid="VideoConference_CameraOverlayImageClear"
                         Command="{Binding Mode=OneWay, Path=ClearOverlayImage}"
                         HorizontalAlignment="Left" />
             </StackPanel>
