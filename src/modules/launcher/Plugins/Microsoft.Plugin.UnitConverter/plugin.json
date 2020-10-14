@@ -1,7 +1,7 @@
 ﻿{
     "ID": "aa0ee9daff654fb7be452c2d77c471b9", //Plugin ID，32 bit UUID
     "ActionKeyword": "*", //Plugin default action keyword
-    "Name": "Unit Converter", //Plugin name
+    "Name": "UnitConverter", //Plugin name
     "Description": "Provides unit conversion (2 ft in cm).", //Plugin description
     "Author": "ThiefZero", //Plugin Author
     "Version": "0.0.1", //Plugin version，must be x.x.x format

@@ -33,7 +33,6 @@ namespace Microsoft.Plugin.UnitConverter
             }
 
             System.Diagnostics.Debug.WriteLine(string.Format("works {0}", query));
-            throw new ArgumentNullException(paramName: nameof(query));
 
             return new List<Result>();
         }

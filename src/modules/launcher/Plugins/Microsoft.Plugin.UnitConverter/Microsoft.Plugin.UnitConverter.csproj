@@ -6,9 +6,19 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Microsoft.Plugin.UnitConverter\</OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="plugin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
