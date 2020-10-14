@@ -114,6 +114,9 @@
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
+    <Compile Include="Views\AltDragPage.xaml.cs">
+      <DependentUpon>AltDragPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ColorPickerPage.xaml.cs">
       <DependentUpon>ColorPickerPage.xaml</DependentUpon>
     </Compile>
@@ -237,6 +240,10 @@
     <Page Include="Styles\_Thickness.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\AltDragPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ColorPickerPage.xaml">
       <SubType>Designer</SubType>

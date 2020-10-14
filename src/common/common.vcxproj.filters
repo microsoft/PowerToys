@@ -141,6 +141,9 @@
     <ClInclude Include="string_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LowlevelMouseEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
