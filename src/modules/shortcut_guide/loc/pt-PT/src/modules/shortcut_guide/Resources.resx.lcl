@@ -58,6 +58,9 @@
       <Item ItemId=";Setting_Description_Press_Time" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[How long to press the Windows key before showing the Shortcut Guide (ms)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Durante quanto tempo se tem de premir a tecla do Windows antes de mostrar o Guia de Atalhos (ms)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

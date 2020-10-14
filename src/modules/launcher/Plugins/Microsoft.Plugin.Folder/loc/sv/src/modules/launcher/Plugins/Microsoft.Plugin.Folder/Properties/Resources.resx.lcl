@@ -13,38 +13,53 @@
       <Item ItemId=";Microsoft_plugin_folder_clipboard_failed" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Fail to set text in clipboard]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Det gick inte att ange text i Urklipp]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_copy_path" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Copy path (Ctrl+C)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kopiera sökväg (Ctrl+C)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_file_open_failed" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Fail to open file at]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Det gick inte att öppna filen på]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_open_containing_folder" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open containing folder (Ctrl+Shift+E)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Öppna den innehållande mappen (Ctrl+Skift+E)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_open_in_console" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open path in console (Ctrl+Shift+C)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Öppna sökvägen i konsolen (Ctrl+Skift+C)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Showing {0:N0} of {1:N0} results]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Visar {0} av {1} resultat]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Visar {0:N0} av {1:N0} resultat]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Showing {0} of {1} results]]></Val>
@@ -55,12 +70,18 @@
       <Item ItemId=";Microsoft_plugin_folder_truncation_warning_title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Warning: Folder Plugin Results truncated.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Varning: mappens plugin-resultat trunkerades.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";wox_plugin_folder_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open favorite folder from PowerToys Run directly]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Öppna favoritmappen direkt från PowerToys Run]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -85,12 +106,18 @@
       <Item ItemId=";wox_plugin_folder_select_folder_OpenFileOrFolder_error_message" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Could not start]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Det gick inte att starta]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";wox_plugin_folder_select_folder_first_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use > to search within the directory. Use * to search for file extensions. Or use both >*]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Använd > för att söka i katalogen. Använd * om du vill söka efter filtillägg. Eller använd både >*]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

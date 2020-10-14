@@ -337,6 +337,9 @@
       <Item ItemId=";ErrorMessage_ShortcutAtleast2Keys" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shortcut must have atleast 2 keys]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[O atalho tem de ter pelo menos duas teclas]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -13,38 +13,53 @@
       <Item ItemId=";Microsoft_plugin_folder_clipboard_failed" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Fail to set text in clipboard]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удалось задать текст в буфере обмена.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_copy_path" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Copy path (Ctrl+C)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Копировать путь (CTRL+C)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_file_open_failed" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Fail to open file at]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удалось открыть файл в]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_open_containing_folder" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open containing folder (Ctrl+Shift+E)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Открыть содержащую папку (CTRL+SHIFT+E)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_open_in_console" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open path in console (Ctrl+Shift+C)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Открыть путь в консоли (CTRL+SHIFT+C)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Showing {0:N0} of {1:N0} results]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Показано результатов: {0} из {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Отображается результатов: {0:N0} из {1:N0}]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Showing {0} of {1} results]]></Val>
@@ -55,12 +70,18 @@
       <Item ItemId=";Microsoft_plugin_folder_truncation_warning_title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Warning: Folder Plugin Results truncated.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Предупреждение: результаты подключаемого модуля папок усечены.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";wox_plugin_folder_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open favorite folder from PowerToys Run directly]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Открыть папку "Избранное" непосредственно с Панели PowerToys]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -86,7 +107,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Could not start]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось запустить]]></Val>
+            <Val><![CDATA[Не удалось запустить.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -94,6 +115,9 @@
       <Item ItemId=";wox_plugin_folder_select_folder_first_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use > to search within the directory. Use * to search for file extensions. Or use both >*]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Для поиска в каталоге используйте >. Используйте * для поиска расширений файлов. Или используйте одновременно > и *.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -101,7 +125,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Открыто]]></Val>
+            <Val><![CDATA[Открыть]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
