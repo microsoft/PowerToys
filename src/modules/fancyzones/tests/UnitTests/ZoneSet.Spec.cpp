@@ -85,40 +85,28 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (AddOne)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                constexpr size_t zoneId = 1;
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, zoneId);
                 Assert::IsNotNull(zone.get());
                 m_set->AddZone(zone);
                 auto zones = m_set->GetZones();
                 Assert::AreEqual((size_t)1, zones.size());
                 compareZones(zone, zones[0]);
-                Assert::AreEqual((size_t)1, zones[0]->Id());
-            }
-
-            TEST_METHOD (AddManySame)
-            {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
-                Assert::IsNotNull(zone.get());
-                for (size_t i = 0; i < 1024; i++)
-                {
-                    m_set->AddZone(zone);
-                    auto zones = m_set->GetZones();
-                    Assert::AreEqual(i + 1, zones.size());
-                    compareZones(zone, zones[i]);
-                    Assert::AreEqual(i + 1, zones[i]->Id());
-                }
+                Assert::AreEqual(zoneId, zones[0]->Id());
             }
 
             TEST_METHOD (AddManyEqual)
             {
                 for (size_t i = 0; i < 1024; i++)
                 {
-                    winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                    size_t zoneId = i + 1;
+                    winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, zoneId);
                     Assert::IsNotNull(zone.get());
                     m_set->AddZone(zone);
                     auto zones = m_set->GetZones();
                     Assert::AreEqual(i + 1, zones.size());
                     compareZones(zone, zones[i]);
-                    Assert::AreEqual(i + 1, zones[i]->Id());
+                    Assert::AreEqual(zoneId, zones[i]->Id());
                 }
             }
 
@@ -126,41 +114,49 @@ namespace FancyZonesUnitTests
             {
                 for (size_t i = 0; i < 1024; i++)
                 {
+                    size_t zoneId = i + 1;
                     int left = rand() % 10;
                     int top = rand() % 10;
                     int right = left + 1 + rand() % 100;
                     int bottom = top + 1 + rand() % 100;
-                    winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom });
+                    winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom }, zoneId);
                     Assert::IsNotNull(zone.get());
                     m_set->AddZone(zone);
                     auto zones = m_set->GetZones();
                     Assert::AreEqual(i + 1, zones.size());
                     compareZones(zone, zones[i]);
-                    Assert::AreEqual(i + 1, zones[i]->Id());
+                    Assert::AreEqual(zoneId, zones[i]->Id());
                 }
             }
 
             TEST_METHOD (MakeZoneFromZeroRect)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 });
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 }, 1);
                 Assert::IsNotNull(zone.get());
+            }
+
+            TEST_METHOD (MakeZoneWithInvalidId)
+            {
+                constexpr size_t invalidZoneId = 0;
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 }, invalidZoneId);
+                Assert::IsNull(zone.get());
             }
 
             TEST_METHOD (MakeZoneFromInvalidRectWidth)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 99, 101 });
+                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 99, 101 }, 1);
                 Assert::IsNull(zone.get());
             }
 
             TEST_METHOD (MakeZoneFromInvalidRectHeight)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 101, 99 });
+                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 101, 99 }, 1);
                 Assert::IsNull(zone.get());
             }
 
             TEST_METHOD (MakeZoneFromInvalidRectCoords)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ -1, -1, -1, -1 });
+                winrt::com_ptr<IZone> zone = MakeZone({ -1, -1, -1, -1 }, 1);
                 Assert::IsNull(zone.get());
             }
 
@@ -173,7 +169,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (ZoneFromPointInner)
             {
                 const int left = 0, top = 0, right = 100, bottom = 100;
-                winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom });
+                winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom }, 1);
                 m_set->AddZone(expected);
 
                 for (int i = left + 1; i < right; i++)
@@ -190,7 +186,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (ZoneFromPointBorder)
             {
                 const int left = 0, top = 0, right = 100, bottom = 100;
-                winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom });
+                winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom }, 1);
                 m_set->AddZone(expected);
 
                 for (int i = left; i < right; i++)
@@ -224,7 +220,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (ZoneFromPointOuter)
             {
                 const int left = 0, top = 0, right = 100, bottom = 100;
-                winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom });
+                winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom }, 1);
                 m_set->AddZone(zone);
 
                 auto actual = m_set->ZonesFromPoint(POINT{ 200, 200 });
@@ -233,13 +229,13 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneFromPointOverlapping)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
                 m_set->AddZone(zone1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
                 m_set->AddZone(zone2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 10, 10, 150, 150 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 10, 10, 150, 150 }, 3);
                 m_set->AddZone(zone3);
-                winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 50, 50 });
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 50, 50 }, 4);
                 m_set->AddZone(zone4);
 
                 // zone4 is expected because it's the smallest one, and it's considered to be inside
@@ -252,13 +248,13 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneFromPointMultizoneHorizontal)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
                 m_set->AddZone(zone1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 }, 2);
                 m_set->AddZone(zone2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 }, 3);
                 m_set->AddZone(zone3);
-                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 }, 4);
                 m_set->AddZone(zone4);
 
                 auto actual = m_set->ZonesFromPoint(POINT{ 50, 100 });
@@ -269,13 +265,13 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneFromPointMultizoneVertical)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
                 m_set->AddZone(zone1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 }, 2);
                 m_set->AddZone(zone2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 }, 3);
                 m_set->AddZone(zone3);
-                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 }, 4);
                 m_set->AddZone(zone4);
 
                 auto actual = m_set->ZonesFromPoint(POINT{ 100, 50 });
@@ -286,13 +282,13 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneFromPointMultizoneQuad)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
                 m_set->AddZone(zone1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 }, 2);
                 m_set->AddZone(zone2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 }, 3);
                 m_set->AddZone(zone3);
-                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 }, 4);
                 m_set->AddZone(zone4);
 
                 auto actual = m_set->ZonesFromPoint(POINT{ 100, 100 });
@@ -305,7 +301,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneIndexFromWindowUnknown)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, 1);
                 HWND window = Mocks::Window();
                 HWND zoneWindow = Mocks::Window();
                 m_set->AddZone(zone);
@@ -317,7 +313,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneIndexFromWindowNull)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, 1);
                 HWND window = Mocks::Window();
                 HWND zoneWindow = Mocks::Window();
                 m_set->AddZone(zone);
@@ -329,9 +325,9 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndex)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 }, 2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 }, 3);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
@@ -349,9 +345,9 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByIndexWithInvalidIndex)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 }, 2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 }, 3);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
@@ -364,9 +360,9 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameWindow)
             {
                 // Add a couple of zones.
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 });
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 3);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
@@ -385,9 +381,9 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameIndex)
             {
                 // Add a couple of zones.
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 });
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 3);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
@@ -406,7 +402,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByPointOuterPoint)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
                 m_set->AddZone(zone1);
 
                 auto window = Mocks::Window();
@@ -417,7 +413,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByPointInnerPoint)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
                 m_set->AddZone(zone1);
 
                 auto window = Mocks::Window();
@@ -428,8 +424,8 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByPointInnerPointOverlappingZones)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
 
@@ -444,8 +440,8 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
 
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
@@ -462,8 +458,8 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
 
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
 
@@ -480,9 +476,9 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 });
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 }, 3);
 
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
@@ -510,9 +506,9 @@ namespace FancyZonesUnitTests
                 m_set = MakeZoneSet(config);
 
                 // Add a couple of zones.
-                m_zone1 = MakeZone({ 0, 0, 100, 100 });
-                m_zone2 = MakeZone({ 0, 0, 100, 100 });
-                m_zone3 = MakeZone({ 0, 0, 100, 100 });
+                m_zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                m_zone2 = MakeZone({ 0, 0, 100, 100 }, 2);
+                m_zone3 = MakeZone({ 0, 0, 100, 100 }, 3);
                 m_set->AddZone(m_zone1);
                 m_set->AddZone(m_zone2);
                 m_set->AddZone(m_zone3);
