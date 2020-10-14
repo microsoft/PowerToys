@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Windows.UI.Xaml;
@@ -13,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public sealed class ModuleEnabledToForegroundConverter : IValueConverter
     {
-        private readonly ISettingsUtils settingsUtils = new SettingsUtils(new SystemIOProvider());
+        private readonly ISettingsUtils settingsUtils = new SettingsUtils(new FileSystem());
 
         private string selectedTheme = string.Empty;
 

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
@@ -36,8 +37,10 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, PowerPreviewSettings.ModuleName, fileName);
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var settingPathMock = new Mock<ISettingsPath>();
+            var fileMock = BackCompatTestProperties.GetModuleIOProvider(version, PowerPreviewSettings.ModuleName, fileName);
+
+            var mockSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);
             PowerPreviewSettings originalSettings = mockSettingsUtils.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName);
             var repository = new BackCompatTestProperties.MockSettingsRepository<PowerPreviewSettings>(mockSettingsUtils);
 
@@ -52,7 +55,7 @@ namespace ViewModelTests
 
             //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, PowerPreviewSettings.ModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(fileMock, PowerPreviewSettings.ModuleName, expectedCallCount);
         }
 
 

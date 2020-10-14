@@ -22,7 +22,6 @@ using Wox.Infrastructure.FileSystemHelper;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
-using FileWrapper = Wox.Infrastructure.FileSystemHelper.FileWrapper;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -65,7 +64,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Wrappers for File Operations
         public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
 
-        public static IFileWrapper FileWrapper { get; set; } = new FileWrapper();
+        public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
         public static IShellLinkHelper Helper { get; set; } = new ShellLinkHelper();
 

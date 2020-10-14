@@ -110,7 +110,7 @@
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Abstractions, Version=12.0.0.0, Culture=neutral, PublicKeyToken=96bf224d23c43e59, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.IO.Abstractions.12.2.1\lib\net461\System.IO.Abstractions.dll</HintPath>
+      <HintPath>..\..\..\packages\System.IO.Abstractions.12.2.5\lib\net461\System.IO.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="WebDriver, Version=3.141.0.0, Culture=neutral, processorArchitecture=MSIL">

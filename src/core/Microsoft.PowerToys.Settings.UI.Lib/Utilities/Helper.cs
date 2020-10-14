@@ -14,6 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
 {
     public class Helper
     {
+        public static readonly IFileSystem FileSystem = new FileSystem();
+
         public static bool AllowRunnerToForeground()
         {
             var result = false;
@@ -77,7 +79,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
         private static extern bool AllowSetForegroundWindow(int dwProcessId);
 
         private static readonly interop.LayoutMapManaged LayoutMap = new interop.LayoutMapManaged();
-        public static readonly IFileSystem FileSystem = new FileSystem();
 
         public static string GetKeyName(uint key)
         {

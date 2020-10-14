@@ -2,14 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
-using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -27,11 +26,14 @@ namespace ViewModelTests
         {
             //Arrange
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ColorPickerSettings.ModuleName, fileName);
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var settingPathMock = new Mock<ISettingsPath>();
+
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object, settingPathMock.Object);
             ColorPickerSettings originalSettings = mockSettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
-            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object, settingPathMock.Object);
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 

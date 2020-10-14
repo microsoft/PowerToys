@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerPreviewPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            var settingsUtils = new SettingsUtils();
             ViewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }

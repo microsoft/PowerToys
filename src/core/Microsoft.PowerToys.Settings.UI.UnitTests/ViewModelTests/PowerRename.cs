@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
@@ -39,12 +40,16 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "power-rename-settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
+            var settingPathMock = new Mock<ISettingsPath>();
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, PowerRenameSettings.ModuleName, fileName);
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object, settingPathMock.Object);
             PowerRenameLocalProperties originalSettings = mockSettingsUtils.GetSettings<PowerRenameLocalProperties>(PowerRenameSettings.ModuleName);
 
+
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
-            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object, settingPathMock.Object);
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 

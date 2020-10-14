@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ImageResizerPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            var settingsUtils = new SettingsUtils();
             ViewModel = new ImageResizerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }

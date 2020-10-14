@@ -29,7 +29,7 @@ namespace ColorPicker.Settings
         [ImportingConstructor]
         public UserSettings()
         {
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = new SettingsUtils();
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);

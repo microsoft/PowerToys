@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO.Abstractions;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -14,7 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         private const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";
-        private readonly IFileSystem _fileSystem;
+        private readonly IFile _file;
+        private readonly ISettingsPath _settingsPath;
 
         public SettingsUtils()
             : this(new FileSystem())
@@ -22,46 +22,25 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         }
 
         public SettingsUtils(IFileSystem fileSystem)
+            : this(fileSystem.File, new SettingPath(fileSystem.Directory, fileSystem.Path))
         {
-            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
-        private bool SettingsFolderExists(string powertoy)
+        public SettingsUtils(IFile file, ISettingsPath settingPath)
         {
-            return _fileSystem.Directory.Exists(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
-        }
-
-        private void CreateSettingsFolder(string powertoy)
-        {
-            _fileSystem.Directory.CreateDirectory(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
-        }
-
-        public void DeleteSettings(string powertoy = "")
-        {
-            _fileSystem.Directory.Delete(System.IO.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
-        }
-
-        /// <summary>
-        /// Get path to the json settings file.
-        /// </summary>
-        /// <returns>string path.</returns>
-        public static string GetSettingsPath(string powertoy, string fileName = DefaultFileName)
-        {
-            if (string.IsNullOrWhiteSpace(powertoy))
-            {
-                return System.IO.Path.Combine(
-                    LocalApplicationDataFolder(),
-                    $"Microsoft\\PowerToys\\{fileName}");
-            }
-
-            return System.IO.Path.Combine(
-                LocalApplicationDataFolder(),
-                $"Microsoft\\PowerToys\\{powertoy}\\{fileName}");
+            _file = file;
+            _settingsPath = settingPath;
         }
 
         public bool SettingsExists(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
-            return _fileSystem.File.Exists(GetSettingsPath(powertoy, fileName));
+            var settingsPath = _settingsPath.GetSettingsPath(powertoy, fileName);
+            return _file.Exists(settingsPath);
+        }
+
+        public void DeleteSettings(string powertoy = "")
+        {
+            _settingsPath.DeleteSettings(powertoy);
         }
 
         /// <summary>
@@ -101,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             // Look at issue https://github.com/microsoft/PowerToys/issues/6413 you'll see the file has a large sum of \0 to fill up a 4096 byte buffer for writing to disk
             // This, while not totally ideal, does work around the problem by trimming the end.
             // The file itself did write the content correctly but something is off with the actual end of the file, hence the 0x00 bug
-            var jsonSettingsString = _fileSystem.File.ReadAllText(GetSettingsPath(powertoyFolderName, fileName)).Trim('\0');
+            var jsonSettingsString = _file.ReadAllText(_settingsPath.GetSettingsPath(powertoyFolderName, fileName)).Trim('\0');
             return JsonSerializer.Deserialize<T>(jsonSettingsString);
         }
 
@@ -112,22 +91,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             {
                 if (jsonSettings != null)
                 {
-                    if (!SettingsFolderExists(powertoy))
+                    if (!_settingsPath.SettingsFolderExists(powertoy))
                     {
-                        CreateSettingsFolder(powertoy);
+                        _settingsPath.CreateSettingsFolder(powertoy);
                     }
 
-                    _fileSystem.File.WriteAllText(GetSettingsPath(powertoy, fileName), jsonSettings);
+                    _file.WriteAllText(_settingsPath.GetSettingsPath(powertoy, fileName), jsonSettings);
                 }
             }
             catch
             {
             }
-        }
-
-        private static string LocalApplicationDataFolder()
-        {
-            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerLauncherPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            var settingsUtils = new SettingsUtils();
             ViewModel = new PowerLauncherViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, (int)Windows.System.VirtualKey.Space);
             DataContext = ViewModel;
 

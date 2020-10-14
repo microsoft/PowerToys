@@ -8,14 +8,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
     {
         bool FileExists(string path);
 
-        bool DirectoryExists(string path);
-
-        bool CreateDirectory(string path);
-
-        void DeleteDirectory(string path);
-
-        void WriteAllText(string path, string content);
-
         string ReadAllText(string path);
     }
 }
