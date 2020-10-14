@@ -103,7 +103,7 @@ namespace
     }
 }
 
-namespace ZoneWindowDrawing
+namespace ZoneWindowDrawingNS
 {
     void DrawBackdrop(wil::unique_hdc& hdc, RECT const& clientRect) noexcept
     {

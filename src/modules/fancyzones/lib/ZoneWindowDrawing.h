@@ -4,12 +4,13 @@
 #include <vector>
 #include <wil\resource.h>
 #include <winrt/base.h>
+#include <d2d1.h>
 
 #include "util.h"
 #include "Zone.h"
 #include "ZoneSet.h"
 
-namespace ZoneWindowDrawing
+namespace ZoneWindowDrawingNS
 {
     struct ColorSetting
     {
@@ -30,3 +31,14 @@ namespace ZoneWindowDrawing
                            const std::vector<size_t>& highlightZones,
                            bool flashMode) noexcept;
 }
+
+class ZoneWindowDrawing
+{
+    HWND m_window;
+    winrt::com_ptr<IZoneWindowHost> m_host;
+
+public:
+    ZoneWindowDrawing(HWND window);
+    void StartAnimation(unsigned millis);
+    void DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone>>& zones, const std::vector<size_t>& highlightZones);
+};

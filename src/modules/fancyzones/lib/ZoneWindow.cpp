@@ -87,11 +87,11 @@ namespace ZoneWindowUtils
         HPAINTBUFFER bufferedPaint = BeginBufferedPaint(hdc, &clientRect, BPBF_TOPDOWNDIB, nullptr, &hdcMem);
         if (bufferedPaint)
         {
-            ZoneWindowDrawing::DrawBackdrop(hdcMem, clientRect);
+            ZoneWindowDrawingNS::DrawBackdrop(hdcMem, clientRect);
 
             if (hasActiveZoneSet)
             {
-                ZoneWindowDrawing::DrawActiveZoneSet(hdcMem,
+                ZoneWindowDrawingNS::DrawActiveZoneSet(hdcMem,
                                                      hostZoneColor,
                                                      hostZoneBorderColor,
                                                      hostZoneHighlightColor,
