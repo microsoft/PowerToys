@@ -106,20 +106,10 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !std::get<Shortcut>(newKey).IsValidShortcut()))
     {
         singleKeyRemapBuffer.push_back(std::make_pair<RemapBufferItem, std::wstring>(RemapBufferItem{ originalKey, newKey }, L""));
-        std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList();
-        std::vector<DWORD> shortcutListKeyCodes = KeyDropDownControl::GetKeyCodeList(true, true);
-        auto it = std::find(keyCodes.begin(), keyCodes.end(), originalKey);
-        if (it != keyCodes.end())
-        {
-            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects[0]->SetSelectedIndex((int32_t)std::distance(keyCodes.begin(), it));
-        }
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(originalKey));
         if (newKey.index() == 0)
         {
-            it = std::find(shortcutListKeyCodes.begin(), shortcutListKeyCodes.end(), std::get<DWORD>(newKey));
-            if (it != shortcutListKeyCodes.end())
-            {
-                keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedIndex((int32_t)std::distance(shortcutListKeyCodes.begin(), it));
-            }
+            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(std::get<DWORD>(newKey)));
         }
         else
         {
@@ -234,11 +224,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
             std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList();
             // Update the drop down list with the new language to ensure that the correct key is displayed
             linkedRemapDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState.keyboardMap.GetKeyNameList()));
-            auto it = std::find(keyCodeList.begin(), keyCodeList.end(), detectedKey);
-            if (it != keyCodeList.end())
-            {
-                linkedRemapDropDown.SelectedIndex((int32_t)std::distance(keyCodeList.begin(), it));
-            }
+            linkedRemapDropDown.SelectedValue(winrt::box_value(std::to_wstring(detectedKey)));
         }
         // Hide the type key UI
         detectRemapKeyBox.Hide();

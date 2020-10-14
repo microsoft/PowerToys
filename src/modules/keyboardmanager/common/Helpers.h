@@ -82,7 +82,7 @@ namespace KeyboardManagerHelper
     winrt::hstring GetErrorMessage(ErrorType errorType);
 
     // Function to return the list of key name in the order for the drop down based on the key codes
-    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::wstring>& list);
+    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::pair<DWORD,std::wstring>>& list);
 
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
@@ -106,8 +106,5 @@ namespace KeyboardManagerHelper
     void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
 
     // Function to check if a modifier has been repeated in the previous drop downs
-    bool CheckRepeatedModifier(std::vector<DWORD>& currentKeys, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
-
-    // Function to get the selected key codes from the list of selected indices
-    std::vector<DWORD> GetKeyCodesFromSelectedIndices(const std::vector<int32_t>& selectedIndices, const std::vector<DWORD>& keyCodeList);
+    bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCodes);
 }

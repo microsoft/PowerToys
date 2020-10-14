@@ -33,8 +33,6 @@ private:
     winrt::Windows::Foundation::IInspectable dropDown;
     // Stores the previous layout
     HKL previousLayout = 0;
-    // Stores the key code list
-    std::vector<DWORD> keyCodeList;
     // Stores the flyout warning message
     winrt::Windows::Foundation::IInspectable warningMessage;
     // Stores the flyout attached to the current drop down
@@ -47,6 +45,9 @@ private:
 
     // Function to check if the layout has changed and accordingly update the drop down list
     void CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut, bool renderDisable);
+
+    // Get selected value of dropdown or -1 if nothing is selected
+    static DWORD GetSelectedValue(ComboBox comboBox);
 
     // Function to set accessible name for combobox
     static void SetAccessibleNameForComboBox(ComboBox dropDown, int index);
@@ -70,9 +71,6 @@ public:
     // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
     void SetSelectionHandler(winrt::Windows::UI::Xaml::Controls::Grid& table, winrt::Windows::UI::Xaml::Controls::StackPanel shortcutControl, winrt::Windows::UI::Xaml::Controls::StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox& targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
-    // Function to set the selected index of the drop down
-    void SetSelectedIndex(int32_t index);
-
     // Function to return the combo box element of the drop down
     ComboBox GetComboBox();
 
@@ -80,7 +78,7 @@ public:
     static void AddDropDown(winrt::Windows::UI::Xaml::Controls::Grid table, winrt::Windows::UI::Xaml::Controls::StackPanel shortcutControl, winrt::Windows::UI::Xaml::Controls::StackPanel parent, const int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow, bool ignoreWarning = false);
 
     // Function to get the list of key codes from the shortcut combo box stack panel
-    static std::vector<int32_t> GetSelectedIndicesFromStackPanel(StackPanel parent);
+    static std::vector<int32_t> GetSelectedCodesFromStackPanel(StackPanel parent);
 
     // Function for validating the selection of shortcuts for all the associated drop downs
     static void ValidateShortcutFromDropDownList(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, RemapBuffer& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
@@ -91,9 +89,9 @@ public:
     // Function to add a shortcut to the UI control as combo boxes
     static void AddShortcutToControl(Shortcut shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
-    // Get keys code list depending if Disable is in dropdown
-    static std::vector<DWORD> GetKeyCodeList(bool isShortcut, bool renderDisable);
-
     // Get keys name list depending if Disable is in dropdown
-    static std::vector<std::wstring> GetKeyNameList(bool isShortcut, bool renderDisable);
+    static std::vector<std::pair<DWORD,std::wstring>> GetKeyNameList(bool isShortcut, bool renderDisable);
+
+    // Set selected Value
+    void SetSelectedValue(std::wstring value);
 };
