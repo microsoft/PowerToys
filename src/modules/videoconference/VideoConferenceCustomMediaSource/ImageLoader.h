@@ -11,4 +11,4 @@
 #include <stdint.h>
 #pragma warning(pop)
 
-Microsoft::WRL::ComPtr<IMFSample> LoadImageAsSample(Microsoft::WRL::ComPtr<IStream> imageStream, IMFMediaType* outputSampleMediaType);
+Microsoft::WRL::ComPtr<IMFSample> LoadImageAsSample(Microsoft::WRL::ComPtr<IStream> imageStream, IMFMediaType* outputSampleMediaType) noexcept;

@@ -18,7 +18,7 @@
 
 #include "Logging.h"
 
-IWICImagingFactory* _GetWIC()
+IWICImagingFactory* _GetWIC() noexcept
 {
     static IWICImagingFactory* s_Factory = nullptr;
 
@@ -44,7 +44,7 @@ IWICImagingFactory* _GetWIC()
 
 using Microsoft::WRL::ComPtr;
 
-ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* sampleMediaType)
+ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* sampleMediaType) noexcept
 {
     HRESULT hr = S_OK;
 

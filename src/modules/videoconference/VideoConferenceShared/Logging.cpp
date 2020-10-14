@@ -14,10 +14,11 @@ constexpr inline size_t maxLogSizeMegabytes = 10;
 
 void LogToFile(std::string what, const bool verbose)
 {
-    const auto tempPath = std::filesystem::temp_directory_path();
+    std::error_code _;
+    const auto tempPath = std::filesystem::temp_directory_path(_);
     if (verbose)
     {
-        const bool verboseIndicatorFilePresent = std::filesystem::exists(tempPath / L"PowerToysVideoConferenceVerbose.flag");
+        const bool verboseIndicatorFilePresent = std::filesystem::exists(tempPath / L"PowerToysVideoConferenceVerbose.flag", _);
         if (!verboseIndicatorFilePresent)
         {
             return;
