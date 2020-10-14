@@ -84,13 +84,11 @@ namespace Microsoft.Plugin.Folder.UnitTests
         }
 
         [TestCase(@"c:\>", 3, 3, true, Reason = "Max Folder test recursive")]
-        [TestCase(@"c:\Test>", 2, 3, true, Reason = "2 Folders recursive")]
-        [TestCase(@"c:\not-exist>", 2, 3, true, Reason = "Folder not exist, return root recursive")]
+        [TestCase(@"c:\Test>", 3, 3, true, Reason = "2 Folders recursive")]
+        [TestCase(@"c:\not-exist>", 3, 3, true, Reason = "Folder not exist, return root recursive")]
         [TestCase(@"c:\not-exist\not-exist2>", 0, 0, false, Reason = "Folder not exist, return root recursive")]
         public void Query_Recursive_WhenCalled(string search, int folders, int files, bool truncated)
         {
-            Assert.Inconclusive("Current framework is not supporting the 'EnumerateFileSystemInfos' 'EnumerationOptions'. Waiting till pull request is finished.");
-
             const int maxFolderSetting = 3;
 
             // Setup

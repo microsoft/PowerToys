@@ -4,6 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib;
@@ -96,8 +97,8 @@ namespace ViewModelTests
         public void JPEGQualityLevelShouldSetValueToTenWhenSuccessful()
         {
             // arrange
-            var fileSystemMock = new Mock<IFileSystem>();
-            var mockSettingsUtils = new SettingsUtils(fileSystemMock.Object);
+            var fileSystemMock = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(fileSystemMock);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
@@ -113,8 +114,8 @@ namespace ViewModelTests
         public void PngInterlaceOptionShouldSetValueToTenWhenSuccessful()
         {
             // arrange
-            var fileSystemMock = new Mock<IFileSystem>();
-            var mockSettingsUtils = new SettingsUtils(fileSystemMock.Object);
+            var fileSystemMock = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(fileSystemMock);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
@@ -130,8 +131,8 @@ namespace ViewModelTests
         public void TiffCompressOptionShouldSetValueToTenWhenSuccessful()
         {
             // arrange
-            var fileSystemMock = new Mock<IFileSystem>();
-            var mockSettingsUtils = new SettingsUtils(fileSystemMock.Object);
+            var fileSystemMock = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(fileSystemMock);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
@@ -147,8 +148,8 @@ namespace ViewModelTests
         public void FileNameShouldUpdateValueWhenSuccessful()
         {
             // arrange
-            var fileSystemMock = new Mock<IFileSystem>();
-            var mockSettingsUtils = new SettingsUtils(fileSystemMock.Object);
+            var fileSystemMock = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(fileSystemMock);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             string expectedValue = "%1 (%3)";
@@ -188,8 +189,8 @@ namespace ViewModelTests
         public void EncoderShouldUpdateValueWhenSuccessful()
         {
             // arrange
-            var fileSystemMock = new Mock<IFileSystem>();
-            var mockSettingsUtils = new SettingsUtils(fileSystemMock.Object);
+            var fileSystemMock = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(fileSystemMock);
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
 
@@ -197,7 +198,7 @@ namespace ViewModelTests
             viewModel.Encoder = 3;
 
             // Assert
-            viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG);
             Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", viewModel.EncoderGuid);
             Assert.AreEqual(3, viewModel.Encoder);
         }

@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public sealed class ModuleEnabledToForegroundConverter : IValueConverter
     {
-        private readonly ISettingsUtils settingsUtils = new SettingsUtils(new FileSystem());
+        private readonly ISettingsUtils settingsUtils = new SettingsUtils();
 
         private string selectedTheme = string.Empty;
 
