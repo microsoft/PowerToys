@@ -9,16 +9,16 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class CreateOpenCurrentFolderResult : IItemResult
     {
-        private readonly IExplorerAction _explorerAction;
+        private readonly IShellAction _explorerAction;
 
         public string Search { get; set;  }
 
         public CreateOpenCurrentFolderResult(string search)
-            : this(search, new ExplorerAction())
+            : this(search, new ShellAction())
         {
         }
 
-        public CreateOpenCurrentFolderResult(string search, IExplorerAction explorerAction)
+        public CreateOpenCurrentFolderResult(string search, IShellAction explorerAction)
         {
             Search = search;
             _explorerAction = explorerAction;

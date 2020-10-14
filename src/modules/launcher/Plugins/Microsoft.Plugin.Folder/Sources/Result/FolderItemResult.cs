@@ -10,7 +10,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class FolderItemResult : IItemResult
     {
-        private static readonly IExplorerAction ExplorerAction = new ExplorerAction();
+        private static readonly IShellAction ExplorerAction = new ShellAction();
 
         public FolderItemResult()
         {
