@@ -156,7 +156,8 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MakeZoneFromInvalidRectCoords)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ -1, -1, -1, -1 }, 1);
+                const int invalid = ZoneConstants::MAX_NEGATIVE_SPACING - 1;
+                winrt::com_ptr<IZone> zone = MakeZone({ invalid, invalid, invalid, invalid }, 1);
                 Assert::IsNull(zone.get());
             }
 
@@ -846,9 +847,9 @@ namespace FancyZonesUnitTests
                     }
                 }
 
-                TEST_METHOD (NegativeSpacing)
+                TEST_METHOD (LargeNegativeSpacing)
                 {
-                    const int spacing = -1;
+                    const int spacing = ZoneConstants::MAX_NEGATIVE_SPACING - 1;
                     const int zoneCount = 10;
 
                     for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)

@@ -1,5 +1,10 @@
 #pragma once
 
+namespace ZoneConstants
+{
+    constexpr int MAX_NEGATIVE_SPACING = -10;
+}
+
 /**
  * Class representing one zone inside applied zone layout, which is basically wrapper around rectangle structure.
  */
