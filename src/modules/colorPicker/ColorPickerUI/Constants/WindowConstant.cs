@@ -12,6 +12,6 @@ namespace ColorPicker.Constants
         /// <summary>
         /// The width of the color picker window
         /// </summary>
-        public const double PickerWindowWidth = 235d;
+        public const double PickerWindowWidth = 240d;
     }
 }
