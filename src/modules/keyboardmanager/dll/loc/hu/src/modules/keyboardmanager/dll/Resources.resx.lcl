@@ -102,7 +102,7 @@
       </Item>
       <Item ItemId=";EditKeyboard_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ha például az A billentyű lenyomásával szeretné elérni a Ctrl+C billentyűkombinációt, az A lenne a Billentyű, a Ctrl+C billentyűparancs pedig a Leképezve a következőre oszlopban.]]></Val>
           </Tgt>
@@ -174,7 +174,7 @@
       </Item>
       <Item ItemId=";EditShortcuts_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ha például a Ctrl+C billentyűkombinációt szeretné használni, és csak a Microsoft Edge-ben érvényes az Alt, a Billentyűparancs oszlopban a Ctrl+C, a Leképezve a következőre oszlopban pedig az Alt szerepelne, és az MSEdge lenne a Célalkalmazás oszlopban. Ha nincs megadva célalkalmazás, a leképezés globálisan lesz érvényes. A névnek a folyamat nevének kell lennie, nem pedig az alkalmazás nevének.]]></Val>
           </Tgt>

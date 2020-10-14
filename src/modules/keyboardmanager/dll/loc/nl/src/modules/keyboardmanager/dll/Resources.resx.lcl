@@ -102,7 +102,7 @@
       </Item>
       <Item ItemId=";EditKeyboard_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Als u bijvoorbeeld op A wilt drukken om Ctrl+C te verkrijgen, is de A uw Toets-kolom en is de snelkoppeling Ctrl+C uw kolom Toegewezen aan.]]></Val>
           </Tgt>
@@ -174,7 +174,7 @@
       </Item>
       <Item ItemId=";EditShortcuts_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Als u bijvoorbeeld op Ctrl+C wilt klikken en Alt alleen op Microsoft Edge wilt krijgen, is Ctrl+C uw kolom Snelkoppeling, de Alt-toets uw kolom Toegewezen aan en MSEdge uw kolom Doel-app. Als er geen doel-app is ingevoerd, wordt deze globaal toegepast. De naam moet de procesnaam zijn en niet de naam van de app.]]></Val>
           </Tgt>
