@@ -178,9 +178,6 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
 {
     m_zones.emplace_back(zone);
 
-    // Important not to set Id 0 since we store it in the HWND using SetProp.
-    // SetProp(0) doesn't really work.
-    zone->SetId(m_zones.size());
     return S_OK;
 }
 
@@ -603,7 +600,7 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 
     for (int i = 0; i < zoneCount; i++)
     {
-        auto zone = MakeZone(focusZoneRect);
+        auto zone = MakeZone(focusZoneRect, m_zones.size() + 1);
         if (zone)
         {
             AddZone(zone);
@@ -660,7 +657,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::
         }
 
 
-        auto zone = MakeZone(RECT{ left, top, right, bottom });
+        auto zone = MakeZone(RECT{ left, top, right, bottom }, m_zones.size() + 1);
         if (zone)
         {
             AddZone(zone);
@@ -780,7 +777,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
                 DPIAware::Convert(m_config.Monitor, x, y);
                 DPIAware::Convert(m_config.Monitor, width, height);
 
-                auto zone = MakeZone(RECT{ x, y, x + width, y + height });
+                auto zone = MakeZone(RECT{ x, y, x + width, y + height }, m_zones.size() + 1);
                 if (zone)
                 {
                     AddZone(zone);
@@ -863,7 +860,7 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
                 long right = columnInfo[maxCol].End;
                 long bottom = rowInfo[maxRow].End;
 
-                auto zone = MakeZone(RECT{ left, top, right, bottom });
+                auto zone = MakeZone(RECT{ left, top, right, bottom }, m_zones.size() + 1);
                 if (zone)
                 {
                     AddZone(zone);

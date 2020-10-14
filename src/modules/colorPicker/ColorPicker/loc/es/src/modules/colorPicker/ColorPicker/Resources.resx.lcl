@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[ColorPicker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ColorPicker]]></Val>
+            <Val><![CDATA[Selector de colores]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

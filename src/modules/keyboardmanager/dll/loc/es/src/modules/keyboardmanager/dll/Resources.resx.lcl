@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Row ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fila]]></Val>
+            <Val><![CDATA[Fila ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -85,6 +85,9 @@
       <Item ItemId=";ERRORMESSAGE_DISABLEASACTIONKEY" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Disable can not be an action or a modifier key]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Deshabilitar no puede ser una acción ni una tecla modificadora.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -99,9 +102,9 @@
       </Item>
       <Item ItemId=";EditKeyboard_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Por ejemplo, si quiere presionar A y obtener ""Control + C"", la tecla ""A"" sería la columna "Tecla" y el acceso directo ""Control + C"" sería la columna ""Asignado a"".]]></Val>
+            <Val><![CDATA[Por ejemplo, si quiere presionar A y obtener "Control + C", la tecla "A" sería la columna "Tecla" y el acceso directo "Control + C" sería la columna "Asignado a".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -171,9 +174,9 @@
       </Item>
       <Item ItemId=";EditShortcuts_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Por ejemplo, si quiere presionar ""Control + C"" y obtener ""Alt"" solo en Microsoft Edge, ""Control + C "" sería la columna ""Acceso directo"", la tecla ""Alt"" sería la columna ""Asignado a"" y "MSEdge"" sería la columna ""Aplicación de destino"". Si no se especifica ninguna aplicación de destino, se aplicará globalmente. El nombre debe ser el del proceso y no el de la aplicación.]]></Val>
+            <Val><![CDATA[Por ejemplo, si quiere presionar "Control + C" y obtener "Alt" solo en Microsoft Edge, "Control + C " sería la columna "Acceso directo", la tecla "Alt" sería la columna "Asignado a" y "MSEdge" sería la columna "Aplicación de destino". Si no se especifica ninguna aplicación de destino, se aplicará globalmente. El nombre debe ser el del proceso y no el de la aplicación.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

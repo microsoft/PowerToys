@@ -164,6 +164,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.*.resx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\Settings.settings">
