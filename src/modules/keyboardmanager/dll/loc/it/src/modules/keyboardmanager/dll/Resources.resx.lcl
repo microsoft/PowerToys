@@ -102,9 +102,9 @@
       </Item>
       <Item ItemId=";EditKeyboard_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Se ad esempio si vuole premere A per ottenere ""CTRL+C"", il tasto ""A"" corrisponderà alla colonna ""Tasto"" e il tasto di scelta rapida ""CTRL+C"" corrisponderà alla colonna ""Mappato a"".]]></Val>
+            <Val><![CDATA[Se ad esempio si vuole premere A per ottenere "CTRL+C", il tasto "A" corrisponderà alla colonna "Tasto" e il tasto di scelta rapida "CTRL+C" corrisponderà alla colonna "Mappato a".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -174,9 +174,9 @@
       </Item>
       <Item ItemId=";EditShortcuts_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Se ad esempio si vuole premere ""CTRL+C"" per ottenere ""ALT"" solo in Microsoft Edge, ""CTRL+C"" corrisponderà alla colonna ""Tasto di scelta rapida"", il tasto ""ALT"" corrisponderà alla colonna ""Mappato a"" e ""MSEdge" sarà la colonna ""App di destinazione"". Se non si specifica un'app di destinazione, il tasto di scelta rapida verrà applicato a livello globale. Il nome deve essere il nome del processo e non il nome dell'app.]]></Val>
+            <Val><![CDATA[Se ad esempio si vuole premere "CTRL+C" per ottenere "ALT" solo in Microsoft Edge, "CTRL+C" corrisponderà alla colonna "Tasto di scelta rapida", il tasto "ALT" corrisponderà alla colonna "Mappato a" e "MSEdge" sarà la colonna "App di destinazione". Se non si specifica un'app di destinazione, il tasto di scelta rapida verrà applicato a livello globale. Il nome deve essere il nome del processo e non il nome dell'app.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
