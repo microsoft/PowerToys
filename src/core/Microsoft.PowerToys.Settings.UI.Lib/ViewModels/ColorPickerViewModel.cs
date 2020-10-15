@@ -119,6 +119,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
+        public bool UseEditor
+        {
+            get
+            {
+                return _colorPickerSettings.Properties.UseEditor;
+            }
+
+            set
+            {
+                if (_colorPickerSettings.Properties.UseEditor != value)
+                {
+                    _colorPickerSettings.Properties.UseEditor = value;
+                    OnPropertyChanged(nameof(UseEditor));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             SendConfigMSG(

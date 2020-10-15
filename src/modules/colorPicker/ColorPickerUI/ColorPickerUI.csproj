@@ -106,7 +106,15 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behaviors\CopyToClipboardBehavior.cs" />
+    <Compile Include="Behaviors\DragWindowBehavior.cs" />
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
+    <Compile Include="ColorEditorWindow.xaml.cs">
+      <DependentUpon>ColorEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\ColorToStringConverter.cs" />
+    <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
     <Compile Include="NativeMethods.cs" />
@@ -118,6 +126,11 @@
     <Compile Include="Telemetry\ColorPickerCancelledEvent.cs" />
     <Compile Include="Telemetry\ColorPickerShowEvent.cs" />
     <Compile Include="Telemetry\ColorPickerZoomOpenedEvent.cs" />
+    <Compile Include="ViewModelContracts\IColorEditorViewModel.cs" />
+    <Compile Include="ViewModels\ColorEditorViewModel.cs" />
+    <Compile Include="Views\ColorEditorView.xaml.cs">
+      <DependentUpon>ColorEditorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ZoomWindow.xaml.cs">
       <DependentUpon>ZoomWindow.xaml</DependentUpon>
     </Compile>
@@ -136,6 +149,10 @@
     <Compile Include="Views\ZoomView.xaml.cs">
       <DependentUpon>ZoomView.xaml</DependentUpon>
     </Compile>
+    <Page Include="ColorEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -167,6 +184,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\ViewModelViewMappings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ColorEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

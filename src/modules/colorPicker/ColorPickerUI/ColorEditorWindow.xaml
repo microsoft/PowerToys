@@ -1,0 +1,14 @@
+﻿<Window x:Class="ColorPicker.ColorEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ColorPicker"
+        mc:Ignorable="d"
+        xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
+        Title="ColorEditorWindow" Height="450" Width="800" WindowStyle="None" ResizeMode="NoResize">
+    <e:Interaction.Behaviors>
+        <behaviors:CloseZoomWindowBehavior/>
+    </e:Interaction.Behaviors>
+</Window>

@@ -1,5 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:ColorPicker.Converters">
     <!--CONVERTERS-->
     <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+    <converters:ColorToBrushConverter x:Key="colorToBrushConverter"/>
+    <converters:ColorToStringConverter x:Key="colorToStringConverter"/>
 </ResourceDictionary>

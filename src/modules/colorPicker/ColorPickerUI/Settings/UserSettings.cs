@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using ColorPicker.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
@@ -25,6 +27,8 @@ namespace ColorPicker.Settings
 
         private readonly object _loadingSettingsLock = new object();
 
+        private bool _loadingColorsHistory;
+
         [ImportingConstructor]
         public UserSettings()
         {
@@ -32,9 +36,22 @@ namespace ColorPicker.Settings
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);
+            UseEditor = new SettingItem<bool>(true);
+            ColorHistoryLimit = new SettingItem<int>(20);
+            ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
 
             LoadSettingsFromJson();
             _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", LoadSettingsFromJson);
+        }
+
+        private void ColorHistory_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (!_loadingColorsHistory)
+            {
+                var settings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
+                settings.Properties.ColorHistory = ColorHistory.ToList();
+                settings.Save(_settingsUtils);
+            }
         }
 
         public SettingItem<string> ActivationShortcut { get; private set; }
@@ -42,6 +59,12 @@ namespace ColorPicker.Settings
         public SettingItem<bool> ChangeCursor { get; private set; }
 
         public SettingItem<ColorRepresentationType> CopiedColorRepresentation { get; set; }
+
+        public SettingItem<bool> UseEditor { get; private set; }
+
+        public ObservableCollection<string> ColorHistory { get; private set; } = new ObservableCollection<string>();
+
+        public SettingItem<int> ColorHistoryLimit { get; }
 
         private void LoadSettingsFromJson()
         {
@@ -71,6 +94,21 @@ namespace ColorPicker.Settings
                                 ChangeCursor.Value = settings.Properties.ChangeCursor;
                                 ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
                                 CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
+                                UseEditor.Value = settings.Properties.UseEditor;
+                                ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
+                                if (settings.Properties.ColorHistory == null)
+                                {
+                                    settings.Properties.ColorHistory = new System.Collections.Generic.List<string>();
+                                }
+
+                                _loadingColorsHistory = true;
+                                ColorHistory.Clear();
+                                foreach (var item in settings.Properties.ColorHistory)
+                                {
+                                    ColorHistory.Add(item);
+                                }
+
+                                _loadingColorsHistory = false;
                             }
 
                             retry = false;

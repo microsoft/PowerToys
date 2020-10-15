@@ -92,7 +92,14 @@ namespace ColorPicker.Keyboard
 
             if (ArraysAreSame(currentlyPressedKeys, _activationKeys))
             {
-                _appStateHandler.ShowColorPicker();
+                if (_userSettings.UseEditor.Value)
+                {
+                    _appStateHandler.ShowColorPickerEditor();
+                }
+                else
+                {
+                    _appStateHandler.ShowColorPicker();
+                }
             }
         }
 

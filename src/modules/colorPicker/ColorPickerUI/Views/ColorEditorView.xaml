@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="ColorPicker.Views.ColorEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ColorPicker.Views"
+             mc:Ignorable="d" 
+             xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="60"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="35"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="35"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Button Command="{Binding OpenColorPickerCommand}" FontFamily="Segoe MDL2 Assets" Content="&#xEF3C;"/>
+        <TextBlock Grid.Column="1" Text="Color Picker Editor" FontSize="14" IsHitTestVisible="True">
+            <e:Interaction.Behaviors>
+                <behaviors:DragWindowBehavior/>
+            </e:Interaction.Behaviors>
+        </TextBlock>
+
+        <Button Grid.Column="2" Command="{Binding CloseWindowCommand}" Width="35" FontFamily="Segoe MDL2 Assets" Content="&#xE894;"/>
+
+        <ListBox Grid.Row="1" ItemsSource="{Binding ColorsHistory}" SelectedItem="{Binding SelectedColor}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Width="20" Height="20" Background="{Binding Path=., Converter={StaticResource colorToBrushConverter}}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" FontSize="20">
+            <e:Interaction.Behaviors>
+                <behaviors:CopyToClipboardBehavior CopiedIndicationBorder="{Binding ElementName=CopiedBorderIndicator}" />
+            </e:Interaction.Behaviors>
+        </TextBlock>
+
+        <Border x:Name="CopiedBorderIndicator" Visibility="Collapsed" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="20" Background="Gray">
+            <TextBlock Text="Copied!"/>
+        </Border>
+    </Grid>
+</UserControl>
