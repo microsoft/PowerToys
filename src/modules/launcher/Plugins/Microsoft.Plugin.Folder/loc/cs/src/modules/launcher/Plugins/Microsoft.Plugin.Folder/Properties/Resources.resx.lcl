@@ -58,8 +58,8 @@
       <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Showing {0:N0} of {1:N0} results]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Zobrazené výsledky: {0} z {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zobrazuje se {0:N0} z celkového počtu {1:N0} výsledků]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Showing {0} of {1} results]]></Val>
