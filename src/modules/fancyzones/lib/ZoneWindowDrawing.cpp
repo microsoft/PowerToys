@@ -114,11 +114,9 @@ namespace ZoneWindowDrawing
                            int zoneOpacity,
                            const std::vector<winrt::com_ptr<IZone>>& zones,
                            const std::vector<size_t>& highlightZones,
-                           bool flashMode,
-                           bool drawHints) noexcept
+                           bool flashMode) noexcept
     {
         //                                 { fillAlpha, fill, borderAlpha, border, thickness }
-        ColorSetting const colorHints{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 255, RGB(104, 118, 138), -2 };
         ColorSetting colorViewer{ OpacitySettingToAlpha(zoneOpacity), 0, 255, RGB(40, 50, 60), -2 };
         ColorSetting colorHighlight{ OpacitySettingToAlpha(zoneOpacity), 0, 255, 0, -2 };
         ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
@@ -145,10 +143,7 @@ namespace ZoneWindowDrawing
                 {
                     DrawZone(hdc, colorFlash, zone, zones, flashMode);
                 }
-                else if (drawHints)
-                {
-                    DrawZone(hdc, colorHints, zone, zones, flashMode);
-                }
+                else
                 {
                     colorViewer.fill = zoneColor;
                     colorViewer.border = zoneBorderColor;
