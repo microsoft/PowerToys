@@ -45,9 +45,9 @@ void LogToFile(std::string what, const bool verbose)
     }
     if (logSizeMBs > maxLogSizeMegabytes)
     {
-        std::error_code _;
+        std::error_code __;
         // Truncate the log file to zero
-        std::filesystem::resize_file(logFilePath, 0, _);
+        std::filesystem::resize_file(logFilePath, 0, __);
     }
     std::ofstream myfile;
     myfile.open(logFilePath, std::fstream::app);
