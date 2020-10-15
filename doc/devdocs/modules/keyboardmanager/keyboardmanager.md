@@ -106,11 +106,26 @@ The `HandleKeyboardHookEvent` is the method which calls the corresponding remapp
 - **`HandleAppSpecificShortcutRemapEvent`:** This method handles the app-specific shortcut remap logic. If a remapping takes place, the key event is suppressed. This method is described in more detail at (INSERTLINK). **Since this is executed after the single key remap method, single key remappings have precedence over shortcut remaps and are correspondingly reflected in shortcut remaps.**
 - **`HandleOSLevelShortcutRemapEvent`:** This method handles the global shortcut remap logic. If a remapping takes place, the key event is suppressed. This method is described in more detail at (INSERTLINK). The app-specific remap method is executed before this because if a shortcut is remapped to different keys/shortcuts for a particular app and globally, the app-specific variant should be preferred if that app is in focus. **Since this is executed after the single key remap method, single key remappings have precedence over shortcut remaps and are correspondingly reflected in shortcut remaps.**
 
+**Note:** Single key remaps need to be executed before shortcut remaps, because otherwise there can be several logical issues. For example if a user has Ctrl remapped to X and Ctrl+A remapped to Y, we can't detect Ctrl+A because the moment Ctrl is pressed it would be remapped to X before the system ever sees Ctrl+A. This is why the design decision was made to separate Remap keys and Remap shortcuts, and all key remaps are reflected in the shortcut remaps.
+
 ## Custom Action to launch KBM UI
 KBM uses the `call_custom_action` (INSERTCODELINK) method from the `PowertoyModuleIface` in order to launch the KBM UI when the user clicks the Remap a key or Remap a shortcut button from the KBM settings page. On clicking the button, we check if there is already any active KBM UI window, and if there is it is brought to the foreground. If not, the corresponding KBM UI window is launched on a separate detached thread. The UI is described in more detail at (INSERTLINK).
 
+## SendInput Special Scenarios
+
+### Extended keys
+Certain keys such as the arrow keys, <kbd>right Ctrl/Alt</kbd>, and <kbd>Del/Home/Ins</kbd>, etc need to be sent with the `KEYEVENTF_EXTENDEDKEY` flag because otherwise the NumPad versions get sent, which can cause weird behavior when NumLock is on. (INSERTCODELINK INSERTLINK).
+
+### Scan code
+Certain applications (such as Windows Terminal) may filter out key events which are set to scan code 0. Even though the `KEYEVENTF_SCANCODE` flag is not set, the `wScan` field is still sent, which defaults to 0. To avoid this issue we use the `MapVirtualKey` API to find the scan code from the virtual key code. (INSERTCODELINK INSERTLINK)
+
 ## Special Scenarios
 Since we are using low level keyboard hooks and not actual OS level input handling certain scenarios with input require workarounds as do they not interact well with the OS input logic directly. These are covered in the sub-sections below.
+
+### Dummy key events
+To prevent the behavior that some modifiers have that occur when you press and release the modifier without pressing any key in between, we need to send a dummy key event in between the two states. Some examples of this behavior are Win key for Start Menu and Alt key to focus the menu bar. We need to send the dummy key events at any point where an unintentional modifier press/release sequence may occur. We use the undocumented `0xFF` virtual key code for this as we haven't found any side effects of using this key code yet. Initially we used only a key up message, but it has been tweaked now to send a key down followed by key up (INSERTCODELINK), as without the key down there were compatibility issues with some apps(INSERTLINK) (like Slack).
+The dummy key event is currently used in the following places (the linked code snippet contains an example scenario of why it is required):
+(INSERTCODELINK)
 
 ### Suppressing Num Lock in a keyboard hook
 The <kbd>Num Lock</kbd> key state is updated by the OS before it is intercepted by low level hooks. This causes the issue that even if you suppress a <kbd>Num Lock</kbd> key event, <kbd>Num Lock</kbd> will still get toggled. In order to work around this, in the `hook_proc` (INSERTCODELINK) whenever we suppress a <kbd>Num Lock</kbd> key down event, we send an additional <kbd>Num Lock</kbd> key up followed by key down so that the <kbd>Num Lock</kbd> state is reverted to it's previous value before the suppressed event. These are sent with a `KEYBOARDMANAGER_SUPPRESS_FLAG` in the `dwExtraInfo` field, so that we suppress them at the start of the hook. Since these events will update the <kbd>Num Lock</kbd> state before the low level hooks, by suppressing them we ensure that these are not sent to any other hooks/applications and hence are only processed by the OS(INSERTCODELINK). 
