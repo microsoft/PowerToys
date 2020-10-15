@@ -40,6 +40,9 @@
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Não foi possível registrar/cancelar o registro de alguns dos módulos do Explorador de Arquivos de acordo com as configurações. Reinicie os PowerToys como administrador para que as alterações entrem em vigor.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
