@@ -7,7 +7,7 @@
 #include <common/common.h>
 #include "Generated Files/resource.h"
 #include <atomic>
-#include <dll\PowerRenameConstants.h>
+#include <dll/PowerRenameConstants.h>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
 HINSTANCE g_hInst = 0;

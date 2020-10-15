@@ -12,7 +12,7 @@
 #include <lib/FancyZones.h>
 #include <lib/FancyZonesData.h>
 #include <lib/FancyZonesWinHookEventIDs.h>
-#include <lib\FancyZonesData.cpp>
+#include <lib/FancyZonesData.cpp>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
