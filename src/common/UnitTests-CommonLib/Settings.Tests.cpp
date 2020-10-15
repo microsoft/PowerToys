@@ -106,24 +106,22 @@ namespace UnitTestsCommonLib
             Assert::ExpectException<winrt::hresult_error>(func);
         }
 
+        TEST_METHOD (LoadFromInvalidString_NameMissed)
+        {
+            auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L"{\"properties\" : {\"bool_toggle_true\":{\"value\":true},\"bool_toggle_false\":{\"value\":false},\"color_picker\" : {\"value\":\"#ff8d12\"},\"int_spinner\" : {\"value\":10},\"string_text\" : {\"value\":\"a quick fox\"}},\"version\" : \"1.0\" }", L"Module Key"); };
+            Assert::ExpectException<winrt::hresult_error>(func);
+        }
+
         TEST_METHOD (LoadFromInvalidString_VersionMissed)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}}", L"Module Key");
-            const std::wstring expectedStr = L"{\"name\" : \"Module Name\", \"properties\" : {},\"version\" : \"1.0\"}";
-            const auto expected = json::JsonObject::Parse(expectedStr);
-            const auto actual = json::JsonObject::Parse(values.serialize());
-
-            compareJsons(expected, actual);
+            auto func = [] { PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}}", L"Module Key"); };
+            Assert::ExpectException<winrt::hresult_error>(func);
         }
 
         TEST_METHOD (LoadFromInvalidString_PropertiesMissed)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }", L"Module Key");
-            const std::wstring expectedStr = L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }";
-            const auto expected = json::JsonObject::Parse(expectedStr);
-            const auto actual = json::JsonObject::Parse(values.serialize());
-
-            compareJsons(expected, actual);
+            auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }", L"Module Key"); };
+            Assert::ExpectException<winrt::hresult_error>(func);
         }
 
         TEST_METHOD (LoadFromValidString_EmptyProperties)
