@@ -55,15 +55,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
 
-            // Using InvariantCulture here as these are internal strings. However, FxCop
-            // also expects strings to be normalized to uppercase, so just for the
-            // purposes of this method we will operate on uppercase strings.
-            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture));
+            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            switch (GeneralSettingsConfig.Theme.ToUpper(CultureInfo.InvariantCulture))
+            // Using Invariant here as these are internal strings and fxcop
+            // expects strings to be normalized to uppercase. While the theme names
+            // are represented in lowercase everywhere else, we'll use uppercase
+            // normalization for switch statements
+            switch (GeneralSettingsConfig.Theme.ToUpperInvariant())
             {
                 case "LIGHT":
                     _isLightThemeRadioButtonChecked = true;

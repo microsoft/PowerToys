@@ -30,10 +30,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 throw new ArgumentNullException(nameof(arg));
             }
 
-            // Using InvariantCulture for internal text
-            return OriginalKeys.Equals(arg.OriginalKeys, System.StringComparison.InvariantCulture) &&
-                NewRemapKeys.Equals(arg.NewRemapKeys, System.StringComparison.InvariantCulture) &&
-                TargetApp.Equals(arg.TargetApp, System.StringComparison.InvariantCulture);
+            // Using Ordinal comparison for internal text
+            return OriginalKeys.Equals(arg.OriginalKeys, StringComparison.Ordinal) &&
+                NewRemapKeys.Equals(arg.NewRemapKeys, StringComparison.Ordinal) &&
+                TargetApp.Equals(arg.TargetApp, StringComparison.Ordinal);
         }
     }
 }
