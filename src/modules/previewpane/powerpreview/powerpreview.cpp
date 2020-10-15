@@ -10,6 +10,7 @@
 // Constructor
 PowerPreviewModule::PowerPreviewModule() :
     m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
+    app_key(powerpreviewConstants::ModuleKey),
     m_fileExplorerModules(
         { // SVG Preview Handler settings object.
           new PreviewHandlerSettings(
