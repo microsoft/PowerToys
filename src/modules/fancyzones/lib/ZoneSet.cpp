@@ -18,19 +18,6 @@ namespace
 {
     constexpr int C_MULTIPLIER = 10000;
 
-    /*
-      constexpr int MAX_ZONE_COUNT = 50;
-
-      struct GridLayoutInfo {
-        int rows;
-        int columns;
-        int rowsPercents[MAX_ZONE_COUNT];
-        int columnsPercents[MAX_ZONE_COUNT];
-        int cellChildMap[MAX_ZONE_COUNT][MAX_ZONE_COUNT];
-      };
-    */
-
-    auto l = FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = 1, .columns = 1 });
     // PriorityGrid layout is unique for zoneCount <= 11. For zoneCount > 11 PriorityGrid is same as Grid
     FancyZonesDataTypes::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
         /* 1 */
