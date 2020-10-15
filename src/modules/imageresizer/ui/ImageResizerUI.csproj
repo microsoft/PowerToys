@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <Import Project="..\..\..\Version.props" />
+  
   <PropertyGroup>
     <AssemblyTitle>ImageResizer</AssemblyTitle>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
@@ -8,8 +10,9 @@
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
   </PropertyGroup>
+  
   <PropertyGroup>
-    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <Platform Condition="'$(Platform)'==''">x64</Platform>
     <ProjectGuid>{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ImageResizer</RootNamespace>
@@ -19,39 +22,21 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>
+  
   <PropertyGroup>
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-  <Import Project="..\..\..\Version.props" />
-  <Target Name="GenerateAssemblyInfo" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <HeaderLines Include="// Copyright (c) Microsoft Corporation" />
-      <HeaderLines Include="// The Microsoft Corporation licenses this file to you under the MIT license." />
-      <HeaderLines Include="// See the LICENSE file in the project root for more information." />
-      <HeaderLines Include="#pragma warning disable SA1516" />
-      <HeaderLines Include="using System.Reflection%3b" />
-      <HeaderLines Include="using System.Resources%3b" />
-      <HeaderLines Include="using System.Runtime.InteropServices%3b" />
-      <HeaderLines Include="using System.Windows%3b" />
-      <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyDescription(&quot;&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyTitle)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
-      <HeaderLines Include="[assembly: ComVisible(false)]" />
-      <HeaderLines Include="[assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]" />
-      <HeaderLines Include="[assembly: AssemblyVersion(&quot;$(Version).0&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyFileVersion(&quot;$(Version).0&quot;)]" />
-    </ItemGroup>
-    <WriteLinesToFile File="Generated Files\AssemblyInfo.cs" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
-  </Target>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Include="..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
   </ItemGroup>
