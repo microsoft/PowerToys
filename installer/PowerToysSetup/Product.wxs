@@ -492,14 +492,11 @@
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe">
           <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
         </File>
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.Platform.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.Extras.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\System.Windows.Interactivity.dll">
-          <!-- NB: Needed since it's only referenced in XAML. -->
-          <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
-        </File>
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Newtonsoft.Json.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.runtimeconfig.json" />
+        <File Id="Module_ImageResizer_Microsoft_Xaml_Behaviors" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.Xaml.Behaviors.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />		  
         <File Id="ImageResizer_interop" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToysInterop.dll" />
 
