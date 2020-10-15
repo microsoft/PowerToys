@@ -175,30 +175,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Properties\Resources.ar.resx" />
-    <EmbeddedResource Include="Properties\Resources.bg.resx" />
-    <EmbeddedResource Include="Properties\Resources.ca.resx" />
-    <EmbeddedResource Include="Properties\Resources.cs.resx" />
-    <EmbeddedResource Include="Properties\Resources.de.resx" />
-    <EmbeddedResource Include="Properties\Resources.es.resx" />
-    <EmbeddedResource Include="Properties\Resources.eu-ES.resx" />
-    <EmbeddedResource Include="Properties\Resources.fr.resx" />
-    <EmbeddedResource Include="Properties\Resources.he.resx" />
-    <EmbeddedResource Include="Properties\Resources.hu.resx" />
-    <EmbeddedResource Include="Properties\Resources.it.resx" />
-    <EmbeddedResource Include="Properties\Resources.nb-NO.resx" />
-    <EmbeddedResource Include="Properties\Resources.nl.resx" />
-    <EmbeddedResource Include="Properties\Resources.pl.resx" />
-    <EmbeddedResource Include="Properties\Resources.pt-BR.resx" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.ru.resx" />
-    <EmbeddedResource Include="Properties\Resources.sk.resx" />
-    <EmbeddedResource Include="Properties\Resources.tr.resx" />
-    <EmbeddedResource Include="Properties\Resources.zh-Hans.resx" />
+    </EmbeddedResource>    
+    <EmbeddedResource Include="Properties\Resources.*.resx" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json" />

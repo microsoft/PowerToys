@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Only show the PowerRename menu item on the extended context menu (Shift + Right-click).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mostrar solo el elemento de menú PowerRename en el menú contextual extendido (Mayús + clic derecho).]]></Val>
+            <Val><![CDATA[Mostrar solo el elemento de menú Cambio de nombre avanzado en el menú contextual extendido (Mayús + clic derecho).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Maximum number of items to show in recently used list for autocomplete dropdown.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Número máximo de elementos que se van a mostrar en la lista de los que se usan recientemente para la lista desplegable de autocompletar.]]></Val>
+            <Val><![CDATA[Número máximo de elementos que se van a mostrar en la lista de los usados recientemente para la lista desplegable de autocompletar.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Po&werRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Po&werRename]]></Val>
+            <Val><![CDATA[Cambio de nombre a&vanzado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerRename]]></Val>
+            <Val><![CDATA[Cambio de nombre avanzado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Extensión del shell de Windows para realizar un cambio de nombre masivo más avanzado mediante las funciones para buscar y reemplazar o expresiones regulares.]]></Val>
+            <Val><![CDATA[Extensión de Windows Shell para realizar un cambio de nombre masivo más avanzado mediante las funciones para buscar y reemplazar o expresiones regulares.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

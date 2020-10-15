@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre el Selector de colores]]></Val>
+            <Val><![CDATA[Acerca del Selector de colores]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre Diseños sofisticados]]></Val>
+            <Val><![CDATA[Acerca de Diseños sofisticados]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About File Explorer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre el Explorador de archivos]]></Val>
+            <Val><![CDATA[Acerca del Explorador de archivos]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre el Cambio de tamaño de imagen]]></Val>
+            <Val><![CDATA[Acerca del Cambio de tamaño de imágenes]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre el Administrador de teclado]]></Val>
+            <Val><![CDATA[Acerca del Administrador de teclado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre el Ejecutor de PowerToys]]></Val>
+            <Val><![CDATA[Acerca del Ejecutor de PowerToys]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Power Rename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre PowerRename]]></Val>
+            <Val><![CDATA[Acerca del Cambio de nombre avanzado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -86,7 +86,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre la Guía de métodos abreviados de teclado]]></Val>
+            <Val><![CDATA[Acerca de la Guía de métodos abreviados de teclado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About this feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre esta característica]]></Val>
+            <Val><![CDATA[Acerca de esta característica]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -275,7 +275,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Para evitar que una aplicación se acople a las zonas, agregue su nombre aquí (uno por línea). Estas aplicaciones solo reaccionarán a Windows Snap.]]></Val>
+            <Val><![CDATA[Para evitar que una aplicación se acople a las zonas, agregue su nombre aquí (uno por línea). Estas aplicaciones solo reaccionarán a la característica Acoplar de Windows.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -320,7 +320,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Convertir en transparente la ventana arrastrada]]></Val>
+            <Val><![CDATA[Hacer transparente la ventana arrastrada]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -365,7 +365,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap shortcut (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Reemplazar el acceso directo de Windows Snap (Win + flecha) para mover las ventanas entre zonas]]></Val>
+            <Val><![CDATA[Reemplazar el acceso directo de la característica Acoplar de Windows (Win + flecha) para mover ventanas entre zonas]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -401,7 +401,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Permitir que las zonas se expandan entre los monitores (todos los monitores deben tener el mismo ajuste de PPP).]]></Val>
+            <Val><![CDATA[Permitir que las zonas se expandan entre los monitores (todos los monitores deben tener el mismo ajuste de PPP)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -460,6 +460,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FileExplorerPreview_AffectsAllUsers.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The settings on this page affect all users on the system]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La configuración de esta página afecta a todos los usuarios del sistema.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FileExplorerPreview_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[These settings allow you to manage your Windows File Explorer custom preview handlers.]]></Val>
@@ -496,11 +505,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FileExplorerPreview_RebootRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A reboot may be required for changes to these settings to take effect]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Puede que sea necesario reiniciar para que los cambios de esta configuración se apliquen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorerPreview_RunAsAdminRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You need to run as administrator to modify these settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Debe ejecutarlo como administrador para modificar esta configuración.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FileExplorerPreview_ToggleSwitch_Preview_MD.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Markdown (.md) preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Habilitar la vista previa de Markdown (.md)]]></Val>
+            <Val><![CDATA[Habilitar la Vista previa de Markdown (.md)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -509,7 +536,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable SVG (.svg) preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Habilitar la vista previa de SVG (.svg)]]></Val>
+            <Val><![CDATA[Habilitar la Vista previa de SVG (.svg)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -527,7 +554,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerToys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sobre PowerToys]]></Val>
+            <Val><![CDATA[Acerca de PowerToys]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -698,7 +725,7 @@
         <Str Cat="Text">
           <Val><![CDATA[You need to run as administrator to use this setting]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Debe ser administrador para usar esta configuración.]]></Val>
+            <Val><![CDATA[Debe ejecutar como administrador para usar esta configuración.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -824,7 +851,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zip]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Código postal]]></Val>
+            <Val><![CDATA[ZIP]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -932,7 +959,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fit Property]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Propiedad Fit]]></Val>
+            <Val><![CDATA[Propiedad Ajustar]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -995,7 +1022,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Height Property]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Propiedad Height]]></Val>
+            <Val><![CDATA[Propiedad Alto]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1004,7 +1031,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cambio de tamaño de imagen]]></Val>
+            <Val><![CDATA[Cambio de tamaño de imágenes]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1040,7 +1067,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Size Property]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Propiedad Size]]></Val>
+            <Val><![CDATA[Propiedad Tamaño]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1139,7 +1166,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Width Property]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Propiedad Width]]></Val>
+            <Val><![CDATA[Propiedad Ancho]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1193,7 +1220,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hasta:]]></Val>
+            <Val><![CDATA[A:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1274,7 +1301,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Reasignación del acceso directo]]></Val>
+            <Val><![CDATA[Reasignación de accesos directos]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1355,7 +1382,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Copy path location]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Copiar ubicación de la ruta de acceso]]></Val>
+            <Val><![CDATA[Copiar la ubicación de la ruta de acceso]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1373,7 +1400,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Disable drive detection warning for the indexer plugin]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Deshabilitar la advertencia de la detección de la unidad para el complemento del indexador]]></Val>
+            <Val><![CDATA[Deshabilitar la advertencia de detección de la unidad para el complemento del indexador]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1526,7 +1553,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A string that is contained in the application]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cadena contenida en la aplicación]]></Val>
+            <Val><![CDATA[Cadena incluida en la aplicación]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1553,7 +1580,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Extensión del shell de Windows para realizar un cambio de nombre masivo más avanzado mediante las funciones para buscar y reemplazar o expresiones regulares.]]></Val>
+            <Val><![CDATA[Extensión de Windows Shell para realizar un cambio de nombre masivo más avanzado mediante las funciones para buscar y reemplazar o expresiones regulares.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1562,7 +1589,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Power Rename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerRename]]></Val>
+            <Val><![CDATA[Cambio de nombre avanzado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1580,7 +1607,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable autocomplete for the search and replace fields]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Habilitar la opción de autocompletar para los campos de buscar y reemplazar.]]></Val>
+            <Val><![CDATA[Habilitar la opción de autocompletar para los campos de buscar y reemplazar]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1589,7 +1616,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Habilitar PowerRename]]></Val>
+            <Val><![CDATA[Habilitar el Cambio de nombre avanzado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1688,7 +1715,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Set Shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Establecer el acceso directo]]></Val>
+            <Val><![CDATA[Establecer acceso directo]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1733,7 +1760,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cambio de tamaño de imagen]]></Val>
+            <Val><![CDATA[Cambio de tamaño de imágenes]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1778,7 +1805,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerRename]]></Val>
+            <Val><![CDATA[Cambio de nombre avanzado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1814,7 +1841,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Habilitar la Guía de métodos abreviados de teclado]]></Val>
+            <Val><![CDATA[Habilitar la guía de métodos abreviados de teclado]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1832,7 +1859,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Tiempo en que se debe mantener presionado para que se muestre (ms)]]></Val>
+            <Val><![CDATA[Tiempo que se debe mantener presionado para que se muestre (ms)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1841,7 +1868,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Choose Shortcut Guide overlay color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Elija el color de superposición de la Guía de métodos abreviados de teclado.]]></Val>
+            <Val><![CDATA[Elija el color de superposición de la guía de métodos abreviados de teclado.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

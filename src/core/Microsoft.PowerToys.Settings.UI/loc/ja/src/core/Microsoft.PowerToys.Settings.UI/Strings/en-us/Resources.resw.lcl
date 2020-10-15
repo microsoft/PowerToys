@@ -460,6 +460,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FileExplorerPreview_AffectsAllUsers.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The settings on this page affect all users on the system]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[このページの設定は、システム上のすべてのユーザーに影響します]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FileExplorerPreview_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[These settings allow you to manage your Windows File Explorer custom preview handlers.]]></Val>
@@ -492,6 +501,24 @@
           <Val><![CDATA[Preview Pane]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[プレビュー ペイン]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorerPreview_RebootRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A reboot may be required for changes to these settings to take effect]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[これらの設定の変更を有効にするには、再起動が必要になる場合があります]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorerPreview_RunAsAdminRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You need to run as administrator to modify these settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[これらの設定を変更するには、管理者として実行する必要があります]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

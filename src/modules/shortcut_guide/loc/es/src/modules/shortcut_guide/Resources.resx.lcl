@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opacity of the Shortcut Guide's overlay background (%)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Opacidad del fondo de superposición de la Guía de métodos abreviados de teclado (%)]]></Val>
+            <Val><![CDATA[Opacidad del fondo de superposición de la guía de métodos abreviados de teclado (%)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[How long to press the Windows key before showing the Shortcut Guide (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Tiempo durante el que se debe presionar la tecla Windows para mostrar la Guía de métodos abreviados de teclado (ms)]]></Val>
+            <Val><![CDATA[Tiempo durante el que se debe presionar la tecla Windows para mostrar la guía de métodos abreviados de teclado (ms)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Choose Shortcut Guide overlay color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Elija el color de superposición de la Guía de métodos abreviados de teclado.]]></Val>
+            <Val><![CDATA[Elija el color de superposición de la guía de métodos abreviados de teclado.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

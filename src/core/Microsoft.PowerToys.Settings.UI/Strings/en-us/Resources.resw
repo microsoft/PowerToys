@@ -768,4 +768,10 @@
   <data name="FileExplorerPreview_RebootRequired.Text" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
   </data>
+  <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+  </data>
+  <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
+    <value>Example: %1 (%2)</value>
+  </data>
 </root>

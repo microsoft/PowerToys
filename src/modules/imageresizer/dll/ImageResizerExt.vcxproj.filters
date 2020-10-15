@@ -90,67 +90,7 @@
     <None Include="resource.base.h">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="Resources.ar.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.bg.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.ca.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.cs.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.de.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.es.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.eu-ES.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.fr.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.he.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.hu.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.it.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.nb-NO.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.nl.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.pl.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.pt-BR.resx">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Resources.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.ro.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.ru.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.sk.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.tr.resx">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Resources.zh-Hans.resx">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The markdown could not be preview due to an internal error.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[No se pudo obtener la vista previa de Markdown debido a un error interno.]]></Val>
+            <Val><![CDATA[No se pudo obtener la Vista previa de Markdown debido a un error interno.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
