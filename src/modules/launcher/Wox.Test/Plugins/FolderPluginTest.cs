@@ -10,7 +10,6 @@ using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
-#pragma warning disable CA1812 // Suppressing warning for uninstantiated internal class
     internal class FolderPluginTest
     {
         [Test]
@@ -52,5 +51,4 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console, contextMenuResults[2].Title);
         }
     }
-#pragma warning restore CA1812 // Suppressing warning for uninstantiated internal class
 }
