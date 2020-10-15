@@ -8,6 +8,7 @@ using Wox.Plugin;
 
 namespace Wox.Test
 {
+#pragma warning disable CA1812 // Suppressing warning for uninstantiated internal class
     [TestFixture]
     internal class ResultsViewModelTest
     {
@@ -163,4 +164,5 @@ namespace Wox.Test
             Assert.IsFalse(isContextMenuItemSelected);
         }
     }
+#pragma warning restore CA1812 // Suppressing warning for uninstantiated internal class
 }

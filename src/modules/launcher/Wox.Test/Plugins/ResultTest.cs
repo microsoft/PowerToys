@@ -8,6 +8,7 @@ using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
+#pragma warning disable CA1812 // Suppressing warning for uninstantiated internal class
     [TestFixture]
     internal class ResultTest
     {
@@ -35,4 +36,5 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(Visibility.Collapsed, res.ToolTipVisibility);
         }
     }
+#pragma warning restore CA1812 // Suppressing warning for uninstantiated internal class
 }

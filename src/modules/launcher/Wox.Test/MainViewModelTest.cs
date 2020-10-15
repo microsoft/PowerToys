@@ -7,6 +7,7 @@ using PowerLauncher.ViewModel;
 
 namespace Wox.Test
 {
+#pragma warning disable CA1812 // Suppressing warning for uninstantiated internal class
     [TestFixture]
     internal class MainViewModelTest
     {
@@ -208,4 +209,5 @@ namespace Wox.Test
             Assert.AreEqual(input, autoCompleteText);
         }
     }
+#pragma warning restore CA1812 // Suppressing warning for uninstantiated internal class
 }
