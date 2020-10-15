@@ -41,5 +41,19 @@ namespace RemappingLogicTests
                 Assert::AreEqual(true, bool(input[i].ki.dwFlags & KEYEVENTF_EXTENDEDKEY));
             }
         }
+        
+        // Test if SetKeyEvent sets the scan code field to 0 for dummy key
+        TEST_METHOD (SetKeyEvent_ShouldSetScanCodeFieldTo0_WhenArgumentIsDummyKey)
+        {
+            const int nInputs = KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
+            INPUT input[nInputs] = {};
+
+            int index = 0;
+            KeyboardManagerHelper::SetDummyKeyEvent(input, index, 0);
+
+            // Assert that wScan for both inputs is 0
+            Assert::AreEqual<unsigned int>(0, input[0].ki.wScan);
+            Assert::AreEqual<unsigned int>(0, input[1].ki.wScan);
+        }
     };
 }

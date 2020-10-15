@@ -393,6 +393,12 @@ public:
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // If remappings are disabled (due to the remap tables getting updated) skip the rest of the hook
+        if (!keyboardManagerState.AreRemappingsEnabled())
+        {
+            return 0;
+        }
+
         // If key has suppress flag, then suppress it
         if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
         {
@@ -441,8 +447,11 @@ public:
             return 0;
         }
 
+        /* This feature has not been enabled (code from proof of concept stage)
+        * 
         //// Remap a key to behave like a modifier instead of a toggle
         //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
+        */
 
         // Handle an app-specific shortcut remapping
         intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, keyboardManagerState);

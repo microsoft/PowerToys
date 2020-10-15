@@ -30,7 +30,7 @@ struct Settings
     bool showZonesOnAllMonitors = false;
     bool spanZonesAcrossMonitors = false;
     bool makeDraggedWindowTransparent = true;
-    std::wstring zoneColor = L"#F5FCFF";
+    std::wstring zoneColor = L"#AACDFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
     std::wstring zoneHighlightColor = L"#008CFF";
     int zoneHighlightOpacity = 50;

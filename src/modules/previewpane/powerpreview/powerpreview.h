@@ -3,6 +3,8 @@
 #include <common.h>
 #include "trace.h"
 #include "settings.h"
+#include "thumbnail_provider.h"
+#include "preview_handler.h"
 #include "registry_wrapper.h"
 #include <powerpreview\powerpreviewConstants.h>
 
@@ -17,45 +19,25 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     std::wstring m_moduleName;
-    //contains the non localized key of the powertoy
-    std::wstring app_key;
-    std::vector<FileExplorerPreviewSettings*> m_previewHandlers;
-    std::vector<FileExplorerPreviewSettings*> m_thumbnailProviders;
+    std::vector<FileExplorerPreviewSettings*> m_fileExplorerModules;
+
+    // Function to check if the registry states need to be updated
+    bool is_registry_update_required();
+
+    // Function to warn the user that PowerToys needs to run as administrator for changes to take effect
+    void show_update_warning_message();
+
+    // Function that checks if a registry method is required and if so checks if the process is elevated and accordingly executes the method or shows a warning
+    void registry_and_elevation_check_wrapper(std::function<void()> method);
+
+    // Function that checks if the process is elevated and accordingly executes the method or shows a warning
+    void elevation_check_wrapper(std::function<void()> method);
+
+    // Function that updates the registry state to match the toggle states
+    void update_registry_to_match_toggles();
 
 public:
-    PowerPreviewModule() :
-        m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
-        app_key(powerpreviewConstants::ModuleKey),
-        m_previewHandlers(
-            { // SVG Preview Handler settings object.
-              new FileExplorerPreviewSettings(
-                  true,
-                  L"svg-previewer-toggle-setting",
-                  GET_RESOURCE_STRING(IDS_PREVPANE_SVG_SETTINGS_DESCRIPTION),
-                  L"{ddee2b8a-6807-48a6-bb20-2338174ff779}",
-                  L"SVG Preview Handler",
-                  new RegistryWrapper()),
-
-              // MarkDown Preview Handler Settings Object.
-              new FileExplorerPreviewSettings(
-                  true,
-                  L"md-previewer-toggle-setting",
-                  GET_RESOURCE_STRING(IDS_PREVPANE_MD_SETTINGS_DESCRIPTION),
-                  L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}",
-                  L"Markdown Preview Handler",
-                  new RegistryWrapper()) }),
-        m_thumbnailProviders(
-            { // TODO: MOVE THIS SVG Thumbnail Provider settings object.
-              new FileExplorerPreviewSettings(
-                  true,
-                  L"svg-thumbnail-toggle-setting",
-                  GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
-                  L"{36B27788-A8BB-4698-A756-DF9F11F64F84}",
-                  L"SVG Thumbnail Provider",
-                  new RegistryWrapper()) })
-    {
-        init_settings();
-    };
+    PowerPreviewModule();
 
     virtual void destroy();
     virtual const wchar_t* get_name();

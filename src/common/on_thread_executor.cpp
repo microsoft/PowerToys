@@ -16,6 +16,14 @@ std::future<void> OnThreadExecutor::submit(task_t task)
     return future;
 }
 
+void OnThreadExecutor::cancel()
+{
+    std::lock_guard lock{ _task_mutex };
+    _task_queue = {};
+    _task_cv.notify_one();
+}
+
+
 void OnThreadExecutor::worker_thread()
 {
     while (!_shutdown_request)

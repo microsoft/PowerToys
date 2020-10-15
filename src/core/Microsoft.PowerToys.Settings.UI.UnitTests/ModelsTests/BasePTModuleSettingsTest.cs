@@ -21,8 +21,8 @@ namespace CommonLibTest
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-migrate-from-newtonsoft-how-to.
         // Test also fails when the attributes are not initialized i.e they have null values.
         [TestMethod]
-        [Obsolete]
-        public void ToJsonString_ShouldReturnValidJSONOfModel_WhenSuccessful()
+        [ObsoleteAttribute("This test method is obsolete.", true)]
+        public void ToJsonStringShouldReturnValidJSONOfModelWhenSuccessful()
         {
             //Mock Disk access
             string saveContent = string.Empty;

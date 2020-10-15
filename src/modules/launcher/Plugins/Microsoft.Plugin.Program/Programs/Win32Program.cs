@@ -170,10 +170,12 @@ namespace Microsoft.Plugin.Program.Programs
 
         public bool QueryEqualsNameForRunCommands(string query)
         {
-            if (query != null && AppType == ApplicationType.RunCommand
-                && !query.Equals(Name, StringComparison.OrdinalIgnoreCase))
+            if (query != null && AppType == ApplicationType.RunCommand)
             {
-                return false;
+                if (!query.Equals(Name, StringComparison.OrdinalIgnoreCase) && !query.Equals(ExecutableName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -778,8 +780,8 @@ namespace Microsoft.Plugin.Program.Programs
 
         private static ParallelQuery<Win32Program> StartMenuPrograms(IList<string> suffixes)
         {
-            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
+            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
+            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu);
             List<string> indexLocation = new List<string>() { directory1, directory2 };
 
             return IndexPath(suffixes, indexLocation);
@@ -788,7 +790,9 @@ namespace Microsoft.Plugin.Program.Programs
         private static ParallelQuery<Win32Program> DesktopPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            List<string> indexLocation = new List<string>() { directory1 };
+            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
+
+            List<string> indexLocation = new List<string>() { directory1, directory2 };
 
             return IndexPath(suffixes, indexLocation);
         }
@@ -886,16 +890,18 @@ namespace Microsoft.Plugin.Program.Programs
         // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
         public override int GetHashCode()
         {
-            return new RemoveDuplicatesComparer().GetHashCode(this);
+            return RemoveDuplicatesComparer.Default.GetHashCode(this);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is Win32Program win && new RemoveDuplicatesComparer().Equals(this, win);
+            return obj is Win32Program win && RemoveDuplicatesComparer.Default.Equals(this, win);
         }
 
         private class RemoveDuplicatesComparer : IEqualityComparer<Win32Program>
         {
+            public static readonly RemoveDuplicatesComparer Default = new RemoveDuplicatesComparer();
+
             public bool Equals(Win32Program app1, Win32Program app2)
             {
                 if (!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
@@ -929,9 +935,8 @@ namespace Microsoft.Plugin.Program.Programs
         // Deduplication code
         public static Win32Program[] DeduplicatePrograms(ParallelQuery<Win32Program> programs)
         {
-            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && ExecutableApplicationExtensions.Contains(Extension(x.FullPath)) && !(x.AppType == ApplicationType.RunCommand)));
-            var uniquePrograms = uniqueExePrograms.Distinct(new RemoveDuplicatesComparer());
-            return uniquePrograms.ToArray();
+            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && ExecutableApplicationExtensions.Contains(Extension(x.FullPath)) && x.AppType != ApplicationType.RunCommand));
+            return new HashSet<Win32Program>(uniqueExePrograms, new RemoveDuplicatesComparer()).ToArray();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive but logging the exception")]
