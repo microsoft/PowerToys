@@ -542,8 +542,6 @@ namespace KeyboardEventHandlers
                     {
                         if (remapToShortcut)
                         {
-                            it->second.isShortcutInvoked = true;
-
                             // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps
                             if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
                             {
