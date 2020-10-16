@@ -15,11 +15,16 @@
     <system:String x:Key="Theme.ColorScheme">Accent3</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <SolidColorBrush x:Key="DialogWindowTitleBarBackgroundBrush" Color="#FF121212" />
-    <SolidColorBrush x:Key="DialogWindowBackgroundBrush" Color="#FF1b1b1b" />
+    <SolidColorBrush x:Key="DialogWindowTitleBarBackgroundBrush" Color="#FF37393b" />
+    <SolidColorBrush x:Key="DialogWindowBackgroundBrush" Color="#FF313233" />
     <SolidColorBrush x:Key="DialogWindowTitleBarForegroundBrush" Color="#FF6e6e6e"/>
     <SolidColorBrush x:Key="DialogWindowBorderBrush" Color="Black"/>
 
+    <SolidColorBrush x:Key="ListViewPointerOverBrush" Color="#242424"/>
+    <SolidColorBrush x:Key="ListViewPressedBrush" Color="#FF313233"/>
+
+    <SolidColorBrush x:Key="ColorControlBackgroundBrush" Color="#66000000"/>
+    
     <SolidColorBrush x:Key="BackgroundBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="PanelBorderBrush" Color="#FF00ff00" />

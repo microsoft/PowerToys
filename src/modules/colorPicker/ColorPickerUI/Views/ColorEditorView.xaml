@@ -8,8 +8,7 @@
              xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-             Background="{DynamicResource BackgroundBrush}"
-             d:DesignHeight="320" d:DesignWidth="400">
+             d:DesignHeight="380" d:DesignWidth="400">
     <UserControl.Resources>
         <Style x:Key="ListBoxItemStyle1" TargetType="{x:Type ListBoxItem}">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -50,7 +49,7 @@
                                     <Condition Property="Selector.IsSelectionActive" Value="False"/>
                                     <Condition Property="IsSelected" Value="True"/>
                                 </MultiTrigger.Conditions>
-                                <Setter Property="Background" TargetName="Bd" Value="Yellow"/>
+                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource ListViewPressedBrush}"/>
                             </MultiTrigger>
                             <MultiTrigger>
                                 <MultiTrigger.Conditions>
@@ -74,7 +73,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="1" Height="40" Background="Transparent" VerticalAlignment="Top" IsHitTestVisible="True">
+        <Grid Grid.ColumnSpan="2" Height="40" Background="Transparent" VerticalAlignment="Top" IsHitTestVisible="True">
             <e:Interaction.Behaviors>
                 <behaviors:DragWindowBehavior/>
             </e:Interaction.Behaviors>
@@ -84,9 +83,26 @@
                 Width="30"
                 Height="3"
                 CornerRadius="1.5"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Margin="0,4,0,0" />
-            <Button Grid.Column="2" Command="{Binding CloseWindowCommand}" HorizontalAlignment="Right" Width="35" FontFamily="Segoe MDL2 Assets" Content="&#xE894;"/>
+                Margin="0,2,0,0" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:AppBarButton Width="40" >
+                    <ui:AppBarButton.Icon>
+                        <ui:FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                Glyph="&#xE115;" />
+                    </ui:AppBarButton.Icon>
+                </ui:AppBarButton>
+                <ui:AppBarButton Command="{Binding CloseWindowCommand}" Width="40" >
+                    <ui:AppBarButton.Icon>
+                        <ui:FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                Glyph="&#xE10A;" />
+                    </ui:AppBarButton.Icon>
+                </ui:AppBarButton>
+            </StackPanel>
+
         </Grid>
         <Grid Background="{DynamicResource DialogWindowTitleBarBackgroundBrush}">
             <Grid.RowDefinitions>
@@ -105,36 +121,146 @@
                     <DataTemplate>
                         <Grid Width="64" Height="48">
                             <Border
-                                Width="24"
-                                Height="24"
+                                Width="26"
+                                Height="26"
                                 CornerRadius="4"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Background="{Binding Path=., Converter={StaticResource colorToBrushConverter}}">
                                 <Border.Effect>
-                                    <DropShadowEffect BlurRadius="12" Direction="0" ShadowDepth="2"/>
+                                    <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
                                 </Border.Effect>
                             </Border>
                         </Grid>
-
                     </DataTemplate>
                 </ui:ListView.ItemTemplate>
-                <!--<ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>-->
             </ui:ListView>
         </Grid>
 
-        <TextBlock Grid.Row="1" Grid.Column="1" Margin="64" Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" FontSize="20">
-            <e:Interaction.Behaviors>
-                <behaviors:CopyToClipboardBehavior CopiedIndicationBorder="{Binding ElementName=CopiedBorderIndicator}" />
-            </e:Interaction.Behaviors>
-        </TextBlock>
+        <StackPanel Orientation="Vertical" Margin="12,124,12,12" Grid.Column="1" Grid.Row="1">
+            <Border
+                    Margin="0,6,0,0"
+                    Width="308"
+                    Height="36"
+                    CornerRadius="4"
+                    Padding="8"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource ColorControlBackgroundBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="HEX" Opacity="0.4" Foreground="{DynamicResource PrimaryForegroundBrush}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" Foreground="{DynamicResource PrimaryForegroundBrush}" FontFamily="Consolas" Grid.Column="1" FontSize="14" Margin="0,-2,0,0" VerticalAlignment="Center">
+                              <e:Interaction.Behaviors>
+                                <behaviors:CopyToClipboardBehavior CopiedIndicationBorder="{Binding ElementName=CopiedBorderIndicator}" />
+                              </e:Interaction.Behaviors>
+                    </TextBlock>
+                </Grid>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                </Border.Effect>
+            </Border>
+            <Border
+                    Margin="0,6,0,0"
+                    Width="308"
+                    Height="36"
+                    CornerRadius="4"
+                    Padding="8"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource ColorControlBackgroundBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="CMYK" Opacity="0.4" Foreground="{DynamicResource PrimaryForegroundBrush}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" Foreground="{DynamicResource PrimaryForegroundBrush}" FontFamily="Consolas" Grid.Column="1" FontSize="14" Margin="0,-2,0,0" VerticalAlignment="Center">
+                              <e:Interaction.Behaviors>
+                                <behaviors:CopyToClipboardBehavior CopiedIndicationBorder="{Binding ElementName=CopiedBorderIndicator}" />
+                              </e:Interaction.Behaviors>
+                    </TextBlock>
+                </Grid>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                </Border.Effect>
+            </Border>
 
-        <Border x:Name="CopiedBorderIndicator" Visibility="Collapsed" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="20" Background="Gray">
-            <TextBlock Text="Copied!"/>
+            <Border
+                    Margin="0,6,0,0"
+                    Width="308"
+                    Height="36"
+                    CornerRadius="4"
+                    Padding="8"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource ColorControlBackgroundBrush}">
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="XAML" Opacity="0.4" Foreground="{DynamicResource PrimaryForegroundBrush}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" Foreground="{DynamicResource PrimaryForegroundBrush}" FontFamily="Consolas" Grid.Column="1" FontSize="14" Margin="0,-2,0,0" VerticalAlignment="Center">
+                              <e:Interaction.Behaviors>
+                                <behaviors:CopyToClipboardBehavior CopiedIndicationBorder="{Binding ElementName=CopiedBorderIndicator}" />
+                              </e:Interaction.Behaviors>
+                    </TextBlock>
+                </Grid>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                </Border.Effect>
+            </Border>
+
+            <Border
+                    Margin="0,6,0,0"
+                    Width="308"
+                    Height="36"
+                    CornerRadius="4"
+                    Padding="8"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource ColorControlBackgroundBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="RGB" Opacity="0.4" Foreground="{DynamicResource PrimaryForegroundBrush}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" Foreground="{DynamicResource PrimaryForegroundBrush}" FontFamily="Consolas" Grid.Column="1" FontSize="14" Margin="0,-2,0,0" VerticalAlignment="Center">
+                              <e:Interaction.Behaviors>
+                                <behaviors:CopyToClipboardBehavior CopiedIndicationBorder="{Binding ElementName=CopiedBorderIndicator}" />
+                              </e:Interaction.Behaviors>
+                    </TextBlock>
+                </Grid>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                </Border.Effect>
+            </Border>
+        </StackPanel>
+        <Grid Grid.Column="1" Height="48" Margin="12,52,12,0" VerticalAlignment="Top">
+            <Grid.Effect>
+                <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+            </Grid.Effect>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="12*"/>
+                <ColumnDefinition Width="12*"/>
+                <ColumnDefinition Width="50*"/>
+                <ColumnDefinition Width="12*"/>
+                <ColumnDefinition Width="12*"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" CornerRadius="4,0,0,4" Opacity="0.6" Grid.Column="0"/>
+            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" Grid.Column="1" Opacity="0.8"/>
+            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" Grid.Column="2"/>
+            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" Grid.Column="3" Opacity="0.8"/>
+            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" Grid.Column="4" Opacity="0.6" CornerRadius="0,4,4,0"/>
+        </Grid>
+
+
+        <Border x:Name="CopiedBorderIndicator" Visibility="Collapsed" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="56" Background="{DynamicResource DialogWindowTitleBarBackgroundBrush}">
+            <TextBlock FontSize="16" Foreground="{DynamicResource PrimaryForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
+                <Run Text="Copied to clipboard" FontWeight="SemiBold"/>
+            </TextBlock>
         </Border>
     </Grid>
 </UserControl>

@@ -7,10 +7,10 @@
         mc:Ignorable="d"
         xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-        Background="{DynamicResource DialogBorderBrush}"
+        Background="{DynamicResource DialogWindowBackgroundBrush}"
         BorderBrush="{DynamicResource DialogWindowBorderBrush}"
         BorderThickness="1"
-        Title="ColorEditorWindow" Height="320" Width="400" ResizeMode="NoResize" WindowStyle="None">
+        Title="ColorEditorWindow" Height="380" Width="400" ResizeMode="NoResize" WindowStyle="None">
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior/>
     </e:Interaction.Behaviors>
