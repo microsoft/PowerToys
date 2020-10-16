@@ -2,11 +2,11 @@
 ## Overview
 `PowerToys Run` is divided across several projects to keep a logical separation between plugins and core functionality. The following sections provide a brief overview of each project.
 
-![Image of project dependency](/doc/images/launcher/launcher_dependency.png)
+![Image of project dependency](/doc/images/launcher/launcher_dependency.PNG)
 Fig 1. Project along with their dependencies in `PowerToys Run` ecosystem.
 
 ## Project Description
-#### `PowerLauncher`
+#### [`PowerLauncher`](/src/modules/launcher/PowerLauncher)
 This is the startup project for the `PowerToys Run.` It is a WPF desktop application and follows the `Model-View-ViewModel (MVVM)` design pattern. Plugins play the role of `Model` and provide data to `ViewModel.`
 
 #### [`PowerLauncher.Telemetry`](/src/modules/launcher/PowerLauncher.Telemetry)
@@ -18,7 +18,7 @@ This is the startup project for the `PowerToys Run.` It is a WPF desktop applica
 #### [`Wox.Infrastructure`](/src/modules/launcher/Wox.Infrastructure)
 [`Wox.Infrastructure`](/src/modules/launcher/Wox.Infrastructure) is a .net core project that contains helper classes required for logging, image manipulation, and storage by the `PowerLauncher` project and the plugins. [`ImageLoader.cs`](/src/modules/launcher/Wox.Infrastructure/Image/ImageLoader.cs) class is used to load icons for `Win32` program. It also provides caching functionality to speed up image loading for frequently queried programs. [`Log.cs`](/src/modules/launcher/Wox.Infrastructure/Logger/Log.cs) provides an abstraction for logging error, information, and output to text files. These files are stored at `%userprofile%/appdata/local/microsoft/powertoys/powertoys run/Logs.`
 
-#### `Wox.Plugin` 
+#### [`Wox.Plugin`](/src/modules/launcher/Wox.Plugin) 
 [`Wox.Plugin`](/src/modules/launcher/Wox.Plugin) contains interfaces that facilitate communication between `PowerLauncher` and plugins. These interfaces have been discussed in detail [here](/doc/devdocs/modules/launcher/architecture.md#flow-of-data-between-viewmodels-and-pluginsmodel). 
  
 
