@@ -114,14 +114,22 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromInvalidString_VersionMissed)
         {
-            auto func = [] { PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}}", L"Module Key"); };
-            Assert::ExpectException<winrt::hresult_error>(func);
+            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}}", L"Module Key");
+            const std::wstring expectedStr = L"{\"name\" : \"Module Name\", \"properties\" : {},\"version\" : \"1.0\"}";
+            const auto expected = json::JsonObject::Parse(expectedStr);
+            const auto actual = json::JsonObject::Parse(values.serialize());
+
+            compareJsons(expected, actual);
         }
 
         TEST_METHOD (LoadFromInvalidString_PropertiesMissed)
         {
-            auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }", L"Module Key"); };
-            Assert::ExpectException<winrt::hresult_error>(func);
+            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }", L"Module Key");
+            const std::wstring expectedStr = L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }";
+            const auto expected = json::JsonObject::Parse(expectedStr);
+            const auto actual = json::JsonObject::Parse(values.serialize());
+
+            compareJsons(expected, actual);
         }
 
         TEST_METHOD (LoadFromValidString_EmptyProperties)

@@ -295,16 +295,6 @@ namespace PowerToysSettings
             throw winrt::hresult_error(E_NOT_SET, L"name field not set");
         }
 
-        if (!jsonObject.HasKey(L"properties"))
-        {
-            throw winrt::hresult_error(E_NOT_SET, L"properties field not set");
-        }
-
-        if (!jsonObject.HasKey(L"version"))
-        {
-            throw winrt::hresult_error(E_NOT_SET, L"version field not set");
-        }
-
         result.m_json = json::JsonValue::Parse(json).GetObjectW();
         result._key = powertoy_key;
         return result;
