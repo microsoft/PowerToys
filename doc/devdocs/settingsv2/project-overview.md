@@ -1,5 +1,7 @@
-# Settings V2 Project structure
+# Overview
+`Settingsv2` is WPF .net core desktop application. It takes advantage of latest UWP UI components by using `WindowsXamlHost` control from the Windows Community Toolkit to host controls from WinUI3 library. More details about WinUI can be found [here](https://microsoft.github.io/microsoft-ui-xaml/about.html#what-is-it).
 
+## Settings V2 Project structure
 The Settings project is a XAML island based project which
 follows the [MVVM architectural pattern][MVVM] where the graphical user interface is separated from the view models.
 
