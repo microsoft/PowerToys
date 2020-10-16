@@ -86,12 +86,15 @@ public:
     // Function to set the warning message
     void SetDropDownError(winrt::Windows::UI::Xaml::Controls::ComboBox currentDropDown, winrt::hstring message);
 
+    // Set selected Value
+    void SetSelectedValue(std::wstring value);
+
     // Function to add a shortcut to the UI control as combo boxes
     static void AddShortcutToControl(Shortcut shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
     // Get keys name list depending if Disable is in dropdown
-    static std::vector<std::pair<DWORD,std::wstring>> GetKeyNameList(bool isShortcut, bool renderDisable);
+    static std::vector<std::pair<DWORD,std::wstring>> GetKeyList(bool isShortcut, bool renderDisable);
 
-    // Set selected Value
-    void SetSelectedValue(std::wstring value);
+    // Get number of selected keys. Do not count -1 and 0 values as they stand for Not selected and None
+    static int GetNumberOfSelectedKeys(std::vector<int32_t> keys);
 };

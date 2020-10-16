@@ -103,7 +103,7 @@ namespace KeyboardManagerHelper
         for (auto& val : list)
         {
             auto comboBox = ComboBoxItem();
-            comboBox.DataContext(winrt::box_value(to_hstring(std::to_string(val.first))));
+            comboBox.DataContext(winrt::box_value(std::to_wstring(val.first)));
             comboBox.Content(winrt::box_value(val.second));
             boxList.Append(winrt::box_value(comboBox));
         }
@@ -350,12 +350,14 @@ namespace KeyboardManagerHelper
     // Function to check if a modifier has been repeated in the previous drop downs
     bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCode)
     {
+        // Count the number of keys that are equal to 'selectedKeyCode'
         int numberOfSameType = 0;
         for (int i = 0; i < currentKeys.size(); i++)
         {
             numberOfSameType += KeyboardManagerHelper::GetKeyType(selectedKeyCode) == KeyboardManagerHelper::GetKeyType(currentKeys[i]);
         }
 
+        // If we have at least two keys equal to 'selectedKeyCode' than modifier was repeated
         return numberOfSameType > 1;
     }
 }

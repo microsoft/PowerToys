@@ -2,6 +2,7 @@
 #include "BufferValidationHelpers.h"
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common\shared_constants.h>
+#include <modules\keyboardmanager\ui\KeyDropDownControl.h>
 
 namespace BufferValidationHelpers
 {
@@ -204,7 +205,7 @@ namespace BufferValidationHelpers
         if (errorType == KeyboardManagerHelper::ErrorType::NoError)
         {
             KeyShortcutUnion tempShortcut;
-            if (isHybridControl && std::count_if(selectedCodes.begin(), selectedCodes.end(), [](int32_t a) { return a != -1 && a != 0; }) == 1)
+            if (isHybridControl && KeyDropDownControl::GetNumberOfSelectedKeys(selectedCodes) == 1)
             {
                 tempShortcut = *std::find_if(selectedCodes.begin(), selectedCodes.end(), [](int32_t a) { return a != -1 && a != 0; });
             }

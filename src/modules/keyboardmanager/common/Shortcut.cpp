@@ -510,7 +510,7 @@ void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
     Reset();
     for (int i = 0; i < keys.size(); i++)
     {
-        if (keys[i] != -1)
+        if (keys[i] != -1 && keys[i] != 0)
         {
             SetKey(keys[i]);
         }

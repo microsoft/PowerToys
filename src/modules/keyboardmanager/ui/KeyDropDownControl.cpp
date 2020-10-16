@@ -18,7 +18,7 @@ DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)
         return -1;
 
     auto value = winrt::unbox_value<hstring>(dataContext);
-    return stoi(to_string(value));
+    return stoi(std::wstring(value));
 }
 
 void KeyDropDownControl::SetSelectedValue(std::wstring value)
@@ -27,7 +27,7 @@ void KeyDropDownControl::SetSelectedValue(std::wstring value)
 }
 
 // Get keys name list depending if Disable is in dropdown
-std::vector<std::pair<DWORD, std::wstring>> KeyDropDownControl::GetKeyNameList(bool isShortcut, bool renderDisable)
+std::vector<std::pair<DWORD, std::wstring>> KeyDropDownControl::GetKeyList(bool isShortcut, bool renderDisable)
 {
     auto list = keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut);
     if (renderDisable)
@@ -57,8 +57,8 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     dropDown.as<ComboBox>().SelectedValuePath(L"DataContext");
-    dropDown.as<ComboBox>().ItemsSource(KeyboardManagerHelper::ToBoxValue(GetKeyNameList(isShortcut, renderDisable)));
-    
+    dropDown.as<ComboBox>().ItemsSource(KeyboardManagerHelper::ToBoxValue(GetKeyList(isShortcut, renderDisable)));
+
     // drop down open handler - to reload the items with the latest layout
     dropDown.as<ComboBox>().DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
@@ -88,7 +88,7 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
     // Check if the layout has changed
     if (previousLayout != layout)
     {
-        currentDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(GetKeyNameList(isShortcut, renderDisable)));
+        currentDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(GetKeyList(isShortcut, renderDisable)));
         previousLayout = layout;
     }
 }
@@ -242,7 +242,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutCon
             else
             {
                 // If exactly one key is selected consider it to be a key remap
-                if (selectedKeyCodes.size() == 1)
+                if (GetNumberOfSelectedKeys(selectedKeyCodes) == 1)
                 {
                     shortcutRemapBuffer[validationResult.second].first[colIndex] = selectedKeyCodes[0];
                 }
@@ -340,8 +340,8 @@ void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel
     {
         // Check for errors only if the current selection is a valid shortcut
         std::vector<int32_t> selectedKeyCodes = GetSelectedCodesFromStackPanel(parent);
-        std::variant<DWORD, Shortcut> currentShortcut;
-        if (selectedKeyCodes.size() == 1 && isHybridControl)
+        KeyShortcutUnion currentShortcut;
+        if (GetNumberOfSelectedKeys(selectedKeyCodes) == 1 && isHybridControl)
         {
             currentShortcut = selectedKeyCodes[0];
         }
@@ -375,7 +375,6 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, Grid table, Sta
     parent.Children().Clear();
     // Remove references to the old drop down objects to destroy them
     keyDropDownControlObjects.clear();
-    
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
     if (shortcutKeyCodes.size() != 0)
     {
@@ -400,4 +399,10 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, Grid table, Sta
         }
     }
     parent.UpdateLayout();
+}
+
+// Get number of selected keys. Do not count -1 and 0 values as they stand for Not selected and None
+int KeyDropDownControl::GetNumberOfSelectedKeys(std::vector<int32_t> keyCodes)
+{
+    return (int)std::count_if(keyCodes.begin(), keyCodes.end(), [](int32_t a) { return a != -1 && a != 0; });
 }
