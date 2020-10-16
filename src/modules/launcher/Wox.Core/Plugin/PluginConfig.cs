@@ -32,6 +32,7 @@ namespace Wox.Core.Plugin
             return PluginMetadatas;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
         private static void ParsePluginConfigs(IEnumerable<string> directories)
         {
             // todo use linq when diable plugin is implemented since parallel.foreach + list is not thread saft
@@ -43,9 +44,7 @@ namespace Wox.Core.Plugin
                     {
                         Directory.Delete(directory, true);
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Log.Exception($"Can't delete <{directory}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                     }
@@ -83,9 +82,7 @@ namespace Wox.Core.Plugin
                 // for plugin still use old ActionKeyword
                 metadata.ActionKeyword = metadata.ActionKeywords?[0];
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception($"|PluginConfig.GetPluginMetadata|invalid json for config <{configPath}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return null;
