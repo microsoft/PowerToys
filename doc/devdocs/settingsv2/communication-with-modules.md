@@ -1,12 +1,13 @@
 # Communication with modules
 
 ## Through runner
-- The settings process communicates changes in the UI to most modules using the runner using delegates.
+- The settings process communicates changes in the UI to most modules using the runner through delegates.
 - More details on this are mentioned in [`runner-ipc.md`](settingsv2/runner-ipc.md).
 
 ## PT Run
-- Any changes in the UI are saved by the settings process in the `settings.json` file within the `/Local/Microsoft/PowerToys/Launcher/` folder.
-- PT Run watches for any changes within this file and updates it's general settings or propagates the information to the plugins.
+- Any changes to the UI are saved by the settings process in the `settings.json` file located within the `/Local/Microsoft/PowerToys/Launcher/` folder.
+- PT Run watches for any changes within this file and updates it's general settings or propagates the information to the plugins, depending on the type of information.
+Eg: The maximum number of results drop down updates the maximum number of rows in the results list which updates the general settings of PT Run whereas the drive detection checkbox details are dispatched to the indexer plugin.
 
 ## Keyboard Manager
 - The Settings process and keyboard manager share access to a common `default.json` file which contains information about the remapped keys and shortcuts.

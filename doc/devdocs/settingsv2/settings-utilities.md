@@ -10,4 +10,4 @@
 - The GetSettings function tries to read the file in the powertoy settings folder and creates a new file with default configurations if it does not exist.
 - Ideally this function should only be called by the [`SettingsRepository`](src/core/Microsoft.PowerToys.Settings.UI.Lib/SettingsRepository`1.cs) which would be accessed only when a powertoy settings object is being loaded for the first time.
 - The reason behind ensuring that it is not accessed elsewhere is to avoid contention with the runner during file access.
-- Each of the objects which are deserialized using this function must implement the `ISettingsConfig` repository.
+- Each of the objects which are deserialized using this function must implement the `ISettingsConfig` interface.
