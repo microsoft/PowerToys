@@ -1,6 +1,8 @@
 # Window Walker plugin
 The window walker plugin matches the user entered query with the open windows on the system.
 
+![Image of Window Walker plugin](/doc/images/launcher/plugins/windowwalker.png)
+
 ### [`OpenWindows.cs`](src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/OpenWindows.cs)
 - The window walker plugin uses the `EnumWindows` function to enumerate all the open windows in the [`OpenWindows.cs`](src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Components/OpenWindows.cs) class.
 

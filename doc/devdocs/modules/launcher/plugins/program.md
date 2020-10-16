@@ -1,5 +1,8 @@
 # Program Plugin
 The program plugin as the name suggests is used to search for programs installed on the system.
+
+![Image of Program plugin](/doc/images/launcher/plugins/program.png)
+
 There are broadly two different categories of applications:
 
 1. Packaged applications
@@ -29,10 +32,10 @@ There are broadly two different categories of applications:
 
 ### Score
 - The score for each application result is based on the how many letters are matched, how close the matched letters are to the actual word and the index of the matched characters.
-- There is a threshold for the apps which are to be displayed and applications which have a lower score are not displayed by PT Run.
+- There is a threshold score to decide the apps which are to be displayed and applications which have a lower score are not displayed by PT Run.
 
 ### Update Program List in Runtime
-- Packaged and Win32 app helpers exist to reflect changes in the list of indexed apps when applications are installed on the system when PT Run is executing.
+- Packaged and Win32 app helpers exist to reflect changes in the list of indexed apps when applications are installed on the system while PT Run is executing.
 - Packaged applications trigger events when the package is being installed and uninstalled. PT Run listens to those events to index applications which are newly installed or to delete an app which no longer exists from the database.
 - No such events exist for Win32 applications. We therefore use FileSystem Watchers to monitor the locations that we index for newly created, deleted or renamed application files and update the indexed Win32 catalog accordingly.
 
