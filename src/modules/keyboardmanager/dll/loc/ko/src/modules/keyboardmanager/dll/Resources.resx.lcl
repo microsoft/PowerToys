@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[예를 들어 <A> 키를 누르고 "Ctrl+C"를 사용하려는 경우 "A" 키는 "키" 열이 되고, 바로 가기 "Ctrl+C"는 "매핑 대상" 열이 됩니다.]]></Val>
+            <Val><![CDATA[예를 들어 A 키를 누르고 "Ctrl+C"를 사용하려는 경우 "A" 키는 "키" 열이 되고, 바로 가기 "Ctrl+C"는 "매핑 대상" 열이 됩니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>

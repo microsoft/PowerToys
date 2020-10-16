@@ -104,8 +104,11 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wenn Sie z. B. die Taste A drücken möchten, um die Tastenkombination "STRG+C" zu erhalten, muss A in die Spalte "Taste" und die Tastenkombination "STRG+C" in die Spalte "Zugeordnet zu" eingefügt werden.]]></Val>
+            <Val><![CDATA[Wenn Sie z. B. die Taste A drücken möchten, um die Tastenkombination "STRG+C" zu erhalten, muss A in der Spalte "Taste" und die Tastenkombination "STRG+C" in der Spalte "Zugeordnet zu" eingefügt werden.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -178,6 +181,9 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Wenn Sie z. B. "STRG+C" drücken möchten, um nur in Microsoft Edge "ALT" zu erhalten, muss "STRG+C" in der Spalte "Tastenkombination", "ALT" in der Spalte "Zugeordnet zu" und "MSEdge" in der Spalte "Ziel-App" eingefügt werden. Wenn keine Ziel-App angegeben wird, erfolgt die Anwendung global. Als Name muss anstelle des App-Namens der Prozessname eingegeben werden.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
