@@ -41,9 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 PowerRenameLocalProperties localSettings = _settingsUtils.GetSettings<PowerRenameLocalProperties>(GetSettingsSubPath(), "power-rename-settings.json");
                 Settings = new PowerRenameSettings(localSettings);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 PowerRenameLocalProperties localSettings = new PowerRenameLocalProperties();
                 Settings = new PowerRenameSettings(localSettings);

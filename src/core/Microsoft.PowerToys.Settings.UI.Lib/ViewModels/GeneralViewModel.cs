@@ -253,9 +253,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                         UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                     }
 
@@ -281,9 +279,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                         UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                     }
 
@@ -309,9 +305,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                         UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                     }
 

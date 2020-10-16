@@ -554,9 +554,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     clr.G.ToString("X2", CultureInfo.InvariantCulture) +
                     clr.B.ToString("X2", CultureInfo.InvariantCulture);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return "#FFFFFF";
             }

@@ -39,9 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 Settings = _settingsUtils.GetSettings<ImageResizerSettings>(ModuleName);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Settings = new ImageResizerSettings();
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
