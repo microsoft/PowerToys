@@ -1,6 +1,6 @@
 {
   "ID": "03276A39D4E9417C8FFD200B0EE5E871",
-  "ActionKeywords": [ "*", ":" ],
+  "ActionKeywords": [ "*", "//" ],
   "Name": "Windows Uri Handler",
   "Description": "Handles urls",
   "Author": "Microsoft",
