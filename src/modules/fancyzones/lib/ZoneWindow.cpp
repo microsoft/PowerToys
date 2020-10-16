@@ -71,8 +71,7 @@ namespace ZoneWindowUtils
                          int hostZoneHighlightOpacity,
                          std::vector<winrt::com_ptr<IZone>> zones,
                          std::vector<size_t> highlightZone,
-                         bool flashMode,
-                         bool drawHints)
+                         bool flashMode)
     {
         PAINTSTRUCT ps;
         HDC oldHdc = hdc;
@@ -99,8 +98,7 @@ namespace ZoneWindowUtils
                                                      hostZoneHighlightOpacity,
                                                      zones,
                                                      highlightZone,
-                                                     flashMode,
-                                                     drawHints);
+                                                     flashMode);
             }
 
             EndBufferedPaint(bufferedPaint, TRUE);
@@ -170,7 +168,6 @@ private:
     std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
     wil::unique_hwnd m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
-    bool m_drawHints{};
     bool m_flashMode{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
@@ -266,7 +263,6 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window) noexcept
 {
     m_windowMoveSize = window;
-    m_drawHints = true;
     m_highlightZone = {};
     m_initialHighlightZone = {};
     ShowZoneWindow();
@@ -477,7 +473,6 @@ ZoneWindow::HideZoneWindow() noexcept
         ShowWindow(m_window.get(), SW_HIDE);
         m_keyLast = 0;
         m_windowMoveSize = nullptr;
-        m_drawHints = false;
         m_highlightZone = {};
     }
 }
@@ -629,7 +624,6 @@ void ZoneWindow::OnPaint(HDC hdc) noexcept
     std::vector<winrt::com_ptr<IZone>> zones{};
     std::vector<size_t> highlightZone = m_highlightZone;
     bool flashMode = m_flashMode;
-    bool drawHints = m_drawHints;
 
     if (hasActiveZoneSet)
     {
@@ -651,8 +645,7 @@ void ZoneWindow::OnPaint(HDC hdc) noexcept
                                          hostZoneHighlightOpacity,
                                          zones,
                                          highlightZone,
-                                         flashMode,
-                                         drawHints);
+                                         flashMode);
         } };
 
     if (m_animating)

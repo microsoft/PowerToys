@@ -26,6 +26,5 @@ namespace ZoneWindowDrawing
                            int zoneOpacity,
                            const std::vector<winrt::com_ptr<IZone>>& zones,
                            const std::vector<size_t>& highlightZones,
-                           bool flashMode,
-                           bool drawHints) noexcept;
+                           bool flashMode) noexcept;
 }
