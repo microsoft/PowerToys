@@ -26,7 +26,10 @@ The indexer plugin is used to search for files within the indexed locations of t
     2. Non-Full Text predicates - eg: [LIKE][Like]
 - The Full text predicates are much faster than non-full text predicates as they are based on finding matches rather than comparing the query with each item in the indexer database. Hence, queries which have the `CONTAINS` keyword are much faster than those which contain the `LIKE` keyword.
 - To prevent the indexer query from taking a long time and blocking the UI thread, there are two types of indexer queries which are executed. A simplified query and a full query, without and with the `LIKE` keyword respectively.
-- The result list is updated with the results of the full query once they are obtained. 
+- The result list is updated with the results of the full query once they are obtained.
+
+### Score
+Each of the indexer plugin results has a score set to 0 so they are present at the bottom of the list.
 
 [OLEDBCommand]: https://docs.microsoft.com/en-us/dotnet/api/system.data.oledb.oledbcommand?view=dotnet-plat-ext-3.1
 [OLEDBConnection]: https://docs.microsoft.com/en-us/dotnet/api/system.data.oledb.oledbconnection?view=dotnet-plat-ext-3.1

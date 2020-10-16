@@ -11,7 +11,7 @@ There are broadly two different categories of applications:
 - To index packaged applications, the `PackageManager` retrives all the packages for the current user and indexes all the applications.
 - To retrieve the app icon for packaged applications, the assets path is retrieved from the `Application Manifest` file. There are multiple icons corresponding to each scale, target size and theme. The best icon is chosen given the theme of powerToys Run.
 
-### Win32Program
+### [Win32Program](src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/Win32Program.cs)
 - Win32 programs in the following locations are indexed by PT Run-
     1. Desktop
     2. Public Desktop (Applications present on the desktop of all the users)
