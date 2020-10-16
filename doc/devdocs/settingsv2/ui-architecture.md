@@ -5,5 +5,5 @@
 - `WindowsXamlHost` control is used to host UWP control to [`MainWindow.xaml`](/src/core/Microsoft.PowerToys.Settings.UI.Runner/MainWindow.xaml)  parent control.
 - [`ShellPage.xaml`](/src/core/Microsoft.PowerToys.Settings.UI/Views/ShellPage.xaml) is a UWP control, consisting of a side navigation panel with an icon for each module. Clicking on a module icon loads the corresponding `setting.json` file and displays the data in the UI.
 
-![Settings UI architecture](/doc/images/Settingsv2/ui-architecture.png)
+![Settings UI architecture](/doc/images/settingsv2/ui-architecture.png)
 **Fig 1: UI Architecture for settingsv2**
