@@ -60,6 +60,7 @@ namespace Wox.Core.Plugin
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
         private static PluginMetadata GetPluginMetadata(string pluginDirectory)
         {
             string configPath = Path.Combine(pluginDirectory, PluginConfigName);
