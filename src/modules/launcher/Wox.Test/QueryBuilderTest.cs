@@ -14,10 +14,10 @@ namespace Wox.Test
     {
         private static bool AreEqual(Query firstQuery, Query secondQuery)
         {
-            // Using InvariantCulture since this is a command line arg
-            return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.InvariantCulture)
-                && firstQuery.Search.Equals(secondQuery.Search, StringComparison.InvariantCulture)
-                && firstQuery.RawQuery.Equals(secondQuery.RawQuery, StringComparison.InvariantCulture);
+            // Using Ordinal since this is used internally
+            return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal)
+                && firstQuery.Search.Equals(secondQuery.Search, StringComparison.Ordinal)
+                && firstQuery.RawQuery.Equals(secondQuery.RawQuery, StringComparison.Ordinal);
         }
 
         [Test]
@@ -146,9 +146,9 @@ namespace Wox.Test
             var secondQuery = secondPluginQueryPairs.GetValueOrDefault(plugin);
 
             // Assert
-            // Using InvariantCulture since this is a command line arg
-            Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search, StringComparison.InvariantCulture));
-            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.InvariantCulture));
+            // Using Ordinal since this is used internally
+            Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search, StringComparison.Ordinal));
+            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal));
         }
 
         [Test]
@@ -197,9 +197,9 @@ namespace Wox.Test
             var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
 
             // Assert
-            // Using InvariantCulture since this is a command line arg
-            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.InvariantCulture) && firstQuery.Terms[1].Equals("efgh", StringComparison.InvariantCulture) && firstQuery.Terms.Length == 2);
-            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.InvariantCulture) && secondQuery.Terms.Length == 1);
+            // Using Ordinal since this is used internally
+            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Length == 2);
+            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Length == 1);
         }
     }
 }

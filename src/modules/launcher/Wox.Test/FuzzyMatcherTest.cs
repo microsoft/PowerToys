@@ -118,7 +118,7 @@ namespace Wox.Test
                 Debug.WriteLine("SEARCHTERM: " + searchTerm + ", GreaterThanSearchPrecisionScore: " + precisionScore);
                 foreach (var item in filteredResult)
                 {
-                    // Using InvariantCulture since this is a command line arg
+                    // Using InvariantCulture since this is used for testing
                     Debug.WriteLine("SCORE: " + item.Score.ToString(CultureInfo.InvariantCulture) + ", FoundString: " + item.Title);
                 }
 
