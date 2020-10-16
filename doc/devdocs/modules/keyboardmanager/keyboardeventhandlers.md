@@ -56,4 +56,20 @@ This method is used for handling app-specific shortcut to shortcut and shortcut 
 ## HandleSingleKeyToggleToModEvent (Obsolete - Code from PoC which is commented out)
 This method was added to support a feature for converting the behavior of a key from behaving like a toggle (like Caps Lock/Num Lock) to a modifier (like Ctrl), such that when you hold Caps Lock it would behave as if Caps Lock was active, and when it was not pressed Caps Lock would be off. For Caps Lock this would be similar to behaving like Shift, but for Num Lock there is no existing key which can substitute for this. This was added while testing out remapping for the KBM PoC, but wasn't added as a feature since it wasn't a priority. (INSERTCODELINK)
 
-## Testing
+## Tests
+In order to test the remapping logic, a mocked keyboard input handler had to be created because otherwise the tests would process and send actual key events. For this the `InputInterface`(INSERTCODELINK) was made, and in production code the methods are implemented using `SendInput` and `GetAsyncKeyState`. In addition to this, `GetCurrentApplication`(INSERTCODELINK) had to be mocked so that app-specific remapping can be tested.
+
+### MockedInput
+The `MockedInput` class uses a 256 size `bool` vector to store the key state for each key code. `ForegroundProcess` is mocked by simply setting and getting a string value for the name of the current process.
+
+To mock the `SendInput` method, the steps for processing the input are as follows. This implementation is based on public documentation for SendInput and the behavior of key messages and keyboard hooks:
+- Iterate over all the inputs in the INPUT array argument
+- If the event is a key up event, then it is considered `WM_SYSKEYUP` if Alt is held down (INSERTLINK), otherwise it is `WM_KEYUP`.
+- If the event is a key down event, then it is considered `WM_SYSKEYDOWN` if either Alt is held down or if it is F10 (INSERTLINK), otherwise it is `WM_KEYDOWN`.
+- An optional function which can be set on the `MockedInput` handler can be used to test for the number of times a key event is received by the system with a particular condition using `sendVirtualInputCallCondition`.(INSERTCODELINK).
+- The hook logic for a low level hook which returns 0 or 1 can be set on the `MockedInput` handler such that it behaves like a low level hook would behave with actual keyboard input. If the method returns 1, then the keyboard state is not updated, and if it returns 0 the corresponding key event is used to update the key state. This works in the recursive way as well similar to low level hooks, as `SendVirtualInput` can be called from within the hook, thus simulating identical behavior to calling `SendInput` in a low level hook (as soon as SendInput is called, the low level hook is called for the new input event, and only after those are processed it returns back to the current event).
+- For updating the keyboard state, KEYUP messages result in the state for that key code being set to false, and KEYDOWN result in the state for that key code being set to true.
+- For modifiers the behavior is slightly different as if the key state of the L/R version is modified, it should also modify the common version, and if a common version is released, it should release both the L and R versions.
+
+### Tests for single key remaps and shortcut remaps
+Using the MockedInput handler, all the expected (and known) key scenarios that can occur for while pressing a remapped key or remapped shortcut are tested at (INSERTLINK). The foreground app behavior which is specific to app-specific shortcuts is tested at (INSERTLINK).
