@@ -327,7 +327,7 @@ namespace KeyboardManagerHelper
     }
 
     // Function to filter the key codes for artificial key codes
-    DWORD FilterArtificialKeys(const DWORD& key)
+    int32_t FilterArtificialKeys(const int32_t& key)
     {
         switch (key)
         {

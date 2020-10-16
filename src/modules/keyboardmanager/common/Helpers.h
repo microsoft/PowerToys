@@ -100,7 +100,7 @@ namespace KeyboardManagerHelper
     void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, LPINPUT keyEventArray, int& index, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);
 
     // Function to filter the key codes for artificial key codes
-    DWORD FilterArtificialKeys(const DWORD& key);
+    int32_t FilterArtificialKeys(const int32_t& key);
 
     // Function to sort a vector of shortcuts based on it's size
     void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
