@@ -59,8 +59,8 @@ namespace ColorPicker.ViewModels
         public void Initialize()
         {
             _initializing = true;
-            ColorsHistory.Clear();
 
+            // ColorsHistory.Clear();
             foreach (var item in _userSettings.ColorHistory)
             {
                 var parts = item.Split('|');
@@ -74,6 +74,9 @@ namespace ColorPicker.ViewModels
                 SelectedColor = ColorsHistory.First();
             }
 
+            ColorsHistory.Add(Colors.Red);
+            ColorsHistory.Add(Colors.LightBlue);
+            ColorsHistory.Add(Colors.BlueViolet);
             _initializing = false;
         }
 

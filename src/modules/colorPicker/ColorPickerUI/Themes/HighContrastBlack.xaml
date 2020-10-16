@@ -15,37 +15,21 @@
     <system:String x:Key="Theme.ColorScheme">Accent4</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <Color x:Key="SystemBaseMediumLowColor">#66FFFFFF</Color>
-    <SolidColorBrush x:Key="SystemChromeLow" Color="Black" options:Freeze="True" />
-    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF3ff23f" />
-    <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#30FFFFFF" />
-    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61FFFFFF" />
-    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#30FFFFFF" />
-    <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61FFFFFF" />
-    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF0ca7b6" />
-    <SolidColorBrush x:Key="ControlTextBrushKey" Color="White" />
-    <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FF3ff23f" />
-    <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="White" />
-    <SolidColorBrush x:Key="DialogBorderBrush" Color="White" />
+    <SolidColorBrush x:Key="DialogWindowTitleBarBackgroundBrush" Color="#FF121212" />
+    <SolidColorBrush x:Key="DialogWindowBackgroundBrush" Color="#FF1b1b1b" />
+    <SolidColorBrush x:Key="DialogWindowTitleBarForegroundBrush" Color="#FF6e6e6e"/>
+    <SolidColorBrush x:Key="DialogWindowBorderBrush" Color="White"/>
 
-    <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="White" />
-    <Color x:Key="ScrollBarThumbPointerOver">#FF0ca7b6</Color>
-    <Color x:Key="ScrollBarThumbPointerPressed">#FF0ca7b6</Color>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="PanelBorderBrush" Color="#FFffffff" />
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFffffff" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF1aebff" />
+    <SolidColorBrush x:Key="ItemBackgroundBrush" Color="#FF2e2e2e" />
 
-    <Color x:Key="ScrollBarBackgroundPointerOver">#FF000000</Color>
+    <SolidColorBrush x:Key="ZonePreviewBackgroundBrush" Color="#FF656565" />
+    <SolidColorBrush x:Key="ZonePreviewBorderBrush" Color="#FF2e2e2e" />
 
-    <SolidColorBrush x:Key="ScrollBarLineButtonForeground">#FFFFFFFF</SolidColorBrush>
-    <Color x:Key="ScrollBarLineButtonForegroundPointerOver">#FFFFFFFF</Color>
-    <Color x:Key="ScrollBarLineButtonForegroundPointerPressed">#FFFFFFFF</Color>
-
-    <SolidColorBrush x:Key="ScrollBarLineButtonBackground" Color="Transparent"/>
-    <Color x:Key="ScrollBarLineButtonBackgroundPointerOver">#FF000000</Color>
-    <Color x:Key="ScrollBarLineButtonBackgroundPointerPressed">#FF000000</Color>
-
-    <SolidColorBrush x:Key="ToolTipBorderBrushKey" Color="#5B000000" />
-    <SolidColorBrush x:Key="ToolTipForegroundBrushKey" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ToolTipBackgroundBrushKey" Color="#FF2B2B2B" />
+    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
+    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>
 </ResourceDictionary>
