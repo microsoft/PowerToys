@@ -4,9 +4,11 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin
@@ -96,6 +98,7 @@ namespace Wox.Core.Plugin
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
         private static PluginMetadata GetMetadataFromJson(string pluginDirectory)
         {
             string configPath = Path.Combine(pluginDirectory, "plugin.json");
@@ -111,11 +114,10 @@ namespace Wox.Core.Plugin
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
+            catch (Exception e)
             {
                 string error = $"Parse plugin config {configPath} failed: json format is not valid";
+                Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
                 {
                     throw new Exception(error);
