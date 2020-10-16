@@ -42,8 +42,8 @@ namespace Wox.Core.Plugin
 
             foreach (string pluginActionKeyword in nonGlobalPlugins.Keys)
             {
-                // Using InvariantCulture since this is a command line arg
-                if (possibleActionKeyword.StartsWith(pluginActionKeyword, StringComparison.InvariantCulture))
+                // Using Ordinal since this is used internally
+                if (possibleActionKeyword.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
                 {
                     if (nonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
                     {

@@ -41,16 +41,16 @@ namespace Wox.Core.Plugin
 
                 string pluginFolderPath = Infrastructure.Constant.PluginsDirectory;
 
-                // Using InvariantCulture since this is a command line arg
+                // Using Ordinal since this is part of a path
                 string newPluginName = plugin.Name
-                    .Replace("/", "_", StringComparison.InvariantCulture)
-                    .Replace("\\", "_", StringComparison.InvariantCulture)
-                    .Replace(":", "_", StringComparison.InvariantCulture)
-                    .Replace("<", "_", StringComparison.InvariantCulture)
-                    .Replace(">", "_", StringComparison.InvariantCulture)
-                    .Replace("?", "_", StringComparison.InvariantCulture)
-                    .Replace("*", "_", StringComparison.InvariantCulture)
-                    .Replace("|", "_", StringComparison.InvariantCulture)
+                    .Replace("/", "_", StringComparison.Ordinal)
+                    .Replace("\\", "_", StringComparison.Ordinal)
+                    .Replace(":", "_", StringComparison.Ordinal)
+                    .Replace("<", "_", StringComparison.Ordinal)
+                    .Replace(">", "_", StringComparison.Ordinal)
+                    .Replace("?", "_", StringComparison.Ordinal)
+                    .Replace("*", "_", StringComparison.Ordinal)
+                    .Replace("|", "_", StringComparison.Ordinal)
                     + "-" + Guid.NewGuid();
                 string newPluginPath = Path.Combine(pluginFolderPath, newPluginName);
                 string content = $"Do you want to install following plugin?{Environment.NewLine}{Environment.NewLine}" +
@@ -163,8 +163,8 @@ namespace Wox.Core.Plugin
                 strDirectory = Directory.GetCurrentDirectory();
             }
 
-            // Using InvariantCulture since this is a command line arg
-            if (!strDirectory.EndsWith("\\", StringComparison.InvariantCulture))
+            // Using Ordinal since this is a path
+            if (!strDirectory.EndsWith("\\", StringComparison.Ordinal))
             {
                 strDirectory += "\\";
             }

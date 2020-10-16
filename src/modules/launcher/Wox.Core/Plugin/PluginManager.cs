@@ -214,8 +214,8 @@ namespace Wox.Core.Plugin
 
                 if (!string.IsNullOrEmpty(query.ActionKeyword))
                 {
-                    // Using InvariantCulture since this is a command line arg
-                    result.QueryTextDisplay = string.Format(CultureInfo.InvariantCulture, "{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
+                    // Using CurrentCulture since this is user facing
+                    result.QueryTextDisplay = string.Format(CultureInfo.CurrentCulture, "{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
                 }
             }
 
