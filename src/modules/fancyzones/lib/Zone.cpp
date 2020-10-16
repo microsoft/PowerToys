@@ -15,7 +15,11 @@ namespace
     {
         int width  = rect.right - rect.left;
         int height = rect.bottom - rect.top;
-        return rect.left >= 0 && rect.right >= 0 && rect.top >= 0 && rect.bottom >= 0 && width >= 0 && height >= 0;
+        return rect.left   >= ZoneConstants::MAX_NEGATIVE_SPACING &&
+               rect.right  >= ZoneConstants::MAX_NEGATIVE_SPACING &&
+               rect.top    >= ZoneConstants::MAX_NEGATIVE_SPACING &&
+               rect.bottom >= ZoneConstants::MAX_NEGATIVE_SPACING &&
+               width >= 0 && height >= 0;
     }
 
     BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
