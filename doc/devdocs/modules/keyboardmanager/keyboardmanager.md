@@ -108,7 +108,7 @@ Since the [`hook_proc`](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4
 
 As seen in the code for `hook_proc`, similar to other keyboard hooks in PowerToys it consists of a main method `HandleKeyboardHookEvent` which computes whether the key needs to be suppressed and accordingly returns 1 or calls the `CallNextHook` method.
 
-https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L330-L349
+https://github.com/microsoft/PowerToys/blob/master/src/modules/keyboardmanager/dll/dllmain.cpp#L330-L349
 
 `HandleKeyboardHookEvent` is covered in the [next section](#HandleKeyboardHookEvent). The `SetNumLockToPreviousState` code in the above snippet is required for a special scenario with keyboard input, which is covered in [this section](Suppressing-Num-Lock-in-a-keyboard-hook).
 
