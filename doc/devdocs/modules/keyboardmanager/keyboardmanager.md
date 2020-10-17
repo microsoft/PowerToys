@@ -21,15 +21,17 @@ This file contains the documentation for the KeyboardManager PowerToy module whi
 10. [Telemetry](#Telemetry)
 
 ## Class members
-The `KeyboardManager` module has 3 main class members:
+The `KeyboardManager` module has [3 main class members](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L54-L61):
 - A static pointer to the current object of `KeyboardManager`. This is required for using the `KeyboardManager` object in the low level keyboard hook handler as that method must be static. This is described in more detail in [this section](#Low-level-keyboard-hook-handler).
 - An object of type `Input`, which is used for all the operations that involving getting or setting keyboard states. This is wrapped in an object to allow testing the remapping methods.
-- An object of type `KeyboardManagerState`. This object contains all the data related to remappings and is also used in the sense of a View Model as it used to communicate common data that is shared between the KBM UI and the backend. This class is described in more detail [here](keyboardmanagercommon.md#helpers).
+- An object of type `KeyboardManagerState`. This object contains all the data related to remappings and is also used in the sense of a View Model as it used to communicate common data that is shared between the KBM UI and the backend. This class is described in more detail [here](keyboardmanagercommon.md#keyboardmanagerstate).
 
 ## Enable/Disable
-On enabling KBM, the low level keyboard hook is started, and it is unhooked on disable. This is done to allow users to manually restart KBM if some other application which registers a keyboard hook was launched after PowerToys, so that it can be brought back to the highest priority hook (as the last hook to be registered receives the input first as mentioned in this blog INSERTLINK).
+On enabling KBM, the low level keyboard hook is started, and it is unhooked on disable. This is done to allow users to manually restart KBM if some other application which registers a keyboard hook was launched after PowerToys, so that it can be brought back to the highest priority hook (as the last hook to be registered receives the input first as mentioned [here](https://docs.microsoft.com/en-us/windows/win32/winmsg/about-hooks#hook-procedures)).
 
 In addition to stopping the hook, any active KBM UI windows are also closed on disabling. This is done because the KBM UI uses the same keyboard hook for the Type button where you can type a key/shortcut, so if KBM is disabled the windows would not be completely functional.
+
+The enable/disable code can be found at https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L301-L322
 
 ## Settings format
 KBM uses two sets of settings files. 
