@@ -1,7 +1,20 @@
 # Keyboard Manager Common
-This project contains any code that is to be shared between the backend and UI projects. This file covers any functionality which hasn't been covered along with the other modules.
+This project contains any code that is to be shared between the backend and UI projects. This file covers any functionality in this project which hasn't been covered along with the other modules.
 
 ## Table of Contents
+1. [KeyboardManagerState](#KeyboardManagerState)
+    1. [UI States](#UI-States)
+    2. [DetectSingleRemapKeyUIBackend and DetectShortcutUIBackend](#DetectSingleRemapKeyUIBackend-and-DetectShortcutUIBackend)
+    3. [HandleKeyDelayEvent](#HandleKeyDelayEvent)
+    4. [Saving remappings to file](#Saving-remappings-to-file)
+    5. [Concurrent Access to remap tables](#Concurrent-Access-to-remap-tables)
+2. [KeyDelay](#KeyDelay)
+3. [Shortcut and RemapShortcut classes](#Shortcut-and-RemapShortcut-classes)
+    1. [IsKeyboardStateClearExceptShortcut](#IsKeyboardStateClearExceptShortcut)
+    2. [CheckModifiersKeyboardState](#CheckModifiersKeyboardState)
+    3. [Tests](#Tests)
+4. [Helpers](#Helpers)
+    1. [Foreground App Detection](#Foreground-App-Detection)
 
 ## KeyboardManagerState
 This class stores all the data related to remappings and is also used in the sense of a View Model as it used to communicate common data that is shared between the KBM UI and the backend. They are accessed on the UI controls using static class members of `SingleKeyRemapControl` and `ShortcutControl`.

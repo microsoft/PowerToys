@@ -1,6 +1,15 @@
 # Keyboard Event Handlers (Remapping Logic)
+This file contains documentation for all the methods involved in key/shortcut remapping.
 
 ## Table of Contents:
+1. [HandleSingleKeyRemapEvent](#HandleSingleKeyRemapEvent)
+2. [HandleShortcutRemapEvent](#HandleShortcutRemapEvent)
+3. [HandleOSLevelShortcutRemapEvent](#HandleOSLevelShortcutRemapEvent)
+4. [HandleAppSpecificShortcutRemapEvent](#HandleAppSpecificShortcutRemapEvent)
+5. [HandleSingleKeyToggleToModEvent (Obsolete))](#HandleSingleKeyToggleToModEvent-(Obsolete---Code-from-PoC-which-is-commented-out))
+6. [Tests](#Tests)
+    1. [MockedInput](#MockedInput)
+    2. [Tests for single key remaps and shortcut remaps](#Tests-for-single-key-remaps-and-shortcut-remaps)
 
 ## HandleSingleKeyRemapEvent
 This method is used for handling the key to key and key to shortcut remapping logic.(INSERTCODELINK) The general logic is as follows:

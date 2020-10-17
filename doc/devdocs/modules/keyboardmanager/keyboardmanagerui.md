@@ -1,14 +1,24 @@
 # Keyboard Manager UI
 
 ## Table of Contents:
-- Settings format (INSERTLINK)
-- Loading settings
-- Enable/Disable
-- Class members
-- Low level keyboard hook handler
+1. [C++ XAML Islands](#c---xaml-islands)
+    1. [Debugging exceptions in XAML Islands](#debugging-exceptions-in-xaml-islands)
+    2. [Build times](#build-times)
+    3. [Setting custom backgrounds for Xaml Controls using brushes](#setting-custom-backgrounds-for-xaml-controls-using-brushes)
+2. [UI Structure](#ui-structure)
+3. [EditKeyboardWindow/EditShortcutsWindow](#editkeyboardwindow-editshortcutswindow)
+    1. [OK and Cancel button](#ok-and-cancel-button)
+    2. [Delete button](#delete-button)
+    3. [Handling common modifiers in EditKeyboardWindow](#handling-common-modifiers-in-editkeyboardwindow)
+4. [SingleKeyRemapControl](#singlekeyremapcontrol)
+5. [ShortcutControl](#shortcutcontrol)
+6. [KeyDropDownControl](#keydropdowncontrol)
+    1. [Localized key names](#localized-key-names)
+    2. [Single Key ComboBox Selection Handler](#single-key-combobox-selection-handler)
+    3. [Shortcut ComboBox Selection Handler](#shortcut-combobox-selection-handler)
 
-## C++ Xaml Islands
-The KBM UI is implemented as a C++ XAML Island, but all the controls are implemented in code behind rather than .xaml and .xaml.cs files. This was done as per a Xaml Island Code sample and it didn't require a separate UWP project, which could be limited in terms of using hooks. There is a tech debt item (INSERTLINK https://github.com/microsoft/PowerToys/issues/2027) for moving this to XAML. The reason it wasn't implemented in the C# Settings was because it required communication with the low level hook thread, which could be too slow if IPC is used, since the UI needs to update on every key event.
+## C++ XAML Islands
+The KBM UI is implemented as a C++ XAML Island, but all the controls are implemented in code behind rather than .xaml and .xaml.cs files. This was done as per a XAML Island Code sample and it didn't require a separate UWP project, which could be limited in terms of using hooks. There is a tech debt item (INSERTLINK https://github.com/microsoft/PowerToys/issues/2027) for moving this to XAML. The reason it wasn't implemented in the C# Settings was because it required communication with the low level hook thread, which could be too slow if IPC is used, since the UI needs to update on every key event.
 
 **Note:** For functions which take a XAML component as argument, pass it by value and not by reference. This is because `winrt` WinUI classes store their own internal references, so they are supposed to be passed by value (and internally ref counts are incremented). Passing by reference can lead to weird behavior where the object is `null`.
 
@@ -20,8 +30,8 @@ Once the UI controls are created, the parent container is set as the content for
 
 **Note:** `ContentDialog` in Xaml Islands requires manually settings a `XamlRoot`. This can generally be done by passing the XamlRoot from a component in the main window, such as the button used to open the dialog (`sender.as<Button>().XamlRoot()`(INSERTCODELINK)). These docs have more details about this (INSERTLINK) (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
 
-### Debugging exceptions in Xaml Islands
-Sometimes if an exception occurs in Xaml Islands, the stack trace may not always point to the correct code causing the exception and instead it will point to the Xaml Island message loop. In these cases the output window in VS will generally show the correct exception.
+### Debugging exceptions in XAML Islands
+Sometimes if an exception occurs in XAML Islands, the stack trace may not always point to the correct code causing the exception and instead it will point to the Xaml Island message loop. In these cases the output window in VS will generally show the correct exception.
 
 ### Build times
 C++ Xaml Islands generally take several minutes to build because the `pch` which contains the WinUI headers takes longer to build and compiles to a file of several GBs. To minimize the build times, multi-processor compilation within the projects have been enabled (files are distributed for compilation to the processors), and references to the Xaml headers have been removed from the .h headers files as much as possible. Since several classes of ours had class members with UI controls like `StackPanel` (which requires definitions of the classes in order to compile), we worked around this by declaring them as `IInspectable` (the equivalent of an object pointer in winrt), and initializing them to the actual control like `StackPanel` in the constructor and accessing all their member functions by inline typecasting (for `IInspectable x;` we do `x = StackPanel();` and `x.as<StackPanel>().MemberFunction()`).

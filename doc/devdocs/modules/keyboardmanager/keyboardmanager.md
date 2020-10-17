@@ -1,11 +1,35 @@
 # Keyboard Manager module
-
+This file contains the documentation for the KeyboardManager PowerToy module which is called by the runner.
 ## Table of Contents:
-- Settings format (INSERTLINK)
-- Loading settings
-- Enable/Disable
-- Class members
-- Low level keyboard hook handler
+1. [Class members](#Class-members)
+2. [Enable/Disable](#Enable/disable)
+3. [Settings format](#Settings-format)
+4. [Loading settings](#Loading-settings)
+5. [Low level keyboard hook handler](#Low-level-keyboard-hook-handler)
+6. [Custom Action to launch KBM UI](#Custom-Action-to-launch-KBM-UI)
+7. [SendInput Special Scenarios](#SendInput-Special-Scenarios)
+    1. [Extended keys](#Extended-keys)
+    2. [Scan code](#Scan-code)
+8. [Special Scenarios](#Special-Scenarios)
+    1. [Dummy key events](#Dummy-key-events)
+    2. [Suppressing Num Lock in a keyboard hook](#Suppressing-Num-Lock-in-a-keyboard-hook)
+    3. [Modifier-Caps Lock interaction on Japanese IME keyboards](#Modifier-Caps-Lock-interaction-on-Japanese-IME-keyboards)
+    4. [UIPI Issues (not resolved)](#UIPI-Issues-(not-resolved))
+9. [Other remapping approaches](#Other-remapping-approaches)
+    1. [Registry approach](#Registry-approach)
+    2. [Driver approach](#Driver-approach)
+10. [Telemetry](#Telemetry)
+
+## Class members
+The `KeyboardManager` module has 3 main class members:
+- A static pointer to the current object of `KeyboardManager`. This is required for using the `KeyboardManager` object in the low level keyboard hook handler as that method must be static. This is described in more detail in the next section(INSERTLINK).
+- An object of type `Input`, which is used for all the operations that involving getting or setting keyboard states. This is wrapped in an object to allow testing the remapping methods. This is described in detail at (INSERTLINK).
+- An object of type `KeyboardManagerState`. This object contains all the data related to remappings and is also used in the sense of a View Model as it used to communicate common data that is shared between the KBM UI and the backend. This class is described in more detail at (INSERTLINK).
+
+## Enable/Disable
+On enabling KBM, the low level keyboard hook is started, and it is unhooked on disable. This is done to allow users to manually restart KBM if some other application which registers a keyboard hook was launched after PowerToys, so that it can be brought back to the highest priority hook (as the last hook to be registered receives the input first as mentioned in this blog INSERTLINK).
+
+In addition to stopping the hook, any active KBM UI windows are also closed on disabling. This is done because the KBM UI uses the same keyboard hook for the Type button where you can type a key/shortcut, so if KBM is disabled the windows would not be completely functional.
 
 ## Settings format
 KBM uses two sets of settings files. 
@@ -76,17 +100,6 @@ KBM uses two sets of settings files.
 
 ## Loading settings
 KBM settings are loaded only on the C++ side only at start up, in the construct (INSERTCODELINK). The settings file may get modified from the KBM UI on applying new remappings, but the the file is not read again. The files are read from the PowerToys Settings process whenever a change is made to the file (using a FileWatcher) or whenever the KBM page is opened.
-
-## Enable/Disable
-On enabling KBM, the low level keyboard hook is started, and it is unhooked on disable. This is done to allow users to manually restart KBM if some other application which registers a keyboard hook was launched after PowerToys, so that it can be brought back to the highest priority hook (as the last hook to be registered receives the input first as mentioned in this blog INSERTLINK).
-
-In addition to stopping the hook, any active KBM UI windows are also closed on disabling. This is done because the KBM UI uses the same keyboard hook for the Type button where you can type a key/shortcut, so if KBM is disabled the windows would not be completely functional.
-
-## Class members
-The `KeyboardManager` module has 3 main class members:
-- A static pointer to the current object of `KeyboardManager`. This is required for using the `KeyboardManager` object in the low level keyboard hook handler as that method must be static. This is described in more detail in the next section(INSERTLINK).
-- An object of type `Input`, which is used for all the operations that involving getting or setting keyboard states. This is wrapped in an object to allow testing the remapping methods. This is described in detail at (INSERTLINK).
-- An object of type `KeyboardManagerState`. This object contains all the data related to remappings and is also used in the sense of a View Model as it used to communicate common data that is shared between the KBM UI and the backend. This class is described in more detail at (INSERTLINK).
 
 ## Low level keyboard hook handler
 Since the `hook_proc` (INSERTCODELINK) cannot be a member function in the class, this is declared `static` and a `static pointer` to the `KeyboardManager` project is used (`keyboardmanager_object_ptr`)(INSERTCODELINK).
