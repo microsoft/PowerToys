@@ -66,6 +66,7 @@ namespace Wox.Plugin
                     darkThemeUri,
                     MahAppsLibraryThemeProvider.DefaultInstance));
 
+            ResetTheme();
             ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
             ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
         }
