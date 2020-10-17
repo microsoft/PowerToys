@@ -31,7 +31,7 @@ On enabling KBM, the low level keyboard hook is started, and it is unhooked on d
 
 In addition to stopping the hook, any active KBM UI windows are also closed on disabling. This is done because the KBM UI uses the same keyboard hook for the Type button where you can type a key/shortcut, so if KBM is disabled the windows would not be completely functional.
 
-The enable/disable code can be found at https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L301-L322
+The enable/disable code can be found [here](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L301-L322)
 
 ## Settings format
 KBM uses two sets of settings files. 
@@ -101,14 +101,16 @@ KBM uses two sets of settings files.
     - `remapShortcuts` is split into `global` and `appSpecific`, where `global` remaps would apply to all applications, whereas `appSpecific` would apply on when the `targetApp` is in focus. `targetApp` must be the process name of the app (with or without it's extension), e.g. `msedge` or `msedge.exe` for Microsoft Edge.
 
 ## Loading settings
-KBM settings are loaded only on the C++ side only at start up, in the construct (INSERTCODELINK). The settings file may get modified from the KBM UI on applying new remappings, but the the file is not read again. The files are read from the PowerToys Settings process whenever a change is made to the file (using a FileWatcher) or whenever the KBM page is opened.
+KBM settings are loaded only on the C++ side only at start up, in the [constructor](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L67-L68). The settings file may get modified from the KBM UI on applying new remappings, but the the file is not read again. The files are read from the PowerToys Settings process whenever a change is made to the file (using a FileWatcher) or whenever the KBM page is opened.
 
 ## Low level keyboard hook handler
-Since the `hook_proc` (INSERTCODELINK) cannot be a member function in the class, this is declared `static` and a `static pointer` to the `KeyboardManager` project is used (`keyboardmanager_object_ptr`)(INSERTCODELINK).
+Since the [`hook_proc`](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L330-L349) cannot be a member function in the class, this is declared `static` and a `static pointer` to the `KeyboardManager` project is used ([`keyboardmanager_object_ptr`](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L54-L55)).
 
-As seen in the code for `hook_proc` (INSERTCODELINK), similar to other keyboard hooks in PowerToys it consists of a main method `HandleKeyboardHookEvent` which computes whether the key needs to be suppressed and accordingly returns 1 or calls the `CallNextHook` method.
+As seen in the code for `hook_proc`, similar to other keyboard hooks in PowerToys it consists of a main method `HandleKeyboardHookEvent` which computes whether the key needs to be suppressed and accordingly returns 1 or calls the `CallNextHook` method.
 
-`HandleKeyboardHookEvent` is covered in the next section(INSERTLINK). The `SetNumLockToPreviousState` code in the above snippet is required for a special scenario with keyboard input, which is covered in this section(INSERTLINK).
+https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/dllmain.cpp#L330-L349
+
+`HandleKeyboardHookEvent` is covered in the [next section](#HandleKeyboardHookEvent). The `SetNumLockToPreviousState` code in the above snippet is required for a special scenario with keyboard input, which is covered in [this section](Suppressing-Num-Lock-in-a-keyboard-hook).
 
 ## HandleKeyboardHookEvent
 The `HandleKeyboardHookEvent` is the method which calls the corresponding remapping methods in the required order. The following checks are executed in order:
