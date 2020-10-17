@@ -3,11 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using ControlzEx.Theming;
 using MahApps.Metro.Theming;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.Win32;
 
 namespace Wox.Plugin
@@ -15,6 +16,7 @@ namespace Wox.Plugin
     public class ThemeManager : IDisposable
     {
         private readonly Application _app;
+        private readonly ISettingsUtils _settingsUtils;
         private const string LightTheme = "Light.Accent1";
         private const string DarkTheme = "Dark.Accent1";
         private const string HighContrastOneTheme = "HighContrast.Accent2";
@@ -30,6 +32,7 @@ namespace Wox.Plugin
         public ThemeManager(Application app)
         {
             _app = app;
+            _settingsUtils = new SettingsUtils(new SystemIOProvider());
 
             Uri highContrastOneThemeUri = new Uri("pack://application:,,,/Themes/HighContrast1.xaml");
             Uri highContrastTwoThemeUri = new Uri("pack://application:,,,/Themes/HighContrast2.xaml");
@@ -63,7 +66,6 @@ namespace Wox.Plugin
                     darkThemeUri,
                     MahAppsLibraryThemeProvider.DefaultInstance));
 
-            ResetTheme();
             ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
             ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
         }
@@ -90,25 +92,17 @@ namespace Wox.Plugin
                 case "hcblack":
                     return Theme.HighContrastBlack;
                 default:
-                    return Theme.None;
+                    return Theme.HighContrastOne;
             }
         }
 
         private void ResetTheme()
         {
-            if (WindowsThemeHelper.IsHighContrastEnabled())
-            {
-                Theme highContrastBaseType = GetHighContrastBaseType();
-                ChangeTheme(highContrastBaseType);
-            }
-            else
-            {
-                string baseColor = WindowsThemeHelper.GetWindowsBaseColor();
-                ChangeTheme((Theme)Enum.Parse(typeof(Theme), baseColor));
-            }
+            var settings = _settingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+            ChangeTheme((Theme)Enum.Parse(typeof(Theme), settings.Properties.Theme, true));
         }
 
-        private void ChangeTheme(Theme theme)
+        public void ChangeTheme(Theme theme)
         {
             Theme oldTheme = currentTheme;
 
@@ -144,7 +138,17 @@ namespace Wox.Plugin
             }
             else
             {
-                currentTheme = Theme.None;
+                currentTheme = Theme.System;
+                if (WindowsThemeHelper.IsHighContrastEnabled())
+                {
+                    Theme highContrastBaseType = GetHighContrastBaseType();
+                    ChangeTheme(highContrastBaseType);
+                }
+                else
+                {
+                    string baseColor = WindowsThemeHelper.GetWindowsBaseColor();
+                    ChangeTheme((Theme)Enum.Parse(typeof(Theme), baseColor));
+                }
             }
 
             ThemeChanged?.Invoke(oldTheme, currentTheme);
@@ -178,7 +182,7 @@ namespace Wox.Plugin
 
     public enum Theme
     {
-        None,
+        System,
         Light,
         Dark,
         HighContrastOne,

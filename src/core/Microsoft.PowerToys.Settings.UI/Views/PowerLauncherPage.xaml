@@ -146,7 +146,22 @@
 	                IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableDriveDetectionWarning}"
 	                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
 	                />
+            <TextBlock x:Uid="PowerLauncher_Theme"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
+                <RadioButton x:Uid="PowerLauncher_Radio_Theme_Dark"
+                             Content="Dark"
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}" />
 
+                <RadioButton x:Uid="PowerLauncher_Radio_Theme_Light"
+                             Content="Light"
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}" />
+
+                <RadioButton x:Uid="PowerLauncher_Radio_Theme_Default"
+                             Content="System default"
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}" />
+            </StackPanel>
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 

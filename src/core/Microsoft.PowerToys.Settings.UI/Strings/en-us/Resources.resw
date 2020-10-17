@@ -302,6 +302,9 @@
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
+  <data name="PowerLauncher_Theme.Text" xml:space="preserve">
+    <value>Choose color</value>
+  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>

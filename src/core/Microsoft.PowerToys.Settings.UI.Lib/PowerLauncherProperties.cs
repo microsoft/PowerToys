@@ -44,6 +44,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("clear_input_on_launch")]
         public bool ClearInputOnLaunch { get; set; }
 
+        [JsonPropertyName("theme")]
+        public string Theme { get; set; }
+
         public PowerLauncherProperties()
         {
             OpenPowerLauncher = new HotkeySettings(false, false, true, false, 32);
@@ -56,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             DisableDriveDetectionWarning = false;
             ClearInputOnLaunch = false;
             MaximumNumberOfResults = 4;
+            Theme = "system";
         }
     }
 }
