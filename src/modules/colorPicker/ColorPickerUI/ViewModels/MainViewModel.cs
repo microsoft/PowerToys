@@ -92,7 +92,7 @@ namespace ColorPicker.ViewModels
         }
 
         /// <summary>
-        /// Tell the color picker thaht the color on the position of the mouse cursor have changed
+        /// Tell the color picker that the color on the position of the mouse cursor have changed
         /// </summary>
         /// <param name="sender">The sender of this event</param>
         /// <param name="color">The new <see cref="Color"/> under the mouse cursor</param>
