@@ -10,6 +10,6 @@ namespace Microsoft.Plugin.Folder.Sources
 {
     public interface IQueryFileSystemInfo : IDirectoryWrapper
     {
-        IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, SearchOption searchOption);
+        IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, bool isRecursive);
     }
 }

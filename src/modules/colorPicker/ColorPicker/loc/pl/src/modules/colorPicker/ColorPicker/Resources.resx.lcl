@@ -13,12 +13,18 @@
       <Item ItemId=";ColorPicker_Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[ColorPicker]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Selektor kolorów]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPicker_Settings_Desc" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[This feature requires Windows 10 version 1903 or higher]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ta funkcja wymaga systemu Windows 10 w wersji 1903 lub nowszej]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BufferValidationHelpers.h"
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <common\shared_constants.h>
 
 namespace BufferValidationHelpers
 {
@@ -121,9 +122,14 @@ namespace BufferValidationHelpers
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutOneActionKey;
                     }
                 }
+                // Disable can not be selected if one modifier key has already been selected
+                else if (keyCodeList[selectedKeyIndex] == CommonSharedConstants::VK_DISABLED && dropDownIndex)
+                {
+                    errorType = KeyboardManagerHelper::ErrorType::ShortcutDisableAsActionKey;
+                }
                 // If none of the above, then the action key will be set
             }
-            // If it is the not the last drop down
+            // If it is not the last drop down
             else
             {
                 if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]))
@@ -157,6 +163,11 @@ namespace BufferValidationHelpers
                         // warn and reset the drop down
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutAtleast2Keys;
                     }
+                }
+                // Allow selection of VK_DISABLE only in first dropdown
+                else if (keyCodeList[selectedKeyIndex] == CommonSharedConstants::VK_DISABLED && dropDownIndex)
+                {
+                    errorType = KeyboardManagerHelper::ErrorType::ShortcutDisableAsActionKey;
                 }
                 // If the user tries to set an action key check if all drop down menus after this are empty if it is not the first key. If it is a hybrid control, this can be done even on the first key
                 else if (dropDownIndex != 0 || isHybridControl)
@@ -193,7 +204,7 @@ namespace BufferValidationHelpers
         // After validating the shortcut, now for errors like remap to same shortcut, remap shortcut more than once, Win L and Ctrl Alt Del
         if (errorType == KeyboardManagerHelper::ErrorType::NoError)
         {
-            std::variant<DWORD, Shortcut> tempShortcut;
+            KeyShortcutUnion tempShortcut;
             if (isHybridControl && selectedKeyCodes.size() == 1)
             {
                 tempShortcut = selectedKeyCodes[0];

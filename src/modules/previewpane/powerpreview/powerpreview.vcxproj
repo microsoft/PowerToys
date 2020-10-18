@@ -85,7 +85,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;EXAMPLEPOWERTOY_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\common\Telemetry;..\..\..\common;..\..\common\inc;..\common\Telemetry;..\;..\..\;..\..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\;..\..\..\;..\..\..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -109,11 +109,13 @@
   <ItemGroup>
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="preview_handler.h" />
     <ClInclude Include="registry_wrapper.h" />
     <ClInclude Include="registry_wrapper_interface.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <None Include="resource.base.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="thumbnail_provider.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
@@ -123,8 +125,10 @@
     </ClCompile>
     <ClCompile Include="powerpreview.cpp" />
     <ClInclude Include="powerpreview.h" />
+    <ClCompile Include="preview_handler.cpp" />
     <ClCompile Include="registry_wrapper.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="thumbnail_provider.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>

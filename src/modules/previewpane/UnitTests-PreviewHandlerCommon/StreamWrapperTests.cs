@@ -50,7 +50,7 @@ namespace PreviewHandlerCommonUnitTests
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
                 // Assert
-                Assert.AreEqual(streamWrapper.CanRead, true);
+                Assert.AreEqual(true, streamWrapper.CanRead);
             }
         }
 
@@ -64,7 +64,7 @@ namespace PreviewHandlerCommonUnitTests
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
                 // Assert
-                Assert.AreEqual(streamWrapper.CanSeek, true);
+                Assert.AreEqual(true, streamWrapper.CanSeek);
             }
         }
 
@@ -78,7 +78,7 @@ namespace PreviewHandlerCommonUnitTests
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
                 // Assert
-                Assert.AreEqual(streamWrapper.CanWrite, false);
+                Assert.AreEqual(false, streamWrapper.CanWrite);
             }
         }
 
@@ -101,7 +101,7 @@ namespace PreviewHandlerCommonUnitTests
                 var actualLength = streamWrapper.Length;
 
                 // Assert
-                Assert.AreEqual(actualLength, streamLength);
+                Assert.AreEqual(streamLength, actualLength);
             }
         }
 
@@ -127,7 +127,7 @@ namespace PreviewHandlerCommonUnitTests
                 var actualPosition = streamWrapper.Position;
 
                 // Assert
-                Assert.AreEqual(actualPosition, currPosition);
+                Assert.AreEqual(currPosition, actualPosition);
                 streamMock.Verify(_ => _.Seek(It.Is<long>(offset => offset == expectedOffset), It.Is<int>(dworigin => dworigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
             }
         }
@@ -207,7 +207,7 @@ namespace PreviewHandlerCommonUnitTests
                 var actualPosition = streamWrapper.Seek(0, SeekOrigin.Begin);
 
                 // Assert
-                Assert.AreEqual(position, actualPosition);
+                Assert.AreEqual(actualPosition, position);
             }
         }
 

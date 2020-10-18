@@ -31,6 +31,18 @@ namespace ImageResizer.Models
         }
 
         [Fact]
+        public void ExecuteCopiesFrameMetadataExceptWhenMetadataCannotBeCloned()
+        {
+            var operation = new ResizeOperation("TestMetadataIssue2447.jpg", _directory, Settings());
+
+            operation.Execute();
+
+            AssertEx.Image(
+                _directory.File(),
+                image => Assert.Null(((BitmapMetadata)image.Frames[0].Metadata).CameraModel));
+        }
+
+        [Fact]
         public void ExecuteKeepsDateModified()
         {
             var operation = new ResizeOperation("Test.png", _directory, Settings(s => s.KeepDateModified = true));
@@ -430,19 +442,19 @@ namespace ImageResizer.Models
 
         private static Settings Settings(Action<Settings> action = null)
         {
-            var settings = new Settings
+            var settings = new Settings()
             {
-                Sizes = new ObservableCollection<ResizeSize>
-                {
-                    new ResizeSize
-                    {
-                        Name = "Test",
-                        Width = 96,
-                        Height = 96,
-                    },
-                },
                 SelectedSizeIndex = 0,
             };
+            settings.Sizes.Clear();
+
+            settings.Sizes.Add(new ResizeSize
+            {
+                Name = "Test",
+                Width = 96,
+                Height = 96,
+            });
+
             action?.Invoke(settings);
 
             return settings;

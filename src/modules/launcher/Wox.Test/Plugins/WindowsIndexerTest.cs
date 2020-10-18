@@ -53,7 +53,7 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.IsNotNull(queryHelper);
-            Assert.AreEqual(queryHelper.QueryMaxResults, maxCount);
+            Assert.AreEqual(maxCount, queryHelper.QueryMaxResults);
         }
 
         [Test]
@@ -281,11 +281,11 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(contextMenuItems.Count, 4);
-            Assert.AreEqual(contextMenuItems[0].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_containing_folder);
-            Assert.AreEqual(contextMenuItems[1].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_run_as_administrator);
-            Assert.AreEqual(contextMenuItems[2].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path);
-            Assert.AreEqual(contextMenuItems[3].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console);
+            Assert.AreEqual(4, contextMenuItems.Count);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_containing_folder, contextMenuItems[0].Title);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_run_as_administrator, contextMenuItems[1].Title);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path, contextMenuItems[2].Title);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console, contextMenuItems[3].Title);
         }
 
         [TestCase("item.pdf")]
@@ -309,10 +309,10 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(contextMenuItems.Count, 3);
-            Assert.AreEqual(contextMenuItems[0].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_containing_folder);
-            Assert.AreEqual(contextMenuItems[1].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path);
-            Assert.AreEqual(contextMenuItems[2].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console);
+            Assert.AreEqual(3, contextMenuItems.Count);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_containing_folder, contextMenuItems[0].Title);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path, contextMenuItems[1].Title);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console, contextMenuItems[2].Title);
         }
 
         [TestCase("C:/DummyFolder")]
@@ -334,9 +334,9 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(contextMenuItems.Count, 2);
-            Assert.AreEqual(contextMenuItems[0].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path);
-            Assert.AreEqual(contextMenuItems[1].Title, Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console);
+            Assert.AreEqual(2, contextMenuItems.Count);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path, contextMenuItems[0].Title);
+            Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console, contextMenuItems[1].Title);
         }
 
         [TestCase(0, false, ExpectedResult = true)]

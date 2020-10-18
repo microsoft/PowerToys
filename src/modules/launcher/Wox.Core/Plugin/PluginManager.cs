@@ -27,7 +27,7 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Gets directories that will hold Wox plugin directory
         /// </summary>
-        public static List<PluginPair> AllPlugins { get; private set; }
+        public static List<PluginPair> AllPlugins { get; private set; } = new List<PluginPair>();
 
         public static IPublicAPI API { get; private set; }
 
@@ -194,13 +194,14 @@ namespace Wox.Core.Plugin
         {
             foreach (Result result in results)
             {
-                if (!string.IsNullOrEmpty(result.QueryTextDisplay))
+                if (string.IsNullOrEmpty(result.QueryTextDisplay))
+                {
+                    result.QueryTextDisplay = result.Title;
+                }
+
+                if (!string.IsNullOrEmpty(query.ActionKeyword))
                 {
                     result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
-                }
-                else
-                {
-                    result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.Title);
                 }
             }
 
