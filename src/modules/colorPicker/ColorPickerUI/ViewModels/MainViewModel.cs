@@ -34,19 +34,9 @@ namespace ColorPicker.ViewModels
         private readonly IUserSettings _userSettings;
 
         /// <summary>
-        /// Backing field for <see cref="HexColor"/>
-        /// </summary>
-        private string _hexColor;
-
-        /// <summary>
-        /// Backing field for <see cref="RgbColor"/>
-        /// </summary>
-        private string _rgbColor;
-
-        /// <summary>
         /// Backing field for <see cref="OtherColor"/>
         /// </summary>
-        private string _otherColorText;
+        private string _colorText;
 
         /// <summary>
         /// Backing field for <see cref="ColorBrush"/>
@@ -76,32 +66,6 @@ namespace ColorPicker.ViewModels
         }
 
         /// <summary>
-        /// Gets the current selected color in a hexadecimal presentation
-        /// </summary>
-        public string HexColor
-        {
-            get => _hexColor;
-            private set
-            {
-                _hexColor = value;
-                OnPropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// Gets the current selected color in a RGB presentation
-        /// </summary>
-        public string RgbColor
-        {
-            get => _rgbColor;
-            private set
-            {
-                _rgbColor = value;
-                OnPropertyChanged();
-            }
-        }
-
-        /// <summary>
         /// Gets the current selected color as a <see cref="Brush"/>
         /// </summary>
         public Brush ColorBrush
@@ -117,34 +81,46 @@ namespace ColorPicker.ViewModels
         /// <summary>
         /// Gets the text representation of the selected color value
         /// </summary>
-        public string OtherColorText
+        public string ColorText
         {
-            get => _otherColorText;
+            get => _colorText;
             private set
             {
-                _otherColorText = value;
+                _colorText = value;
                 OnPropertyChanged();
             }
         }
 
+        /// <summary>
+        /// Tell the color picker thaht the color on the position of the mouse cursor have changed
+        /// </summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="color">The new <see cref="Color"/> under the mouse cursor</param>
         private void Mouse_ColorChanged(object sender, System.Drawing.Color color)
         {
             ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
-            HexColor = ColorToHex(color);
-            RgbColor = ColorToRGB(color);
 
-            OtherColorText = _userSettings.CopiedColorRepresentation.Value switch
+            ColorText = _userSettings.CopiedColorRepresentation.Value switch
             {
                 ColorRepresentationType.CMYK => ColorToCYMK(color),
+                ColorRepresentationType.HEX => ColorToHex(color),
                 ColorRepresentationType.HSL => ColorToHSL(color),
                 ColorRepresentationType.HSV => ColorToHSV(color),
-                _ => ColorToRGB(color),
+                ColorRepresentationType.RGB => ColorToRGB(color),
+
+                // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
+                _ => ColorToHex(color),
             };
         }
 
+        /// <summary>
+        /// Tell the color picker that the user have press a mouse button (after release the button)
+        /// </summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="p">The current <see cref="System.Drawing.Point"/> of the mouse cursor</param>
         private void MouseInfoProvider_OnMouseDown(object sender, System.Drawing.Point p)
         {
-            CopyToClipboard(OtherColorText);
+            CopyToClipboard(ColorText);
 
             _appStateHandler.HideColorPicker();
             PowerToysTelemetry.Log.WriteEvent(new ColorPickerShowEvent());
@@ -181,6 +157,11 @@ namespace ColorPicker.ViewModels
             }
         }
 
+        /// <summary>
+        /// Tell the color picker that the user have used the mouse wheel
+        /// </summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The new values for the zoom</param>
         private void MouseInfoProvider_OnMouseWheel(object sender, Tuple<Point, bool> e)
             => _zoomWindowHelper.Zoom(e.Item1, e.Item2);
 
