@@ -4,7 +4,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -99,18 +98,7 @@ namespace ColorPicker.ViewModels
         private void Mouse_ColorChanged(object sender, System.Drawing.Color color)
         {
             ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
-
-            ColorText = _userSettings.CopiedColorRepresentation.Value switch
-            {
-                ColorRepresentationType.CMYK => ColorToCYMK(color),
-                ColorRepresentationType.HEX => ColorToHex(color),
-                ColorRepresentationType.HSL => ColorToHSL(color),
-                ColorRepresentationType.HSV => ColorToHSV(color),
-                ColorRepresentationType.RGB => ColorToRGB(color),
-
-                // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
-                _ => ColorToHex(color),
-            };
+            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
         }
 
         /// <summary>
@@ -164,81 +152,5 @@ namespace ColorPicker.ViewModels
         /// <param name="e">The new values for the zoom</param>
         private void MouseInfoProvider_OnMouseWheel(object sender, Tuple<Point, bool> e)
             => _zoomWindowHelper.Zoom(e.Item1, e.Item2);
-
-        /// <summary>
-        /// Return a hexadecimal representation of a RGB color
-        /// </summary>
-        /// <param name="color">The color for the hexadecimal presentation</param>
-        /// <returns>A hexadecimal representation of a RGB color</returns>
-        private static string ColorToHex(System.Drawing.Color color)
-            => $"#{color.R.ToString("X2", CultureInfo.InvariantCulture)}"
-             + $"{color.G.ToString("X2", CultureInfo.InvariantCulture)}"
-             + $"{color.B.ToString("X2", CultureInfo.InvariantCulture)}";
-
-        /// <summary>
-        /// Return a <see cref="string"/> representation of a RGB color
-        /// </summary>
-        /// <param name="color">The color for the RGB color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a <see cref="System.Drawing.Color"/></returns>
-        private static string ColorToRGB(System.Drawing.Color color)
-            => $"rgb({color.R.ToString(CultureInfo.InvariantCulture)}"
-             + $", {color.G.ToString(CultureInfo.InvariantCulture)}"
-             + $", {color.B.ToString(CultureInfo.InvariantCulture)})";
-
-        /// <summary>
-        /// Return a <see cref="string"/>  representation of a HSL color
-        /// </summary>
-        /// <param name="color">The color for the HSL color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a HSL color</returns>
-        private static string ColorToHSL(System.Drawing.Color color)
-        {
-            var (hue, saturation, lightness) = ColorHelper.ConvertToHSLColor(color);
-
-            hue = Math.Round(hue);
-            saturation = Math.Round(saturation * 100);
-            lightness = Math.Round(lightness * 100);
-
-            return $"hsl({hue.ToString(CultureInfo.InvariantCulture)}"
-                 + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {lightness.ToString(CultureInfo.InvariantCulture)}%)";
-        }
-
-        /// <summary>
-        /// Return a <see cref="string"/> representation of a HSV color
-        /// </summary>
-        /// <param name="color">The color for the HSV color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a HSV color</returns>
-        private static string ColorToHSV(System.Drawing.Color color)
-        {
-            var (hue, saturation, value) = ColorHelper.ConvertToHSVColor(color);
-
-            hue = Math.Round(hue);
-            saturation = Math.Round(saturation * 100);
-            value = Math.Round(value * 100);
-
-            return $"hsv({hue.ToString(CultureInfo.InvariantCulture)}"
-                 + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {value.ToString(CultureInfo.InvariantCulture)}%)";
-        }
-
-        /// <summary>
-        /// Return a <see cref="string"/> representation of a HSV color
-        /// </summary>
-        /// <param name="color">The color for the HSV color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a HSV color</returns>
-        private static string ColorToCYMK(System.Drawing.Color color)
-        {
-            var (cyan, magenta, yellow, blackKey) = ColorHelper.ConvertToCMYKColor(color);
-
-            cyan = Math.Round(cyan * 100);
-            magenta = Math.Round(magenta * 100);
-            yellow = Math.Round(yellow * 100);
-            blackKey = Math.Round(blackKey * 100);
-
-            return $"cmyk({cyan.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {magenta.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {yellow.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {blackKey.ToString(CultureInfo.InvariantCulture)}%)";
-        }
     }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     public enum ColorRepresentationType
     {
         /// <summary>
-        /// Color presentation as hexadecimal color value (e.g. #0055FF)
+        /// Color presentation as hexadecimal color value without the alpha-value (e.g. #0055FF)
         /// </summary>
         HEX = 0,
 
@@ -53,8 +53,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public ColorRepresentationType CopiedColorRepresentation { get; set; }
 
         public override string ToString()
-        {
-            return JsonSerializer.Serialize(this);
-        }
+            => JsonSerializer.Serialize(this);
     }
 }
