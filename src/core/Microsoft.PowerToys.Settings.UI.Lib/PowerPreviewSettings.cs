@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public const string ModuleName = "File Explorer";
 
-        [JsonPropertyName("Properties")]
+        [JsonPropertyName("properties")]
         public PowerPreviewProperties Properties { get; set; }
 
         public PowerPreviewSettings()

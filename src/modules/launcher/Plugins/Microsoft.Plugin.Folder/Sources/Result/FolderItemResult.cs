@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
@@ -9,7 +10,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class FolderItemResult : IItemResult
     {
-        private static readonly IExplorerAction ExplorerAction = new ExplorerAction();
+        private static readonly IShellAction ShellAction = new ShellAction();
 
         public FolderItemResult()
         {
@@ -36,11 +37,11 @@ namespace Microsoft.Plugin.Folder.Sources.Result
             {
                 Title = Title,
                 IcoPath = Path,
-                SubTitle = "Folder: " + Subtitle,
+                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Subtitle),
                 QueryTextDisplay = Path,
                 TitleHighlightData = StringMatcher.FuzzySearch(Search, Title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Path },
-                Action = c => ExplorerAction.Execute(Path, contextApi),
+                Action = c => ShellAction.Execute(Path, contextApi),
             };
         }
     }

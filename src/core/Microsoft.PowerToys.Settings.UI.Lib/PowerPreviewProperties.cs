@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             return JsonSerializer.Serialize(this);
         }
 
-        private void LogTelemetryEvent(bool value, [CallerMemberName] string propertyName = null)
+        private static void LogTelemetryEvent(bool value, [CallerMemberName] string propertyName = null)
         {
             var dataEvent = new SettingsEnabledEvent()
             {

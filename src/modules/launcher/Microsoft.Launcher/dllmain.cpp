@@ -271,6 +271,12 @@ public:
         // For now, hotkeyId will always be zero
         if (m_enabled)
         {
+            if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
+            {
+                // The process exited, restart it
+                enable();
+            }
+
             SetEvent(m_hEvent);
             return true;
         }

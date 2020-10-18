@@ -52,9 +52,9 @@ private:
     struct MoveSizeWindowInfo
     {
         // True if from the styles the window looks like a standard window
-        bool standardWindow = false;
+        bool isStandardWindow = false;
         // True if the window is a top-level window that does not have a visible owner
-        bool noVisibleOwner = false;
+        bool hasNoVisibleOwner = false;
     };
 
     void WarnIfElevationIsRequired(HWND window) noexcept;

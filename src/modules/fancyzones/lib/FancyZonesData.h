@@ -58,7 +58,7 @@ public:
         return appZoneHistoryMap;
     }
 
-    void AddDevice(const std::wstring& deviceId);
+    bool AddDevice(const std::wstring& deviceId);
     void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
     void UpdatePrimaryDesktopData(const std::wstring& desktopId);
     void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);

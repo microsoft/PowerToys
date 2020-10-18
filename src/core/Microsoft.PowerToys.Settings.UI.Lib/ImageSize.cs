@@ -203,8 +203,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 {
                     _unit = value;
                     OnPropertyChanged();
-                    OnPropertyChanged("ExtraBoxOpacity");
-                    OnPropertyChanged("EnableEtraBoxes");
+                    OnPropertyChanged(nameof(ExtraBoxOpacity));
+                    OnPropertyChanged(nameof(EnableEtraBoxes));
                 }
             }
         }

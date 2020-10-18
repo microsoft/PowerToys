@@ -26,9 +26,9 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuResults = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 2);
-            Assert.AreEqual(contextMenuResults[0].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_copy_path);
-            Assert.AreEqual(contextMenuResults[1].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console);
+            Assert.AreEqual(2, contextMenuResults.Count);
+            Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_copy_path, contextMenuResults[0].Title);
+            Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console, contextMenuResults[1].Title);
         }
 
         [Test]
@@ -45,10 +45,10 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuResults = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(contextMenuResults.Count, 3);
-            Assert.AreEqual(contextMenuResults[0].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_containing_folder);
-            Assert.AreEqual(contextMenuResults[1].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_copy_path);
-            Assert.AreEqual(contextMenuResults[2].Title, Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console);
+            Assert.AreEqual(3, contextMenuResults.Count);
+            Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_containing_folder, contextMenuResults[0].Title);
+            Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_copy_path, contextMenuResults[1].Title);
+            Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console, contextMenuResults[2].Title);
         }
     }
 }

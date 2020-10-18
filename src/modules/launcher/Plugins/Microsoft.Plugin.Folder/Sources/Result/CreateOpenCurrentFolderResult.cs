@@ -8,31 +8,31 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class CreateOpenCurrentFolderResult : IItemResult
     {
-        private readonly IExplorerAction _explorerAction;
+        private readonly IShellAction _shellAction;
 
-        public string Search { get; set;  }
+        public string Search { get; set; }
 
         public CreateOpenCurrentFolderResult(string search)
-            : this(search, new ExplorerAction())
+            : this(search, new ShellAction())
         {
         }
 
-        public CreateOpenCurrentFolderResult(string search, IExplorerAction explorerAction)
+        public CreateOpenCurrentFolderResult(string search, IShellAction shellAction)
         {
             Search = search;
-            _explorerAction = explorerAction;
+            _shellAction = shellAction;
         }
 
         public Wox.Plugin.Result Create(IPublicAPI contextApi)
         {
             return new Wox.Plugin.Result
             {
-                Title = $"Open {Search}",
+                Title = Properties.Resources.wox_plugin_folder_select_folder_first_result_title,
                 QueryTextDisplay = Search,
-                SubTitle = $"Folder: Use > to search within the directory. Use * to search for file extensions. Or use both >*.",
+                SubTitle = Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle,
                 IcoPath = Search,
                 Score = 500,
-                Action = c => _explorerAction.ExecuteSanitized(Search, contextApi),
+                Action = c => _shellAction.ExecuteSanitized(Search, contextApi),
             };
         }
     }

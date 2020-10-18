@@ -42,8 +42,8 @@ namespace Microsoft.Plugin.Folder.UnitTests
             queryFileSystemInfoMock.Setup(r => r.Exists(It.IsAny<string>()))
                 .Returns<string>(path => ContainsDirectory(path));
 
-            queryFileSystemInfoMock.Setup(r => r.MatchFileSystemInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SearchOption>()))
-                .Returns<string, string, SearchOption>(MatchFileSystemInfo);
+            queryFileSystemInfoMock.Setup(r => r.MatchFileSystemInfo(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+                .Returns<string, string, bool>(MatchFileSystemInfo);
 
             _queryFileSystemInfoMock = queryFileSystemInfoMock;
         }
@@ -66,25 +66,23 @@ namespace Microsoft.Plugin.Folder.UnitTests
             return trimEnd;
         }
 
-        private static IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, SearchOption searchOption)
+        private static IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, bool isRecursive)
         {
             Func<string, bool> folderSearchFunc;
             Func<string, bool> fileSearchFunc;
-            switch (searchOption)
+            switch (isRecursive)
             {
-                case SearchOption.TopDirectoryOnly:
+                case false:
                     folderSearchFunc = s => s.Equals(search, StringComparison.CurrentCultureIgnoreCase);
 
                     var regexSearch = TrimDirectoryEnd(search);
 
                     fileSearchFunc = s => Regex.IsMatch(s, $"^{Regex.Escape(regexSearch)}[^\\\\]*$");
                     break;
-                case SearchOption.AllDirectories:
+                case true:
                     folderSearchFunc = s => s.StartsWith(search, StringComparison.CurrentCultureIgnoreCase);
                     fileSearchFunc = s => s.StartsWith(search, StringComparison.CurrentCultureIgnoreCase);
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(searchOption), searchOption, null);
             }
 
             var directories = DirectoryExist.Where(s => folderSearchFunc(s))

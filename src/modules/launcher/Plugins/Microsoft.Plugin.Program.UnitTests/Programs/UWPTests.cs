@@ -51,7 +51,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var applications = UWP.All();
 
             // Assert
-            Assert.AreEqual(applications.Length, 2);
+            Assert.AreEqual(2, applications.Length);
             Assert.IsTrue(applications.FindAll(x => x.Name == "DevelopmentApp").Length > 0);
             Assert.IsTrue(applications.FindAll(x => x.Name == "PackagedApp").Length > 0);
         }
@@ -70,7 +70,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var applications = UWP.All();
 
             // Assert
-            Assert.AreEqual(applications.Length, 1);
+            Assert.AreEqual(1, applications.Length);
             Assert.IsTrue(applications.FindAll(x => x.Name == "PackagedApp").Length > 0);
         }
 
@@ -89,7 +89,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var applications = UWP.All();
 
             // Assert
-            Assert.AreEqual(applications.Length, 0);
+            Assert.AreEqual(0, applications.Length);
         }
     }
 }
