@@ -5,27 +5,40 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ColorPicker.Views"
              xmlns:viewModel="clr-namespace:ColorPicker.ViewModels"
-             mc:Ignorable="d" 
-             d:DesignHeight="50" d:DesignWidth="180" 
+             mc:Ignorable="d"  
              d:DataContext="{d:DesignInstance viewModel:MainViewModel, IsDesignTimeCreatable=True}">
-    <Grid Background="Transparent" >
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="50"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
+    <Grid Background="Transparent">
 
-            <Border BorderBrush="#505050" Grid.Column="2" Margin="0,1,1,1" Grid.RowSpan="2" BorderThickness="3,0,3,0" Background="#202020" CornerRadius="0" />
-            <Border Background="{Binding ColorBrush}" BorderBrush="Black" Grid.Column="1" BorderThickness="1" Grid.RowSpan="2" x:Name="ColorBorder" CornerRadius="2,0,0,2"/>
-            <Border Grid.RowSpan="2" Grid.ColumnSpan="2" Grid.Column="1" Background="Transparent" BorderThickness="1" BorderBrush="Black" CornerRadius="2"/>
-            
-            <TextBlock Margin="7,5,5,5" Foreground="White" Grid.Row="0" Grid.Column="2" Text="{Binding HexColor}"/>
-            <TextBlock Margin="7,0,0,0" Foreground="White" Grid.Row="1" Grid.Column="2" Text="{Binding RgbColor}"/>
+        <Border BorderBrush="{DynamicResource WindowBorderBrush}"
+                Margin="12"
+                BorderThickness="1" Background="{DynamicResource PrimaryBackgroundBrush}"
+                CornerRadius="4">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="16" Opacity="0.28" ShadowDepth="1" />
+            </Border.Effect>
+
+            <Grid Margin="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="36"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Background="{Binding ColorBrush}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="{DynamicResource WindowBorderBrush}"
+                    BorderThickness="1"
+                    x:Name="ColorBorder"
+                    CornerRadius="4"/>
+
+            <TextBlock Margin="8,5,0,8"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       Grid.Column="1"
+                       Text="{Binding HexColor}"/>
         </Grid>
+        </Border>
     </Grid>
 </UserControl>

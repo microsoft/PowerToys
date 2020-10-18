@@ -15,27 +15,14 @@
     <system:String x:Key="Theme.ColorScheme">Accent1</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">Black</Color>
 
-    <SolidColorBrush x:Key="DialogWindowTitleBarBackgroundBrush" Color="#434447" />
-    <SolidColorBrush x:Key="DialogWindowBackgroundBrush" Color="#FF313233" />
-    <SolidColorBrush x:Key="DialogWindowBorderBrush" Color="#FF373737"/>
-    <SolidColorBrush x:Key="DialogWindowTitleBarForegroundBrush" Color="#FF6e6e6e"/>
+    <SolidColorBrush x:Key="SeondaryBackgroundBrush" Color="#434447" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF313233" />
+    <SolidColorBrush x:Key="WindowBorderBrush" Color="#FF535353"/>
 
     <SolidColorBrush x:Key="ListViewPointerOverBrush" Color="#242424"/>
     <SolidColorBrush x:Key="ListViewPressedBrush" Color="#FF313233"/>
 
     <SolidColorBrush x:Key="ColorControlBackgroundBrush" Color="#66000000"/>
-    
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#FF1b1b1b" />
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="PanelBorderBrush" Color="Transparent" />
-
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FFa1a1a1" />
-    <SolidColorBrush x:Key="ItemBackgroundBrush" Color="#FF2e2e2e" />
-
-    <SolidColorBrush x:Key="ZonePreviewBackgroundBrush" Color="#FF656565" />
-    <SolidColorBrush x:Key="ZonePreviewBorderBrush" Color="#FF2e2e2e" />
-
-    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
-    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>
 </ResourceDictionary>

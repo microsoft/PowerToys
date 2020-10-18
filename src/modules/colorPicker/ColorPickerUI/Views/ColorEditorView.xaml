@@ -9,64 +9,6 @@
              xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
              d:DesignHeight="380" d:DesignWidth="400">
-    <UserControl.Resources>
-        <Style x:Key="ListBoxItemStyle1" TargetType="{x:Type ListBoxItem}">
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
-            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FocusVisualStyle">
-                <Setter.Value>
-                    <Style>
-                        <Setter Property="Control.Template">
-                            <Setter.Value>
-                                <ControlTemplate>
-                                    <Rectangle Margin="2" SnapsToDevicePixels="True" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                        <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsMouseOver" Value="True"/>
-                                </MultiTrigger.Conditions>
-                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource ListViewPointerOverBrush}"/>
-                            </MultiTrigger>
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="Selector.IsSelectionActive" Value="False"/>
-                                    <Condition Property="IsSelected" Value="True"/>
-                                </MultiTrigger.Conditions>
-                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource ListViewPressedBrush}"/>
-                            </MultiTrigger>
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="Selector.IsSelectionActive" Value="True"/>
-                                    <Condition Property="IsSelected" Value="True"/>
-                                </MultiTrigger.Conditions>
-                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource ListViewPressedBrush}"/>
-                            </MultiTrigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="TextElement.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="64"/>
@@ -78,9 +20,10 @@
                 <behaviors:DragWindowBehavior/>
             </e:Interaction.Behaviors>
             <Border
-                Background="{DynamicResource DialogWindowTitleBarForegroundBrush}"
+                Background="{DynamicResource SecondaryForegroundBrush}"
                 Grid.ColumnSpan="2"
                 Width="30"
+                Opacity="0.9"
                 Height="3"
                 CornerRadius="1.5"
                 HorizontalAlignment="Center"
@@ -104,7 +47,7 @@
             </StackPanel>
 
         </Grid>
-        <Grid Background="{DynamicResource DialogWindowTitleBarBackgroundBrush}">
+        <Grid Background="{DynamicResource SeondaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
@@ -116,7 +59,7 @@
                                 Glyph="&#xEF3C;" />
                 </ui:AppBarButton.Icon>
             </ui:AppBarButton>
-            <ui:ListView Margin="0,12,0,0" Grid.Row="1" Padding="0" ItemsSource="{Binding ColorsHistory}" SelectedItem="{Binding SelectedColor}" ItemContainerStyle="{DynamicResource ListBoxItemStyle1}">
+            <ui:ListView Margin="0,12,0,0" Grid.Row="1" Padding="0" ItemsSource="{Binding ColorsHistory}" SelectedItem="{Binding SelectedColor}" ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
                 <ui:ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Width="64" Height="48">
@@ -139,7 +82,7 @@
 
         <StackPanel Orientation="Vertical" Margin="12,124,12,12" Grid.Column="1" Grid.Row="1">
             <Border
-                    Margin="0,6,0,0"
+                    Margin="0,12,0,0"
                     Width="308"
                     Height="36"
                     CornerRadius="4"
@@ -163,7 +106,7 @@
                 </Border.Effect>
             </Border>
             <Border
-                    Margin="0,6,0,0"
+                    Margin="0,12,0,0"
                     Width="308"
                     Height="36"
                     CornerRadius="4"
@@ -188,7 +131,7 @@
             </Border>
 
             <Border
-                    Margin="0,6,0,0"
+                    Margin="0,12,0,0"
                     Width="308"
                     Height="36"
                     CornerRadius="4"
@@ -213,7 +156,7 @@
             </Border>
 
             <Border
-                    Margin="0,6,0,0"
+                    Margin="0,12,0,0"
                     Width="308"
                     Height="36"
                     CornerRadius="4"
@@ -256,7 +199,7 @@
         </Grid>
 
 
-        <Border x:Name="CopiedBorderIndicator" Visibility="Collapsed" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="56" Background="{DynamicResource DialogWindowTitleBarBackgroundBrush}">
+        <Border x:Name="CopiedBorderIndicator" Visibility="Collapsed" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="56" Background="{DynamicResource SystemControlBackgroundAccentBrush}">
             <TextBlock FontSize="16" Foreground="{DynamicResource PrimaryForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" >
                 <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
                 <Run Text="Copied to clipboard" FontWeight="SemiBold"/>

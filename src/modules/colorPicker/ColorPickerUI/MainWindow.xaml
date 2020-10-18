@@ -7,7 +7,16 @@
         mc:Ignorable="d"
         xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-        Title="Color Picker" Height="50" Width="180" WindowStyle="None" Opacity="0.01" ShowInTaskbar="False" ResizeMode="NoResize" Topmost="True" Background="Transparent" AllowsTransparency="True">
+        Title="Color Picker"
+        Height="56"
+        Width="300"
+        WindowStyle="None"
+        Opacity="0.01"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Topmost="True"
+        Background="Transparent"
+        AllowsTransparency="True">
     <e:Interaction.Behaviors>
         <behaviors:ChangeWindowPositionBehavior/>
         <behaviors:AppearAnimationBehavior/>

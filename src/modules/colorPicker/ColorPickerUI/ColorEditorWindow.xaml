@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-        Background="{DynamicResource DialogWindowBackgroundBrush}"
-        BorderBrush="{DynamicResource DialogWindowBorderBrush}"
+        Background="{DynamicResource PrimaryBackgroundBrush}"
+        BorderBrush="{DynamicResource WindowBorderBrush}"
         BorderThickness="1"
         Title="ColorEditorWindow" Height="380" Width="400" ResizeMode="NoResize" WindowStyle="None">
     <e:Interaction.Behaviors>

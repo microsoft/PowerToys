@@ -38,10 +38,10 @@ namespace ColorPicker.Behaviors
         private void Appear()
         {
             var opacityAppear = new DoubleAnimation(0, 1.0, new Duration(TimeSpan.FromMilliseconds(250)));
-            opacityAppear.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut };
+            opacityAppear.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
 
             var resize = new DoubleAnimation(0, 180, new Duration(TimeSpan.FromMilliseconds(250)));
-            resize.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseOut };
+            resize.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
             AssociatedObject.BeginAnimation(Window.OpacityProperty, opacityAppear);
             AssociatedObject.BeginAnimation(Window.WidthProperty, resize);
         }
