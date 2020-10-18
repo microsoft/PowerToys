@@ -154,5 +154,33 @@ namespace UnitTest_ColorPickerUI.Helpers
             // black[0..1]
             Assert.InRange(result.blackKey * 100, blackKey - 0.5, blackKey + 0.5);
         }
+
+        [Fact]
+        public void ColorRGBtoCMYKZeroDiv()
+        {
+            for(var red = 0; red < 256; red++)
+            {
+                for(var blue = 0; blue < 256; blue++)
+                {
+                    for(var green = 0; green < 256; green++)
+                    {
+                        var color = Color.FromArgb(red, green, blue);
+
+                        Exception? exception = null;
+
+                        try
+                        {
+                            _ = ColorHelper.ConvertToCMYKColor(color);
+                        }
+                        catch(Exception ex)
+                        {
+                            exception = ex;
+                        }
+
+                        Assert.Null(exception);
+                    }
+                }
+            }
+        }
     }
 }

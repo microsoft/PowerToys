@@ -68,6 +68,12 @@ namespace ColorPicker.Helpers
 
             var blackKey = 1d - Math.Max(Math.Max(red, green), blue);
 
+            // special case for black (avoid division by zero)
+            if (1d - blackKey == 0d)
+            {
+                return (0d, 0d, 0d, 1d);
+            }
+
             var cyan = (1d - red - blackKey) / (1d - blackKey);
             var magenta = (1d - green - blackKey) / (1d - blackKey);
             var yellow = (1d - blue - blackKey) / (1d - blackKey);
