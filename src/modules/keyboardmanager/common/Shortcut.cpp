@@ -658,7 +658,7 @@ bool IgnoreKeyCode(DWORD key)
     // IME keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/6951
     bool isIME = in_range(key, VK_KANA, 0x1A) + in_range(key, VK_CONVERT, VK_MODECHANGE) + equals(key, VK_PROCESSKEY);
 
-    if (isUndefined || isReserved || isUnassigned || isOEMSpecific)
+    if (isUndefined || isReserved || isUnassigned || isOEMSpecific || isIME)
     {
         return true;
     }
