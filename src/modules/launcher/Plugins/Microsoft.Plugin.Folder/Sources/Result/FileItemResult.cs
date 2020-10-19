@@ -13,9 +13,21 @@ namespace Microsoft.Plugin.Folder.Sources.Result
     {
         private static readonly IShellAction ShellAction = new ShellAction();
 
+        private readonly IPath _path;
+
+        public FileItemResult()
+            : this(new FileSystem().Path)
+        {
+        }
+
+        private FileItemResult(IPath path)
+        {
+            _path = path;
+        }
+
         public string FilePath { get; set; }
 
-        public string Title => _fileSystem.Path.GetFileName(FilePath);
+        public string Title => _path.GetFileName(FilePath);
 
         public string Search { get; set; }
 
@@ -26,7 +38,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 Title = Title,
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_file_result_subtitle, FilePath),
                 IcoPath = FilePath,
-                TitleHighlightData = StringMatcher.FuzzySearch(Search, Path.GetFileName(FilePath)).MatchData,
+                TitleHighlightData = StringMatcher.FuzzySearch(Search, _path.GetFileName(FilePath)).MatchData,
                 Action = c => ShellAction.Execute(FilePath, contextApi),
                 ContextData = new SearchResult { Type = ResultType.File, FullPath = FilePath },
             };
