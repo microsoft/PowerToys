@@ -1,6 +1,6 @@
 {
     "ID":"CEA0FDFC6D3B4085823D60DC76F28855",
-    "ActionKeyword":"*",
+    "ActionKeywords": [ "*", "=" ],
     "Name":"Calculator",
     "Description":"Provide mathematical calculations.(Try 5*3-2 in PowerToys)",
     "Author":"cxfksword",
