@@ -30,6 +30,4 @@ rem Move UWP resource files to correct file paths as per file path expected by U
 cd %RepoRootWithoutBackslash%
 powershell -NonInteractive -executionpolicy Unrestricted ".\tools\localization\move_uwp_resources.ps1"
 
-echo UWP Localization finished
-
 exit /b %errorlevel%
