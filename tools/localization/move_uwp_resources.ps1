@@ -58,6 +58,7 @@ for ($i=0; $i -lt $input_resource_folder_list.length; $i++) {
         $output_file = $output_path + "\" + "Resources.resw"
 
         Move-Item -Path $input_file -Destination $output_file
+        echo $output_file
     }
 }
 
