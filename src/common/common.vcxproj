@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\Version.props" />
@@ -140,6 +140,7 @@
     <ClInclude Include="shared_constants.h" />
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="timeutil.h" />
+    <ClInclude Include="toast_dont_show_again.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
     <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="window_helpers.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="start_visible.cpp" />
     <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="common.cpp" />
+    <ClCompile Include="toast_dont_show_again.cpp" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="VersionHelper.cpp" />

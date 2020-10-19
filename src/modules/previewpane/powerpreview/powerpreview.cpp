@@ -5,7 +5,9 @@
 #include "trace.h"
 #include "settings.h"
 #include "Generated Files/resource.h"
-#include <common\os-detect.h>
+#include <common/notifications.h>
+#include <common/os-detect.h>
+#include <common/toast_dont_show_again.h>
 
 // Constructor
 PowerPreviewModule::PowerPreviewModule() :
@@ -203,11 +205,20 @@ bool PowerPreviewModule::is_registry_update_required()
 // Function to warn the user that PowerToys needs to run as administrator for changes to take effect
 void PowerPreviewModule::show_update_warning_message()
 {
-    // Show warning message if update is required
-    MessageBoxW(NULL,
-                GET_RESOURCE_STRING(IDS_FILEEXPLORER_ADMIN_RESTART_WARNING_DESCRIPTION).c_str(),
-                GET_RESOURCE_STRING(IDS_FILEEXPLORER_ADMIN_RESTART_WARNING_TITLE).c_str(),
-                MB_OK | MB_ICONWARNING);
+    using namespace notifications;
+    if (!is_toast_disabled(PreviewModulesDontShowAgainRegistryPath, PreviewModulesDisableIntervalInDays))
+    {
+        std::vector<action_t> actions = {
+            link_button{ GET_RESOURCE_STRING(IDS_FILEEXPLORER_ADMIN_RESTART_WARNING_OPEN_SETTINGS),
+                         L"powertoys://open_settings/" },
+            link_button{ GET_RESOURCE_STRING(IDS_FILEEXPLORER_ADMIN_RESTART_WARNING_DONT_SHOW_AGAIN),
+                         L"powertoys://couldnt_toggle_powerpreview_modules_disable/" }
+        };
+        show_toast_with_activations(GET_RESOURCE_STRING(IDS_FILEEXPLORER_ADMIN_RESTART_WARNING_DESCRIPTION),
+                                    GET_RESOURCE_STRING(IDS_FILEEXPLORER_ADMIN_RESTART_WARNING_TITLE),
+                                    {},
+                                    std::move(actions));
+    }
 }
 
 // Function that checks if a registry method is required and if so checks if the process is elevated and accordingly executes the method or shows a warning
