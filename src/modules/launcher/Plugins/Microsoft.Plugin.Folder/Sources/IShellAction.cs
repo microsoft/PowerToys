@@ -6,7 +6,7 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
-    public interface IExplorerAction
+    public interface IShellAction
     {
         bool Execute(string sanitizedPath, IPublicAPI contextApi);
 

@@ -28,7 +28,7 @@ public:
     Shortcut(const std::wstring& shortcutVK);
 
     // Constructor to initialize shortcut from a list of keys
-    Shortcut(const std::vector<DWORD>& keys);
+    Shortcut(const std::vector<int32_t>& keys);
 
     // == operator
     inline bool operator==(const Shortcut& sc) const
@@ -153,7 +153,7 @@ public:
     std::vector<DWORD> GetKeyCodes();
 
     // Function to set a shortcut from a vector of key codes
-    void SetKeyCodes(const std::vector<DWORD>& keys);
+    void SetKeyCodes(const std::vector<int32_t>& keys);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
     bool CheckModifiersKeyboardState(InputInterface& ii) const;

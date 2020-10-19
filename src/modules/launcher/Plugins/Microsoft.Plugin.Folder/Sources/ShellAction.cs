@@ -7,16 +7,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Windows;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
-    public class ExplorerAction : IExplorerAction
+    public class ShellAction : IShellAction
     {
-        private const string FileExplorerProgramName = "explorer";
-
         public bool Execute(string path, IPublicAPI contextApi)
         {
             if (contextApi == null)
@@ -24,7 +21,7 @@ namespace Microsoft.Plugin.Folder.Sources
                 throw new ArgumentNullException(nameof(contextApi));
             }
 
-            return OpenFileOrFolder(FileExplorerProgramName, path, contextApi);
+            return OpenFileOrFolder(path, contextApi);
         }
 
         public bool ExecuteSanitized(string search, IPublicAPI contextApi)
@@ -51,16 +48,21 @@ namespace Microsoft.Plugin.Folder.Sources
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and instead inform the user of the error")]
-        private static bool OpenFileOrFolder(string program, string path, IPublicAPI contextApi)
+        private static bool OpenFileOrFolder(string path, IPublicAPI contextApi)
         {
             try
             {
-                Process.Start(program, path);
+                using (var process = new Process())
+                {
+                    process.StartInfo.FileName = path;
+                    process.StartInfo.UseShellExecute = true;
+                    process.Start();
+                }
             }
             catch (Exception e)
             {
                 string messageBoxTitle = string.Format(CultureInfo.InvariantCulture, "{0} {1}", Properties.Resources.wox_plugin_folder_select_folder_OpenFileOrFolder_error_message, path);
-                Log.Exception($"Failed to open {path} in {FileExplorerProgramName}, {e.Message}", e, MethodBase.GetCurrentMethod().DeclaringType);
+                Log.Exception($"Failed to open {path}, {e.Message}", e, MethodBase.GetCurrentMethod().DeclaringType);
                 contextApi.ShowMsg(messageBoxTitle, e.Message);
             }
 
