@@ -481,7 +481,7 @@ namespace KeyboardEventHandlers
                         else
                         {
                             // Check if the keyboard state is clear apart from the target remap key (by creating a temp Shortcut object with the target key)
-                            bool isKeyboardStateClear = Shortcut(std::vector<DWORD>({ KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)) })).IsKeyboardStateClearExceptShortcut(ii);
+                            bool isKeyboardStateClear = Shortcut(std::vector<int32_t>({ KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)) })).IsKeyboardStateClearExceptShortcut(ii);
                             // If the keyboard state is clear, we release the target key but do not reset the remap state
                             if (isKeyboardStateClear)
                             {

@@ -18,7 +18,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
 }
 
 // Constructor to initialize shortcut from a list of keys
-Shortcut::Shortcut(const std::vector<DWORD>& keys)
+Shortcut::Shortcut(const std::vector<int32_t>& keys)
 {
     SetKeyCodes(keys);
 }
@@ -505,12 +505,15 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
 }
 
 // Function to set a shortcut from a vector of key codes
-void Shortcut::SetKeyCodes(const std::vector<DWORD>& keys)
+void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
 {
     Reset();
     for (int i = 0; i < keys.size(); i++)
     {
-        SetKey(keys[i]);
+        if (keys[i] != -1 && keys[i] != 0)
+        {
+            SetKey(keys[i]);
+        }
     }
 }
 

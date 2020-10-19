@@ -133,9 +133,10 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][1]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>(), 1, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][1]->keyDropDownControlObjects, targetAppTextBox, true, false);
 
         // Reset the buffer based on the selected drop down items
-        std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(KeyDropDownControl::GetSelectedIndicesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>()), KeyDropDownControl::GetKeyCodeList(true, false)));
+        std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>()));
         // second column is a hybrid column
-        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(KeyDropDownControl::GetSelectedIndicesFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>()), KeyDropDownControl::GetKeyCodeList(true, true));
+
+        std::vector<int32_t> selectedKeyCodes = KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>());
 
         // If exactly one key is selected consider it to be a key remap
         if (selectedKeyCodes.size() == 1)
@@ -244,12 +245,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
 
         if (newKeys.index() == 0)
         {
-            std::vector<DWORD> shortcutListKeyCodes = KeyDropDownControl::GetKeyCodeList(true, true);
-            auto it = std::find(shortcutListKeyCodes.begin(), shortcutListKeyCodes.end(), std::get<DWORD>(newKeys));
-            if (it != shortcutListKeyCodes.end())
-            {
-                keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedIndex((int32_t)std::distance(shortcutListKeyCodes.begin(), it));
-            }
+            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(std::get<DWORD>(newKeys)));
         }
         else
         {
