@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -39,6 +40,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -48,20 +54,25 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
-            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme.ToLower());
+
+            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            switch (GeneralSettingsConfig.Theme.ToLower())
+            // Using Invariant here as these are internal strings and fxcop
+            // expects strings to be normalized to uppercase. While the theme names
+            // are represented in lowercase everywhere else, we'll use uppercase
+            // normalization for switch statements
+            switch (GeneralSettingsConfig.Theme.ToUpperInvariant())
             {
-                case "light":
+                case "LIGHT":
                     _isLightThemeRadioButtonChecked = true;
                     break;
-                case "dark":
+                case "DARK":
                     _isDarkThemeRadioButtonChecked = true;
                     break;
-                case "system":
+                case "SYSTEM":
                     _isSystemThemeRadioButtonChecked = true;
                     break;
             }
@@ -102,7 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_packaged != value)
                 {
                     _packaged = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -121,7 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _startup = value;
                     GeneralSettingsConfig.Startup = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -193,7 +204,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _runElevated = value;
                     GeneralSettingsConfig.RunElevated = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -220,7 +231,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _autoDownloadUpdates = value;
                     GeneralSettingsConfig.AutoDownloadUpdates = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -246,7 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -272,7 +283,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -298,7 +309,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -329,12 +340,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_latestAvailableVersion != value)
                 {
                     _latestAvailableVersion = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);

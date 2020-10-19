@@ -27,10 +27,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _settingsConfigFileFolder = configFileSubfolder;
 
             // To obtain the general PowerToys settings.
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // To obtain the shortcut guide settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
+            if (moduleSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(moduleSettingsRepository));
+            }
+
             Settings = moduleSettingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -102,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to dark.
                         Settings.Properties.Theme.Value = "dark";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
 
                     if (value == 1)
@@ -110,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to light.
                         Settings.Properties.Theme.Value = "light";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
 
                     if (value == 2)
@@ -118,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to system default.
                         Settings.Properties.Theme.Value = "system";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
                 }
             }
@@ -137,7 +147,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _pressTime = value;
                     Settings.Properties.PressTime.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -155,7 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _opacity = value;
                     Settings.Properties.OverlayOpacity.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -165,7 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             return _settingsConfigFileFolder + "\\" + ModuleName;
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
             SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);

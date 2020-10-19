@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -28,10 +29,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public FancyZonesViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // To obtain the general settings configurations of PowerToys Settings.
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             settingsConfigFileFolder = configFileSubfolder;
 
             // To obtain the settings configurations of Fancy zones.
+            if (moduleSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(moduleSettingsRepository));
+            }
+
             Settings = moduleSettingsRepository.SettingsConfig;
 
             LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
@@ -137,7 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _shiftDrag = value;
                     Settings.Properties.FancyzonesShiftDrag.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -155,7 +166,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _mouseSwitch = value;
                     Settings.Properties.FancyzonesMouseSwitch.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -178,7 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _overrideSnapHotkeys = value;
                     Settings.Properties.FancyzonesOverrideSnapHotkeys.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                     OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
                 }
             }
@@ -197,7 +208,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _moveWindowsAcrossMonitors = value;
                     Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -215,7 +226,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _moveWindowsBasedOnPosition = value;
                     Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -233,7 +244,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _displayChangemoveWindows = value;
                     Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -251,7 +262,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _zoneSetChangeMoveWindows = value;
                     Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -269,7 +280,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _appLastZoneMoveWindows = value;
                     Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -287,7 +298,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _openWindowOnActiveMonitor = value;
                     Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -305,7 +316,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _restoreSize = value;
                     Settings.Properties.FancyzonesRestoreSize.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -323,7 +334,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _useCursorPosEditorStartupScreen = value;
                     Settings.Properties.UseCursorposEditorStartupscreen.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -341,7 +352,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _showOnAllMonitors = value;
                     Settings.Properties.FancyzonesShowOnAllMonitors.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -359,7 +370,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _spanZonesAcrossMonitors = value;
                     Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -377,11 +388,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _makeDraggedWindowTransparent = value;
                     Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
 
+        // For the following setters we use OrdinalIgnoreCase string comparison since
+        // we expect value to be a hex code.
         public string ZoneHighlightColor
         {
             get
@@ -391,12 +404,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                value = ToRGBHex(value);
-                if (!value.Equals(_zoneHighlightColor))
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_zoneHighlightColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneHighlightColor = value;
                     Settings.Properties.FancyzonesZoneHighlightColor.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -410,12 +426,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                value = ToRGBHex(value);
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
                 if (!value.Equals(_zoneBorderColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneBorderColor = value;
                     Settings.Properties.FancyzonesBorderColor.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -429,12 +448,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                value = ToRGBHex(value);
-                if (!value.Equals(_zoneInActiveColor))
+                // The fallback value is based on ToRGBHex's behavior, which returns
+                // #FFFFFF if any exceptions are encountered, e.g. from passing in a null value.
+                // This extra handling is added here to deal with FxCop warnings.
+                value = (value != null) ? ToRGBHex(value) : "#FFFFFF";
+                if (!value.Equals(_zoneInActiveColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _zoneInActiveColor = value;
                     Settings.Properties.FancyzonesInActiveColor.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -452,7 +474,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _highlightOpacity = value;
                     Settings.Properties.FancyzonesHighlightOpacity.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -468,7 +490,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value != _editorHotkey)
                 {
-                    if (value.IsEmpty())
+                    if (value == null || value.IsEmpty())
                     {
                         _editorHotkey = FZConfigProperties.DefaultHotkeyValue;
                     }
@@ -478,7 +500,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     }
 
                     Settings.Properties.FancyzonesEditorHotkey.Value = _editorHotkey;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -496,7 +518,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _excludedApps = value;
                     Settings.Properties.FancyzonesExcludedApps.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -507,7 +529,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             SendConfigMSG("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
             if (SendConfigMSG != null)
@@ -522,9 +544,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             try
             {
-                int argb = int.Parse(color.Replace("#", string.Empty), System.Globalization.NumberStyles.HexNumber);
+                // Using InvariantCulture as these are expected to be hex codes.
+                int argb = int.Parse(
+                    color.Replace("#", string.Empty),
+                    System.Globalization.NumberStyles.HexNumber,
+                    CultureInfo.InvariantCulture);
                 Color clr = Color.FromArgb(argb);
-                return "#" + clr.R.ToString("X2") + clr.G.ToString("X2") + clr.B.ToString("X2");
+                return "#" + clr.R.ToString("X2", CultureInfo.InvariantCulture) +
+                    clr.G.ToString("X2", CultureInfo.InvariantCulture) +
+                    clr.B.ToString("X2", CultureInfo.InvariantCulture);
             }
             catch (Exception)
             {

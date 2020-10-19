@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -24,6 +25,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public ColorPickerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // Obtain the general PowerToy settings configurations
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
@@ -121,8 +127,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private void NotifySettingsChanged()
         {
+            // Using InvariantCulture as this is an IPC message
             SendConfigMSG(
-                   string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", ColorPickerSettings.ModuleName, JsonSerializer.Serialize(_colorPickerSettings)));
+                   string.Format(
+                       CultureInfo.InvariantCulture,
+                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                       ColorPickerSettings.ModuleName,
+                       JsonSerializer.Serialize(_colorPickerSettings)));
         }
     }
 }
