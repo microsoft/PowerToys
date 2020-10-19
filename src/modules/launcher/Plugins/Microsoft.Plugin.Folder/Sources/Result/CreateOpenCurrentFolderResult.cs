@@ -2,26 +2,25 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class CreateOpenCurrentFolderResult : IItemResult
     {
-        private readonly IExplorerAction _explorerAction;
+        private readonly IShellAction _shellAction;
 
-        public string Search { get; set;  }
+        public string Search { get; set; }
 
         public CreateOpenCurrentFolderResult(string search)
-            : this(search, new ExplorerAction())
+            : this(search, new ShellAction())
         {
         }
 
-        public CreateOpenCurrentFolderResult(string search, IExplorerAction explorerAction)
+        public CreateOpenCurrentFolderResult(string search, IShellAction shellAction)
         {
             Search = search;
-            _explorerAction = explorerAction;
+            _shellAction = shellAction;
         }
 
         public Wox.Plugin.Result Create(IPublicAPI contextApi)
@@ -33,7 +32,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 SubTitle = Properties.Resources.wox_plugin_folder_select_folder_first_result_subtitle,
                 IcoPath = Search,
                 Score = 500,
-                Action = c => _explorerAction.ExecuteSanitized(Search, contextApi),
+                Action = c => _shellAction.ExecuteSanitized(Search, contextApi),
             };
         }
     }
