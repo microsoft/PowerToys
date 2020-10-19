@@ -537,7 +537,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected, actual);
 
             const auto zoneSet = zoneWindow->ActiveZoneSet();
-            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
             const auto actualZoneIndexSet = zoneSet->GetZoneIndexSetFromWindow(window);
             Assert::IsFalse(std::vector<size_t>{} == actualZoneIndexSet);
         }
@@ -593,7 +593,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected, actual);
 
             const auto zoneSet = zoneWindow->ActiveZoneSet();
-            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
             const auto actualZoneIndex = zoneSet->GetZoneIndexSetFromWindow(window);
             Assert::IsFalse(std::vector<size_t>{} == actualZoneIndex); // with invalid point zone remains the same
         }
@@ -620,7 +620,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
             const auto& appHistoryArray = actualAppZoneHistory.begin()->second;
             Assert::AreEqual((size_t)1, appHistoryArray.size());
-            Assert::IsTrue(std::vector<size_t>{ 0 } == appHistoryArray[0].zoneIndexSet);
+            Assert::IsTrue(std::vector<size_t>{ 1 } == appHistoryArray[0].zoneIndexSet);
         }
 
         TEST_METHOD(MoveWindowIntoZoneByDirectionManyTimes)
@@ -637,7 +637,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
             const auto& appHistoryArray = actualAppZoneHistory.begin()->second;
             Assert::AreEqual((size_t)1, appHistoryArray.size());
-            Assert::IsTrue(std::vector<size_t>{ 2 } == appHistoryArray[0].zoneIndexSet);
+            Assert::IsTrue(std::vector<size_t>{ 3 } == appHistoryArray[0].zoneIndexSet);
         }
 
         TEST_METHOD(SaveWindowProcessToZoneIndexNullptrWindow)
@@ -706,7 +706,7 @@ namespace FancyZonesUnitTests
 
             auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
-            zoneWindow->MoveWindowIntoZoneByIndex(window, 0);
+            zoneWindow->MoveWindowIntoZoneByIndex(window, 1);
 
             //fill app zone history map
             Assert::IsTrue(m_fancyZonesData.SetAppLastZones(window, deviceId, Helpers::GuidToString(zoneSetId), { 2 }));
