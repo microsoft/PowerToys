@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include <functional>
+#include <common/debug_control.h>
 
 template<int... keys>
 class GenericKeyHook

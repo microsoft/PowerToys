@@ -42,6 +42,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public KeyboardManagerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -106,7 +111,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public static List<AppSpecificKeysDataModel> CombineShortcutLists(List<KeysDataModel> globalShortcutList, List<AppSpecificKeysDataModel> appSpecificShortcutList)
         {
-            return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).Concat(appSpecificShortcutList).ToList();
+            if (globalShortcutList == null && appSpecificShortcutList == null)
+            {
+                return new List<AppSpecificKeysDataModel>();
+            }
+            else if (globalShortcutList == null)
+            {
+                return appSpecificShortcutList;
+            }
+            else if (appSpecificShortcutList == null)
+            {
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).ToList();
+            }
+            else
+            {
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).Concat(appSpecificShortcutList).ToList();
+            }
         }
 
         public List<AppSpecificKeysDataModel> RemapShortcuts
@@ -128,28 +148,31 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
+        // Note: FxCop suggests calling ConfigureAwait() for the following methods,
+        // and calling ConfigureAwait(true) has the same behavior as not explicitly
+        // calling it (continuations are scheduled on the task-creating thread)
         private async void OnRemapKeyboard()
         {
-            await Task.Run(() => OnRemapKeyboardBackground());
+            await Task.Run(() => OnRemapKeyboardBackground()).ConfigureAwait(true);
         }
 
         private async void OnEditShortcut()
         {
-            await Task.Run(() => OnEditShortcutBackground());
+            await Task.Run(() => OnEditShortcutBackground()).ConfigureAwait(true);
         }
 
         private async Task OnRemapKeyboardBackground()
         {
             Helper.AllowRunnerToForeground();
             SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, RemapKeyboardActionName, RemapKeyboardActionValue));
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(true);
         }
 
         private async Task OnEditShortcutBackground()
         {
             Helper.AllowRunnerToForeground();
             SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, EditShortcutActionName, EditShortcutActionValue));
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(true);
         }
 
         public void NotifyFileChanged()

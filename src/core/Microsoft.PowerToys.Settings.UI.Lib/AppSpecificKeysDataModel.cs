@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -24,7 +25,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public bool Compare(AppSpecificKeysDataModel arg)
         {
-            return OriginalKeys.Equals(arg.OriginalKeys) && NewRemapKeys.Equals(arg.NewRemapKeys) && TargetApp.Equals(arg.TargetApp);
+            if (arg == null)
+            {
+                throw new ArgumentNullException(nameof(arg));
+            }
+
+            // Using Ordinal comparison for internal text
+            return OriginalKeys.Equals(arg.OriginalKeys, StringComparison.Ordinal) &&
+                NewRemapKeys.Equals(arg.NewRemapKeys, StringComparison.Ordinal) &&
+                TargetApp.Equals(arg.TargetApp, StringComparison.Ordinal);
         }
     }
 }

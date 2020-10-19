@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Filename:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fájlnév:]]></Val>
+            <Val><![CDATA[_Fájlnév:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
