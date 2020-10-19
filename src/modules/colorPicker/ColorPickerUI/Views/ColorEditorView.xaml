@@ -199,7 +199,7 @@
         </Grid>
 
 
-        <Border x:Name="CopiedBorderIndicator" Visibility="Collapsed" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="56" Background="{DynamicResource SystemControlBackgroundAccentBrush}">
+        <Border x:Name="CopiedBorderIndicator" Opacity="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="0" Background="{DynamicResource SystemControlBackgroundAccentBrush}">
             <TextBlock FontSize="16" Foreground="{DynamicResource PrimaryForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" >
                 <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
                 <Run Text="Copied to clipboard" FontWeight="SemiBold"/>
