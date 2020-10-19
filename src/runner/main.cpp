@@ -136,7 +136,7 @@ int runner(bool isProcessElevated)
             try
             {
                 auto module = load_powertoy(moduleSubdir);
-                modules().emplace(module->get_name(), std::move(module));
+                modules().emplace(module->get_key(), std::move(module));
             }
             catch (...)
             {

@@ -17,6 +17,7 @@ public:
     OverlayWindow();
 
     virtual const wchar_t* get_name() override;
+    virtual const wchar_t* get_key() override;
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override;
 
     virtual void set_config(const wchar_t* config) override;
@@ -37,6 +38,8 @@ public:
 
 private:
     std::wstring app_name;
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
     std::unique_ptr<TargetState> target_state;
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
     bool _enabled = false;
