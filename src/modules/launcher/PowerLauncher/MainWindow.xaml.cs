@@ -336,8 +336,9 @@ namespace PowerLauncher
         {
             var textBox = (TextBox)sender;
             var text = textBox.Text;
+            var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
-            if (string.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(text) || autoCompleteText.IndexOf(text, StringComparison.InvariantCulture) != 0)
             {
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }
