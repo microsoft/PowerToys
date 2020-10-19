@@ -45,7 +45,7 @@ namespace
 
 CSettings::CSettings()
 {
-    std::wstring result = PTSettingsHelper::get_module_save_folder_location(ImageResizerConstants::ModuleKey);
+    std::wstring result = PTSettingsHelper::get_module_save_folder_location(ImageResizerConstants::ModuleSaveFolderKey);
     jsonFilePath = result + std::wstring(c_imageResizerDataFilePath);
     Load();
 }
