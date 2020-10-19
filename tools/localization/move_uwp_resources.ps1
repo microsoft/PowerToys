@@ -28,7 +28,7 @@ $languageHashTable = @{ "en" = "en-us";
 # Iterate over all folders
 for ($i=0; $i -lt $input_resource_folder_list.length; $i++) {
     echo "Starting outer loop"
-    Get-ChildItem $input_resource_folder_list[$i]
+    Get-ChildItem "src\core\Microsoft.PowerToys.Settings.UI\Strings\"
 
     Get-ChildItem $input_resource_folder_list[$i] -Filter Resources.*.resw | 
     Foreach-Object {
