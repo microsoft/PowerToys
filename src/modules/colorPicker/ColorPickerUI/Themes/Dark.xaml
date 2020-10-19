@@ -15,7 +15,7 @@
     <system:String x:Key="Theme.ColorScheme">Accent1</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">Black</Color>
 
-    <SolidColorBrush x:Key="SeondaryBackgroundBrush" Color="#434447" />
+    <SolidColorBrush x:Key="SeondaryBackgroundBrush" Color="#EE434447" />
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF313233" />
     <SolidColorBrush x:Key="WindowBorderBrush" Color="#FF535353"/>
 

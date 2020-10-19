@@ -106,11 +106,13 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Behaviors\CopyToClipboardBehavior.cs" />
     <Compile Include="Behaviors\DragWindowBehavior.cs" />
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
     <Compile Include="ColorEditorWindow.xaml.cs">
       <DependentUpon>ColorEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ColorFormatControl.xaml.cs">
+      <DependentUpon>ColorFormatControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ColorToStringConverter.cs" />
@@ -151,6 +153,10 @@
       <DependentUpon>ZoomView.xaml</DependentUpon>
     </Compile>
     <Page Include="ColorEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ColorFormatControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
