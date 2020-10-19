@@ -106,6 +106,9 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Örneğin, A tuşuna basmak ve "Ctrl+C" tuşlarının işlevini almak istiyorsanız, "Tuş" sütununuz "A" tuşu, "Şuna Eşlendi" sütununuz "Ctrl+C" kısayolu olur.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -178,6 +181,9 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Örneğin, "Ctrl+C" tuşlarına basıp yalnızca Microsoft Edge'de "Alt" tuşunun işlevini almak istiyorsanız "Kısayol" sütununuz "Ctrl+C", "Şuna Eşlendi" sütununuz "Alt" ve "Hedef Uygulama" sütununuz "MSEdge" olur. Hedef uygulama girilmezse eşleme genel olarak geçerli olur. Ad, uygulama adı değil, işlem adı olmalıdır.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

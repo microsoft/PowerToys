@@ -104,8 +104,11 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Por exemplo, se você desejar pressionar A e obter "Ctrl+C", a tecla "A" será a sua coluna "Tecla" e o atalho "Ctrl+C" será a sua coluna "Mapeado para".]]></Val>
+            <Val><![CDATA[Por exemplo, se você quiser pressionar A e obter "Ctrl+C", a tecla "A" será a coluna "Tecla" e o atalho "Ctrl+C" será a coluna "Mapeado para".]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -176,8 +179,11 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Por exemplo, se você desejar pressionar "Ctrl+C" e obter "Alt" somente no Microsoft Edge, "Ctrl+C" será a sua coluna "Atalho", a tecla "Alt" será a sua coluna "Mapeado para" e "MSEdge" será a sua coluna "Aplicativo de Destino". Se nenhum aplicativo de destino for inserido, isso será aplicado globalmente. O nome precisa ser o nome do processo e não o nome do aplicativo.]]></Val>
+            <Val><![CDATA[Por exemplo, se você quiser pressionar "Ctrl+C" e obter "Alt" apenas no Microsoft Edge, "Ctrl+C" será a coluna "Atalho", a tecla "Alt" será a coluna "Mapeado para" e "MSEdge" será a coluna "Aplicativo de Destino". Se não for inserido nenhum aplicativo de destino, essa opção será aplicada globalmente. O nome precisa ser o nome do processo e não o nome do aplicativo.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
