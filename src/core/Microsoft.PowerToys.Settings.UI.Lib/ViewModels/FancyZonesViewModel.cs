@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
@@ -542,19 +543,21 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private static string ToRGBHex(string color)
         {
-            try
+            // Using InvariantCulture as these are expected to be hex codes.
+            bool success = int.TryParse(
+                color.Replace("#", string.Empty),
+                System.Globalization.NumberStyles.HexNumber,
+                CultureInfo.InvariantCulture,
+                out int argb);
+
+            if (success)
             {
-                // Using InvariantCulture as these are expected to be hex codes.
-                int argb = int.Parse(
-                    color.Replace("#", string.Empty),
-                    System.Globalization.NumberStyles.HexNumber,
-                    CultureInfo.InvariantCulture);
                 Color clr = Color.FromArgb(argb);
                 return "#" + clr.R.ToString("X2", CultureInfo.InvariantCulture) +
                     clr.G.ToString("X2", CultureInfo.InvariantCulture) +
                     clr.B.ToString("X2", CultureInfo.InvariantCulture);
             }
-            catch (Exception)
+            else
             {
                 return "#FFFFFF";
             }

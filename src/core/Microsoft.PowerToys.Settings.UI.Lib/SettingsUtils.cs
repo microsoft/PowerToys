@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
@@ -100,6 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         }
 
         // Save settings to a json file.
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "General exceptions will be logged until we can better understand runtime exception scenarios")]
         public void SaveSettings(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             try
@@ -114,8 +116,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     _ioProvider.WriteAllText(GetSettingsPath(powertoy, fileName), jsonSettings);
                 }
             }
-            catch
+            catch (Exception e)
             {
+                Logger.LogError($"Exception encountered while saving {powertoy} settings.", e);
             }
         }
 

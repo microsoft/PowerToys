@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -182,6 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             OnPropertyChanged(nameof(RemapShortcuts));
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions here (especially mutex errors) should not halt app execution, but they will be logged.")]
         public bool LoadProfile()
         {
             var success = true;
@@ -221,9 +222,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // Failed to load the configuration.
+                Logger.LogError($"Exception encountered when loading {PowerToyName} profile", e);
                 success = false;
             }
 

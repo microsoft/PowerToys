@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -236,6 +236,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This may throw if the XAML page is not initialized in tests (https://github.com/microsoft/PowerToys/pull/2676)")]
         public bool IsDarkThemeRadioButtonChecked
         {
             get
@@ -253,8 +254,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                         UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Logger.LogError("Exception encountered when changing Settings theme", e);
                     }
 
                     NotifyPropertyChanged();
@@ -262,6 +264,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This may throw if the XAML page is not initialized in tests (https://github.com/microsoft/PowerToys/pull/2676)")]
         public bool IsLightThemeRadioButtonChecked
         {
             get
@@ -279,8 +282,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                         UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Logger.LogError("Exception encountered when changing Settings theme", e);
                     }
 
                     NotifyPropertyChanged();
@@ -288,6 +292,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This may throw if the XAML page is not initialized in tests (https://github.com/microsoft/PowerToys/pull/2676)")]
         public bool IsSystemThemeRadioButtonChecked
         {
             get
@@ -305,8 +310,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     {
                         UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Logger.LogError("Exception encountered when changing Settings theme", e);
                     }
 
                     NotifyPropertyChanged();

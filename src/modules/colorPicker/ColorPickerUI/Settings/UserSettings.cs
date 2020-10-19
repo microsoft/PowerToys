@@ -60,7 +60,7 @@ namespace ColorPicker.Settings
 
                             if (!_settingsUtils.SettingsExists(ColorPickerModuleName))
                             {
-                                Logger.LogInfo("ColorPicker settings.json was missing, creating a new one");
+                                ColorPicker.Helpers.Logger.LogInfo("ColorPicker settings.json was missing, creating a new one");
                                 var defaultColorPickerSettings = new ColorPickerSettings();
                                 defaultColorPickerSettings.Save(_settingsUtils);
                             }
@@ -82,7 +82,7 @@ namespace ColorPicker.Settings
                                 retry = false;
                             }
 
-                            Logger.LogError("Failed to read changed settings", ex);
+                            ColorPicker.Helpers.Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -94,7 +94,7 @@ namespace ColorPicker.Settings
                                 retry = false;
                             }
 
-                            Logger.LogError("Failed to read changed settings", ex);
+                            ColorPicker.Helpers.Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
                     }
