@@ -45,7 +45,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
     /**
      * @returns Array of zone objects (defining coordinates of the zone) inside this zone layout.
      */
-    IFACEMETHOD_(std::vector<winrt::com_ptr<IZone>>, GetZones)() const = 0;
+    virtual std::map<size_t, winrt::com_ptr<IZone>> GetZones() const = 0;
     /**
      * Assign window to the zone based on zone index inside zone layout.
      *
