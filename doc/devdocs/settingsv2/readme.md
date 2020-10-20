@@ -8,4 +8,5 @@
 5. [Settings Utilities](/doc/devdocs/settingsv2/settings-utilities.md)
 6. [Custom Hotkey control and keyboard hook handling](hotkeycontrol.md)
 7. [Compatibility with legacy settings and runner](/doc/devdocs/settingsv2/compatibility-legacy-settings.md)
-8. [Telemetry](/doc/devdocs/settingsv2/telemetry.md)
+8. [XAML Island tweaks](/doc/devdocs/settingsv2/xaml-island-tweaks.md)
+9. [Telemetry](/doc/devdocs/settingsv2/telemetry.md)
