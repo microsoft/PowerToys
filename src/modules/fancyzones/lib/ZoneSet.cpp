@@ -130,7 +130,7 @@ public:
     ZonesFromPoint(POINT pt) const noexcept;
     IFACEMETHODIMP_(std::vector<size_t>)
     GetZoneIndexSetFromWindow(HWND window) const noexcept;
-    std::map<size_t, winrt::com_ptr<IZone>>
+    IFACEMETHODIMP_(ZonesMap)
     GetZones()const noexcept override { return m_zones; }
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, HWND workAreaWindow, size_t index) noexcept;
@@ -159,7 +159,7 @@ private:
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
     bool CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing);
 
-    std::map<size_t, winrt::com_ptr<IZone>> m_zones;
+    ZonesMap m_zones;
     std::map<HWND, std::vector<size_t>> m_windowIndexSet;
 
     // Needed for ExtendWindowByDirectionAndPosition
