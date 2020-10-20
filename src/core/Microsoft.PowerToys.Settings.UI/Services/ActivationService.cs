@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
         }
 
-        private async Task InitializeAsync()
+        private static async Task InitializeAsync()
         {
             await Task.CompletedTask;
         }
@@ -89,17 +89,17 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
         }
 
-        private async Task StartupAsync()
+        private static async Task StartupAsync()
         {
             await Task.CompletedTask;
         }
 
-        private IEnumerable<ActivationHandler> GetActivationHandlers()
+        private static IEnumerable<ActivationHandler> GetActivationHandlers()
         {
             yield break;
         }
 
-        private bool IsInteractive(object args)
+        private static bool IsInteractive(object args)
         {
             return args is IActivatedEventArgs;
         }

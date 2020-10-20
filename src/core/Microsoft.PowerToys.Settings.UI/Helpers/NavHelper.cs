@@ -8,7 +8,7 @@ using Windows.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-    public class NavHelper
+    public static class NavHelper
     {
         // This helper class allows to specify the page that will be shown when you click on a NavigationViewItem
         //

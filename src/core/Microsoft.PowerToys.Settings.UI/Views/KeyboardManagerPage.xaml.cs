@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void CombineRemappings(List<KeysDataModel> remapKeysList, uint leftKey, uint rightKey, uint combinedKey)
+        private static void CombineRemappings(List<KeysDataModel> remapKeysList, uint leftKey, uint rightKey, uint combinedKey)
         {
             KeysDataModel firstRemap = remapKeysList.Find(x => uint.Parse(x.OriginalKeys) == leftKey);
             KeysDataModel secondRemap = remapKeysList.Find(x => uint.Parse(x.OriginalKeys) == rightKey);

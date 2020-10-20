@@ -77,7 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
         }
 
-        public int UpdateUIThemeMethod(string themeName)
+        public static int UpdateUIThemeMethod(string themeName)
         {
             switch (themeName.ToUpperInvariant())
             {
