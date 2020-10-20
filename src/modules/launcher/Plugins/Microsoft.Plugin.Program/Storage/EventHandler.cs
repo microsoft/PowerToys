@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Plugin.Program.Storage
 {
@@ -12,7 +12,7 @@ namespace Microsoft.Plugin.Program.Storage
     {
         // To obtain the path of the app when multiple events are added to the Concurrent queue across multiple threads.
         // On the first occurence of a different file path, the existing app path is to be returned without removing any more elements from the queue.
-        public static string GetAppPathFromQueue(ConcurrentQueue<string> eventHandlingQueue, int dequeueDelay)
+        public static async Task<string> GetAppPathFromQueueAsync(ConcurrentQueue<string> eventHandlingQueue, int dequeueDelay)
         {
             if (eventHandlingQueue == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.Plugin.Program.Storage
                 }
 
                 // This delay has been added to account for the delay in events being triggered during app installation.
-                Thread.Sleep(dequeueDelay);
+                await Task.Delay(dequeueDelay).ConfigureAwait(false);
             }
 
             return previousAppPath;
