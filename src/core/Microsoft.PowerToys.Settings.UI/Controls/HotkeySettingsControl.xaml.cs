@@ -15,9 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
 
-        private bool _shiftKeyDownOnEntering = false;
+        private bool _shiftKeyDownOnEntering;
 
-        private bool _shiftToggled = false;
+        private bool _shiftToggled;
 
         public string Header { get; set; }
 
@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 typeof(HotkeySettingsControl),
                 null);
 
-        private bool _enabled = false;
+        private bool _enabled;
 
         public bool Enabled
         {
