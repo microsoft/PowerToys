@@ -20,9 +20,7 @@ namespace Wox.Core.Plugin
         public static List<PluginPair> Plugins(List<PluginMetadata> metadatas)
         {
             var csharpPlugins = CSharpPlugins(metadatas).ToList();
-            var executablePlugins = ExecutablePlugins(metadatas);
-            var plugins = csharpPlugins.Concat(executablePlugins).ToList();
-            return plugins;
+            return csharpPlugins;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
@@ -84,19 +82,6 @@ namespace Wox.Core.Plugin
                 });
                 metadata.InitTime += milliseconds;
             }
-
-            return plugins;
-        }
-
-        public static IEnumerable<PluginPair> ExecutablePlugins(IEnumerable<PluginMetadata> source)
-        {
-            var metadatas = source.Where(o => o.Language.ToUpperInvariant() == AllowedLanguage.Executable);
-
-            var plugins = metadatas.Select(metadata => new PluginPair
-            {
-                Plugin = new ExecutablePlugin(metadata.ExecuteFilePath),
-                Metadata = metadata,
-            });
 
             return plugins;
         }
