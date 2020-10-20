@@ -40,25 +40,25 @@ namespace Microsoft.Plugin.Program.Storage
 
             // This task would always run in the background trying to dequeue file paths from the queue at regular intervals.
             _ = Task.Run(async () =>
-              {
-                  while (true)
-                  {
-                      int dequeueDelay = 500;
-                      string appPath = await EventHandler.GetAppPathFromQueueAsync(commonEventHandlingQueue, dequeueDelay).ConfigureAwait(false);
+            {
+                while (true)
+                {
+                    int dequeueDelay = 500;
+                    string appPath = await EventHandler.GetAppPathFromQueueAsync(commonEventHandlingQueue, dequeueDelay).ConfigureAwait(false);
 
-                      // To allow for the installation process to finish.
-                      await Task.Delay(5000).ConfigureAwait(false);
+                    // To allow for the installation process to finish.
+                    await Task.Delay(5000).ConfigureAwait(false);
 
-                      if (!string.IsNullOrEmpty(appPath))
-                      {
-                          Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(appPath);
-                          if (app != null)
-                          {
-                              Add(app);
-                          }
-                      }
-                  }
-              }).ConfigureAwait(false);
+                    if (!string.IsNullOrEmpty(appPath))
+                    {
+                        Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(appPath);
+                        if (app != null)
+                        {
+                            Add(app);
+                        }
+                    }
+                }
+            }).ConfigureAwait(false);
         }
 
         private void InitializeFileSystemWatchers()
