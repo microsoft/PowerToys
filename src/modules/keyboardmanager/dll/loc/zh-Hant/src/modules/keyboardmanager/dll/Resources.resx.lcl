@@ -396,10 +396,13 @@
       </Item>
       <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Key Drop Down]]></Val>
+          <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[下拉式按鍵]]></Val>
+            <Val><![CDATA[金鑰]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Key Drop Down]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
