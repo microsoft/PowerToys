@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,8 +59,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             if (_settingsUtils.SettingsExists(PowerToyName))
             {
-                // Todo: Be more resilient while reading and saving settings.
-                Settings = _settingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
+                try
+                {
+                    Settings = _settingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError($"Exception encountered while reading {PowerToyName} settings.", e);
+#if DEBUG
+                    if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
+                    {
+                        throw e;
+                    }
+#endif
+                }
 
                 // Load profile.
                 if (!LoadProfile())

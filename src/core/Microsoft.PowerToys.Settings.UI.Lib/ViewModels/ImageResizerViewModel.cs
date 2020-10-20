@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
@@ -45,6 +46,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             catch (Exception e)
             {
                 Logger.LogError($"Exception encountered while reading {ModuleName} settings.", e);
+#if DEBUG
+                if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
+                {
+                    throw e;
+                }
+#endif
                 Settings = new ImageResizerSettings();
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
@@ -119,6 +120,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             catch (Exception e)
             {
                 Logger.LogError($"Exception encountered while saving {powertoy} settings.", e);
+#if DEBUG
+                if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
+                {
+                    throw e;
+                }
+#endif
             }
         }
 

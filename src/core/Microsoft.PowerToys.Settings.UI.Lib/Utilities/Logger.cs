@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
                 Directory.CreateDirectory(ApplicationLogPath);
             }
 
-            var logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.CurrentCulture) + ".txt");
+            var logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
