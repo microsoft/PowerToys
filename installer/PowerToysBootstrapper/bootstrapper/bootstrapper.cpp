@@ -65,18 +65,18 @@ std::optional<fs::path> extractIcon()
     return iconRes->saveAsFile(icoPath) ? std::make_optional(std::move(icoPath)) : std::nullopt;
 }
 
-void setup_log(const spdlog::level::level_enum severity)
+void setup_log(fs::path directory, const spdlog::level::level_enum severity)
 {
     try
     {
         std::shared_ptr<spdlog::logger> logger;
         if (severity != spdlog::level::off)
         {
-            logger = spdlog::basic_logger_mt("file", LOG_FILENAME);
+            logger = spdlog::basic_logger_mt("file", (directory / LOG_FILENAME).string());
 
             std::error_code _;
             const DWORD msiSev = severity == spdlog::level::debug ? INSTALLLOGMODE_VERBOSE : INSTALLLOGMODE_ERROR;
-            const auto msiLogPath = fs::current_path(_) / MSI_LOG_FILENAME;
+            const auto msiLogPath = directory / MSI_LOG_FILENAME;
             MsiEnableLogW(msiSev, msiLogPath.c_str(), INSTALLLOGATTRIBUTES_APPEND);
         }
         else
@@ -106,7 +106,8 @@ int bootstrapper()
         ("s,silent", "Suppress MSI UI and notifications")
         ("no_start_pt", "Do not launch PowerToys after the installation is complete")
         ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
-        ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"));
+        ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
+        ("log_dir", "Log directory.", cxxopts::value<std::string>()->default_value("."));
     // clang-format on
     cxxopts::ParseResult cmdArgs;
     options.allow_unrecognised_options();
@@ -123,7 +124,21 @@ int bootstrapper()
     const bool skipDotnetInstall = cmdArgs["skip_dotnet_install"].as<bool>();
     const bool noStartPT = cmdArgs["no_start_pt"].as<bool>();
     const auto logLevel = cmdArgs["log_level"].as<std::string>();
+    const auto logDirArg = cmdArgs["log_dir"].as<std::string>();
     spdlog::level::level_enum severity = spdlog::level::off;
+
+    fs::path logDir = ".";
+    try
+    {
+        fs::path logDirArgPath = logDirArg;
+        if (fs::exists(logDirArgPath) && fs::is_directory(logDirArgPath))
+        {
+            logDir = logDirArgPath;
+        }
+    }
+    catch (...)
+    {
+    }
 
     if (logLevel == "debug")
     {
@@ -133,7 +148,7 @@ int bootstrapper()
     {
         severity = spdlog::level::err;
     }
-    setup_log(severity);
+    setup_log(logDir, severity);
     if (showHelp)
     {
         std::ostringstream helpMsg;
