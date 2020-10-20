@@ -1183,10 +1183,9 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
                 auto zoneSet = workArea->ActiveZoneSet();
                 if (zoneSet)
                 {
-                    auto zones = zoneSet->GetZones();
-                    for (size_t i = 0; i < zones.size(); i++)
+                    const auto& zones = zoneSet->GetZones();
+                    for (const auto& [zoneId, zone] : zones)
                     {
-                        const auto& zone = zones[i];
                         RECT zoneRect = zone->GetZoneRect();
 
                         zoneRect.left += monitorRect.left;
@@ -1195,7 +1194,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
                         zoneRect.bottom += monitorRect.top;
 
                         zoneRects.emplace_back(zoneRect);
-                        zoneRectsInfo.emplace_back(i, workArea);
+                        zoneRectsInfo.emplace_back(zoneId, workArea);
                     }
                 }
             }
@@ -1228,10 +1227,9 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             auto zoneSet = workArea->ActiveZoneSet();
             if (zoneSet)
             {
-                auto zones = zoneSet->GetZones();
-                for (size_t i = 0; i < zones.size(); i++)
+                const auto& zones = zoneSet->GetZones();
+                for (const auto& [zoneId, zone] : zones)
                 {
-                    const auto& zone = zones[i];
                     RECT zoneRect = zone->GetZoneRect();
 
                     zoneRect.left += currentMonitorRect.left;
@@ -1240,7 +1238,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
                     zoneRect.bottom += currentMonitorRect.top;
 
                     zoneRects.emplace_back(zoneRect);
-                    zoneRectsInfo.emplace_back(i, workArea);
+                    zoneRectsInfo.emplace_back(zoneId, workArea);
                 }
             }
         }
