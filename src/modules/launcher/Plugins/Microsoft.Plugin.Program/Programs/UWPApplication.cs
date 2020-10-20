@@ -108,7 +108,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             // To set the title to always be the displayname of the packaged application
             result.Title = DisplayName;
-            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+            result.SetTitleHighlightData(StringMatcher.FuzzySearch(query, Name).MatchData);
 
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, Package.Location);

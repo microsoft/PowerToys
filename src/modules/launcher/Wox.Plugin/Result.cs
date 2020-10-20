@@ -17,6 +17,7 @@ namespace Wox.Plugin
         private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
+        private IList<int> _titleHighlightData;
 
         public string Title
         {
@@ -96,10 +97,26 @@ namespace Wox.Plugin
 
         public int Score { get; set; }
 
+        public Result(IList<int> titleHighlightData = null)
+        {
+            _titleHighlightData = titleHighlightData;
+        }
+
         /// <summary>
-        /// Gets or sets a list of indexes for the characters to be highlighted in Title
+        /// Gets a list of indexes for the characters to be highlighted in Title
         /// </summary>
-        public IList<int> TitleHighlightData { get; set; }
+        public IList<int> GetTitleHighlightData()
+        {
+            return _titleHighlightData;
+        }
+
+        /// <summary>
+        /// Sets a list of indexes for the characters to be highlighted in Title
+        /// </summary>
+        public void SetTitleHighlightData(IList<int> value)
+        {
+            _titleHighlightData = value;
+        }
 
         /// <summary>
         /// Gets or sets a list of indexes for the characters to be highlighted in SubTitle
@@ -138,7 +155,7 @@ namespace Wox.Plugin
             var equality = string.Equals(r?.Title, Title, StringComparison.Ordinal) &&
                            string.Equals(r?.SubTitle, SubTitle, StringComparison.Ordinal) &&
                            string.Equals(r?.IcoPath, IcoPath, StringComparison.Ordinal) &&
-                           TitleHighlightData == r.TitleHighlightData &&
+                           GetTitleHighlightData() == r.GetTitleHighlightData() &&
                            SubTitleHighlightData == r.SubTitleHighlightData;
 
             return equality;
