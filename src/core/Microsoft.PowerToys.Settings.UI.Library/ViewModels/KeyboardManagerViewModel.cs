@@ -42,6 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions should not crash the program but will be logged until we can understand common exception scenarios")]
         public KeyboardManagerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
             if (settingsRepository == null)
@@ -69,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 #if DEBUG
                     if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
                     {
-                        throw e;
+                        throw;
                     }
 #endif
                 }

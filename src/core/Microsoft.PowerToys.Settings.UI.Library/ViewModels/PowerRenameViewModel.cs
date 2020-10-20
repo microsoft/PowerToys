@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 #if DEBUG
                 if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
                 {
-                    throw e;
+                    throw;
                 }
 #endif
                 PowerRenameLocalProperties localSettings = new PowerRenameLocalProperties();

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 
-namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
+namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 {
     public static class Logger
     {

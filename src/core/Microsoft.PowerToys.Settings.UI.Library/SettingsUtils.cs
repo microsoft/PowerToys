@@ -123,7 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 #if DEBUG
                 if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
                 {
-                    throw e;
+                    throw;
                 }
 #endif
             }
