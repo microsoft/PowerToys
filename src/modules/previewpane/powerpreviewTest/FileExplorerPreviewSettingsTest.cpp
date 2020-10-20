@@ -417,7 +417,7 @@ namespace FileExplorerPreviewSettingsTest
                 L"valid-description",
                 L"valid-guid",
                 L"valid-handler",
-                registryMock);
+                std::unique_ptr<RegistryWrapperIface>(registryMock));
         }
 
         ThumbnailProviderSettings GetThumbnailProviderSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
@@ -428,7 +428,7 @@ namespace FileExplorerPreviewSettingsTest
                 L"valid-description",
                 L"valid-guid",
                 L"valid-handler",
-                registryMock,
+                std::unique_ptr<RegistryWrapperIface>(registryMock),
                 L"valid-subkey");
         }
 
