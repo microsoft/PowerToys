@@ -26,7 +26,7 @@ namespace Wox.Test
             // Arrange
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" } } } },
+                { ">", new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" } ) } },
             };
             string searchQuery = ">   file.txt    file2 file3";
 
@@ -43,7 +43,7 @@ namespace Wox.Test
             // Arrange
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" }, Disabled = true } } },
+                { ">", new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" }) { Disabled = true } } },
             };
             string searchQuery = ">   file.txt    file2 file3";
 
@@ -72,7 +72,7 @@ namespace Wox.Test
         {
             // Arrange
             string searchQuery = "> query";
-            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" } } };
+            var firstPlugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" } ) };
             var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = ">" } };
 
             var nonGlobalPluginWithActionKeywords = new Dictionary<string, PluginPair>
@@ -103,7 +103,7 @@ namespace Wox.Test
         public void QueryBuilderShouldGenerateCorrectQueriesForPluginsWithMultipleActionKeywords()
         {
             // Arrange
-            var plugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { "a", "b" } } };
+            var plugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { "a", "b" } ) };
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
                 { "a", plugin },
@@ -129,7 +129,7 @@ namespace Wox.Test
         public void QueryBuildShouldGenerateSameSearchQueryWithOrWithoutSpaceAfterActionKeyword()
         {
             // Arrange
-            var plugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { "a" } } };
+            var plugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { "a" } ) };
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
                 { "a", plugin },

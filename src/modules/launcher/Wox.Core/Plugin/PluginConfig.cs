@@ -78,10 +78,10 @@ namespace Wox.Core.Plugin
                 metadata.PluginDirectory = pluginDirectory;
 
                 // for plugins which doesn't has ActionKeywords key
-                metadata.ActionKeywords = metadata.ActionKeywords ?? new List<string> { metadata.ActionKeyword };
+                metadata.SetActionKeywords(metadata.GetActionKeywords() ?? new List<string> { metadata.ActionKeyword });
 
                 // for plugin still use old ActionKeyword
-                metadata.ActionKeyword = metadata.ActionKeywords?[0];
+                metadata.ActionKeyword = metadata.GetActionKeywords()?[0];
             }
             catch (Exception e)
             {

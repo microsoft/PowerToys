@@ -125,7 +125,7 @@ namespace Wox.Core.Plugin
                 }
 
                 // Plugins may have multiple ActionKeywords, eg. WebSearch
-                plugin.Metadata.ActionKeywords.Where(x => x != Query.GlobalPluginWildcardSign)
+                plugin.Metadata.GetActionKeywords().Where(x => x != Query.GlobalPluginWildcardSign)
                                                 .ToList()
                                                 .ForEach(x => NonGlobalPlugins[x] = plugin);
             }
@@ -244,7 +244,7 @@ namespace Wox.Core.Plugin
 
         private static bool IsGlobalPlugin(PluginMetadata metadata)
         {
-            return metadata.ActionKeywords.Contains(Query.GlobalPluginWildcardSign);
+            return metadata.GetActionKeywords().Contains(Query.GlobalPluginWildcardSign);
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace Wox.Core.Plugin
                 NonGlobalPlugins[newActionKeyword] = plugin;
             }
 
-            plugin.Metadata.ActionKeywords.Add(newActionKeyword);
+            plugin.Metadata.GetActionKeywords().Add(newActionKeyword);
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace Wox.Core.Plugin
             var plugin = GetPluginForId(id);
             if (oldActionkeyword == Query.GlobalPluginWildcardSign
                 && // Plugins may have multiple ActionKeywords that are global, eg. WebSearch
-                plugin.Metadata.ActionKeywords
+                plugin.Metadata.GetActionKeywords()
                                     .Where(x => x == Query.GlobalPluginWildcardSign)
                                     .ToList()
                                     .Count == 1)
@@ -345,7 +345,7 @@ namespace Wox.Core.Plugin
                 NonGlobalPlugins.Remove(oldActionkeyword);
             }
 
-            plugin.Metadata.ActionKeywords.Remove(oldActionkeyword);
+            plugin.Metadata.GetActionKeywords().Remove(oldActionkeyword);
         }
 
         public static void ReplaceActionKeyword(string id, string oldActionKeyword, string newActionKeyword)
