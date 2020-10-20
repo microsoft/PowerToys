@@ -3,8 +3,8 @@
 #include "version.h"
 
 #include "http_client.h"
+#include "notifications.h"
 #include "updating.h"
-#include "toast_notifications_helper.h"
 
 #include <msi.h>
 #include <common/common.h>

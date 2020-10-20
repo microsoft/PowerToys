@@ -301,8 +301,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             return 0;
         }
     case SpecialMode::ReportSuccessfulUpdate:
-        notifications::show_toast(localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT, L"PowerToys");
+    {
+        notifications::remove_toasts(notifications::UPDATING_PROCESS_TOAST_TAG);
+        notifications::show_toast(localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
+                                  L"PowerToys",
+                                  notifications::toast_params{ notifications::UPDATING_PROCESS_TOAST_TAG });
         break;
+    }
 
     case SpecialMode::None:
         // continue as usual
