@@ -27,6 +27,11 @@ namespace Wox.Plugin.SharedCommands
 
         public static Process RunAsDifferentUser(ProcessStartInfo processStartInfo)
         {
+            if (processStartInfo == null)
+            {
+                throw new ArgumentNullException(nameof(processStartInfo));
+            }
+
             processStartInfo.Verb = "RunAsUser";
             var process = Process.Start(processStartInfo);
 

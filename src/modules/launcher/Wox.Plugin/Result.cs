@@ -27,6 +27,11 @@ namespace Wox.Plugin
 
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _title = value.Replace("\n", " ", StringComparison.Ordinal);
             }
         }
