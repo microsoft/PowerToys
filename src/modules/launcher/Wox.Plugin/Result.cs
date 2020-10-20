@@ -97,9 +97,10 @@ namespace Wox.Plugin
 
         public int Score { get; set; }
 
-        public Result(IList<int> titleHighlightData = null)
+        public Result(IList<int> titleHighlightData = null, IList<int> subTitleHighlightData = null)
         {
             _titleHighlightData = titleHighlightData;
+            SubTitleHighlightData = subTitleHighlightData;
         }
 
         /// <summary>
@@ -119,9 +120,9 @@ namespace Wox.Plugin
         }
 
         /// <summary>
-        /// Gets or sets a list of indexes for the characters to be highlighted in SubTitle
+        /// Gets a list of indexes for the characters to be highlighted in SubTitle
         /// </summary>
-        public IList<int> SubTitleHighlightData { get; set; }
+        public IList<int> SubTitleHighlightData { get; private set; }
 
         /// <summary>
         /// Gets or sets only results that originQuery match with current query will be displayed in the panel
@@ -171,10 +172,6 @@ namespace Wox.Plugin
         public override string ToString()
         {
             return string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Title, SubTitle);
-        }
-
-        public Result()
-        {
         }
 
         /// <summary>
