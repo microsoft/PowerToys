@@ -48,12 +48,12 @@ namespace ColorPicker.Controls
         {
             InitializeComponent();
             _actionInvoker = Bootstrapper.Container.GetExportedValue<IThrottledActionInvoker>();
-            ColorTextRepresentationTextBox.MouseLeftButtonDown += ColorTextRepresentationTextBox_MouseLeftButtonDown;
+            CopyToClipboardButton.Click += CopyToClipboardButton_Click;
         }
 
-        private void ColorTextRepresentationTextBox_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void CopyToClipboardButton_Click(object sender, RoutedEventArgs e)
         {
-            ClipboardHelper.CopyToClipboard(ColorTextRepresentationTextBox.Text);
+            ClipboardHelper.CopyToClipboard(ColorTextRepresentationTextBlock.Text);
             if (!_copyIndicatorVisible)
             {
                 AppearCopiedIndicator();
@@ -74,12 +74,12 @@ namespace ColorPicker.Controls
 
         private static void PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ColorFormatControl)d).ColorTextRepresentationTextBox.Text = (string)e.NewValue;
+            ((ColorFormatControl)d).ColorTextRepresentationTextBlock.Text = (string)e.NewValue;
         }
 
         private static void FormatNamePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ColorFormatControl)d).FormatNameTextBox.Text = (string)e.NewValue;
+            ((ColorFormatControl)d).FormatNameTextBlock.Text = (string)e.NewValue;
         }
 
         private static void ColorCopiedBorderPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

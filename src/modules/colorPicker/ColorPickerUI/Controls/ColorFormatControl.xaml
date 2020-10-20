@@ -8,21 +8,60 @@
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Border
+    
+    <Border x:Name="MainBorder"
                     Margin="0,12,0,0"
                     Width="308"
                     Height="36"
                     CornerRadius="4"
-                    Padding="8"
                     HorizontalAlignment="Stretch"
                     Background="{DynamicResource ColorControlBackgroundBrush}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="64"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="36"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="FormatNameTextBox" Opacity="0.4" Foreground="{DynamicResource PrimaryForegroundBrush}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
-            <TextBlock x:Name="ColorTextRepresentationTextBox" Text="{Binding Text}" Foreground="{DynamicResource PrimaryForegroundBrush}" FontFamily="Consolas" Grid.Column="1" FontSize="14" Margin="0,-2,0,0" VerticalAlignment="Center"/>
+            <TextBlock x:Name="FormatNameTextBlock"
+                       Opacity="0.4"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       Margin="8"
+                       FontWeight="SemiBold"
+                       FontSize="12"
+                       VerticalAlignment="Center"/>
+
+            <TextBox x:Name="ColorTextRepresentationTextBlock"
+                       Text="{Binding Text}"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       FontFamily="Consolas"
+                       Grid.Column="1"
+                       FontSize="14"
+                       Background="Transparent"
+                       BorderThickness="0"
+                       IsReadOnly="True"
+                       Margin="8"
+                       VerticalAlignment="Center" Style="{DynamicResource TextBoxStyle}"/>
+
+            <Button x:Name="CopyToClipboardButton"
+                    ToolTipService.ToolTip="Copy to clipboard"
+                    Height="36"
+                    Width="36"
+                    Grid.Column="2">
+                <Button.Content>
+                    <TextBlock FontFamily="Segoe MDL2 Assets"
+                           Text="&#xE16F;"
+                           FontSize="12" />
+                </Button.Content>
+                <Button.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsMouseOver, ElementName=MainBorder}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Resources>
+            </Button>
         </Grid>
         <Border.Effect>
             <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
