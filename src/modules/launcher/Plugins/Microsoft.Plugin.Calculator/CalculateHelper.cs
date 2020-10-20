@@ -11,10 +11,9 @@ namespace Microsoft.Plugin.Calculator
     {
         private static readonly Regex RegValidExpressChar = new Regex(
             @"^(" +
-            @"ceil|floor|exp|pi|e|max|min|det|abs|log|ln|sqrt|" +
-            @"sin|cos|tan|arcsin|arccos|arctan|" +
-            @"eigval|eigvec|eig|sum|polar|plot|round|sort|real|zeta|" +
-            @"bin2dec|hex2dec|oct2dec|" +
+            @"ceil\s*\(|floor\s*\(|exp\s*\(|pi|e|max\s*\(|min\s*\(|det|abs\s*\(|log\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|" +
+            @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(|exp\s*\(|lt\s*\(|gt\s*\(|eq\s*\(|rand\s*\(|" +
+            @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +
             @"==|~=|&&|\|\||" +
             @"[ei]|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
             @")+$", RegexOptions.Compiled);
