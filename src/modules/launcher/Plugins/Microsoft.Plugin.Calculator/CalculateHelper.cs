@@ -41,6 +41,13 @@ namespace Microsoft.Plugin.Calculator
                 return false;
             }
 
+            // If the input ends with a binary operator then it is not a valid input to mages and the Interpret function would throw an exception.
+            string trimmedInput = input.TrimEnd();
+            if (trimmedInput.EndsWith('+') || trimmedInput.EndsWith('-') || trimmedInput.EndsWith('*') || trimmedInput.EndsWith('|') || trimmedInput.EndsWith('\\') || trimmedInput.EndsWith('^') || trimmedInput.EndsWith('=') || trimmedInput.EndsWith('&'))
+            {
+                return false;
+            }
+
             return true;
         }
     }
