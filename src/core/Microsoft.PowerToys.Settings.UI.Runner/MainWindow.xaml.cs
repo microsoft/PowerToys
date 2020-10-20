@@ -30,6 +30,12 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
         {
+            // If sender is null, it could lead to a NullReferenceException. This might occur on restarting as admin (check https://github.com/microsoft/PowerToys/issues/7393 for details)
+            if (sender == null)
+            {
+                return;
+            }
+
             // Hook up x:Bind source.
             WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
             ShellPage shellPage = windowsXamlHost.GetUwpInternalObject() as ShellPage;

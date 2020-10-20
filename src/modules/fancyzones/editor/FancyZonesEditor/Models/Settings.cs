@@ -54,6 +54,8 @@ namespace FancyZonesEditor
         public const ushort _blankCustomModelId = 0xFFFA;
         public const ushort _lastDefinedId = _blankCustomModelId;
 
+        private const int MaxNegativeSpacing = -10;
+
         // Localizable strings
         private const string ErrorMessageBoxTitle = "FancyZones Editor Error";
         private const string ErrorParsingDeviceInfo = "Error parsing device info data.";
@@ -209,7 +211,7 @@ namespace FancyZonesEditor
             {
                 if (_spacing != value)
                 {
-                    _spacing = Math.Max(0, value);
+                    _spacing = Math.Max(MaxNegativeSpacing, value);
                     FirePropertyChanged();
                 }
             }

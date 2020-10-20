@@ -20,6 +20,10 @@ namespace winrt::Windows::UI::Xaml::Controls
     struct StackPanel;
 }
 
+using SingleKeyRemapTable = std::unordered_map<DWORD, KeyShortcutUnion>;
+using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
+using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
+
 // Enum type to store different states of the UI
 enum class KeyboardManagerUIState
 {
@@ -84,6 +88,9 @@ private:
     // Stores the activated target application in app-specfic shortcut
     std::wstring activatedAppSpecificShortcutTarget;
 
+    // Thread safe boolean value to check if remappings are currently enabled. This is used to disable remappings while the remap tables are being updated by the UI thread
+    std::atomic_bool remappingsEnabled;
+
     // Display a key by appending a border Control as a child of the panel.
     void AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
 
@@ -91,22 +98,21 @@ public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
-    std::unordered_map<DWORD, std::variant<DWORD, Shortcut>> singleKeyReMap;
-    std::mutex singleKeyReMap_mutex;
+    std::unordered_map<DWORD, KeyShortcutUnion> singleKeyReMap;
 
+    /* This feature has not been enabled (code from proof of concept stage)
+    * 
     // Stores keys which need to be changed from toggle behavior to modifier behavior. Eg. Caps Lock
     std::unordered_map<DWORD, bool> singleKeyToggleToMod;
-    std::mutex singleKeyToggleToMod_mutex;
+    */
 
     // Stores the os level shortcut remappings
-    std::map<Shortcut, RemapShortcut> osLevelShortcutReMap;
+    ShortcutRemapTable osLevelShortcutReMap;
     std::vector<Shortcut> osLevelShortcutReMapSortedKeys;
-    std::mutex osLevelShortcutReMap_mutex;
 
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
-    std::map<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificShortcutReMap;
+    AppSpecificShortcutRemapTable appSpecificShortcutReMap;
     std::map<std::wstring, std::vector<Shortcut>> appSpecificShortcutReMapSortedKeys;
-    std::mutex appSpecificShortcutReMap_mutex;
 
     // Stores the keyboard layout
     LayoutMap keyboardMap;
@@ -139,13 +145,23 @@ public:
     void ClearAppSpecificShortcuts();
 
     // Function to add a new single key to key remapping
-    bool AddSingleKeyRemap(const DWORD& originalKey, const std::variant<DWORD, Shortcut>& newRemapKey);
+    bool AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutUnion& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
-    bool AddOSLevelShortcut(const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC);
+    bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutUnion& newSC);
 
     // Function to add a new App specific level shortcut remapping
-    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC);
+    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutUnion& newSC);
+
+    // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
+    std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
+
+    bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
+
+    std::vector<Shortcut>& GetSortedShortcutRemapVector(const std::optional<std::wstring>& appName);
+
+    // Function to get the source and target of a shortcut remap given the source shortcut. Returns nullopt if it isn't remapped
+    ShortcutRemapTable& GetShortcutRemapTable(const std::optional<std::wstring>& appName);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);
@@ -214,4 +230,8 @@ public:
 
     // Gets the activated target application in app-specfic shortcut
     std::wstring GetActivatedApp();
+
+    bool AreRemappingsEnabled();
+
+    void RemappingsDisabledWrapper(std::function<void()> method);
 };

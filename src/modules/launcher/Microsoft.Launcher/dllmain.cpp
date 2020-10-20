@@ -6,6 +6,7 @@
 #include "trace.h"
 #include "Generated Files/resource.h"
 #include <common/os-detect.h>
+#include <launcher\Microsoft.Launcher\LauncherConstants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -59,6 +60,9 @@ private:
     //contains the name of the powerToys
     std::wstring app_name;
 
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
+
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
 
@@ -76,6 +80,7 @@ public:
     Microsoft_Launcher()
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
+        app_key = LauncherConstants::ModuleKey;
         init_settings();
 
         SECURITY_ATTRIBUTES sa;
@@ -100,10 +105,16 @@ public:
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
+    // Return the localized display name of the powertoy
     virtual const wchar_t* get_name() override
     {
         return app_name.c_str();
+    }
+
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
+    {
+        return app_key.c_str();
     }
 
     // Return JSON with the configuration options.
@@ -143,7 +154,7 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             parse_hotkey(values);
             // If you don't need to do any custom processing of the settings, proceed
@@ -271,6 +282,12 @@ public:
         // For now, hotkeyId will always be zero
         if (m_enabled)
         {
+            if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
+            {
+                // The process exited, restart it
+                enable();
+            }
+
             SetEvent(m_hEvent);
             return true;
         }
@@ -314,7 +331,7 @@ void Microsoft_Launcher::init_settings()
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
 
         parse_hotkey(settings);
     }

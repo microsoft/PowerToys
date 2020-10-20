@@ -19,13 +19,28 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public PowerPreviewViewModel(ISettingsRepository<PowerPreviewSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
+        public PowerPreviewViewModel(ISettingsRepository<PowerPreviewSettings> moduleSettingsRepository, ISettingsRepository<GeneralSettings> generalSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
+            // To obtain the general Settings configurations of PowerToys
+            if (generalSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(generalSettingsRepository));
+            }
+
+            GeneralSettingsConfig = generalSettingsRepository.SettingsConfig;
+
             // To obtain the PowerPreview settings if it exists.
             // If the file does not exist, to create a new one and return the default settings configurations.
+            if (moduleSettingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(moduleSettingsRepository));
+            }
+
             Settings = moduleSettingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
@@ -36,9 +51,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
         }
 
-        private bool _svgRenderIsEnabled = false;
-        private bool _mdRenderIsEnabled = false;
-        private bool _svgThumbnailIsEnabled = false;
+        private bool _svgRenderIsEnabled;
+        private bool _mdRenderIsEnabled;
+        private bool _svgThumbnailIsEnabled;
 
         public bool SVGRenderIsEnabled
         {
@@ -97,6 +112,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         public string GetSettingsSubPath()
         {
             return _settingsConfigFileFolder + "\\" + ModuleName;
+        }
+
+        public bool IsElevated
+        {
+            get
+            {
+                return GeneralSettingsConfig.IsElevated;
+            }
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)

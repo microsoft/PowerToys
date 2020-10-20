@@ -29,6 +29,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _settingsConfigFileFolder = configFileSubfolder;
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             try
@@ -54,12 +59,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _powerRenameEnabled = GeneralSettingsConfig.Enabled.PowerRename;
         }
 
-        private bool _powerRenameEnabled = false;
-        private bool _powerRenameEnabledOnContextMenu = false;
-        private bool _powerRenameEnabledOnContextExtendedMenu = false;
-        private bool _powerRenameRestoreFlagsOnLaunch = false;
-        private int _powerRenameMaxDispListNumValue = 0;
-        private bool _autoComplete = false;
+        private bool _powerRenameEnabled;
+        private bool _powerRenameEnabledOnContextMenu;
+        private bool _powerRenameEnabledOnContextExtendedMenu;
+        private bool _powerRenameRestoreFlagsOnLaunch;
+        private int _powerRenameMaxDispListNumValue;
+        private bool _autoComplete;
 
         public bool IsEnabled
         {
@@ -78,8 +83,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         SendConfigMSG(snd.ToString());
 
                         _powerRenameEnabled = value;
-                        OnPropertyChanged("IsEnabled");
-                        RaisePropertyChanged("GlobalAndMruEnabled");
+                        OnPropertyChanged(nameof(IsEnabled));
+                        RaisePropertyChanged(nameof(GlobalAndMruEnabled));
                 }
             }
         }
@@ -98,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                     _autoComplete = value;
                     Settings.Properties.MRUEnabled.Value = value;
                     RaisePropertyChanged();
-                    RaisePropertyChanged("GlobalAndMruEnabled");
+                    RaisePropertyChanged(nameof(GlobalAndMruEnabled));
                 }
             }
         }

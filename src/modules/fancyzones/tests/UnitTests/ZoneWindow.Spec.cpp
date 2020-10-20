@@ -160,7 +160,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD(CreateZoneWindowNoDeviceId)
         {
             // Generate unique id without device id
-            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, nullptr, m_virtualDesktopId.c_str());
+            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, {}, m_virtualDesktopId);
             auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {}, false);
 
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
@@ -178,7 +178,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD(CreateZoneWindowNoDesktopId)
         {
             // Generate unique id without virtual desktop id
-            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, m_deviceId.c_str(), nullptr);
+            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, m_deviceId, {});
             auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {}, false);
 
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
@@ -657,7 +657,7 @@ namespace FancyZonesUnitTests
             Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
             auto window = Mocks::WindowCreate(m_hInst);
-            auto zone = MakeZone(RECT{ 0, 0, 100, 100 });
+            auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
 
             zoneWindow->SaveWindowProcessToZoneIndex(window);
@@ -684,7 +684,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(std::vector<size_t>{ 0 } == appHistoryArray1[0].zoneIndexSet);
 
             // add zone without window
-            const auto zone = MakeZone(RECT{ 0, 0, 100, 100 });
+            const auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
 
             zoneWindow->SaveWindowProcessToZoneIndex(window);
@@ -704,7 +704,7 @@ namespace FancyZonesUnitTests
             const auto deviceId = zoneWindow->UniqueId();
             const auto zoneSetId = zoneWindow->ActiveZoneSet()->Id();
 
-            auto zone = MakeZone(RECT{ 0, 0, 100, 100 });
+            auto zone = MakeZone(RECT{ 0, 0, 100, 100 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
             zoneWindow->MoveWindowIntoZoneByIndex(window, 0);
 
@@ -737,7 +737,7 @@ namespace FancyZonesUnitTests
             SetWindowPos(window, nullptr, 150, 150, originalWidth, originalHeight, SWP_SHOWWINDOW);
             SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
 
-            auto zone = MakeZone(RECT{ 50, 50, 300, 300 });
+            auto zone = MakeZone(RECT{ 50, 50, 300, 300 }, 1);
             zoneWindow->ActiveZoneSet()->AddZone(zone);
 
             zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, VK_LEFT, true);

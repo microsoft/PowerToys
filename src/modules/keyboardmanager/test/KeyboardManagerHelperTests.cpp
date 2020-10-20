@@ -104,11 +104,10 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (CheckRepeatedModifier_ShouldReturnTrue_OnPassingSameModifierRepeated)
         {
             // Arrange
-            std::vector<DWORD> keyList = LayoutMap().GetKeyCodeList(true);
-            std::vector<DWORD> keys = { VK_CONTROL, VK_CONTROL, 0x41 };
+            std::vector<int32_t> keys = { VK_CONTROL, VK_CONTROL, 0x41 };
 
             // Act
-            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, TestHelpers::GetDropDownIndexFromDropDownList(VK_CONTROL, keyList), keyList);
+            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, VK_CONTROL);
 
             // Assert
             Assert::IsTrue(result);
@@ -118,11 +117,10 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (CheckRepeatedModifier_ShouldReturnTrue_OnPassingConflictingModifierRepeated)
         {
             // Arrange
-            std::vector<DWORD> keyList = LayoutMap().GetKeyCodeList(true);
-            std::vector<DWORD> keys = { VK_CONTROL, VK_LCONTROL, 0x41 };
+            std::vector<int32_t> keys = { VK_CONTROL, VK_LCONTROL, 0x41 };
 
             // Act
-            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, TestHelpers::GetDropDownIndexFromDropDownList(VK_LCONTROL, keyList), keyList);
+            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, VK_LCONTROL);
 
             // Assert
             Assert::IsTrue(result);
@@ -132,42 +130,13 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (CheckRepeatedModifier_ShouldReturnFalse_OnPassingDifferentModifiers)
         {
             // Arrange
-            std::vector<DWORD> keyList = LayoutMap().GetKeyCodeList(true);
-            std::vector<DWORD> keys = { VK_CONTROL, VK_SHIFT, 0x41 };
+            std::vector<int32_t> keys = { VK_CONTROL, VK_SHIFT, 0x41 };
 
             // Act
-            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, TestHelpers::GetDropDownIndexFromDropDownList(VK_SHIFT, keyList), keyList);
+            bool result = KeyboardManagerHelper::CheckRepeatedModifier(keys, VK_SHIFT);
 
             // Assert
             Assert::IsFalse(result);
-        }
-
-        // Test if the GetKeyCodesFromSelectedIndices method ignores -1 and 0 from argument in return value
-        TEST_METHOD (GetKeyCodesFromSelectedIndices_ShouldIgnoreMinus1And0_OnPassingArgumentWithMinus1Or0)
-        {
-            // Arrange
-            std::vector<DWORD> keyList = LayoutMap().GetKeyCodeList(true);
-            std::vector<int32_t> indices = { -1, 0, -1, 0 };
-
-            // Act
-            auto result = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(indices, keyList);
-
-            // Assert
-            Assert::IsTrue(result.empty());
-        }
-
-        // Test if the GetKeyCodesFromSelectedIndices method returns vector with key codes from vector with indices as per key code list
-        TEST_METHOD (GetKeyCodesFromSelectedIndices_ShouldReturnVectorWithKeyCodes_OnPassingVectorWithIndicesAsPerKeyCodeList)
-        {
-            // Arrange
-            std::vector<DWORD> keyList = LayoutMap().GetKeyCodeList(true);
-            std::vector<int32_t> indices = { TestHelpers::GetDropDownIndexFromDropDownList(0x41, keyList), TestHelpers::GetDropDownIndexFromDropDownList(0x42, keyList) };
-
-            // Act
-            auto result = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(indices, keyList);
-
-            // Assert
-            Assert::IsTrue(result == std::vector<DWORD>{ 0x41, 0x42 });
         }
     };
 }

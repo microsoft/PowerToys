@@ -26,7 +26,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void CombineShortcutLists_ShouldReturnEmptyList_WhenBothArgumentsAreEmptyLists()
+        public void CombineShortcutListsShouldReturnEmptyListWhenBothArgumentsAreEmptyLists()
         {
             // arrange
             var firstList = new List<KeysDataModel>();
@@ -38,11 +38,74 @@ namespace ViewModelTests
             // Assert
             var expectedResult = new List<AppSpecificKeysDataModel>();
 
-            Assert.AreEqual(expectedResult.Count(), result.Count());
+            Assert.AreEqual(expectedResult.Count, result.Count);
         }
 
         [TestMethod]
-        public void CombineShortcutLists_ShouldReturnListWithOneAllAppsEntry_WhenFirstArgumentHasOneEntryAndSecondArgumentIsEmpty()
+        public void CombineShortcutListsShouldReturnEmptyListWhenBothArgumentsAreNull()
+        {
+            // act
+            var result = KeyboardManagerViewModel.CombineShortcutLists(null, null);
+
+            // Assert
+            var expectedResult = new List<AppSpecificKeysDataModel>();
+
+            Assert.AreEqual(expectedResult.Count, result.Count);
+        }
+
+        [TestMethod]
+        public void CombineShortcutListsShouldReturnListWithOneAppSpecificEntryWhenFirstArgumentIsNullAndSecondArgumentHasOneEntry()
+        {
+            // arrange
+            var secondList = new List<AppSpecificKeysDataModel>();
+            var entry = new AppSpecificKeysDataModel();
+            entry.OriginalKeys = "17;65";
+            entry.NewRemapKeys = "17;86";
+            entry.TargetApp = "msedge";
+            secondList.Add(entry);
+
+            // act
+            var result = KeyboardManagerViewModel.CombineShortcutLists(null, secondList);
+
+            // Assert
+            var expectedResult = new List<AppSpecificKeysDataModel>();
+            var expectedEntry = new AppSpecificKeysDataModel();
+            expectedEntry.OriginalKeys = entry.OriginalKeys;
+            expectedEntry.NewRemapKeys = entry.NewRemapKeys;
+            expectedEntry.TargetApp = entry.TargetApp;
+            expectedResult.Add(expectedEntry);
+
+            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.IsTrue(expectedResult[0].Compare(result[0]));
+        }
+
+        [TestMethod]
+        public void CombineShortcutListsShouldReturnListWithOneAllAppsEntryWhenFirstArgumentHasOneEntryAndSecondArgumentIsNull()
+        {
+            // arrange
+            var firstList = new List<KeysDataModel>();
+            var entry = new KeysDataModel();
+            entry.OriginalKeys = "17;65";
+            entry.NewRemapKeys = "17;86";
+            firstList.Add(entry);
+
+            // act
+            var result = KeyboardManagerViewModel.CombineShortcutLists(firstList, null);
+
+            // Assert
+            var expectedResult = new List<AppSpecificKeysDataModel>();
+            var expectedEntry = new AppSpecificKeysDataModel();
+            expectedEntry.OriginalKeys = entry.OriginalKeys;
+            expectedEntry.NewRemapKeys = entry.NewRemapKeys;
+            expectedEntry.TargetApp = "All Apps";
+            expectedResult.Add(expectedEntry);
+
+            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.IsTrue(expectedResult[0].Compare(result[0]));
+        }
+
+        [TestMethod]
+        public void CombineShortcutListsShouldReturnListWithOneAllAppsEntryWhenFirstArgumentHasOneEntryAndSecondArgumentIsEmpty()
         {
             // arrange
             var firstList = new List<KeysDataModel>();
@@ -63,12 +126,12 @@ namespace ViewModelTests
             expectedEntry.TargetApp = "All Apps";
             expectedResult.Add(expectedEntry);
             var x = expectedResult[0].Equals(result[0]);
-            Assert.AreEqual(expectedResult.Count(), result.Count());
+            Assert.AreEqual(expectedResult.Count, result.Count);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
         }
 
         [TestMethod]
-        public void CombineShortcutLists_ShouldReturnListWithOneAppSpecificEntry_WhenFirstArgumentIsEmptyAndSecondArgumentHasOneEntry()
+        public void CombineShortcutListsShouldReturnListWithOneAppSpecificEntryWhenFirstArgumentIsEmptyAndSecondArgumentHasOneEntry()
         {
             // arrange
             var firstList = new List<KeysDataModel>();
@@ -90,12 +153,12 @@ namespace ViewModelTests
             expectedEntry.TargetApp = entry.TargetApp;
             expectedResult.Add(expectedEntry);
 
-            Assert.AreEqual(expectedResult.Count(), result.Count());
+            Assert.AreEqual(expectedResult.Count, result.Count);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
         }
 
         [TestMethod]
-        public void CombineShortcutLists_ShouldReturnListWithOneAllAppsEntryAndOneAppSpecificEntry_WhenFirstArgumentHasOneEntryAndSecondArgumentHasOneEntry()
+        public void CombineShortcutListsShouldReturnListWithOneAllAppsEntryAndOneAppSpecificEntryWhenFirstArgumentHasOneEntryAndSecondArgumentHasOneEntry()
         {
             // arrange
             var firstList = new List<KeysDataModel>();
@@ -126,7 +189,7 @@ namespace ViewModelTests
             expectedSecondEntry.TargetApp = secondListEntry.TargetApp;
             expectedResult.Add(expectedSecondEntry);
 
-            Assert.AreEqual(expectedResult.Count(), result.Count());
+            Assert.AreEqual(expectedResult.Count, result.Count);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
             Assert.IsTrue(expectedResult[1].Compare(result[1]));
         }

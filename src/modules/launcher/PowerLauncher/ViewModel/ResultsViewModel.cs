@@ -174,7 +174,7 @@ namespace PowerLauncher.ViewModel
             {
                 // Tabbing backwards should highlight the last item of the previous row
                 SelectPrevResult();
-                SelectedItem.SelectLastContextButton();
+                SelectedItem?.SelectLastContextButton();
             }
         }
 

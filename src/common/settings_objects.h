@@ -67,9 +67,9 @@ namespace PowerToysSettings
     class PowerToyValues
     {
     public:
-        PowerToyValues(std::wstring_view powertoy_name);
-        static PowerToyValues from_json_string(std::wstring_view json);
-        static PowerToyValues load_from_settings_file(std::wstring_view powertoy_name);
+        PowerToyValues(std::wstring_view powertoy_name, std::wstring_view powertoy_key);
+        static PowerToyValues from_json_string(std::wstring_view json, std::wstring_view powertoy_key);
+        static PowerToyValues load_from_settings_file(std::wstring_view powertoy_key);
 
         template<typename T>
         inline void add_property(std::wstring_view name, T value)
@@ -92,7 +92,7 @@ namespace PowerToysSettings
         const std::wstring m_version = L"1.0";
         void set_version();
         json::JsonObject m_json;
-        std::wstring _name;
+        std::wstring _key;
         PowerToyValues() {}
     };
 

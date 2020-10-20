@@ -13,12 +13,18 @@
       <Item ItemId=";Microsoft_plugin_uri_plugin_description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Handles urls]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hanterar URL:er]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Microsoft_plugin_uri_plugin_name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Url Handler]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[URL-hanteraren]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -26,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open in browser]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Öppna i webbläsare]]></Val>
+            <Val><![CDATA[Öppna i webbläsaren]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
