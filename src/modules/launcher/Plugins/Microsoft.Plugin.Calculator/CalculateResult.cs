@@ -27,7 +27,7 @@ namespace Microsoft.Plugin.Calculator
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Result, RoundedResult);
+            return HashCode.Combine(Result, RoundedResult, ValidResult);
         }
 
         public static bool operator ==(CalculateResult left, CalculateResult right)
