@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -26,7 +27,7 @@ namespace Wox.Plugin
 
             set
             {
-                _title = value.Replace("\n", " ");
+                _title = value.Replace("\n", " ", StringComparison.Ordinal);
             }
         }
 
@@ -129,9 +130,9 @@ namespace Wox.Plugin
         {
             var r = obj as Result;
 
-            var equality = string.Equals(r?.Title, Title) &&
-                           string.Equals(r?.SubTitle, SubTitle) &&
-                           string.Equals(r?.IcoPath, IcoPath) &&
+            var equality = string.Equals(r?.Title, Title, StringComparison.Ordinal) &&
+                           string.Equals(r?.SubTitle, SubTitle, StringComparison.Ordinal) &&
+                           string.Equals(r?.IcoPath, IcoPath, StringComparison.Ordinal) &&
                            TitleHighlightData == r.TitleHighlightData &&
                            SubTitleHighlightData == r.SubTitleHighlightData;
 
@@ -140,14 +141,14 @@ namespace Wox.Plugin
 
         public override int GetHashCode()
         {
-            var hashcode = (Title?.GetHashCode() ?? 0) ^
-                           (SubTitle?.GetHashCode() ?? 0);
+            var hashcode = (Title?.GetHashCode(StringComparison.Ordinal) ?? 0) ^
+                           (SubTitle?.GetHashCode(StringComparison.Ordinal) ?? 0);
             return hashcode;
         }
 
         public override string ToString()
         {
-            return string.Format("{0} : {1}", Title, SubTitle);
+            return string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Title, SubTitle);
         }
 
         public Result()

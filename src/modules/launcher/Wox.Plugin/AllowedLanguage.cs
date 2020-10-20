@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+
 namespace Wox.Plugin
 {
     public static class AllowedLanguage
@@ -18,8 +20,8 @@ namespace Wox.Plugin
 
         public static bool IsAllowed(string language)
         {
-            return language.ToUpper() == CSharp.ToUpper()
-                || language.ToUpper() == Executable.ToUpper();
+            return language.ToUpper(CultureInfo.InvariantCulture) == CSharp.ToUpper(CultureInfo.InvariantCulture)
+                || language.ToUpper(CultureInfo.InvariantCulture) == Executable.ToUpper(CultureInfo.InvariantCulture);
         }
     }
 }
