@@ -5,6 +5,7 @@
 #include <wil\resource.h>
 #include <winrt/base.h>
 #include <d2d1.h>
+#include <dwrite.h>
 
 #include "util.h"
 #include "Zone.h"
@@ -39,6 +40,7 @@ class ZoneWindowDrawing
         D2D1_RECT_F rect;
         D2D1_COLOR_F borderColor;
         D2D1_COLOR_F fillColor;
+        size_t id;
     };
 
     HWND m_window;
@@ -48,7 +50,6 @@ class ZoneWindowDrawing
 
     std::mutex m_sceneMutex;
     std::vector<DrawableRect> m_sceneRects;
-    std::vector<DrawableRect> m_sceneLabels;
 
     void DrawBackdrop()
     {
@@ -57,12 +58,24 @@ class ZoneWindowDrawing
 
     static ID2D1Factory* GetD2DFactory()
     {
-        static ID2D1Factory* pD2DFactory = 0;
+        static ID2D1Factory* pD2DFactory = nullptr;
         if (!pD2DFactory)
         {
             D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2DFactory);
         }
         return pD2DFactory;
+
+        // TODO: Destroy factory
+    }
+
+    static IDWriteFactory* GetWriteFactory()
+    {
+        static IUnknown* pDWriteFactory = nullptr;
+        if (!pDWriteFactory)
+        {
+            DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &pDWriteFactory);
+        }
+        return reinterpret_cast<IDWriteFactory*>(pDWriteFactory);
 
         // TODO: Destroy factory
     }
@@ -84,9 +97,13 @@ public:
     ZoneWindowDrawing(HWND window)
     {
         m_window = window;
+        m_renderTarget = nullptr;
 
         // Obtain the size of the drawing area.
-        GetClientRect(window, &m_clientRect);
+        if (!GetClientRect(window, &m_clientRect))
+        {
+            return;
+        }
 
         // Create a Direct2D render target
         GetD2DFactory()->CreateHwndRenderTarget(
@@ -105,16 +122,24 @@ public:
     {
         std::unique_lock lock(m_sceneMutex);
 
+        if (!m_renderTarget)
+        {
+            return;
+        }
+
         m_renderTarget->BeginDraw();
         DrawBackdrop();
 
+
+
         for (const auto& drawableRect : m_sceneRects)
         {
-            ID2D1SolidColorBrush* borderBrush = NULL;
-            ID2D1SolidColorBrush* fillBrush = NULL;
-            // TODO: hresult and null checks
+            ID2D1SolidColorBrush* borderBrush = nullptr;
+            ID2D1SolidColorBrush* fillBrush = nullptr;
+            ID2D1SolidColorBrush* textBrush = nullptr;
             m_renderTarget->CreateSolidColorBrush(drawableRect.borderColor, &borderBrush);
             m_renderTarget->CreateSolidColorBrush(drawableRect.fillColor, &fillBrush);
+            m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &textBrush);
 
             if (fillBrush)
             {
@@ -126,6 +151,34 @@ public:
             {
                 m_renderTarget->DrawRectangle(drawableRect.rect, borderBrush);
                 borderBrush->Release();
+            }
+
+            std::wstring idStr = std::to_wstring(drawableRect.id);
+
+            // TODO: mark string as non-localizable
+            IDWriteTextFormat* textFormat = nullptr;
+            auto writeFactory = GetWriteFactory();
+
+            if (writeFactory)
+            {
+                writeFactory->CreateTextFormat(L"Segoe ui", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 80.f, L"en-US", &textFormat);
+            }
+            
+            if (textFormat && textBrush)
+            {
+                textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+                textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+                m_renderTarget->DrawTextW(idStr.c_str(), idStr.size(), textFormat, drawableRect.rect, textBrush);
+            }
+
+            if (textFormat)
+            {
+                textFormat->Release();
+            }
+
+            if (textBrush)
+            {
+                textBrush->Release();
             }
         }
 
@@ -173,7 +226,8 @@ public:
                 DrawableRect drawableRect{
                     .rect = ConvertRect(zone->GetZoneRect()),
                     .borderColor = borderColor,
-                    .fillColor = inactiveColor
+                    .fillColor = inactiveColor,
+                    .id = zone->Id()
                 };
 
                 m_sceneRects.push_back(drawableRect);
@@ -195,7 +249,8 @@ public:
                 DrawableRect drawableRect{
                     .rect = ConvertRect(zone->GetZoneRect()),
                     .borderColor = borderColor,
-                    .fillColor = highlightColor
+                    .fillColor = highlightColor,
+                    .id = zone->Id()
                 };
 
                 m_sceneRects.push_back(drawableRect);
