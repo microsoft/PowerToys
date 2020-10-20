@@ -9,13 +9,15 @@ namespace Microsoft.Plugin.Calculator
 {
     public struct CalculateResult : IEquatable<CalculateResult>
     {
+        public bool ValidResult { get; set; }
+
         public decimal Result { get; set; }
 
         public decimal RoundedResult { get; set; }
 
         public bool Equals(CalculateResult other)
         {
-            return Result == other.Result && RoundedResult == other.RoundedResult;
+            return Result == other.Result && RoundedResult == other.RoundedResult && ValidResult == other.ValidResult;
         }
 
         public override bool Equals(object obj)

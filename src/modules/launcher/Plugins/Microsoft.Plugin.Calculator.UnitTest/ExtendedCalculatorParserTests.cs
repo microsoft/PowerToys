@@ -111,6 +111,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("(1 * 2)))", false)]
         [TestCase("abcde", false)]
         [TestCase("plot( 2 * 3)", true)]
+        [TestCase("1 + 2 +", false)]
         public void InputValid_TestValid_WhenCalled(string input, bool valid)
         {
             // Arrange

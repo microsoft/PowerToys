@@ -47,6 +47,7 @@ namespace Microsoft.Plugin.Calculator
             {
                 Result = decimalResult,
                 RoundedResult = roundedResult,
+                ValidResult = true,
             };
         }
 
