@@ -1,161 +1,162 @@
 using System;
 using System.Drawing;
 using ColorPicker.Helpers;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UnitTest_ColorPickerUI.Helpers
 {
     /// <summary>
     /// Test class to test <see cref="ColorConverter"/>
     /// </summary>
+    [TestClass]
     public class ColorConverterTest
     {
         // test values taken from https://de.wikipedia.org/wiki/HSV-Farbraum
-        [Theory]
-        [InlineData(000, 000, 000, 000, 000, 000)]      // Black
-        [InlineData(000, 000, 100, 100, 100, 100)]      // White
-        [InlineData(000, 100, 050, 100, 000, 000)]      // Red
-        [InlineData(015, 100, 050, 100, 025, 000)]      // Vermilion/Cinnabar
-        [InlineData(020, 060, 022.5, 036, 018, 009)]    // Brown
-        [InlineData(030, 100, 050, 100, 050, 000)]      // Orange
-        [InlineData(045, 100, 050, 100, 075, 000)]      // Saffron
-        [InlineData(060, 100, 050, 100, 100, 000)]      // Yellow
-        [InlineData(075, 100, 050, 075, 100, 000)]      // Light green-yellow
-        [InlineData(090, 100, 050, 050, 100, 000)]      // Green-yellow
-        [InlineData(105, 100, 050, 025, 100, 000)]      // Lime
-        [InlineData(120, 100, 025, 000, 050, 000)]      // Dark green
-        [InlineData(120, 100, 050, 000, 100, 000)]      // Green
-        [InlineData(135, 100, 050, 000, 100, 025)]      // Light blue-green
-        [InlineData(150, 100, 050, 000, 100, 050)]      // Blue-green
-        [InlineData(165, 100, 050, 000, 100, 075)]      // Green-cyan
-        [InlineData(180, 100, 050, 000, 100, 100)]      // Cyan
-        [InlineData(195, 100, 050, 000, 075, 100)]      // Blue-cyan
-        [InlineData(210, 100, 050, 000, 050, 100)]      // Green-blue
-        [InlineData(225, 100, 050, 000, 025, 100)]      // Light green-blue
-        [InlineData(240, 100, 050, 000, 000, 100)]      // Blue
-        [InlineData(255, 100, 050, 025, 000, 100)]      // Indigo
-        [InlineData(270, 100, 050, 050, 000, 100)]      // Purple
-        [InlineData(285, 100, 050, 075, 000, 100)]      // Blue-magenta
-        [InlineData(300, 100, 050, 100, 000, 100)]      // Magenta
-        [InlineData(315, 100, 050, 100, 000, 075)]      // Red-magenta
-        [InlineData(330, 100, 050, 100, 000, 050)]      // Blue-red
-        [InlineData(345, 100, 050, 100, 000, 025)]      // Light blue-red
-        public void ColorRGBtoHSL(float hue, float saturation, float lightness, int red, int green, int blue)
+        [TestMethod]
+        [DataRow(000, 000, 000, 000, 000, 000)]      // Black
+        [DataRow(000, 000, 100, 100, 100, 100)]      // White
+        [DataRow(000, 100, 050, 100, 000, 000)]      // Red
+        [DataRow(015, 100, 050, 100, 025, 000)]      // Vermilion/Cinnabar
+        [DataRow(020, 060, 022.5, 036, 018, 009)]    // Brown
+        [DataRow(030, 100, 050, 100, 050, 000)]      // Orange
+        [DataRow(045, 100, 050, 100, 075, 000)]      // Saffron
+        [DataRow(060, 100, 050, 100, 100, 000)]      // Yellow
+        [DataRow(075, 100, 050, 075, 100, 000)]      // Light green-yellow
+        [DataRow(090, 100, 050, 050, 100, 000)]      // Green-yellow
+        [DataRow(105, 100, 050, 025, 100, 000)]      // Lime
+        [DataRow(120, 100, 025, 000, 050, 000)]      // Dark green
+        [DataRow(120, 100, 050, 000, 100, 000)]      // Green
+        [DataRow(135, 100, 050, 000, 100, 025)]      // Light blue-green
+        [DataRow(150, 100, 050, 000, 100, 050)]      // Blue-green
+        [DataRow(165, 100, 050, 000, 100, 075)]      // Green-cyan
+        [DataRow(180, 100, 050, 000, 100, 100)]      // Cyan
+        [DataRow(195, 100, 050, 000, 075, 100)]      // Blue-cyan
+        [DataRow(210, 100, 050, 000, 050, 100)]      // Green-blue
+        [DataRow(225, 100, 050, 000, 025, 100)]      // Light green-blue
+        [DataRow(240, 100, 050, 000, 000, 100)]      // Blue
+        [DataRow(255, 100, 050, 025, 000, 100)]      // Indigo
+        [DataRow(270, 100, 050, 050, 000, 100)]      // Purple
+        [DataRow(285, 100, 050, 075, 000, 100)]      // Blue-magenta
+        [DataRow(300, 100, 050, 100, 000, 100)]      // Magenta
+        [DataRow(315, 100, 050, 100, 000, 075)]      // Red-magenta
+        [DataRow(330, 100, 050, 100, 000, 050)]      // Blue-red
+        [DataRow(345, 100, 050, 100, 000, 025)]      // Light blue-red
+        public void ColorRGBtoHSL(double hue, double saturation, double lightness, int red, int green, int blue)
         {
-            red   = Convert.ToInt32(Math.Round(255f / 100f * red));     // [0%..100%] to [0..255]
-            green = Convert.ToInt32(Math.Round(255f / 100f * green));   // [0%..100%] to [0..255]
-            blue  = Convert.ToInt32(Math.Round(255f / 100f * blue));    // [0%..100%] to [0..255]
+            red   = Convert.ToInt32(Math.Round(255d / 100d * red));     // [0%..100%] to [0..255]
+            green = Convert.ToInt32(Math.Round(255d / 100d * green));   // [0%..100%] to [0..255]
+            blue  = Convert.ToInt32(Math.Round(255d / 100d * blue));    // [0%..100%] to [0..255]
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToHSLColor(color);
 
             // hue[0°..360°]
-            Assert.InRange(result.hue, hue - 0.2, hue + 0.2);
+            Assert.AreEqual(result.hue, hue, 0.2d);
 
             // saturation[0..1]
-            Assert.InRange(result.saturation * 100, saturation - 0.2, saturation + 0.2);
+            Assert.AreEqual(result.saturation * 100d, saturation, 0.2d);
 
             // lightness[0..1]
-            Assert.InRange(result.lightness * 100, lightness - 0.2, lightness + 0.2);
+            Assert.AreEqual(result.lightness * 100d, lightness, 0.2d);
         }
 
         // test values taken from https://de.wikipedia.org/wiki/HSV-Farbraum
-        [Theory]
-        [InlineData(000, 000, 000, 000, 000, 000)]      // Black
-        [InlineData(000, 000, 100, 100, 100, 100)]      // White
-        [InlineData(000, 100, 100, 100, 000, 000)]      // Red
-        [InlineData(015, 100, 100, 100, 025, 000)]      // Vermilion/Cinnabar
-        [InlineData(020, 075, 036, 036, 018, 009)]      // Brown
-        [InlineData(030, 100, 100, 100, 050, 000)]      // Orange
-        [InlineData(045, 100, 100, 100, 075, 000)]      // Saffron
-        [InlineData(060, 100, 100, 100, 100, 000)]      // Yellow
-        [InlineData(075, 100, 100, 075, 100, 000)]      // Light green-yellow
-        [InlineData(090, 100, 100, 050, 100, 000)]      // Green-yellow
-        [InlineData(105, 100, 100, 025, 100, 000)]      // Lime
-        [InlineData(120, 100, 050, 000, 050, 000)]      // Dark green
-        [InlineData(120, 100, 100, 000, 100, 000)]      // Green
-        [InlineData(135, 100, 100, 000, 100, 025)]      // Light blue-green
-        [InlineData(150, 100, 100, 000, 100, 050)]      // Blue-green
-        [InlineData(165, 100, 100, 000, 100, 075)]      // Green-cyan
-        [InlineData(180, 100, 100, 000, 100, 100)]      // Cyan
-        [InlineData(195, 100, 100, 000, 075, 100)]      // Blue-cyan
-        [InlineData(210, 100, 100, 000, 050, 100)]      // Green-blue
-        [InlineData(225, 100, 100, 000, 025, 100)]      // Light green-blue
-        [InlineData(240, 100, 100, 000, 000, 100)]      // Blue
-        [InlineData(255, 100, 100, 025, 000, 100)]      // Indigo
-        [InlineData(270, 100, 100, 050, 000, 100)]      // Purple
-        [InlineData(285, 100, 100, 075, 000, 100)]      // Blue-magenta
-        [InlineData(300, 100, 100, 100, 000, 100)]      // Magenta
-        [InlineData(315, 100, 100, 100, 000, 075)]      // Red-magenta
-        [InlineData(330, 100, 100, 100, 000, 050)]      // Blue-red
-        [InlineData(345, 100, 100, 100, 000, 025)]      // Light blue-red
-        public void ColorRGBtoHSV(float hue, float saturation, float value, int red, int green, int blue)
+        [TestMethod]
+        [DataRow(000, 000, 000, 000, 000, 000)]      // Black
+        [DataRow(000, 000, 100, 100, 100, 100)]      // White
+        [DataRow(000, 100, 100, 100, 000, 000)]      // Red
+        [DataRow(015, 100, 100, 100, 025, 000)]      // Vermilion/Cinnabar
+        [DataRow(020, 075, 036, 036, 018, 009)]      // Brown
+        [DataRow(030, 100, 100, 100, 050, 000)]      // Orange
+        [DataRow(045, 100, 100, 100, 075, 000)]      // Saffron
+        [DataRow(060, 100, 100, 100, 100, 000)]      // Yellow
+        [DataRow(075, 100, 100, 075, 100, 000)]      // Light green-yellow
+        [DataRow(090, 100, 100, 050, 100, 000)]      // Green-yellow
+        [DataRow(105, 100, 100, 025, 100, 000)]      // Lime
+        [DataRow(120, 100, 050, 000, 050, 000)]      // Dark green
+        [DataRow(120, 100, 100, 000, 100, 000)]      // Green
+        [DataRow(135, 100, 100, 000, 100, 025)]      // Light blue-green
+        [DataRow(150, 100, 100, 000, 100, 050)]      // Blue-green
+        [DataRow(165, 100, 100, 000, 100, 075)]      // Green-cyan
+        [DataRow(180, 100, 100, 000, 100, 100)]      // Cyan
+        [DataRow(195, 100, 100, 000, 075, 100)]      // Blue-cyan
+        [DataRow(210, 100, 100, 000, 050, 100)]      // Green-blue
+        [DataRow(225, 100, 100, 000, 025, 100)]      // Light green-blue
+        [DataRow(240, 100, 100, 000, 000, 100)]      // Blue
+        [DataRow(255, 100, 100, 025, 000, 100)]      // Indigo
+        [DataRow(270, 100, 100, 050, 000, 100)]      // Purple
+        [DataRow(285, 100, 100, 075, 000, 100)]      // Blue-magenta
+        [DataRow(300, 100, 100, 100, 000, 100)]      // Magenta
+        [DataRow(315, 100, 100, 100, 000, 075)]      // Red-magenta
+        [DataRow(330, 100, 100, 100, 000, 050)]      // Blue-red
+        [DataRow(345, 100, 100, 100, 000, 025)]      // Light blue-red
+        public void ColorRGBtoHSV(double hue, double saturation, double value, int red, int green, int blue)
         {
-            red   = Convert.ToInt32(Math.Round(255f / 100f * red));         // [0%..100%] to [0..255]
-            green = Convert.ToInt32(Math.Round(255f / 100f * green));       // [0%..100%] to [0..255]
-            blue  = Convert.ToInt32(Math.Round(255f / 100f * blue));        // [0%..100%] to [0..255]
+            red   = Convert.ToInt32(Math.Round(255d / 100d * red));         // [0%..100%] to [0..255]
+            green = Convert.ToInt32(Math.Round(255d / 100d * green));       // [0%..100%] to [0..255]
+            blue  = Convert.ToInt32(Math.Round(255d / 100d * blue));        // [0%..100%] to [0..255]
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToHSVColor(color);
 
             // hue [0°..360°]
-            Assert.InRange(result.hue, hue - 0.2, hue + 0.2);
+            Assert.AreEqual(result.hue, hue, 0.2d);
 
             // saturation[0..1]
-            Assert.InRange(result.saturation * 100, saturation - 0.2, saturation + 0.2);
+            Assert.AreEqual(result.saturation * 100d, saturation, 0.2d);
 
             // value[0..1]
-            Assert.InRange(result.value * 100, value - 0.2, value + 0.2);
+            Assert.AreEqual(result.value * 100d, value, 0.2d);
         }
 
-        [Theory]
-        [InlineData(000, 000, 000, 100, 000, 000, 000)]     // Black
-        [InlineData(000, 000, 000, 000, 255, 255, 255)]     // White
-        [InlineData(000, 100, 100, 000, 255, 000, 000)]     // Red
-        [InlineData(000, 075, 100, 000, 255, 064, 000)]     // Vermilion/Cinnabar
-        [InlineData(000, 050, 075, 064, 092, 046, 023)]     // Brown
-        [InlineData(000, 050, 100, 000, 255, 128, 000)]     // Orange
-        [InlineData(000, 025, 100, 000, 255, 192, 000)]     // Saffron
-        [InlineData(000, 000, 100, 000, 255, 255, 000)]     // Yellow
-        [InlineData(025, 000, 100, 000, 192, 255, 000)]     // Light green-yellow
-        [InlineData(050, 000, 100, 000, 128, 255, 000)]     // Green-yellow
-        [InlineData(075, 000, 100, 000, 064, 255, 000)]     // Lime
-        [InlineData(100, 000, 100, 050, 000, 128, 000)]     // Dark green
-        [InlineData(100, 000, 100, 000, 000, 255, 000)]     // Green
-        [InlineData(100, 000, 075, 000, 000, 255, 064)]     // Light blue-green
-        [InlineData(100, 000, 050, 000, 000, 255, 128)]     // Blue-green
-        [InlineData(100, 000, 025, 000, 000, 255, 192)]     // Green-cyan
-        [InlineData(100, 000, 000, 000, 000, 255, 255)]     // Cyan
-        [InlineData(100, 025, 000, 000, 000, 192, 255)]     // Blue-cyan
-        [InlineData(100, 050, 000, 000, 000, 128, 255)]     // Green-blue
-        [InlineData(100, 075, 000, 000, 000, 064, 255)]     // Light green-blue
-        [InlineData(100, 100, 000, 000, 000, 000, 255)]     // Blue
-        [InlineData(075, 100, 000, 000, 064, 000, 255)]     // Indigo
-        [InlineData(050, 100, 000, 000, 128, 000, 255)]     // Purple
-        [InlineData(025, 100, 000, 000, 192, 000, 255)]     // Blue-magenta
-        [InlineData(000, 100, 000, 000, 255, 000, 255)]     // Magenta
-        [InlineData(000, 100, 025, 000, 255, 000, 192)]     // Red-magenta
-        [InlineData(000, 100, 050, 000, 255, 000, 128)]     // Blue-red
-        [InlineData(000, 100, 075, 000, 255, 000, 064)]     // Light blue-red
-        public void ColorRGBtoCMYK(byte cyan, byte magenta, byte yellow, byte blackKey, int red, int green, int blue)
+        [TestMethod]
+        [DataRow(000, 000, 000, 100, 000, 000, 000)]     // Black
+        [DataRow(000, 000, 000, 000, 255, 255, 255)]     // White
+        [DataRow(000, 100, 100, 000, 255, 000, 000)]     // Red
+        [DataRow(000, 075, 100, 000, 255, 064, 000)]     // Vermilion/Cinnabar
+        [DataRow(000, 050, 075, 064, 092, 046, 023)]     // Brown
+        [DataRow(000, 050, 100, 000, 255, 128, 000)]     // Orange
+        [DataRow(000, 025, 100, 000, 255, 192, 000)]     // Saffron
+        [DataRow(000, 000, 100, 000, 255, 255, 000)]     // Yellow
+        [DataRow(025, 000, 100, 000, 192, 255, 000)]     // Light green-yellow
+        [DataRow(050, 000, 100, 000, 128, 255, 000)]     // Green-yellow
+        [DataRow(075, 000, 100, 000, 064, 255, 000)]     // Lime
+        [DataRow(100, 000, 100, 050, 000, 128, 000)]     // Dark green
+        [DataRow(100, 000, 100, 000, 000, 255, 000)]     // Green
+        [DataRow(100, 000, 075, 000, 000, 255, 064)]     // Light blue-green
+        [DataRow(100, 000, 050, 000, 000, 255, 128)]     // Blue-green
+        [DataRow(100, 000, 025, 000, 000, 255, 192)]     // Green-cyan
+        [DataRow(100, 000, 000, 000, 000, 255, 255)]     // Cyan
+        [DataRow(100, 025, 000, 000, 000, 192, 255)]     // Blue-cyan
+        [DataRow(100, 050, 000, 000, 000, 128, 255)]     // Green-blue
+        [DataRow(100, 075, 000, 000, 000, 064, 255)]     // Light green-blue
+        [DataRow(100, 100, 000, 000, 000, 000, 255)]     // Blue
+        [DataRow(075, 100, 000, 000, 064, 000, 255)]     // Indigo
+        [DataRow(050, 100, 000, 000, 128, 000, 255)]     // Purple
+        [DataRow(025, 100, 000, 000, 192, 000, 255)]     // Blue-magenta
+        [DataRow(000, 100, 000, 000, 255, 000, 255)]     // Magenta
+        [DataRow(000, 100, 025, 000, 255, 000, 192)]     // Red-magenta
+        [DataRow(000, 100, 050, 000, 255, 000, 128)]     // Blue-red
+        [DataRow(000, 100, 075, 000, 255, 000, 064)]     // Light blue-red
+        public void ColorRGBtoCMYK(int cyan, int magenta, int yellow, int blackKey, int red, int green, int blue)
         {
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToCMYKColor(color);
 
             // cyan[0..1]
-            Assert.InRange(result.cyan * 100, cyan - 0.5, cyan + 0.5);
+            Assert.AreEqual(result.cyan * 100d, cyan, 0.5d);
 
             // magenta[0..1]
-            Assert.InRange(result.magenta * 100, magenta - 0.5, magenta + 0.5);
+            Assert.AreEqual(result.magenta * 100d, magenta, 0.5d);
 
             // yellow[0..1]
-            Assert.InRange(result.yellow * 100, yellow - 0.5, yellow + 0.5);
+            Assert.AreEqual(result.yellow * 100d, yellow, 0.5d);
 
             // black[0..1]
-            Assert.InRange(result.blackKey * 100, blackKey - 0.5, blackKey + 0.5);
+            Assert.AreEqual(result.blackKey * 100d, blackKey, 0.5d);
         }
 
-        [Fact]
+        [TestMethod]
         public void ColorRGBtoCMYKZeroDiv()
         {
             for(var red = 0; red < 256; red++)
@@ -177,7 +178,7 @@ namespace UnitTest_ColorPickerUI.Helpers
                             exception = ex;
                         }
 
-                        Assert.Null(exception);
+                        Assert.IsNull(exception);
                     }
                 }
             }
