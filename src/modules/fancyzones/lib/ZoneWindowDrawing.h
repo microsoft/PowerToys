@@ -202,8 +202,8 @@ public:
         auto inactiveColor = ConvertColor(host->GetZoneColor());
         auto highlightColor = ConvertColor(host->GetZoneHighlightColor());
 
-        inactiveColor.a = host->GetZoneHighlightOpacity() / 255.f;
-        highlightColor.a = host->GetZoneHighlightOpacity() / 255.f;
+        inactiveColor.a = host->GetZoneHighlightOpacity() / 100.f;
+        highlightColor.a = host->GetZoneHighlightOpacity() / 100.f;
 
         std::vector<bool> isHighlighted(zones.size(), false);
         for (size_t x : highlightZones)
