@@ -110,15 +110,47 @@ int bootstrapper()
         ("log_dir", "Log directory.", cxxopts::value<std::string>()->default_value("."));
     // clang-format on
     cxxopts::ParseResult cmdArgs;
-    options.allow_unrecognised_options();
+    bool showHelp = false;
     try
     {
         cmdArgs = options.parse(__argc, const_cast<const char**>(__argv));
     }
+    catch (cxxopts::option_has_no_value_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_not_exists_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_not_present_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_not_has_argument_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_required_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_requires_argument_exception&)
+    {
+        showHelp = true;
+    }
     catch (...)
     {
     }
-    const bool showHelp = cmdArgs["help"].as<bool>();
+
+    showHelp = showHelp || cmdArgs["help"].as<bool>();
+    if (showHelp)
+    {
+        std::ostringstream helpMsg;
+        helpMsg << options.help();
+        MessageBoxA(nullptr, helpMsg.str().c_str(), "Help", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
     const bool noFullUI = cmdArgs["no_full_ui"].as<bool>();
     const bool silent = cmdArgs["silent"].as<bool>();
     const bool skipDotnetInstall = cmdArgs["skip_dotnet_install"].as<bool>();
@@ -149,13 +181,6 @@ int bootstrapper()
         severity = spdlog::level::err;
     }
     setup_log(logDir, severity);
-    if (showHelp)
-    {
-        std::ostringstream helpMsg;
-        helpMsg << options.help();
-        MessageBoxA(nullptr, helpMsg.str().c_str(), "Help", MB_OK | MB_ICONINFORMATION);
-        return 0;
-    }
     spdlog::debug("PowerToys Bootstrapper is launched!\nnoFullUI: {}\nsilent: {}\nno_start_pt: {}\nskip_dotnet_install: {}\nlog_level: {}", noFullUI, silent, noStartPT, skipDotnetInstall, logLevel);
 
     if (!noFullUI)
@@ -392,7 +417,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     catch (const std::exception& ex)
     {
-        MessageBoxA(nullptr, ex.what(), "Unhandled stdexception encountered!", MB_OK | MB_ICONERROR);
+        MessageBoxA(nullptr, ex.what(), "Unhandled std exception encountered!", MB_OK | MB_ICONERROR);
     }
     catch (winrt::hresult_error const& ex)
     {
