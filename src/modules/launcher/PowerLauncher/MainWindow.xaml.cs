@@ -313,7 +313,7 @@ namespace PowerLauncher
                     // Hence, there can be a situation where the element index that we want to scroll into view is out of range for it's parent control.
                     // To mitigate this we use the UpdateLayout function, which forces layout update to ensure that the parent element contains the latest properties.
                     // However, it has a performance impact and is therefore not called each time.
-                    Log.Exception("MainWindow", "The parent element layout is not updated yet", ex, "SuggestionsList_SelectionChanged");
+                    Log.Exception("The parent element layout is not updated yet", ex, GetType());
                     listview.UpdateLayout();
                     listview.ScrollIntoView(e.AddedItems[0]);
                 }
@@ -336,8 +336,9 @@ namespace PowerLauncher
         {
             var textBox = (TextBox)sender;
             var text = textBox.Text;
+            var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
-            if (string.IsNullOrEmpty(text))
+            if (MainViewModel.ShouldAutoCompleteTextBeEmpty(text, autoCompleteText))
             {
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }

@@ -62,7 +62,10 @@
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
                       Padding="0"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      SelectionMode="None">
+                      SelectionMode="None"
+                      ScrollViewer.HorizontalScrollMode="Enabled"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.IsHorizontalRailEnabled="True">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -250,6 +253,7 @@
             <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                       HorizontalAlignment="Left"
                       MinWidth="240"
+                      x:Uid="ImageResizer_FilenameFormatPlaceholder"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       Margin="{StaticResource SmallTopMargin}"
                       AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_FilenameFormatHeader}">

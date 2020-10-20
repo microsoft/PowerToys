@@ -4,11 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 
@@ -16,9 +18,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class KeyboardManagerViewModel : Observable
     {
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
         private readonly ISettingsUtils _settingsUtils;
 
-        private const string PowerToyName = "Keyboard Manager";
+        private const string PowerToyName = KeyboardManagerSettings.ModuleName;
         private const string RemapKeyboardActionName = "RemapKeyboard";
         private const string RemapKeyboardActionValue = "Open Remap Keyboard Window";
         private const string EditShortcutActionName = "EditShortcut";
@@ -32,14 +36,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         private ICommand _remapKeyboardCommand;
         private ICommand _editShortcutCommand;
         private KeyboardManagerProfile _profile;
-        private GeneralSettings _generalSettings;
 
         private Func<string, int> SendConfigMSG { get; }
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
+            if (settingsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
+
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
+
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
             FilterRemapKeysList = filterRemapKeysList;
@@ -59,18 +69,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
             else
             {
-                Settings = new KeyboardManagerSettings(PowerToyName);
+                Settings = new KeyboardManagerSettings();
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
-            }
-
-            if (_settingsUtils.SettingsExists())
-            {
-                _generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            }
-            else
-            {
-                _generalSettings = new GeneralSettings();
-                _settingsUtils.SaveSettings(_generalSettings.ToJsonString(), string.Empty);
             }
         }
 
@@ -78,16 +78,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         {
             get
             {
-                return _generalSettings.Enabled.KeyboardManager;
+                return GeneralSettingsConfig.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (_generalSettings.Enabled.KeyboardManager != value)
+                if (GeneralSettingsConfig.Enabled.KeyboardManager != value)
                 {
-                    _generalSettings.Enabled.KeyboardManager = value;
+                    GeneralSettingsConfig.Enabled.KeyboardManager = value;
                     OnPropertyChanged(nameof(Enabled));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(_generalSettings);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());
                 }
@@ -112,7 +112,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public static List<AppSpecificKeysDataModel> CombineShortcutLists(List<KeysDataModel> globalShortcutList, List<AppSpecificKeysDataModel> appSpecificShortcutList)
         {
-            return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).Concat(appSpecificShortcutList).ToList();
+            if (globalShortcutList == null && appSpecificShortcutList == null)
+            {
+                return new List<AppSpecificKeysDataModel>();
+            }
+            else if (globalShortcutList == null)
+            {
+                return appSpecificShortcutList;
+            }
+            else if (appSpecificShortcutList == null)
+            {
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).ToList();
+            }
+            else
+            {
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).Concat(appSpecificShortcutList).ToList();
+            }
         }
 
         public List<AppSpecificKeysDataModel> RemapShortcuts
@@ -134,28 +149,31 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
+        // Note: FxCop suggests calling ConfigureAwait() for the following methods,
+        // and calling ConfigureAwait(true) has the same behavior as not explicitly
+        // calling it (continuations are scheduled on the task-creating thread)
         private async void OnRemapKeyboard()
         {
-            await Task.Run(() => OnRemapKeyboardBackground());
+            await Task.Run(() => OnRemapKeyboardBackground()).ConfigureAwait(true);
         }
 
         private async void OnEditShortcut()
         {
-            await Task.Run(() => OnEditShortcutBackground());
+            await Task.Run(() => OnEditShortcutBackground()).ConfigureAwait(true);
         }
 
         private async Task OnRemapKeyboardBackground()
         {
             Helper.AllowRunnerToForeground();
             SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, RemapKeyboardActionName, RemapKeyboardActionValue));
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(true);
         }
 
         private async Task OnEditShortcutBackground()
         {
             Helper.AllowRunnerToForeground();
             SendConfigMSG(Helper.GetSerializedCustomAction(PowerToyName, EditShortcutActionName, EditShortcutActionValue));
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(true);
         }
 
         public void NotifyFileChanged()
@@ -177,8 +195,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // update the UI element here.
                         try
                         {
-                            _profile = _settingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, Settings.Properties.ActiveConfiguration.Value + JsonFileType);
-                            FilterRemapKeysList(_profile.RemapKeys.InProcessRemapKeys);
+                            string fileName = Settings.Properties.ActiveConfiguration.Value + JsonFileType;
+
+                            if (_settingsUtils.SettingsExists(PowerToyName, fileName))
+                            {
+                                _profile = _settingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, fileName);
+                            }
+                            else
+                            {
+                                // The KBM process out of runner creates the default.json file if it does not exist.
+                                success = false;
+                            }
+
+                            FilterRemapKeysList(_profile?.RemapKeys?.InProcessRemapKeys);
                         }
                         finally
                         {

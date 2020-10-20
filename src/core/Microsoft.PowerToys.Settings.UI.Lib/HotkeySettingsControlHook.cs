@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
@@ -10,7 +11,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
     public delegate bool IsActive();
 
-    public class HotkeySettingsControlHook
+    public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo);
+
+    public class HotkeySettingsControlHook : IDisposable
     {
         private const int WmKeyDown = 0x100;
         private const int WmKeyUp = 0x101;
@@ -21,13 +24,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         private KeyEvent _keyDown;
         private KeyEvent _keyUp;
         private IsActive _isActive;
+        private bool disposedValue;
 
-        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive)
+        private FilterAccessibleKeyboardEvents _filterKeyboardEvent;
+
+        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
         {
             _keyDown = keyDown;
             _keyUp = keyUp;
             _isActive = isActive;
-            _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, null);
+            _filterKeyboardEvent = filterAccessibleKeyboardEvents;
+            _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, FilterKeyboardEvents);
             _hook.Start();
         }
 
@@ -51,10 +58,29 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
         }
 
+        private bool FilterKeyboardEvents(KeyboardEvent ev)
+        {
+            return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // Dispose the KeyboardHook object to terminate the hook threads
+                    _hook.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
         public void Dispose()
         {
-            // Dispose the KeyboardHook object to terminate the hook threads
-            _hook.Dispose();
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

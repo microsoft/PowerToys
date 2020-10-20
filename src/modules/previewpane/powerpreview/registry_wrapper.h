@@ -8,6 +8,6 @@ namespace PowerPreviewSettings
     public:
         virtual LONG SetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, CONST BYTE* data, DWORD cbData);
         virtual LONG DeleteRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName);
-        virtual LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
+        virtual LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
     };
 }

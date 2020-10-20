@@ -3,9 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 
@@ -13,11 +14,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class GeneralViewModel : Observable
     {
-        private readonly ISettingsUtils _settingsUtils;
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private GeneralSettings GeneralSettingsConfigs { get; set; }
-
-        public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
+        public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
@@ -35,33 +34,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public GeneralViewModel(ISettingsUtils settingsUtils, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "")
         {
-            CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
-            RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+            CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
+            RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
 
-            try
+            // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
+            if (settingsRepository == null)
             {
-                GeneralSettingsConfigs = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                throw new ArgumentNullException(nameof(settingsRepository));
+            }
 
-                if (Helper.CompareVersions(GeneralSettingsConfigs.PowertoysVersion, Helper.GetProductVersion()) < 0)
-                {
-                    // Update settings
-                    GeneralSettingsConfigs.PowertoysVersion = Helper.GetProductVersion();
-                    _settingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
-                }
-            }
-            catch (FormatException e)
-            {
-                // If there is an issue with the version number format, don't migrate settings.
-                Debug.WriteLine(e.Message);
-            }
-            catch
-            {
-                GeneralSettingsConfigs = new GeneralSettings();
-                _settingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
-            }
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -70,28 +54,33 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             // set the callback function value to update the UI theme.
             UpdateUIThemeCallBack = updateTheme;
-            UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme.ToLower());
+
+            UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
 
-            switch (GeneralSettingsConfigs.Theme.ToLower())
+            // Using Invariant here as these are internal strings and fxcop
+            // expects strings to be normalized to uppercase. While the theme names
+            // are represented in lowercase everywhere else, we'll use uppercase
+            // normalization for switch statements
+            switch (GeneralSettingsConfig.Theme.ToUpperInvariant())
             {
-                case "light":
+                case "LIGHT":
                     _isLightThemeRadioButtonChecked = true;
                     break;
-                case "dark":
+                case "DARK":
                     _isDarkThemeRadioButtonChecked = true;
                     break;
-                case "system":
+                case "SYSTEM":
                     _isSystemThemeRadioButtonChecked = true;
                     break;
             }
 
-            _startup = GeneralSettingsConfigs.Startup;
-            _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
+            _startup = GeneralSettingsConfig.Startup;
+            _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _isElevated = isElevated;
-            _runElevated = GeneralSettingsConfigs.RunElevated;
+            _runElevated = GeneralSettingsConfig.RunElevated;
 
             RunningAsUserDefaultText = runAsUserText;
             RunningAsAdminDefaultText = runAsAdminText;
@@ -99,15 +88,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             _isAdmin = isAdmin;
         }
 
-        private bool _packaged = false;
-        private bool _startup = false;
-        private bool _isElevated = false;
-        private bool _runElevated = false;
-        private bool _isAdmin = false;
-        private bool _isDarkThemeRadioButtonChecked = false;
-        private bool _isLightThemeRadioButtonChecked = false;
-        private bool _isSystemThemeRadioButtonChecked = false;
-        private bool _autoDownloadUpdates = false;
+        private bool _packaged;
+        private bool _startup;
+        private bool _isElevated;
+        private bool _runElevated;
+        private bool _isAdmin;
+        private bool _isDarkThemeRadioButtonChecked;
+        private bool _isLightThemeRadioButtonChecked;
+        private bool _isSystemThemeRadioButtonChecked;
+        private bool _autoDownloadUpdates;
 
         private string _latestAvailableVersion = string.Empty;
 
@@ -124,7 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_packaged != value)
                 {
                     _packaged = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -142,8 +131,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_startup != value)
                 {
                     _startup = value;
-                    GeneralSettingsConfigs.Startup = value;
-                    RaisePropertyChanged();
+                    GeneralSettingsConfig.Startup = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -181,8 +170,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_isElevated != value)
                 {
                     _isElevated = value;
-                    OnPropertyChanged("IsElevated");
-                    OnPropertyChanged("IsAdminButtonEnabled");
+                    OnPropertyChanged(nameof(IsElevated));
+                    OnPropertyChanged(nameof(IsAdminButtonEnabled));
                     OnPropertyChanged("RunningAsAdminText");
                 }
             }
@@ -197,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             set
             {
-                OnPropertyChanged("IsAdminButtonEnabled");
+                OnPropertyChanged(nameof(IsAdminButtonEnabled));
             }
         }
 
@@ -214,8 +203,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_runElevated != value)
                 {
                     _runElevated = value;
-                    GeneralSettingsConfigs.RunElevated = value;
-                    RaisePropertyChanged();
+                    GeneralSettingsConfig.RunElevated = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -241,8 +230,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_autoDownloadUpdates != value)
                 {
                     _autoDownloadUpdates = value;
-                    GeneralSettingsConfigs.AutoDownloadUpdates = value;
-                    RaisePropertyChanged();
+                    GeneralSettingsConfig.AutoDownloadUpdates = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -258,17 +247,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsConfigs.Theme = "dark";
+                    GeneralSettingsConfig.Theme = "dark";
                     _isDarkThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme);
+                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -284,17 +273,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsConfigs.Theme = "light";
+                    GeneralSettingsConfig.Theme = "light";
                     _isLightThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme);
+                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -310,22 +299,27 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsConfigs.Theme = "system";
+                    GeneralSettingsConfig.Theme = "system";
                     _isSystemThemeRadioButtonChecked = value;
                     try
                     {
-                        UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme);
+                        UpdateUIThemeCallBack(GeneralSettingsConfig.Theme);
                     }
                     catch
                     {
                     }
 
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
 
+        // FxCop suggests marking this member static, but it is accessed through
+        // an instance in autogenerated files (GeneralPage.g.cs) and will break
+        // the file if modified
+#pragma warning disable CA1822 // Mark members as static
         public string PowerToysVersion
+#pragma warning restore CA1822 // Mark members as static
         {
             get
             {
@@ -346,38 +340,36 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (_latestAvailableVersion != value)
                 {
                     _latestAvailableVersion = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
-            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfigs);
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
             SendConfigMSG(outsettings.ToString());
         }
 
         // callback function to launch the URL to check for updates.
-        private void CheckForUpdates_Click()
+        private void CheckForUpdatesClick()
         {
-            GeneralSettings settings = _settingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
-            settings.CustomActionName = "check_for_updates";
+            GeneralSettingsConfig.CustomActionName = "check_for_updates";
 
-            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendCheckForUpdatesConfigMSG(customaction.ToString());
         }
 
-        public void Restart_Elevated()
+        public void RestartElevated()
         {
-            GeneralSettings settings = _settingsUtils.GetSettings<GeneralSettings>(_settingsConfigFileFolder);
-            settings.CustomActionName = "restart_elevation";
+            GeneralSettingsConfig.CustomActionName = "restart_elevation";
 
-            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendRestartAsAdminConfigMSG(customaction.ToString());

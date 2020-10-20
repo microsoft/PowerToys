@@ -7,6 +7,7 @@
 #include <common/settings_objects.h>
 #include <common/debug_control.h>
 #include <sstream>
+#include <modules\shortcut_guide\ShortcutGuideConstants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -94,12 +95,20 @@ namespace
 OverlayWindow::OverlayWindow()
 {
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
+    app_key = ShortcutGuideConstants::ModuleKey;
     init_settings();
 }
 
+// Return the localized display name of the powertoy
 const wchar_t* OverlayWindow::get_name()
 {
     return app_name.c_str();
+}
+
+// Return the non localized key of the powertoy, this will be cached by the runner
+const wchar_t* OverlayWindow::get_key()
+{
+    return app_key.c_str();
 }
 
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
@@ -142,7 +151,7 @@ void OverlayWindow::set_config(const wchar_t* config)
     {
         // save configuration
         PowerToysSettings::PowerToyValues _values =
-            PowerToysSettings::PowerToyValues::from_json_string(config);
+            PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
         _values.save_to_settings_file();
         Trace::SettingsChanged(pressTime.value, overlayOpacity.value, theme.value);
 
@@ -331,7 +340,7 @@ void OverlayWindow::init_settings()
     try
     {
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(OverlayWindow::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(OverlayWindow::get_key());
         if (const auto val = settings.get_int_value(pressTime.name))
         {
             pressTime.value = *val;

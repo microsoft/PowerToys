@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
 {
-    public class Helper
+    public static class Helper
     {
         public static bool AllowRunnerToForeground()
         {
@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             if (processes.Length > 0)
             {
                 var pid = processes[0].Id;
-                result = AllowSetForegroundWindow(pid);
+                result = NativeMethods.AllowSetForegroundWindow(pid);
             }
 
             return result;
@@ -74,9 +74,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
 
-        [DllImport("user32.dll")]
-        private static extern bool AllowSetForegroundWindow(int dwProcessId);
-
         private static readonly interop.LayoutMapManaged LayoutMap = new interop.LayoutMapManaged();
 
         public static string GetKeyName(uint key)
@@ -95,10 +92,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             {
                 // Split up the version strings into int[]
                 // Example: v10.0.2 -> {10, 0, 2};
+                if (version1 == null)
+                {
+                    throw new ArgumentNullException(nameof(version1));
+                }
+                else if (version2 == null)
+                {
+                    throw new ArgumentNullException(nameof(version2));
+                }
+
                 var v1 = version1.Substring(1).Split('.').Select(int.Parse).ToArray();
                 var v2 = version2.Substring(1).Split('.').Select(int.Parse).ToArray();
 
-                if (v1.Count() != 3 || v2.Count() != 3)
+                if (v1.Length != 3 || v2.Length != 3)
                 {
                     throw new FormatException();
                 }

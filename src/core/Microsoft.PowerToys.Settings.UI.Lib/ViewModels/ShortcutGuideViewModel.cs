@@ -5,54 +5,48 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ShortcutGuideViewModel : Observable
     {
-        private readonly ISettingsUtils _settingsUtils;
+        private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ShortcutGuideSettings Settings { get; set; }
 
-        private const string ModuleName = "Shortcut Guide";
+        private const string ModuleName = ShortcutGuideSettings.ModuleName;
 
         private Func<string, int> SendConfigMSG { get; }
 
         private string _settingsConfigFileFolder = string.Empty;
 
-        public ShortcutGuideViewModel(ISettingsUtils settingsUtils, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public ShortcutGuideViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            try
+            // To obtain the general PowerToys settings.
+            if (settingsRepository == null)
             {
-                Settings = _settingsUtils.GetSettings<ShortcutGuideSettings>(GetSettingsSubPath());
-            }
-            catch
-            {
-                Settings = new ShortcutGuideSettings();
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), GetSettingsSubPath());
+                throw new ArgumentNullException(nameof(settingsRepository));
             }
 
-            GeneralSettings generalSettings;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            try
+            // To obtain the shortcut guide settings, if the file exists.
+            // If not, to create a file with the default settings and to return the default configurations.
+            if (moduleSettingsRepository == null)
             {
-                generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
+                throw new ArgumentNullException(nameof(moduleSettingsRepository));
             }
-            catch
-            {
-                generalSettings = new GeneralSettings();
-                _settingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
-            }
+
+            Settings = moduleSettingsRepository.SettingsConfig;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _isEnabled = generalSettings.Enabled.ShortcutGuide;
+            _isEnabled = GeneralSettingsConfig.Enabled.ShortcutGuide;
             _pressTime = Settings.Properties.PressTime.Value;
             _opacity = Settings.Properties.OverlayOpacity.Value;
 
@@ -74,10 +68,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
-        private bool _isEnabled = false;
-        private int _themeIndex = 0;
-        private int _pressTime = 0;
-        private int _opacity = 0;
+        private bool _isEnabled;
+        private int _themeIndex;
+        private int _pressTime;
+        private int _opacity;
 
         public bool IsEnabled
         {
@@ -91,11 +85,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettings generalSettings = _settingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                    generalSettings.Enabled.ShortcutGuide = value;
-                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
+
+                    // To update the status of shortcut guide in General PowerToy settings.
+                    GeneralSettingsConfig.Enabled.ShortcutGuide = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
+
                     SendConfigMSG(snd.ToString());
-                    OnPropertyChanged("IsEnabled");
+                    OnPropertyChanged(nameof(IsEnabled));
                 }
             }
         }
@@ -116,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to dark.
                         Settings.Properties.Theme.Value = "dark";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
 
                     if (value == 1)
@@ -124,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to light.
                         Settings.Properties.Theme.Value = "light";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
 
                     if (value == 2)
@@ -132,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                         // set theme to system default.
                         Settings.Properties.Theme.Value = "system";
                         _themeIndex = value;
-                        RaisePropertyChanged();
+                        NotifyPropertyChanged();
                     }
                 }
             }
@@ -151,7 +147,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _pressTime = value;
                     Settings.Properties.PressTime.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -169,7 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 {
                     _opacity = value;
                     Settings.Properties.OverlayOpacity.Value = value;
-                    RaisePropertyChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -179,7 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             return _settingsConfigFileFolder + "\\" + ModuleName;
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
             SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);

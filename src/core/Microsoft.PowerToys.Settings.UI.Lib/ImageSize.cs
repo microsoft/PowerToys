@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -203,8 +204,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 {
                     _unit = value;
                     OnPropertyChanged();
-                    OnPropertyChanged("ExtraBoxOpacity");
-                    OnPropertyChanged("EnableEtraBoxes");
+                    OnPropertyChanged(nameof(ExtraBoxOpacity));
+                    OnPropertyChanged(nameof(EnableEtraBoxes));
                 }
             }
         }
@@ -222,6 +223,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public void Update(ImageSize modifiedSize)
         {
+            if (modifiedSize == null)
+            {
+                throw new ArgumentNullException(nameof(modifiedSize));
+            }
+
             Id = modifiedSize.Id;
             Name = modifiedSize.Name;
             Fit = modifiedSize.Fit;

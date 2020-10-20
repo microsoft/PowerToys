@@ -178,6 +178,7 @@
   <ItemGroup>
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="Generated Files/resource.h" />
+    <ClInclude Include="PowerRenameConstants.h" />
     <ClInclude Include="PowerRenameExt.h" />
     <ClInclude Include="pch.h" />
     <None Include="resource.base.h" />

@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
@@ -17,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("newRemapKeys")]
         public string NewRemapKeys { get; set; }
 
-        private List<string> MapKeys(string stringOfKeys)
+        private static List<string> MapKeys(string stringOfKeys)
         {
             return stringOfKeys
                 .Split(';')
@@ -26,14 +27,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 .ToList();
         }
 
-        public List<string> GetOriginalKeys()
+        public List<string> GetMappedOriginalKeys()
         {
             return MapKeys(OriginalKeys);
         }
 
-        public List<string> GetNewRemapKeys()
+        public List<string> GetMappedNewRemapKeys()
         {
             return MapKeys(NewRemapKeys);
+        }
+
+        public string ToJsonString()
+        {
+            return JsonSerializer.Serialize(this);
         }
     }
 }

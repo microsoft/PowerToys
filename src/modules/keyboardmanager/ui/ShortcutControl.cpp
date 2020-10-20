@@ -5,6 +5,7 @@
 #include "keyboardmanager/common/Helpers.h"
 #include "common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
+#include <common\shared_constants.h>
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 //Both static members are initialized to null
@@ -64,15 +65,15 @@ void ShortcutControl::UpdateAccessibleNames(StackPanel sourceColumn, StackPanel 
 }
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const std::variant<DWORD, Shortcut>& newKeys, const std::wstring& targetAppName)
+void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys, const KeyShortcutUnion& newKeys, const std::wstring& targetAppName)
 {
     // Textbox for target application
     TextBox targetAppTextBox;
 
     // Create new ShortcutControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<ShortcutControl>> newrow;
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 0, targetAppTextBox))));
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 1, targetAppTextBox))));
+    newrow.emplace_back(std::make_unique<ShortcutControl>(parent, 0, targetAppTextBox));
+    newrow.emplace_back(std::make_unique<ShortcutControl>(parent, 1, targetAppTextBox));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
@@ -132,9 +133,10 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][1]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>(), 1, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][1]->keyDropDownControlObjects, targetAppTextBox, true, false);
 
         // Reset the buffer based on the selected drop down items
-        std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(KeyDropDownControl::GetSelectedIndicesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>()), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true)));
+        std::get<Shortcut>(shortcutRemapBuffer[rowIndex].first[0]).SetKeyCodes(KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>()));
         // second column is a hybrid column
-        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(KeyDropDownControl::GetSelectedIndicesFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>()), KeyDropDownControl::keyboardManagerState->keyboardMap.GetKeyCodeList(true));
+
+        std::vector<int32_t> selectedKeyCodes = KeyDropDownControl::GetSelectedCodesFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>());
 
         // If exactly one key is selected consider it to be a key remap
         if (selectedKeyCodes.size() == 1)
@@ -243,12 +245,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
 
         if (newKeys.index() == 0)
         {
-            std::vector<DWORD> shortcutListKeyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList(true);
-            auto it = std::find(shortcutListKeyCodes.begin(), shortcutListKeyCodes.end(), std::get<DWORD>(newKeys));
-            if (it != shortcutListKeyCodes.end())
-            {
-                keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedIndex((int32_t)std::distance(shortcutListKeyCodes.begin(), it));
-            }
+            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects[0]->SetSelectedValue(std::to_wstring(std::get<DWORD>(newKeys)));
         }
         else
         {
@@ -355,6 +352,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
         onAccept();
     });
 
+    // NOTE: UnregisterKeys should never be called on the DelayThread, as it will re-enter the mutex. To avoid this it is run on the dispatcher thread
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         selectDetectedShortcutAndResetKeys,
@@ -367,19 +365,24 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
                     onPressEnter();
                 });
         },
-        [onReleaseEnter](DWORD) {
-            onReleaseEnter();
+        [onReleaseEnter, detectShortcutBox](DWORD) {
+            detectShortcutBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [onReleaseEnter]() {
+                    onReleaseEnter();
+                });
         });
 
     TextBlock cancelButtonText;
     cancelButtonText.Text(GET_RESOURCE_STRING(IDS_CANCEL_BUTTON));
 
-    Button cancelButton;
-    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    cancelButton.Margin({ 2, 2, 2, 2 });
-    cancelButton.Content(cancelButtonText);
-    // Cancel button
-    cancelButton.Click([detectShortcutBox, unregisterKeys, &keyboardManagerState, isSingleKeyWindow, parentWindow](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    auto onCancel = [&keyboardManagerState,
+                     detectShortcutBox,
+                     unregisterKeys,
+                     isSingleKeyWindow,
+                     parentWindow] {
+        detectShortcutBox.Hide();
+
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
         if (isSingleKeyWindow)
@@ -393,31 +396,27 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
             keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
         }
         unregisterKeys();
-        detectShortcutBox.Hide();
+    };
+
+    Button cancelButton;
+    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
+    cancelButton.Margin({ 2, 2, 2, 2 });
+    cancelButton.Content(cancelButtonText);
+    // Cancel button
+    cancelButton.Click([onCancel](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        onCancel();
     });
 
+    // NOTE: UnregisterKeys should never be called on the DelayThread, as it will re-enter the mutex. To avoid this it is run on the dispatcher thread
     keyboardManagerState.RegisterKeyDelay(
         VK_ESCAPE,
         selectDetectedShortcutAndResetKeys,
-        [&keyboardManagerState, detectShortcutBox, unregisterKeys, isSingleKeyWindow, parentWindow](DWORD) {
+        [onCancel, detectShortcutBox](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [detectShortcutBox] {
-                    detectShortcutBox.Hide();
+                [onCancel] {
+                    onCancel();
                 });
-
-            keyboardManagerState.ResetUIState();
-            if (isSingleKeyWindow)
-            {
-                // Revert UI state back to Edit Keyboard window
-                keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, parentWindow);
-            }
-            else
-            {
-                // Revert UI state back to Edit Shortcut window
-                keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, parentWindow);
-            }
-            unregisterKeys();
         },
         nullptr);
 

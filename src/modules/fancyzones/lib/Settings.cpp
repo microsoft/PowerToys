@@ -43,9 +43,10 @@ namespace NonLocalizable
 struct FancyZonesSettings : winrt::implements<FancyZonesSettings, IFancyZonesSettings>
 {
 public:
-    FancyZonesSettings(HINSTANCE hinstance, PCWSTR name)
-        : m_hinstance(hinstance)
-        , m_moduleName(name)
+    FancyZonesSettings(HINSTANCE hinstance, PCWSTR name, PCWSTR key)
+        : m_hinstance(hinstance),
+        m_moduleName(name),
+        m_moduleKey(key)
     {
         LoadSettings(name, true);
     }
@@ -64,6 +65,7 @@ private:
     IFancyZonesCallback* m_callback{};
     const HINSTANCE m_hinstance;
     PCWSTR m_moduleName{};
+    PCWSTR m_moduleKey{};
 
     Settings m_settings;
 
@@ -171,8 +173,8 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
     try
     {
         PowerToysSettings::PowerToyValues values = fromFile ?
-            PowerToysSettings::PowerToyValues::load_from_settings_file(m_moduleName) :
-            PowerToysSettings::PowerToyValues::from_json_string(config);
+            PowerToysSettings::PowerToyValues::load_from_settings_file(m_moduleKey) :
+            PowerToysSettings::PowerToyValues::from_json_string(config, m_moduleKey);
 
         for (auto const& setting : m_configBools)
         {
@@ -244,7 +246,7 @@ void FancyZonesSettings::SaveSettings() noexcept
 {
     try
     {
-        PowerToysSettings::PowerToyValues values(m_moduleName);
+        PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
 
         for (auto const& setting : m_configBools)
         {
@@ -271,7 +273,7 @@ void FancyZonesSettings::SaveSettings() noexcept
     }
 }
 
-winrt::com_ptr<IFancyZonesSettings> MakeFancyZonesSettings(HINSTANCE hinstance, PCWSTR name) noexcept
+winrt::com_ptr<IFancyZonesSettings> MakeFancyZonesSettings(HINSTANCE hinstance, PCWSTR name, PCWSTR key) noexcept
 {
-    return winrt::make_self<FancyZonesSettings>(hinstance, name);
+    return winrt::make_self<FancyZonesSettings>(hinstance, name, key);
 }

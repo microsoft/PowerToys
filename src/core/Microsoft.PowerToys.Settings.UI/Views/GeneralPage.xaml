@@ -125,7 +125,7 @@
             <Button x:Uid="GeneralPage_CheckForUpdates"
                     Style="{StaticResource AccentButtonStyle}"
                     Foreground="White"
-                    Command="{Binding CheckFoUpdatesEventHandler}"
+                    Command="{Binding CheckForUpdatesEventHandler}"
                     />
 
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 

@@ -31,7 +31,8 @@ namespace PreviewPaneUnitTests
             string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
-            Assert.AreEqual(html, "<table class=\"table table-striped table-bordered\">\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n</table>\n");
+            const string expected = "<table class=\"table table-striped table-bordered\">\n<thead>\n<tr>\n<th>A</th>\n<th>B</th>\n</tr>\n</thead>\n</table>\n";
+            Assert.AreEqual(expected, html);
         }
 
         [TestMethod]
@@ -46,7 +47,8 @@ namespace PreviewPaneUnitTests
             string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
-            Assert.AreEqual(html, "<blockquote class=\"blockquote\">\n<p>Blockquotes.</p>\n</blockquote>\n");
+            const string expected = "<blockquote class=\"blockquote\">\n<p>Blockquotes.</p>\n</blockquote>\n";
+            Assert.AreEqual(expected, html);
         }
 
         [TestMethod]
@@ -61,7 +63,8 @@ namespace PreviewPaneUnitTests
             string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
-            Assert.AreEqual(html, "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
+            const string expected = "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n";
+            Assert.AreEqual(expected, html);
         }
 
         [TestMethod]
@@ -76,7 +79,8 @@ namespace PreviewPaneUnitTests
             string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
-            Assert.AreEqual(html, "<figure class=\"figure\">\n<figcaption class=\"figure-caption\">This is a caption</figcaption>\n</figure>\n");
+            const string expected = "<figure class=\"figure\">\n<figcaption class=\"figure-caption\">This is a caption</figcaption>\n</figure>\n";
+            Assert.AreEqual(expected, html);
         }
 
         [TestMethod]
@@ -92,8 +96,9 @@ namespace PreviewPaneUnitTests
             string html = Markdown.ToHtml(mdString, markdownPipeline);
 
             // Assert
-            Assert.AreEqual(count, 1);
-            Assert.AreEqual(html, "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n");
+            Assert.AreEqual(1, count);
+            const string expected = "<p><img src=\"#\" class=\"img-fluid\" alt=\"text\" title=\"Figure\" /></p>\n";
+            Assert.AreEqual(expected, html);
         }
     }
 }

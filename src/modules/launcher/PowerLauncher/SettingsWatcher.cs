@@ -44,7 +44,7 @@ namespace PowerLauncher
         {
             if (!_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
             {
-                Log.Info("|SettingsWatcher.OverloadSettings|PT Run settings.json was missing, creating a new one");
+                Log.Info("PT Run settings.json was missing, creating a new one", GetType());
 
                 var defaultSettings = new PowerLauncherSettings();
                 defaultSettings.Save(_settingsUtils);
@@ -110,7 +110,7 @@ namespace PowerLauncher
                     if (retryCount > MaxRetries)
                     {
                         retry = false;
-                        Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserialize PowerToys settings, Retrying {e.Message}", e);
+                        Log.Exception($"Failed to Deserialize PowerToys settings, Retrying {e.Message}", e, GetType());
                     }
                     else
                     {
@@ -122,7 +122,7 @@ namespace PowerLauncher
                     if (retryCount > MaxRetries)
                     {
                         retry = false;
-                        Log.Exception($"|SettingsWatcher.OverloadSettings| Failed to Deserialize PowerToys settings, Creating new settings as file could be corrupted {e.Message}", e);
+                        Log.Exception($"Failed to Deserialize PowerToys settings, Creating new settings as file could be corrupted {e.Message}", e, GetType());
 
                         // Settings.json could possibly be corrupted. To mitigate this we delete the
                         // current file and replace it with a correct json value.

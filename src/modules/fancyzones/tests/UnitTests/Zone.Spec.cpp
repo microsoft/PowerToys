@@ -22,7 +22,7 @@ namespace FancyZonesUnitTests
     public:
         TEST_METHOD(TestCreateZone)
         {
-            winrt::com_ptr<IZone> zone = MakeZone(m_zoneRect);
+            winrt::com_ptr<IZone> zone = MakeZone(m_zoneRect, 1);
             Assert::IsNotNull(&zone);
             CustomAssert::AreEqual(m_zoneRect, zone->GetZoneRect());
         }
@@ -30,18 +30,17 @@ namespace FancyZonesUnitTests
         TEST_METHOD(TestCreateZoneZeroRect)
         {
             RECT zoneRect{ 0, 0, 0, 0 };
-            winrt::com_ptr<IZone> zone = MakeZone(zoneRect);
+            winrt::com_ptr<IZone> zone = MakeZone(zoneRect, 1);
             Assert::IsNotNull(&zone);
             CustomAssert::AreEqual(zoneRect, zone->GetZoneRect());
         }
 
         TEST_METHOD(GetSetId)
         {
-            winrt::com_ptr<IZone> zone = MakeZone(m_zoneRect);
+            constexpr size_t zoneId = 123;
+            winrt::com_ptr<IZone> zone = MakeZone(m_zoneRect, zoneId);
 
-            constexpr size_t id = 10;
-            zone->SetId(id);
-            Assert::AreEqual(zone->Id(), id);
+            Assert::AreEqual(zone->Id(), zoneId);
         }
     };
 }

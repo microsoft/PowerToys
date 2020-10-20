@@ -4,12 +4,13 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class ImageResizerSettings : BasePTModuleSettings
+    public class ImageResizerSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "Image Resizer";
+        public const string ModuleName = "ImageResizer";
 
         [JsonPropertyName("properties")]
         public ImageResizerProperties Properties { get; set; }
@@ -28,6 +29,17 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 WriteIndented = true,
             };
             return JsonSerializer.Serialize(this, options);
+        }
+
+        public string GetModuleName()
+        {
+            return Name;
+        }
+
+        // This can be utilized in the future if the settings.json file is to be modified/deleted.
+        public bool UpgradeSettingsConfiguration()
+        {
+            return false;
         }
     }
 }

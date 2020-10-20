@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var settingsUtils = new SettingsUtils(new SystemIOProvider());
 
             ViewModel = new GeneralViewModel(
-                settingsUtils,
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
                 loader.GetString("GeneralSettings_RunningAsUserText"),
                 ShellPage.IsElevated,
@@ -79,15 +79,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public int UpdateUIThemeMethod(string themeName)
         {
-            switch (themeName)
+            switch (themeName.ToUpperInvariant())
             {
-                case "light":
+                case "LIGHT":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
                     break;
-                case "dark":
+                case "DARK":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
                     break;
-                case "system":
+                case "SYSTEM":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
                     break;
             }

@@ -63,13 +63,13 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // Act
             win32ProgramRepository.Add(item1);
 
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(1, win32ProgramRepository.Count());
 
             // To add an item with the same hashCode, ie, same name, exename and fullPath
             win32ProgramRepository.Add(item2);
 
             // Assert, count still remains 1 because they are duplicate items
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(1, win32ProgramRepository.Count());
         }
 
         [TestCase("path.appref-ms")]
@@ -83,8 +83,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, Win32Program.ApplicationType.ApprefApplication);
+            Assert.AreEqual(1, win32ProgramRepository.Count());
+            Assert.AreEqual(Win32Program.ApplicationType.ApprefApplication, win32ProgramRepository.ElementAt(0).AppType);
         }
 
         [TestCase("directory", "path.appref-ms")]
@@ -102,7 +102,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
         [TestCase("directory", "oldpath.appref-ms", "newpath.appref-ms")]
@@ -123,7 +123,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(1, win32ProgramRepository.Count());
             Assert.IsTrue(win32ProgramRepository.Contains(newitem));
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }
@@ -144,8 +144,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, Win32Program.ApplicationType.Win32Application);
+            Assert.AreEqual(1, win32ProgramRepository.Count());
+            Assert.AreEqual(Win32Program.ApplicationType.Win32Application, win32ProgramRepository.ElementAt(0).AppType);
         }
 
         [TestCase("directory", "path.exe")]
@@ -168,7 +168,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
         [TestCase("directory", "oldpath.appref-ms", "newpath.appref-ms")]
@@ -194,29 +194,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(1, win32ProgramRepository.Count());
             Assert.IsTrue(win32ProgramRepository.Contains(newitem));
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
-        }
-
-        [TestCase("path.url")]
-        public void Win32ProgramRepositoryMustCallOnAppChangedForUrlAppsWhenChangedEventIsRaised(string path)
-        {
-            // Arrange
-            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
-            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Changed, "directory", path);
-
-            // File.ReadAllLines must be mocked for url applications
-            var mockFile = new Mock<IFileWrapper>();
-            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
-            Win32Program.FileWrapper = mockFile.Object;
-
-            // Act
-            _fileSystemMocks[0].Raise(m => m.Changed += null, e);
-
-            // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, Win32Program.ApplicationType.InternetShortcutApplication); // Internet Shortcut Application
         }
 
         [TestCase("path.url")]
@@ -237,7 +217,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
         [TestCase("path.exe")]
@@ -265,7 +245,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Changed += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
         [TestCase("directory", "path.url")]
@@ -288,7 +268,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
         [TestCase("directory", "oldpath.url", "newpath.url")]
@@ -314,29 +294,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(1, win32ProgramRepository.Count());
             Assert.IsTrue(win32ProgramRepository.Contains(newitem));
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
-        }
-
-        [TestCase("path.lnk")]
-        public void Win32ProgramRepositoryMustCallOnAppCreatedForLnkAppsWhenCreatedEventIsRaised(string path)
-        {
-            // Arrange
-            Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32Program>>("Win32"), _settings, _pathsToWatch);
-            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
-
-            // ShellLinkHelper must be mocked for lnk applications
-            var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(string.Empty);
-            Win32Program.Helper = mockShellLink.Object;
-
-            // Act
-            _fileSystemMocks[0].Raise(m => m.Created += null, e);
-
-            // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(win32ProgramRepository.ElementAt(0).AppType, Win32Program.ApplicationType.Win32Application);
         }
 
         [TestCase("directory", "path.lnk")]
@@ -366,7 +326,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 0);
+            Assert.AreEqual(0, win32ProgramRepository.Count());
         }
 
         [TestCase("directory", "oldpath.lnk", "path.lnk")]
@@ -405,7 +365,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
 
             // Assert
-            Assert.AreEqual(win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(1, win32ProgramRepository.Count());
             Assert.IsTrue(win32ProgramRepository.Contains(newitem));
             Assert.IsFalse(win32ProgramRepository.Contains(olditem));
         }

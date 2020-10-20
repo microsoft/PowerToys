@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
@@ -25,6 +27,8 @@ namespace Microsoft.Plugin.Program.Storage
         private int _numberOfPathsToWatch;
         private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", $"*{LnkExtension}", "*.appref-ms", $"*{UrlExtension}" };
 
+        private static ConcurrentQueue<string> commonEventHandlingQueue = new ConcurrentQueue<string>();
+
         public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32Program>> storage, ProgramPluginSettings settings, string[] pathsToWatch)
         {
             _fileSystemWatcherHelpers = fileSystemWatcherHelpers;
@@ -33,6 +37,28 @@ namespace Microsoft.Plugin.Program.Storage
             _pathsToWatch = pathsToWatch;
             _numberOfPathsToWatch = pathsToWatch.Length;
             InitializeFileSystemWatchers();
+
+            // This task would always run in the background trying to dequeue file paths from the queue at regular intervals.
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    int dequeueDelay = 500;
+                    string appPath = await EventHandler.GetAppPathFromQueueAsync(commonEventHandlingQueue, dequeueDelay).ConfigureAwait(false);
+
+                    // To allow for the installation process to finish.
+                    await Task.Delay(5000).ConfigureAwait(false);
+
+                    if (!string.IsNullOrEmpty(appPath))
+                    {
+                        Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(appPath);
+                        if (app != null)
+                        {
+                            Add(app);
+                        }
+                    }
+                }
+            }).ConfigureAwait(false);
         }
 
         private void InitializeFileSystemWatchers()
@@ -94,7 +120,7 @@ namespace Microsoft.Plugin.Program.Storage
             }
             catch (Exception ex)
             {
-                Log.Info($"|Win32ProgramRepository|OnAppRenamed-{extension}Program|{oldPath}|Unable to create program from {oldPath}| {ex.Message}");
+                Log.Exception($"OnAppRenamed-{extension}Program|{oldPath}|Unable to create program from {oldPath}", ex, GetType());
             }
 
             // To remove the old app which has been renamed and to add the new application.
@@ -134,7 +160,7 @@ namespace Microsoft.Plugin.Program.Storage
             }
             catch (Exception ex)
             {
-                Log.Info($"|Win32ProgramRepository|OnAppDeleted-{extension}Program|{path}|Unable to create program from {path}| {ex.Message}");
+                Log.Exception($"OnAppDeleted-{extension}Program|{path}|Unable to create program from {path}", ex, GetType());
             }
 
             if (app != null)
@@ -175,7 +201,7 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase))
+            if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase) && !Path.GetExtension(path).Equals(LnkExtension, StringComparison.CurrentCultureIgnoreCase))
             {
                 Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
                 if (app != null)
@@ -188,13 +214,11 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppChanged(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase))
+            if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase) || Path.GetExtension(path).Equals(LnkExtension, StringComparison.CurrentCultureIgnoreCase))
             {
-                Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
-                if (app != null)
-                {
-                    Add(app);
-                }
+                // When a url or lnk app is installed, multiple created and changed events are triggered.
+                // To prevent the code from acting on the first such event (which may still be during app installation), the events are added a common queue and dequeued by a background task at regular intervals - https://github.com/microsoft/PowerToys/issues/6429.
+                commonEventHandlingQueue.Enqueue(path);
             }
         }
 

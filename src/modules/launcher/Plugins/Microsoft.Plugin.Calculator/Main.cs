@@ -44,14 +44,14 @@ namespace Microsoft.Plugin.Calculator
 
                 return new List<Result>
                 {
-                    ResultHelper.CreateResult(result.Result, result.RoundedResult, IconPath),
+                    ResultHelper.CreateResult(result.RoundedResult, IconPath),
                 };
             } // We want to keep the process alive if any the mages library throws any exceptions.
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                Log.Exception($"|Microsoft.Plugin.Calculator.Main.Query|Exception when query for <{query}>", e);
+                Log.Exception("Exception when query for <{query}>", e, GetType());
             }
 
             return new List<Result>();

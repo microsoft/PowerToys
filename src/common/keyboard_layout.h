@@ -12,7 +12,7 @@ public:
     void UpdateLayout();
     std::wstring GetKeyName(DWORD key);
     std::vector<DWORD> GetKeyCodeList(const bool isShortcut = false);
-    std::vector<std::wstring> GetKeyNameList(const bool isShortcut = false);
+    std::vector<std::pair<DWORD, std::wstring>> GetKeyNameList(const bool isShortcut = false);
 
 private:
     class LayoutMapImpl;

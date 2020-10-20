@@ -63,12 +63,12 @@ namespace Microsoft.Plugin.Shell
 
                 try
                 {
-                    List<Result> folderPluginResults = Folder.Main.GetFolderPluginResults(query);
+                    IEnumerable<Result> folderPluginResults = Folder.Main.GetFolderPluginResults(query);
                     results.AddRange(folderPluginResults);
                 }
                 catch (Exception e)
                 {
-                    Log.Exception($"|Microsoft.Plugin.Shell.Main.Query|Exception when query for <{query}>", e);
+                    Log.Exception($"Exception when query for <{query}>", e, GetType());
                 }
 
                 return results;
