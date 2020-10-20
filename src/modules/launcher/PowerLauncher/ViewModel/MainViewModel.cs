@@ -871,6 +871,18 @@ namespace PowerLauncher.ViewModel
             }
         }
 
+        public static bool ShouldAutoCompleteTextBeEmpty(string queryText, string autoCompleteText)
+        {
+            if (string.IsNullOrEmpty(autoCompleteText))
+            {
+                return false;
+            }
+            else
+            {
+                return string.IsNullOrEmpty(queryText) || autoCompleteText.IndexOf(queryText, StringComparison.Ordinal) != 0;
+            }
+        }
+
         public static string GetAutoCompleteText(int index, string input, string query)
         {
             if (!string.IsNullOrEmpty(input) && !string.IsNullOrEmpty(query))
