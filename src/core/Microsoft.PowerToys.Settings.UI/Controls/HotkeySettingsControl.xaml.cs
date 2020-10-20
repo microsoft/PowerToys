@@ -11,7 +11,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public sealed partial class HotkeySettingsControl : UserControl
+    public sealed partial class HotkeySettingsControl : UserControl, IDisposable
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
 
@@ -73,6 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private HotkeySettings lastValidSettings;
         private HotkeySettingsControlHook hook;
         private bool _isActive;
+        private bool disposedValue;
 
         public HotkeySettings HotkeySettings
         {
@@ -277,6 +278,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             HotkeyTextBox.Text = hotkeySettings.ToString();
             _isActive = false;
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                    hook.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
