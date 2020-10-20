@@ -877,7 +877,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0)
                 {
-                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // Use the same case as the input query for the matched portion of the string
                         return query + input.Substring(query.Length);
@@ -894,7 +894,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0 && !string.IsNullOrEmpty(query))
                 {
-                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         return query + input.Substring(query.Length);
                     }
