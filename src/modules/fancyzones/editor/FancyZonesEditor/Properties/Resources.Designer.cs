@@ -88,6 +88,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Canvas layout editor window.
+        /// </summary>
+        public static string Canvs_Layout_Editor {
+            get {
+                return ResourceManager.GetString("Canvs_Layout_Editor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Choose your layout for this desktop.
         /// </summary>
         public static string Choose_Layout {
@@ -165,6 +174,15 @@ namespace FancyZonesEditor.Properties {
         public static string Fancy_Zones_Editor_App_Title {
             get {
                 return ResourceManager.GetString("Fancy_Zones_Editor_App_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones main editor window.
+        /// </summary>
+        public static string Fancy_Zones_Main_Editor_Window {
+            get {
+                return ResourceManager.GetString("Fancy_Zones_Main_Editor_Window", resourceCulture);
             }
         }
         
