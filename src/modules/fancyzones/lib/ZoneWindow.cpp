@@ -158,6 +158,7 @@ private:
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
     void OnPaint(HDC hdc) noexcept;
+    void OnPaintD2D() noexcept;
     void OnKeyUp(WPARAM wparam) noexcept;
     std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
     void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
@@ -181,6 +182,7 @@ private:
     std::atomic<bool> m_animating;
     OnThreadExecutor m_paintExecutor;
     ULONG_PTR gdiplusToken;
+    std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
 };
 
 ZoneWindow::ZoneWindow(HINSTANCE hinstance)
@@ -240,6 +242,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
     MakeWindowTransparent(m_window.get());
 
+    m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window.get());
     // Ignore flashZones
     /*
     if (flashZones)
@@ -596,12 +599,12 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
 
     case WM_PRINTCLIENT:
     {
-        OnPaint(reinterpret_cast<HDC>(wparam));
+        // OnPaint(reinterpret_cast<HDC>(wparam));
     }
     break;
     case WM_PAINT:
     {
-        OnPaint(NULL);
+        OnPaintD2D();
     }
     break;
 
@@ -657,6 +660,12 @@ void ZoneWindow::OnPaint(HDC hdc) noexcept
         m_paintExecutor.cancel();
         m_paintExecutor.submit(std::move(task));
     }
+}
+
+void ZoneWindow::OnPaintD2D() noexcept
+{
+    m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
+    m_zoneWindowDrawing->Render();
 }
 
 void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept
