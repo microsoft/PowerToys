@@ -620,7 +620,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
             const auto& appHistoryArray = actualAppZoneHistory.begin()->second;
             Assert::AreEqual((size_t)1, appHistoryArray.size());
-            Assert::IsTrue(std::vector<size_t>{ 1 } == appHistoryArray[0].zoneIndexSet);
+            Assert::IsTrue(std::vector<size_t>{ 0 } == appHistoryArray[0].zoneIndexSet);
         }
 
         TEST_METHOD(MoveWindowIntoZoneByDirectionManyTimes)
@@ -637,7 +637,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
             const auto& appHistoryArray = actualAppZoneHistory.begin()->second;
             Assert::AreEqual((size_t)1, appHistoryArray.size());
-            Assert::IsTrue(std::vector<size_t>{ 3 } == appHistoryArray[0].zoneIndexSet);
+            Assert::IsTrue(std::vector<size_t>{ 2 } == appHistoryArray[0].zoneIndexSet);
         }
 
         TEST_METHOD(SaveWindowProcessToZoneIndexNullptrWindow)

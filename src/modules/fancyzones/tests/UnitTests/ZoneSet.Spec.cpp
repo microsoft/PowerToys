@@ -85,7 +85,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (AddOne)
             {
-                constexpr size_t zoneId = 1;
+                constexpr size_t zoneId = 0;
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, zoneId);
                 Assert::IsNotNull(zone.get());
                 m_set->AddZone(zone);
@@ -99,7 +99,7 @@ namespace FancyZonesUnitTests
             {
                 for (size_t i = 0; i < 1024; i++)
                 {
-                    size_t zoneId = i + 1;
+                    size_t zoneId = i;
                     winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, zoneId);
                     Assert::IsNotNull(zone.get());
                     m_set->AddZone(zone);
@@ -114,7 +114,7 @@ namespace FancyZonesUnitTests
             {
                 for (size_t i = 0; i < 1024; i++)
                 {
-                    size_t zoneId = i + 1;
+                    size_t zoneId = i;
                     int left = rand() % 10;
                     int top = rand() % 10;
                     int right = left + 1 + rand() % 100;
@@ -133,13 +133,6 @@ namespace FancyZonesUnitTests
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 }, 1);
                 Assert::IsNotNull(zone.get());
-            }
-
-            TEST_METHOD (MakeZoneWithInvalidId)
-            {
-                constexpr size_t invalidZoneId = 0;
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 }, invalidZoneId);
-                Assert::IsNull(zone.get());
             }
 
             TEST_METHOD (MakeZoneFromInvalidRectWidth)
@@ -361,39 +354,39 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameWindow)
             {
                 // Add a couple of zones.
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 3);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 1);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 2);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
+
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
                 Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
 
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
                 Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
-
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 3);
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameIndex)
             {
                 // Add a couple of zones.
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 3);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 1);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 2);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByPointEmpty)
@@ -414,8 +407,21 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByPointInnerPoint)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
                 m_set->AddZone(zone1);
+
+                auto window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
+
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
+            }
+
+            TEST_METHOD (MoveWindowIntoZoneByPointInnerPointOverlappingZones)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
 
                 auto window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
@@ -423,35 +429,22 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
-            TEST_METHOD (MoveWindowIntoZoneByPointInnerPointOverlappingZones)
-            {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
-                m_set->AddZone(zone1);
-                m_set->AddZone(zone2);
-
-                auto window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
-
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
-            }
-
             TEST_METHOD (MoveWindowIntoZoneByPointDropAddWindow)
             {
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
 
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
 
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
 
                 m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByPointDropAddWindowToSameZone)
@@ -459,8 +452,8 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
 
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
 
@@ -469,7 +462,7 @@ namespace FancyZonesUnitTests
 
                 m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByPointSeveralZonesWithSameWindow)
@@ -477,19 +470,19 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 }, 3);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 }, 2);
 
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
 
-                m_set->MoveWindowIntoZoneByIndexSet(window, Mocks::Window(), { 1, 2, 3 });
+                m_set->MoveWindowIntoZoneByIndexSet(window, Mocks::Window(), { 0, 1, 2 });
 
                 m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
             }
     };
 
@@ -507,9 +500,9 @@ namespace FancyZonesUnitTests
                 m_set = MakeZoneSet(config);
 
                 // Add a couple of zones.
-                m_zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                m_zone2 = MakeZone({ 0, 0, 100, 100 }, 2);
-                m_zone3 = MakeZone({ 0, 0, 100, 100 }, 3);
+                m_zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                m_zone2 = MakeZone({ 0, 0, 100, 100 }, 1);
+                m_zone3 = MakeZone({ 0, 0, 100, 100 }, 2);
                 m_set->AddZone(m_zone1);
                 m_set->AddZone(m_zone2);
                 m_set->AddZone(m_zone3);
@@ -535,14 +528,14 @@ namespace FancyZonesUnitTests
             {
                 HWND window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
-                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveLeftNoZones)
             {
                 HWND window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveRightTwice)
@@ -550,7 +543,7 @@ namespace FancyZonesUnitTests
                 HWND window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveLeftTwice)
@@ -558,7 +551,7 @@ namespace FancyZonesUnitTests
                 HWND window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveRightMoreThanZonesCount)
@@ -569,7 +562,7 @@ namespace FancyZonesUnitTests
                     m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
                 }
 
-                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveLeftMoreThanZonesCount)
@@ -580,131 +573,131 @@ namespace FancyZonesUnitTests
                     m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
                 }
 
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionRight)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
 
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveRightWithSameWindowAdded)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndexSet(window, Mocks::Window(), { 1, 2 });
+                m_set->MoveWindowIntoZoneByIndexSet(window, Mocks::Window(), { 0, 1 });
 
-                Assert::IsTrue(std::vector<size_t>{ 1, 2 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 0, 1 } == m_set->GetZoneIndexSetFromWindow(window));
+
+                m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
 
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
                 Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
-
-                m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveRightWithDifferentWindowsAdded)
             {
                 HWND window1 = Mocks::Window();
                 HWND window2 = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window1, Mocks::Window(), { 1 });
-                m_set->MoveWindowIntoZoneByIndex(window2, Mocks::Window(), { 2 });
+                m_set->MoveWindowIntoZoneByIndex(window1, Mocks::Window(), { 0 });
+                m_set->MoveWindowIntoZoneByIndex(window2, Mocks::Window(), { 1 });
+
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window1));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window2));
+
+                m_set->MoveWindowIntoZoneByDirectionAndIndex(window1, Mocks::Window(), VK_RIGHT, true);
 
                 Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window1));
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window2));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window2));
 
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window1, Mocks::Window(), VK_RIGHT, true);
 
                 Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window1));
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window2));
-
-                m_set->MoveWindowIntoZoneByDirectionAndIndex(window1, Mocks::Window(), VK_RIGHT, true);
-
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window1));
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window2));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window2));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionLeft)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 3);
-                m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
-
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
                 Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
+
+                m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveLeftWithSameWindowAdded)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndexSet(window, Mocks::Window(), { 2, 3 });
+                m_set->MoveWindowIntoZoneByIndexSet(window, Mocks::Window(), { 1, 2 });
 
-                Assert::IsTrue(std::vector<size_t>{ 2, 3 } == m_set->GetZoneIndexSetFromWindow(window));
-
-                m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
-                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 1, 2 } == m_set->GetZoneIndexSetFromWindow(window));
 
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
+
+                m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
+                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveLeftWithDifferentWindowsAdded)
             {
                 HWND window1 = Mocks::Window();
                 HWND window2 = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window1, Mocks::Window(), 2);
-                m_set->MoveWindowIntoZoneByIndex(window2, Mocks::Window(), 3);
+                m_set->MoveWindowIntoZoneByIndex(window1, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window2, Mocks::Window(), 2);
 
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window1));
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window2));
-
-                m_set->MoveWindowIntoZoneByDirectionAndIndex(window2, Mocks::Window(), VK_LEFT, true);
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window1));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window1));
                 Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window2));
 
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window2, Mocks::Window(), VK_LEFT, true);
-                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window1));
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window1));
                 Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window2));
+
+                m_set->MoveWindowIntoZoneByDirectionAndIndex(window2, Mocks::Window(), VK_LEFT, true);
+                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window1));
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window2));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionWrapAroundRight)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 3);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, true);
-                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveWindowIntoZoneByDirectionWrapAroundLeft)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, true);
-                Assert::IsTrue(std::vector<size_t>{ 3 } == m_set->GetZoneIndexSetFromWindow(window));
+                Assert::IsTrue(std::vector<size_t>{ 2 } == m_set->GetZoneIndexSetFromWindow(window));
             }
 
             TEST_METHOD (MoveSecondWindowIntoSameZone)
             {
                 HWND window1 = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window1, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window1, Mocks::Window(), 0);
 
                 HWND window2 = Mocks::Window();
                 m_set->MoveWindowIntoZoneByDirectionAndIndex(window2, Mocks::Window(), VK_RIGHT, true);
 
-                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window1));
-                Assert::IsTrue(std::vector<size_t>{ 1 } == m_set->GetZoneIndexSetFromWindow(window2));
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window1));
+                Assert::IsTrue(std::vector<size_t>{ 0 } == m_set->GetZoneIndexSetFromWindow(window2));
             }
 
             TEST_METHOD (MoveRightMoreThanZoneCountReturnsFalse)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
                 for (size_t i = 0; i < m_set->GetZones().size() - 1; ++i)
                 {
                     m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_RIGHT, false);
@@ -716,7 +709,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveLeftMoreThanZoneCountReturnsFalse)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 3);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
                 for (size_t i = 0; i < m_set->GetZones().size() - 1; ++i)
                 {
                     m_set->MoveWindowIntoZoneByDirectionAndIndex(window, Mocks::Window(), VK_LEFT, false);
@@ -771,7 +764,7 @@ namespace FancyZonesUnitTests
                     auto zones = set->GetZones();
                     Assert::AreEqual(expectedCount, zones.size());
 
-                    int zoneId = 1;
+                    int zoneId = 0;
                     for (const auto& zone : zones)
                     {
                         Assert::IsTrue(set->IsZoneEmpty(zoneId));

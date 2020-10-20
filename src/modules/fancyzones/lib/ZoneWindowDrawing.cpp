@@ -98,7 +98,7 @@ namespace
 
         if (!flashMode)
         {
-            DrawIndex(hdc, zoneRect, zone->Id());
+            DrawIndex(hdc, zoneRect, zone->Id() + 1);
         }
     }
 }

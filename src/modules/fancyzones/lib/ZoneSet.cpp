@@ -344,14 +344,14 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND workAreaWindow,
     // The window was not assigned to any zone here
     if (indexSet.size() == 0)
     {
-        MoveWindowIntoZoneByIndex(window, workAreaWindow, vkCode == VK_LEFT ? numZones : 1);
+        MoveWindowIntoZoneByIndex(window, workAreaWindow, vkCode == VK_LEFT ? numZones - 1 : 0);
         return true;
     }
 
     size_t oldId = indexSet[0];
 
     // We reached the edge
-    if ((vkCode == VK_LEFT && oldId == 1) || (vkCode == VK_RIGHT && oldId == numZones))
+    if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == numZones - 1))
     {
         if (!cycle)
         {
@@ -360,7 +360,7 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND workAreaWindow,
         }
         else
         {
-            MoveWindowIntoZoneByIndex(window, workAreaWindow, vkCode == VK_LEFT ? numZones : 1);
+            MoveWindowIntoZoneByIndex(window, workAreaWindow, vkCode == VK_LEFT ? numZones - 1 : 0);
             return true;
         }
     }
@@ -385,9 +385,7 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWind
         return false;
     }
 
-    // Initialize (m_zones.size() + 1) vector of bools
-    // as usedZoneIndices[0] not used -> zoneIds have values in [1..m_zones.size()]
-    std::vector<bool> usedZoneIndices(m_zones.size() + 1, false);
+    std::vector<bool> usedZoneIndices(m_zones.size(), false);
     for (size_t id : GetZoneIndexSetFromWindow(window))
     {
         usedZoneIndices[id] = true;
@@ -598,7 +596,7 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 
     for (int i = 0; i < zoneCount; i++)
     {
-        auto zone = MakeZone(focusZoneRect, m_zones.size() + 1);
+        auto zone = MakeZone(focusZoneRect, m_zones.size());
         if (zone)
         {
             AddZone(zone);
@@ -655,7 +653,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::
         }
 
 
-        auto zone = MakeZone(RECT{ left, top, right, bottom }, m_zones.size() + 1);
+        auto zone = MakeZone(RECT{ left, top, right, bottom }, m_zones.size());
         if (zone)
         {
             AddZone(zone);
@@ -722,15 +720,15 @@ bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLay
         gridLayoutInfo.cellChildMap()[i] = std::vector<int>(columns);
     }
 
-    int index = zoneCount - 1;
-    for (int col = columns - 1; col >= 0; col--)
+    int index = 0;
+    for (int row = 0; row < rows; row++)
     {
-        for (int row = rows - 1; row >= 0; row--)
+        for (int col = 0; col < columns; col++)
         {
-            gridLayoutInfo.cellChildMap()[row][col] = index--;
-            if (index < 0)
+            gridLayoutInfo.cellChildMap()[row][col] = index++;
+            if (index == zoneCount)
             {
-                index = 0;
+                index--;
             }
         }
     }
@@ -775,7 +773,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
                 DPIAware::Convert(m_config.Monitor, x, y);
                 DPIAware::Convert(m_config.Monitor, width, height);
 
-                auto zone = MakeZone(RECT{ x, y, x + width, y + height }, m_zones.size() + 1);
+                auto zone = MakeZone(RECT{ x, y, x + width, y + height }, m_zones.size());
                 if (zone)
                 {
                     AddZone(zone);
@@ -858,7 +856,7 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
                 long right = columnInfo[maxCol].End;
                 long bottom = rowInfo[maxRow].End;
 
-                auto zone = MakeZone(RECT{ left, top, right, bottom }, i + 1);
+                auto zone = MakeZone(RECT{ left, top, right, bottom }, i);
                 if (zone)
                 {
                     AddZone(zone);
