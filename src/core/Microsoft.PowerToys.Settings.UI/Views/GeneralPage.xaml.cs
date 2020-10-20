@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -58,16 +59,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     {
                         str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_VersionIsLatest");
                     }
-                    else if (version != string.Empty)
+                    else if (!string.IsNullOrEmpty(version))
                     {
                         str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_NewVersionIsAvailable");
-                        if (str != string.Empty)
+                        if (!string.IsNullOrEmpty(str))
                         {
                             str += ": " + version;
                         }
                     }
 
-                    ViewModel.LatestAvailableVersion = string.Format(str);
+                    // Using CurrentCulture since this is user-facing
+                    ViewModel.LatestAvailableVersion = string.Format(CultureInfo.CurrentCulture, str);
                 }
                 catch (Exception)
                 {

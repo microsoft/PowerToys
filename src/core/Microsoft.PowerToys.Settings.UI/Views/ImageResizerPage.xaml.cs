@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
+using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -28,7 +29,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             try
             {
                 Button deleteRowButton = (Button)sender;
-                int rowNum = int.Parse(deleteRowButton.CommandParameter.ToString());
+
+                // Using InvariantCulture since this is internal and expected to be numerical
+                int rowNum = int.Parse(deleteRowButton.CommandParameter.ToString(), CultureInfo.InvariantCulture);
                 ViewModel.DeleteImageSize(rowNum);
             }
             catch
