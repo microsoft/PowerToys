@@ -110,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             hook.Dispose();
         }
 
-        private void KeyEventHandler(int key, bool matchValue, int matchValueCode, string matchValueText)
+        private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
         {
             switch ((Windows.System.VirtualKey)key)
             {
@@ -230,7 +230,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                KeyEventHandler(key, true, key, Library.Utilities.Helper.GetKeyName((uint)key));
+                KeyEventHandler(key, true, key);
 
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
                 if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
@@ -245,7 +245,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                KeyEventHandler(key, false, 0, string.Empty);
+                KeyEventHandler(key, false, 0);
             });
         }
 
