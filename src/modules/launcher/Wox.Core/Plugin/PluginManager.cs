@@ -6,6 +6,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -82,17 +84,18 @@ namespace Wox.Core.Plugin
         public static void LoadPlugins(PluginSettings settings)
         {
             _metadatas = PluginConfig.Parse(Directories);
-            Settings = settings;
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Settings.UpdatePluginSettings(_metadatas);
-            AllPlugins = PluginsLoader.Plugins(_metadatas, Settings);
+            AllPlugins = PluginsLoader.Plugins(_metadatas);
         }
 
         /// <summary>
         /// Call initialize for all plugins
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
         public static void InitializePlugins(IPublicAPI api)
         {
-            API = api;
+            API = api ?? throw new ArgumentNullException(nameof(api));
             var failedPlugins = new ConcurrentQueue<PluginPair>();
             Parallel.ForEach(AllPlugins, pair =>
             {
@@ -145,6 +148,11 @@ namespace Wox.Core.Plugin
 
         public static List<PluginPair> ValidPluginsForQuery(Query query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             if (NonGlobalPlugins.ContainsKey(query.ActionKeyword))
             {
                 var plugin = NonGlobalPlugins[query.ActionKeyword];
@@ -156,8 +164,14 @@ namespace Wox.Core.Plugin
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
         public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {
+            if (pair == null)
+            {
+                throw new ArgumentNullException(nameof(pair));
+            }
+
             try
             {
                 List<Result> results = null;
@@ -204,7 +218,8 @@ namespace Wox.Core.Plugin
 
                 if (!string.IsNullOrEmpty(query.ActionKeyword))
                 {
-                    result.QueryTextDisplay = string.Format("{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
+                    // Using CurrentCulture since this is user facing
+                    result.QueryTextDisplay = string.Format(CultureInfo.CurrentCulture, "{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
                 }
             }
 
@@ -213,6 +228,16 @@ namespace Wox.Core.Plugin
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException(nameof(results));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
             foreach (var r in results)
             {
                 r.PluginDirectory = metadata.PluginDirectory;
@@ -242,6 +267,7 @@ namespace Wox.Core.Plugin
             return AllPlugins.Where(p => p.Plugin is T);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
         public static List<ContextMenuResult> GetContextMenusForPlugin(Result result)
         {
             var pluginPair = _contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);

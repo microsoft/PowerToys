@@ -10,6 +10,7 @@
 // Constructor
 PowerPreviewModule::PowerPreviewModule() :
     m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
+    app_key(powerpreviewConstants::ModuleKey),
     m_fileExplorerModules(
         { // SVG Preview Handler settings object.
           new PreviewHandlerSettings(
@@ -55,10 +56,16 @@ void PowerPreviewModule::destroy()
     delete this;
 }
 
-// Return the display name of the powertoy, this will be cached.
+// Return the localized display name of the powertoy
 const wchar_t* PowerPreviewModule::get_name()
 {
     return m_moduleName.c_str();
+}
+
+// Return the non localized key of the powertoy, this will be cached by the runner
+const wchar_t* PowerPreviewModule::get_key()
+{
+    return app_key.c_str();
 }
 
 // Return JSON with the configuration options.
@@ -96,7 +103,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 {
     try
     {
-        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
+        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
         bool updateSuccess = true;
         bool isElevated = is_process_elevated(false);
@@ -167,7 +174,7 @@ void PowerPreviewModule::init_settings()
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_key());
 
         // Load settings states.
         for (auto fileExplorerModule : this->m_fileExplorerModules)

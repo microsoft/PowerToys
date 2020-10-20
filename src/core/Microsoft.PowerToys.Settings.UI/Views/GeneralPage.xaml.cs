@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var settingsUtils = new SettingsUtils();
 
             ViewModel = new GeneralViewModel(
-                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig,
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
                 loader.GetString("GeneralSettings_RunningAsUserText"),
                 ShellPage.IsElevated,
