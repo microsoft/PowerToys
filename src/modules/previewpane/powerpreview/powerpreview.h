@@ -21,7 +21,7 @@ private:
     std::wstring m_moduleName;
     //contains the non localized key of the powertoy
     std::wstring app_key;
-    std::vector<FileExplorerPreviewSettings*> m_fileExplorerModules;
+    std::vector<std::unique_ptr<FileExplorerPreviewSettings>> m_fileExplorerModules;
 
     // Function to check if the registry states need to be updated
     bool is_registry_update_required();

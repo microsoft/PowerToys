@@ -11,8 +11,8 @@ namespace PowerPreviewSettings
         LPCWSTR thumbnail_provider_subkey;
 
     public:
-        ThumbnailProviderSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper, LPCWSTR subkey) :
-            FileExplorerPreviewSettings(toggleSettingEnabled, toggleSettingName, toggleSettingDescription, clsid, registryValueData, registryWrapper), thumbnail_provider_subkey(subkey)
+        ThumbnailProviderSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, std::unique_ptr<RegistryWrapperIface> registryWrapper, LPCWSTR subkey) :
+            FileExplorerPreviewSettings(toggleSettingEnabled, toggleSettingName, toggleSettingDescription, clsid, registryValueData, std::move(registryWrapper)), thumbnail_provider_subkey(subkey)
         {
         }
 
