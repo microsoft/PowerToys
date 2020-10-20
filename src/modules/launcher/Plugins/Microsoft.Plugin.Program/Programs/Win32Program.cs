@@ -219,11 +219,8 @@ namespace Microsoft.Plugin.Program.Programs
                 SubTitle = SetSubtitle(),
                 IcoPath = IcoPath,
                 Score = score,
-                ContextData = new SearchResult()
-                {
-                    Program = this,
-                    ProgramAguments = queryArguments,
-                },
+                ContextData = this,
+                ProgramArguments = queryArguments,
                 Action = e =>
                 {
                     var info = GetProcessStartInfo(queryArguments);

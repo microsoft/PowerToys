@@ -156,9 +156,9 @@ namespace Microsoft.Plugin.Program
             }
 
             var menuOptions = new List<ContextMenuResult>();
-            if (selectedResult.ContextData is SearchResult searchResult)
+            if (selectedResult.ContextData is IProgram program)
             {
-                menuOptions = searchResult.Program.ContextMenus(searchResult.ProgramAguments, _context.API);
+                menuOptions = program.ContextMenus(selectedResult.ProgramArguments, _context.API);
             }
 
             return menuOptions;

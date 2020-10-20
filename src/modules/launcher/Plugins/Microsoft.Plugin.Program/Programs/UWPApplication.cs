@@ -97,11 +97,8 @@ namespace Microsoft.Plugin.Program.Programs
                 SubTitle = SetSubtitle(),
                 Icon = Logo,
                 Score = score,
-                ContextData = new SearchResult()
-                {
-                    Program = this,
-                    ProgramAguments = queryArguments,
-                },
+                ContextData = this,
+                ProgramArguments = queryArguments,
                 Action = e =>
                 {
                     Launch(api, queryArguments);
