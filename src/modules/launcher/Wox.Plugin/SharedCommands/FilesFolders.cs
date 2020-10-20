@@ -52,7 +52,7 @@ namespace Wox.Plugin.SharedCommands
 #pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
-                throw e;
+                throw;
 #else
                 System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, "Copying path {0} has failed, it will now be deleted for consistency", targetPath));
                 RemoveFolder(targetPath);
@@ -84,7 +84,7 @@ namespace Wox.Plugin.SharedCommands
 #pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
-                throw e;
+                throw;
 #else
                 System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, "Unable to verify folders and files between {0} and {1}", fromPath, toPath));
                 return false;
@@ -106,7 +106,7 @@ namespace Wox.Plugin.SharedCommands
 #pragma warning restore CS0168 // Variable is declared but never used
             {
 #if DEBUG
-                throw e;
+                throw;
 #else
                 System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, "Not able to delete folder {0}, please go to the location and manually delete it", path));
 #endif
