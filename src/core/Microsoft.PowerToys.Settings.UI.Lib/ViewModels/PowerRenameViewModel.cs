@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
@@ -23,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions should not crash the program but will be logged until we can understand common exception scenarios")]
         public PowerRenameViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
@@ -41,8 +45,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 PowerRenameLocalProperties localSettings = _settingsUtils.GetSettings<PowerRenameLocalProperties>(GetSettingsSubPath(), "power-rename-settings.json");
                 Settings = new PowerRenameSettings(localSettings);
             }
-            catch
+            catch (Exception e)
             {
+                Logger.LogError($"Exception encountered while reading {ModuleName} settings.", e);
+#if DEBUG
+                if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
+                {
+                    throw e;
+                }
+#endif
                 PowerRenameLocalProperties localSettings = new PowerRenameLocalProperties();
                 Settings = new PowerRenameSettings(localSettings);
                 _settingsUtils.SaveSettings(localSettings.ToJsonString(), GetSettingsSubPath(), "power-rename-settings.json");

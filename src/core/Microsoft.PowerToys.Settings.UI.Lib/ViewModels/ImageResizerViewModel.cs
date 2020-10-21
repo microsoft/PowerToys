@@ -5,9 +5,12 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
@@ -23,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions should not crash the program but will be logged until we can understand common exception scenarios")]
         public ImageResizerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
@@ -39,8 +43,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 Settings = _settingsUtils.GetSettings<ImageResizerSettings>(ModuleName);
             }
-            catch
+            catch (Exception e)
             {
+                Logger.LogError($"Exception encountered while reading {ModuleName} settings.", e);
+#if DEBUG
+                if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
+                {
+                    throw e;
+                }
+#endif
                 Settings = new ImageResizerSettings();
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
