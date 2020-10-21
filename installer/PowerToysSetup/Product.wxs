@@ -231,42 +231,34 @@
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />               
-              <Directory Id="LauncherpinyindbFolder" Name="pinyindb" />
               <Directory Id="LauncherPluginsFolder" Name="Plugins">
                 <Directory Id="CalculatorPluginFolder" Name="Microsoft.Plugin.Calculator">
                   <Directory Id="CalculatorImagesFolder" Name="Images" />
                   <Directory Id="CalculatorLanguagesFolder" Name="Languages" />
-                  <Directory Id="CalculatorpinyindbFolder" Name="pinyindb" />
                 </Directory>
                 <Directory Id="FolderPluginFolder" Name="Microsoft.Plugin.Folder">
                   <Directory Id="FolderPluginImagesFolder" Name="Images" />
                   <Directory Id="FolderPluginLanguagesFolder" Name="Languages" />
-                  <Directory Id="FolderPluginpinyindbFolder" Name="pinyindb" />
                 </Directory>
                 <Directory Id="ProgramPluginFolder" Name="Microsoft.Plugin.Program">
                   <Directory Id="ProgramImagesFolder" Name="Images" />
                   <Directory Id="ProgramLanguagesFolder" Name="Languages" />
-                  <Directory Id="ProgrampinyindbFolder" Name="pinyindb" />
                 </Directory>
                 <Directory Id="ShellPluginFolder" Name="Microsoft.Plugin.Shell">
                   <Directory Id="ShellImagesFolder" Name="Images" />
                   <Directory Id="ShellLanguagesFolder" Name="Languages" />
-                  <Directory Id="ShellpinyindbFolder" Name="pinyindb" />
                 </Directory>
                 <Directory Id="IndexerPluginFolder" Name="Microsoft.Plugin.Indexer">
                   <Directory Id="IndexerImagesFolder" Name="Images" />
                   <Directory Id="IndexerLanguagesFolder" Name="Languages" />
-                  <Directory Id="IndexerpinyindbFolder" Name="pinyindb" />
                 </Directory>
                 <Directory Id="UriPluginFolder" Name="Microsoft.Plugin.Uri">
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
-                  <Directory Id="UripinyindbFolder" Name="pinyindb" />
                 </Directory>
                 <Directory Id="WindowWalkerPluginFolder" Name="Microsoft.Plugin.WindowWalker">
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
-                  <Directory Id="WindowWalkerpinyindbFolder" Name="pinyindb" />
                 </Directory>
               </Directory>
               <Directory Id="LauncherPropertiesFolder" Name="Properties" />
@@ -894,7 +886,7 @@
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll;ManagedCommon.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll;ManagedCommon.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
@@ -909,11 +901,6 @@
         <?endforeach?>
         <File Source="$(var.BinX64Dir)modules\launcher\Images\New Message.png" />
       </Component>
-      <Component Id="launcherpinyinComponent" Directory="LauncherpinyindbFolder" Guid="F9EA53C7-D6AE-4E62-9800-0D32FBBD9F65">
-        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Source="$(var.BinX64Dir)modules\launcher\pinyindb\$(var.File)" />
-        <?endforeach?>
-      </Component>
       
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
@@ -925,11 +912,6 @@
         <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.light.png" />
         <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.dark.png" />
       </Component>
-      <Component Id="calculatorpinyindbComponent" Directory="CalculatorpinyindbFolder" Guid="D5527670-BE9A-4AA9-9D36-1249F2184B5B">
-        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\pinyindb\$(var.File)" />
-        <?endforeach?>
-      </Component>
 
       <!-- Folder Plugin -->
       <Component Id="FolderComponent" Directory="FolderPluginFolder" Guid="453D6C29-8F0D-46EC-B210-82E6AF547039">
@@ -940,11 +922,6 @@
       <Component Id="FolderImagesComponent" Directory="FolderPluginImagesFolder" Guid="6C5226EB-E312-4768-B4D1-B1D3ACFCCBDF">
         <?foreach File in copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png;Warning.dark.png;Warning.light.png?>
           <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Images\$(var.File)" />
-        <?endforeach?>
-      </Component>
-      <Component Id="FolderPluginpinyindbComponent" Directory="FolderPluginpinyindbFolder" Guid="233BE087-B9DC-408A-8809-593C42DE8B1B">
-        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
     
@@ -959,11 +936,6 @@
           <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\Images\$(var.File)" />
         <?endforeach?>
       </Component>
-      <Component Id="ProgrampinyindbComponent" Directory="ProgrampinyindbFolder" Guid="65A488C3-C67D-45F7-9654-6DF529AEEB3F">
-        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="ProgramPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\pinyindb\$(var.File)" />
-        <?endforeach?>
-      </Component>
     
       <!-- Shell Plugin -->
       <Component Id="ShellComponent" Directory="ShellPluginFolder" Guid="6D3D7294-1804-47C9-83E5-47A8867F3801">
@@ -974,11 +946,6 @@
       <Component Id="ShellImagesComponent" Directory="ShellImagesFolder" Guid="15B5DBAE-E7C1-4BF7-A29E-6CE76242F8F4">
        <?foreach File in shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
           <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Images\$(var.File)" />
-        <?endforeach?>
-      </Component>
-      <Component Id="ShellpinyindbComponent" Directory="ShellpinyindbFolder" Guid="A60742F3-2187-47F2-A5B5-300E44837DD7">
-        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="ShellPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
 
@@ -993,11 +960,6 @@
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
         <?endforeach?>
       </Component>
-      <Component Id="IndexerpinyindbComponent" Directory="IndexerpinyindbFolder" Guid="48DE333A-80F8-400A-87F4-244DF0A2DB05">
-        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="IndexerPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\pinyindb\$(var.File)" />
-        <?endforeach?>
-      </Component>
 
       <!-- Uri Plugin -->
       <Component Id="UriComponent" Directory="UriPluginFolder" Guid="C7DC8F88-554C-4375-9510-9435399B5D3D">
@@ -1009,11 +971,6 @@
         <File Id="UriDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.dark.png" />
         <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.light.png" />
       </Component>
-      <Component Id="UripinyindbComponent" Directory="UripinyindbFolder" Guid="A52A7281-CD7C-4E7D-A5A6-EA8CFCF462A2">
-        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="UriPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\pinyindb\$(var.File)" />
-        <?endforeach?>
-      </Component>
 
       <!-- WindowWalker Plugin -->  
       <Component Id="WindowWalkerComponent" Directory="WindowWalkerPluginFolder" Guid="EB1391C9-B701-421F-80FC-ABB2FEDFAD19">
@@ -1024,11 +981,6 @@
       <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
           <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.dark.png" />
           <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.light.png" />
-      </Component>
-      <Component Id="WindowWalkerpinyindbComponent" Directory="WindowWalkerpinyindbFolder" Guid="02C7A758-CDD4-4E27-9EC7-2ED68DC444B0">
-        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="WindowWalkerPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\pinyindb\$(var.File)" />
-        <?endforeach?>
       </Component>
     
     </ComponentGroup>
