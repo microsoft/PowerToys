@@ -118,9 +118,9 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("sqrt( 36)", true)]
         [TestCase("max 4", false)]
         [TestCase("sin(0)", true)]
-        [TestCase("ln(e)", true)]
         [TestCase("cos", false)]
         [TestCase("abs", false)]
+        [TestCase("1+1.1e3", true)]
         public void InputValid_TestValid_WhenCalled(string input, bool valid)
         {
             // Arrange
