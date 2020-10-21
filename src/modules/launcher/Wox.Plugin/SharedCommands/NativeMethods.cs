@@ -14,7 +14,7 @@ namespace Wox.Plugin.SharedCommands
         [DllImport("user32.dll")]
         public static extern bool EnumThreadWindows(uint threadId, EnumThreadDelegate lpfn, IntPtr lParam);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int GetWindowText(IntPtr hwnd, StringBuilder lpString, int nMaxCount);
 
         [DllImport("user32.dll")]
