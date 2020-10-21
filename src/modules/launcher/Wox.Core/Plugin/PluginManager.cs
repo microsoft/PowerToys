@@ -258,7 +258,6 @@ namespace Wox.Core.Plugin
         }
 
         public static IEnumerable<PluginPair> GetPluginsForInterface<T>()
-            where T : IFeatures
         {
             return AllPlugins.Where(p => p.Plugin is T);
         }
