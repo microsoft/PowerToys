@@ -1,5 +1,5 @@
 ﻿<local:EditorWindow x:Class="FancyZonesEditor.CanvasEditorWindow"
-        AutomationProperties.Name="{x:Static props:Resources.Canvs_Layout_Editor}"
+        AutomationProperties.Name="{x:Static props:Resources.Canvas_Layout_Editor}"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
