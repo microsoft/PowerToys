@@ -76,7 +76,6 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl 
-                Width="240"
                 x:Uid="FancyZones_HotkeyEditorControl"
                 HorizontalAlignment="Left"
                 Margin="{StaticResource SmallTopMargin}"
@@ -285,8 +284,6 @@
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps}"
                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                     Width="375"
-                     Height="160"
                      HorizontalAlignment="Left"
                      ScrollViewer.VerticalScrollBarVisibility ="Visible"
                      ScrollViewer.VerticalScrollMode="Enabled"

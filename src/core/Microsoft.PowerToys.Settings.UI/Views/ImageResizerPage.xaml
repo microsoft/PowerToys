@@ -90,7 +90,35 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
-                                    <ListViewItemPresenter CheckBrush="{ThemeResource ListViewItemCheckBrush}" ContentMargin="{TemplateBinding Padding}" CheckMode="{ThemeResource ListViewItemCheckMode}" ContentTransitions="{TemplateBinding ContentTransitions}" CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}" DragForeground="{ThemeResource ListViewItemDragForeground}" DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}" DragBackground="{ThemeResource ListViewItemDragBackground}" DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}" FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}" FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}" FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}" FocusVisualMargin="{TemplateBinding FocusVisualMargin}" FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}" FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}" FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Control.IsTemplateFocusTarget="True" PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}" PressedBackground="{ThemeResource ListViewItemBackgroundPressed}" PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}" PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}" ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}" SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}" SelectedForeground="{ThemeResource ListViewItemForegroundSelected}" SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}" SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                    <ListViewItemPresenter 
+                                        CheckBrush="{ThemeResource ListViewItemCheckBrush}" 
+                                        ContentMargin="{TemplateBinding Padding}" 
+                                        CheckMode="{ThemeResource ListViewItemCheckMode}" 
+                                        ContentTransitions="{TemplateBinding ContentTransitions}" 
+                                        CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}" 
+                                        DragForeground="{ThemeResource ListViewItemDragForeground}" 
+                                        DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}" 
+                                        DragBackground="{ThemeResource ListViewItemDragBackground}" 
+                                        DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}" 
+                                        FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}" 
+                                        FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}" 
+                                        FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}" 
+                                        FocusVisualMargin="{TemplateBinding FocusVisualMargin}" 
+                                        FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}" 
+                                        FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}" 
+                                        FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}" 
+                                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                        Control.IsTemplateFocusTarget="True" 
+                                        PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}" 
+                                        PressedBackground="{ThemeResource ListViewItemBackgroundPressed}"
+                                        PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}" 
+                                        PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}" ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" 
+                                        SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}" 
+                                        SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}" 
+                                        SelectedForeground="{ThemeResource ListViewItemForegroundSelected}" 
+                                        SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}" 
+                                        SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}" 
+                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -99,13 +127,12 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize" >
-                        <StackPanel Name="ImageResizer_Configurations" x:Uid="ImageResizer_Configurations" Orientation="Horizontal" Height="48" Padding="0" Spacing="4">
+                        <StackPanel Name="ImageResizer_Configurations" x:Uid="ImageResizer_Configurations" Orientation="Horizontal" Padding="0" Spacing="4">
                             <TextBox Name="ImageResizer_Name"
                                      x:Uid="ImageResizer_Name"
                                      Text="{x:Bind Path=Name, Mode=TwoWay}" 
                                      Width="90"
                                      VerticalAlignment="Center"
-                                     Height="34"
                                      Margin="{StaticResource SmallTopMargin}"/>
 
                             <ComboBox Name="ImageResizer_Fit_Property"
@@ -113,7 +140,6 @@
                                       SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
                                       Width="90"
                                       VerticalAlignment="Center"
-                                      Height="34"
                                       Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
@@ -124,7 +150,6 @@
                                             x:Uid="ImageResizer_Width_Property"
                                             Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                             Width="68"
-                                            Height="34"
                                             SpinButtonPlacementMode="Compact"
                                             VerticalAlignment="Center"
                                             Margin="{StaticResource SmallTopMargin}"/>
@@ -143,7 +168,6 @@
                                             x:Uid="ImageResizer_Height_Property"
                                             Value="{x:Bind Path=Height, Mode=TwoWay}" 
                                             Width="68"
-                                            Height="34"
                                             VerticalAlignment="Center"
                                             SpinButtonPlacementMode="Compact"
                                             Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"
@@ -154,7 +178,6 @@
                                       x:Uid="ImageResizer_Size_Property"
                                       SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
                                       Width="120"
-                                      Height="34"
                                       VerticalAlignment="Center"
                                       Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
@@ -166,7 +189,6 @@
                                     x:Uid="RemoveButton"
                                     Background="Transparent"
                                     FontFamily="Segoe MDL2 Assets"
-                                    Height="34"
                                     Width="34"
                                     Content="&#xE74D;"
                                     VerticalAlignment="Center"
@@ -183,7 +205,6 @@
             <StackPanel Orientation="Horizontal">
                 <AppBarButton Icon="Add"
                               x:Name="AddSizeButton"
-                              Width="560"
                               Style="{StaticResource AddItemAppBarButtonStyle}"
                               IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" 
                               x:Uid="ImageResizer_AddSizeButton"

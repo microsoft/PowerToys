@@ -50,7 +50,6 @@
                           IsOn="{Binding IsEnabled, Mode=TwoWay}"/>
 
             <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
-                                          Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource MediumTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
