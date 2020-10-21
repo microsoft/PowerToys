@@ -6,7 +6,6 @@ using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
-using ColorPicker.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
@@ -60,7 +59,7 @@ namespace ColorPicker.Settings
 
                             if (!_settingsUtils.SettingsExists(ColorPickerModuleName))
                             {
-                                ColorPicker.Helpers.Logger.LogInfo("ColorPicker settings.json was missing, creating a new one");
+                                Logger.LogInfo("ColorPicker settings.json was missing, creating a new one");
                                 var defaultColorPickerSettings = new ColorPickerSettings();
                                 defaultColorPickerSettings.Save(_settingsUtils);
                             }
@@ -82,7 +81,7 @@ namespace ColorPicker.Settings
                                 retry = false;
                             }
 
-                            ColorPicker.Helpers.Logger.LogError("Failed to read changed settings", ex);
+                            Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -94,7 +93,7 @@ namespace ColorPicker.Settings
                                 retry = false;
                             }
 
-                            ColorPicker.Helpers.Logger.LogError("Failed to read changed settings", ex);
+                            Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
                     }

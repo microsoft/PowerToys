@@ -27,6 +27,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             Trace.AutoFlush = true;
         }
 
+        public static void LogInfo(string message)
+        {
+            Log(message, "INFO");
+        }
+
         public static void LogError(string message, Exception e)
         {
             Log(
