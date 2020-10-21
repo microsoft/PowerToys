@@ -67,7 +67,7 @@ namespace Wox.Plugin.SharedCommands
         private static string GetWindowTitle(IntPtr hwnd)
         {
             StringBuilder sb = new StringBuilder(NativeMethods.GetWindowTextLength(hwnd) + 1);
-            NativeMethods.GetWindowText(hwnd, sb, sb.Capacity);
+            _ = NativeMethods.GetWindowText(hwnd, sb, sb.Capacity);
             return sb.ToString();
         }
 
