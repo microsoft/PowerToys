@@ -16,7 +16,7 @@ namespace Microsoft.Plugin.Calculator
             @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +
             @"pi|" +
             @"==|~=|&&|\|\||" +
-            @"[ei]|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
+            @"e|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
             @")+$", RegexOptions.Compiled);
 
         public static bool InputValid(string input)
