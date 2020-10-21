@@ -54,6 +54,7 @@ namespace Wox.Plugin.SharedCommands
 #if DEBUG
                 throw;
 #else
+                // Using CurrentCulture since this is user facing
                 System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, "Copying path {0} has failed, it will now be deleted for consistency", targetPath));
                 RemoveFolder(targetPath);
 #endif
@@ -86,6 +87,7 @@ namespace Wox.Plugin.SharedCommands
 #if DEBUG
                 throw;
 #else
+                // Using CurrentCulture since this is user facing
                 System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, "Unable to verify folders and files between {0} and {1}", fromPath, toPath));
                 return false;
 #endif
@@ -108,6 +110,7 @@ namespace Wox.Plugin.SharedCommands
 #if DEBUG
                 throw;
 #else
+                // Using CurrentCulture since this is user facing
                 System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, "Not able to delete folder {0}, please go to the location and manually delete it", path));
 #endif
             }

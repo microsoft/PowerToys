@@ -33,6 +33,7 @@ namespace Wox.Plugin
                     throw new ArgumentNullException(nameof(value));
                 }
 
+                // Using Ordinal since this is used internally
                 _title = value.Replace("\n", " ", StringComparison.Ordinal);
             }
         }
@@ -153,6 +154,7 @@ namespace Wox.Plugin
         {
             var r = obj as Result;
 
+            // Using Ordinal since this is used internally
             var equality = string.Equals(r?.Title, Title, StringComparison.Ordinal) &&
                            string.Equals(r?.SubTitle, SubTitle, StringComparison.Ordinal) &&
                            string.Equals(r?.IcoPath, IcoPath, StringComparison.Ordinal) &&
@@ -164,6 +166,7 @@ namespace Wox.Plugin
 
         public override int GetHashCode()
         {
+            // Using Ordinal since this is used internally
             var hashcode = (Title?.GetHashCode(StringComparison.Ordinal) ?? 0) ^
                            (SubTitle?.GetHashCode(StringComparison.Ordinal) ?? 0);
             return hashcode;
@@ -171,6 +174,7 @@ namespace Wox.Plugin
 
         public override string ToString()
         {
+            // Using CurrentCulture since this is user facing
             return string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Title, SubTitle);
         }
 

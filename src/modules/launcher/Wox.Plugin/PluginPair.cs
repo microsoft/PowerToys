@@ -21,6 +21,7 @@ namespace Wox.Plugin
         {
             if (obj is PluginPair r)
             {
+                // Using Ordinal since this is used internally
                 return string.Equals(r.Metadata.ID, Metadata.ID, StringComparison.Ordinal);
             }
             else
@@ -31,6 +32,7 @@ namespace Wox.Plugin
 
         public override int GetHashCode()
         {
+            // Using Ordinal since this is used internally
             var hashcode = Metadata.ID?.GetHashCode(StringComparison.Ordinal) ?? 0;
             return hashcode;
         }
