@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Mono.Collections.Generic;
 using NUnit.Framework;
 using Wox.Core.Plugin;
 using Wox.Plugin;
@@ -85,7 +86,7 @@ namespace Wox.Test
                 { ">", secondPlugin },
             };
             string[] terms = { ">", "query" };
-            Query expectedQuery = new Query("> query", "query", terms, ">");
+            Query expectedQuery = new Query("> query", "query", new ReadOnlyCollection<string>(terms), ">");
 
             // Act
             var queriesForPluginsWithActionKeywords = QueryBuilder.Build(ref searchQuery, nonGlobalPluginWithActionKeywords);
@@ -198,8 +199,8 @@ namespace Wox.Test
 
             // Assert
             // Using Ordinal since this is used internally
-            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Length == 2);
-            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Length == 1);
+            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Count == 2);
+            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Count == 1);
         }
     }
 }
