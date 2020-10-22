@@ -109,7 +109,6 @@ private:
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    void OnPaint(HDC hdc) noexcept;
     void OnPaintD2D() noexcept;
     void OnKeyUp(WPARAM wparam) noexcept;
     std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
@@ -236,6 +235,8 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
     {
         InvalidateRect(m_window.get(), nullptr, true);
     }
+    
+    UpdateWindow(m_window.get());
     return S_OK;
 }
 
@@ -373,6 +374,8 @@ ZoneWindow::ShowZoneWindow() noexcept
 
     SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
     m_zoneWindowDrawing->Show(m_showAnimationDuration);
+    InvalidateRect(window, nullptr, true);
+    UpdateWindow(window);
 }
 
 IFACEMETHODIMP_(void)
