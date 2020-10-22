@@ -149,7 +149,7 @@
                             <muxc:NumberBox Name="ImageResizer_Width_Property"
                                             x:Uid="ImageResizer_Width_Property"
                                             Value="{x:Bind Path=Width, Mode=TwoWay}" 
-                                            Width="68"
+                                            MinWidth="68"
                                             SpinButtonPlacementMode="Compact"
                                             VerticalAlignment="Center"
                                             Margin="{StaticResource SmallTopMargin}"/>
@@ -167,7 +167,7 @@
                             <muxc:NumberBox Name="ImageResizer_Height_Property"
                                             x:Uid="ImageResizer_Height_Property"
                                             Value="{x:Bind Path=Height, Mode=TwoWay}" 
-                                            Width="68"
+                                            MinWidth="68"
                                             VerticalAlignment="Center"
                                             SpinButtonPlacementMode="Compact"
                                             Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"
@@ -177,7 +177,7 @@
                             <ComboBox Name="ImageResizer_Size_Property"
                                       x:Uid="ImageResizer_Size_Property"
                                       SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
-                                      Width="120"
+                                      MinWidth="120"
                                       VerticalAlignment="Center"
                                       Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
@@ -220,7 +220,7 @@
 
             <ComboBox x:Uid="ImageResizer_FallBackEncoderText"
                           SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
-                          Width="240"
+                          MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
@@ -235,7 +235,7 @@
                             Minimum="0"
                             Maximum="100"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
-                            Width="240"
+                            MinWidth="240"
                             Margin="{StaticResource SmallTopMargin}"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
@@ -245,7 +245,7 @@
 
             <ComboBox x:Uid="ImageResizer_PNGInterlacing"
                           SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}"
-                          Width="240"
+                          MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="Default"/>
@@ -255,7 +255,7 @@
 
             <ComboBox x:Uid="ImageResizer_TIFFCompression"
                           SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}"
-                          Width="240"
+                          MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>

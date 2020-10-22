@@ -55,6 +55,7 @@
 
             <CustomControls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
                                                   HorizontalAlignment="Left"
+                                                  MinWidth="240"
                                                   Margin="{StaticResource SmallTopMargin}"
                                                   HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
                                                   Keys="Win, Ctrl, Alt, Shift"
@@ -124,7 +125,7 @@
 
             <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults"
                             Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                            Width="240"
+                            MinWidth="240"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Minimum="1"
