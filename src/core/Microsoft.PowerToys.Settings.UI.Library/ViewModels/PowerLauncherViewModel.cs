@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -13,6 +14,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
+        private bool _isDarkThemeRadioButtonChecked;
+        private bool _isLightThemeRadioButtonChecked;
+        private bool _isSystemThemeRadioButtonChecked;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
@@ -62,6 +67,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 settings.Properties.OpenPowerLauncher.Code = defaultKeyCode;
                 settings.Properties.MaximumNumberOfResults = 4;
                 callback(settings);
+            }
+
+            switch (settings.Properties.Theme)
+            {
+                case Theme.Light:
+                    _isLightThemeRadioButtonChecked = true;
+                    break;
+                case Theme.Dark:
+                    _isDarkThemeRadioButtonChecked = true;
+                    break;
+                case Theme.System:
+                    _isSystemThemeRadioButtonChecked = true;
+                    break;
             }
         }
 
@@ -144,6 +162,63 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 if (settings.Properties.MaximumNumberOfResults != value)
                 {
                     settings.Properties.MaximumNumberOfResults = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool IsDarkThemeRadioButtonChecked
+        {
+            get
+            {
+                return _isDarkThemeRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Theme = Theme.Dark;
+                    _isDarkThemeRadioButtonChecked = value;
+
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool IsLightThemeRadioButtonChecked
+        {
+            get
+            {
+                return _isLightThemeRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Theme = Theme.Light;
+                    _isDarkThemeRadioButtonChecked = value;
+
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool IsSystemThemeRadioButtonChecked
+        {
+            get
+            {
+                return _isSystemThemeRadioButtonChecked;
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    settings.Properties.Theme = Theme.System;
+                    _isDarkThemeRadioButtonChecked = value;
+
                     UpdateSettings();
                 }
             }
