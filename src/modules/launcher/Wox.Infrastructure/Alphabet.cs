@@ -10,9 +10,9 @@ using System.Text;
 using hyjiacan.util.p4n;
 using hyjiacan.util.p4n.format;
 using JetBrains.Annotations;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure
 {

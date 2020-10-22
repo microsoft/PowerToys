@@ -9,7 +9,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 
-namespace Wox.Infrastructure.Logger
+namespace Wox.Plugin.Logger
 {
     public static class Log
     {

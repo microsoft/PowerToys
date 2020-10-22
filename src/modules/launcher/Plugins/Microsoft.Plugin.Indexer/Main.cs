@@ -15,9 +15,9 @@ using Microsoft.Plugin.Indexer.DriveDetection;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.Search.Interop;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Indexer
 {

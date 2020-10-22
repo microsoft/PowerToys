@@ -12,9 +12,9 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Lib;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 using Wox.Plugin.SharedCommands;
 using Control = System.Windows.Controls.Control;
 

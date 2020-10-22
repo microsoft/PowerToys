@@ -89,7 +89,7 @@ namespace Wox.Infrastructure.UserSettings
                 }
                 catch (ArgumentException e)
                 {
-                    Logger.Log.Exception("Failed to load QuerySearchPrecisionString value from Settings file", e, GetType());
+                    Wox.Plugin.Logger.Log.Exception("Failed to load QuerySearchPrecisionString value from Settings file", e, GetType());
 
                     QuerySearchPrecision = StringMatcher.SearchPrecisionScore.Regular;
                     StringMatcher.Instance.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.Regular;

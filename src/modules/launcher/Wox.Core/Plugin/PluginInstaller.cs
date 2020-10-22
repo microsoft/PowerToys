@@ -41,7 +41,7 @@ namespace Wox.Core.Plugin
                     return;
                 }
 
-                string pluginFolderPath = Infrastructure.Constant.PluginsDirectory;
+                string pluginFolderPath = Constant.PluginsDirectory;
 
                 // Using Ordinal since this is part of a path
                 string newPluginName = plugin.Name
