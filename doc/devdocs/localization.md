@@ -79,7 +79,10 @@ END
 
 #endif
 ```
-Since there is no API to identify the `AFX_TARG_*`, `LANG_*` or `SUBLANG_*` values from each langId from the pipeline, these are hardcoded in the script (for each language) as done [here](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/tools/build/convert-resx-to-rc.ps1#L50-L77). **If any other languages are added in the future, this script will have to be updated.** In order to determine what are the language codes, you can open the rc file in Resource View, right click the string table and press `Insert Copy` and choose the corresponding language. This autogenerates the required code and can be used to figure out the language codes. The files also add the resource declarations to a resource.h file, starting from 101 by default(this can be changed by an optional argument). Since the output files will be generated in `Generated Files`, any includes in these two files will require an additional `..\` and wherever resource.h is used, it will have to be included as `Generated Files\resource.h`.
+Since there is no API to identify the `AFX_TARG_*`, `LANG_*` or `SUBLANG_*` values from each langId from the pipeline, these are hardcoded in the script (for each language) as done [here](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/tools/build/convert-resx-to-rc.ps1#L50-L77). **If any other languages are added in the future, this script will have to be updated.** In order to determine what are the language codes, you can open the rc file in Resource View, right click the string table and press `Insert Copy` and choose the corresponding language. This autogenerates the required code and can be used to figure out the language codes. The files also add the resource declarations to a resource.h file, starting from 101 by default(this can be changed by an optional argument). Since the output files will be generated in `Generated Files`, any includes in these two files will require an additional `..\` and wherever resource.h is used, it will have to be included as `Generated Files\resource.h`. While adding `resource.base.h` and `ProjName.base.rc` to the vcxproj, these should be modified to not participate in the build to avoid build errors:
+```
+<None Include="Resources.resx" />
+```
 
 Some rc/resource.h files might be used in multiple projects (for example, KBM). To ensure the projects build for these cases, the build event can be added to the entire directory so that the rc files are generated before any project is built. See [Directory.Build.targets](https://github.com/microsoft/PowerToys/blob/master/src/modules/keyboardmanager/Directory.Build.targets) for an example.
 
@@ -90,6 +93,8 @@ Since C# projects natively support `resx` files, the only step required here is 
 ```
 <EmbeddedResource Include="Properties\Resources.*.resx" />
 ```
+
+**Note:** Building with localized resources may cause a build warning `Referenced assembly 'mscorlib.dll' targets a different processor` which is a VS bug. More details can be found [here](https://github.com/microsoft/PowerToys/issues/7269).
 
 **Note:** If a project needs to be migrated from XAML resources to resx, the easiest way to convert the resources would be to change to format to `=` separates resources by either manually (by Ctrl+H on a text editor), or by a script, and then running [`resgen`](https://docs.microsoft.com/en-us/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) on `Developer Command Prompt for VS` to convert it to resx format.
 ```
