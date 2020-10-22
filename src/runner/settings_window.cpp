@@ -390,7 +390,7 @@ void run_settings_window()
     WaitForSingleObject(process_info.hProcess, INFINITE);
     if (WaitForSingleObject(process_info.hProcess, INFINITE) != WAIT_OBJECT_0)
     {
-        show_last_error_message(L"Couldn't wait on the Settings Window to close.", GetLastError());
+        show_last_error_message(L"Couldn't wait on the Settings Window to close.", GetLastError(), L"PowerToys - runner");
     }
 
 LExit:
