@@ -1,5 +1,16 @@
 # Localization
 
+## Table of Contents
+1. [Localization on the pipeline (CDPX)](#localization-on-the-pipeline--cdpx-)
+    1. [UWP Special case](#uwp-special-case)
+2. [Enabling localization on a new project](#enabling-localization-on-a-new-project)
+    1. [C++](#c--)
+    2. [C#](#c-)
+    3. [UWP](#uwp)
+3. [Lcl Files](#lcl-files)
+4. [Possible Issues in localization PRs (LEGO)](#possible-issues-in-localization-prs--lego-)
+5. [Enabling localized MSI for a new project](#enabling-localized-msi-for-a-new-project)
+
 ## Localization on the pipeline (CDPX)
 [The localization step](https://github.com/microsoft/PowerToys/blob/86d77103e9c69686c297490acb04775d43ef8b76/.pipelines/pipeline.user.windows.yml#L45-L52) is run on the pipeline before the solution is built. This step runs the [build-localization](https://github.com/microsoft/PowerToys/blob/master/.pipelines/build-localization.cmd) script, which generates resx files for all the projects with localization enabled using the `Localization.XLoc` package.
 
