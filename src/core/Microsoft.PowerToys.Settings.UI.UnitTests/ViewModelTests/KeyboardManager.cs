@@ -4,8 +4,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
