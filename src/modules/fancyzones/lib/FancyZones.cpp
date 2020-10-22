@@ -937,17 +937,13 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
                 uniqueId = ZoneWindowUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get());
             }
 
-            // "Turning FLASHING_ZONE option off"
-            //const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones;
-            const bool flash = false;
-
             std::wstring parentId{};
             auto parentArea = m_workAreaHandler.GetWorkArea(m_previousDesktopId, monitor);
             if (parentArea)
             {
                 parentId = parentArea->UniqueId();
             }
-            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId, flash);
+            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId);
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
