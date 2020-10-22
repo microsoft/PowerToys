@@ -179,7 +179,7 @@ private:
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
     
-    std::atomic<bool> m_animating;
+    std::atomic<bool> m_animating; // TODO remove
     OnThreadExecutor m_paintExecutor;
     ULONG_PTR gdiplusToken;
     std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
@@ -454,18 +454,7 @@ ZoneWindow::ShowZoneWindow() noexcept
     }
 
     SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
-
-    std::thread{ [this, strong_this{ get_strong() }]() {
-        m_animating = true;
-        auto window = m_window.get();
-        AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
-        InvalidateRect(window, nullptr, true);
-        if (!m_host->InMoveSize())
-        {
-            HideZoneWindow();
-        }
-        m_animating = false;
-    } }.detach();
+    m_zoneWindowDrawing->Show(m_showAnimationDuration);
 }
 
 IFACEMETHODIMP_(void)
@@ -473,7 +462,7 @@ ZoneWindow::HideZoneWindow() noexcept
 {
     if (m_window)
     {
-        ShowWindow(m_window.get(), SW_HIDE);
+        m_zoneWindowDrawing->Hide();
         m_keyLast = 0;
         m_windowMoveSize = nullptr;
         m_highlightZone = {};

@@ -47,13 +47,36 @@ class ZoneWindowDrawing
     RECT m_clientRect;
     // winrt::com_ptr<IZoneWindowHost> m_host;
     ID2D1HwndRenderTarget* m_renderTarget;
+    std::optional<std::chrono::steady_clock::time_point> m_tAnimationStart;
+    unsigned m_animationDuration;
 
-    std::mutex m_sceneMutex;
+    std::mutex m_mutex;
     std::vector<DrawableRect> m_sceneRects;
 
     void DrawBackdrop()
     {
+        // Lock is being held
         m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
+    }
+
+    float GetAnimationAlpha()
+    {
+        // Lock is being held
+        if (!m_tAnimationStart)
+        {
+            return 1.f;
+        }
+
+        auto tNow = std::chrono::steady_clock().now();
+        auto alpha = (tNow - *m_tAnimationStart).count() / (1e6f * m_animationDuration);
+        if (alpha < 1.f)
+        {
+            return alpha;
+        }
+        else
+        {
+            return 1.f;
+        }
     }
 
     static ID2D1Factory* GetD2DFactory()
@@ -90,7 +113,7 @@ class ZoneWindowDrawing
 
     static D2D1_RECT_F ConvertRect(RECT rect)
     {
-        return D2D1::RectF(rect.left, rect.top, rect.right, rect.bottom);
+        return D2D1::RectF((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom);
     }
 
 public:
@@ -98,6 +121,7 @@ public:
     {
         m_window = window;
         m_renderTarget = nullptr;
+        m_animationDuration = 0;
 
         // Obtain the size of the drawing area.
         if (!GetClientRect(window, &m_clientRect))
@@ -120,7 +144,7 @@ public:
 
     void Render()
     {
-        std::unique_lock lock(m_sceneMutex);
+        std::unique_lock lock(m_mutex);
 
         if (!m_renderTarget)
         {
@@ -129,17 +153,21 @@ public:
 
         m_renderTarget->BeginDraw();
         DrawBackdrop();
-
-
-
-        for (const auto& drawableRect : m_sceneRects)
+        float animationAlpha = GetAnimationAlpha();
+        
+        for (auto drawableRect : m_sceneRects)
         {
             ID2D1SolidColorBrush* borderBrush = nullptr;
             ID2D1SolidColorBrush* fillBrush = nullptr;
             ID2D1SolidColorBrush* textBrush = nullptr;
+
+            // Need to copy the rect from m_sceneRects
+            drawableRect.borderColor.a *= animationAlpha;
+            drawableRect.fillColor.a *= animationAlpha;
+
             m_renderTarget->CreateSolidColorBrush(drawableRect.borderColor, &borderBrush);
             m_renderTarget->CreateSolidColorBrush(drawableRect.fillColor, &fillBrush);
-            m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &textBrush);
+            m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black, animationAlpha), &textBrush);
 
             if (fillBrush)
             {
@@ -168,7 +196,7 @@ public:
             {
                 textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
                 textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-                m_renderTarget->DrawTextW(idStr.c_str(), idStr.size(), textFormat, drawableRect.rect, textBrush);
+                m_renderTarget->DrawTextW(idStr.c_str(), (UINT32)idStr.size(), textFormat, drawableRect.rect, textBrush);
             }
 
             if (textFormat)
@@ -185,16 +213,32 @@ public:
         m_renderTarget->EndDraw();
     }
 
-    void StartAnimation(unsigned millis)
+    void Hide()
     {
+        std::unique_lock lock(m_mutex);
+        if (m_tAnimationStart)
+        {
+            m_tAnimationStart.reset();
+            ShowWindow(m_window, SW_HIDE);
+        }
+    }
 
+    void Show(unsigned animationMillis)
+    {
+        std::unique_lock lock(m_mutex);
+        if (!m_tAnimationStart)
+        {
+            ShowWindow(m_window, SW_SHOWDEFAULT);
+            m_tAnimationStart = std::chrono::steady_clock().now();
+            m_animationDuration = animationMillis;
+        }
     }
 
     void DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone>>& zones,
                            const std::vector<size_t>& highlightZones,
                            winrt::com_ptr<IZoneWindowHost> host)
     {
-        std::unique_lock lock(m_sceneMutex);
+        std::unique_lock lock(m_mutex);
 
         m_sceneRects = {};
 
