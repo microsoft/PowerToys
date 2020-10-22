@@ -126,6 +126,9 @@
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Canvas_Layout_Editor" xml:space="preserve">
+    <value>Canvas layout editor</value>
+  </data>
   <data name="Choose_Layout" xml:space="preserve">
     <value>Choose your layout for this desktop</value>
   </data>
@@ -152,6 +155,9 @@
   </data>
   <data name="Fancy_Zones_Editor_App_Title" xml:space="preserve">
     <value>FancyZones Editor</value>
+  </data>
+  <data name="Fancy_Zones_Main_Editor" xml:space="preserve">
+    <value>FancyZones main editor</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Name</value>

@@ -871,13 +871,25 @@ namespace PowerLauncher.ViewModel
             }
         }
 
+        public static bool ShouldAutoCompleteTextBeEmpty(string queryText, string autoCompleteText)
+        {
+            if (string.IsNullOrEmpty(autoCompleteText))
+            {
+                return false;
+            }
+            else
+            {
+                return string.IsNullOrEmpty(queryText) || autoCompleteText.IndexOf(queryText, StringComparison.Ordinal) != 0;
+            }
+        }
+
         public static string GetAutoCompleteText(int index, string input, string query)
         {
             if (!string.IsNullOrEmpty(input) && !string.IsNullOrEmpty(query))
             {
                 if (index == 0)
                 {
-                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // Use the same case as the input query for the matched portion of the string
                         return query + input.Substring(query.Length);
@@ -894,7 +906,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0 && !string.IsNullOrEmpty(query))
                 {
-                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         return query + input.Substring(query.Length);
                     }

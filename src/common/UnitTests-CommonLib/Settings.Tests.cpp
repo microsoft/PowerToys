@@ -53,11 +53,12 @@ namespace UnitTestsCommonLib
     private:
         const std::wstring m_json = L"{\"name\":\"Module Name\",\"properties\" : {\"bool_toggle_true\":{\"value\":true},\"bool_toggle_false\":{\"value\":false},\"color_picker\" : {\"value\":\"#ff8d12\"},\"int_spinner\" : {\"value\":10},\"string_text\" : {\"value\":\"a quick fox\"}},\"version\" : \"1.0\" }";
         const std::wstring m_moduleName = L"Module Name";
+        const std::wstring m_moduleKey = L"Module Key";
 
     public:
         TEST_METHOD (LoadFromJsonBoolTrue)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(m_json);
+            PowerToyValues values = PowerToyValues::from_json_string(m_json, m_moduleKey);
             auto value = values.get_bool_value(L"bool_toggle_true");
             Assert::IsTrue(value.has_value());
             Assert::AreEqual(true, *value);
@@ -65,7 +66,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromJsonBoolFalse)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(m_json);
+            PowerToyValues values = PowerToyValues::from_json_string(m_json, m_moduleKey);
             auto value = values.get_bool_value(L"bool_toggle_false");
             Assert::IsTrue(value.has_value());
             Assert::AreEqual(false, *value);
@@ -73,7 +74,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromJsonInt)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(m_json);
+            PowerToyValues values = PowerToyValues::from_json_string(m_json, m_moduleKey);
             auto value = values.get_int_value(L"int_spinner");
             Assert::IsTrue(value.has_value());
             Assert::AreEqual(10, *value);
@@ -81,7 +82,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromJsonString)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(m_json);
+            PowerToyValues values = PowerToyValues::from_json_string(m_json, m_moduleKey);
             auto value = values.get_string_value(L"string_text");
 
             Assert::IsTrue(value.has_value());
@@ -91,7 +92,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromJsonColorPicker)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(m_json);
+            PowerToyValues values = PowerToyValues::from_json_string(m_json, m_moduleKey);
             auto value = values.get_string_value(L"color_picker");
 
             Assert::IsTrue(value.has_value());
@@ -101,19 +102,19 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromEmptyString)
         {
-            auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L""); };
+            auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L"", L"Module Key"); };
             Assert::ExpectException<winrt::hresult_error>(func);
         }
 
         TEST_METHOD (LoadFromInvalidString_NameMissed)
         {
-            auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L"{\"properties\" : {\"bool_toggle_true\":{\"value\":true},\"bool_toggle_false\":{\"value\":false},\"color_picker\" : {\"value\":\"#ff8d12\"},\"int_spinner\" : {\"value\":10},\"string_text\" : {\"value\":\"a quick fox\"}},\"version\" : \"1.0\" }"); };
+            auto func = [] { PowerToyValues values = PowerToyValues::from_json_string(L"{\"properties\" : {\"bool_toggle_true\":{\"value\":true},\"bool_toggle_false\":{\"value\":false},\"color_picker\" : {\"value\":\"#ff8d12\"},\"int_spinner\" : {\"value\":10},\"string_text\" : {\"value\":\"a quick fox\"}},\"version\" : \"1.0\" }", L"Module Key"); };
             Assert::ExpectException<winrt::hresult_error>(func);
         }
 
         TEST_METHOD (LoadFromInvalidString_VersionMissed)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}}");
+            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}}", L"Module Key");
             const std::wstring expectedStr = L"{\"name\" : \"Module Name\", \"properties\" : {},\"version\" : \"1.0\"}";
             const auto expected = json::JsonObject::Parse(expectedStr);
             const auto actual = json::JsonObject::Parse(values.serialize());
@@ -123,7 +124,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromInvalidString_PropertiesMissed)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }");
+            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }", L"Module Key");
             const std::wstring expectedStr = L"{\"name\":\"Module Name\",\"version\" : \"1.0\" }";
             const auto expected = json::JsonObject::Parse(expectedStr);
             const auto actual = json::JsonObject::Parse(values.serialize());
@@ -133,7 +134,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromValidString_EmptyProperties)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}, \"version\" : \"1.0\" }");
+            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {}, \"version\" : \"1.0\" }", L"Module Key");
             const std::wstring expectedStr = L"{\"name\":\"Module Name\",\"properties\" : {},\"version\" : \"1.0\" }";
             const auto expected = json::JsonObject::Parse(expectedStr);
             const auto actual = json::JsonObject::Parse(values.serialize());
@@ -143,7 +144,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (LoadFromValidString_ChangedVersion)
         {
-            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {},\"version\" : \"2.0\"}");
+            PowerToyValues values = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\",\"properties\" : {},\"version\" : \"2.0\"}", L"Module Key");
             const std::wstring expectedStr = L"{\"name\" : \"Module Name\", \"properties\" : {},\"version\" : \"1.0\"}"; //version from input json is ignored
 
             const auto expected = json::JsonObject::Parse(expectedStr);
@@ -154,7 +155,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (CreateWithName)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             const std::wstring expectedStr = L"{\"name\":\"Module Name\",\"properties\" : {},\"version\" : \"1.0\" }";
 
             const auto expected = json::JsonObject::Parse(expectedStr);
@@ -165,7 +166,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyBoolPositive)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             values.add_property<bool>(L"positive_bool_value", true);
 
             auto value = values.get_bool_value(L"positive_bool_value");
@@ -175,7 +176,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyBoolNegative)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             values.add_property<bool>(L"negative_bool_value", false);
 
             auto value = values.get_bool_value(L"negative_bool_value");
@@ -185,7 +186,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyIntPositive)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             const int intVal = 4392854;
             values.add_property<int>(L"integer", intVal);
 
@@ -196,7 +197,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyIntNegative)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             const int intVal = -4392854;
             values.add_property<int>(L"integer", intVal);
 
@@ -207,7 +208,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyIntZero)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             const int intVal = 0;
             values.add_property<int>(L"integer", intVal);
 
@@ -218,7 +219,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyStringEmpty)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             const std::wstring stringVal = L"";
             values.add_property<std::wstring>(L"stringval", stringVal);
 
@@ -229,7 +230,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyString)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             const std::wstring stringVal = L"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
             values.add_property<std::wstring>(L"stringval", stringVal);
 
@@ -240,7 +241,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyJsonEmpty)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             const auto json = json::JsonObject();
             values.add_property<json::JsonObject>(L"jsonval", json);
 
@@ -251,7 +252,7 @@ namespace UnitTestsCommonLib
 
         TEST_METHOD (AddPropertyJsonObject)
         {
-            PowerToyValues values(m_moduleName);
+            PowerToyValues values(m_moduleName, m_moduleKey);
             const auto json = json::JsonObject::Parse(m_json);
             values.add_property<json::JsonObject>(L"jsonval", json);
 

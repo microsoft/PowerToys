@@ -65,18 +65,18 @@ std::optional<fs::path> extractIcon()
     return iconRes->saveAsFile(icoPath) ? std::make_optional(std::move(icoPath)) : std::nullopt;
 }
 
-void setup_log(const spdlog::level::level_enum severity)
+void setup_log(fs::path directory, const spdlog::level::level_enum severity)
 {
     try
     {
         std::shared_ptr<spdlog::logger> logger;
         if (severity != spdlog::level::off)
         {
-            logger = spdlog::basic_logger_mt("file", LOG_FILENAME);
+            logger = spdlog::basic_logger_mt("file", (directory / LOG_FILENAME).string());
 
             std::error_code _;
             const DWORD msiSev = severity == spdlog::level::debug ? INSTALLLOGMODE_VERBOSE : INSTALLLOGMODE_ERROR;
-            const auto msiLogPath = fs::current_path(_) / MSI_LOG_FILENAME;
+            const auto msiLogPath = directory / MSI_LOG_FILENAME;
             MsiEnableLogW(msiSev, msiLogPath.c_str(), INSTALLLOGATTRIBUTES_APPEND);
         }
         else
@@ -106,24 +106,71 @@ int bootstrapper()
         ("s,silent", "Suppress MSI UI and notifications")
         ("no_start_pt", "Do not launch PowerToys after the installation is complete")
         ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
-        ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"));
+        ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
+        ("log_dir", "Log directory.", cxxopts::value<std::string>()->default_value("."));
     // clang-format on
     cxxopts::ParseResult cmdArgs;
-    options.allow_unrecognised_options();
+    bool showHelp = false;
     try
     {
         cmdArgs = options.parse(__argc, const_cast<const char**>(__argv));
     }
+    catch (cxxopts::option_has_no_value_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_not_exists_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_not_present_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_not_has_argument_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_required_exception&)
+    {
+        showHelp = true;
+    }
+    catch (cxxopts::option_requires_argument_exception&)
+    {
+        showHelp = true;
+    }
     catch (...)
     {
     }
-    const bool showHelp = cmdArgs["help"].as<bool>();
+
+    showHelp = showHelp || cmdArgs["help"].as<bool>();
+    if (showHelp)
+    {
+        std::ostringstream helpMsg;
+        helpMsg << options.help();
+        MessageBoxA(nullptr, helpMsg.str().c_str(), "Help", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
     const bool noFullUI = cmdArgs["no_full_ui"].as<bool>();
     const bool silent = cmdArgs["silent"].as<bool>();
     const bool skipDotnetInstall = cmdArgs["skip_dotnet_install"].as<bool>();
     const bool noStartPT = cmdArgs["no_start_pt"].as<bool>();
     const auto logLevel = cmdArgs["log_level"].as<std::string>();
+    const auto logDirArg = cmdArgs["log_dir"].as<std::string>();
     spdlog::level::level_enum severity = spdlog::level::off;
+
+    fs::path logDir = ".";
+    try
+    {
+        fs::path logDirArgPath = logDirArg;
+        if (fs::exists(logDirArgPath) && fs::is_directory(logDirArgPath))
+        {
+            logDir = logDirArgPath;
+        }
+    }
+    catch (...)
+    {
+    }
 
     if (logLevel == "debug")
     {
@@ -133,14 +180,7 @@ int bootstrapper()
     {
         severity = spdlog::level::err;
     }
-    setup_log(severity);
-    if (showHelp)
-    {
-        std::ostringstream helpMsg;
-        helpMsg << options.help();
-        MessageBoxA(nullptr, helpMsg.str().c_str(), "Help", MB_OK | MB_ICONINFORMATION);
-        return 0;
-    }
+    setup_log(logDir, severity);
     spdlog::debug("PowerToys Bootstrapper is launched!\nnoFullUI: {}\nsilent: {}\nno_start_pt: {}\nskip_dotnet_install: {}\nlog_level: {}", noFullUI, silent, noStartPT, skipDotnetInstall, logLevel);
 
     if (!noFullUI)
@@ -260,7 +300,7 @@ int bootstrapper()
                     break;
                 }
                 progressParams.progress = std::min(0.99f, progressParams.progress + 0.001f);
-                notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+                notifications::update_toast_progress_bar(TOAST_TAG, progressParams);
             }
         } }.detach();
     }
@@ -273,7 +313,7 @@ int bootstrapper()
         std::scoped_lock lock{ progressLock };
         progressParams.progress = value;
         progressParams.progress_title = title;
-        notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+        notifications::update_toast_progress_bar(TOAST_TAG, progressParams);
     };
 
     spdlog::debug("Extracting embedded MSI installer");
@@ -377,7 +417,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     catch (const std::exception& ex)
     {
-        MessageBoxA(nullptr, ex.what(), "Unhandled stdexception encountered!", MB_OK | MB_ICONERROR);
+        MessageBoxA(nullptr, ex.what(), "Unhandled std exception encountered!", MB_OK | MB_ICONERROR);
     }
     catch (winrt::hresult_error const& ex)
     {

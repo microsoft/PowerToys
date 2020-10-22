@@ -8,7 +8,7 @@ using System.Linq;
 using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 

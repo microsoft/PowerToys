@@ -386,9 +386,20 @@ namespace KeyboardEventHandlers
                     {
                         // 1 for releasing new key and original shortcut modifiers except the one released and dummy key
                         key_count = dest_size + src_size - 2 + KeyboardManagerConstants::DUMMY_KEY_EVENT_SIZE;
+                        bool isTargetKeyPressed = false;
+
                         // Do not send Disable key up
                         if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
                         {
+                            key_count--;
+                        }
+                        else if (ii.GetVirtualKeyState(KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))))
+                        {
+                            isTargetKeyPressed = true;
+                        }
+                        else
+                        {
+                            isTargetKeyPressed = false;
                             key_count--;
                         }
 
@@ -397,7 +408,7 @@ namespace KeyboardEventHandlers
 
                         // Release new key state
                         int i = 0;
-                        if (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED)
+                        if (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED && isTargetKeyPressed)
                         {
                             KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                             i++;
@@ -481,7 +492,7 @@ namespace KeyboardEventHandlers
                         else
                         {
                             // Check if the keyboard state is clear apart from the target remap key (by creating a temp Shortcut object with the target key)
-                            bool isKeyboardStateClear = Shortcut(std::vector<DWORD>({ KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)) })).IsKeyboardStateClearExceptShortcut(ii);
+                            bool isKeyboardStateClear = Shortcut(std::vector<int32_t>({ KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)) })).IsKeyboardStateClearExceptShortcut(ii);
                             // If the keyboard state is clear, we release the target key but do not reset the remap state
                             if (isKeyboardStateClear)
                             {
@@ -503,7 +514,7 @@ namespace KeyboardEventHandlers
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerHelper::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 i++;
 
-                                // Set original shortcut key down state except the action key and the released modifier
+                                // Set original shortcut key down state except the action key
                                 KeyboardManagerHelper::SetModifierKeyEvents(it->first, it->second.winKeyInvoked, keyEventList, i, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
                                 // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->V, press Shift+Win+A and release A, since Win will be pressed here we need to send a dummy event after it
@@ -531,8 +542,6 @@ namespace KeyboardEventHandlers
                     {
                         if (remapToShortcut)
                         {
-                            it->second.isShortcutInvoked = true;
-
                             // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps
                             if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey() == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey() == NULL)
                             {

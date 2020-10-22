@@ -45,6 +45,9 @@ private:
     // The PowerToy name that will be shown in the settings.
     const std::wstring app_name = GET_RESOURCE_STRING(IDS_KEYBOARDMANAGER);
 
+    //contains the non localized key of the powertoy
+    std::wstring app_key = KeyboardManagerConstants::ModuleName;
+
     // Low level hook handles
     static HHOOK hook_handle;
 
@@ -77,7 +80,7 @@ public:
         try
         {
             PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
             auto current_config = settings.get_string_value(KeyboardManagerConstants::ActiveConfigurationSettingName);
 
             if (current_config)
@@ -227,10 +230,16 @@ public:
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
+    // Return the localized display name of the powertoy
     virtual const wchar_t* get_name() override
     {
         return app_name.c_str();
+    }
+
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
+    {
+        return app_key.c_str();
     }
 
     // Return JSON with the configuration options.
@@ -286,7 +295,7 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:

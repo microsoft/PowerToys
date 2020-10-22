@@ -336,8 +336,9 @@ namespace PowerLauncher
         {
             var textBox = (TextBox)sender;
             var text = textBox.Text;
+            var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
-            if (string.IsNullOrEmpty(text))
+            if (MainViewModel.ShouldAutoCompleteTextBeEmpty(text, autoCompleteText))
             {
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }

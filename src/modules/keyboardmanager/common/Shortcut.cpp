@@ -18,7 +18,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
 }
 
 // Constructor to initialize shortcut from a list of keys
-Shortcut::Shortcut(const std::vector<DWORD>& keys)
+Shortcut::Shortcut(const std::vector<int32_t>& keys)
 {
     SetKeyCodes(keys);
 }
@@ -505,12 +505,15 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
 }
 
 // Function to set a shortcut from a vector of key codes
-void Shortcut::SetKeyCodes(const std::vector<DWORD>& keys)
+void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
 {
     Reset();
     for (int i = 0; i < keys.size(); i++)
     {
-        SetKey(keys[i]);
+        if (keys[i] != -1 && keys[i] != 0)
+        {
+            SetKey(keys[i]);
+        }
     }
 }
 
@@ -649,10 +652,13 @@ bool IgnoreKeyCode(DWORD key)
     // Unassigned keys
     bool isUnassigned = in_range(key, 0x88, 0x8F) || in_range(key, 0x97, 0x9F) || in_range(key, 0xD8, 0xDA) || equals(key, 0xE8);
 
-    //OEM Specific keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/5225
+    // OEM Specific keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/5225
     bool isOEMSpecific = in_range(key, 0x92, 0x96) || equals(key, 0xE1) || in_range(key, 0xE3, 0xE4) || equals(key, 0xE6) || in_range(key, 0xE9, 0xF5);
 
-    if (isUndefined || isReserved || isUnassigned || isOEMSpecific)
+    // IME keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/6951
+    bool isIME = in_range(key, VK_KANA, 0x1A) || in_range(key, VK_CONVERT, VK_MODECHANGE) || equals(key, VK_PROCESSKEY);
+
+    if (isUndefined || isReserved || isUnassigned || isOEMSpecific || isIME)
     {
         return true;
     }

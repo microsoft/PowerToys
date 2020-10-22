@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
@@ -40,15 +39,15 @@ namespace Microsoft.Plugin.Program.Storage
             InitializeFileSystemWatchers();
 
             // This task would always run in the background trying to dequeue file paths from the queue at regular intervals.
-            Task.Run(() =>
+            _ = Task.Run(async () =>
             {
                 while (true)
                 {
                     int dequeueDelay = 500;
-                    string appPath = EventHandler.GetAppPathFromQueue(commonEventHandlingQueue, dequeueDelay);
+                    string appPath = await EventHandler.GetAppPathFromQueueAsync(commonEventHandlingQueue, dequeueDelay).ConfigureAwait(false);
 
                     // To allow for the installation process to finish.
-                    Thread.Sleep(5000);
+                    await Task.Delay(5000).ConfigureAwait(false);
 
                     if (!string.IsNullOrEmpty(appPath))
                     {

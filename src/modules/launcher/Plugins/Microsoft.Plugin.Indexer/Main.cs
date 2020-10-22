@@ -14,7 +14,7 @@ using System.Windows.Controls;
 using ManagedCommon;
 using Microsoft.Plugin.Indexer.DriveDetection;
 using Microsoft.Plugin.Indexer.SearchHelper;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.Search.Interop;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;

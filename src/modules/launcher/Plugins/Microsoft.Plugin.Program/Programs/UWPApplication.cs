@@ -99,6 +99,7 @@ namespace Microsoft.Plugin.Program.Programs
                 Icon = Logo,
                 Score = score,
                 ContextData = this,
+                ProgramArguments = queryArguments,
                 Action = e =>
                 {
                     Launch(api, queryArguments);
@@ -118,7 +119,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
-        public List<ContextMenuResult> ContextMenus(IPublicAPI api)
+        public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)
             {
@@ -145,7 +146,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                                 var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
                                 info.UseShellExecute = true;
-
+                                info.Arguments = queryArguments;
                                 Process.Start(info);
                                 return true;
                             },

@@ -1,5 +1,5 @@
 # List of resource folders
-$input_resource_folder_list = @("src\core\Microsoft.PowerToys.Settings.UI\Strings\en-us\")
+$input_resource_folder_list = @("src\core\Microsoft.PowerToys.Settings.UI\Strings\")
 $output_resource_folder_list = @("src\core\Microsoft.PowerToys.Settings.UI\Strings\")
 
 # Hash table to get the folder language code from the code used in the file name

@@ -103,7 +103,7 @@
       <Item ItemId=";EditKeyboard_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[例如，若要在按下 A 键时实现 "Ctrl+C" 效果，请在“键”列中输入键 "A"，并在“映射到”列中输入快捷键 "Ctrl+C"。]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -396,10 +396,13 @@
       </Item>
       <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Key Drop Down]]></Val>
+          <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[键下拉列表]]></Val>
+            <Val><![CDATA[密钥]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Key Drop Down]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -49,7 +49,7 @@ PowertoyModule::PowertoyModule(PowertoyModuleIface* module, HMODULE handle) :
 
 void PowertoyModule::update_hotkeys()
 {
-    CentralizedKeyboardHook::ClearModuleHotkeys(module->get_name());
+    CentralizedKeyboardHook::ClearModuleHotkeys(module->get_key());
 
     size_t hotkeyCount = module->get_hotkeys(nullptr, 0);
     std::vector<PowertoyModuleIface::Hotkey> hotkeys(hotkeyCount);
@@ -59,7 +59,7 @@ void PowertoyModule::update_hotkeys()
 
     for (size_t i = 0; i < hotkeyCount; i++)
     {
-        CentralizedKeyboardHook::SetHotkeyAction(module->get_name(), hotkeys[i], [modulePtr, i] {
+        CentralizedKeyboardHook::SetHotkeyAction(module->get_key(), hotkeys[i], [modulePtr, i] {
             return modulePtr->on_hotkey(i);
         });
     }

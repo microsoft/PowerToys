@@ -1,4 +1,5 @@
 ﻿<local:EditorWindow x:Class="FancyZonesEditor.CanvasEditorWindow"
+        AutomationProperties.Name="{x:Static props:Resources.Canvas_Layout_Editor}"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -166,14 +167,14 @@
     </Window.Resources>
     <StackPanel>
         <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Layout_Creator}" Style="{StaticResource titleText}"  />
-        <Button x:Name="newZoneButton" Width="496" Height="136" Style="{StaticResource newZoneButton}" Click="OnAddZone">
+        <Button x:Name="newZoneButton" AutomationProperties.LabeledBy="{Binding ElementName=newZoneName}" Width="496" Height="136" Style="{StaticResource newZoneButton}" Click="OnAddZone">
             <StackPanel>
-                <TextBlock x:Name="newSoneName" Text="{x:Static props:Resources.Add_zone}" Style="{StaticResource templateTitleText}"  />
+                <TextBlock x:Name="newZoneName" Text="{x:Static props:Resources.Add_zone}" Style="{StaticResource templateTitleText}"  />
                 <TextBlock HorizontalAlignment="Center" Text="+" Margin="0,-40,0,0"/>
             </StackPanel>
         </Button>
-        <TextBlock Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
-        <TextBox Text="{Binding Name}" Width="496" Style="{StaticResource textBox}" />
+        <TextBlock x:Name="customLayoutName" Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
+        <TextBox Text="{Binding Name}" AutomationProperties.LabeledBy="{Binding ElementName=customLayoutName}" Width="496" Style="{StaticResource textBox}" />
         <!--
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
             <CheckBox x:Name="showGridSetting" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" Margin="16,4,0,0"/>

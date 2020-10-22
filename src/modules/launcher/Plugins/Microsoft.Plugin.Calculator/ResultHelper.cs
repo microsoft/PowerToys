@@ -17,11 +17,17 @@ namespace Microsoft.Plugin.Calculator
             return CreateResult(result.RoundedResult, iconPath);
         }
 
-        public static Result CreateResult(decimal roundedResult, string iconPath)
+        public static Result CreateResult(decimal? roundedResult, string iconPath)
         {
+            // Return null when the expression is not a valid calculator query.
+            if (roundedResult == null)
+            {
+                return null;
+            }
+
             return new Result
             {
-                Title = roundedResult.ToString(CultureInfo.CurrentCulture),
+                Title = roundedResult?.ToString(CultureInfo.CurrentCulture),
                 IcoPath = iconPath,
                 Score = 300,
                 SubTitle = Properties.Resources.wox_plugin_calculator_copy_number_to_clipboard,
@@ -29,26 +35,29 @@ namespace Microsoft.Plugin.Calculator
             };
         }
 
-        public static bool Action(decimal roundedResult)
+        public static bool Action(decimal? roundedResult)
         {
             var ret = false;
 
-            var thread = new Thread(() =>
+            if (roundedResult != null)
             {
-                try
+                var thread = new Thread(() =>
                 {
-                    Clipboard.SetText(roundedResult.ToString(CultureInfo.CurrentUICulture.NumberFormat));
-                    ret = true;
-                }
-                catch (ExternalException)
-                {
-                    MessageBox.Show(Properties.Resources.wox_plugin_calculator_copy_failed);
-                }
-            });
+                    try
+                    {
+                        Clipboard.SetText(roundedResult?.ToString(CultureInfo.CurrentUICulture.NumberFormat));
+                        ret = true;
+                    }
+                    catch (ExternalException)
+                    {
+                        MessageBox.Show(Properties.Resources.wox_plugin_calculator_copy_failed);
+                    }
+                });
 
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                thread.Join();
+            }
 
             return ret;
         }
