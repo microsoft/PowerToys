@@ -6,9 +6,8 @@ using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
-using ColorPicker.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace ColorPicker.Settings
 {

@@ -6,8 +6,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,7 +21,7 @@ namespace CommonLibTest
 
 
         [TestMethod]
-        public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
+        public void SaveSettingsSaveSettingsToFileWhenFilePathExists()
         {
             // Arrange
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
@@ -41,7 +41,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void SaveSettings_ShouldCreateFile_WhenFilePathIsNotFound()
+        public void SaveSettingsShouldCreateFileWhenFilePathIsNotFound()
         {
             // Arrange
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
@@ -59,7 +59,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
+        public void SettingsFolderExistsShouldReturnFalseWhenFilePathIsNotFound()
         {
             // Arrange
             var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();

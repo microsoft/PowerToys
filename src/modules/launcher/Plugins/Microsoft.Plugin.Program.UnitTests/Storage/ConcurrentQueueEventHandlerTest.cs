@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using Microsoft.Plugin.Program.Storage;
 using NUnit.Framework;
 
@@ -12,14 +13,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
     public class ConcurrentQueueEventHandlerTest
     {
         [TestCase]
-        public void EventHandlerMustReturnEmptyPathForEmptyQueue()
+        public async Task EventHandlerMustReturnEmptyPathForEmptyQueueAsync()
         {
             // Arrange
             int dequeueDelay = 0;
             ConcurrentQueue<string> eventHandlingQueue = new ConcurrentQueue<string>();
 
             // Act
-            string appPath = EventHandler.GetAppPathFromQueue(eventHandlingQueue, dequeueDelay);
+            string appPath = await EventHandler.GetAppPathFromQueueAsync(eventHandlingQueue, dequeueDelay).ConfigureAwait(false);
 
             // Assert
             Assert.IsEmpty(appPath);
@@ -27,7 +28,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
         [TestCase(1)]
         [TestCase(10)]
-        public void EventHandlerMustReturnPathForConcurrentQueueWithSameFilePaths(int itemCount)
+        public async Task EventHandlerMustReturnPathForConcurrentQueueWithSameFilePathsAsync(int itemCount)
         {
             // Arrange
             int dequeueDelay = 0;
@@ -39,15 +40,15 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             }
 
             // Act
-            string pathFromQueue = EventHandler.GetAppPathFromQueue(eventHandlingQueue, dequeueDelay);
+            string pathFromQueue = await EventHandler.GetAppPathFromQueueAsync(eventHandlingQueue, dequeueDelay).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(pathFromQueue, appPath);
-            Assert.AreEqual(eventHandlingQueue.Count, 0);
+            Assert.AreEqual(appPath, pathFromQueue);
+            Assert.AreEqual(0, eventHandlingQueue.Count);
         }
 
         [TestCase(5)]
-        public void EventHandlerMustReturnPathAndRetainDifferentFilePathsInQueue(int itemCount)
+        public async Task EventHandlerMustReturnPathAndRetainDifferentFilePathsInQueueAsync(int itemCount)
         {
             // Arrange
             int dequeueDelay = 0;
@@ -65,15 +66,15 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             }
 
             // Act
-            string pathFromQueue = EventHandler.GetAppPathFromQueue(eventHandlingQueue, dequeueDelay);
+            string pathFromQueue = await EventHandler.GetAppPathFromQueueAsync(eventHandlingQueue, dequeueDelay).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(pathFromQueue, firstAppPath);
-            Assert.AreEqual(eventHandlingQueue.Count, itemCount);
+            Assert.AreEqual(firstAppPath, pathFromQueue);
+            Assert.AreEqual(itemCount, eventHandlingQueue.Count);
         }
 
         [TestCase(5)]
-        public void EventHandlerMustReturnPathAndRetainAllPathsAfterEncounteringADifferentPath(int itemCount)
+        public async Task EventHandlerMustReturnPathAndRetainAllPathsAfterEncounteringADifferentPathAsync(int itemCount)
         {
             // Arrange
             int dequeueDelay = 0;
@@ -96,11 +97,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             }
 
             // Act
-            string pathFromQueue = EventHandler.GetAppPathFromQueue(eventHandlingQueue, dequeueDelay);
+            string pathFromQueue = await EventHandler.GetAppPathFromQueueAsync(eventHandlingQueue, dequeueDelay).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(pathFromQueue, firstAppPath);
-            Assert.AreEqual(eventHandlingQueue.Count, itemCount * 2);
+            Assert.AreEqual(firstAppPath, pathFromQueue);
+            Assert.AreEqual(itemCount * 2, eventHandlingQueue.Count);
         }
     }
 }

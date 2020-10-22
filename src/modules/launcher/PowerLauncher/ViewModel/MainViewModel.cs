@@ -500,6 +500,9 @@ namespace PowerLauncher.ViewModel
                     {
                         Thread.Sleep(20);
 
+                        // Keep track of total number of results for telemetry
+                        var numResults = 0;
+
                         // Contains all the plugins for which this raw query is valid
                         var plugins = pluginQueryPairs.Keys.ToList();
 
@@ -535,8 +538,9 @@ namespace PowerLauncher.ViewModel
                                     }
 
                                     currentCancellationToken.ThrowIfCancellationRequested();
+                                    numResults = Results.Results.Count;
                                     Results.Sort();
-                                    Results.SelectedItem = Results.Results[0];
+                                    Results.SelectedItem = Results.Results.FirstOrDefault();
                                 }
                             }
 
@@ -573,8 +577,9 @@ namespace PowerLauncher.ViewModel
                                                         UpdateResultView(results, queryText, currentCancellationToken);
 
                                                         currentCancellationToken.ThrowIfCancellationRequested();
+                                                        numResults = Results.Results.Count;
                                                         Results.Sort();
-                                                        Results.SelectedItem = Results.Results[0];
+                                                        Results.SelectedItem = Results.Results.FirstOrDefault();
                                                     }
                                                 }
 
@@ -598,7 +603,7 @@ namespace PowerLauncher.ViewModel
                         var queryEvent = new LauncherQueryEvent()
                         {
                             QueryTimeMs = queryTimer.ElapsedMilliseconds,
-                            NumResults = Results.Results.Count,
+                            NumResults = numResults,
                             QueryLength = queryText.Length,
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
@@ -611,7 +616,13 @@ namespace PowerLauncher.ViewModel
                 _currentQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Visibility = Visibility.Hidden;
-                Results.Clear();
+                Task.Run(() =>
+                {
+                    lock (_addResultsLock)
+                    {
+                        Results.Clear();
+                    }
+                });
             }
         }
 
@@ -860,13 +871,25 @@ namespace PowerLauncher.ViewModel
             }
         }
 
+        public static bool ShouldAutoCompleteTextBeEmpty(string queryText, string autoCompleteText)
+        {
+            if (string.IsNullOrEmpty(autoCompleteText))
+            {
+                return false;
+            }
+            else
+            {
+                return string.IsNullOrEmpty(queryText) || autoCompleteText.IndexOf(queryText, StringComparison.Ordinal) != 0;
+            }
+        }
+
         public static string GetAutoCompleteText(int index, string input, string query)
         {
             if (!string.IsNullOrEmpty(input) && !string.IsNullOrEmpty(query))
             {
                 if (index == 0)
                 {
-                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // Use the same case as the input query for the matched portion of the string
                         return query + input.Substring(query.Length);
@@ -883,7 +906,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0 && !string.IsNullOrEmpty(query))
                 {
-                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         return query + input.Substring(query.Length);
                     }

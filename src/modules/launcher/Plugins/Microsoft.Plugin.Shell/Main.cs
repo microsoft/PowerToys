@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -63,7 +63,7 @@ namespace Microsoft.Plugin.Shell
 
                 try
                 {
-                    List<Result> folderPluginResults = Folder.Main.GetFolderPluginResults(query);
+                    IEnumerable<Result> folderPluginResults = Folder.Main.GetFolderPluginResults(query);
                     results.AddRange(folderPluginResults);
                 }
                 catch (Exception e)

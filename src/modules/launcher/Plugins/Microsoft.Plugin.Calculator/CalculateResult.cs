@@ -9,9 +9,9 @@ namespace Microsoft.Plugin.Calculator
 {
     public struct CalculateResult : IEquatable<CalculateResult>
     {
-        public decimal Result { get; set; }
+        public decimal? Result { get; set; }
 
-        public decimal RoundedResult { get; set; }
+        public decimal? RoundedResult { get; set; }
 
         public bool Equals(CalculateResult other)
         {

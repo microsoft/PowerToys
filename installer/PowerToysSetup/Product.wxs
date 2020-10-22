@@ -219,25 +219,7 @@
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
-            <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
-              <!-- Resource file directories -->
-              <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
-              <!--NB: Ids can't contain hyphens-->
-              <?if $(var.Language) = eu-ES?>
-              <?define IdSafeLanguage = eu_ES?>
-              <?elseif $(var.Language) = nb-NO?>
-              <?define IdSafeLanguage = nb_NO?>
-              <?elseif $(var.Language) = pt-BR?>
-              <?define IdSafeLanguage = pt_BR?>
-              <?elseif $(var.Language) = zh-Hans?>
-              <?define IdSafeLanguage = zh_Hans?>
-              <?else?>
-              <?define IdSafeLanguage = $(var.Language)?>
-              <?endif?>
-              <Directory Id="Resources$(var.IdSafeLanguage)Folder" Name="$(var.Language)" />
-              <?undef IdSafeLanguage?>
-              <?endforeach?>
-            </Directory>
+            <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
@@ -510,14 +492,11 @@
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe">
           <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
         </File>
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.Platform.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.Extras.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\System.Windows.Interactivity.dll">
-          <!-- NB: Needed since it's only referenced in XAML. -->
-          <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
-        </File>
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Newtonsoft.Json.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.runtimeconfig.json" />
+        <File Id="Module_ImageResizer_Microsoft_Xaml_Behaviors" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.Xaml.Behaviors.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />		  
         <File Id="ImageResizer_interop" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToysInterop.dll" />
 
@@ -817,27 +796,95 @@
       <ComponentRef Id="settings_js_bundle" />
     </ComponentGroup>
   </Fragment>
+
+  <!-- Languages for localization on build farm -->
+  <?define LocLanguageList = cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
+    
   <Fragment>
+    <!-- Resource directories should be added only if the installer is built on the build farm -->
+    <?ifdef env.IsPipeline?>
+        <?foreach ParentDirectory in LauncherInstallFolder;FancyZonesInstallFolder;ImageResizerInstallFolder;ColorPickerInstallFolder;FileExplorerPreviewInstallFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UriPluginFolder;WindowWalkerPluginFolder?>
+            <DirectoryRef Id="$(var.ParentDirectory)">
+                <!-- Resource file directories -->
+                <?foreach Language in $(var.LocLanguageList)?>
+                    <!--NB: Ids can't contain hyphens-->
+                    <?if $(var.Language) = pt-BR?>
+                    <?define IdSafeLanguage = pt_BR?>
+                    <?elseif $(var.Language) = pt-PT?>
+                    <?define IdSafeLanguage = pt_PT?>
+                    <?elseif $(var.Language) = zh-Hans?>
+                    <?define IdSafeLanguage = zh_Hans?>
+                    <?elseif $(var.Language) = zh-Hant?>
+                    <?define IdSafeLanguage = zh_Hant?>
+                    <?else?>
+                    <?define IdSafeLanguage = $(var.Language)?>
+                    <?endif?>
+                    <Directory Id="Resource$(var.IdSafeLanguage)$(var.ParentDirectory)" Name="$(var.Language)" />
+                    <?undef IdSafeLanguage?>
+                <?endforeach?>
+            </DirectoryRef>
+        <?endforeach?>
+    <?endif?>
     <ComponentGroup Id="ResourcesComponents">
-      <!-- Components for adding resource files -->
-      <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
-        <!--NB: Ids can't contain hyphens-->
-        <?if $(var.Language) = eu-ES?>
-          <?define IdSafeLanguage = eu_ES?>
-        <?elseif $(var.Language) = nb-NO?>
-          <?define IdSafeLanguage = nb_NO?>
-        <?elseif $(var.Language) = pt-BR?>
-          <?define IdSafeLanguage = pt_BR?>
-        <?elseif $(var.Language) = zh-Hans?>
-          <?define IdSafeLanguage = zh_Hans?>
-        <?else?>
-          <?define IdSafeLanguage = $(var.Language)?>
+        <!-- Resource components should be added only if the installer is built on the build farm -->
+        <?ifdef env.IsPipeline?>
+            <!-- Components for adding resource files -->
+            <?foreach Language in $(var.LocLanguageList)?>
+                <!--NB: Ids can't contain hyphens-->
+                <?if $(var.Language) = pt-BR?>
+                    <?define IdSafeLanguage = pt_BR?>
+                <?elseif $(var.Language) = pt-PT?>
+                    <?define IdSafeLanguage = pt_PT?>
+                <?elseif $(var.Language) = zh-Hans?>
+                    <?define IdSafeLanguage = zh_Hans?>
+                <?elseif $(var.Language) = zh-Hant?>
+                    <?define IdSafeLanguage = zh_Hant?>
+                <?else?>
+                    <?define IdSafeLanguage = $(var.Language)?>
+                <?endif?>
+                <Component Id="Launcher_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)LauncherInstallFolder">
+                    <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\$(var.Language)\PowerLauncher.resources.dll" />
+                </Component>
+                <Component Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FancyZonesInstallFolder">
+                    <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\$(var.Language)\FancyZonesEditor.resources.dll" />
+                </Component>
+                <Component Id="ImageResizer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ImageResizerInstallFolder">
+                    <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />
+                </Component>
+                <Component Id="ColorPicker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder">
+                    <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\ColorPicker.resources.dll" />
+                </Component>
+                <Component Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                    <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\MarkdownPreviewHandler.resources.dll" />
+                </Component>
+                <Component Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
+                    <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\SvgPreviewHandler.resources.dll" />
+                </Component>
+                <!-- Launcher plugin resources -->
+                <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
+                    <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\$(var.Language)\Microsoft.Plugin.Calculator.resources.dll" />
+                </Component>
+                <Component Id="Launcher_Folder_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder">
+                    <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
+                </Component>
+                <Component Id="Launcher_Program_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder">
+                    <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
+                </Component>
+                <Component Id="Launcher_Shell_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder">
+                    <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
+                </Component>
+                <Component Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
+                    <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
+                </Component>
+                <Component Id="Launcher_Uri_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
+                    <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
+                </Component>
+                <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
+                    <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
+                </Component>
+                <?undef IdSafeLanguage?>
+            <?endforeach?>
         <?endif?>
-        <Component Id="Resources_$(var.IdSafeLanguage)_Component" Directory="Resources$(var.IdSafeLanguage)Folder">
-          <File Id="Resources_ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />
-        </Component>
-        <?undef IdSafeLanguage?>
-      <?endforeach?>
     </ComponentGroup>
   </Fragment>
   <Fragment>

@@ -126,8 +126,17 @@
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Canvas_Layout_Editor" xml:space="preserve">
+    <value>Canvas layout editor</value>
+  </data>
   <data name="Choose_Layout" xml:space="preserve">
     <value>Choose your layout for this desktop</value>
+  </data>
+  <data name="Crash_Report_Message_Box_Text_Part1" xml:space="preserve">
+    <value>Error logged to </value>
+  </data>
+  <data name="Crash_Report_Message_Box_Text_Part2" xml:space="preserve">
+    <value>Please report the bug to </value>
   </data>
   <data name="Custom" xml:space="preserve">
     <value>Custom</value>
@@ -143,6 +152,12 @@
   </data>
   <data name="Edit_Selected_Layout" xml:space="preserve">
     <value>Edit selected layout</value>
+  </data>
+  <data name="Fancy_Zones_Editor_App_Title" xml:space="preserve">
+    <value>FancyZones Editor</value>
+  </data>
+  <data name="Fancy_Zones_Main_Editor" xml:space="preserve">
+    <value>FancyZones main editor</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Name</value>

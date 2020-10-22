@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,8 +21,8 @@ namespace CommonLibTest
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-migrate-from-newtonsoft-how-to.
         // Test also fails when the attributes are not initialized i.e they have null values.
         [TestMethod]
-        [Obsolete]
-        public void ToJsonString_ShouldReturnValidJSONOfModel_WhenSuccessful()
+        [ObsoleteAttribute("This test method is obsolete.", true)]
+        public void ToJsonStringShouldReturnValidJSONOfModelWhenSuccessful()
         {
             //Mock Disk access
             string saveContent = string.Empty;

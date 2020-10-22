@@ -13,20 +13,20 @@
       <Item ItemId=";BlockedImageInfoText" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Some pictures have been blocked to help prevent the sender from identifying this computer. Open this item to view pictures.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[一些图片已被拦截，以帮助防止发件人识别这台计算机。打开此项可以查看图片。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[This text is displayed if image is blocked from being displayed.]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";MarkdownNotPreviewedError" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The markdown could not be preview due to an internal error.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法预览 Markdown，因为发生了内部错误。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[This text is displayed if markdown fails to preview]]></Cmt>
-        </Cmts>
       </Item>
     </Item>
   </Item>
