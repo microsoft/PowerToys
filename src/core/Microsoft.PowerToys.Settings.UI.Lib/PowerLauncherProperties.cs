@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
@@ -45,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public bool ClearInputOnLaunch { get; set; }
 
         [JsonPropertyName("theme")]
-        public string Theme { get; set; }
+        public Theme Theme { get; set; }
 
         public PowerLauncherProperties()
         {
@@ -59,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             DisableDriveDetectionWarning = false;
             ClearInputOnLaunch = false;
             MaximumNumberOfResults = 4;
-            Theme = "system";
+            Theme = Theme.System;
         }
     }
 }

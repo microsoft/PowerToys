@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using PowerLauncher.Helper;
@@ -29,15 +30,14 @@ namespace PowerLauncher
         private readonly Settings _settings;
         private readonly ThemeManager _themeManager;
 
-        public SettingsWatcher(Settings settings)
+        public SettingsWatcher(Settings settings, ThemeManager themeManager)
         {
             _settingsUtils = new SettingsUtils(new SystemIOProvider());
             _settings = settings;
+            _themeManager = themeManager;
 
             // Set up watcher
             _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
-
-            _themeManager = new ThemeManager(App.Current);
 
             // Load initial settings file
             OverloadSettings();
@@ -106,7 +106,7 @@ namespace PowerLauncher
                     if (_settings.Theme != overloadSettings.Properties.Theme)
                     {
                         _settings.Theme = overloadSettings.Properties.Theme;
-                        _themeManager.ChangeTheme((Theme)Enum.Parse(typeof(Theme), _settings.Theme, true));
+                        _themeManager.ChangeTheme(_settings.Theme, _settings.Theme == Theme.System);
                     }
 
                     retry = false;

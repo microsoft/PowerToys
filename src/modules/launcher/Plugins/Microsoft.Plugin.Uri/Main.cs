@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using ManagedCommon;
 using Microsoft.Plugin.Uri.UriHelper;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;

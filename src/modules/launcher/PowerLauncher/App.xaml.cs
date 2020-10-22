@@ -114,7 +114,7 @@ namespace PowerLauncher
 
                 RegisterExitEvents();
 
-                _settingsWatcher = new SettingsWatcher(_settings);
+                _settingsWatcher = new SettingsWatcher(_settings, _themeManager);
 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();

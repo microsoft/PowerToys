@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Interface;
 
@@ -12,6 +13,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
+        private bool _isDarkThemeRadioButtonChecked;
+        private bool _isLightThemeRadioButtonChecked;
+        private bool _isSystemThemeRadioButtonChecked;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
@@ -53,15 +58,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 callback(settings);
             }
 
-            switch (settings.Properties.Theme.ToLower())
+            switch (settings.Properties.Theme)
             {
-                case "light":
+                case Theme.Light:
                     _isLightThemeRadioButtonChecked = true;
                     break;
-                case "dark":
+                case Theme.Dark:
                     _isDarkThemeRadioButtonChecked = true;
                     break;
-                case "system":
+                case Theme.System:
                     _isSystemThemeRadioButtonChecked = true;
                     break;
             }
@@ -151,10 +156,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             }
         }
 
-        private bool _isDarkThemeRadioButtonChecked;
-        private bool _isLightThemeRadioButtonChecked;
-        private bool _isSystemThemeRadioButtonChecked;
-
         public bool IsDarkThemeRadioButtonChecked
         {
             get
@@ -166,7 +167,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    settings.Properties.Theme = "dark";
+                    settings.Properties.Theme = Theme.Dark;
                     _isDarkThemeRadioButtonChecked = value;
 
                     UpdateSettings();
@@ -185,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    settings.Properties.Theme = "light";
+                    settings.Properties.Theme = Theme.Light;
                     _isDarkThemeRadioButtonChecked = value;
 
                     UpdateSettings();
@@ -204,7 +205,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
             {
                 if (value == true)
                 {
-                    settings.Properties.Theme = "system";
+                    settings.Properties.Theme = Theme.System;
                     _isDarkThemeRadioButtonChecked = value;
 
                     UpdateSettings();

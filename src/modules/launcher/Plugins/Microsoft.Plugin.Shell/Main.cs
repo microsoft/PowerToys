@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;

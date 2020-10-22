@@ -11,9 +11,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using ManagedCommon;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
-using Wox.Plugin;
 
 namespace Wox.Infrastructure.Image
 {
