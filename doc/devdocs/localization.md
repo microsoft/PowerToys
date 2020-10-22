@@ -45,7 +45,7 @@ The rest of the steps depend on the project type and are covered in the sections
 ### C++
 
 ### C#
-Since C# projects natively support `resx` files,
+Since C# projects natively support `resx` files. updating language in resource csproj
 
 ### UWP
 
@@ -72,6 +72,7 @@ The `<Tgt>` element would not be present in the initial commits of the lcl files
 Since the LEGO PRs update some of the strings in LCL files at a time, there can be multiple PRs which modify the same files, leading to merge conflicts. In most cases this would show up on GitHub as a merge conflict, but sometimes a bad git merge may occur, and the file could end up with incorrect formatting, such as two `<Tgt>` elements for a single resource. These can be fixed by ensuring the elements follow the format described in [this section](#lcl-files). To catch such errors, the build farm should be run for every LEGO PR and if any error occurs in the localization step, we should check the corresponding resx/lcl files for conflicts.
 
 ## Enabling localized MSI for a new project
+For C++ and UWP projects no additional files are generated with localization that need to be added to the MSI. For C++ projects all the resources are added to the dll/exe, while for UWP projects they are added to the `resources.pri` file (which is present even for an unlocalized project).
 signing, and adding resources.dll to MSI
 ### C++ or UWP
 
