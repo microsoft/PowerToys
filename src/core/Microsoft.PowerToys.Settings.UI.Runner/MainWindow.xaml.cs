@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
@@ -28,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions from handling IPC messages will be logged, but should not crash the app.")]
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
         {
             // If sender is null, it could lead to a NullReferenceException. This might occur on restarting as admin (check https://github.com/microsoft/PowerToys/issues/7393 for details)
@@ -67,13 +70,17 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 {
                     if (ShellPage.ShellHandler.IPCResponseHandleList != null)
                     {
-                        var success = JsonObject.TryParse(msg, out JsonObject json);
-                        if (success)
+                        try
                         {
+                            JsonObject json = JsonObject.Parse(msg);
                             foreach (Action<JsonObject> handle in ShellPage.ShellHandler.IPCResponseHandleList)
                             {
                                 handle(json);
                             }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.LogError("Exception encountered while handling IPC response", e);
                         }
                     }
                 };
