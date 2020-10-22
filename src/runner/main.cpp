@@ -35,20 +35,12 @@
 #endif
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
-
-namespace localized_strings
-{
-    const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
-    const wchar_t DOWNLOAD_UPDATE_ERROR[] = L"Couldn't download PowerToys update! Please report the issue on Github.";
-    const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
-    const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated successfully!";
-    const wchar_t POWER_TOYS[] = L"PowerToys";
-    const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
-}
+extern updating::notifications::strings Strings;
 
 namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
+    const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
 }
 
 void chdir_current_executable()
@@ -59,7 +51,7 @@ void chdir_current_executable()
     PathRemoveFileSpec(executable_path);
     if (!SetCurrentDirectory(executable_path))
     {
-        show_last_error_message(L"Change Directory to Executable Path", GetLastError());
+        show_last_error_message(L"Change Directory to Executable Path", GetLastError(), L"PowerToys - runner");
     }
 }
 
@@ -110,7 +102,7 @@ int runner(bool isProcessElevated)
             std::thread{ [] {
                 if (updating::uninstall_previous_msix_version_async().get())
                 {
-                    notifications::show_toast(localized_strings::OLDER_MSIX_UNINSTALLED, L"PowerToys");
+                    notifications::show_toast(GET_RESOURCE_STRING(IDS_OLDER_MSIX_UNINSTALLED).c_str(), L"PowerToys");
                 }
             } }.detach();
         }
@@ -140,11 +132,12 @@ int runner(bool isProcessElevated)
             }
             catch (...)
             {
-                std::wstring errorMessage = std::wstring(localized_strings::POWER_TOYS_MODULE_LOAD_FAIL) + moduleSubdir.data();
-                MessageBox(NULL,
-                           errorMessage.c_str(),
-                           localized_strings::POWER_TOYS,
-                           MB_OK | MB_ICONERROR);
+                std::wstring errorMessage = POWER_TOYS_MODULE_LOAD_FAIL;
+                errorMessage += moduleSubdir;
+                MessageBoxW(NULL,
+                            errorMessage.c_str(),
+                            L"PowerToys",
+                            MB_OK | MB_ICONERROR);
             }
         }
         // Start initial powertoys
@@ -243,7 +236,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     {
         try
         {
-            std::wstring installer_filename = updating::download_update().get();
+            std::wstring installer_filename = updating::download_update(Strings).get();
 
             std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
             args += L' ';
@@ -255,7 +248,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
         catch (...)
         {
             MessageBoxW(nullptr,
-                        localized_strings::DOWNLOAD_UPDATE_ERROR,
+                        GET_RESOURCE_STRING(IDS_DOWNLOAD_UPDATE_ERROR).c_str(),
                         L"PowerToys",
                         MB_ICONWARNING | MB_OK);
 
@@ -314,7 +307,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     case SpecialMode::ReportSuccessfulUpdate:
     {
         notifications::remove_toasts(notifications::UPDATING_PROCESS_TOAST_TAG);
-        notifications::show_toast(localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
+        notifications::show_toast(GET_RESOURCE_STRING(IDS_PT_UPDATE_MESSAGE_BOX_TEXT),
                                   L"PowerToys",
                                   notifications::toast_params{ notifications::UPDATING_PROCESS_TOAST_TAG });
         break;
