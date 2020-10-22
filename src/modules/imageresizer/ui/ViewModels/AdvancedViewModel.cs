@@ -7,14 +7,13 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
+using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Properties;
 
 namespace ImageResizer.ViewModels
 {
-    public class AdvancedViewModel : ViewModelBase
+    public class AdvancedViewModel : Observable
     {
         private static Dictionary<Guid, string> InitEncoderMap()
         {

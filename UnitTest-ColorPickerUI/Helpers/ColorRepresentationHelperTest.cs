@@ -1,5 +1,5 @@
 ﻿using ColorPicker.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Drawing;
 
