@@ -128,6 +128,8 @@ private:
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
     std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
+
+    std::thread m_toy;
 };
 
 ZoneWindow::ZoneWindow(HINSTANCE hinstance)
@@ -183,6 +185,13 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
     m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window.get());
 
+    m_toy = std::thread([this]() {
+        while (1)
+        {
+            OnPaintD2D();
+        }
+    });
+
     return true;
 }
 
@@ -233,10 +242,10 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
     if (redraw)
     {
-        InvalidateRect(m_window.get(), nullptr, true);
+        // InvalidateRect(m_window.get(), nullptr, true);
     }
     
-    UpdateWindow(m_window.get());
+    // UpdateWindow(m_window.get());
     return S_OK;
 }
 
@@ -374,8 +383,6 @@ ZoneWindow::ShowZoneWindow() noexcept
 
     SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
     m_zoneWindowDrawing->Show(m_showAnimationDuration);
-    InvalidateRect(window, nullptr, true);
-    UpdateWindow(window);
 }
 
 IFACEMETHODIMP_(void)
@@ -506,12 +513,6 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
 
     case WM_ERASEBKGND:
         return 1;
-
-    case WM_PAINT:
-    {
-        OnPaintD2D();
-    }
-    break;
 
     default:
     {
