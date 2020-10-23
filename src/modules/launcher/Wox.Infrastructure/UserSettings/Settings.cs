@@ -63,11 +63,6 @@ namespace Wox.Infrastructure.UserSettings
 
         public string ResultFontStretch { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether when false Alphabet static service will always return empty results
-        /// </summary>
-        public bool ShouldUsePinyin { get; set; } = false;
-
         internal StringMatcher.SearchPrecisionScore QuerySearchPrecision { get; private set; } = StringMatcher.SearchPrecisionScore.Regular;
 
         [JsonIgnore]
@@ -90,7 +85,7 @@ namespace Wox.Infrastructure.UserSettings
                 }
                 catch (ArgumentException e)
                 {
-                    Logger.Log.Exception("Failed to load QuerySearchPrecisionString value from Settings file", e, GetType());
+                    Wox.Plugin.Logger.Log.Exception("Failed to load QuerySearchPrecisionString value from Settings file", e, GetType());
 
                     QuerySearchPrecision = StringMatcher.SearchPrecisionScore.Regular;
                     StringMatcher.Instance.UserSettingSearchPrecision = StringMatcher.SearchPrecisionScore.Regular;

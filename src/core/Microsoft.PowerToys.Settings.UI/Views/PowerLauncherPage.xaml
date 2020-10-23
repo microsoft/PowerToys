@@ -54,21 +54,19 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
-                                                  Width="240"
                                                   HorizontalAlignment="Left"
+                                                  MinWidth="240"
                                                   Margin="{StaticResource SmallTopMargin}"
                                                   HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
                                                   Keys="Win, Ctrl, Alt, Shift"
                                                   Enabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
             <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
-                                          Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
-                                          Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
@@ -76,7 +74,6 @@
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
-                                          Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenConsole, Mode=TwoWay}"
@@ -128,7 +125,7 @@
 
             <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults"
                             Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                            Width="240"
+                            MinWidth="240"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Minimum="1"

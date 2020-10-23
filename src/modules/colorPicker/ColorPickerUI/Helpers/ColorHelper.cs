@@ -28,7 +28,7 @@ namespace ColorPicker.Helpers
             {
                 return (color.GetHue(), 0d, lightness);
             }
-            else if (lightness is > 0d and <= 0.5d)
+            else if (lightness > 0d && lightness <= 0.5d)
             {
                 return (color.GetHue(), (max - min) / (max + min), lightness);
             }
