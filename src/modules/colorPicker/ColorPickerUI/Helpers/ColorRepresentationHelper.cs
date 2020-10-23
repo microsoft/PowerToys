@@ -5,7 +5,7 @@
 using System;
 using System.Drawing;
 using System.Globalization;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace ColorPicker.Helpers
 {

@@ -77,13 +77,13 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl 
-                Width="240"
                 x:Uid="FancyZones_HotkeyEditorControl"
-                HorizontalAlignment="Left"
                 Margin="{StaticResource SmallTopMargin}"
                 HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
                 Keys="Win, Ctrl, Alt, Shift"
                 Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                HorizontalAlignment="Left"
+                MinWidth="240"
                 />
 
             <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
@@ -168,7 +168,7 @@
                 <Slider x:Uid="FancyZones_HighlightOpacity"
                     Minimum="0"
                     Maximum="100"
-                    Width="240"
+                    MinWidth="240"
                     IsThumbToolTipEnabled="False"
                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}"
                     HorizontalAlignment="Left"
@@ -236,7 +236,6 @@
                     <Flyout>
                         <muxc:ColorPicker x:Name="FancyZones_InActiveColorPicker"
                               Margin="0,6,0,0"
-                              HorizontalAlignment="Left"
                               IsColorSliderVisible="True"
                               IsColorChannelTextInputVisible="True"
                               IsHexInputVisible="True"
@@ -288,14 +287,14 @@
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps}"
                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                     Width="375"
-                     Height="160"
-                     HorizontalAlignment="Left"
                      ScrollViewer.VerticalScrollBarVisibility ="Visible"
                      ScrollViewer.VerticalScrollMode="Enabled"
                      ScrollViewer.IsVerticalRailEnabled="True"
                      TextWrapping="Wrap"
-                     AcceptsReturn="True"/>
+                     AcceptsReturn="True"
+                     HorizontalAlignment="Left"
+                     MinWidth="240"
+                     MinHeight="160" />
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
