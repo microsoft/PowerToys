@@ -100,7 +100,8 @@
                                 Text="{Binding}"
                                 FontWeight="Bold"
                                 Style="{ThemeResource TitleTextBlockStyle}"
-                                Margin="{StaticResource SmallLeftRightMargin}" />
+                                Margin="{StaticResource SmallLeftRightMargin}"
+                                AutomationProperties.HeadingLevel="Level1" />
                         </Grid>
                     </DataTemplate>
                 </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
