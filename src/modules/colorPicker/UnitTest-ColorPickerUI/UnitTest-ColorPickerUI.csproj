@@ -11,10 +11,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\..\..\..\x64\Debug\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\..\..\..\x64\Release\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
