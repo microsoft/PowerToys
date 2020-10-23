@@ -32,6 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             Log(message, "INFO");
         }
 
+        public static void LogError(string message)
+        {
+            Log(message, "ERROR");
+        }
+
         public static void LogError(string message, Exception e)
         {
             Log(
