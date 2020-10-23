@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Wox.Plugin;
 
@@ -13,6 +14,11 @@ namespace Wox.Infrastructure.UserSettings
 
         public void UpdatePluginSettings(List<PluginMetadata> metadatas)
         {
+            if (metadatas == null)
+            {
+                throw new ArgumentNullException(nameof(metadatas));
+            }
+
             foreach (var metadata in metadatas)
             {
                 if (Plugins.ContainsKey(metadata.ID))

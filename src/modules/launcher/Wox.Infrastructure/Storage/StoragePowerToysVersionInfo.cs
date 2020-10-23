@@ -102,6 +102,11 @@ namespace Wox.Infrastructure.Storage
 
         public StoragePowerToysVersionInfo(string associatedFilePath, int type)
         {
+            if (associatedFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(associatedFilePath));
+            }
+
             FilePath = GetFilePath(associatedFilePath, type);
 
             // Get the previous version of PowerToys and cache Storage details from the CacheDetails.json storage file

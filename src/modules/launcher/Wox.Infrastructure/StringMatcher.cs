@@ -59,6 +59,11 @@ namespace Wox.Infrastructure
                 return new MatchResult(false, UserSettingSearchPrecision);
             }
 
+            if (opt == null)
+            {
+                throw new ArgumentNullException(nameof(opt));
+            }
+
             query = query.Trim();
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
             var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
