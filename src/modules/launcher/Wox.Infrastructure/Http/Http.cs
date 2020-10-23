@@ -9,8 +9,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Http
 {

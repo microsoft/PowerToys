@@ -9,7 +9,7 @@ using System.Windows.Input;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
 using ColorPicker.Telemetry;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
 using static ColorPicker.NativeMethods;
 

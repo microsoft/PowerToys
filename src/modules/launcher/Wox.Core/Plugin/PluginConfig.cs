@@ -8,8 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Core.Plugin
 {

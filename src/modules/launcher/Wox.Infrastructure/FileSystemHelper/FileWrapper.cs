@@ -5,7 +5,7 @@
 using System;
 using System.IO;
 using System.Security;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.FileSystemHelper
 {

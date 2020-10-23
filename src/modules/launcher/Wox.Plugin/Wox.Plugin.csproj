@@ -66,10 +66,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
-    <PackageReference Include="MahApps.Metro" Version="2.2.0" />
+    <PackageReference Include="MahApps.Metro" Version="2.3.0" />
     <PackageReference Include="ControlzEx" Version="4.3.2" />
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.5" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.2.9">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -77,7 +78,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj" />
+    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">

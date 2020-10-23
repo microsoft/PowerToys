@@ -6,14 +6,14 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows.Input;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerLauncher.Helper;
 using Wox.Core.Plugin;
 using Wox.Infrastructure.Hotkey;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher
@@ -34,7 +34,7 @@ namespace PowerLauncher
             _settings = settings;
 
             // Set up watcher
-            _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();

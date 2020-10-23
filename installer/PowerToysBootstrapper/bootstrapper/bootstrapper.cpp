@@ -300,7 +300,7 @@ int bootstrapper()
                     break;
                 }
                 progressParams.progress = std::min(0.99f, progressParams.progress + 0.001f);
-                notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+                notifications::update_toast_progress_bar(TOAST_TAG, progressParams);
             }
         } }.detach();
     }
@@ -313,7 +313,7 @@ int bootstrapper()
         std::scoped_lock lock{ progressLock };
         progressParams.progress = value;
         progressParams.progress_title = title;
-        notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+        notifications::update_toast_progress_bar(TOAST_TAG, progressParams);
     };
 
     spdlog::debug("Extracting embedded MSI installer");

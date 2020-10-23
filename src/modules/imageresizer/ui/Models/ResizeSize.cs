@@ -4,14 +4,14 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using GalaSoft.MvvmLight;
+using ImageResizer.Helpers;
 using ImageResizer.Properties;
 using Newtonsoft.Json;
 
 namespace ImageResizer.Models
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class ResizeSize : ObservableObject
+    public class ResizeSize : Observable
     {
         private static readonly IDictionary<string, string> _tokens = new Dictionary<string, string>
         {
@@ -45,7 +45,7 @@ namespace ImageResizer.Models
         public virtual string Name
         {
             get => _name;
-            set => Set(nameof(Name), ref _name, ReplaceTokens(value));
+            set => Set(ref _name, ReplaceTokens(value));
         }
 
         [JsonProperty(PropertyName = "fit")]
@@ -54,7 +54,8 @@ namespace ImageResizer.Models
             get => _fit;
             set
             {
-                if (Set(nameof(Fit), ref _fit, value))
+                Set(ref _fit, value);
+                if (!Equals(_fit, value))
                 {
                     UpdateShowHeight();
                 }
@@ -65,14 +66,14 @@ namespace ImageResizer.Models
         public double Width
         {
             get => _width;
-            set => Set(nameof(Width), ref _width, value);
+            set => Set(ref _width, value);
         }
 
         [JsonProperty(PropertyName = "height")]
         public double Height
         {
             get => _height;
-            set => Set(nameof(Height), ref _height, value);
+            set => Set(ref _height, value);
         }
 
         public bool ShowHeight
@@ -87,7 +88,8 @@ namespace ImageResizer.Models
             get => _unit;
             set
             {
-                if (Set(nameof(Unit), ref _unit, value))
+                Set(ref _unit, value);
+                if (!Equals(_unit, value))
                 {
                     UpdateShowHeight();
                 }
@@ -113,7 +115,6 @@ namespace ImageResizer.Models
 
         private void UpdateShowHeight()
             => Set(
-                nameof(ShowHeight),
                 ref _showHeight,
                 Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent);
 

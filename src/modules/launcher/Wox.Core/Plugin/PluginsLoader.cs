@@ -10,6 +10,7 @@ using System.Runtime.Loader;
 using Wox.Infrastructure;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Core.Plugin
 {
@@ -46,7 +47,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Infrastructure.Logger.Log.Exception($"Couldn't load assembly for {metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        Log.Exception($"Couldn't load assembly for {metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 
@@ -58,7 +59,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (InvalidOperationException e)
                     {
-                        Infrastructure.Logger.Log.Exception($"Can't find class implement IPlugin for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        Log.Exception($"Can't find class implement IPlugin for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 
@@ -69,7 +70,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Infrastructure.Logger.Log.Exception($"Can't create instance for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        Log.Exception($"Can't create instance for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 #endif
