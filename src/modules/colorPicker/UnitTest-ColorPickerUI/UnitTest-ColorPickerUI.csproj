@@ -5,7 +5,7 @@
     <RootNamespace>UnitTest_ColorPickerUI</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
