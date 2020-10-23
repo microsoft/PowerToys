@@ -51,10 +51,13 @@
 
         <StackPanel Orientation="Vertical" 
                     x:Name="GeneralView">
-            <TextBlock x:Uid="Admin_Mode" FontWeight="SemiBold"
+            <TextBlock x:Uid="Admin_Mode" 
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"
                        Style="{StaticResource SubtitleTextBlockStyle}"/>
 
             <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.RunningAsText}"
+                       TextWrapping="Wrap"
                        Margin="{StaticResource SmallTopMargin}"/>
 
             <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
@@ -66,6 +69,7 @@
 
             <TextBlock x:Uid="General_RunAsAdminRequired"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                       TextWrapping="Wrap"
                        Visibility="{Binding Mode=TwoWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
                        Margin="0,24,0,-8" />
 
@@ -75,7 +79,7 @@
                           IsOn="{Binding Mode=TwoWay, Path=RunElevated}"/>
 
             <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp">
-                <TextBlock x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" />
+                <TextBlock x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" TextWrapping="Wrap" />
             </HyperlinkButton>
 
 
