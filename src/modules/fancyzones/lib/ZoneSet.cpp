@@ -115,7 +115,7 @@ public:
     {
     }
 
-    ZoneSet(ZoneSetConfig const& config, std::map<size_t, winrt::com_ptr<IZone>> zones):
+    ZoneSet(ZoneSetConfig const& config, ZonesMap zones) :
         m_config(config),
         m_zones(zones)
     {
