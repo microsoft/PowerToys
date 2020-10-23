@@ -399,7 +399,7 @@ ZoneWindow::ClearSelectedZones() noexcept
     if (m_highlightZone.size())
     {
         m_highlightZone.clear();
-        InvalidateRect(m_window.get(), nullptr, true);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
     }
 }
 
@@ -526,7 +526,7 @@ void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept
     if ((wparam >= '0') && (wparam <= '9'))
     {
         CycleActiveZoneSetInternal(static_cast<DWORD>(wparam), Trace::ZoneWindow::InputMode::Keyboard);
-        InvalidateRect(m_window.get(), nullptr, true);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
     }
 }
 
