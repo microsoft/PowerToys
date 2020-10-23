@@ -22,7 +22,7 @@ namespace Wox.Infrastructure.Image
         InCacheOnly = 0x10,
     }
 
-    public class WindowsThumbnailProvider
+    public static class WindowsThumbnailProvider
     {
         // Based on https://stackoverflow.com/questions/21751747/extract-thumbnail-for-any-file-in-windows
         private const string IShellItem2Guid = "7E9FB0D3-919F-4307-AB2E-9B1860310C93";

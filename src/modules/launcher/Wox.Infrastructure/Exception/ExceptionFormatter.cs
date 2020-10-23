@@ -12,7 +12,7 @@ using Wox.Plugin;
 
 namespace Wox.Infrastructure.Exception
 {
-    public class ExceptionFormatter
+    public static class ExceptionFormatter
     {
         public static string FormatException(System.Exception exception)
         {
