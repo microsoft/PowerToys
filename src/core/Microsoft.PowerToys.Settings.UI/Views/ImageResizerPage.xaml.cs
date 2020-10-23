@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Linq;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -24,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions from int.Parse should be caught and logged.")]
         public void DeleteCustomSize(object sender, RoutedEventArgs e)
         {
             try
@@ -34,19 +37,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 int rowNum = int.Parse(deleteRowButton.CommandParameter.ToString(), CultureInfo.InvariantCulture);
                 ViewModel.DeleteImageSize(rowNum);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError("Exception encountered when deleting custom image size.", ex);
             }
         }
 
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "JSON exceptions from saving new settings should be caught and logged.")]
         private void AddSizeButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 ViewModel.AddRow();
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError("Exception encountered when adding a new image size.", ex);
             }
         }
 

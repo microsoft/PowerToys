@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -28,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
         /// General Settings page constructor.
         /// </summary>
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions from the IPC response handler should be caught and logged.")]
         public GeneralPage()
         {
             InitializeComponent();
@@ -71,8 +73,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     // Using CurrentCulture since this is user-facing
                     ViewModel.LatestAvailableVersion = string.Format(CultureInfo.CurrentCulture, str);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Logger.LogError("Exception encountered when reading the version.", e);
                 }
             });
 
