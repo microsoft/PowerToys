@@ -200,7 +200,7 @@ namespace Wox.Infrastructure.Image
             return new ImageResult(image, type);
         }
 
-        private static readonly bool _enableImageHash = true;
+        private const bool _enableImageHash = true;
 
         public static ImageSource Load(string path, bool loadFullImage = false)
         {

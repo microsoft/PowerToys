@@ -27,7 +27,7 @@ namespace Wox.Infrastructure.Storage
         public string DirectoryPath { get; set; }
 
         // This storage helper returns whether or not to delete the json storage items
-        private static readonly int _jsonStorage = 1;
+        private const int _jsonStorage = 1;
         private StoragePowerToysVersionInfo _storageHelper;
 
         internal JsonStorage()

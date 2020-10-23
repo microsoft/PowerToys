@@ -20,7 +20,7 @@ namespace Wox.Infrastructure.Storage
     public class BinaryStorage<T> : IStorage<T>
     {
         // This storage helper returns whether or not to delete the binary storage items
-        private static readonly int _binaryStorage = 0;
+        private const int _binaryStorage = 0;
         private StoragePowerToysVersionInfo _storageHelper;
 
         public BinaryStorage(string filename)
