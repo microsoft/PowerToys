@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -65,8 +66,8 @@ namespace Wox.Infrastructure
             }
 
             query = query.Trim();
-            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
-            var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
+            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower(CultureInfo.InvariantCulture) : stringToCompare;
+            var queryWithoutCase = opt.IgnoreCase ? query.ToLower(CultureInfo.InvariantCulture) : query;
 
             var querySubstrings = queryWithoutCase.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             int currentQuerySubstringIndex = 0;

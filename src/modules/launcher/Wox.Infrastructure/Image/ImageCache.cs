@@ -44,7 +44,7 @@ namespace Wox.Infrastructure.Image
                     // To delete the images from the data dictionary based on the resizing of the Usage Dictionary.
                     foreach (var key in _data.Keys)
                     {
-                        if (!Usage.TryGetValue(key, out _) && !(key.Equals(Constant.ErrorIcon) || key.Equals(Constant.DefaultIcon) || key.Equals(Constant.LightThemedErrorIcon) || key.Equals(Constant.LightThemedDefaultIcon)))
+                        if (!Usage.TryGetValue(key, out _) && !(key.Equals(Constant.ErrorIcon, StringComparison.Ordinal) || key.Equals(Constant.DefaultIcon, StringComparison.Ordinal) || key.Equals(Constant.LightThemedErrorIcon, StringComparison.Ordinal) || key.Equals(Constant.LightThemedDefaultIcon, StringComparison.Ordinal)))
                         {
                             _data.TryRemove(key, out _);
                         }

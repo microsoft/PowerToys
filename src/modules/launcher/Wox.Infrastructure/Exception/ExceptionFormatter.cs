@@ -119,7 +119,7 @@ namespace Wox.Infrastructure.Exception
                 {
                     foreach (string versionKeyName in ndpKey.GetSubKeyNames())
                     {
-                        if (versionKeyName.StartsWith("v"))
+                        if (versionKeyName.StartsWith("v", StringComparison.Ordinal))
                         {
                             RegistryKey versionKey = ndpKey.OpenSubKey(versionKeyName);
                             string name = (string)versionKey.GetValue("Version", string.Empty);
@@ -129,11 +129,11 @@ namespace Wox.Infrastructure.Exception
                             {
                                 if (sp != string.Empty && install == "1")
                                 {
-                                    result.Add(string.Format("{0} {1} SP{2}", versionKeyName, name, sp));
+                                    result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} SP{2}", versionKeyName, name, sp));
                                 }
                                 else
                                 {
-                                    result.Add(string.Format("{0} {1}", versionKeyName, name));
+                                    result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1}", versionKeyName, name));
                                 }
                             }
 
@@ -156,11 +156,11 @@ namespace Wox.Infrastructure.Exception
                                 {
                                     if (sp != string.Empty && install == "1")
                                     {
-                                        result.Add(string.Format("{0} {1} {2} SP{3}", versionKeyName, subKeyName, name, sp));
+                                        result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} {2} SP{3}", versionKeyName, subKeyName, name, sp));
                                     }
                                     else if (install == "1")
                                     {
-                                        result.Add(string.Format("{0} {1} {2}", versionKeyName, subKeyName, name));
+                                        result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}", versionKeyName, subKeyName, name));
                                     }
                                 }
                             }

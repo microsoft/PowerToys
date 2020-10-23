@@ -82,7 +82,7 @@ namespace Wox.Infrastructure.Hotkey
                 return;
             }
 
-            List<string> keys = hotkeyString.Replace(" ", string.Empty).Split('+').ToList();
+            List<string> keys = hotkeyString.Replace(" ", string.Empty, StringComparison.Ordinal).Split('+').ToList();
             if (keys.Contains("Alt"))
             {
                 Alt = true;

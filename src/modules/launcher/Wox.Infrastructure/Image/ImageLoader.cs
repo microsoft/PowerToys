@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -153,7 +154,7 @@ namespace Wox.Infrastructure.Image
                 }
                 else if (File.Exists(path))
                 {
-                    var extension = Path.GetExtension(path).ToLower();
+                    var extension = Path.GetExtension(path).ToLower(CultureInfo.InvariantCulture);
                     if (ImageExtensions.Contains(extension))
                     {
                         type = ImageType.ImageFile;
