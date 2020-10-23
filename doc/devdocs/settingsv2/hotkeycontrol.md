@@ -7,7 +7,7 @@ The Settings project provides a custom hotkey control which consumes key presses
 
 ## Hotkey related files
 
-#### [`HotkeySettingsControlHook.cs`](/src/core/Microsoft.PowerToys.Settings.UI.Lib/HotkeySettingsControlHook.cs)
+#### [`HotkeySettingsControlHook.cs`](/src/core/Microsoft.PowerToys.Settings.UI.Library/HotkeySettingsControlHook.cs)
 
 - This function initializes and starts the [`keyboardHook`](src/common/interop/KeyboardHook.cpp) for the hotkey control.
 
@@ -35,7 +35,7 @@ The Settings project provides a custom hotkey control which consumes key presses
     - `isActive`: Sets the current status of the keyboard hook.
     - `FilterAccessibleKeyboardEvents`: This function is used to ignore the `Tab` and `Shift+Tab` key presses to meet the accessibility requirements.
 
-#### [`HotkeySettings.cs`](/src/core/Microsoft.PowerToys.Settings.UI.Lib/HotkeySettings.cs)
+#### [`HotkeySettings.cs`](/src/core/Microsoft.PowerToys.Settings.UI.Library/HotkeySettings.cs)
 
 - Contains the structure of a HotKey where it is represented as a combination of one of the modifier keys (`Alt`, `Shift`, `Win` and `Ctrl`) and a non-modifier key.
 

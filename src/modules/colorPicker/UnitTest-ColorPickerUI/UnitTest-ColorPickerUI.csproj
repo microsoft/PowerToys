@@ -5,16 +5,18 @@
     <RootNamespace>UnitTest_ColorPickerUI</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\..\..\..\x64\Debug\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\..\..\..\x64\Release\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
-    <ProjectReference Include="..\src\modules\colorPicker\ColorPickerUI\ColorPickerUI.csproj" />
+    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\ColorPickerUI\ColorPickerUI.csproj" />
   </ItemGroup>
 
 </Project>
