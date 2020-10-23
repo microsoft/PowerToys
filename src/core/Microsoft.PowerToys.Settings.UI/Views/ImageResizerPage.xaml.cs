@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 Button deleteRowButton = (Button)sender;
 
                 // Using InvariantCulture since this is internal and expected to be numerical
-                int rowNum = int.Parse(deleteRowButton.CommandParameter.ToString(), CultureInfo.InvariantCulture);
+                int rowNum = int.Parse(deleteRowButton?.CommandParameter?.ToString(), CultureInfo.InvariantCulture);
                 ViewModel.DeleteImageSize(rowNum);
             }
             catch (Exception ex)

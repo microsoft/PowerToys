@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static int UpdateUIThemeMethod(string themeName)
         {
-            switch (themeName.ToUpperInvariant())
+            switch (themeName?.ToUpperInvariant())
             {
                 case "LIGHT":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
@@ -94,6 +94,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     break;
                 case "SYSTEM":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    break;
+                default:
+                    Logger.LogError($"Unexpected theme name: {themeName}");
                     break;
             }
 

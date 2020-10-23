@@ -19,12 +19,12 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         // NavHelper.SetNavigateTo(navigationViewItem, typeof(MainPage));
         public static Type GetNavigateTo(NavigationViewItem item)
         {
-            return (Type)item.GetValue(NavigateToProperty);
+            return (Type)item?.GetValue(NavigateToProperty);
         }
 
         public static void SetNavigateTo(NavigationViewItem item, Type value)
         {
-            item.SetValue(NavigateToProperty, value);
+            item?.SetValue(NavigateToProperty, value);
         }
 
         public static readonly DependencyProperty NavigateToProperty =
