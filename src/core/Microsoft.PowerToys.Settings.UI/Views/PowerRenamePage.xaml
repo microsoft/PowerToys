@@ -51,7 +51,6 @@
 
             <TextBlock x:Uid="PowerRename_ShellIntegration"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
@@ -68,7 +67,6 @@
 
             <TextBlock x:Uid="PowerRename_AutoCompleteHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CheckBox x:Uid="PowerRename_Toggle_AutoComplete"
@@ -101,7 +99,6 @@
             <StackPanel x:Name="DescriptionPanel">
                 <TextBlock x:Uid="About_PowerRename" x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="PowerRename_Description"
                            TextWrapping="Wrap"
@@ -132,7 +129,6 @@
                 <TextBlock 
                 x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}" 
-                AutomationProperties.HeadingLevel="Level2"
                 Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
                 <HyperlinkButton NavigateUri="https://github.com/chrdavis/SmartRename" Margin="0,-3,0,0">

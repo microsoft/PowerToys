@@ -62,7 +62,6 @@
 
             <TextBlock x:Uid="FileExplorerPreview_PreviewPane_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyleAsHeader}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
@@ -77,7 +76,6 @@
 
             <TextBlock x:Uid="FileExplorerPreview_IconThumbnail_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsElevated, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBlock x:Uid="FileExplorerPreview_RebootRequired"
@@ -98,7 +96,6 @@
             <StackPanel x:Name="DescriptionPanel">
                 <TextBlock x:Uid="About_FileExplorerPreview" x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="FileExplorerPreview_Description"
                            TextWrapping="Wrap"

@@ -54,7 +54,6 @@
 
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
@@ -113,7 +112,6 @@
                            x:Name="AboutTitle"
                            Grid.ColumnSpan="2"
                            Style="{StaticResource SettingsGroupTitleStyle}"
-                           AutomationProperties.HeadingLevel="Level2"
                            Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="ShortcutGuide_Description"
                            TextWrapping="Wrap"

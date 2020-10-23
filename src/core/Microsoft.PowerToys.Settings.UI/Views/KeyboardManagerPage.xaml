@@ -241,7 +241,6 @@
 
             <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBlock x:Uid="KeyboardManager_RemapKeyboardSubtitle"
@@ -284,7 +283,6 @@
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsSubtitle"
@@ -341,7 +339,6 @@
                            x:Name="AboutTitle"
                            Grid.ColumnSpan="2"
                            Style="{StaticResource SettingsGroupTitleStyle}"
-                           AutomationProperties.HeadingLevel="Level2"
                            Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="KeyboardManager_Description"
                            TextWrapping="Wrap"

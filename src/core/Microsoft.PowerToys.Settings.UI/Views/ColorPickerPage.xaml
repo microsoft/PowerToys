@@ -60,7 +60,6 @@
 
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
         
             <ComboBox x:Uid="ColorPicker_CopiedColorRepresentation"
@@ -94,7 +93,6 @@
             <StackPanel x:Name="DescriptionPanel">
                 <TextBlock x:Uid="About_ColorPicker" x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="ColorPicker_Description"
                            TextWrapping="Wrap"
@@ -123,8 +121,7 @@
 
                 <TextBlock 
                 x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                AutomationProperties.HeadingLevel="Level2" />
+                Style="{StaticResource SettingsGroupTitleStyle}" />
 
                 <HyperlinkButton Margin="0,-3,0,0"
                                 NavigateUri="https://github.com/martinchrzan/ColorPicker/">

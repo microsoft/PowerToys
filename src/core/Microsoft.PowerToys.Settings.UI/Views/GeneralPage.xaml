@@ -54,8 +54,7 @@
             <TextBlock x:Uid="Admin_Mode" 
                        FontWeight="SemiBold"
                        TextWrapping="Wrap"
-                       Style="{StaticResource SubtitleTextBlockStyle}"
-                       AutomationProperties.HeadingLevel="Level2"/>
+                       Style="{StaticResource SubtitleTextBlockStyle}"/>
 
             <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.RunningAsText}"
                        TextWrapping="Wrap"
@@ -85,8 +84,7 @@
 
 
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <!-- Replaced the Radiobuttons parent control with a StackPanel to mitigate the Tab and Arrow key related keyboard navigation issues due to XAML Islands
             Tracking issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
@@ -114,8 +112,7 @@
 
 
             <TextBlock x:Uid="General_Updates"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
             <StackPanel Orientation="Horizontal" 
                         Margin="{StaticResource SmallTopMargin}"
                         AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
@@ -149,7 +146,6 @@
             <StackPanel x:Name="DescriptionPanel">
                 <TextBlock x:Uid="GeneralPage_AboutPowerToysHeader" x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="About_PowerToys"
                            TextWrapping="Wrap"

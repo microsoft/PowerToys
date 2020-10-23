@@ -73,7 +73,6 @@
 
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl 
@@ -161,7 +160,6 @@
 
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}" Spacing="12">
@@ -280,7 +278,6 @@
 
             <TextBlock x:Uid="FancyZones_ExcludeApps"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       AutomationProperties.HeadingLevel="Level2"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
@@ -304,9 +301,8 @@
             <StackPanel x:Name="DescriptionPanel">
                 <TextBlock x:Uid="About_FancyZones"
                            x:Name="AboutTitle" Grid.ColumnSpan="2"
-                           Style="{StaticResource SettingsGroupTitleStyle}"
-                           AutomationProperties.HeadingLevel="Level2"
-                           Margin="{StaticResource XSmallBottomMargin}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="FancyZones_Description"
                            TextWrapping="Wrap"/>
             </StackPanel>
