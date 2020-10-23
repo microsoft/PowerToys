@@ -155,7 +155,11 @@ namespace ZoneWindowDrawing
         {
             colorHighlight.fill = highlightColor;
             colorHighlight.border = zoneBorderColor;
-            DrawZone(hdc, colorHighlight, zones.at(zoneId), flashMode);
+
+            if (zones.contains(zoneId))
+            {
+                DrawZone(hdc, colorHighlight, zones.at(zoneId), flashMode);
+            }
         }
     }
 }

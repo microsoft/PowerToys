@@ -318,7 +318,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const st
         if (m_zones.contains(id))
         {
             const auto& zone = m_zones.at(id);
-            const RECT& newSize = zone->ComputeActualZoneRect(window, workAreaWindow);
+            const RECT newSize = zone->ComputeActualZoneRect(window, workAreaWindow);
             if (!sizeEmpty)
             {
                 size.left = min(size.left, newSize.left);
@@ -903,18 +903,21 @@ std::vector<size_t> ZoneSet::GetCombinedZoneRange(const std::vector<size_t>& ini
 
     for (size_t zoneId : combinedZones)
     {
-        const RECT& rect = m_zones.at(zoneId)->GetZoneRect();
-        if (boundingRectEmpty)
+        if (m_zones.contains(zoneId))
         {
-            boundingRect = rect;
-            boundingRectEmpty = false;
-        }
-        else
-        {
-            boundingRect.left = min(boundingRect.left, rect.left);
-            boundingRect.top = min(boundingRect.top, rect.top);
-            boundingRect.right = max(boundingRect.right, rect.right);
-            boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
+            const RECT rect = m_zones.at(zoneId)->GetZoneRect();
+            if (boundingRectEmpty)
+            {
+                boundingRect = rect;
+                boundingRectEmpty = false;
+            }
+            else
+            {
+                boundingRect.left = min(boundingRect.left, rect.left);
+                boundingRect.top = min(boundingRect.top, rect.top);
+                boundingRect.right = max(boundingRect.right, rect.right);
+                boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
+            }
         }
     }
 
@@ -922,7 +925,7 @@ std::vector<size_t> ZoneSet::GetCombinedZoneRange(const std::vector<size_t>& ini
     {
         for (const auto& [zoneId, zone] : m_zones)
         {
-            const RECT& rect = zone->GetZoneRect();
+            const RECT rect = zone->GetZoneRect();
             if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
                 boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
             {
