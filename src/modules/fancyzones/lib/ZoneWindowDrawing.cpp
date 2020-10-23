@@ -11,12 +11,6 @@ namespace NonLocalizable
     const wchar_t SegoeUiFont[] = L"Segoe ui";
 }
 
-void ZoneWindowDrawing::DrawBackdrop()
-{
-    // Lock is being held
-    m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
-}
-
 float ZoneWindowDrawing::GetAnimationAlpha()
 {
     // Lock is being held
@@ -79,6 +73,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     m_window = window;
     m_renderTarget = nullptr;
     m_animationDuration = 0;
+    m_shouldRender = false;
 
     // Obtain the size of the drawing area.
     if (!GetClientRect(window, &m_clientRect))
@@ -97,6 +92,29 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
                 m_clientRect.right - m_clientRect.left,
                 m_clientRect.bottom - m_clientRect.top)),
         &m_renderTarget);
+
+    m_renderThread = std::thread([this]() {
+        while (!m_abortThread)
+        {
+            // Force repeated rendering while in the animation loop.
+            // Yield if low latency locking was requested
+            if (!m_lowLatencyLock)
+            {
+                float animationAlpha;
+                {
+                    std::unique_lock lock(m_mutex);
+                    animationAlpha = GetAnimationAlpha();
+                }
+
+                if (animationAlpha < 1.f)
+                {
+                    m_shouldRender = true;
+                }
+            }
+
+            Render();
+        }
+    });
 }
 
 void ZoneWindowDrawing::Render()
@@ -108,9 +126,14 @@ void ZoneWindowDrawing::Render()
         return;
     }
 
+    m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
+
     m_renderTarget->BeginDraw();
-    DrawBackdrop();
+    
     float animationAlpha = GetAnimationAlpha();
+
+    // Draw backdrop
+    m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
 
     for (auto drawableRect : m_sceneRects)
     {
@@ -167,6 +190,7 @@ void ZoneWindowDrawing::Render()
     }
 
     m_renderTarget->EndDraw();
+    m_shouldRender = false;
 }
 
 void ZoneWindowDrawing::Hide()
@@ -181,12 +205,17 @@ void ZoneWindowDrawing::Hide()
 
 void ZoneWindowDrawing::Show(unsigned animationMillis)
 {
+    m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
+
     if (!m_tAnimationStart)
     {
         ShowWindow(m_window, SW_SHOWDEFAULT);
         m_tAnimationStart = std::chrono::steady_clock().now();
-        m_animationDuration = animationMillis;
+        m_animationDuration = max(1u, animationMillis);
+        m_shouldRender = true;
+        m_cv.notify_all();
     }
 }
 
@@ -194,7 +223,9 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone
                        const std::vector<size_t>& highlightZones,
                        winrt::com_ptr<IZoneWindowHost> host)
 {
+    m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
 
     m_sceneRects = {};
 
@@ -256,4 +287,27 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone
             m_sceneRects.push_back(drawableRect);
         }
     }
+
+    m_shouldRender = true;
+    m_cv.notify_all();
+}
+
+void ZoneWindowDrawing::ForceRender()
+{
+    m_lowLatencyLock = true;
+    std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
+    m_shouldRender = true;
+    m_cv.notify_all();
+}
+
+ZoneWindowDrawing::~ZoneWindowDrawing()
+{
+    {
+        std::unique_lock lock(m_mutex);
+        m_abortThread = true;
+        m_shouldRender = true;
+    }
+    m_cv.notify_all();
+    m_renderThread.join();
 }

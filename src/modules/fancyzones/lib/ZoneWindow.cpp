@@ -109,7 +109,6 @@ private:
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
-    void OnPaintD2D() noexcept;
     void OnKeyUp(WPARAM wparam) noexcept;
     std::vector<size_t> ZonesFromPoint(POINT pt) noexcept;
     void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
@@ -233,10 +232,9 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
     if (redraw)
     {
-        // InvalidateRect(m_window.get(), nullptr, true);
+        m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
     }
     
-    // UpdateWindow(m_window.get());
     return S_OK;
 }
 
@@ -374,6 +372,7 @@ ZoneWindow::ShowZoneWindow() noexcept
 
     SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
     m_zoneWindowDrawing->Show(m_showAnimationDuration);
+    m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
 }
 
 IFACEMETHODIMP_(void)
@@ -505,18 +504,18 @@ LRESULT ZoneWindow::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept
     case WM_ERASEBKGND:
         return 1;
 
+    case WM_PAINT:
+    {
+        m_zoneWindowDrawing->ForceRender();
+        break;
+    }
+
     default:
     {
         return DefWindowProc(m_window.get(), message, wparam, lparam);
     }
     }
     return 0;
-}
-
-void ZoneWindow::OnPaintD2D() noexcept
-{
-    m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
-    m_zoneWindowDrawing->Render();
 }
 
 void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept

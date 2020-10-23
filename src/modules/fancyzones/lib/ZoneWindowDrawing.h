@@ -31,19 +31,27 @@ class ZoneWindowDrawing
     std::mutex m_mutex;
     std::vector<DrawableRect> m_sceneRects;
 
-    void DrawBackdrop();
     float GetAnimationAlpha();
     static ID2D1Factory* GetD2DFactory();
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
+    void Render();
+    void StopRendering();
+
+    std::atomic<bool> m_shouldRender;
+    std::atomic<bool> m_abortThread;
+    std::atomic<bool> m_lowLatencyLock;
+    std::condition_variable m_cv;
+    std::thread m_renderThread;
 
 public:
 
+    ~ZoneWindowDrawing();
     ZoneWindowDrawing(HWND window);
-    void Render();
     void Hide();
     void Show(unsigned animationMillis);
+    void ForceRender();
     void DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone>>& zones,
                            const std::vector<size_t>& highlightZones,
                            winrt::com_ptr<IZoneWindowHost> host);
