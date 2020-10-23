@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -32,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             this.defaultNavItem = defaultNavItem;
         }
 
+        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Warning is intended for library code.")]
         public async Task ActivateAsync(object activationArgs)
         {
             if (IsInteractive(activationArgs))
@@ -64,11 +66,13 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
         }
 
+        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Warning is intended for library code.")]
         private static async Task InitializeAsync()
         {
             await Task.CompletedTask;
         }
 
+        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Warning is intended for library code.")]
         private async Task HandleActivationAsync(object activationArgs)
         {
             var activationHandler = GetActivationHandlers()
@@ -89,6 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
         }
 
+        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Warning is intended for library code.")]
         private static async Task StartupAsync()
         {
             await Task.CompletedTask;

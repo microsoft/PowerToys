@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Windows.ApplicationModel.Activation;
@@ -18,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Activation
             this.navElement = navElement;
         }
 
+        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Warning is intended for library code.")]
         protected override async Task HandleInternalAsync(IActivatedEventArgs args)
         {
             // When the navigation stack isn't restored, navigate to the first page and configure
