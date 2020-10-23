@@ -20,7 +20,7 @@ using JsonException = System.Text.Json.JsonException;
 namespace PowerLauncher
 {
     // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
-    public class SettingsWatcher : BaseModel, IDisposable
+    public class SettingsWatcher : BaseModel
     {
         private readonly ISettingsUtils _settingsUtils;
 
@@ -154,21 +154,6 @@ namespace PowerLauncher
             Key key = KeyInterop.KeyFromVirtualKey(hotkey.Code);
             HotkeyModel model = new HotkeyModel(hotkey.Alt, hotkey.Shift, hotkey.Win, hotkey.Ctrl, key);
             return model.ToString();
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _themeManager?.Dispose();
-                _watcher?.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }
