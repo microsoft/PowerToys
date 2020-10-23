@@ -1,14 +1,14 @@
 # Localization
 
 ## Table of Contents
-1. [Localization on the pipeline (CDPX)](#localization-on-the-pipeline--cdpx-)
+1. [Localization on the pipeline (CDPX)](#localization-on-the-pipeline-cdpx)
     1. [UWP Special case](#uwp-special-case)
 2. [Enabling localization on a new project](#enabling-localization-on-a-new-project)
-    1. [C++](#c--)
-    2. [C#](#c-)
+    1. [C++](#c)
+    2. [C#](#c-1)
     3. [UWP](#uwp)
 3. [Lcl Files](#lcl-files)
-4. [Possible Issues in localization PRs (LEGO)](#possible-issues-in-localization-prs--lego-)
+4. [Possible Issues in localization PRs (LEGO)](#possible-issues-in-localization-prs-lego)
 5. [Enabling localized MSI for a new project](#enabling-localized-msi-for-a-new-project)
 
 ## Localization on the pipeline (CDPX)
