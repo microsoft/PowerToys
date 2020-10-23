@@ -125,9 +125,9 @@ namespace Wox.Infrastructure.Exception
                             string name = (string)versionKey.GetValue("Version", string.Empty);
                             string sp = versionKey.GetValue("SP", string.Empty).ToString();
                             string install = versionKey.GetValue("Install", string.Empty).ToString();
-                            if (install != string.Empty)
+                            if (!string.IsNullOrEmpty(install))
                             {
-                                if (sp != string.Empty && install == "1")
+                                if (!string.IsNullOrEmpty(sp) && install == "1")
                                 {
                                     result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} SP{2}", versionKeyName, name, sp));
                                 }
@@ -137,7 +137,7 @@ namespace Wox.Infrastructure.Exception
                                 }
                             }
 
-                            if (name != string.Empty)
+                            if (!string.IsNullOrEmpty(name))
                             {
                                 continue;
                             }
@@ -146,15 +146,15 @@ namespace Wox.Infrastructure.Exception
                             {
                                 RegistryKey subKey = versionKey.OpenSubKey(subKeyName);
                                 name = (string)subKey.GetValue("Version", string.Empty);
-                                if (name != string.Empty)
+                                if (!string.IsNullOrEmpty(name))
                                 {
                                     sp = subKey.GetValue("SP", string.Empty).ToString();
                                 }
 
                                 install = subKey.GetValue("Install", string.Empty).ToString();
-                                if (install != string.Empty)
+                                if (!string.IsNullOrEmpty(install))
                                 {
-                                    if (sp != string.Empty && install == "1")
+                                    if (!string.IsNullOrEmpty(sp) && install == "1")
                                     {
                                         result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} {2} SP{3}", versionKeyName, subKeyName, name, sp));
                                     }
