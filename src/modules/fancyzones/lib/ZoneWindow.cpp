@@ -128,8 +128,6 @@ private:
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
     std::unique_ptr<ZoneWindowDrawing> m_zoneWindowDrawing;
-
-    std::thread m_toy;
 };
 
 ZoneWindow::ZoneWindow(HINSTANCE hinstance)
@@ -184,13 +182,6 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     MakeWindowTransparent(m_window.get());
 
     m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window.get());
-
-    m_toy = std::thread([this]() {
-        while (1)
-        {
-            OnPaintD2D();
-        }
-    });
 
     return true;
 }
