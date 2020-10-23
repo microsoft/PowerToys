@@ -12,22 +12,14 @@ namespace PowerPreviewSettings
     extern "C" IMAGE_DOS_HEADER __ImageBase;
 
     // Base Settings Class Implementation
-    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper) :
+    FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, std::unique_ptr<RegistryWrapperIface> registryWrapper) :
         m_toggleSettingEnabled(toggleSettingEnabled),
         m_toggleSettingName(toggleSettingName),
         m_toggleSettingDescription(toggleSettingDescription),
         m_clsid(clsid),
         m_registryValueData(registryValueData),
-        m_registryWrapper(registryWrapper)
+        m_registryWrapper(std::move(registryWrapper))
     {
-    }
-
-    FileExplorerPreviewSettings::~FileExplorerPreviewSettings()
-    {
-        if (this->m_registryWrapper != NULL)
-        {
-            delete this->m_registryWrapper;
-        }
     }
 
     bool FileExplorerPreviewSettings::GetToggleSettingState() const

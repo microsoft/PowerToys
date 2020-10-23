@@ -109,6 +109,7 @@
     <ClInclude Include="keyboard_state.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <None Include="resource.base.h" />
+    <ClInclude Include="ShortcutGuideConstants.h" />
     <ClInclude Include="shortcut_guide.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="target_state.h" />

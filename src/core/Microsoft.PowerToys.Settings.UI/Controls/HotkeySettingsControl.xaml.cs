@@ -4,7 +4,7 @@
 
 using System;
 using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -229,7 +229,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                KeyEventHandler(key, true, key, Lib.Utilities.Helper.GetKeyName((uint)key));
+                KeyEventHandler(key, true, key, Library.Utilities.Helper.GetKeyName((uint)key));
 
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
                 if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())

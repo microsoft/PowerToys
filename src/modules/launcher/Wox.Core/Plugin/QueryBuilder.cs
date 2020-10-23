@@ -13,6 +13,16 @@ namespace Wox.Core.Plugin
     {
         public static Dictionary<PluginPair, Query> Build(ref string text, Dictionary<string, PluginPair> nonGlobalPlugins)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            if (nonGlobalPlugins == null)
+            {
+                throw new ArgumentNullException(nameof(nonGlobalPlugins));
+            }
+
             // replace multiple white spaces with one white space
             var terms = text.Split(new[] { Query.TermSeparator }, StringSplitOptions.RemoveEmptyEntries);
             if (terms.Length == 0)
@@ -32,7 +42,8 @@ namespace Wox.Core.Plugin
 
             foreach (string pluginActionKeyword in nonGlobalPlugins.Keys)
             {
-                if (possibleActionKeyword.StartsWith(pluginActionKeyword))
+                // Using Ordinal since this is used internally
+                if (possibleActionKeyword.StartsWith(pluginActionKeyword, StringComparison.Ordinal))
                 {
                     if (nonGlobalPlugins.TryGetValue(pluginActionKeyword, out var pluginPair) && !pluginPair.Metadata.Disabled)
                     {
@@ -59,12 +70,20 @@ namespace Wox.Core.Plugin
                 }
             }
 
-            var globalplugins = PluginManager.GlobalPlugins;
-
-            foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
+            // If the user has specified a matching action keyword, then do not
+            // add the global plugins to the list.
+            if (pluginQueryPair.Count == 0)
             {
-                var query = new Query(rawQuery, rawQuery, terms, string.Empty);
-                pluginQueryPair.Add(globalPlugin, query);
+                var globalplugins = PluginManager.GlobalPlugins;
+
+                foreach (PluginPair globalPlugin in PluginManager.GlobalPlugins)
+                {
+                    if (!pluginQueryPair.ContainsKey(globalPlugin))
+                    {
+                        var query = new Query(rawQuery, rawQuery, terms, string.Empty);
+                        pluginQueryPair.Add(globalPlugin, query);
+                    }
+                }
             }
 
             return pluginQueryPair;

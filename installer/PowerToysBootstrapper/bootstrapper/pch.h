@@ -14,3 +14,10 @@
 #include <unordered_set>
 #include <tuple>
 #include <sstream>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/null_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
+#include <cxxopts.hpp>

@@ -103,6 +103,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ColorPickerConstants.h" />
     <ClInclude Include="pch.h" />
     <None Include="resource.base.h" />
     <ClInclude Include="trace.h" />

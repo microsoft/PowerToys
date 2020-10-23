@@ -97,12 +97,15 @@ namespace KeyboardManagerHelper
         }
     }
 
-    Collections::IVector<IInspectable> ToBoxValue(const std::vector<std::wstring>& list)
+    Collections::IVector<IInspectable> ToBoxValue(const std::vector<std::pair<DWORD, std::wstring>>& list)
     {
         Collections::IVector<IInspectable> boxList = single_threaded_vector<IInspectable>();
         for (auto& val : list)
         {
-            boxList.Append(winrt::box_value(val));
+            auto comboBox = ComboBoxItem();
+            comboBox.DataContext(winrt::box_value(std::to_wstring(val.first)));
+            comboBox.Content(winrt::box_value(val.second));
+            boxList.Append(winrt::box_value(comboBox));
         }
 
         return boxList;
@@ -324,7 +327,7 @@ namespace KeyboardManagerHelper
     }
 
     // Function to filter the key codes for artificial key codes
-    DWORD FilterArtificialKeys(const DWORD& key)
+    int32_t FilterArtificialKeys(const int32_t& key)
     {
         switch (key)
         {
@@ -345,57 +348,16 @@ namespace KeyboardManagerHelper
     }
 
     // Function to check if a modifier has been repeated in the previous drop downs
-    bool CheckRepeatedModifier(std::vector<DWORD>& currentKeys, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList)
+    bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCode)
     {
-        // check if modifier has already been added before in a previous drop down
-        int currentDropDownIndex = -1;
-
-        // Find the key index of the current drop down selection so that we skip that index while searching for repeated modifiers
+        // Count the number of keys that are equal to 'selectedKeyCode'
+        int numberOfSameType = 0;
         for (int i = 0; i < currentKeys.size(); i++)
         {
-            if (currentKeys[i] == keyCodeList[selectedKeyIndex])
-            {
-                currentDropDownIndex = i;
-                break;
-            }
+            numberOfSameType += KeyboardManagerHelper::GetKeyType(selectedKeyCode) == KeyboardManagerHelper::GetKeyType(currentKeys[i]);
         }
 
-        bool matchPreviousModifier = false;
-        for (int i = 0; i < currentKeys.size(); i++)
-        {
-            // Skip the current drop down
-            if (i != currentDropDownIndex)
-            {
-                // If the key type for the newly added key matches any of the existing keys in the shortcut
-                if (KeyboardManagerHelper::GetKeyType(keyCodeList[selectedKeyIndex]) == KeyboardManagerHelper::GetKeyType(currentKeys[i]))
-                {
-                    matchPreviousModifier = true;
-                    break;
-                }
-            }
-        }
-
-        return matchPreviousModifier;
-    }
-
-    // Function to get the selected key codes from the list of selected indices
-    std::vector<DWORD> GetKeyCodesFromSelectedIndices(const std::vector<int32_t>& selectedIndices, const std::vector<DWORD>& keyCodeList)
-    {
-        std::vector<DWORD> keys;
-
-        for (int i = 0; i < selectedIndices.size(); i++)
-        {
-            int selectedKeyIndex = selectedIndices[i];
-            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
-            {
-                // If None is not the selected key
-                if (keyCodeList[selectedKeyIndex] != 0)
-                {
-                    keys.push_back(keyCodeList[selectedKeyIndex]);
-                }
-            }
-        }
-
-        return keys;
+        // If we have at least two keys equal to 'selectedKeyCode' than modifier was repeated
+        return numberOfSameType > 1;
     }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class FolderItemResult : IItemResult
     {
-        private static readonly IExplorerAction ExplorerAction = new ExplorerAction();
+        private static readonly IShellAction ShellAction = new ShellAction();
 
         public FolderItemResult()
         {
@@ -41,7 +41,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 QueryTextDisplay = Path,
                 TitleHighlightData = StringMatcher.FuzzySearch(Search, Title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Path },
-                Action = c => ExplorerAction.Execute(Path, contextApi),
+                Action = c => ShellAction.Execute(Path, contextApi),
             };
         }
     }

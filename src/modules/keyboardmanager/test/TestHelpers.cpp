@@ -22,10 +22,4 @@ namespace TestHelpers
         state.SetActivatedApp(maxLengthString);
         state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
     }
-
-    // Function to return the index of the given key code from the drop down key list
-    int GetDropDownIndexFromDropDownList(DWORD key, const std::vector<DWORD>& keyList)
-    {
-        return (int)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), key));
-    }
 }

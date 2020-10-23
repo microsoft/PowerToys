@@ -102,10 +102,13 @@
       </Item>
       <Item ItemId=";EditKeyboard_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Om du till exempel vill trycka på A och få ""Ctrl+C"", skulle tangent ""A"" vara din ""Tangent""-kolumn och genvägen ""Ctrl+C"" vara din ""Mappad till""-kolumn.]]></Val>
+            <Val><![CDATA[Om du exempelvis vill trycka på A och få "Ctrl+C", skulle tangenten "A" vara din "Tangent"-kolumn och genvägen "Ctrl+C" vara din "Mappad till"-kolumn.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -174,10 +177,13 @@
       </Item>
       <Item ItemId=";EditShortcuts_InfoExample" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Om du till exempel vill trycka på ""Ctrl+C"" och få ""Alt"" endast i Microsoft Edge, skulle ""Ctrl+C"" vara din "Genväg""-kolumn, tangenten ""Alt"" skulle vara din ""Mappad till""-kolumn och ""MSEdge"" skulle vara din ""Målapp""-kolumn. Om ingen målapp anges tillämpas den globalt. Namnet måste vara processnamnet och inte appnamnet.]]></Val>
+            <Val><![CDATA[Om du exempelvis vill trycka på "Ctrl+C" och få "Alt" endast i Microsoft Edge, skulle "Ctrl+C" vara din "Genväg"-kolumn, tangenten "Alt" skulle vara din "Mappad till"-kolumn och "MSEdge" skulle vara din "Målapp"-kolumn. Om ingen målapp anges tillämpas den globalt. Namnet måste vara processnamnet och inte appnamnet.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -390,10 +396,13 @@
       </Item>
       <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Key Drop Down]]></Val>
+          <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Listmeny för tangent]]></Val>
+            <Val><![CDATA[Nyckel]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Key Drop Down]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

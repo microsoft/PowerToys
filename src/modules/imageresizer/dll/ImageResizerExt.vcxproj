@@ -162,6 +162,7 @@
     <ClInclude Include="HDropIterator.h" />
     <ClInclude Include="dllmain.h" />
     <None Include="resource.base.h" />
+    <ClInclude Include="ImageResizerConstants.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="ImageResizerExt_i.h" />
