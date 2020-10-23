@@ -127,10 +127,10 @@ namespace Wox.Infrastructure.UserSettings
 
         public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new ObservableCollection<CustomPluginHotkey>();
 
-        [Obsolete]
+        [ObsoleteAttribute("This method is obsolete.")]
         public double Opacity { get; set; } = 1;
 
-        [Obsolete]
+        [ObsoleteAttribute("This method is obsolete.")]
         public OpacityMode OpacityMode { get; set; } = OpacityMode.Normal;
 
         public bool DontPromptUpdateMsg { get; set; }
@@ -182,7 +182,7 @@ namespace Wox.Infrastructure.UserSettings
         Preserved,
     }
 
-    [Obsolete]
+    [ObsoleteAttribute("This enum is obsolete.")]
     public enum OpacityMode
     {
         Normal = 0,
