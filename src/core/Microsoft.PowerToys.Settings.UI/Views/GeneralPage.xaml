@@ -50,9 +50,11 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical" 
-                    x:Name="GeneralView">
+                    x:Name="GeneralView"
+                    AutomationProperties.HeadingLevel="Level1">
             <TextBlock x:Uid="Admin_Mode" FontWeight="SemiBold"
-                       Style="{StaticResource SubtitleTextBlockStyle}"/>
+                       Style="{StaticResource SubtitleTextBlockStyle}"
+                       AutomationProperties.HeadingLevel="Level2"/>
 
             <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.RunningAsText}"
                        Margin="{StaticResource SmallTopMargin}"/>
@@ -80,7 +82,8 @@
 
 
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       AutomationProperties.HeadingLevel="Level2"/>
 
             <!-- Replaced the Radiobuttons parent control with a StackPanel to mitigate the Tab and Arrow key related keyboard navigation issues due to XAML Islands
             Tracking issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
@@ -108,7 +111,8 @@
 
 
             <TextBlock x:Uid="General_Updates"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       AutomationProperties.HeadingLevel="Level2"/>
             <StackPanel Orientation="Horizontal" 
                         Margin="{StaticResource SmallTopMargin}"
                         AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
@@ -142,6 +146,7 @@
             <StackPanel x:Name="DescriptionPanel">
                 <TextBlock x:Uid="GeneralPage_AboutPowerToysHeader" x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
+                       AutomationProperties.HeadingLevel="Level2"
                        Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="About_PowerToys"
                            TextWrapping="Wrap"
