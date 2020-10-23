@@ -74,6 +74,10 @@
                 <ComboBoxItem Content="CMYK - cmyk(100%, 50%, 75%, 0%)"/>
                 <ComboBoxItem Content="HSL - hsl(100, 50%, 75%)"/>
                 <ComboBoxItem Content="HSV - hsv(100, 50%, 75%)"/>
+                <ComboBoxItem Content="HSB - hsb(100, 50%, 75%)"/>
+                <ComboBoxItem Content="HSI - hsi(100, 50%, 75%)"/>
+                <ComboBoxItem Content="HBW - hbw(100, 50%, 75%)"/>
+                <ComboBoxItem Content="NCob - 10R, 50%, 75%"/>
             </ComboBox>
 
                <!--

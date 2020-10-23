@@ -1,5 +1,5 @@
 ﻿using ColorPicker.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Drawing;
 
@@ -11,8 +11,12 @@ namespace UnitTest_ColorPickerUI.Helpers
         [TestMethod]
         [DataRow(ColorRepresentationType.CMYK, "cmyk(0%, 0%, 0%, 100%)")]
         [DataRow(ColorRepresentationType.HEX, "#000000")]
+        [DataRow(ColorRepresentationType.NCol, "R0, 0, 0")]
+        [DataRow(ColorRepresentationType.HSB, "hsb(0, 0%, 0%)")]
+        [DataRow(ColorRepresentationType.HSI, "hsi(0, 0%, 0%)")]
         [DataRow(ColorRepresentationType.HSL, "hsl(0, 0%, 0%)")]
         [DataRow(ColorRepresentationType.HSV, "hsv(0, 0%, 0%)")]
+        [DataRow(ColorRepresentationType.HWB, "hwb(0, 0%, 0%)")]
         [DataRow(ColorRepresentationType.RGB, "rgb(0, 0, 0)")]
 
         public void ColorRGBtoCMYKZeroDiv(ColorRepresentationType type, string expected)

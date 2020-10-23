@@ -5,7 +5,7 @@
 using System;
 using System.Drawing;
 using System.Globalization;
-using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Helpers
 {
@@ -24,14 +24,54 @@ namespace ColorPicker.Helpers
             => colorRepresentationType switch
             {
                 ColorRepresentationType.CMYK => ColorToCYMK(color),
+                ColorRepresentationType.NCol => ColorToNCol(color),
                 ColorRepresentationType.HEX => ColorToHex(color),
+                ColorRepresentationType.HSB => ColorToHSB(color),
                 ColorRepresentationType.HSL => ColorToHSL(color),
                 ColorRepresentationType.HSV => ColorToHSV(color),
+                ColorRepresentationType.HWB => ColorToHWB(color),
                 ColorRepresentationType.RGB => ColorToRGB(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
                 _ => ColorToHex(color),
             };
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation of a CYMK color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the CYMK color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CYMK color</returns>
+        private static string ColorToCYMK(Color color)
+        {
+            var (cyan, magenta, yellow, blackKey) = ColorHelper.ConvertToCMYKColor(color);
+
+            cyan = Math.Round(cyan * 100);
+            magenta = Math.Round(magenta * 100);
+            yellow = Math.Round(yellow * 100);
+            blackKey = Math.Round(blackKey * 100);
+
+            return $"cmyk({cyan.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {magenta.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {yellow.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {blackKey.ToString(CultureInfo.InvariantCulture)}%)";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation of a natural color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the natural color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a natural color</returns>
+        private static string ColorToNCol(Color color)
+        {
+            var (hue, whiteness, blackness) = ColorHelper.ConvertToNaturalColor(color);
+
+            whiteness = Math.Round(whiteness * 100);
+            blackness = Math.Round(blackness * 100);
+
+            return $"{hue}"
+                 + $", {whiteness.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {blackness.ToString(CultureInfo.InvariantCulture)}%";
+        }
 
         /// <summary>
         /// Return a hexadecimal <see cref="string"/> representation of a RGB color
@@ -44,19 +84,27 @@ namespace ColorPicker.Helpers
              + $"{color.B.ToString("X2", CultureInfo.InvariantCulture)}";
 
         /// <summary>
-        /// Return a <see cref="string"/> representation of a RGB color
+        /// Return a <see cref="string"/> representation of a HSB color
         /// </summary>
-        /// <param name="color">The see cref="Color"/> for the RGB color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a RGB color</returns>
-        private static string ColorToRGB(Color color)
-            => $"rgb({color.R.ToString(CultureInfo.InvariantCulture)}"
-             + $", {color.G.ToString(CultureInfo.InvariantCulture)}"
-             + $", {color.B.ToString(CultureInfo.InvariantCulture)})";
+        /// <param name="color">The <see cref="Color"/> for the HSB color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a HSB color</returns>
+        private static string ColorToHSB(Color color)
+        {
+            var (hue, saturation, brightnes) = ColorHelper.ConvertToHSBColor(color);
+
+            hue = Math.Round(hue);
+            saturation = Math.Round(saturation * 100);
+            brightnes = Math.Round(brightnes * 100);
+
+            return $"hsb({hue.ToString(CultureInfo.InvariantCulture)}"
+                 + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {brightnes.ToString(CultureInfo.InvariantCulture)}%)";
+        }
 
         /// <summary>
         /// Return a <see cref="string"/> representation of a HSL color
         /// </summary>
-        /// <param name="color">The see cref="Color"/> for the HSL color presentation</param>
+        /// <param name="color">The <see cref="Color"/> for the HSL color presentation</param>
         /// <returns>A <see cref="string"/> representation of a HSL color</returns>
         private static string ColorToHSL(Color color)
         {
@@ -75,7 +123,7 @@ namespace ColorPicker.Helpers
         /// <summary>
         /// Return a <see cref="string"/> representation of a HSV color
         /// </summary>
-        /// <param name="color">The see cref="Color"/> for the HSV color presentation</param>
+        /// <param name="color">The <see cref="Color"/> for the HSV color presentation</param>
         /// <returns>A <see cref="string"/> representation of a HSV color</returns>
         private static string ColorToHSV(Color color)
         {
@@ -92,24 +140,31 @@ namespace ColorPicker.Helpers
         }
 
         /// <summary>
-        /// Return a <see cref="string"/> representation of a HSV color
+        /// Return a <see cref="string"/> representation of a HWB color
         /// </summary>
-        /// <param name="color">The see cref="Color"/> for the HSV color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a HSV color</returns>
-        private static string ColorToCYMK(Color color)
+        /// <param name="color">The <see cref="Color"/> for the HWB color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a HWB color</returns>
+        private static string ColorToHWB(Color color)
         {
-            var (cyan, magenta, yellow, blackKey) = ColorHelper.ConvertToCMYKColor(color);
+            var (hue, whiteness, blackness) = ColorHelper.ConvertToHWBColor(color);
 
-            cyan = Math.Round(cyan * 100);
-            magenta = Math.Round(magenta * 100);
-            yellow = Math.Round(yellow * 100);
-            blackKey = Math.Round(blackKey * 100);
+            hue = Math.Round(hue);
+            whiteness = Math.Round(whiteness * 100);
+            blackness = Math.Round(blackness * 100);
 
-            // Using InvariantCulture since this is used for color representation
-            return $"cmyk({cyan.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {magenta.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {yellow.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {blackKey.ToString(CultureInfo.InvariantCulture)}%)";
+            return $"hwb({hue.ToString(CultureInfo.InvariantCulture)}"
+                 + $", {whiteness.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {blackness.ToString(CultureInfo.InvariantCulture)}%)";
         }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation of a RGB color
+        /// </summary>
+        /// <param name="color">The see cref="Color"/> for the RGB color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a RGB color</returns>
+        private static string ColorToRGB(Color color)
+            => $"rgb({color.R.ToString(CultureInfo.InvariantCulture)}"
+             + $", {color.G.ToString(CultureInfo.InvariantCulture)}"
+             + $", {color.B.ToString(CultureInfo.InvariantCulture)})";
     }
 }
