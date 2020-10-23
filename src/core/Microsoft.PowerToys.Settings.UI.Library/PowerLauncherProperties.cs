@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -44,6 +45,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("clear_input_on_launch")]
         public bool ClearInputOnLaunch { get; set; }
 
+        [JsonPropertyName("theme")]
+        public Theme Theme { get; set; }
+
         public PowerLauncherProperties()
         {
             OpenPowerLauncher = new HotkeySettings(false, false, true, false, 32);
@@ -56,6 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DisableDriveDetectionWarning = false;
             ClearInputOnLaunch = false;
             MaximumNumberOfResults = 4;
+            Theme = Theme.System;
         }
     }
 }
