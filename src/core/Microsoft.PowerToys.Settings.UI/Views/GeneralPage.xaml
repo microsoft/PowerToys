@@ -54,6 +54,7 @@
             <TextBlock x:Uid="Admin_Mode" 
                        FontWeight="SemiBold"
                        TextWrapping="Wrap"
+                       AutomationProperties.HeadingLevel="Level2"
                        Style="{StaticResource SubtitleTextBlockStyle}"/>
 
             <TextBlock Text="{x:Bind Mode=TwoWay, Path=ViewModel.RunningAsText}"
