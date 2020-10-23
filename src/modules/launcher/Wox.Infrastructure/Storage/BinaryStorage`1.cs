@@ -8,7 +8,8 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {

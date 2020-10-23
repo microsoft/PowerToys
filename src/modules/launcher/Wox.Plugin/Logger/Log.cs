@@ -9,7 +9,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 
-namespace Wox.Infrastructure.Logger
+namespace Wox.Plugin.Logger
 {
     public static class Log
     {
@@ -28,7 +28,9 @@ namespace Wox.Infrastructure.Logger
             var configuration = new LoggingConfiguration();
             var target = new FileTarget();
             configuration.AddTarget("file", target);
-            target.FileName = CurrentLogDirectory.Replace(@"\", "/") + "/${shortdate}.txt";
+
+            // Adding CurrentCulture since this is user facing
+            target.FileName = CurrentLogDirectory.Replace(@"\", "/", StringComparison.CurrentCulture) + "/${shortdate}.txt";
 #if DEBUG
             var rule = new LoggingRule("*", LogLevel.Debug, target);
 #else
@@ -36,6 +38,7 @@ namespace Wox.Infrastructure.Logger
 #endif
             configuration.LoggingRules.Add(rule);
             LogManager.Configuration = configuration;
+            target.Dispose();
         }
 
         private static void LogInternalException(string message, System.Exception e, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
@@ -66,26 +69,51 @@ namespace Wox.Infrastructure.Logger
 
         public static void Info(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
+            if (fullClassName == null)
+            {
+                throw new ArgumentNullException(nameof(fullClassName));
+            }
+
             LogInternal(LogLevel.Info, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         public static void Debug(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
+            if (fullClassName == null)
+            {
+                throw new ArgumentNullException(nameof(fullClassName));
+            }
+
             LogInternal(LogLevel.Debug, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         public static void Warn(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
+            if (fullClassName == null)
+            {
+                throw new ArgumentNullException(nameof(fullClassName));
+            }
+
             LogInternal(LogLevel.Warn, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         public static void Error(string message, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
+            if (fullClassName == null)
+            {
+                throw new ArgumentNullException(nameof(fullClassName));
+            }
+
             LogInternal(LogLevel.Error, message, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 
         public static void Exception(string message, System.Exception ex, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
+            if (fullClassName == null)
+            {
+                throw new ArgumentNullException(nameof(fullClassName));
+            }
+
             LogInternalException(message, ex, fullClassName, methodName, sourceFilePath, sourceLineNumber);
         }
 

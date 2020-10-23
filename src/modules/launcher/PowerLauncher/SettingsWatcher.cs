@@ -11,9 +11,9 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerLauncher.Helper;
 using Wox.Core.Plugin;
 using Wox.Infrastructure.Hotkey;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher

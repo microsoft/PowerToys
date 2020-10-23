@@ -7,10 +7,25 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace Wox.Infrastructure
+namespace Wox.Plugin
 {
     public static class Constant
     {
+        /// <summary>
+        /// http://www.yinwang.org/blog-cn/2015/11/21/programming-philosophy
+        /// </summary>
+        public static string NonNull(this string obj)
+        {
+            if (obj == null)
+            {
+                throw new NullReferenceException();
+            }
+            else
+            {
+                return obj;
+            }
+        }
+
         public const string ExeFileName = "PowerLauncher";
         public const string ModuleLocation = "Microsoft\\PowerToys\\PowerToys Run";
         public const string Plugins = "Plugins";
