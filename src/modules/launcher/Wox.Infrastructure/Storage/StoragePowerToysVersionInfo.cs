@@ -10,7 +10,7 @@ namespace Wox.Infrastructure.Storage
     public class StoragePowerToysVersionInfo
     {
         // This detail is accessed by the storage items and is used to decide if the cache must be deleted or not
-        public bool ClearCache { get; set; } = false;
+        public bool ClearCache { get; set; }
 
         private readonly string currentPowerToysVersion = string.Empty;
 

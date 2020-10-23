@@ -94,7 +94,7 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
-        public bool AutoUpdates { get; set; } = false;
+        public bool AutoUpdates { get; set; }
 
         public double WindowLeft { get; set; }
 
@@ -161,7 +161,7 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool HideWhenDeactivated { get; set; } = true;
 
-        public bool ClearInputOnLaunch { get; set; } = false;
+        public bool ClearInputOnLaunch { get; set; }
 
         public bool RememberLastLaunchLocation { get; set; }
 
