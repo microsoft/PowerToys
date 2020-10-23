@@ -69,7 +69,7 @@ namespace ZoneWindowUtils
                          COLORREF hostZoneBorderColor,
                          COLORREF hostZoneHighlightColor,
                          int hostZoneHighlightOpacity,
-                         std::map<size_t, winrt::com_ptr<IZone>> zones,
+                         IZoneSet::ZonesMap zones,
                          std::vector<size_t> highlightZone,
                          bool flashMode)
     {
@@ -621,7 +621,7 @@ void ZoneWindow::OnPaint(HDC hdc) noexcept
     COLORREF hostZoneBorderColor{};
     COLORREF hostZoneHighlightColor{};
     int hostZoneHighlightOpacity{};
-    std::map<size_t, winrt::com_ptr<IZone>> zones{};
+    IZoneSet::ZonesMap zones;
     std::vector<size_t> highlightZone = m_highlightZone;
     bool flashMode = m_flashMode;
 

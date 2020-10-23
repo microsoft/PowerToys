@@ -1183,7 +1183,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
                 auto zoneSet = workArea->ActiveZoneSet();
                 if (zoneSet)
                 {
-                    const auto& zones = zoneSet->GetZones();
+                    const auto zones = zoneSet->GetZones();
                     for (const auto& [zoneId, zone] : zones)
                     {
                         RECT zoneRect = zone->GetZoneRect();
@@ -1227,7 +1227,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             auto zoneSet = workArea->ActiveZoneSet();
             if (zoneSet)
             {
-                const auto& zones = zoneSet->GetZones();
+                const auto zones = zoneSet->GetZones();
                 for (const auto& [zoneId, zone] : zones)
                 {
                     RECT zoneRect = zone->GetZoneRect();

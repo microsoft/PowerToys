@@ -217,8 +217,18 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
     {
         for (size_t j = i + 1; j < capturedZones.size(); ++j)
         {
-            const auto& rectI = m_zones.at(capturedZones[i])->GetZoneRect();
-            const auto& rectJ = m_zones.at(capturedZones[j])->GetZoneRect();
+            RECT rectI;
+            RECT rectJ;
+            try
+            {
+                rectI = m_zones.at(capturedZones[i])->GetZoneRect();
+                rectJ = m_zones.at(capturedZones[j])->GetZoneRect();
+            }
+            catch (std::out_of_range)
+            {
+                return {};
+            }
+
             if (max(rectI.top, rectJ.top) + m_config.SensitivityRadius < min(rectI.bottom, rectJ.bottom) &&
                 max(rectI.left, rectJ.left) + m_config.SensitivityRadius < min(rectI.right, rectJ.right))
             {
@@ -237,8 +247,17 @@ ZoneSet::ZonesFromPoint(POINT pt) const noexcept
         size_t smallestIdx = 0;
         for (size_t i = 1; i < capturedZones.size(); ++i)
         {
-            const auto& rectS = m_zones.at(capturedZones[smallestIdx])->GetZoneRect();
-            const auto& rectI = m_zones.at(capturedZones[i])->GetZoneRect();
+            RECT rectS;
+            RECT rectI;
+            try
+            {
+                rectS = m_zones.at(capturedZones[smallestIdx])->GetZoneRect();
+                rectI = m_zones.at(capturedZones[i])->GetZoneRect();
+            }
+            catch (std::out_of_range)
+            {
+                return {};
+            }
             int smallestSize = (rectS.bottom - rectS.top) * (rectS.right - rectS.left);
             int iSize = (rectI.bottom - rectI.top) * (rectI.right - rectI.left);
 
