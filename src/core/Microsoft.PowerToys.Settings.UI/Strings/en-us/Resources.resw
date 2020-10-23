@@ -204,10 +204,10 @@
     <value>Current Shortcut Remappings</value>
   </data>
   <data name="KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" xml:space="preserve">
-    <value>Key Remapping</value>
+    <value>Key remapping</value>
   </data>
   <data name="KeyboardManager_RemappedShortcutsListItem.AutomationProperties.Name" xml:space="preserve">
-    <value>Shortcut Remapping</value>
+    <value>Shortcut remapping</value>
   </data>
   <data name="KeyboardManager_RemappedTo.AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
@@ -337,7 +337,7 @@
     <value>Open zones editor</value>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
-    <value>Set shortcut</value>
+    <value>Enter your shortcut</value>
   </data>
   <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
@@ -502,7 +502,7 @@
     <value>Enable Image Resizer</value>
   </data>
   <data name="ImagesSizesListView.AutomationProperties.Name" xml:space="preserve">
-    <value>Image Size</value>
+    <value>Image size</value>
   </data>
   <data name="ImageResizer_Configurations.AutomationProperties.Name" xml:space="preserve">
     <value>Configurations</value>
@@ -511,19 +511,19 @@
     <value>Configuration Name</value>
   </data>
   <data name="ImageResizer_Fit_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Fit Property</value>
+    <value>Fit property</value>
   </data>
   <data name="ImageResizer_Width_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Width Property</value>
+    <value>Width property</value>
   </data>
   <data name="ImageResizer_Height_Property.AutomationProperties.Name" xml:space="preserve">
     <value>Height Property</value>
   </data>
   <data name="ImageResizer_Size_Property.AutomationProperties.Name" xml:space="preserve">
-    <value>Size Property</value>
+    <value>Size property</value>
   </data>
   <data name="ImageResizer_Times_Symbol.AutomationProperties.Name" xml:space="preserve">
-    <value>Times Symbol</value>
+    <value>Times symbol</value>
   </data>
   <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
     <value>Remove</value>

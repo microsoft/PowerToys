@@ -5,39 +5,26 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    AutomationProperties.Name="{x:Bind Header, Mode=OneTime}"
     mc:Ignorable="d"
+    AutomationProperties.Name="{x:Bind Header, Mode=OneTime}"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <StackPanel Orientation="Vertical">
+    <TextBox x:Name="HotkeyTextBox"
+             x:Uid="SettingsPage_SetShortcut"
+             AutomationProperties.HelpText="{Binding ElementName=ShortcutWarningLabelText, Path=Text}"
+             IsReadOnly="True">
         <ToolTipService.ToolTip>
-            <ToolTip>
-                <TextBlock x:Name="ShortcutWarningLabelText">
-                        <Run x:Uid="ShortcutWarningLabel"/>
-                        <LineBreak/>
-                        <Run Text="{x:Bind Keys, Mode=OneTime}" FontWeight="SemiBold"/>
-                </TextBlock>
-            </ToolTip>
+            <TextBlock x:Name="ShortcutWarningLabelText">
+                <Run x:Uid="ShortcutWarningLabel"/>
+                <LineBreak/>
+                <Run Text="{x:Bind Keys, Mode=OneTime}" FontWeight="SemiBold"/>
+            </TextBlock>
         </ToolTipService.ToolTip>
-
-        <StackPanel Orientation="Horizontal">
-            <TextBlock x:Name="TitleText"
-                       Text="{x:Bind Header, Mode=OneTime}"
-                       Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
-                       />
-
-            <TextBlock AutomationProperties.LabeledBy="{Binding ElementName=ShortcutWarningLabelText}"
-                       x:Name="TitleGlyph" Text="&#xE946;"
-                       FontFamily="Segoe MDL2 Assets"
-                       Margin="4,4,0,0"
-                       Foreground="{Binding Path=IsEnabled, ElementName=HotkeyTextBox, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
-                       />
-        
-        </StackPanel>
-        <TextBox x:Uid="SettingsPage_SetShortcut"
-                 x:Name="HotkeyTextBox"
-                 Margin="0,5,0,0"
-                 IsReadOnly="True"
-                 />
-    </StackPanel>
+        <TextBox.Header>
+            <TextBlock>
+                    <Run Text="{x:Bind Header, Mode=OneTime}"/>
+                    <Run Text="&#xE946;" FontFamily="Segoe MDL2 Assets"/>
+            </TextBlock>
+        </TextBox.Header>
+    </TextBox>
 </UserControl>
