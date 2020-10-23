@@ -27,8 +27,6 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
 
-        private readonly Alphabet _alphabet = new Alphabet();
-
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed;
         private Settings _settings;
@@ -95,15 +93,14 @@ namespace PowerLauncher
                 _settings = _settingsVM.Settings;
                 _settings.UsePowerToysRunnerKeyboardHook = e.Args.Contains("--centralized-kb-hook");
 
-                _alphabet.Initialize(_settings);
-                _stringMatcher = new StringMatcher(_alphabet);
+                _stringMatcher = new StringMatcher();
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
-                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = _mainWindow;

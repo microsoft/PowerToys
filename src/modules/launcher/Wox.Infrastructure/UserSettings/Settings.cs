@@ -62,11 +62,6 @@ namespace Wox.Infrastructure.UserSettings
 
         public string ResultFontStretch { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether when false Alphabet static service will always return empty results
-        /// </summary>
-        public bool ShouldUsePinyin { get; set; } = false;
-
         internal StringMatcher.SearchPrecisionScore QuerySearchPrecision { get; private set; } = StringMatcher.SearchPrecisionScore.Regular;
 
         [JsonIgnore]
