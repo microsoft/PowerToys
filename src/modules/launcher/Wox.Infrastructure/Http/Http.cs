@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -53,18 +54,28 @@ namespace Wox.Infrastructure.Http
             }
         }
 
-        public static void Download([NotNull] string url, [NotNull] string filePath)
+        public static void Download([NotNull] Uri url, [NotNull] string filePath)
         {
+            if (url == null)
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
+
             var client = new WebClient { Proxy = WebProxy() };
             client.Headers.Add("user-agent", UserAgent);
-            client.DownloadFile(url, filePath);
+            client.DownloadFile(url.AbsoluteUri, filePath);
         }
 
-        public static async Task<string> Get([NotNull] string url, string encoding = "UTF-8")
+        public static async Task<string> Get([NotNull] Uri url, string encoding = "UTF-8")
         {
-            Log.Debug($"Url <{url}>", MethodBase.GetCurrentMethod().DeclaringType);
+            if (url == null)
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
 
-            var request = WebRequest.CreateHttp(url);
+            Log.Debug($"Url <{url.AbsoluteUri}>", MethodBase.GetCurrentMethod().DeclaringType);
+
+            var request = WebRequest.CreateHttp(url.AbsoluteUri);
             request.Method = "GET";
             request.Timeout = 1000;
             request.Proxy = WebProxy();
@@ -82,7 +93,7 @@ namespace Wox.Infrastructure.Http
                 }
                 else
                 {
-                    throw new HttpRequestException($"Error code <{response.StatusCode}> with content <{content}> returned from <{url}>");
+                    throw new HttpRequestException($"Error code <{response.StatusCode}> with content <{content}> returned from <{url.AbsoluteUri}>");
                 }
             }
         }
