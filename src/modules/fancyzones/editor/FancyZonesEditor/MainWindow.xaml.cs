@@ -35,7 +35,6 @@ namespace FancyZonesEditor
 
             if (Settings.WorkArea.Height < 900)
             {
-                SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = 180;
             }
         }
