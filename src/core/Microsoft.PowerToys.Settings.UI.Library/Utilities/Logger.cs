@@ -35,6 +35,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         public static void LogError(string message)
         {
             Log(message, "ERROR");
+#if DEBUG
+            Debugger.Break();
+#endif
         }
 
         public static void LogError(string message, Exception e)
@@ -47,6 +50,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 "Stack trace: " + Environment.NewLine +
                 e?.StackTrace,
                 "ERROR");
+#if DEBUG
+            Debugger.Break();
+#endif
         }
 
         private static void Log(string message, string type)

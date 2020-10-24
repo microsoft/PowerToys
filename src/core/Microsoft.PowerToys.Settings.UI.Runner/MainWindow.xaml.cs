@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Windows;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -80,9 +79,6 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                         else
                         {
                             Logger.LogError("Failed to parse JSON from IPC message.");
-#if DEBUG
-                            Debugger.Break();
-#endif
                         }
                     }
                 };
