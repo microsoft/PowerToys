@@ -66,8 +66,8 @@ namespace Wox.Infrastructure
             }
 
             query = query.Trim();
-            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower(CultureInfo.InvariantCulture) : stringToCompare;
-            var queryWithoutCase = opt.IgnoreCase ? query.ToLower(CultureInfo.InvariantCulture) : query;
+            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
+            var queryWithoutCase = opt.IgnoreCase ? query.ToUpper(CultureInfo.InvariantCulture) : query;
 
             var querySubstrings = queryWithoutCase.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             int currentQuerySubstringIndex = 0;

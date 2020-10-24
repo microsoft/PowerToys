@@ -155,7 +155,9 @@ namespace Wox.Infrastructure.Image
                 }
                 else if (File.Exists(path))
                 {
+#pragma warning disable CA1308 // Normalize strings to uppercase. Reason: extension is used with the enum ImageExtensions, which contains all lowercase values
                     var extension = Path.GetExtension(path).ToLower(CultureInfo.InvariantCulture);
+#pragma warning restore CA1308 // Normalize strings to uppercase
                     if (ImageExtensions.Contains(extension))
                     {
                         type = ImageType.ImageFile;
