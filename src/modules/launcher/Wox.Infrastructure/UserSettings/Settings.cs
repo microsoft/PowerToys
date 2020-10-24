@@ -125,7 +125,7 @@ namespace Wox.Infrastructure.UserSettings
         [JsonProperty(Order = 1)]
         public PluginSettings PluginSettings { get; set; } = new PluginSettings();
 
-        public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new ObservableCollection<CustomPluginHotkey>();
+        public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; } = new ObservableCollection<CustomPluginHotkey>();
 
         [ObsoleteAttribute("This method is obsolete.")]
         public double Opacity { get; set; } = 1;

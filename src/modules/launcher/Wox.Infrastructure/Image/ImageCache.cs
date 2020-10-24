@@ -19,7 +19,7 @@ namespace Wox.Infrastructure.Image
 
         private readonly ConcurrentDictionary<string, ImageSource> _data = new ConcurrentDictionary<string, ImageSource>();
 
-        public ConcurrentDictionary<string, int> Usage { get; set; } = new ConcurrentDictionary<string, int>();
+        public ConcurrentDictionary<string, int> Usage { get; private set; } = new ConcurrentDictionary<string, int>();
 
         public ImageSource this[string path]
         {

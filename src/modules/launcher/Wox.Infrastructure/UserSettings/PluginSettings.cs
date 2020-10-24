@@ -10,7 +10,7 @@ namespace Wox.Infrastructure.UserSettings
 {
     public class PluginSettings : BaseModel
     {
-        public Dictionary<string, Plugin> Plugins { get; set; } = new Dictionary<string, Plugin>();
+        public Dictionary<string, Plugin> Plugins { get; private set; } = new Dictionary<string, Plugin>();
 
         public void UpdatePluginSettings(List<PluginMetadata> metadatas)
         {
@@ -24,21 +24,20 @@ namespace Wox.Infrastructure.UserSettings
                 if (Plugins.ContainsKey(metadata.ID))
                 {
                     var settings = Plugins[metadata.ID];
-                    if (settings.ActionKeywords?.Count > 0)
+                    if (settings.GetActionKeywords()?.Count > 0)
                     {
-                        metadata.ActionKeywords = settings.ActionKeywords;
-                        metadata.ActionKeyword = settings.ActionKeywords[0];
+                        metadata.ActionKeywords = settings.GetActionKeywords();
+                        metadata.ActionKeyword = settings.GetActionKeywords()[0];
                     }
 
                     metadata.Disabled = settings.Disabled;
                 }
                 else
                 {
-                    Plugins[metadata.ID] = new Plugin
+                    Plugins[metadata.ID] = new Plugin(metadata.ActionKeywords)
                     {
                         ID = metadata.ID,
                         Name = metadata.Name,
-                        ActionKeywords = metadata.ActionKeywords,
                         Disabled = metadata.Disabled,
                     };
                 }
