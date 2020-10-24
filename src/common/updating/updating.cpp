@@ -3,8 +3,8 @@
 #include "version.h"
 
 #include "http_client.h"
+#include "notifications.h"
 #include "updating.h"
-#include "toast_notifications_helper.h"
 
 #include <msi.h>
 #include <common/common.h>
@@ -102,6 +102,11 @@ namespace updating
 
     std::future<std::optional<new_version_download_info>> get_new_github_version_info_async()
     {
+        // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
+        if (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
+        {
+            co_return std::nullopt;
+        }
         try
         {
             http::HttpClient client;

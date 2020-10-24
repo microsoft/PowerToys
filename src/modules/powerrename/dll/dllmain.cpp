@@ -7,6 +7,7 @@
 #include <common/common.h>
 #include "Generated Files/resource.h"
 #include <atomic>
+#include <dll/PowerRenameConstants.h>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
 HINSTANCE g_hInst = 0;
@@ -155,12 +156,20 @@ private:
     // Enabled by default
     bool m_enabled = true;
     std::wstring app_name;
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
 
 public:
-    // Return the display name of the powertoy, this will be cached
+    // Return the localized display name of the powertoy
     virtual PCWSTR get_name() override
     {
         return app_name.c_str();
+    }
+
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
+    {
+        return app_key.c_str();
     }
 
     // Enable the powertoy
@@ -236,7 +245,7 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             CSettingsInstance().SetPersistState(values.get_bool_value(L"bool_persist_input").value());
             CSettingsInstance().SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());
@@ -282,6 +291,7 @@ public:
     {
         init_settings();
         app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
+        app_key = PowerRenameConstants::ModuleKey;
     }
 
     ~PowerRenameModule(){};

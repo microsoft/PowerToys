@@ -27,7 +27,7 @@ std::vector<DWORD> LayoutMap::GetKeyCodeList(const bool isShortcut)
     return impl->GetKeyCodeList(isShortcut);
 }
 
-std::vector<std::wstring> LayoutMap::GetKeyNameList(const bool isShortcut)
+std::vector<std::pair<DWORD, std::wstring>> LayoutMap::GetKeyNameList(const bool isShortcut)
 {
     return impl->GetKeyNameList(isShortcut);
 }
@@ -305,25 +305,25 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
     return keyCodes;
 }
 
-std::vector<std::wstring> LayoutMap::LayoutMapImpl::GetKeyNameList(const bool isShortcut)
+std::vector<std::pair<DWORD, std::wstring>> LayoutMap::LayoutMapImpl::GetKeyNameList(const bool isShortcut)
 {
-    std::vector<std::wstring> keyNames;
+    std::vector<std::pair<DWORD, std::wstring>> keyNames;
     std::vector<DWORD> keyCodes = GetKeyCodeList(isShortcut);
     std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);
     // If it is a key list for the shortcut control then we add a "None" key at the start
     if (isShortcut)
     {
-        keyNames.push_back(L"None");
+        keyNames.push_back({ 0, L"None" });
         for (int i = 1; i < keyCodes.size(); i++)
         {
-            keyNames.push_back(keyboardLayoutMap[keyCodes[i]]);
+            keyNames.push_back({ keyCodes[i], keyboardLayoutMap[keyCodes[i]] });
         }
     }
     else
     {
         for (int i = 0; i < keyCodes.size(); i++)
         {
-            keyNames.push_back(keyboardLayoutMap[keyCodes[i]]);
+            keyNames.push_back({ keyCodes[i], keyboardLayoutMap[keyCodes[i]] });
         }
     }
 

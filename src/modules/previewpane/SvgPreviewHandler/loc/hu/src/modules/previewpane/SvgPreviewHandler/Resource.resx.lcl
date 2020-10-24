@@ -13,12 +13,18 @@
       <Item ItemId=";BlockedElementInfoText" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Néhány elem blokkolva van annak megakadályozása érdekében, hogy a feladó azonosítsa a számítógépet. Az elem megnyitásával megtekintheti az összes elemet.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";SvgNotPreviewedError" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The Svg could not be preview due to an internal error in Svg Preview Handler.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Egy belső hiba miatt nem sikerült megjeleníteni az SVG-fájlt az SVG-előnézeti kezelőben.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

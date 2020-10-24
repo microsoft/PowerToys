@@ -13,7 +13,7 @@
     - call powertoy_create() to create the PowerToy.
 
   On the received object, the runner will call:
-    - get_name() to get the name of the PowerToy,
+    - get_key() to get the non localized ID of the PowerToy,
     - enable() to initialize the PowerToy.
     - get_hotkeys() to register the hotkeys the PowerToy uses.
 
@@ -48,8 +48,10 @@ public:
         std::strong_ordering operator<=>(const Hotkey&) const = default;
     };
 
-    /* Returns the name of the PowerToy, this will be cached by the runner. */
+    /* Returns the localized name of the PowerToy*/
     virtual const wchar_t* get_name() = 0;
+    /* Returns non localized name of the PowerToy, this will be cached by the runner. */
+    virtual const wchar_t* get_key() = 0;
     /* Fills a buffer with the available configuration settings.
     * If 'buffer' is a null ptr or the buffer size is not large enough
     * sets the required buffer size in 'buffer_size' and return false.

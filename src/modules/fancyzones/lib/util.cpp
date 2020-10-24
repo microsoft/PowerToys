@@ -40,6 +40,30 @@ namespace
 
 namespace FancyZonesUtils
 {
+    std::wstring ParseDeviceId(const std::wstring& deviceId)
+    {
+        // We're interested in the unique part between the first and last #'s
+        // Example input: \\?\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
+        // Example output: DELA026#5&10a58c63&0&UID16777488
+        static const std::wstring defaultDeviceId = L"FallbackDevice";
+        if (deviceId.empty())
+        {
+            return defaultDeviceId;
+        }
+
+        size_t start = deviceId.find(L'#');
+        size_t end = deviceId.rfind(L'#');
+        if (start != std::wstring::npos && end != std::wstring::npos && start != end)
+        {
+            size_t size = end - (start + 1);
+            return deviceId.substr(start + 1, size);
+        }
+        else
+        {
+            return defaultDeviceId;
+        }
+    }
+
     typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept
     {

@@ -5,8 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Wox.Infrastructure.Logger;
+using ManagedCommon;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Calculator
 {
@@ -44,7 +45,7 @@ namespace Microsoft.Plugin.Calculator
 
                 return new List<Result>
                 {
-                    ResultHelper.CreateResult(result.Result, result.RoundedResult, IconPath),
+                    ResultHelper.CreateResult(result.RoundedResult, IconPath),
                 };
             } // We want to keep the process alive if any the mages library throws any exceptions.
 #pragma warning disable CA1031 // Do not catch general exception types

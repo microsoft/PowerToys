@@ -178,13 +178,13 @@
     <value>Select the key you want to change (Key) and then the key or shortcut you want it to become (Mapped To).</value>
   </data>
   <data name="EditKeyboard_InfoExample" xml:space="preserve">
-    <value>For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.</value>
+    <value>For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.</value>
   </data>
   <data name="EditShortcuts_Info" xml:space="preserve">
     <value>Select the shortcut you want to change (Shortcut) and then the key or shortcut you want it to invoke (Mapped To).</value>
   </data>
   <data name="EditShortcuts_InfoExample" xml:space="preserve">
-    <value>For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.</value>
+    <value>For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.</value>
   </data>
   <data name="Type_Button" xml:space="preserve">
     <value>Type</value>
@@ -265,7 +265,7 @@
     <value>Unexpected error</value>
   </data>
   <data name="Key_DropDown_Combobox" xml:space="preserve">
-    <value>Key Drop Down</value>
+    <value>Key</value>
   </data>
   <data name="Add_Key_Remap_Button" xml:space="preserve">
     <value>Add Key Remap</value>

@@ -40,7 +40,10 @@
                       
                        Foreground="{DynamicResource ControlTextBrushKey}">
                 <Run Text="{x:Static p:Resources.reportWindow_file_bug}"/>
-                <Hyperlink x:Name="RepositoryHyperlink" Click="RepositoryHyperlink_Click"  FontWeight="SemiBold" NavigateUri="https://aka.ms/powerToysReportBug">
+                <Hyperlink x:Name="RepositoryHyperlink"
+                           Click="RepositoryHyperlink_Click"
+                           FontWeight="SemiBold"
+                           NavigateUri="https://aka.ms/powerToysReportBug">
                     <Run Text="{x:Static p:Resources.reportWindow_github_repo}"/>
                 </Hyperlink>
                 <Run Text="{x:Static p:Resources.reportWindow_period}"/>
@@ -59,8 +62,6 @@
                  TextWrapping="Wrap">
             </TextBox>
 
-       
-        
         <RichTextBox x:Name="ErrorTextbox" 
                      Grid.Row="3"
                      BorderBrush="{DynamicResource ScrollBarThumbBackground}"

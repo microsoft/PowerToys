@@ -156,4 +156,16 @@
   <data name="Explr_Svg_Settings_Description" xml:space="preserve">
     <value>Render SVG images</value>
   </data>
+  <data name="FileExplorer_Admin_Restart_Warning_Description" xml:space="preserve">
+    <value>Some of the File Explorer modules could not be turned off/on as per your settings. Please restart PowerToys as admin for the changes to take place.</value>
+  </data>
+  <data name="FileExplorer_Admin_Restart_Warning_Title" xml:space="preserve">
+    <value>Couldn't modify File Explorer modules</value>
+  </data>
+  <data name="FileExplorer_Admin_Restart_Warning_Open_Settings" xml:space="preserve">
+    <value>Open Settings</value>
+  </data>
+  <data name="FileExplorer_Admin_Restart_Warning_Dont_Show_Again" xml:space="preserve">
+    <value>Don't show again</value>
+  </data>  
 </root>

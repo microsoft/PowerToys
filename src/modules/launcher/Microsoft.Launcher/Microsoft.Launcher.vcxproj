@@ -103,6 +103,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="LauncherConstants.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Generated Files\resource.h" />
     <None Include="resource.base.h" />

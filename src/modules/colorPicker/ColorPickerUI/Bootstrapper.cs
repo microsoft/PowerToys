@@ -4,6 +4,9 @@
 
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("UnitTest-ColorPickerUI")]
 
 namespace ColorPicker
 {
@@ -21,8 +24,6 @@ namespace ColorPicker
         }
 
         public static void Dispose()
-        {
-            Container.Dispose();
-        }
+            => Container.Dispose();
     }
 }

@@ -302,6 +302,9 @@
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
+  <data name="PowerLauncher_Theme.Text" xml:space="preserve">
+    <value>Choose color</value>
+  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
@@ -758,5 +761,29 @@
   </data>
   <data name="FileExplorerPreview_PreviewPane_GroupSettings.Text" xml:space="preserve">
     <value>Preview Pane</value>
+  </data>
+  <data name="FileExplorerPreview_RunAsAdminRequired.Text" xml:space="preserve">
+    <value>You need to run as administrator to modify these settings</value>
+  </data>
+  <data name="FileExplorerPreview_AffectsAllUsers.Text" xml:space="preserve">
+    <value>The settings on this page affect all users on the system</value>
+  </data>
+  <data name="FileExplorerPreview_RebootRequired.Text" xml:space="preserve">
+    <value>A reboot may be required for changes to these settings to take effect</value>
+  </data>
+  <data name="FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+  </data>
+  <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
+    <value>Example: %1 (%2)</value>
+  </data>
+  <data name="PowerLauncher_Radio_Theme_Dark.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="PowerLauncher_Radio_Theme_Default.Content" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="PowerLauncher_Radio_Theme_Light.Content" xml:space="preserve">
+    <value>Light</value>
   </data>
 </root>

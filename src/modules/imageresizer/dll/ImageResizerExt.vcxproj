@@ -162,6 +162,7 @@
     <ClInclude Include="HDropIterator.h" />
     <ClInclude Include="dllmain.h" />
     <None Include="resource.base.h" />
+    <ClInclude Include="ImageResizerConstants.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="ImageResizerExt_i.h" />
@@ -191,27 +192,7 @@
     <Image Include="..\ui\Resources\ImageResizer.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources.ar.resx" />
-    <None Include="Resources.bg.resx" />
-    <None Include="Resources.ca.resx" />
-    <None Include="Resources.cs.resx" />
-    <None Include="Resources.de.resx" />
-    <None Include="Resources.es.resx" />
-    <None Include="Resources.eu-ES.resx" />
-    <None Include="Resources.fr.resx" />
-    <None Include="Resources.he.resx" />
-    <None Include="Resources.hu.resx" />
-    <None Include="Resources.it.resx" />
-    <None Include="Resources.nb-NO.resx" />
-    <None Include="Resources.nl.resx" />
-    <None Include="Resources.pl.resx" />
-    <None Include="Resources.pt-BR.resx" />
     <None Include="Resources.resx" />
-    <None Include="Resources.ro.resx" />
-    <None Include="Resources.ru.resx" />
-    <None Include="Resources.sk.resx" />
-    <None Include="Resources.tr.resx" />
-    <None Include="Resources.zh-Hans.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

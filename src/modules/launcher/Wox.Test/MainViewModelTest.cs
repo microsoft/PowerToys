@@ -22,7 +22,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, string.Empty);
+            Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, string.Empty);
+            Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, string.Empty);
+            Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
         [Test]
@@ -67,7 +67,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, string.Empty);
+            Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
         [Test]
@@ -82,7 +82,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, string.Empty);
+            Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
         [Test]
@@ -98,7 +98,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, expectedAutoCompleteText);
+            Assert.AreEqual(expectedAutoCompleteText, autoCompleteText);
         }
 
         [Test]
@@ -114,7 +114,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, expectedAutoCompleteText);
+            Assert.AreEqual(expectedAutoCompleteText, autoCompleteText);
         }
 
         [Test]
@@ -129,7 +129,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, string.Empty);
+            Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
         [Test]
@@ -144,7 +144,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, string.Empty);
+            Assert.AreEqual(string.Empty, autoCompleteText);
         }
 
         [Test]
@@ -159,7 +159,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, input);
+            Assert.AreEqual(input, autoCompleteText);
         }
 
         [Test]
@@ -174,7 +174,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, input);
+            Assert.AreEqual(input, autoCompleteText);
         }
 
         [Test]
@@ -190,7 +190,7 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, expectedAutoCompleteText);
+            Assert.AreEqual(expectedAutoCompleteText, autoCompleteText);
         }
 
         [Test]
@@ -205,7 +205,63 @@ namespace Wox.Test
             string autoCompleteText = MainViewModel.GetSearchText(index, input, query);
 
             // Assert
-            Assert.AreEqual(autoCompleteText, input);
+            Assert.AreEqual(input, autoCompleteText);
+        }
+
+        [Test]
+        public void ShouldAutoCompleteTextBeEmpty_ShouldReturnFalse_WhenAutoCompleteTextIsEmpty()
+        {
+            // Arrange
+            string queryText = "Te";
+            string autoCompleteText = string.Empty;
+
+            // Act
+            bool result = MainViewModel.ShouldAutoCompleteTextBeEmpty(queryText, autoCompleteText);
+
+            // Assert
+            Assert.AreEqual(false, result);
+        }
+
+        [Test]
+        public void ShouldAutoCompleteTextBeEmpty_ShouldReturnTrue_WhenQueryTextMatchAutoCompleteText()
+        {
+            // Arrange
+            string queryText = "Te";
+            string autoCompleteText = "Teams";
+
+            // Act
+            bool result = MainViewModel.ShouldAutoCompleteTextBeEmpty(queryText, autoCompleteText);
+
+            // Assert
+            Assert.AreEqual(false, result);
+        }
+
+        [Test]
+        public void ShouldAutoCompleteTextBeEmpty_ShouldReturnTrue_WhenQueryTextIsEmpty()
+        {
+            // Arrange
+            string queryText = string.Empty;
+            string autoCompleteText = "Teams";
+
+            // Act
+            bool result = MainViewModel.ShouldAutoCompleteTextBeEmpty(queryText, autoCompleteText);
+
+            // Assert
+            Assert.AreEqual(true, result);
+        }
+
+        [Test]
+        public void ShouldAutoCompleteTextBeEmpty_ShouldReturnTrue_WhenQueryTextDoesNotMatchAutoCompleteText()
+        {
+            // Arrange
+            string queryText = "TE";
+            string autoCompleteText = "Teams";
+
+            // Act
+            bool result = MainViewModel.ShouldAutoCompleteTextBeEmpty(queryText, autoCompleteText);
+
+            // Assert
+            Assert.AreEqual(true, result);
         }
     }
 }

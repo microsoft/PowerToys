@@ -82,10 +82,13 @@ namespace KeyboardManagerHelper
     winrt::hstring GetErrorMessage(ErrorType errorType);
 
     // Function to return the list of key name in the order for the drop down based on the key codes
-    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::wstring>& list);
+    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::pair<DWORD,std::wstring>>& list);
 
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
+
+    // Function to set the dummy key events used for remapping shortcuts, required to ensure releasing a modifier doesn't trigger another action (For example, Win->Start Menu or Alt->Menu bar)
+    void SetDummyKeyEvent(LPINPUT keyEventArray, int& index, ULONG_PTR extraInfo);
 
     // Function to return window handle for a full screen UWP app
     HWND GetFullscreenUWPWindowHandle();
@@ -97,14 +100,11 @@ namespace KeyboardManagerHelper
     void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, LPINPUT keyEventArray, int& index, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);
 
     // Function to filter the key codes for artificial key codes
-    DWORD FilterArtificialKeys(const DWORD& key);
+    int32_t FilterArtificialKeys(const int32_t& key);
 
     // Function to sort a vector of shortcuts based on it's size
     void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
 
     // Function to check if a modifier has been repeated in the previous drop downs
-    bool CheckRepeatedModifier(std::vector<DWORD>& currentKeys, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
-
-    // Function to get the selected key codes from the list of selected indices
-    std::vector<DWORD> GetKeyCodesFromSelectedIndices(const std::vector<int32_t>& selectedIndices, const std::vector<DWORD>& keyCodeList);
+    bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCodes);
 }

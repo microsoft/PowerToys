@@ -102,6 +102,8 @@
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Helpers\NativeKeyboardHelper.cs" />
+    <Compile Include="Helpers\NativeMethods.cs" />
     <Compile Include="Helpers\NavHelper.cs" />
     <Compile Include="Helpers\Observable.cs" />
     <Compile Include="Helpers\RelayCommand.cs" />
@@ -201,7 +203,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Include="Strings\en-us\Resources.resw" />
+    <PRIResource Include="Strings\*\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\HotkeySettingsControl.xaml">
@@ -287,9 +289,9 @@
       <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
       <Name>Telemetry</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj">
+    <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj">
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>
-      <Name>Microsoft.PowerToys.Settings.UI.Lib</Name>
+      <Name>Microsoft.PowerToys.Settings.UI.Library</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

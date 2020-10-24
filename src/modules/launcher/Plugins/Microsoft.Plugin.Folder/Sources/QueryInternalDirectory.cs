@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources.Result;
 using Wox.Plugin;
 
@@ -36,15 +37,10 @@ namespace Microsoft.Plugin.Folder.Sources
             return search.Any(c => SpecialSearchChars.Contains(c));
         }
 
-        public static SearchOption GetSearchOptions(string query)
+        public static bool RecursiveSearch(string query)
         {
             // give the ability to search all folder when it contains a >
-            if (query.Any(c => c.Equals('>')))
-            {
-                return SearchOption.AllDirectories;
-            }
-
-            return SearchOption.TopDirectoryOnly;
+            return query.Any(c => c.Equals('>'));
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
@@ -99,9 +95,9 @@ namespace Microsoft.Plugin.Folder.Sources
             }
 
             var (search, incompleteName) = processed;
-            var searchOption = GetSearchOptions(incompleteName);
+            var isRecursive = RecursiveSearch(incompleteName);
 
-            if (searchOption == SearchOption.AllDirectories)
+            if (isRecursive)
             {
                 // match everything before and after search term using supported wildcard '*', ie. *searchterm*
                 if (string.IsNullOrEmpty(incompleteName))
@@ -117,7 +113,7 @@ namespace Microsoft.Plugin.Folder.Sources
             yield return new CreateOpenCurrentFolderResult(search);
 
             // Note: Take 1000 is so that you don't search the whole system before you discard
-            var lookup = _queryFileSystemInfo.MatchFileSystemInfo(search, incompleteName, searchOption)
+            var lookup = _queryFileSystemInfo.MatchFileSystemInfo(search, incompleteName, isRecursive)
                 .Take(1000)
                 .ToLookup(r => r.Type);
 

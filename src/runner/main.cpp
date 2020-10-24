@@ -9,15 +9,16 @@
 #include "restart_elevated.h"
 #include "Generated files/resource.h"
 
-#include <common/common.h>
-#include <common/dpi_aware.h>
-#include <common/winstore.h>
-#include <common/notifications.h>
-#include <common/updating/updating.h>
-#include <common/RestartManagement.h>
 #include <common/appMutex.h>
-#include <common/processApi.h>
+#include <common/common.h>
 #include <common/comUtils.h>
+#include <common/dpi_aware.h>
+#include <common/notifications.h>
+#include <common/processApi.h>
+#include <common/RestartManagement.h>
+#include <common/toast_dont_show_again.h>
+#include <common/updating/updating.h>
+#include <common/winstore.h>
 
 #include "update_state.h"
 #include "update_utils.h"
@@ -32,7 +33,6 @@
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
-#include <common/notifications/fancyzones_notifications.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -136,7 +136,7 @@ int runner(bool isProcessElevated)
             try
             {
                 auto module = load_powertoy(moduleSubdir);
-                modules().emplace(module->get_name(), std::move(module));
+                modules().emplace(module->get_key(), std::move(module));
             }
             catch (...)
             {
@@ -210,13 +210,15 @@ enum class toast_notification_handler_result
 toast_notification_handler_result toast_notification_handler(const std::wstring_view param)
 {
     const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
-    const std::wstring_view update_now = L"update_now/";
-    const std::wstring_view schedule_update = L"schedule_update/";
+    const std::wstring_view couldnt_toggle_powerpreview_modules_disable = L"couldnt_toggle_powerpreview_modules_disable/";
     const std::wstring_view download_and_install_update = L"download_and_install_update/";
+    const std::wstring_view open_settings = L"open_settings/";
+    const std::wstring_view schedule_update = L"schedule_update/";
+    const std::wstring_view update_now = L"update_now/";
 
     if (param == cant_drag_elevated_disable)
     {
-        return disable_cant_drag_elevated_warning() ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
+        return notifications::disable_toast(notifications::CantDragElevatedDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
     }
     else if (param.starts_with(update_now))
     {
@@ -260,6 +262,15 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
             return toast_notification_handler_result::exit_error;
         }
     }
+    else if (param == couldnt_toggle_powerpreview_modules_disable)
+    {
+        return notifications::disable_toast(notifications::PreviewModulesDontShowAgainRegistryPath) ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
+    }
+    else if (param == open_settings)
+    {
+        open_menu_from_another_instance();
+        return toast_notification_handler_result::exit_success;
+    }
     else
     {
         return toast_notification_handler_result::exit_error;
@@ -301,8 +312,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             return 0;
         }
     case SpecialMode::ReportSuccessfulUpdate:
-        notifications::show_toast(localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT, L"PowerToys");
+    {
+        notifications::remove_toasts(notifications::UPDATING_PROCESS_TOAST_TAG);
+        notifications::show_toast(localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
+                                  L"PowerToys",
+                                  notifications::toast_params{ notifications::UPDATING_PROCESS_TOAST_TAG });
         break;
+    }
 
     case SpecialMode::None:
         // continue as usual

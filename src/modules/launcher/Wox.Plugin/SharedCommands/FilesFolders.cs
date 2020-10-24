@@ -4,11 +4,14 @@
 
 using System;
 using System.IO;
+using System.Reflection;
+using Wox.Plugin.Logger;
 
 namespace Wox.Plugin.SharedCommands
 {
     public static class FilesFolders
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
         public static void Copy(this string sourcePath, string targetPath)
         {
             // Get the subdirectories for the specified directory.
@@ -50,6 +53,8 @@ namespace Wox.Plugin.SharedCommands
             catch (Exception e)
 #pragma warning restore CS0168 // Variable is declared but never used
             {
+                string error = $"Copying path {targetPath} has failed";
+                Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
                 throw e;
 #else
@@ -59,6 +64,7 @@ namespace Wox.Plugin.SharedCommands
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
         public static bool VerifyBothFolderFilesEqual(this string fromPath, string toPath)
         {
             try
@@ -82,15 +88,18 @@ namespace Wox.Plugin.SharedCommands
             catch (Exception e)
 #pragma warning restore CS0168 // Variable is declared but never used
             {
+                string error = $"Unable to verify folders and files between {fromPath} and {toPath}";
+                Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
                 throw e;
 #else
-                System.Windows.MessageBox.Show(string.Format("Unable to verify folders and files between {0} and {1}", fromPath, toPath));
+                System.Windows.MessageBox.Show(string.Format(error));
                 return false;
 #endif
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
         public static void RemoveFolder(this string path)
         {
             try
@@ -104,10 +113,12 @@ namespace Wox.Plugin.SharedCommands
             catch (Exception e)
 #pragma warning restore CS0168 // Variable is declared but never used
             {
+                string error = $"Not able to delete folder {path}, please go to the location and manually delete it";
+                Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
                 throw e;
 #else
-                System.Windows.MessageBox.Show(string.Format("Not able to delete folder {0}, please go to the location and manually delete it", path));
+                System.Windows.MessageBox.Show(string.Format(error));
 #endif
             }
         }

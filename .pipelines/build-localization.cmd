@@ -26,4 +26,8 @@ dotnet "%XLocPath%\tools\netcore\Microsoft.Localization.XLoc.dll" /f "%LocProjec
 
 echo Localization build finished with exit code '%errorlevel%'.
 
+rem Move UWP resource files to correct file paths as per file path expected by UWP project
+cd %RepoRootWithoutBackslash%
+powershell -NonInteractive -executionpolicy Unrestricted ".\tools\localization\move_uwp_resources.ps1"
+
 exit /b %errorlevel%

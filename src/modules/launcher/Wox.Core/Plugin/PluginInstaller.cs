@@ -4,10 +4,12 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Core.Plugin
 {
@@ -39,17 +41,18 @@ namespace Wox.Core.Plugin
                     return;
                 }
 
-                string pluginFolderPath = Infrastructure.Constant.PluginsDirectory;
+                string pluginFolderPath = Constant.PluginsDirectory;
 
+                // Using Ordinal since this is part of a path
                 string newPluginName = plugin.Name
-                    .Replace("/", "_")
-                    .Replace("\\", "_")
-                    .Replace(":", "_")
-                    .Replace("<", "_")
-                    .Replace(">", "_")
-                    .Replace("?", "_")
-                    .Replace("*", "_")
-                    .Replace("|", "_")
+                    .Replace("/", "_", StringComparison.Ordinal)
+                    .Replace("\\", "_", StringComparison.Ordinal)
+                    .Replace(":", "_", StringComparison.Ordinal)
+                    .Replace("<", "_", StringComparison.Ordinal)
+                    .Replace(">", "_", StringComparison.Ordinal)
+                    .Replace("?", "_", StringComparison.Ordinal)
+                    .Replace("*", "_", StringComparison.Ordinal)
+                    .Replace("|", "_", StringComparison.Ordinal)
                     + "-" + Guid.NewGuid();
                 string newPluginPath = Path.Combine(pluginFolderPath, newPluginName);
                 string content = $"Do you want to install following plugin?{Environment.NewLine}{Environment.NewLine}" +
@@ -95,6 +98,7 @@ namespace Wox.Core.Plugin
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
         private static PluginMetadata GetMetadataFromJson(string pluginDirectory)
         {
             string configPath = Path.Combine(pluginDirectory, "plugin.json");
@@ -110,9 +114,10 @@ namespace Wox.Core.Plugin
                 metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 string error = $"Parse plugin config {configPath} failed: json format is not valid";
+                Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
                 {
                     throw new Exception(error);
@@ -157,12 +162,13 @@ namespace Wox.Core.Plugin
         /// <param name="overWrite">overwrite</param>
         private static void UnZip(string zippedFile, string strDirectory, bool overWrite)
         {
-            if (strDirectory == string.Empty)
+            if (string.IsNullOrEmpty(strDirectory))
             {
                 strDirectory = Directory.GetCurrentDirectory();
             }
 
-            if (!strDirectory.EndsWith("\\"))
+            // Using Ordinal since this is a path
+            if (!strDirectory.EndsWith("\\", StringComparison.Ordinal))
             {
                 strDirectory += "\\";
             }
@@ -177,7 +183,7 @@ namespace Wox.Core.Plugin
                     string pathToZip = string.Empty;
                     pathToZip = theEntry.Name;
 
-                    if (pathToZip != string.Empty)
+                    if (!string.IsNullOrEmpty(pathToZip))
                     {
                         directoryName = Path.GetDirectoryName(pathToZip) + "\\";
                     }
@@ -186,7 +192,7 @@ namespace Wox.Core.Plugin
 
                     Directory.CreateDirectory(strDirectory + directoryName);
 
-                    if (fileName != string.Empty)
+                    if (!string.IsNullOrEmpty(fileName))
                     {
                         if ((File.Exists(strDirectory + directoryName + fileName) && overWrite) || (!File.Exists(strDirectory + directoryName + fileName)))
                         {

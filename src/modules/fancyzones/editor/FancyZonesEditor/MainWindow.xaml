@@ -1,5 +1,6 @@
 <Window x:Class="FancyZonesEditor.MainWindow"
         x:Name="MainWindow1"
+        AutomationProperties.Name="{x:Static props:Resources.Fancy_Zones_Main_Editor}"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -23,6 +24,7 @@
         <Converters:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
         <Converters:BooleanToIntConverter x:Key="BooleanToIntConverter" />
     </Window.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -34,7 +36,7 @@
             Foreground="{DynamicResource PrimaryForegroundBrush}"
             Margin="16,-24,0,0" />
         <StackPanel>
-            <TextBlock x:Name="dialog_Title"
+            <TextBlock x:Name="DialogTitle"
                        Text="{x:Static props:Resources.Choose_Layout}"
                        Style="{StaticResource BaseTextBlockStyle}"
                        Margin="16,8,16,8"  />
@@ -43,6 +45,7 @@
                         Background="Transparent"
                         x:Name="TemplateTab"
                         SelectedIndex="{Binding IsCustomLayoutActive, Converter={StaticResource BooleanToIntConverter}, Mode=OneWay}"
+                        AutomationProperties.LabeledBy="{Binding ElementName=DialogTitle}"
                         Margin="-4,0,0,0">
                 <TabItem Header="{x:Static props:Resources.Templates}"
                          Style="{StaticResource TabItemPivotStyle}">
@@ -208,26 +211,31 @@
                     <ui:ToggleSwitch x:Name="spaceAroundSetting"
                                  Header="{x:Static props:Resources.Show_Space_Zones}"
                                  IsOn="{Binding ShowSpacing}"/>
-                    <TextBlock Text="{x:Static props:Resources.Space_Around_Zones}"
+                    <TextBlock x:Name="paddingValue"
+                           Text="{x:Static props:Resources.Space_Around_Zones}"
                            IsEnabled="{Binding ShowSpacing}"
                            Margin="0,8,0,0"
                            Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                    <TextBox x:Name="paddingValue"
-                         Margin="0,6,0,0"
+                    <TextBox Margin="0,6,0,0"
                          IsEnabled="{Binding ShowSpacing}"
                          Text="{Binding Spacing, Mode=TwoWay}"
                          Width="86"
-                         HorizontalAlignment="Left"/>
+                         HorizontalAlignment="Left"
+                         AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}"
+                         />
                     <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
                            IsEnabled="{Binding ShowSpacing}"
                            Margin="0,16,0,0"
-                           Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                    <TextBox x:Name="sensitivityRadiusValue"
-                         Margin="0,6,0,0"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                           x:Name="sensitivityRadiusValue"
+                           />
+                    <TextBox Margin="0,6,0,0"
                          Text="{Binding SensitivityRadius, Mode=TwoWay}"
                          Width="86"
+                         AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
                          HorizontalAlignment="Left"/>
                 </StackPanel>
+
                 <StackPanel Orientation="Vertical"
                         Margin="16"
                         HorizontalAlignment="Stretch"
