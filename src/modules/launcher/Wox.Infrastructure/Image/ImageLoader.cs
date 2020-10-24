@@ -113,6 +113,7 @@ namespace Wox.Infrastructure.Image
             Cache,
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is being logged")]
         private static ImageResult LoadInternal(string path, bool loadFullImage = false)
         {
             ImageSource image;

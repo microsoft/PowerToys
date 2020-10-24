@@ -6,9 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.Win32;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Exception
 {
@@ -110,6 +112,7 @@ namespace Wox.Infrastructure.Exception
         }
 
         // http://msdn.microsoft.com/en-us/library/hh925568%28v=vs.110%29.aspx
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is being logged")]
         private static List<string> GetFrameworkVersionFromRegistry()
         {
             try
@@ -191,8 +194,9 @@ namespace Wox.Infrastructure.Exception
 
                 return result;
             }
-            catch (System.Exception)
+            catch (System.Exception e)
             {
+                Log.Exception("Could not get framework version from registry", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return new List<string>();
             }
         }

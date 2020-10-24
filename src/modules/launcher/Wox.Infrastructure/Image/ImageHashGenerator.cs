@@ -4,14 +4,17 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Image
 {
     public class ImageHashGenerator : IImageHashGenerator
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is being logged")]
         public string GetHashFromImage(ImageSource imageSource)
         {
             if (!(imageSource is BitmapSource image))
@@ -38,8 +41,9 @@ namespace Wox.Infrastructure.Image
                     }
                 }
             }
-            catch
+            catch (System.Exception e)
             {
+                Log.Exception($"Failed to get hash from image", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return null;
             }
         }
