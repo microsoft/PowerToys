@@ -166,7 +166,7 @@ namespace Wox.Infrastructure
         }
 
         // To get the index of the closest space which preceeds the first matching index
-        private int CalculateClosestSpaceIndex(List<int> spaceIndices, int firstMatchIndex)
+        private static int CalculateClosestSpaceIndex(List<int> spaceIndices, int firstMatchIndex)
         {
             if (spaceIndices.Count == 0)
             {

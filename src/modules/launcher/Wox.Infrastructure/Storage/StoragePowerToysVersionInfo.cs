@@ -81,7 +81,7 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private string GetFilePath(string associatedFilePath, int type)
+        private static string GetFilePath(string associatedFilePath, int type)
         {
             string suffix = string.Empty;
             string cacheSuffix = ".cache";
