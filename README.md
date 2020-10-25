@@ -1,4 +1,4 @@
-# Overview
+# PowerToys Overview
 
 <img src="./doc/images/overview/PT%20hero%20image.png"/>
 
@@ -52,7 +52,7 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 ### Keyboard Manager
 
-[<img align="left" src="https://aka.ms/powerToysKBMImageSmall" />](https://aka.ms/PowerToysOverview_KeyboardManager) [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts. This PowerToy requires Windows 10 1903 (build 18362) or later.
+[<img align="left" src="https://aka.ms/powerToysKBMImageSmall" />](https://aka.ms/PowerToysOverview_KeyboardManager) [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts. This PowerToy requires Windows 10 1903 (build 18362) or later, ensuring better accesibility for pleasant usuage
 <br/>
 <br/>
 <br/>
