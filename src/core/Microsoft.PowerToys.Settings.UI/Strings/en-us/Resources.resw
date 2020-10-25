@@ -302,9 +302,6 @@
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
-  <data name="PowerLauncher_Theme.Text" xml:space="preserve">
-    <value>Choose color</value>
-  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
@@ -405,15 +402,6 @@
   <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
   </data>
-  <data name="GeneralPage_Radio_Theme_Dark.Content" xml:space="preserve">
-    <value>Dark</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Default.Content" xml:space="preserve">
-    <value>System default</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Light.Content" xml:space="preserve">
-    <value>Light</value>
-  </data>
   <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
   </data>
@@ -434,9 +422,6 @@
   </data>
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
     <value>Enable PowerRename</value>
-  </data>
-  <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
-    <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
     <value>Show icon on context menu</value>
@@ -491,9 +476,6 @@
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
-  </data>
-  <data name="ShortcutGuide_Theme.Text" xml:space="preserve">
-    <value>Choose Shortcut Guide overlay color</value>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
@@ -777,13 +759,16 @@
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
   </data>
-  <data name="PowerLauncher_Radio_Theme_Dark.Content" xml:space="preserve">
+  <data name="ColorModeHeader.Text" xml:space="preserve">
+    <value>Choose a mode</value>
+  </data>
+  <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
   </data>
-  <data name="PowerLauncher_Radio_Theme_Default.Content" xml:space="preserve">
-    <value>System default</value>
-  </data>
-  <data name="PowerLauncher_Radio_Theme_Light.Content" xml:space="preserve">
+  <data name="Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
+  </data>
+  <data name="Radio_Theme_Default.Content" xml:space="preserve">
+    <value>Windows default</value>
   </data>
 </root>
