@@ -662,7 +662,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zip]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[压缩]]></Val>
+            <Val><![CDATA[ZIP]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

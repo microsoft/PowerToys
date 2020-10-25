@@ -398,7 +398,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[密钥]]></Val>
+            <Val><![CDATA[键]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Key Drop Down]]></Val>
@@ -464,7 +464,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press a key on selected keyboard:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[按所选键盘上的键:]]></Val>
+            <Val><![CDATA[按下选择的键:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

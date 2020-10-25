@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Flash zones when the active FancyZones layout changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在活动 FancyZones 布局变化时的切换区域]]></Val>
+            <Val><![CDATA[在活动布局变化时闪烁区域]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -257,7 +257,7 @@
         <Str Cat="Text">
           <Val><![CDATA[During zone layout changes, windows assigned to a zone will match new size/positions]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在区域布局变化期间，分配给区域的窗口将匹配新的大小/位置]]></Val>
+            <Val><![CDATA[在区域布局变化时，分配给区域的窗口将匹配新的大小/位置]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
