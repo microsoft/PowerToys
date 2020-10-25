@@ -101,6 +101,7 @@
 
                 <RadioButton x:Uid="Radio_Theme_Default"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
+                <HyperlinkButton x:Uid="Windows_Color_Settings" NavigateUri="ms-settings:colors"/>
             </StackPanel>
 
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_RunAtStartUp"  

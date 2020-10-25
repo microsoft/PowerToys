@@ -771,4 +771,7 @@
   <data name="Radio_Theme_Default.Content" xml:space="preserve">
     <value>Windows default</value>
   </data>
+  <data name="Windows_Color_Settings.Content" xml:space="preserve">
+    <value>Windows color settings</value>
+  </data>
 </root>

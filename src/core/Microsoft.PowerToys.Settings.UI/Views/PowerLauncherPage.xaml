@@ -166,6 +166,7 @@
                 <RadioButton x:Uid="Radio_Theme_Default"
                              IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                              IsChecked="{Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}" />
+                <HyperlinkButton x:Uid="Windows_Color_Settings" NavigateUri="ms-settings:colors"/>
             </StackPanel>
         </StackPanel>
 
