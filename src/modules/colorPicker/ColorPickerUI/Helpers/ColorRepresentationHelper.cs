@@ -24,13 +24,13 @@ namespace ColorPicker.Helpers
             => colorRepresentationType switch
             {
                 ColorRepresentationType.CMYK => ColorToCYMK(color),
-                ColorRepresentationType.NCol => ColorToNCol(color),
                 ColorRepresentationType.HEX => ColorToHex(color),
                 ColorRepresentationType.HSB => ColorToHSB(color),
                 ColorRepresentationType.HSI => ColorToHSI(color),
                 ColorRepresentationType.HSL => ColorToHSL(color),
                 ColorRepresentationType.HSV => ColorToHSV(color),
                 ColorRepresentationType.HWB => ColorToHWB(color),
+                ColorRepresentationType.NCol => ColorToNCol(color),
                 ColorRepresentationType.RGB => ColorToRGB(color),
 
                 // Fall-back value, when "_userSettings.CopiedColorRepresentation.Value" is incorrect
@@ -55,23 +55,6 @@ namespace ColorPicker.Helpers
                  + $", {magenta.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {yellow.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {blackKey.ToString(CultureInfo.InvariantCulture)}%)";
-        }
-
-        /// <summary>
-        /// Return a <see cref="string"/> representation of a natural color
-        /// </summary>
-        /// <param name="color">The <see cref="Color"/> for the natural color presentation</param>
-        /// <returns>A <see cref="string"/> representation of a natural color</returns>
-        private static string ColorToNCol(Color color)
-        {
-            var (hue, whiteness, blackness) = ColorHelper.ConvertToNaturalColor(color);
-
-            whiteness = Math.Round(whiteness * 100);
-            blackness = Math.Round(blackness * 100);
-
-            return $"{hue}"
-                 + $", {whiteness.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {blackness.ToString(CultureInfo.InvariantCulture)}%";
         }
 
         /// <summary>
@@ -174,6 +157,23 @@ namespace ColorPicker.Helpers
             return $"hwb({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {whiteness.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {blackness.ToString(CultureInfo.InvariantCulture)}%)";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation of a natural color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the natural color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a natural color</returns>
+        private static string ColorToNCol(Color color)
+        {
+            var (hue, whiteness, blackness) = ColorHelper.ConvertToNaturalColor(color);
+
+            whiteness = Math.Round(whiteness * 100);
+            blackness = Math.Round(blackness * 100);
+
+            return $"{hue}"
+                 + $", {whiteness.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {blackness.ToString(CultureInfo.InvariantCulture)}%";
         }
 
         /// <summary>
