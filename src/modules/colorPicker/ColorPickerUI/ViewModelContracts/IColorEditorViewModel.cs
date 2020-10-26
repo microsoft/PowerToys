@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows.Media;
+using ColorPicker.Models;
 
 namespace ColorPicker.ViewModelContracts
 {
@@ -20,6 +21,8 @@ namespace ColorPicker.ViewModelContracts
         ICommand OpenColorPickerCommand { get; }
 
         ICommand RemoveColorCommand { get; }
+
+        ObservableCollection<ColorFormatModel> ColorRepresentations { get; }
 
         ObservableCollection<Color> ColorsHistory { get; }
 

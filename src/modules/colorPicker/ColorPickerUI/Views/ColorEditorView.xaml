@@ -9,7 +9,7 @@
              xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:controls="clr-namespace:ColorPicker.Controls"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-             d:DesignHeight="380" d:DesignWidth="400">
+             d:DesignHeight="380" d:DesignWidth="400" x:Name="colorEditorControl">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="64"/>
@@ -91,12 +91,19 @@
             </ui:ListView>
         </Grid>
 
-        <StackPanel Orientation="Vertical" Margin="12,124,12,12" Grid.Column="1" Grid.Row="1">
-            <controls:ColorFormatControl FormatName="HEX" Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
-            <controls:ColorFormatControl FormatName="CMYK" Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
-            <controls:ColorFormatControl FormatName="XAML" Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
-            <controls:ColorFormatControl FormatName="RGB" Text="{Binding SelectedColor, Converter={StaticResource colorToStringConverter}}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
-        </StackPanel>
+        <ItemsControl ItemsSource="{Binding ColorRepresentations}" Grid.Column="1" Grid.Row="1">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" Margin="12,124,12,12"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        
         <Grid Grid.Column="1" Height="48" Margin="12,52,12,0" VerticalAlignment="Top">
             <Grid.Effect>
                 <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />

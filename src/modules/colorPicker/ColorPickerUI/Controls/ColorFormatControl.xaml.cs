@@ -5,9 +5,10 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
+using ColorPicker.Models;
 
 namespace ColorPicker.Controls
 {
@@ -16,9 +17,9 @@ namespace ColorPicker.Controls
     /// </summary>
     public partial class ColorFormatControl : UserControl
     {
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(ColorFormatControl), new PropertyMetadata(PropertyChanged), ValidateCallback);
+        public static readonly DependencyProperty ColorFormatModelProperty = DependencyProperty.Register("ColorFormatModel", typeof(ColorFormatModel), typeof(ColorFormatControl), new PropertyMetadata(ColorFormatModelPropertyChanged));
 
-        public static readonly DependencyProperty FormatNameProperty = DependencyProperty.Register("FormatName", typeof(string), typeof(ColorFormatControl), new PropertyMetadata(FormatNamePropertyChanged));
+        public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register("SelectedColor", typeof(Color), typeof(ColorFormatControl), new PropertyMetadata(SelectedColorPropertyChanged));
 
         public static readonly DependencyProperty ColorCopiedNotificationBorderProperty = DependencyProperty.Register("ColorCopiedNotificationBorder", typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(ColorCopiedBorderPropertyChanged));
 
@@ -26,16 +27,16 @@ namespace ColorPicker.Controls
         private IThrottledActionInvoker _actionInvoker;
         private bool _copyIndicatorVisible;
 
-        public string Text
+        public Color SelectedColor
         {
-            get { return (string)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get { return (Color)GetValue(SelectedColorProperty); }
+            set { SetValue(SelectedColorProperty, value); }
         }
 
-        public string FormatName
+        public ColorFormatModel ColorFormatModel
         {
-            get { return (string)GetValue(FormatNameProperty); }
-            set { SetValue(FormatNameProperty, value); }
+            get { return (ColorFormatModel)GetValue(ColorFormatModelProperty); }
+            set { SetValue(ColorFormatModelProperty, value); }
         }
 
         public FrameworkElement ColorCopiedNotificationBorder
@@ -62,24 +63,14 @@ namespace ColorPicker.Controls
             _actionInvoker.ScheduleAction(() => HideCopiedIndicator(), CopyIndicatorStayTimeInMs);
         }
 
-        private static bool ValidateCallback(object value)
+        private static void SelectedColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (value != null)
-            {
-                return true;
-            }
-
-            return true;
+            ((ColorFormatControl)d).ColorTextRepresentationTextBlock.Text = ((ColorFormatControl)d).ColorFormatModel.Convert((Color)e.NewValue);
         }
 
-        private static void PropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void ColorFormatModelPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ColorFormatControl)d).ColorTextRepresentationTextBlock.Text = (string)e.NewValue;
-        }
-
-        private static void FormatNamePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((ColorFormatControl)d).FormatNameTextBlock.Text = (string)e.NewValue;
+            ((ColorFormatControl)d).FormatNameTextBlock.Text = ((ColorFormatModel)e.NewValue).FormatName;
         }
 
         private static void ColorCopiedBorderPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

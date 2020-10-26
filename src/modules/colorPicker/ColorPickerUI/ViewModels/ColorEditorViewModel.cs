@@ -9,6 +9,8 @@ using System.Globalization;
 using System.Windows.Input;
 using System.Windows.Media;
 using ColorPicker.Common;
+using ColorPicker.Helpers;
+using ColorPicker.Models;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 
@@ -30,6 +32,7 @@ namespace ColorPicker.ViewModels
             RemoveColorCommand = new RelayCommand(DeleteSelectedColor);
             ColorsHistory.CollectionChanged += ColorsHistory_CollectionChanged;
             _userSettings = userSettings;
+            SetupAvailableColorRepresentations();
         }
 
         public event EventHandler CloseWindowRequested;
@@ -43,6 +46,8 @@ namespace ColorPicker.ViewModels
         public ICommand RemoveColorCommand { get; }
 
         public ObservableCollection<Color> ColorsHistory { get; } = new ObservableCollection<Color>();
+
+        public ObservableCollection<ColorFormatModel> ColorRepresentations { get; } = new ObservableCollection<ColorFormatModel>();
 
         public Color SelectedColor
         {
@@ -116,6 +121,46 @@ namespace ColorPicker.ViewModels
             var indexToSelect = SelectedColorIndex == ColorsHistory.Count - 1 ? ColorsHistory.Count - 2 : SelectedColorIndex;
             ColorsHistory.RemoveAt(SelectedColorIndex);
             SelectedColorIndex = indexToSelect;
+        }
+
+        private void SetupAvailableColorRepresentations()
+        {
+            ColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = "HEX",
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.HEX); },
+                });
+
+            ColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = "RGB",
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.RGB); },
+                });
+
+            ColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = "HSL",
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.HSL); },
+                });
+
+            ColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = "HSV",
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.HSV); },
+                });
+
+            ColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = "CMYK",
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.CMYK); },
+                });
+
+            // Any other custom format to be added here as well
         }
     }
 }

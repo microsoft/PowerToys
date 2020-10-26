@@ -31,7 +31,6 @@
                        VerticalAlignment="Center"/>
 
             <TextBox x:Name="ColorTextRepresentationTextBlock"
-                       Text="{Binding Text}"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        FontFamily="Consolas"
                        Grid.Column="1"
