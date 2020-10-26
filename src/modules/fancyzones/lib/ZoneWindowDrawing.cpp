@@ -1,7 +1,10 @@
 #include "pch.h"
 #include "ZoneWindowDrawing.h"
 
+#include <algorithm>
+#include <map>
 #include <string>
+#include <vector>
 
 namespace NonLocalizable
 {
@@ -79,7 +82,7 @@ namespace
         g.DrawString(text.c_str(), -1, &font, gdiRect, &stringFormat, &solidBrush);
     }
 
-    void DrawZone(wil::unique_hdc& hdc, ZoneWindowDrawing::ColorSetting const& colorSetting, winrt::com_ptr<IZone> zone, const std::vector<winrt::com_ptr<IZone>>& zones, bool flashMode) noexcept
+    void DrawZone(wil::unique_hdc& hdc, ZoneWindowDrawing::ColorSetting const& colorSetting, winrt::com_ptr<IZone> zone, bool flashMode)noexcept
     {
         RECT zoneRect = zone->GetZoneRect();
 
@@ -95,7 +98,7 @@ namespace
 
         if (!flashMode)
         {
-            DrawIndex(hdc, zoneRect, zone->Id());
+            DrawIndex(hdc, zoneRect, zone->Id() + 1);
         }
     }
 }
@@ -112,66 +115,50 @@ namespace ZoneWindowDrawing
                            COLORREF zoneBorderColor,
                            COLORREF highlightColor,
                            int zoneOpacity,
-                           const std::vector<winrt::com_ptr<IZone>>& zones,
+                           const IZoneSet::ZonesMap& zones,
                            const std::vector<size_t>& highlightZones,
-                           bool flashMode,
-                           bool drawHints) noexcept
+                           bool flashMode) noexcept
     {
         //                                 { fillAlpha, fill, borderAlpha, border, thickness }
-        ColorSetting const colorHints{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 255, RGB(104, 118, 138), -2 };
         ColorSetting colorViewer{ OpacitySettingToAlpha(zoneOpacity), 0, 255, RGB(40, 50, 60), -2 };
         ColorSetting colorHighlight{ OpacitySettingToAlpha(zoneOpacity), 0, 255, 0, -2 };
         ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
 
-        std::vector<bool> isHighlighted(zones.size(), false);
-        for (size_t x : highlightZones)
-        {
-            isHighlighted[x] = true;
-        }
-
         // First draw the inactive zones
         for (auto iter = zones.begin(); iter != zones.end(); iter++)
         {
-            int zoneId = static_cast<int>(iter - zones.begin());
-            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
+            winrt::com_ptr<IZone> zone = iter->second;
+            size_t zoneId = zone->Id();
             if (!zone)
             {
                 continue;
             }
 
-            if (!isHighlighted[zoneId])
+            auto zoneIt = std::find(highlightZones.begin(), highlightZones.end(), zoneId);
+            if (zoneIt == highlightZones.end())
             {
                 if (flashMode)
                 {
-                    DrawZone(hdc, colorFlash, zone, zones, flashMode);
+                    DrawZone(hdc, colorFlash, zone, flashMode);
                 }
-                else if (drawHints)
-                {
-                    DrawZone(hdc, colorHints, zone, zones, flashMode);
-                }
+                else
                 {
                     colorViewer.fill = zoneColor;
                     colorViewer.border = zoneBorderColor;
-                    DrawZone(hdc, colorViewer, zone, zones, flashMode);
+                    DrawZone(hdc, colorViewer, zone, flashMode);
                 }
             }
         }
 
         // Draw the active zones on top of the inactive zones
-        for (auto iter = zones.begin(); iter != zones.end(); iter++)
+        for (const auto& zoneId : highlightZones)
         {
-            int zoneId = static_cast<int>(iter - zones.begin());
-            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
-            if (!zone)
-            {
-                continue;
-            }
+            colorHighlight.fill = highlightColor;
+            colorHighlight.border = zoneBorderColor;
 
-            if (isHighlighted[zoneId])
+            if (zones.contains(zoneId))
             {
-                colorHighlight.fill = highlightColor;
-                colorHighlight.border = zoneBorderColor;
-                DrawZone(hdc, colorHighlight, zone, zones, flashMode);
+                DrawZone(hdc, colorHighlight, zones.at(zoneId), flashMode);
             }
         }
     }

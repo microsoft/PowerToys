@@ -15,7 +15,7 @@ using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using Log = Wox.Infrastructure.Logger.Log;
+using Log = Wox.Plugin.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
 
 namespace PowerLauncher
@@ -336,8 +336,9 @@ namespace PowerLauncher
         {
             var textBox = (TextBox)sender;
             var text = textBox.Text;
+            var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
-            if (string.IsNullOrEmpty(text))
+            if (MainViewModel.ShouldAutoCompleteTextBeEmpty(text, autoCompleteText))
             {
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }

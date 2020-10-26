@@ -104,8 +104,11 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[例如，若您想要按 A 來執行 "Ctrl+C"，則按鍵 "A" 會在「按鍵」資料行，快速鍵 "Ctrl+C" 會在「對應對」資料行。]]></Val>
+            <Val><![CDATA[例如，若您想要按 A 來執行 "Ctrl+C"，則「按鍵」資料行會是按鍵 "A"，「對應至」資料行會是快速鍵 "Ctrl+C"。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -176,8 +179,11 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[例如，若您只想要在 Microsoft Edge 上按 "Ctrl+C" 時執行 "Alt"，則 "Ctrl+C" 會在「快速鍵」資料行，"Alt" 鍵會在「對應至」資料行，而 "MSEdge" 則會在「目標應用程式」資料行。若未輸入目標應用程式，將會套用到全域。此名稱必須是處理序名稱，而不是應用程式名稱。]]></Val>
+            <Val><![CDATA[例如，若您只想要在 Microsoft Edge 上按 "Ctrl+C" 時執行 "Alt"，則「快速鍵」資料行會是 "Ctrl+C"，「對應至」資料行會是 "Alt" 鍵，而「目標應用程式」資料行會是 "MSEdge"。若未輸入目標應用程式，將會在全域套用。此名稱必須是處理序名稱，而不是應用程式名稱。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -390,10 +396,13 @@
       </Item>
       <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Key Drop Down]]></Val>
+          <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[下拉式按鍵]]></Val>
+            <Val><![CDATA[金鑰]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Key Drop Down]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

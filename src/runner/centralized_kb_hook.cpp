@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "centralized_kb_hook.h"
-#include "common/common.h"
+#include <common/common.h>
+#include <common/debug_control.h>
 
 namespace CentralizedKeyboardHook
 {

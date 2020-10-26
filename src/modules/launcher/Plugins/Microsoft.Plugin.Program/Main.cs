@@ -8,12 +8,13 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.Plugin.Program.ProgramArgumentParser;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Microsoft.Plugin.Program
@@ -156,9 +157,9 @@ namespace Microsoft.Plugin.Program
             }
 
             var menuOptions = new List<ContextMenuResult>();
-            if (selectedResult.ContextData is Programs.IProgram program)
+            if (selectedResult.ContextData is IProgram program)
             {
-                menuOptions = program.ContextMenus(_context.API);
+                menuOptions = program.ContextMenus(selectedResult.ProgramArguments, _context.API);
             }
 
             return menuOptions;

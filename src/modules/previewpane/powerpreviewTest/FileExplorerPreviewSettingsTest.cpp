@@ -82,7 +82,7 @@ namespace FileExplorerPreviewSettingsTest
             bool defaultState = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(defaultState, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.LoadState(settings);
@@ -97,7 +97,7 @@ namespace FileExplorerPreviewSettingsTest
             bool defaultState = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(defaultState, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\"}");
+            auto settings = PowerToyValues::from_json_string(L"{\"name\":\"Module Name\"}", L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.LoadState(settings);
@@ -113,7 +113,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
             previewSettings.UpdateToggleSettingState(true);
             // Add expected data in registry
             mockRegistryWrapper->SetMockData(previewSettings.GetRegistryValueData());
@@ -134,7 +134,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             ThumbnailProviderSettings thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(thumbnailSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(thumbnailSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
             thumbnailSettings.UpdateToggleSettingState(true);
             // Add expected data in registry
             mockRegistryWrapper->SetMockData(thumbnailSettings.GetCLSID());
@@ -155,7 +155,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
             previewSettings.UpdateToggleSettingState(true);
 
             // Act
@@ -174,7 +174,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
             previewSettings.UpdateToggleSettingState(true);
 
             // Act
@@ -193,7 +193,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"), L"FileExplorerPreviewTests");
             previewSettings.UpdateToggleSettingState(false);
 
             // Act
@@ -211,7 +211,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"), L"FileExplorerPreviewTests");
             previewSettings.UpdateToggleSettingState(false);
             // Add expected data in registry
             mockRegistryWrapper->SetMockData(previewSettings.GetRegistryValueData());
@@ -231,7 +231,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             ThumbnailProviderSettings thumbnailSettings = GetThumbnailProviderSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(thumbnailSettings.GetToggleSettingName(), L"true"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(thumbnailSettings.GetToggleSettingName(), L"true"), L"FileExplorerPreviewTests");
             thumbnailSettings.UpdateToggleSettingState(false);
             // Add expected data in registry
             mockRegistryWrapper->SetMockData(thumbnailSettings.GetCLSID());
@@ -251,7 +251,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"true"), L"FileExplorerPreviewTests");
             previewSettings.UpdateToggleSettingState(false);
 
             // Act
@@ -269,7 +269,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.UpdateState(settings, enabled, elevated);
@@ -285,7 +285,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.UpdateState(settings, enabled, elevated);
@@ -301,7 +301,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = true;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.UpdateState(settings, enabled, elevated);
@@ -319,7 +319,7 @@ namespace FileExplorerPreviewSettingsTest
             bool elevated = false;
             RegistryMock* mockRegistryWrapper = new RegistryMock();
             PreviewHandlerSettings previewSettings = GetPreviewHandlerSettingsObject(true, mockRegistryWrapper);
-            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"));
+            auto settings = PowerToyValues::from_json_string(GetJSONSettings(previewSettings.GetToggleSettingName(), L"false"), L"FileExplorerPreviewTests");
 
             // Act
             previewSettings.UpdateState(settings, enabled, elevated);
@@ -417,7 +417,7 @@ namespace FileExplorerPreviewSettingsTest
                 L"valid-description",
                 L"valid-guid",
                 L"valid-handler",
-                registryMock);
+                std::unique_ptr<RegistryWrapperIface>(registryMock));
         }
 
         ThumbnailProviderSettings GetThumbnailProviderSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
@@ -428,7 +428,7 @@ namespace FileExplorerPreviewSettingsTest
                 L"valid-description",
                 L"valid-guid",
                 L"valid-handler",
-                registryMock,
+                std::unique_ptr<RegistryWrapperIface>(registryMock),
                 L"valid-subkey");
         }
 

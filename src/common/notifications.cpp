@@ -11,7 +11,10 @@
 #include <winrt/Windows.Data.Xml.Dom.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Notifications.h>
+#include <winrt/Windows.UI.Notifications.Management.h>
 #include <winrt/Windows.ApplicationModel.Background.h>
+#include <winrt/Windows.System.h>
+#include <winrt/Windows.System.UserProfile.h>
 #include <wil/com.h>
 #include <propvarutil.h>
 #include <propkey.h>
@@ -39,6 +42,7 @@ namespace
     constexpr std::wstring_view APPIDS_REGISTRY = LR"(Software\Classes\AppUserModelId\)";
 
     std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
+    constexpr std::wstring_view DEFAULT_TOAST_GROUP = L"PowerToysToastTag";
 }
 
 namespace localized_strings
@@ -275,11 +279,10 @@ void notifications::show_toast_with_activations(std::wstring message,
     std::wstring toast_xml;
     toast_xml.reserve(2048);
 
-    toast_xml += LR"(<?xml version="1.0"?><toast><visual><binding template="ToastGeneric"><text id="1">)";
-    toast_xml += title;
-    toast_xml += LR"(</text><text id="2">)";
-    toast_xml += message;
-    toast_xml += L"</text>";
+    toast_xml += LR"(<?xml version="1.0"?><toast><visual><binding template="ToastGeneric">)";
+    toast_xml += LR"(<text id="1">{title}</text>)";
+    toast_xml += LR"(<text id="2">{message}</text>)";
+
     if (params.progress_bar.has_value())
     {
         toast_xml += LR"(<progress title="{progressTitle}" value="{progressValue}" valueStringOverride="{progressValueString}" status="" />)";
@@ -373,17 +376,20 @@ void notifications::show_toast_with_activations(std::wstring message,
     xml_escape(toast_xml);
     toast_xml_doc.LoadXml(toast_xml);
     ToastNotification notification{ toast_xml_doc };
+    notification.Group(DEFAULT_TOAST_GROUP);
 
+    winrt::Windows::Foundation::Collections::StringMap map;
+    map.Insert(L"message", std::move(message));
+    map.Insert(L"title", std::move(title));
     if (params.progress_bar.has_value())
     {
         float progress = std::clamp(params.progress_bar->progress, 0.0f, 1.0f);
-        winrt::Windows::Foundation::Collections::StringMap map;
         map.Insert(L"progressValue", std::to_wstring(progress));
         map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
         map.Insert(L"progressTitle", params.progress_bar->progress_title);
-        winrt::Windows::UI::Notifications::NotificationData data(map);
-        notification.Data(data);
     }
+    winrt::Windows::UI::Notifications::NotificationData data{ map };
+    notification.Data(std::move(data));
 
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
@@ -412,7 +418,7 @@ void notifications::show_toast_with_activations(std::wstring message,
     }
 }
 
-void notifications::update_progress_bar_toast(std::wstring_view tag, progress_bar_params params)
+void notifications::update_toast_progress_bar(std::wstring_view tag, progress_bar_params params)
 {
     const auto notifier = winstore::running_as_packaged() ?
                               ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
@@ -425,5 +431,41 @@ void notifications::update_progress_bar_toast(std::wstring_view tag, progress_ba
     map.Insert(L"progressTitle", params.progress_title);
 
     winrt::Windows::UI::Notifications::NotificationData data(map);
-    winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag);
+    winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
+}
+
+void notifications::update_toast_contents(std::wstring_view tag, std::wstring plaintext_message, std::wstring title)
+{
+    const auto notifier = winstore::running_as_packaged() ?
+                              ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
+                              ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+
+    winrt::Windows::Foundation::Collections::StringMap map;
+
+    map.Insert(L"title", std::move(title));
+    map.Insert(L"message", std::move(plaintext_message));
+
+    winrt::Windows::UI::Notifications::NotificationData data(map);
+    winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
+}
+
+void notifications::remove_toasts(std::wstring_view tag)
+{
+    using namespace winrt::Windows::System;
+
+    try
+    {
+        User currentUser{ *User::FindAllAsync(UserType::LocalUser, UserAuthenticationStatus::LocallyAuthenticated).get().First() };
+        if (!currentUser)
+        {
+            return;
+        }
+        currentUser.GetPropertyAsync(KnownUserProperties::AccountName());
+        auto toastHistory = ToastNotificationManager::GetForUser(currentUser).History();
+        toastHistory.Remove(tag, DEFAULT_TOAST_GROUP, APPLICATION_ID);
+    }
+    catch (...)
+    {
+        // Couldn't get the current user or problem removing the toast => nothing we can do
+    }
 }

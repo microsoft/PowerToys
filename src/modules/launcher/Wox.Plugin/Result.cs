@@ -36,6 +36,8 @@ namespace Wox.Plugin
 
         public string FontFamily { get; set; }
 
+        public string ProgramArguments { get; set; }
+
         public Visibility ToolTipVisibility { get; set; } = Visibility.Collapsed;
 
         public ToolTipData ToolTipData

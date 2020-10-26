@@ -46,6 +46,6 @@ public:
     // Function to return the list of key codes in the order for the drop down. It creates it if it doesn't exist
     std::vector<DWORD> GetKeyCodeList(const bool isShortcut);
 
-    // Function to return the list of key name in the order for the drop down based on the key codes
-    std::vector<std::wstring> GetKeyNameList(const bool isShortcut);
+    // Function to return the list of key name pairs in the order for the drop down based on the key codes
+    std::vector<std::pair<DWORD, std::wstring>> GetKeyNameList(const bool isShortcut);
 };

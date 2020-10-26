@@ -12,7 +12,7 @@ namespace Microsoft.Plugin.Folder
 {
     public class UserFolderResult : IItemResult
     {
-        private readonly IExplorerAction _explorerAction = new ExplorerAction();
+        private readonly IShellAction _shellAction = new ShellAction();
 
         public string Search { get; set; }
 
@@ -32,7 +32,7 @@ namespace Microsoft.Plugin.Folder
                 QueryTextDisplay = Path,
                 TitleHighlightData = StringMatcher.FuzzySearch(Search, Title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Path },
-                Action = c => _explorerAction.Execute(Path, contextApi),
+                Action = c => _shellAction.Execute(Path, contextApi),
             };
         }
     }

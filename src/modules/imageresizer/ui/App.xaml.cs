@@ -5,7 +5,6 @@
 using System;
 using System.Text;
 using System.Windows;
-using GalaSoft.MvvmLight.Threading;
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
@@ -19,7 +18,6 @@ namespace ImageResizer
         static App()
         {
             Console.InputEncoding = Encoding.Unicode;
-            DispatcherHelper.Initialize();
         }
 
         protected override void OnStartup(StartupEventArgs e)

@@ -141,6 +141,9 @@
     <ClInclude Include="string_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="toast_dont_show_again.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
@@ -220,6 +223,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="comUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="toast_dont_show_again.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

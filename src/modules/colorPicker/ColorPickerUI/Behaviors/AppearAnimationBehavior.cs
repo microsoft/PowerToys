@@ -6,6 +6,7 @@ using System;
 using System.Windows;
 using System.Windows.Interactivity;
 using System.Windows.Media.Animation;
+using ColorPicker.Constants;
 
 namespace ColorPicker.Behaviors
 {
@@ -37,21 +38,31 @@ namespace ColorPicker.Behaviors
 
         private void Appear()
         {
-            var opacityAppear = new DoubleAnimation(0, 1.0, new Duration(TimeSpan.FromMilliseconds(250)));
-            opacityAppear.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+            var duration = new Duration(TimeSpan.FromMilliseconds(250));
 
-            var resize = new DoubleAnimation(0, 180, new Duration(TimeSpan.FromMilliseconds(250)));
+            var opacityAppear = new DoubleAnimation(0d, 1d, duration)
+            {
+            opacityAppear.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+            };
+
+            var resize = new DoubleAnimation(0d, WindowConstant.PickerWindowWidth, duration)
+            {
             resize.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
-            AssociatedObject.BeginAnimation(Window.OpacityProperty, opacityAppear);
-            AssociatedObject.BeginAnimation(Window.WidthProperty, resize);
+            };
+
+            AssociatedObject.BeginAnimation(UIElement.OpacityProperty, opacityAppear);
+            AssociatedObject.BeginAnimation(FrameworkElement.WidthProperty, resize);
         }
 
         private void Hide()
         {
-            var opacityAppear = new DoubleAnimation(0, new Duration(TimeSpan.FromMilliseconds(1)));
-            var resize = new DoubleAnimation(0, new Duration(TimeSpan.FromMilliseconds(1)));
-            AssociatedObject.BeginAnimation(Window.OpacityProperty, opacityAppear);
-            AssociatedObject.BeginAnimation(Window.WidthProperty, resize);
+            var duration = new Duration(TimeSpan.FromMilliseconds(1));
+
+            var opacityAppear = new DoubleAnimation(0d, duration);
+            var resize = new DoubleAnimation(0d, duration);
+
+            AssociatedObject.BeginAnimation(UIElement.OpacityProperty, opacityAppear);
+            AssociatedObject.BeginAnimation(FrameworkElement.WidthProperty, resize);
         }
     }
 }

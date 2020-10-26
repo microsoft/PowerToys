@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
+using Wox.Plugin.Logger;
 
 namespace Wox.Core.Resource
 {
@@ -24,8 +27,9 @@ namespace Wox.Core.Resource
             {
                 return (FontWeight)_fontWeightConverter.ConvertFromInvariantString(value);
             }
-            catch
+            catch (NotSupportedException e)
             {
+                Log.Exception($"Can't convert {value} to FontWeight", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return FontWeights.Normal;
             }
         }
@@ -43,8 +47,9 @@ namespace Wox.Core.Resource
             {
                 return (FontStyle)_fontStyleConverter.ConvertFromInvariantString(value);
             }
-            catch
+            catch (NotSupportedException e)
             {
+                Log.Exception($"Can't convert {value} to FontStyle", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return FontStyles.Normal;
             }
         }
@@ -62,14 +67,20 @@ namespace Wox.Core.Resource
             {
                 return (FontStretch)_fontStretchConverter.ConvertFromInvariantString(value);
             }
-            catch
+            catch (NotSupportedException e)
             {
+                Log.Exception($"Can't convert {value} to FontStretch", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return FontStretches.Normal;
             }
         }
 
         public static FamilyTypeface ChooseRegularFamilyTypeface(this FontFamily family)
         {
+            if (family == null)
+            {
+                throw new ArgumentNullException(nameof(family));
+            }
+
             return family.FamilyTypefaces.OrderBy(o =>
             {
                 return (Math.Abs(o.Stretch.ToOpenTypeStretch() - FontStretches.Normal.ToOpenTypeStretch()) * 100) +
@@ -80,6 +91,11 @@ namespace Wox.Core.Resource
 
         public static FamilyTypeface ConvertFromInvariantStringsOrNormal(this FontFamily family, string style, string weight, string stretch)
         {
+            if (family == null)
+            {
+                throw new ArgumentNullException(nameof(family));
+            }
+
             var styleObj = GetFontStyleFromInvariantStringOrNormal(style);
             var weightObj = GetFontWeightFromInvariantStringOrNormal(weight);
             var stretchObj = GetFontStretchFromInvariantStringOrNormal(stretch);

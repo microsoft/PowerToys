@@ -59,6 +59,7 @@ namespace FancyZonesUnitTests
     {
         HINSTANCE m_hInst;
         PCWSTR m_moduleName = L"FancyZonesUnitTests";
+        PCWSTR m_moduleKey = L"FancyZonesUnitTests";
         std::wstring m_tmpName;
 
         const PowerToysSettings::HotkeyObject m_defaultHotkeyObject = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
@@ -76,7 +77,7 @@ namespace FancyZonesUnitTests
 
                 TEST_METHOD (CreateWithHinstanceDefault)
                 {
-                    auto actual = MakeFancyZonesSettings({}, m_moduleName);
+                    auto actual = MakeFancyZonesSettings({}, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -85,7 +86,7 @@ namespace FancyZonesUnitTests
 
                 TEST_METHOD (CreateWithHinstanceNullptr)
                 {
-                    auto actual = MakeFancyZonesSettings(nullptr, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(nullptr, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -94,7 +95,7 @@ namespace FancyZonesUnitTests
 
                 TEST_METHOD (CreateWithNameEmpty)
                 {
-                    auto actual = MakeFancyZonesSettings(m_hInst, L"");
+                    auto actual = MakeFancyZonesSettings(m_hInst, L"", m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -106,7 +107,7 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
@@ -131,7 +132,7 @@ namespace FancyZonesUnitTests
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -146,7 +147,7 @@ namespace FancyZonesUnitTests
                         .excludedAppsArray = { L"APP", L"APP1", L"APP2", L"ANOTHER APP" },
                     };
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
@@ -171,7 +172,7 @@ namespace FancyZonesUnitTests
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -205,7 +206,7 @@ namespace FancyZonesUnitTests
                         .excludedAppsArray = { L"APP" },
                     };
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
                     values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
@@ -215,7 +216,7 @@ namespace FancyZonesUnitTests
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -227,7 +228,7 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
@@ -249,7 +250,7 @@ namespace FancyZonesUnitTests
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -261,7 +262,7 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
@@ -284,7 +285,7 @@ namespace FancyZonesUnitTests
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -296,7 +297,7 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
@@ -320,7 +321,7 @@ namespace FancyZonesUnitTests
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -332,7 +333,7 @@ namespace FancyZonesUnitTests
                     //prepare data
                     const Settings expected;
 
-                    PowerToysSettings::PowerToyValues values(m_moduleName);
+                    PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
@@ -356,7 +357,7 @@ namespace FancyZonesUnitTests
 
                     values.save_to_settings_file();
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -366,7 +367,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CreateWithEmptyJson)
                 {
                     json::to_file(m_tmpName, json::JsonObject());
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -377,7 +378,7 @@ namespace FancyZonesUnitTests
                 {
                     std::wofstream{ m_tmpName.data(), std::ios::binary } << L"{ \"version\": \"1.0\", \"name\": \"";
 
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
 
                     Assert::IsTrue(actual != nullptr);
                     auto actualSettings = actual->GetSettings();
@@ -387,7 +388,7 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CreateWithCyrillicSymbolsInJson)
                 {
                     std::wofstream{ m_tmpName.data(), std::ios::binary } << L"{ \"version\": \"1.0\", \"name\": \"ФансиЗонс\"}";
-                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName);
+                    auto actual = MakeFancyZonesSettings(m_hInst, m_moduleName, m_moduleKey);
                     Assert::IsTrue(actual != nullptr);
 
                     auto actualSettings = actual->GetSettings();
@@ -399,6 +400,7 @@ namespace FancyZonesUnitTests
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         PCWSTR m_moduleName = L"FancyZonesUnitTests";
+        PCWSTR m_moduleKey = L"FancyZonesUnitTests";
 
         struct FZCallback : public winrt::implements<FZCallback, IFancyZonesCallback>
         {
@@ -474,7 +476,7 @@ namespace FancyZonesUnitTests
                     .excludedAppsArray = { L"APP" },
                 };
 
-                PowerToysSettings::PowerToyValues values(m_moduleName);
+                PowerToysSettings::PowerToyValues values(m_moduleName, m_moduleKey);
                 values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                 values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                 values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
@@ -499,7 +501,7 @@ namespace FancyZonesUnitTests
 
                 values.save_to_settings_file();
 
-                m_settings = MakeFancyZonesSettings(hInst, m_moduleName);
+                m_settings = MakeFancyZonesSettings(hInst, m_moduleName, m_moduleKey);
                 Assert::IsTrue(m_settings != nullptr);
             }
 
@@ -579,6 +581,7 @@ namespace FancyZonesUnitTests
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         PCWSTR m_moduleName = L"FancyZonesUnitTests";
+        PCWSTR m_moduleKey = L"FancyZonesUnitTests";
 
         std::wstring serializedPowerToySettings(const Settings& settings)
         {
@@ -622,7 +625,7 @@ namespace FancyZonesUnitTests
         {
             HINSTANCE hInst = (HINSTANCE)GetModuleHandleW(nullptr);
 
-            m_settings = MakeFancyZonesSettings(hInst, m_moduleName);
+            m_settings = MakeFancyZonesSettings(hInst, m_moduleName, m_moduleKey);
             Assert::IsTrue(m_settings != nullptr);
         }
 

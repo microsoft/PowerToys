@@ -37,7 +37,7 @@
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        Grid.Column="1"
-                       Text="{Binding HexColor}"/>
+                       Text="{Binding ColorText}"/>
         </Grid>
         </Border>
     </Grid>

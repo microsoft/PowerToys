@@ -2,6 +2,7 @@
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -65,14 +66,14 @@ namespace ImageResizer.Properties
         public string FileNameFormat
             => _fileNameFormat
                 ?? (_fileNameFormat = FileName
-                    .Replace("{", "{{")
-                    .Replace("}", "}}")
-                    .Replace("%1", "{0}")
-                    .Replace("%2", "{1}")
-                    .Replace("%3", "{2}")
-                    .Replace("%4", "{3}")
-                    .Replace("%5", "{4}")
-                    .Replace("%6", "{5}"));
+                    .Replace("{", "{{", StringComparison.OrdinalIgnoreCase)
+                    .Replace("}", "}}", StringComparison.OrdinalIgnoreCase)
+                    .Replace("%1", "{0}", StringComparison.OrdinalIgnoreCase)
+                    .Replace("%2", "{1}", StringComparison.OrdinalIgnoreCase)
+                    .Replace("%3", "{2}", StringComparison.OrdinalIgnoreCase)
+                    .Replace("%4", "{3}", StringComparison.OrdinalIgnoreCase)
+                    .Replace("%5", "{4}", StringComparison.OrdinalIgnoreCase)
+                    .Replace("%6", "{5}", StringComparison.OrdinalIgnoreCase));
 
         public ResizeSize SelectedSize
         {
