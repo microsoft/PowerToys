@@ -84,7 +84,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     return deserializedSettings;
                 }
 
-                // If there are any deserialization issues like in issue https://github.com/microsoft/PowerToys/issues/7500, log the error and create a new settings.json file.
+                // Catch json deserialization exceptions when the file is corrupt and has an invalid json.
+                // If there are any deserialization issues like in https://github.com/microsoft/PowerToys/issues/7500, log the error and create a new settings.json file.
+                // This is different from the case where we have trailing zeros following a valid json file, which we have handled by trimming the trailing zeros.
                 catch (JsonException ex)
                 {
                     Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
