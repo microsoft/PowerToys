@@ -70,24 +70,30 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             if (SettingsExists(powertoy, fileName))
             {
-                // Given the file already exists, to deserialize the file and read it's content.
-                T deserializedSettings = GetFile<T>(powertoy, fileName);
-
-                // IF the file needs to be modified, to save the new configurations accordingly.
-                if (deserializedSettings.UpgradeSettingsConfiguration())
+                try
                 {
-                    SaveSettings(deserializedSettings.ToJsonString(), powertoy, fileName);
-                }
+                    // Given the file already exists, to deserialize the file and read it's content.
+                    T deserializedSettings = GetFile<T>(powertoy, fileName);
 
-                return deserializedSettings;
+                    // If the file needs to be modified, to save the new configurations accordingly.
+                    if (deserializedSettings.UpgradeSettingsConfiguration())
+                    {
+                        SaveSettings(deserializedSettings.ToJsonString(), powertoy, fileName);
+                    }
+
+                    return deserializedSettings;
+                }
+                catch (JsonException ex)
+                {
+                    string errorMsg = string.Format($"Exception encountered while loading {powertoy} settings", powertoy);
+                    Logger.LogError(errorMsg, ex);
+                }
             }
-            else
-            {
-                // If the settings file does not exist, to create a new object with default parameters and save it to a newly created settings file.
-                T newSettingsItem = new T();
-                SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
-                return newSettingsItem;
-            }
+
+            // If the settings file does not exist, to create a new object with default parameters and save it to a newly created settings file.
+            T newSettingsItem = new T();
+            SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
+            return newSettingsItem;
         }
 
         // Given the powerToy folder name and filename to be accessed, this function deserializes and returns the file.
