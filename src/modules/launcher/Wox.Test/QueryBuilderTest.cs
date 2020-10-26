@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using Mono.Collections.Generic;
 using NUnit.Framework;
 using Wox.Core.Plugin;
 using Wox.Plugin;
@@ -11,20 +13,21 @@ namespace Wox.Test
 {
     public class QueryBuilderTest
     {
-        private bool AreEqual(Query firstQuery, Query secondQuery)
+        private static bool AreEqual(Query firstQuery, Query secondQuery)
         {
-            return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword)
-                && firstQuery.Search.Equals(secondQuery.Search)
-                && firstQuery.RawQuery.Equals(secondQuery.RawQuery);
+            // Using Ordinal since this is used internally
+            return firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal)
+                && firstQuery.Search.Equals(secondQuery.Search, StringComparison.Ordinal)
+                && firstQuery.RawQuery.Equals(secondQuery.RawQuery, StringComparison.Ordinal);
         }
 
         [Test]
-        public void QueryBuilder_ShouldRemoveExtraSpaces_ForNonGlobalPlugin()
+        public void QueryBuilderShouldRemoveExtraSpacesForNonGlobalPlugin()
         {
             // Arrange
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" } } } },
+                { ">", new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" } ) } },
             };
             string searchQuery = ">   file.txt    file2 file3";
 
@@ -36,12 +39,12 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldRemoveExtraSpaces_ForDisabledNonGlobalPlugin()
+        public void QueryBuilderShouldRemoveExtraSpacesForDisabledNonGlobalPlugin()
         {
             // Arrange
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" }, Disabled = true } } },
+                { ">", new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" }) { Disabled = true } } },
             };
             string searchQuery = ">   file.txt    file2 file3";
 
@@ -53,7 +56,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldRemoveExtraSpaces_ForGlobalPlugin()
+        public void QueryBuilderShouldRemoveExtraSpacesForGlobalPlugin()
         {
             // Arrange
             string searchQuery = "file.txt  file2  file3";
@@ -66,11 +69,11 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldGenerateSameQuery_IfEitherActionKeywordOrActionKeywordsListIsSet()
+        public void QueryBuilderShouldGenerateSameQueryIfEitherActionKeywordOrActionKeywordsListIsSet()
         {
             // Arrange
             string searchQuery = "> query";
-            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" } } };
+            var firstPlugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" } ) };
             var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = ">" } };
 
             var nonGlobalPluginWithActionKeywords = new Dictionary<string, PluginPair>
@@ -83,7 +86,7 @@ namespace Wox.Test
                 { ">", secondPlugin },
             };
             string[] terms = { ">", "query" };
-            Query expectedQuery = new Query("> query", "query", terms, ">");
+            Query expectedQuery = new Query("> query", "query", new ReadOnlyCollection<string>(terms), ">");
 
             // Act
             var queriesForPluginsWithActionKeywords = QueryBuilder.Build(ref searchQuery, nonGlobalPluginWithActionKeywords);
@@ -98,10 +101,10 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldGenerateCorrectQueries_ForPluginsWithMultipleActionKeywords()
+        public void QueryBuilderShouldGenerateCorrectQueriesForPluginsWithMultipleActionKeywords()
         {
             // Arrange
-            var plugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { "a", "b" } } };
+            var plugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { "a", "b" } ) };
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
                 { "a", plugin },
@@ -124,10 +127,10 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuild_ShouldGenerateSameSearchQuery_WithOrWithoutSpaceAfterActionKeyword()
+        public void QueryBuildShouldGenerateSameSearchQueryWithOrWithoutSpaceAfterActionKeyword()
         {
             // Arrange
-            var plugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { "a" } } };
+            var plugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { "a" } ) };
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
                 { "a", plugin },
@@ -144,12 +147,13 @@ namespace Wox.Test
             var secondQuery = secondPluginQueryPairs.GetValueOrDefault(plugin);
 
             // Assert
-            Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search));
-            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword));
+            // Using Ordinal since this is used internally
+            Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search, StringComparison.Ordinal));
+            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal));
         }
 
         [Test]
-        public void QueryBuild_ShouldGenerateCorrectQuery_ForPluginsWhoseActionKeywordsHaveSamePrefix()
+        public void QueryBuildShouldGenerateCorrectQueryForPluginsWhoseActionKeywordsHaveSamePrefix()
         {
             // Arrange
             string searchQuery = "abcdefgh";
@@ -174,7 +178,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilder_ShouldSetTermsCorrently_WhenCalled()
+        public void QueryBuilderShouldSetTermsCorrentlyWhenCalled()
         {
             // Arrange
             string searchQuery = "abcd efgh";
@@ -194,8 +198,9 @@ namespace Wox.Test
             var secondQuery = pluginQueryPairs.GetValueOrDefault(secondPlugin);
 
             // Assert
-            Assert.IsTrue(firstQuery.Terms[0].Equals("cd") && firstQuery.Terms[1].Equals("efgh") && firstQuery.Terms.Length == 2);
-            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh") && secondQuery.Terms.Length == 1);
+            // Using Ordinal since this is used internally
+            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Count == 2);
+            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Count == 1);
         }
     }
 }

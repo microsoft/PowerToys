@@ -6,14 +6,15 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows.Input;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerLauncher.Helper;
 using Wox.Core.Plugin;
 using Wox.Infrastructure.Hotkey;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher
@@ -27,14 +28,16 @@ namespace PowerLauncher
         private static readonly object _watcherSyncObject = new object();
         private readonly FileSystemWatcher _watcher;
         private readonly Settings _settings;
+        private readonly ThemeManager _themeManager;
 
-        public SettingsWatcher(Settings settings)
+        public SettingsWatcher(Settings settings, ThemeManager themeManager)
         {
             _settingsUtils = new SettingsUtils(new SystemIOProvider());
             _settings = settings;
+            _themeManager = themeManager;
 
             // Set up watcher
-            _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();
@@ -98,6 +101,12 @@ namespace PowerLauncher
                     if (_settings.ClearInputOnLaunch != overloadSettings.Properties.ClearInputOnLaunch)
                     {
                         _settings.ClearInputOnLaunch = overloadSettings.Properties.ClearInputOnLaunch;
+                    }
+
+                    if (_settings.Theme != overloadSettings.Properties.Theme)
+                    {
+                        _settings.Theme = overloadSettings.Properties.Theme;
+                        _themeManager.ChangeTheme(_settings.Theme, _settings.Theme == Theme.System);
                     }
 
                     retry = false;

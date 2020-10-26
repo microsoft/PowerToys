@@ -5,8 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Wox.Infrastructure.Logger;
+using ManagedCommon;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Calculator
 {

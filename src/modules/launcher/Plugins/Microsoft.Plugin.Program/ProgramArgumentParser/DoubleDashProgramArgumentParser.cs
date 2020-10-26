@@ -19,9 +19,9 @@ namespace Microsoft.Plugin.Program
             if (!string.IsNullOrEmpty(query?.Search))
             {
                 // First Argument is always (part of) the program, 2nd term is possibly  a Program Argument
-                if (query.Terms.Length > 1)
+                if (query.Terms.Count > 1)
                 {
-                    for (var i = 1; i < query.Terms.Length; i++)
+                    for (var i = 1; i < query.Terms.Count; i++)
                     {
                         if (!string.Equals(query.Terms[i], DoubleDash, StringComparison.Ordinal))
                         {

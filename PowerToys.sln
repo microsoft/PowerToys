@@ -135,11 +135,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManager", "src\modu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "imageresizer", "imageresizer", "{6C7F47CC-2151-44A3-A546-41C70025132C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageResizerUI", "src\modules\imageresizer\ui\ImageResizerUI.csproj", "{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageResizerUI", "src\modules\imageresizer\ui\ImageResizerUI.csproj", "{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageResizerExt", "src\modules\imageresizer\dll\ImageResizerExt.vcxproj", "{0B43679E-EDFA-4DA0-AD30-F4628B308B1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageResizerUITest", "src\modules\imageresizer\tests\ImageResizerUITest.csproj", "{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageResizerUITest", "src\modules\imageresizer\tests\ImageResizerUITest.csproj", "{E0CC7526-D85E-43AC-844F-D5DF0D2F5AB8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerUI", "src\modules\keyboardmanager\ui\KeyboardManagerUI.vcxproj", "{EAF23649-EF6E-478B-980E-81FAD96CCA2A}"
 EndProject
@@ -229,7 +229,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\tests\win-app-driver\packages.config = src\tests\win-app-driver\packages.config
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Lib", "src\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Library", "src\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop", "src\common\interop\interop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
 EndProject
@@ -269,7 +269,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder.UnitTests\Microsoft.Plugin.Folder.UnitTests.csproj", "{4FA206A5-F69F-4193-BF8F-F6EEB496734C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest-ColorPickerUI", "UnitTest-ColorPickerUI\UnitTest-ColorPickerUI.csproj", "{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest-ColorPickerUI", "src\modules\colorPicker\UnitTest-ColorPickerUI\UnitTest-ColorPickerUI.csproj", "{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logging", "src\logging\logging.vcxproj", "{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}"
 EndProject
@@ -547,8 +547,8 @@ Global
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Debug|x64.Build.0 = Debug|x64
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Release|x64.ActiveCfg = Release|x64
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C}.Release|x64.Build.0 = Release|x64
-		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Debug|x64.Build.0 = Debug|Any CPU
+		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Debug|x64.ActiveCfg = Debug|x64
+		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Debug|x64.Build.0 = Debug|x64
 		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Release|x64.ActiveCfg = Release|x64
 		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}.Release|x64.Build.0 = Release|x64
 		{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}.Debug|x64.ActiveCfg = Debug|x64

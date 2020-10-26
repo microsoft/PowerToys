@@ -29,61 +29,55 @@
         CompactModeThresholdWidth="0"
         Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
             <winui:NavigationView.MenuItems>
-                <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
+                <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE713;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_ColorPicker" helpers:NavHelper.NavigateTo="views:ColorPickerPage">
+                <winui:NavigationViewItem x:Uid="Shell_ColorPicker" helpers:NavHelper.NavigateTo="views:ColorPickerPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEF3C;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
                 
-                <!-- TO DO: Update icon -->
-                <winui:NavigationViewItem x:Uid="Shell_FancyZones" helpers:NavHelper.NavigateTo="views:FancyZonesPage">
+                <winui:NavigationViewItem x:Uid="Shell_FancyZones" helpers:NavHelper.NavigateTo="views:FancyZonesPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
-                        <PathIcon Data="M896 0v896H0V0h896zM768 768V128H128v640h640zM0 1920v-896h1920v896H0zm128-768v640h1664v-640H128zM1024 0h896v896h-896V0zm768 768V128h-640v640h640z"></PathIcon>
+                        <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <winui:NavigationViewItem x:Uid="Shell_PowerPreview" helpers:NavHelper.NavigateTo="views:PowerPreviewPage" >
+                <winui:NavigationViewItem x:Uid="Shell_PowerPreview" helpers:NavHelper.NavigateTo="views:PowerPreviewPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEC50;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <!-- TO DO: Update icon -->
-                <winui:NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
+                <winui:NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <PathIcon Data="M0 768h1408v1152H0V768zm128 1024h870l-582-581-288 288v293zm1152 0v-102l-224-223-101 101 223 224h102zM128 896v421l288-287 448 447 192-191 224 224V896H128zm832 256q-26 0-45-19t-19-45q0-26 19-45t45-19q26 0 45 19t19 45q0 26-19 45t-45 19zm960-512V347l-339 338-90-90 338-339h-293V128h512v512h-128zm-768-512h256v128h-256V128zm-128 128H768V128h256v128zm-384 0H384V128h256v128zm-384 0H0V128h256v128zM128 640H0V384h128v256zm1920 128v256h-128V768h128zm-128 384h128v256h-128v-256zm0 384h128v256h-128v-256zm-384 256h256v128h-256v-128z"></PathIcon>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <!-- TO DO: Update icon -->
-                <winui:NavigationViewItem x:Uid="Shell_KeyboardManager" helpers:NavHelper.NavigateTo="views:KeyboardManagerPage">
+                <winui:NavigationViewItem x:Uid="Shell_KeyboardManager" helpers:NavHelper.NavigateTo="views:KeyboardManagerPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE765;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <!-- TO DO: Update icon -->
-                <winui:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage">
+                <winui:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8AC;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <!-- TO DO: Update icon -->
-                <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
+                <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE773;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <!-- TO DO: Update icon -->
-                <winui:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage">
+                <winui:NavigationViewItem x:Uid="Shell_ShortcutGuide" helpers:NavHelper.NavigateTo="views:ShortcutGuidePage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEDA7;"/>
                     </winui:NavigationViewItem.Icon>
@@ -94,13 +88,13 @@
                 DefaultHeader="{x:Bind ViewModel.Selected.Content, Mode=OneWay}">
                     <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
                         <DataTemplate>
-                            <!-- TODO: Style clean up-->
                             <Grid Margin="0, -2, 0, 6">
                                 <TextBlock
                                 Text="{Binding}"
                                 FontWeight="Bold"
                                 Style="{ThemeResource TitleTextBlockStyle}"
-                                Margin="{StaticResource SmallLeftRightMargin}" />
+                                Margin="{StaticResource SmallLeftRightMargin}"
+                                AutomationProperties.HeadingLevel="Level1" />
                         </Grid>
                     </DataTemplate>
                 </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>

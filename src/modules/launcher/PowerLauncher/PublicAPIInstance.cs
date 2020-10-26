@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Windows;
+using ManagedCommon;
 using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox.Core.Plugin;
@@ -20,17 +21,15 @@ namespace Wox
     {
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
-        private readonly Alphabet _alphabet;
         private readonly ThemeManager _themeManager;
         private bool _disposed;
 
         public event ThemeChangedHandler ThemeChanged;
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, ThemeManager themeManager)
         {
             _settingsVM = settingsVM ?? throw new ArgumentNullException(nameof(settingsVM));
             _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
-            _alphabet = alphabet ?? throw new ArgumentNullException(nameof(alphabet));
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
@@ -65,7 +64,6 @@ namespace Wox
             _settingsVM.Save();
             PluginManager.Save();
             ImageLoader.Save();
-            _alphabet.Save();
         }
 
         public void ReloadAllPluginData()

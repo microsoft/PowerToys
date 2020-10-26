@@ -3,7 +3,7 @@
 
 #include <common/dpi_aware.h>
 #include <common/notifications.h>
-#include <common/notifications/fancyzones_notifications.h>
+#include <common/toast_dont_show_again.h>
 #include <common/window_helpers.h>
 
 #include "FancyZonesData.h"
@@ -214,7 +214,7 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
 
         if ((isStandardWindow == false && hasNoVisibleOwner == true &&
              m_moveSizeWindowInfo.isStandardWindow == true && m_moveSizeWindowInfo.hasNoVisibleOwner == true) ||
-             FancyZonesUtils::IsWindowMaximized(window))
+            FancyZonesUtils::IsWindowMaximized(window))
         {
             // Abort the zoning, this is a Chromium based tab that is merged back with an existing window
             // or if the window is maximized by Windows when the cursor hits the screen top border
@@ -299,20 +299,23 @@ bool WindowMoveHandler::ExtendWindowByDirectionAndPosition(HWND window, DWORD vk
 
 void WindowMoveHandler::WarnIfElevationIsRequired(HWND window) noexcept
 {
+    using namespace notifications;
+    using namespace NonLocalizable;
+
     static bool warning_shown = false;
     if (!is_process_elevated() && IsProcessOfWindowElevated(window))
     {
         m_dragEnabled = false;
-        if (!warning_shown && !is_cant_drag_elevated_warning_disabled())
+        if (!warning_shown && !is_toast_disabled(CantDragElevatedDontShowAgainRegistryPath, CantDragElevatedDisableIntervalInDays))
         {
-            std::vector<notifications::action_t> actions = {
-                notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), NonLocalizable::FancyZonesRunAsAdminInfoPage },
-                notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), NonLocalizable::ToastNotificationButtonUrl }
+            std::vector<action_t> actions = {
+                link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), FancyZonesRunAsAdminInfoPage },
+                link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), ToastNotificationButtonUrl }
             };
-            notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED),
-                                                       GET_RESOURCE_STRING(IDS_FANCYZONES),
-                                                       {},
-                                                       std::move(actions));
+            show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED),
+                                        GET_RESOURCE_STRING(IDS_FANCYZONES),
+                                        {},
+                                        std::move(actions));
             warning_shown = true;
         }
     }

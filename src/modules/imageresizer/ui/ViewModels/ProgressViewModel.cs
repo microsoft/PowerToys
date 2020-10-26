@@ -8,14 +8,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
+using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Views;
 
 namespace ImageResizer.ViewModels
 {
-    public class ProgressViewModel : ViewModelBase, IDisposable
+    public class ProgressViewModel : Observable, IDisposable
     {
         private readonly MainViewModel _mainViewModel;
         private readonly ResizeBatch _batch;
@@ -43,13 +42,13 @@ namespace ImageResizer.ViewModels
         public double Progress
         {
             get => _progress;
-            set => Set(nameof(Progress), ref _progress, value);
+            set => Set(ref _progress, value);
         }
 
         public TimeSpan TimeRemaining
         {
             get => _timeRemaining;
-            set => Set(nameof(TimeRemaining), ref _timeRemaining, value);
+            set => Set(ref _timeRemaining, value);
         }
 
         public ICommand StartCommand { get; }

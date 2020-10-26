@@ -24,7 +24,7 @@ namespace Wox.Test
         [TestCase(null, "dummyQueryText", "dummyTitle", "dummyQueryText")]
         [TestCase(null, null, "dummyTitle", "dummyTitle")]
         [TestCase(null, "", "dummyTitle", "dummyTitle")]
-        public void QueryForPlugin_SetsActionKeyword_WhenQueryTextDisplayIsEmpty(string actionKeyword, string queryTextDisplay, string title, string expectedResult)
+        public void QueryForPluginSetsActionKeywordWhenQueryTextDisplayIsEmpty(string actionKeyword, string queryTextDisplay, string title, string expectedResult)
         {
             // Arrange
             var query = new Query
