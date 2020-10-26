@@ -219,7 +219,7 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
     }
 }
 
-void ZoneWindowDrawing::DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone>>& zones,
+void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                        const std::vector<size_t>& highlightZones,
                        winrt::com_ptr<IZoneWindowHost> host)
 {
@@ -236,17 +236,15 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone
     inactiveColor.a = host->GetZoneHighlightOpacity() / 100.f;
     highlightColor.a = host->GetZoneHighlightOpacity() / 100.f;
 
-    std::vector<bool> isHighlighted(zones.size(), false);
+    std::vector<bool> isHighlighted(zones.size() + 1, false);
     for (size_t x : highlightZones)
     {
         isHighlighted[x] = true;
     }
 
     // First draw the inactive zones
-    for (auto iter = zones.begin(); iter != zones.end(); iter++)
+    for (const auto& [zoneId, zone] : zones)
     {
-        int zoneId = static_cast<int>(iter - zones.begin());
-        winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
         if (!zone)
         {
             continue;
@@ -266,10 +264,8 @@ void ZoneWindowDrawing::DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone
     }
 
     // Draw the active zones on top of the inactive zones
-    for (auto iter = zones.begin(); iter != zones.end(); iter++)
+    for (const auto& [zoneId, zone] : zones)
     {
-        int zoneId = static_cast<int>(iter - zones.begin());
-        winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
         if (!zone)
         {
             continue;

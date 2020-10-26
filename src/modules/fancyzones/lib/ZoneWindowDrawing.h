@@ -52,7 +52,7 @@ public:
     void Hide();
     void Show(unsigned animationMillis);
     void ForceRender();
-    void DrawActiveZoneSet(const std::vector<winrt::com_ptr<IZone>>& zones,
+    void DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
                            const std::vector<size_t>& highlightZones,
                            winrt::com_ptr<IZoneWindowHost> host);
 };
