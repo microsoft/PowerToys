@@ -65,7 +65,8 @@
                       SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.IsHorizontalRailEnabled="True">
+                      ScrollViewer.IsHorizontalRailEnabled="True"
+                      ContainerContentChanging="ImagesSizesListView_ContainerContentChanging">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
