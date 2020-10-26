@@ -83,14 +83,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     return deserializedSettings;
                 }
+
+                // If there are any deserialization issues, log the error and create a new settings.json file.
                 catch (JsonException ex)
                 {
-                    string errorMsg = string.Format($"Exception encountered while loading {powertoy} settings", powertoy);
-                    Logger.LogError(errorMsg, ex);
+                    Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
                 }
             }
 
-            // If the settings file does not exist, to create a new object with default parameters and save it to a newly created settings file.
+            // If the settings file does not exist or if the file is corrupt, to create a new object with default parameters and save it to a newly created settings file.
             T newSettingsItem = new T();
             SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
             return newSettingsItem;
