@@ -21,11 +21,16 @@ class ZoneWindowDrawing
         size_t id;
     };
 
+    struct AnimationInfo
+    {
+        std::chrono::steady_clock::time_point tStart;
+        unsigned duration;
+    };
+
     HWND m_window;
     RECT m_clientRect;
     ID2D1HwndRenderTarget* m_renderTarget;
-    std::optional<std::chrono::steady_clock::time_point> m_tAnimationStart;
-    unsigned m_animationDuration;
+    std::optional<AnimationInfo> m_animation;
 
     std::mutex m_mutex;
     std::vector<DrawableRect> m_sceneRects;

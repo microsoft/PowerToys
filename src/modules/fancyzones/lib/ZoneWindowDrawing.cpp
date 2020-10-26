@@ -14,13 +14,13 @@ namespace NonLocalizable
 float ZoneWindowDrawing::GetAnimationAlpha()
 {
     // Lock is being held
-    if (!m_tAnimationStart)
+    if (!m_animation)
     {
         return 1.f;
     }
 
     auto tNow = std::chrono::steady_clock().now();
-    auto alpha = (tNow - *m_tAnimationStart).count() / (1e6f * m_animationDuration);
+    auto alpha = (tNow - m_animation->tStart).count() / (1e6f * m_animation->duration);
     if (alpha < 1.f)
     {
         return alpha;
@@ -68,7 +68,6 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
 {
     m_window = window;
     m_renderTarget = nullptr;
-    m_animationDuration = 0;
     m_shouldRender = false;
 
     // Obtain the size of the drawing area.
@@ -192,9 +191,9 @@ void ZoneWindowDrawing::Render()
 void ZoneWindowDrawing::Hide()
 {
     std::unique_lock lock(m_mutex);
-    if (m_tAnimationStart)
+    if (m_animation)
     {
-        m_tAnimationStart.reset();
+        m_animation.reset();
         ShowWindow(m_window, SW_HIDE);
     }
 }
@@ -205,11 +204,13 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
     std::unique_lock lock(m_mutex);
     m_lowLatencyLock = false;
 
-    if (!m_tAnimationStart)
+    if (!m_animation)
     {
         ShowWindow(m_window, SW_SHOWDEFAULT);
-        m_tAnimationStart = std::chrono::steady_clock().now();
-        m_animationDuration = max(1u, animationMillis);
+        if (animationMillis > 0)
+        {
+            m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis });
+        }
         m_shouldRender = true;
         m_cv.notify_all();
     }
