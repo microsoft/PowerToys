@@ -146,37 +146,32 @@ namespace ColorPicker.Helpers
         /// <returns>A natural color</returns>
         private static string GetNaturalColorFromHue(double hue)
         {
-            while (hue >= 360)
+            if (hue < 60d)
             {
-                hue -= 360;
+                return $"R{Math.Round(hue / 0.6d, 0)}";
             }
 
-            if (hue < 60)
+            if (hue < 120d)
             {
-                return "R" + (hue / 0.6);
+                return $"Y{Math.Round((hue - 60d) / 0.6d, 0)}";
             }
 
-            if (hue < 120)
+            if (hue < 180d)
             {
-                return "Y" + ((hue - 60) / 0.6);
+                return $"G{Math.Round((hue - 120d) / 0.6d, 0)}";
             }
 
-            if (hue < 180)
+            if (hue < 240d)
             {
-                return "G" + ((hue - 120) / 0.6);
+                return $"C{Math.Round((hue - 180d) / 0.6d, 0)}";
             }
 
-            if (hue < 240)
+            if (hue < 300d)
             {
-                return "C" + ((hue - 180) / 0.6);
+                return $"B{Math.Round((hue - 240d) / 0.6d, 0)}";
             }
 
-            if (hue < 300)
-            {
-                return "B" + ((hue - 240) / 0.6);
-            }
-
-            return "M" + ((hue - 300) / 0.6);
+            return $"M{Math.Round((hue - 300d) / 0.6d, 0)}";
         }
     }
 }

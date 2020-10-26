@@ -159,15 +159,15 @@ namespace UnitTest_ColorPickerUI.Helpers
 
         // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
         [TestMethod]
-        [DataRow("FFFFFF", 000.0, 000.0, 100.0)]
-        [DataRow("808080", 000.0, 000.0, 050.0)]
-        [DataRow("000000", 000.0, 000.0, 000.0)]
-        [DataRow("FF0000", 000.0, 100.0, 033.3)]
-        [DataRow("BFBF00", 060.0, 100.0, 050.0)]
-        [DataRow("008000", 120.0, 100.0, 016.7)]
-        [DataRow("80FFFF", 180.0, 040.0, 083.3)]
-        [DataRow("8080FF", 240.0, 025.0, 066.7)]
-        [DataRow("BF40BF", 300.0, 057.1, 058.3)]
+        [DataRow("FFFFFF", 000.0, 000.0, 100.0)]         // white
+        [DataRow("808080", 000.0, 000.0, 050.0)]         // gray
+        [DataRow("000000", 000.0, 000.0, 000.0)]         // black
+        [DataRow("FF0000", 000.0, 100.0, 033.3)]         // red
+        [DataRow("BFBF00", 060.0, 100.0, 050.0)]         // yellow
+        [DataRow("008000", 120.0, 100.0, 016.7)]         // green
+        [DataRow("80FFFF", 180.0, 040.0, 083.3)]         // cyan
+        [DataRow("8080FF", 240.0, 025.0, 066.7)]         // blue
+        [DataRow("BF40BF", 300.0, 057.1, 058.3)]         // magenta
         [DataRow("A0A424", 061.8, 069.9, 047.1)]
         [DataRow("411BEA", 251.1, 075.6, 042.6)]
         [DataRow("1EAC41", 134.9, 066.7, 034.9)]
@@ -195,6 +195,88 @@ namespace UnitTest_ColorPickerUI.Helpers
 
             // intensity[0..1]
             Assert.AreEqual(result.intensity * 100d, intensity, 0.5d);
+        }
+
+        // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
+        // and manual convert via https://colorconv.com/hwb
+        [TestMethod]
+        [DataRow("FFFFFF", 000, 100, 000)]         // white
+        [DataRow("808080", 000, 050, 050)]         // gray
+        [DataRow("000000", 000, 000, 100)]         // black
+        [DataRow("FF0000", 000, 000, 000)]         // red
+        [DataRow("BFBF00", 060, 000, 025)]         // yellow
+        [DataRow("008000", 120, 000, 050)]         // green
+        [DataRow("80FFFF", 180, 050, 000)]         // cyan
+        [DataRow("8080FF", 240, 050, 000)]         // blue
+        [DataRow("BF40BF", 300, 025, 025)]         // magenta
+        [DataRow("A0A424", 062, 014, 036)]
+        [DataRow("411BEA", 251, 011, 008)]
+        [DataRow("1EAC41", 135, 012, 033)]
+        [DataRow("F0C80E", 049, 005, 006)]
+        [DataRow("B430E5", 284, 019, 010)]
+        [DataRow("ED7651", 014, 032, 007)]
+        [DataRow("FEF888", 057, 053, 000)]
+        [DataRow("19CB97", 162, 010, 020)]
+        [DataRow("362698", 248, 015, 040)]
+        [DataRow("7E7EB8", 240, 049, 028)]
+        public void ColorRGBtoHWBTest(string hexValue, double hue, double whiteness, double blackness)
+        {
+            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
+            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
+            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorHelper.ConvertToHWBColor(color);
+
+            // hue[0°..360°]
+            Assert.AreEqual(result.hue, hue, 0.5d);
+
+            // whiteness[0..1]
+            Assert.AreEqual(result.whiteness * 100d, whiteness, 0.5d);
+
+            // blackness[0..1]
+            Assert.AreEqual(result.blackness * 100d, blackness, 0.5d);
+        }
+
+        // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
+        // and manual convert via https://colorconv.com/hwb
+        [TestMethod]
+        [DataRow("FFFFFF", "R0", 100, 000)]         // white
+        [DataRow("808080", "R0", 050, 050)]         // gray
+        [DataRow("000000", "R0", 000, 100)]         // black
+        [DataRow("FF0000", "R0", 000, 000)]         // red
+        [DataRow("BFBF00", "Y0", 000, 025)]         // yellow
+        [DataRow("008000", "G0", 000, 050)]         // green
+        [DataRow("80FFFF", "C0", 050, 000)]         // cyan
+        [DataRow("8080FF", "B0", 050, 000)]         // blue
+        [DataRow("BF40BF", "M0", 025, 025)]         // magenta
+        [DataRow("A0A424", "Y3", 014, 036)]
+        [DataRow("411BEA", "B18", 011, 008)]
+        [DataRow("1EAC41", "G25", 012, 033)]
+        [DataRow("F0C80E", "R82", 005, 006)]
+        [DataRow("B430E5", "B73", 019, 010)]
+        [DataRow("ED7651", "R24", 032, 007)]
+        [DataRow("FEF888", "R95", 053, 000)]
+        [DataRow("19CB97", "G71", 010, 020)]
+        [DataRow("362698", "B14", 015, 040)]
+        [DataRow("7E7EB8", "B0", 049, 028)]
+        public void ColorRGBtoNColTest(string hexValue, string hue, double whiteness, double blackness)
+        {
+            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
+            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
+            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorHelper.ConvertToNaturalColor(color);
+
+            // hue
+            Assert.AreEqual(result.hue, hue);
+
+            // whiteness[0..1]
+            Assert.AreEqual(result.whiteness * 100d, whiteness, 0.5d);
+
+            // blackness[0..1]
+            Assert.AreEqual(result.blackness * 100d, blackness, 0.5d);
         }
 
         [TestMethod]
