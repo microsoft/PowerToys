@@ -39,8 +39,6 @@ ID2D1Factory* ZoneWindowDrawing::GetD2DFactory()
         D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2DFactory);
     }
     return pD2DFactory;
-
-    // TODO: Destroy factory
 }
 
 IDWriteFactory* ZoneWindowDrawing::GetWriteFactory()
@@ -51,8 +49,6 @@ IDWriteFactory* ZoneWindowDrawing::GetWriteFactory()
         DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &pDWriteFactory);
     }
     return reinterpret_cast<IDWriteFactory*>(pDWriteFactory);
-
-    // TODO: Destroy factory
 }
 
 D2D1_COLOR_F ZoneWindowDrawing::ConvertColor(COLORREF color)

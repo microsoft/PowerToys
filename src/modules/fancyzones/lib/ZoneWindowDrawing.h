@@ -23,7 +23,6 @@ class ZoneWindowDrawing
 
     HWND m_window;
     RECT m_clientRect;
-    // winrt::com_ptr<IZoneWindowHost> m_host;
     ID2D1HwndRenderTarget* m_renderTarget;
     std::optional<std::chrono::steady_clock::time_point> m_tAnimationStart;
     unsigned m_animationDuration;
@@ -37,7 +36,6 @@ class ZoneWindowDrawing
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
     void Render();
-    void StopRendering();
 
     std::atomic<bool> m_shouldRender;
     std::atomic<bool> m_abortThread;
