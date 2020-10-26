@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Collections.Generic;
 
 namespace Wox.Plugin
 {
@@ -18,7 +19,7 @@ namespace Wox.Plugin
         /// Initializes a new instance of the <see cref="Query"/> class.
         /// to allow unit tests for plug ins
         /// </summary>
-        public Query(string rawQuery, string search, string[] terms, string actionKeyword = "")
+        public Query(string rawQuery, string search, ReadOnlyCollection<string> terms, string actionKeyword = "")
         {
             Search = search;
             RawQuery = rawQuery;
@@ -41,9 +42,9 @@ namespace Wox.Plugin
         public string Search { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the raw query splited into a string array.
+        /// Gets the raw query splited into a string array.
         /// </summary>
-        public string[] Terms { get; set; }
+        public ReadOnlyCollection<string> Terms { get; private set; }
 
         /// <summary>
         /// Query can be splited into multiple terms by whitespace

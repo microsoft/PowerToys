@@ -6,11 +6,7 @@ using System.Collections.Generic;
 
 namespace Wox.Plugin
 {
-    public interface IFeatures
-    {
-    }
-
-    public interface IContextMenu : IFeatures
+    public interface IContextMenu
     {
         List<ContextMenuResult> LoadContextMenus(Result selectedResult);
     }
@@ -18,14 +14,14 @@ namespace Wox.Plugin
     /// <summary>
     /// Represent plugins that support internationalization
     /// </summary>
-    public interface IPluginI18n : IFeatures
+    public interface IPluginI18n
     {
         string GetTranslatedPluginTitle();
 
         string GetTranslatedPluginDescription();
     }
 
-    public interface IResultUpdated : IFeatures
+    public interface IResultUpdated
     {
         event ResultUpdatedEventHandler ResultsUpdated;
     }

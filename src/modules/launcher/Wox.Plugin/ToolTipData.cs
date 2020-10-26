@@ -16,7 +16,7 @@ namespace Wox.Plugin
         {
             if (string.IsNullOrEmpty(title))
             {
-                throw new ArgumentException("title cannot be null or empty", "title");
+                throw new ArgumentException("title cannot be null or empty", nameof(title));
             }
 
             Title = title;

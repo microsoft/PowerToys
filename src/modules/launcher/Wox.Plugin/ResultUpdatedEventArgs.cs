@@ -9,7 +9,12 @@ namespace Wox.Plugin
 {
     public class ResultUpdatedEventArgs : EventArgs
     {
-        public List<Result> Results { get; set; }
+        public List<Result> Results { get; private set; }
+
+        public ResultUpdatedEventArgs(List<Result> results = null)
+        {
+            Results = results;
+        }
 
         public Query Query { get; set; }
     }
