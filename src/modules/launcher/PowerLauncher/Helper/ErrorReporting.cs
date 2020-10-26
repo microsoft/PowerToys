@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using NLog;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
+using Wox.Plugin;
 
 namespace PowerLauncher.Helper
 {

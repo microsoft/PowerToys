@@ -15,7 +15,7 @@ using ColorPicker.Mouse;
 using ColorPicker.Settings;
 using ColorPicker.Telemetry;
 using ColorPicker.ViewModelContracts;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.ViewModels

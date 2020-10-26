@@ -39,19 +39,43 @@
       </Item>
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Some of the File Explorer modules could not be turned off/on as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[설정에 따라 일부 파일 탐색기 모듈을 등록하거나 등록 취소할 수 없습니다. 변경 내용을 적용하려면 관리자 권한으로 PowerToys를 다시 시작하세요.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorer_Admin_Restart_Warning_Dont_Show_Again" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Don't show again]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[다시 표시 안 함]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorer_Admin_Restart_Warning_Open_Settings" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[설정 열기]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Couldn't modify File Explorer modules]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[파일 탐색기 모듈을 수정하지 못했습니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
