@@ -226,8 +226,15 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         // delete the ShortcutControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
     });
+
     // To set the accessible name of the delete button
     deleteShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+
+    // Add tooltip for delete button which would appear on hover
+    ToolTip deleteShortcuttoolTip;
+    deleteShortcuttoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+    ToolTipService::SetToolTip(deleteShortcut, deleteShortcuttoolTip);
+
     parent.SetColumn(deleteShortcut, KeyboardManagerConstants::ShortcutTableRemoveColIndex);
     parent.SetRow(deleteShortcut, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteShortcut);
