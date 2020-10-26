@@ -616,7 +616,7 @@ void FancyZones::ToggleEditor() noexcept
     winrt::com_ptr<IZoneWindow> zoneWindow;
 
     std::shared_lock readLock(m_lock);
-    
+
     if (m_settings->GetSettings()->spanZonesAcrossMonitors)
     {
         zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, NULL);
@@ -625,7 +625,7 @@ void FancyZones::ToggleEditor() noexcept
     {
         zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
     }
-    
+
     if (!zoneWindow)
     {
         return;
@@ -639,7 +639,8 @@ void FancyZones::ToggleEditor() noexcept
 
         m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
                               allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
-            } }).wait();
+                          } })
+            .wait();
 
         UINT currentDpi = 0;
         for (const auto& monitor : allMonitors)
@@ -650,15 +651,15 @@ void FancyZones::ToggleEditor() noexcept
             {
                 if (currentDpi == 0)
                 {
-                  currentDpi = dpiX;
-                  continue;
+                    currentDpi = dpiX;
+                    continue;
                 }
                 if (currentDpi != dpiX)
                 {
                     MessageBoxW(NULL,
-                    GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
-                    GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                    MB_OK | MB_ICONWARNING);
+                                GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
+                                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+                                MB_OK | MB_ICONWARNING);
                     break;
                 }
             }
@@ -693,8 +694,9 @@ void FancyZones::ToggleEditor() noexcept
         mi.cbSize = sizeof(mi);
 
         m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-            GetMonitorInfo(monitor, &mi);
-            } }).wait();
+                              GetMonitorInfo(monitor, &mi);
+                          } })
+            .wait();
 
         const auto x = mi.rcWork.left;
         const auto y = mi.rcWork.top;
@@ -981,7 +983,7 @@ void FancyZones::UpdateZoneWindows() noexcept
 
     auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
         capture* params = reinterpret_cast<capture*>(data);
-        MONITORINFOEX mi{ { .cbSize = sizeof(mi)} };
+        MONITORINFOEX mi{ { .cbSize = sizeof(mi) } };
         if (GetMonitorInfoW(monitor, &mi))
         {
             auto& displayDeviceIdxMap = *(params->displayDeviceIdx);
@@ -1006,8 +1008,8 @@ void FancyZones::UpdateZoneWindows() noexcept
             if (deviceId.empty())
             {
                 deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
-                                L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
-                                L"\\\\?\\DISPLAY#LOCALDISPLAY#";
+                               L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
+                               L"\\\\?\\DISPLAY#LOCALDISPLAY#";
 
                 fancyZones->AddZoneWindow(monitor, deviceId);
             }
