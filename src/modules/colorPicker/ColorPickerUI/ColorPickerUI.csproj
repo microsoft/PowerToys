@@ -107,7 +107,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Behaviors\DragWindowBehavior.cs" />
-    <Compile Include="Behaviors\GridEffectBehavior.cs" />
     <Compile Include="ColorEditorWindow.xaml.cs">
       <DependentUpon>ColorEditorWindow.xaml</DependentUpon>
     </Compile>

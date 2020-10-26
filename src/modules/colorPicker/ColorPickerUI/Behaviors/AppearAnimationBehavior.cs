@@ -42,12 +42,12 @@ namespace ColorPicker.Behaviors
 
             var opacityAppear = new DoubleAnimation(0d, 1d, duration)
             {
-            opacityAppear.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+                EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut },
             };
 
             var resize = new DoubleAnimation(0d, WindowConstant.PickerWindowWidth, duration)
             {
-            resize.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+                 EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut },
             };
 
             AssociatedObject.BeginAnimation(UIElement.OpacityProperty, opacityAppear);

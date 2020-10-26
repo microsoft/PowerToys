@@ -9,6 +9,11 @@ namespace ColorPicker.Helpers
 {
     public static class ClipboardHelper
     {
+        /// <summary>
+        /// Defined error code for "clipboard can't open"
+        /// </summary>
+        private const uint ErrorCodeClipboardCantOpen = 0x800401D0;
+
         public static void CopyToClipboard(string colorRepresentationToCopy)
         {
             if (!string.IsNullOrEmpty(colorRepresentationToCopy))
@@ -23,8 +28,7 @@ namespace ColorPicker.Helpers
                     }
                     catch (COMException ex)
                     {
-                        const uint CLIPBRD_E_CANT_OPEN = 0x800401D0;
-                        if ((uint)ex.ErrorCode != CLIPBRD_E_CANT_OPEN)
+                        if ((uint)ex.ErrorCode != ErrorCodeClipboardCantOpen)
                         {
                             Logger.LogError("Failed to set text into clipboard", ex);
                         }

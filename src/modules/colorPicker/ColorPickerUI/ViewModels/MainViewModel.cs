@@ -23,11 +23,6 @@ namespace ColorPicker.ViewModels
     [Export(typeof(IMainViewModel))]
     public class MainViewModel : ViewModelBase, IMainViewModel
     {
-        /// <summary>
-        /// Defined error code for "clipboard can't open"
-        /// </summary>
-        private const uint ErrorCodeClipboardCantOpen = 0x800401D0;
-
         private readonly ZoomWindowHelper _zoomWindowHelper;
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
@@ -108,9 +103,7 @@ namespace ColorPicker.ViewModels
         /// <param name="p">The current <see cref="System.Drawing.Point"/> of the mouse cursor</param>
         private void MouseInfoProvider_OnMouseDown(object sender, System.Drawing.Point p)
         {
-            
-
-            ClipboardHelper.CopyToClipboard(colorRepresentationToCopy);
+            ClipboardHelper.CopyToClipboard(ColorText);
 
             _userSettings.ColorHistory.Insert(0, GetColorString());
 

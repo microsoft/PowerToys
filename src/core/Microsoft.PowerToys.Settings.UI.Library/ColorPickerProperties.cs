@@ -43,6 +43,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x43);
             ChangeCursor = false;
             UseEditor = true;
+            ColorHistory = new List<string>();
+            ColorHistoryLimit = 20;
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -59,6 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool UseEditor { get; set; }
 
         [JsonPropertyName("colorhistory")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Need to change this collection")]
         public List<string> ColorHistory { get; set; }
 
         [JsonPropertyName("colorhistorylimit")]
