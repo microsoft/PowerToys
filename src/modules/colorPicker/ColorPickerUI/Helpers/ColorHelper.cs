@@ -59,11 +59,21 @@ namespace ColorPicker.Helpers
         /// <returns>The hue [0°..360°], saturation [0..1] and intensity [0..1] of the converted color</returns>
         internal static (double hue, double saturation, double intensity) ConvertToHSIColor(Color color)
         {
+            // special case for black
+            if (color.R == 0 && color.G == 0 && color.B == 0)
+            {
+                return (0d, 0d, 0d);
+            }
+
+            var red = color.R / 255d;
+            var green = color.G / 255d;
+            var blue = color.B / 255d;
+
+            var intensity = (red + green + blue) / 3d;
+
             var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
 
-            var intensity = 1d / 3d * (color.R + color.G + color.B);
-
-            return (color.GetHue(), intensity == 0d ? 0d : 1d - (min / intensity), intensity);
+            return (color.GetHue(), 1d - (min / intensity), intensity);
         }
 
         /// <summary>
