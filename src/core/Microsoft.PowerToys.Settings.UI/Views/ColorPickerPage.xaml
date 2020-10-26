@@ -75,7 +75,7 @@
                 <ComboBoxItem Content="HSI - hsi(100, 50%, 75%)"/>
                 <ComboBoxItem Content="HSL - hsl(100, 50%, 75%)"/>
                 <ComboBoxItem Content="HSV - hsv(100, 50%, 75%)"/>
-                <ComboBoxItem Content="HBW - hbw(100, 50%, 75%)"/>
+                <ComboBoxItem Content="HWB - hbw(100, 50%, 75%)"/>
                 <ComboBoxItem Content="NCol - R10, 50%, 75%"/>
                 <ComboBoxItem Content="RGB - rgb(100, 50, 75)"/>
             </ComboBox>
