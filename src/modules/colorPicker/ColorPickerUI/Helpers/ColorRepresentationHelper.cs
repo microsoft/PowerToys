@@ -27,6 +27,7 @@ namespace ColorPicker.Helpers
                 ColorRepresentationType.NCol => ColorToNCol(color),
                 ColorRepresentationType.HEX => ColorToHex(color),
                 ColorRepresentationType.HSB => ColorToHSB(color),
+                ColorRepresentationType.HSI => ColorToHSI(color),
                 ColorRepresentationType.HSL => ColorToHSL(color),
                 ColorRepresentationType.HSV => ColorToHSV(color),
                 ColorRepresentationType.HWB => ColorToHWB(color),
@@ -99,6 +100,24 @@ namespace ColorPicker.Helpers
             return $"hsb({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {brightnes.ToString(CultureInfo.InvariantCulture)}%)";
+        }
+
+        /// <summary>
+        /// Return a <see cref="string"/> representation of a HSI color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the HSI color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a HSI color</returns>
+        private static string ColorToHSI(Color color)
+        {
+            var (hue, saturation, intensity) = ColorHelper.ConvertToHSIColor(color);
+
+            hue = Math.Round(hue);
+            saturation = Math.Round(saturation * 100);
+            intensity = Math.Round(intensity * 100);
+
+            return $"hsi({hue.ToString(CultureInfo.InvariantCulture)}"
+                 + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
+                 + $", {intensity.ToString(CultureInfo.InvariantCulture)}%)";
         }
 
         /// <summary>

@@ -53,6 +53,20 @@ namespace ColorPicker.Helpers
             => (color.GetHue(), color.GetSaturation(), color.GetBrightness());
 
         /// <summary>
+        /// Convert a given <see cref="Color"/> to a HSI color (hue, saturation, intensity)
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>The hue [0°..360°], saturation [0..1] and intensity [0..1] of the converted color</returns>
+        internal static (double hue, double saturation, double intensity) ConvertToHSIColor(Color color)
+        {
+            var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
+
+            var intensity = 1d / 3d * (color.R + color.G + color.B);
+
+            return (color.GetHue(), intensity == 0d ? 0d : 1d - (min / intensity), intensity);
+        }
+
+        /// <summary>
         /// Convert a given <see cref="Color"/> to a HSL color (hue, saturation, lightness)
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
