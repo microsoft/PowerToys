@@ -687,6 +687,9 @@
   <data name="General_Version.Text" xml:space="preserve">
     <value>Version:</value>
   </data>
+  <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
+    <value>Version</value>
+  </data>
   <data name="Shortcut_Overlay_Theme.Header" xml:space="preserve">
     <value>Background theme</value>
   </data>
