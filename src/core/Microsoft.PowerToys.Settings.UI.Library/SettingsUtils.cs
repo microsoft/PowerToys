@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     return deserializedSettings;
                 }
 
-                // If there are any deserialization issues, log the error and create a new settings.json file.
+                // If there are any deserialization issues like in issue https://github.com/microsoft/PowerToys/issues/7500, log the error and create a new settings.json file.
                 catch (JsonException ex)
                 {
                     Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
