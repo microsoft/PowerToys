@@ -19,9 +19,13 @@ namespace ColorPicker.ViewModelContracts
 
         ICommand OpenColorPickerCommand { get; }
 
+        ICommand RemoveColorCommand { get; }
+
         ObservableCollection<Color> ColorsHistory { get; }
 
         Color SelectedColor { get; set; }
+
+        int SelectedColorIndex { get; set; }
 
         void Initialize();
     }

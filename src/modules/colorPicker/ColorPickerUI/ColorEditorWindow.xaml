@@ -9,7 +9,7 @@
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
         BorderBrush="{DynamicResource WindowBorderBrush}"
         BorderThickness="1"
-        Title="ColorEditorWindow" Height="380" Width="400" ResizeMode="NoResize" WindowStyle="None" Background="Transparent" AllowsTransparency="True">
+        Title="ColorEditorWindow" Height="380" Width="400" ResizeMode="NoResize" WindowStyle="None" Background="Transparent" AllowsTransparency="True" Topmost="True">
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior/>
     </e:Interaction.Behaviors>

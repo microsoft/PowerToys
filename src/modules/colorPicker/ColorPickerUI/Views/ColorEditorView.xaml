@@ -61,10 +61,10 @@
                                 Glyph="&#xEF3C;" />
                 </ui:AppBarButton.Icon>
             </ui:AppBarButton>
-            <ui:ListView Margin="0,12,0,0" Grid.Row="1" Padding="0" ItemsSource="{Binding ColorsHistory}" SelectedItem="{Binding SelectedColor}" ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
+            <ui:ListView Margin="0,12,0,0" Grid.Row="1" Padding="0" ItemsSource="{Binding ColorsHistory}" SelectedIndex="{Binding SelectedColorIndex}" ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
                 <ui:ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Remove">
+                        <MenuItem Header="Remove" Command="{Binding RemoveColorCommand}">
                             <MenuItem.Icon>
                                 <ui:FontIcon Glyph="&#xE107;" />
                             </MenuItem.Icon>

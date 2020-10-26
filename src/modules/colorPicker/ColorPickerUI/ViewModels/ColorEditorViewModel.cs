@@ -6,7 +6,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Globalization;
-using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
 using ColorPicker.Common;
@@ -21,13 +20,14 @@ namespace ColorPicker.ViewModels
         private readonly IUserSettings _userSettings;
         private Color _selectedColor;
         private bool _initializing;
+        private int _selectedColorIndex;
 
         [ImportingConstructor]
         public ColorEditorViewModel(IUserSettings userSettings)
         {
             CloseWindowCommand = new RelayCommand(() => CloseWindowRequested?.Invoke(this, EventArgs.Empty));
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
-
+            RemoveColorCommand = new RelayCommand(DeleteSelectedColor);
             ColorsHistory.CollectionChanged += ColorsHistory_CollectionChanged;
             _userSettings = userSettings;
         }
@@ -39,6 +39,8 @@ namespace ColorPicker.ViewModels
         public ICommand CloseWindowCommand { get; }
 
         public ICommand OpenColorPickerCommand { get; }
+
+        public ICommand RemoveColorCommand { get; }
 
         public ObservableCollection<Color> ColorsHistory { get; } = new ObservableCollection<Color>();
 
@@ -56,11 +58,30 @@ namespace ColorPicker.ViewModels
             }
         }
 
+        public int SelectedColorIndex
+        {
+            get
+            {
+                return _selectedColorIndex;
+            }
+
+            set
+            {
+                _selectedColorIndex = value;
+                if (value >= 0)
+                {
+                    SelectedColor = ColorsHistory[_selectedColorIndex];
+                }
+
+                OnPropertyChanged();
+            }
+        }
+
         public void Initialize()
         {
             _initializing = true;
 
-            // ColorsHistory.Clear();
+            ColorsHistory.Clear();
             foreach (var item in _userSettings.ColorHistory)
             {
                 var parts = item.Split('|');
@@ -71,12 +92,9 @@ namespace ColorPicker.ViewModels
                     G = byte.Parse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture),
                     B = byte.Parse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture),
                 });
-                SelectedColor = ColorsHistory.First();
+                SelectedColorIndex = 0;
             }
 
-            ColorsHistory.Add(Colors.Red);
-            ColorsHistory.Add(Colors.LightBlue);
-            ColorsHistory.Add(Colors.BlueViolet);
             _initializing = false;
         }
 
@@ -90,6 +108,14 @@ namespace ColorPicker.ViewModels
                     _userSettings.ColorHistory.Add(item.A + "|" + item.R + "|" + item.G + "|" + item.B);
                 }
             }
+        }
+
+        private void DeleteSelectedColor()
+        {
+            // select new color on the same index if possible, otherwise the last one
+            var indexToSelect = SelectedColorIndex == ColorsHistory.Count - 1 ? ColorsHistory.Count - 2 : SelectedColorIndex;
+            ColorsHistory.RemoveAt(SelectedColorIndex);
+            SelectedColorIndex = indexToSelect;
         }
     }
 }
