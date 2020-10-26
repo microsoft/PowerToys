@@ -76,7 +76,7 @@ namespace Wox.Infrastructure.Http
 
             Log.Debug($"Url <{url.AbsoluteUri}>", MethodBase.GetCurrentMethod().DeclaringType);
 
-            var request = WebRequest.CreateHttp(url.AbsoluteUri);
+            var request = WebRequest.CreateHttp(url);
             request.Method = "GET";
             request.Timeout = 1000;
             request.Proxy = WebProxy();
