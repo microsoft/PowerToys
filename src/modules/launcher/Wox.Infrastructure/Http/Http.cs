@@ -28,7 +28,7 @@ namespace Wox.Infrastructure.Http
                                                     | SecurityProtocolType.Tls12;
         }
 
-        public static HttpProxy Proxy { private get; set; }
+        public static HttpProxy Proxy { get; set; }
 
         public static IWebProxy WebProxy()
         {
