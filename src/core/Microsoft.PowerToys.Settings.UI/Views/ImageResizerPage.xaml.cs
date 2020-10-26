@@ -56,6 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
         private void ImagesSizesListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (ViewModel.IsListViewFocusRequested)
