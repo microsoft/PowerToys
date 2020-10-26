@@ -64,6 +64,7 @@ namespace Wox.Infrastructure.Http
             var client = new WebClient { Proxy = WebProxy() };
             client.Headers.Add("user-agent", UserAgent);
             client.DownloadFile(url.AbsoluteUri, filePath);
+            client.Dispose();
         }
 
         public static async Task<string> Get([NotNull] Uri url, string encoding = "UTF-8")
