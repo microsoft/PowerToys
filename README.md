@@ -211,7 +211,7 @@ For [0.25](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+
 
 ### PowerToys roadmap
 
-Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on.
+Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
 ## Developer Guidance
 
