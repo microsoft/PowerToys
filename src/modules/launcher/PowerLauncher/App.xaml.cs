@@ -107,7 +107,7 @@ namespace PowerLauncher
                 Current.MainWindow.Title = Constant.ExeFileName;
 
                 // main windows needs initialized before theme change because of blur settings
-                Http.Proxy = _settings.Proxy;
+                HttpClient.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
 

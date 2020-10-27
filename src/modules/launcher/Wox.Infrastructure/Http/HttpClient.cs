@@ -15,11 +15,11 @@ using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Http
 {
-    public static class Http
+    public static class HttpClient
     {
         private const string UserAgent = @"Mozilla/5.0 (Trident/7.0; rv:11.0) like Gecko";
 
-        static Http()
+        static HttpClient()
         {
             // need to be added so it would work on a win10 machine
             ServicePointManager.Expect100Continue = true;
