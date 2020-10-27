@@ -136,7 +136,7 @@ We currently support the matrix below.
 
 Our goals for 0.23 release cycle was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. We have a full accessibility pass being done starting end of September to audit all of PowerToys. Our localization efforts now had data flowing both directions as well.
 
-Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on.
+Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
 #### Highlights from September
 
