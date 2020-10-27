@@ -362,6 +362,30 @@ TEST_METHOD(VerifyHandleCapturingGroups)
     }
 }
 
+TEST_METHOD(VerifyLookbehindFails)
+{
+    // Standard Library Regex Engine does not support lookbehind, thus test should fail.
+    SearchReplaceExpected sreTable[] = {
+        //search, replace, test, result
+        { L"(?<=E12).*", L"Foo", L"AAAAAA", nullptr },
+        { L"(?<!E12).*", L"Foo", L"AAAAAA", nullptr },
+    };
+
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    Assert::IsTrue(renameRegEx->PutFlags(UseRegularExpressions) == S_OK);
+
+    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
+    {
+        PWSTR result = nullptr;
+        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
+        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
+        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == E_FAIL);
+        Assert::AreEqual(sreTable[i].expected, result);
+        CoTaskMemFree(result);
+    }
+}
+
 TEST_METHOD(VerifyEventsFire)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
