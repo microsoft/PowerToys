@@ -19,15 +19,6 @@ namespace Wox.Infrastructure.Http
     {
         private const string UserAgent = @"Mozilla/5.0 (Trident/7.0; rv:11.0) like Gecko";
 
-        static HttpClient()
-        {
-            // need to be added so it would work on a win10 machine
-            ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls
-                                                    | SecurityProtocolType.Tls11
-                                                    | SecurityProtocolType.Tls12;
-        }
-
         public static HttpProxy Proxy { get; set; }
 
         public static IWebProxy WebProxy()
