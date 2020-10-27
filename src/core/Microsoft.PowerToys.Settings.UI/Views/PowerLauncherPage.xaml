@@ -9,7 +9,8 @@
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>

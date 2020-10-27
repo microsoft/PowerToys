@@ -9,7 +9,8 @@
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
