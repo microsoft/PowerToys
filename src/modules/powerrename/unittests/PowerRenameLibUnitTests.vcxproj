@@ -196,6 +196,7 @@
     <ClCompile Include="MockPowerRenameItem.cpp" />
     <ClCompile Include="MockPowerRenameManagerEvents.cpp" />
     <ClCompile Include="MockPowerRenameRegExEvents.cpp" />
+    <ClCompile Include="PowerRenameRegExBoostTests.cpp" />
     <ClCompile Include="PowerRenameManagerTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>

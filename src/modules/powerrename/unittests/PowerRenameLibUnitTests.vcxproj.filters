@@ -8,6 +8,7 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="PowerRenameRegExTests.cpp" />
     <ClCompile Include="TestFileHelper.cpp" />
+    <ClCompile Include="PowerRenameRegExBoostTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MockPowerRenameItem.h" />
