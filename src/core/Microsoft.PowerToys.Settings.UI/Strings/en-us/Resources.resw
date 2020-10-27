@@ -340,7 +340,7 @@
     <value>Open zones editor</value>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
-    <value>Set Shortcut</value>
+    <value>Shortcut setting</value>
   </data>
   <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
