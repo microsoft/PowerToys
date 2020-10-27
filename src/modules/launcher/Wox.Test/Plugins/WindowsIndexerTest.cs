@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.Indexer;
 using Microsoft.Plugin.Indexer.DriveDetection;
-using Microsoft.Plugin.Indexer.Interface;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Search.Interop;
 using Moq;
