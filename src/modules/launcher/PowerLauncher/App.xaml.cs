@@ -29,7 +29,7 @@ namespace PowerLauncher
 
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed;
-        private Settings _settings;
+        private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
         private ThemeManager _themeManager;

@@ -11,7 +11,7 @@ using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
 {
-    public class Settings : BaseModel
+    public class PowerToysRunSettings : BaseModel
     {
         private string _hotkey = "Alt + Space";
         private string _previousHotkey = string.Empty;

@@ -36,7 +36,7 @@ namespace PowerLauncher.ViewModel
         private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
         private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
         private readonly WoxJsonStorage<TopMostRecord> _topMostRecordStorage;
-        private readonly Settings _settings;
+        private readonly PowerToysRunSettings _settings;
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
@@ -53,7 +53,7 @@ namespace PowerLauncher.ViewModel
 
         internal HotkeyManager HotkeyManager { get; set; }
 
-        public MainViewModel(Settings settings)
+        public MainViewModel(PowerToysRunSettings settings)
         {
             _saved = false;
             _queryTextBeforeLeaveResults = string.Empty;
@@ -87,7 +87,7 @@ namespace PowerLauncher.ViewModel
                 HotkeyManager = new HotkeyManager();
                 _settings.PropertyChanged += (s, e) =>
                 {
-                    if (e.PropertyName == nameof(Settings.Hotkey))
+                    if (e.PropertyName == nameof(PowerToysRunSettings.Hotkey))
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {

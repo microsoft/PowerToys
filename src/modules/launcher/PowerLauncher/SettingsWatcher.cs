@@ -18,7 +18,7 @@ using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher
 {
-    // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
+    // Watch for /Local/Microsoft/PowerToys/Launcher/PowerToysRunSettings.json changes
     public class SettingsWatcher : BaseModel
     {
         private readonly ISettingsUtils _settingsUtils;
@@ -26,9 +26,9 @@ namespace PowerLauncher
         private const int MaxRetries = 10;
         private static readonly object _watcherSyncObject = new object();
         private readonly FileSystemWatcher _watcher;
-        private readonly Settings _settings;
+        private readonly PowerToysRunSettings _settings;
 
-        public SettingsWatcher(Settings settings)
+        public SettingsWatcher(PowerToysRunSettings settings)
         {
             _settingsUtils = new SettingsUtils(new SystemIOProvider());
             _settings = settings;
