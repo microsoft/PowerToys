@@ -26,20 +26,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
         }
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions from int.Parse should be caught and logged.")]
         public void DeleteCustomSize(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                Button deleteRowButton = (Button)sender;
+            Button deleteRowButton = (Button)sender;
 
-                // Using InvariantCulture since this is internal and expected to be numerical
-                int rowNum = int.Parse(deleteRowButton?.CommandParameter?.ToString(), CultureInfo.InvariantCulture);
+            // Using InvariantCulture since this is internal and expected to be numerical
+            bool success = int.TryParse(deleteRowButton?.CommandParameter?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int rowNum);
+            if (success)
+            {
                 ViewModel.DeleteImageSize(rowNum);
             }
-            catch (Exception ex)
+            else
             {
-                Logger.LogError("Exception encountered when deleting custom image size.", ex);
+                Logger.LogError("Failed to delete custom image size.");
             }
         }
 
