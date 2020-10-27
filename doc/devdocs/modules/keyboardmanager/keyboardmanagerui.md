@@ -107,7 +107,7 @@ Unlike the Single Key handler, there is a different set of errors that can occur
 - Shortcut can't have a repeated modifier (Ctrl+Ctrl(left)+A is not a shortcut)
 - Shortcut can only have upto 2 modifiers (Ctrl+Shift+Alt is not supported as we have enforced a 3 key constraint (**not a backend limitation, there is [an issue](https://github.com/microsoft/PowerToys/issues/3936) requesting to remove this**))
 - Shortcut must contain an action key (Ctrl+A and change A to None, only for left column)
-- Shortcut must have atleast two keys (Ctrl+A and change Ctrl to None, only for left column)
+- Shortcut must have at least two keys (Ctrl+A and change Ctrl to None, only for left column)
 - Disable can't be a modifier or action key (Ctrl+Disable is invalid)
 - Shortcut can't have more than one action key (Ctrl+Shift+A, change Shift to B)
 - Remap to same shortcut(Ctrl+A->Ctrl+A)
