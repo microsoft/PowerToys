@@ -22,7 +22,7 @@ namespace Wox.Plugin
         private const string HighContrastWhiteTheme = "HighContrast.Accent5";
 
         private Theme currentTheme;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public event ThemeChangedHandler ThemeChanged;
 

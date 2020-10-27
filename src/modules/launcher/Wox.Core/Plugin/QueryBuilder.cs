@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Collections.Generic;
 using Wox.Plugin;
 
 namespace Wox.Core.Plugin
@@ -63,7 +64,7 @@ namespace Wox.Core.Plugin
                         }
 
                         // A new query is constructed for each plugin as they have different action keywords
-                        var query = new Query(rawQuery, search, terms, pluginActionKeyword);
+                        var query = new Query(rawQuery, search, new ReadOnlyCollection<string>(terms), pluginActionKeyword);
 
                         pluginQueryPair.TryAdd(pluginPair, query);
                     }
@@ -80,7 +81,7 @@ namespace Wox.Core.Plugin
                 {
                     if (!pluginQueryPair.ContainsKey(globalPlugin))
                     {
-                        var query = new Query(rawQuery, rawQuery, terms, string.Empty);
+                        var query = new Query(rawQuery, rawQuery, new ReadOnlyCollection<string>(terms), string.Empty);
                         pluginQueryPair.Add(globalPlugin, query);
                     }
                 }

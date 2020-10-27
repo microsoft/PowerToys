@@ -40,7 +40,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("[::]", true, "http://[::]/")]
         [TestCase("[2001:0DB8::1]", true, "http://[2001:db8::1]/")]
         [TestCase("[2001:0DB8::1]:80", true, "http://[2001:db8::1]/")]
-        public void TryParse_CanParseHostName(string query, bool expectedSuccess, string expectedResult)
+        public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
             // Arrange
             var parser = new ExtendedUriParser();

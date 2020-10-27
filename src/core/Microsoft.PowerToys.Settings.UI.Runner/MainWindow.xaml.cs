@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
@@ -67,16 +68,17 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 {
                     if (ShellPage.ShellHandler.IPCResponseHandleList != null)
                     {
-                        try
+                        var success = JsonObject.TryParse(msg, out JsonObject json);
+                        if (success)
                         {
-                            JsonObject json = JsonObject.Parse(msg);
                             foreach (Action<JsonObject> handle in ShellPage.ShellHandler.IPCResponseHandleList)
                             {
                                 handle(json);
                             }
                         }
-                        catch (Exception)
+                        else
                         {
+                            Logger.LogError("Failed to parse JSON from IPC message.");
                         }
                     }
                 };

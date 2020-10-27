@@ -33,13 +33,12 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 
         public Wox.Plugin.Result Create(IPublicAPI contextApi)
         {
-            return new Wox.Plugin.Result
+            return new Wox.Plugin.Result(StringMatcher.FuzzySearch(Search, Title).MatchData)
             {
                 Title = Title,
                 IcoPath = Path,
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Subtitle),
                 QueryTextDisplay = Path,
-                TitleHighlightData = StringMatcher.FuzzySearch(Search, Title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Path },
                 Action = c => ShellAction.Execute(Path, contextApi),
             };
