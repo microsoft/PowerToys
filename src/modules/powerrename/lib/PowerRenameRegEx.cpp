@@ -3,6 +3,7 @@
 #include <regex>
 #include <string>
 #include <algorithm>
+#include <boost/regex.hpp>
 
 
 using namespace std;
@@ -206,6 +207,20 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
 
             if (m_flags & UseRegularExpressions)
             {
+                if (_useBoostLib)
+                {
+                    boost::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? boost::regex::icase | boost::regex::ECMAScript : boost::regex::ECMAScript);
+                    if (m_flags & MatchAllOccurences)
+                    {
+                        res = boost::regex_replace(wstring(source), pattern, replaceTerm);
+                    }
+                    else
+                    {
+                        res = boost::regex_replace(wstring(source), pattern, replaceTerm, boost::regex_constants::format_first_only);
+                    }
+                }
+                else
+                {
                 std::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? regex_constants::icase | regex_constants::ECMAScript : regex_constants::ECMAScript);
                 if (m_flags & MatchAllOccurences)
                 {
@@ -215,6 +230,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
                 {
                     res = regex_replace(wstring(source), pattern, replaceTerm, regex_constants::format_first_only);
                 }
+            }
             }
             else
             {
