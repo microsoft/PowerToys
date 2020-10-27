@@ -22,7 +22,7 @@ Interop.ShowWindow(coreWindowInterop.WindowHandle, Interop.SW_HIDE);
 ```
 3. Workaround to prevent XAML Island failing to render on Nvidia workstation graphics cards:
 ```
- // XAML Islands: If the window is open, explicity force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384 
+ // XAML Islands: If the window is open, explicitly force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384 
  if (isOpen) 
  { 
      Show(); 
