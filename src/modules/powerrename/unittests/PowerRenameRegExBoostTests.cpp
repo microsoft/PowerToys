@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
+#include "powerrename/lib/Settings.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameRegEx.h>
 #include "MockPowerRenameRegExEvents.h"
@@ -19,10 +20,20 @@ namespace PowerRenameRegExBoostTests
     TEST_CLASS(SimpleTests)
     {
     public:
+TEST_CLASS_INITIALIZE(ClassInitialize)
+{
+    CSettingsInstance().SetUseBoostLib(true);
+}
+
+TEST_CLASS_CLEANUP(ClassCleanup)
+{
+    CSettingsInstance().SetUseBoostLib(false);
+}
+
 TEST_METHOD(GeneralReplaceTest)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"foo") == S_OK);
     Assert::IsTrue(renameRegEx->PutReplaceTerm(L"big") == S_OK);
@@ -34,7 +45,7 @@ TEST_METHOD(GeneralReplaceTest)
 TEST_METHOD(ReplaceNoMatch)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"notfound") == S_OK);
     Assert::IsTrue(renameRegEx->PutReplaceTerm(L"big") == S_OK);
@@ -46,7 +57,7 @@ TEST_METHOD(ReplaceNoMatch)
 TEST_METHOD(ReplaceNoSearchOrReplaceTerm)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) != S_OK);
     Assert::IsTrue(result == nullptr);
@@ -56,7 +67,7 @@ TEST_METHOD(ReplaceNoSearchOrReplaceTerm)
 TEST_METHOD(ReplaceNoReplaceTerm)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"foo") == S_OK);
     Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) == S_OK);
@@ -67,7 +78,7 @@ TEST_METHOD(ReplaceNoReplaceTerm)
 TEST_METHOD(ReplaceEmptyStringReplaceTerm)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"foo") == S_OK);
     Assert::IsTrue(renameRegEx->PutReplaceTerm(L"") == S_OK);
@@ -79,7 +90,7 @@ TEST_METHOD(ReplaceEmptyStringReplaceTerm)
 TEST_METHOD(VerifyDefaultFlags)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = 0;
     Assert::IsTrue(renameRegEx->GetFlags(&flags) == S_OK);
     Assert::IsTrue(flags == MatchAllOccurences);
@@ -88,7 +99,7 @@ TEST_METHOD(VerifyDefaultFlags)
 TEST_METHOD(VerifyCaseSensitiveSearch)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -113,7 +124,7 @@ TEST_METHOD(VerifyCaseSensitiveSearch)
 TEST_METHOD(VerifyReplaceFirstOnly)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = 0;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -137,7 +148,7 @@ TEST_METHOD(VerifyReplaceFirstOnly)
 TEST_METHOD(VerifyReplaceAll)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -161,7 +172,7 @@ TEST_METHOD(VerifyReplaceAll)
 TEST_METHOD(VerifyReplaceAllCaseInsensitive)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -186,7 +197,7 @@ TEST_METHOD(VerifyReplaceAllCaseInsensitive)
 TEST_METHOD(VerifyReplaceFirstOnlyUseRegEx)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -210,7 +221,7 @@ TEST_METHOD(VerifyReplaceFirstOnlyUseRegEx)
 TEST_METHOD(VerifyReplaceAllUseRegEx)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -234,7 +245,7 @@ TEST_METHOD(VerifyReplaceAllUseRegEx)
 TEST_METHOD(VerifyReplaceAllUseRegExCaseSensitive)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -258,7 +269,7 @@ TEST_METHOD(VerifyReplaceAllUseRegExCaseSensitive)
 TEST_METHOD(VerifyMatchAllWildcardUseRegEx)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -283,7 +294,7 @@ TEST_METHOD(VerifyMatchAllWildcardUseRegEx)
 void VerifyReplaceFirstWildcard(SearchReplaceExpected sreTable[], int tableSize, DWORD flags)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     for (int i = 0; i < tableSize; i++)
@@ -343,7 +354,7 @@ TEST_METHOD(VerifyHandleCapturingGroups)
     // This differs from the Standard Library: Boost does not recognize $xyz as $x and "yz".
     // To use a capturing group followed by numbers as replacement curly braces are needed.
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
@@ -389,7 +400,7 @@ TEST_METHOD(VerifyLookbehind)
     };
 
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     Assert::IsTrue(renameRegEx->PutFlags(UseRegularExpressions) == S_OK);
 
     for (int i = 0; i < ARRAYSIZE(sreTable); i++)
@@ -406,7 +417,7 @@ TEST_METHOD(VerifyLookbehind)
 TEST_METHOD(VerifyEventsFire)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     CMockPowerRenameRegExEvents* mockEvents = new CMockPowerRenameRegExEvents();
     CComPtr<IPowerRenameRegExEvents> regExEvents;
     Assert::IsTrue(mockEvents->QueryInterface(IID_PPV_ARGS(&regExEvents)) == S_OK);

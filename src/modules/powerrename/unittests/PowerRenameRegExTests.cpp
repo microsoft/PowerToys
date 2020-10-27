@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
+#include "powerrename/lib/Settings.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameRegEx.h>
 #include "MockPowerRenameRegExEvents.h"
@@ -18,8 +19,14 @@ namespace PowerRenameRegExTests
 
     TEST_CLASS(SimpleTests){
         public:
-            TEST_METHOD(GeneralReplaceTest){
-                CComPtr<IPowerRenameRegEx> renameRegEx;
+TEST_CLASS_INITIALIZE(ClassInitialize)
+{
+    CSettingsInstance().SetUseBoostLib(true);
+}
+
+TEST_METHOD(GeneralReplaceTest)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"foo") == S_OK);

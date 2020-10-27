@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PowerRenameRegEx.h"
+#include "Settings.h"
 #include <regex>
 #include <string>
 #include <algorithm>
@@ -179,7 +180,8 @@ CPowerRenameRegEx::CPowerRenameRegEx(bool useBoostLib) :
     SHStrDup(L"", &m_searchTerm);
     SHStrDup(L"", &m_replaceTerm);
 
-    _useBoostLib = useBoostLib;
+    CSettingsInstance().Load();
+    _useBoostLib = CSettingsInstance().GetUseBoostLib();
 }
 
 CPowerRenameRegEx::~CPowerRenameRegEx()
