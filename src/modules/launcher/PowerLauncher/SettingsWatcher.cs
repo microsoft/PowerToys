@@ -19,7 +19,7 @@ using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher
 {
-    // Watch for /Local/Microsoft/PowerToys/Launcher/PowerToysRunSettings.json changes
+    // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
     public class SettingsWatcher : BaseModel
     {
         private readonly ISettingsUtils _settingsUtils;
