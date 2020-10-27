@@ -81,13 +81,13 @@ namespace Wox.Infrastructure.Http
             request.Timeout = 1000;
             request.Proxy = WebProxy();
             request.UserAgent = UserAgent;
-            var response = await request.GetResponseAsync() as HttpWebResponse;
+            var response = await request.GetResponseAsync().ConfigureAwait(true) as HttpWebResponse;
             response = response.NonNull();
             var stream = response.GetResponseStream().NonNull();
 
             using (var reader = new StreamReader(stream, Encoding.GetEncoding(encoding)))
             {
-                var content = await reader.ReadToEndAsync();
+                var content = await reader.ReadToEndAsync().ConfigureAwait(true);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     return content;
