@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -46,6 +46,8 @@ namespace FancyZonesEditor
 
         public Settings ZoneSettings { get; }
 
+        public static EditorOverlay Overlay { get; private set; }
+
         public App()
         {
             ZoneSettings = new Settings();
@@ -60,41 +62,12 @@ namespace FancyZonesEditor
                 Environment.Exit(0);
             });
 
-            LayoutModel foundModel = null;
+            Overlay = new EditorOverlay();
 
-            foreach (LayoutModel model in ZoneSettings.DefaultModels)
-            {
-                if (model.Type == Settings.ActiveZoneSetLayoutType)
-                {
-                    // found match
-                    foundModel = model;
-                    break;
-                }
-            }
+            Settings settings = ((App)Current).ZoneSettings;
+            settings.UpdateSelectedLayoutModel();
 
-            if (foundModel == null)
-            {
-                foreach (LayoutModel model in Settings.CustomModels)
-                {
-                    if ("{" + model.Guid.ToString().ToUpper() + "}" == Settings.ActiveZoneSetUUid.ToUpper())
-                    {
-                        // found match
-                        foundModel = model;
-                        break;
-                    }
-                }
-            }
-
-            if (foundModel == null)
-            {
-                foundModel = ZoneSettings.DefaultModels[0];
-            }
-
-            foundModel.IsSelected = true;
-
-            EditorOverlay overlay = new EditorOverlay();
-            overlay.Show();
-            overlay.DataContext = foundModel;
+            Overlay.Show();
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)

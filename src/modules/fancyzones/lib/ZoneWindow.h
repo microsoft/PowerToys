@@ -2,12 +2,6 @@
 #include "FancyZones.h"
 #include "lib/ZoneSet.h"
 
-namespace ZoneWindowUtils
-{
-    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
-    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
-}
-
 /**
  * Class representing single work area, which is defined by monitor and virtual desktop.
  */

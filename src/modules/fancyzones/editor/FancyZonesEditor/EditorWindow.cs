@@ -30,14 +30,14 @@ namespace FancyZonesEditor
 
             _backToLayoutPicker = false;
             Close();
-            EditorOverlay.Current.Close();
+            EditorOverlay.Current.CloseEditor();
         }
 
         protected void OnClosed(object sender, EventArgs e)
         {
             if (_backToLayoutPicker)
             {
-                EditorOverlay.Current.ShowLayoutPicker();
+                EditorOverlay.Current.CloseEditor();
             }
         }
 

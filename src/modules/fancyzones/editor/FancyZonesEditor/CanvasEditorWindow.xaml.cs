@@ -5,6 +5,7 @@
 using System.Windows;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -25,15 +26,16 @@ namespace FancyZonesEditor
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            if (_offset + (int)(Settings.WorkArea.Width * 0.4) < (int)Settings.WorkArea.Width
-                && _offset + (int)(Settings.WorkArea.Height * 0.4) < (int)Settings.WorkArea.Height)
+            Rect workingArea = WorkArea.WorkingAreaRect;
+            if (_offset + (int)(workingArea.Width * 0.4) < (int)workingArea.Width
+                && _offset + (int)(workingArea.Height * 0.4) < (int)workingArea.Height)
             {
-                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
+                _model.AddZone(new Int32Rect(_offset, _offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
             }
             else
             {
                 _offset = 100;
-                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
+                _model.AddZone(new Int32Rect(_offset, _offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
             }
 
             _offset += 50;

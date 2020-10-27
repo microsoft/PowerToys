@@ -8,14 +8,14 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:FancyZonesEditor"
         xmlns:Converters="clr-namespace:FancyZonesEditor.Converters"
-        xmlns:props="clr-namespace:FancyZonesEditor.Properties"
-        mc:Ignorable="d"
+        xmlns:props="clr-namespace:FancyZonesEditor.Properties" xmlns:local1="clr-namespace:FancyZonesEditor.ViewModels"
+                      mc:Ignorable="d"
         Title=""
         Width="810"
         SizeToContent="Height"
         Background="White"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterOwner"
         Initialized="OnInitialized"
         Closing="OnClosing">
     <Window.Resources>
@@ -162,7 +162,51 @@
             <Setter Property="Margin" Value="16,6,0,0"/>
             <Setter Property="Padding" Value="5,5,5,5"/>
         </Style>
-        
+        <Style x:Key="desktopIdText" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="Light" />
+            <Setter Property="FontSize" Value="42" />
+            <Setter Property="Foreground" Value="#303030" />
+        </Style>
+        <Style x:Key="desktopDimensionsText" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="Light" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="#303030" />
+        </Style>
+        <Style x:Key="desktopButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#DADADA" />
+            <Setter Property="Width" Value="{Binding DisplayWidth}" />
+            <Setter Property="Height" Value="{Binding DisplayHeight}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="0" 
+                                BorderBrush="#303030" 
+                                BorderThickness="2" >
+                            <ContentPresenter x:Name="contentPresenter" 
+                                              ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                              Content="{TemplateBinding Content}" 
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#C2C2C2" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding Selected}" Value="true">
+                                <Setter Property="Background" Value="#0078D7" />
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="templateBackground" TargetType="Border">
             <Setter Property="Background" Value="#F2F2F2"/>
             <Setter Property="CornerRadius" Value="4"/>
@@ -186,24 +230,95 @@
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
+        
+        <ControlTemplate x:Key="desktopButton">
+            <Button Style="{StaticResource desktopButtonStyle}"
+                    Command="{Binding DataContext.SelectCommand, ElementName= MainWindowItemControl}" 
+                    CommandParameter="{Binding}"
+                    Margin="1,6,1,6">
+                <Button.Content>
+                    <Grid Name="MonitorsGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="0.40*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Name="desktopId" Text="{Binding Index}" Style="{StaticResource desktopIdText}" Grid.Row="0"/>
+                        <TextBlock Name="desktopDimensions" Text="{Binding Dimensions}" Style="{StaticResource desktopDimensionsText}" Grid.Row="1" />
+                    </Grid>
+                </Button.Content>
+            </Button>
+            
+            <ControlTemplate.Triggers>
+                <DataTrigger Binding="{Binding Selected}" Value="true">
+                    <Setter TargetName="desktopId" Property="Foreground" Value="#F2F2F2" />
+                    <Setter TargetName="desktopDimensions" Property="Foreground" Value="#F2F2F2" />
+                </DataTrigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
     </Window.Resources>
 
     <StackPanel FocusManager.FocusedElement="{Binding ElementName=decrementZones}">
 
         <TextBlock Name="DialogTitle" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource titleText}" />
 
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.CanContentScroll="True"
+                          ScrollViewer.PanningMode="HorizontalOnly"
+                          Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UIElement}}"
+                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                <ScrollViewer.DataContext>
+                    <local1:MonitorViewModel></local1:MonitorViewModel>
+                </ScrollViewer.DataContext>
+                <ItemsControl x:Name="MainWindowItemControl" 
+                              ItemsSource="{Binding Monitors}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Background="Transparent" 
+                                        Orientation="Horizontal" 
+                                        HorizontalAlignment="Center" 
+                                        Margin="8, 16, 8, 8" 
+                                        Visibility="{Binding DesktopsPanelVisibility}"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Template="{StaticResource desktopButton}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+        
         <TabControl BorderThickness="0" x:Name="TemplateTab" AutomationProperties.LabeledBy="{Binding ElementName=DialogTitle}" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
             <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}" AutomationProperties.Name="{x:Static props:Resources.Tab_Item_Templates}">
                 <StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                     <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button x:Name="decrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
                         <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" Style="{StaticResource zoneCount}"/>
                         <Button x:Name="incrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click"/>
                     </StackPanel>
+                    </Grid>
+                    
                     <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,0,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}" ItemHeight="{Binding ElementName=WrapPanel1, Path=ItemWidth}" x:Name="WrapPanel1" />
+                                <WrapPanel Orientation="Horizontal" 
+                                           Margin="2"
+                                           ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}" 
+                                           ItemHeight="{Binding ElementName=WrapPanel1, Path=ItemWidth}" 
+                                           x:Name="WrapPanel1" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>

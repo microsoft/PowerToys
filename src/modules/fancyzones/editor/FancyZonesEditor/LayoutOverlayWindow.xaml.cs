@@ -1,0 +1,32 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Windows;
+
+namespace FancyZonesEditor
+{
+    /// <summary>
+    /// Interaction logic for LayoutOverlayWindow.xaml
+    /// </summary>
+    public partial class LayoutOverlayWindow : Window
+    {
+        public LayoutOverlayWindow()
+        {
+            InitializeComponent();
+
+            if (Settings.DebugMode)
+            {
+                Background = System.Windows.Media.Brushes.BlanchedAlmond;
+                Opacity = 0.7;
+            }
+        }
+
+        private void Window_DpiChanged(object sender, DpiChangedEventArgs e)
+        {
+            Width = Width * e.OldDpi.DpiScaleX / e.NewDpi.DpiScaleX;
+            Height = Height * e.OldDpi.DpiScaleY / e.NewDpi.DpiScaleY;
+        }
+    }
+}

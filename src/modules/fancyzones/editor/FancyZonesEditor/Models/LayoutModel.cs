@@ -39,6 +39,7 @@ namespace FancyZonesEditor.Models
         private const string ErrorSerializingDeletedLayouts = "Error serializing deleted layouts";
         private const string ErrorLoadingCustomLayouts = "Error loading custom layouts";
         private const string ErrorApplyingLayout = "Error applying layout";
+        private const string ErrorPersistingCustomLayout = "Error persisting custom layout";
 
         // Non-localizable strings
         private const string NameStr = "name";
@@ -136,6 +137,14 @@ namespace FancyZonesEditor.Models
 
         private Guid _guid;
 
+        public string Uuid
+        {
+            get
+            {
+                return "{" + Guid.ToString().ToUpper() + "}";
+            }
+        }
+
         // IsSelected (not-persisted) - tracks whether or not this LayoutModel is selected in the picker
         // TODO: once we switch to a picker per monitor, we need to move this state to the view
         public bool IsSelected
@@ -177,9 +186,39 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        // Adds new custom Layout
+        public void AddCustomLayout(LayoutModel model)
+        {
+            bool updated = false;
+            for (int i = 0; i < _customModels.Count && !updated; i++)
+            {
+                if (_customModels[i].Uuid == model.Uuid)
+                {
+                    _customModels[i] = model;
+                    updated = true;
+                }
+            }
+
+            if (!updated)
+            {
+                _customModels.Add(model);
+            }
+        }
+
+        // Add custom layouts json data that would be serialized to a temp file
+        public void AddCustomLayoutJson(JsonElement json)
+        {
+            _createdCustomLayouts.Add(json);
+        }
+
         private struct DeletedCustomZoneSetsWrapper
         {
             public List<string> DeletedCustomZoneSets { get; set; }
+        }
+
+        private struct CreatedCustomZoneSetsWrapper
+        {
+            public List<JsonElement> CreatedCustomZoneSets { get; set; }
         }
 
         public static void SerializeDeletedCustomZoneSets()
@@ -202,6 +241,29 @@ namespace FancyZonesEditor.Models
             catch (Exception ex)
             {
                 ShowExceptionMessageBox(ErrorSerializingDeletedLayouts, ex);
+            }
+        }
+
+        public static void SerializeCreatedCustomZonesets()
+        {
+            CreatedCustomZoneSetsWrapper layouts = new CreatedCustomZoneSetsWrapper
+            {
+                CreatedCustomZoneSets = _createdCustomLayouts,
+            };
+
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = new DashCaseNamingPolicy(),
+            };
+
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(layouts, options);
+                File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                ShowExceptionMessageBox(ErrorPersistingCustomLayout, ex);
             }
         }
 
@@ -357,6 +419,7 @@ namespace FancyZonesEditor.Models
 
         private static ObservableCollection<LayoutModel> _customModels = null;
         private static List<string> _deletedCustomModels = new List<string>();
+        private static List<JsonElement> _createdCustomLayouts = new List<JsonElement>();
 
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract void PersistData();
@@ -391,46 +454,65 @@ namespace FancyZonesEditor.Models
             public int EditorSensitivityRadius { get; set; }
         }
 
+        private struct AppliedZonesetsToDesktops
+        {
+            public List<AppliedZoneSet> AppliedZonesets { get; set; }
+        }
+
         public void Apply()
         {
-            ActiveZoneSetWrapper activeZoneSet = new ActiveZoneSetWrapper
-            {
-                Uuid = "{" + Guid.ToString().ToUpper() + "}",
-            };
+            // update settings
+            Settings.AppliedLayouts[Settings.CurrentDesktopId].ZonesetUuid = Uuid;
+            Settings.AppliedLayouts[Settings.CurrentDesktopId].Type = Type;
 
-            switch (Type)
+            // update temp file
+            AppliedZonesetsToDesktops applied = new AppliedZonesetsToDesktops { };
+            applied.AppliedZonesets = new List<AppliedZoneSet>();
+
+            foreach (Settings.AppliedZoneset zoneset in Settings.AppliedLayouts)
             {
-                case LayoutType.Focus:
-                    activeZoneSet.Type = FocusJsonTag;
-                    break;
-                case LayoutType.Rows:
-                    activeZoneSet.Type = RowsJsonTag;
-                    break;
-                case LayoutType.Columns:
-                    activeZoneSet.Type = ColumnsJsonTag;
-                    break;
-                case LayoutType.Grid:
-                    activeZoneSet.Type = GridJsonTag;
-                    break;
-                case LayoutType.PriorityGrid:
-                    activeZoneSet.Type = PriorityGridJsonTag;
-                    break;
-                case LayoutType.Custom:
-                    activeZoneSet.Type = CustomJsonTag;
-                    break;
+                if (zoneset.ZonesetUuid.Length == 0)
+                {
+                    continue;
+                }
+
+                ActiveZoneSetWrapper activeZoneSet = new ActiveZoneSetWrapper
+                {
+                    Uuid = zoneset.ZonesetUuid,
+                };
+
+                switch (zoneset.Type)
+                {
+                    case LayoutType.Focus:
+                        activeZoneSet.Type = FocusJsonTag;
+                        break;
+                    case LayoutType.Rows:
+                        activeZoneSet.Type = RowsJsonTag;
+                        break;
+                    case LayoutType.Columns:
+                        activeZoneSet.Type = ColumnsJsonTag;
+                        break;
+                    case LayoutType.Grid:
+                        activeZoneSet.Type = GridJsonTag;
+                        break;
+                    case LayoutType.PriorityGrid:
+                        activeZoneSet.Type = PriorityGridJsonTag;
+                        break;
+                    case LayoutType.Custom:
+                        activeZoneSet.Type = CustomJsonTag;
+                        break;
+                }
+
+                applied.AppliedZonesets.Add(new AppliedZoneSet
+                {
+                    DeviceId = zoneset.DeviceId,
+                    ActiveZoneset = activeZoneSet,
+                    EditorShowSpacing = zoneset.ShowSpacing,
+                    EditorSpacing = zoneset.Spacing,
+                    EditorZoneCount = zoneset.ZoneCount,
+                    EditorSensitivityRadius = zoneset.SensitivityRadius,
+                });
             }
-
-            Settings settings = ((App)Application.Current).ZoneSettings;
-
-            AppliedZoneSet zoneSet = new AppliedZoneSet
-            {
-                DeviceId = Settings.UniqueKey,
-                ActiveZoneset = activeZoneSet,
-                EditorShowSpacing = settings.ShowSpacing,
-                EditorSpacing = settings.Spacing,
-                EditorZoneCount = settings.ZoneCount,
-                EditorSensitivityRadius = settings.SensitivityRadius,
-            };
 
             JsonSerializerOptions options = new JsonSerializerOptions
             {
@@ -439,8 +521,8 @@ namespace FancyZonesEditor.Models
 
             try
             {
-                string jsonString = JsonSerializer.Serialize(zoneSet, options);
-                FileSystem.File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
+                string jsonString = JsonSerializer.Serialize(applied, options);
+                File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
             }
             catch (Exception ex)
             {

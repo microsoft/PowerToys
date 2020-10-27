@@ -89,6 +89,9 @@
   <PropertyGroup>
     <ApplicationIcon>images\FancyZonesEditor.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -121,6 +124,9 @@
     <Compile Include="DashCaseNamingPolicy.cs" />
     <Compile Include="GridData.cs" />
     <Compile Include="GridDragHandles.cs" />
+    <Compile Include="LayoutOverlayWindow.xaml.cs">
+      <DependentUpon>LayoutOverlayWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />
@@ -151,6 +157,15 @@
       <DependentUpon>GridEditorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SplitEventArgs.cs" />
+    <Compile Include="Utils\EventArgs`1.cs" />
+    <Compile Include="Utils\EventRaiser.cs" />
+    <Compile Include="Utils\MonitorChangedEventArgs.cs" />
+    <Compile Include="Models\MonitorInfoModel.cs" />
+    <Compile Include="Utils\RelayCommand.cs" />
+    <Compile Include="Utils\RelayCommand`1.cs" />
+    <Compile Include="Utils\WorkArea.cs" />
+    <Compile Include="Utils\WorkAreaData.cs" />
+    <Compile Include="ViewModels\MonitorViewModel.cs" />
     <Compile Include="WindowLayout.xaml.cs">
       <DependentUpon>WindowLayout.xaml</DependentUpon>
     </Compile>
@@ -172,6 +187,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="GridResizer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LayoutOverlayWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -235,6 +254,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.*.resx" />
+    <None Include="app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -252,6 +272,9 @@
     </PackageReference>
     <PackageReference Include="System.IO.Abstractions">
       <Version>12.2.5</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.DpiAwareness">
+      <Version>6.6.30107</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
       <Version>4.7.2</Version>

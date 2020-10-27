@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Text.Json;
 using System.Windows;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor.Models
 {
@@ -14,9 +15,6 @@ namespace FancyZonesEditor.Models
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
-        // Localizable strings
-        private const string ErrorPersistingCanvasLayout = "Error persisting canvas layout";
-
         // Non-localizable strings
         private const string ModelTypeID = "canvas";
 
@@ -51,9 +49,9 @@ namespace FancyZonesEditor.Models
         // Zones - the list of all zones in this layout, described as independent rectangles
         public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
 
-        private int lastWorkAreaWidth = (int)Settings.WorkArea.Width;
+        private int lastWorkAreaWidth = (int)WorkArea.WorkingAreaRect.Width;
 
-        private int lastWorkAreaHeight = (int)Settings.WorkArea.Height;
+        private int lastWorkAreaHeight = (int)WorkArea.WorkingAreaRect.Height;
 
         public bool IsScaled { get; private set; }
 
@@ -107,17 +105,19 @@ namespace FancyZonesEditor.Models
             // Scale if:
             // - at least one dimension changed
             // - orientation remained the same
-            return (lastWorkAreaHeight != Settings.WorkArea.Height || lastWorkAreaWidth != Settings.WorkArea.Width) &&
-                ((lastWorkAreaHeight > lastWorkAreaWidth && Settings.WorkArea.Height > Settings.WorkArea.Width) ||
-                  (lastWorkAreaWidth > lastWorkAreaHeight && Settings.WorkArea.Width > Settings.WorkArea.Height));
+            Rect workingArea = WorkArea.WorkingAreaRect;
+            return (lastWorkAreaHeight != workingArea.Height || lastWorkAreaWidth != workingArea.Width) &&
+                ((lastWorkAreaHeight > lastWorkAreaWidth && workingArea.Height > workingArea.Width) ||
+                  (lastWorkAreaWidth > lastWorkAreaHeight && workingArea.Width > workingArea.Height));
         }
 
         private void ScaleLayout(IList<Int32Rect> zones)
         {
+            Rect workingArea = WorkArea.WorkingAreaRect;
             foreach (Int32Rect zone in zones)
             {
-                double widthFactor = (double)Settings.WorkArea.Width / lastWorkAreaWidth;
-                double heightFactor = (double)Settings.WorkArea.Height / lastWorkAreaHeight;
+                double widthFactor = (double)workingArea.Width / lastWorkAreaWidth;
+                double heightFactor = (double)workingArea.Height / lastWorkAreaHeight;
                 int scaledX = (int)(zone.X * widthFactor);
                 int scaledY = (int)(zone.Y * heightFactor);
                 int scaledWidth = (int)(zone.Width * widthFactor);
@@ -125,8 +125,8 @@ namespace FancyZonesEditor.Models
                 Zones.Add(new Int32Rect(scaledX, scaledY, scaledWidth, scaledHeight));
             }
 
-            lastWorkAreaHeight = (int)Settings.WorkArea.Height;
-            lastWorkAreaWidth = (int)Settings.WorkArea.Width;
+            lastWorkAreaHeight = (int)workingArea.Height;
+            lastWorkAreaWidth = (int)workingArea.Width;
             IsScaled = true;
         }
 
@@ -165,13 +165,15 @@ namespace FancyZonesEditor.Models
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
+            AddCustomLayout(this);
+
             CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
             {
                 RefWidth = lastWorkAreaWidth,
                 RefHeight = lastWorkAreaHeight,
-
                 Zones = new Zone[Zones.Count],
             };
+
             for (int i = 0; i < Zones.Count; ++i)
             {
                 Zone zone = new Zone
@@ -187,26 +189,19 @@ namespace FancyZonesEditor.Models
 
             CanvasLayoutJson jsonObj = new CanvasLayoutJson
             {
-                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Uuid = Uuid,
                 Name = Name,
                 Type = ModelTypeID,
                 Info = layoutInfo,
             };
-
             JsonSerializerOptions options = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = new DashCaseNamingPolicy(),
             };
 
-            try
-            {
-                string jsonString = JsonSerializer.Serialize(jsonObj, options);
-                FileSystem.File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
-            }
-            catch (Exception ex)
-            {
-                ShowExceptionMessageBox(ErrorPersistingCanvasLayout, ex);
-            }
+            string jsonString = JsonSerializer.Serialize(jsonObj, options);
+            AddCustomLayoutJson(JsonSerializer.Deserialize<JsonElement>(jsonString));
+            SerializeCreatedCustomZonesets();
         }
     }
 }

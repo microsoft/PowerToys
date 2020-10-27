@@ -108,6 +108,15 @@ namespace FancyZonesDataTypes
         std::vector<size_t> zoneIndexSet;
     };
 
+    struct DeviceIdData
+    {
+        std::wstring deviceName;
+        int width;
+        int height;
+        GUID virtualDesktopId;
+        std::wstring monitorId;
+    };
+
     struct DeviceInfoData
     {
         ZoneSetData activeZoneSet;

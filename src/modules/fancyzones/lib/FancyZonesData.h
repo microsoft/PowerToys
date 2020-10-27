@@ -15,6 +15,7 @@
 namespace FancyZonesDataTypes
 {
     struct ZoneSetData;
+    struct DeviceIdData;
     struct DeviceInfoData;
     struct CustomZoneSetData;
     struct AppZoneHistoryData;
@@ -71,7 +72,7 @@ public:
 
     void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
-    bool SerializeDeviceInfoToTmpFile(const std::wstring& uniqueId) const;
+    void SerializeDeviceInfoToTmpFile(const GUID& currentVirtualDesktop) const;
     void ParseDataFromTmpFiles();
 
     json::JsonObject GetPersistFancyZonesJSON();
@@ -113,7 +114,7 @@ private:
     }
 #endif
     void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
-    void ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
+    void ParseCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
     void ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
     void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);

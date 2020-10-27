@@ -57,6 +57,7 @@ namespace Helpers
 {
     std::wstring GuidToString(const GUID& guid);
     std::wstring CreateGuidString();
+    std::optional<GUID> StringToGuid(const std::wstring& str);
 }
 
 template<>

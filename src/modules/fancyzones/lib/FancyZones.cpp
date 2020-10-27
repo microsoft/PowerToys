@@ -592,133 +592,120 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-    HMONITOR monitor{};
-    HWND foregroundWindow{};
-
-    const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
-    POINT currentCursorPos{};
-    if (use_cursorpos_editor_startupscreen)
-    {
-        GetCursorPos(&currentCursorPos);
-        monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-    }
-    else
-    {
-        foregroundWindow = GetForegroundWindow();
-        monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
-    }
-
-    if (!monitor)
-    {
-        return;
-    }
-
-    winrt::com_ptr<IZoneWindow> zoneWindow;
-
     std::shared_lock readLock(m_lock);
 
-    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+    HMONITOR targetMonitor{};
+
+    const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
+    if (use_cursorpos_editor_startupscreen)
     {
-        zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, NULL);
+        POINT currentCursorPos{};
+        GetCursorPos(&currentCursorPos);
+        targetMonitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
     }
     else
     {
-        zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+        targetMonitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTOPRIMARY);
     }
 
-    if (!zoneWindow)
+    if (!targetMonitor)
     {
         return;
     }
 
-    std::wstring editorLocation;
+    /*
+    * Divider: /
+    * Parts:
+    * (1) Process id
+    * (2) Span zones across monitors
+    * (3) Monitor id where the Editor should be opened
+    * (4) Smallest used DPI
+    * (5) Monitors count
+    * 
+    * Data for each monitor:
+    * (6) Monitor id
+    * (7) Dpi
+    * (8) monitor X-coordinate
+    * (9) monitor Y-coordinate
+    * (10) monitor width
+    * (11) monitor height
+    * (12) work area X-coordinate
+    * (13) work area Y-coordinate
+    * (14) work area width
+    * (15) work area height
+    * ...
+    */
+    std::wstring params;
+    const std::wstring divider = L"/";
+    params += std::to_wstring(GetCurrentProcessId()) + divider; /* Process id */
 
-    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+    const bool spanZonesAcrossMonitors = m_settings->GetSettings()->spanZonesAcrossMonitors;
+    params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
+        
+    std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
+    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+    
+    bool showDpiWarning = false;
+    int prevDpiX = -1, prevDpiY = -1;
+    int smallestDpi = -1;
+    std::wstring monitorsData;
+    for (auto& monitor : allMonitors)
     {
-        std::vector<std::pair<HMONITOR, RECT>> allMonitors;
-
-        m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-                              allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
-                          } })
-            .wait();
-
-        UINT currentDpi = 0;
-        for (const auto& monitor : allMonitors)
+        auto monitorId = FancyZonesUtils::GenerateMonitorId(monitor.second, monitor.first, m_currentDesktopId);
+        if (monitor.first == targetMonitor)
         {
+            params += *monitorId + divider; /* Monitor id where the Editor should be opened */
+        }
+
+        if (monitorId.has_value())
+        {
+            monitorsData += std::move(*monitorId) + divider; /* Monitor id */
+
             UINT dpiX = 0;
             UINT dpiY = 0;
             if (GetDpiForMonitor(monitor.first, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
             {
-                if (currentDpi == 0)
+                if (smallestDpi == -1 || smallestDpi > static_cast<int>(dpiX))
                 {
-                    currentDpi = dpiX;
-                    continue;
+                    smallestDpi = dpiX;
                 }
-                if (currentDpi != dpiX)
+
+                monitorsData += std::to_wstring(dpiX) + divider; /* Dpi */
+
+                if (spanZonesAcrossMonitors && prevDpiX != -1 && (prevDpiX != dpiX || prevDpiY != dpiY))
                 {
-                    MessageBoxW(NULL,
-                                GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
-                                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                                MB_OK | MB_ICONWARNING);
-                    break;
+                    showDpiWarning = true;
                 }
-            }
-        }
 
-        for (auto& [monitor, workArea] : allMonitors)
-        {
-            const auto x = workArea.left;
-            const auto y = workArea.top;
-            const auto width = workArea.right - workArea.left;
-            const auto height = workArea.bottom - workArea.top;
-            std::wstring editorLocationPart =
-                std::to_wstring(x) + L"_" +
-                std::to_wstring(y) + L"_" +
-                std::to_wstring(width) + L"_" +
-                std::to_wstring(height);
+                prevDpiX = dpiX;
+                prevDpiY = dpiY;
+            }
 
-            if (editorLocation.empty())
-            {
-                editorLocation = std::move(editorLocationPart);
-            }
-            else
-            {
-                editorLocation += L'/';
-                editorLocation += editorLocationPart;
-            }
+            monitorsData += std::to_wstring(monitor.second.rcMonitor.left) + divider;
+            monitorsData += std::to_wstring(monitor.second.rcMonitor.top) + divider;
+            monitorsData += std::to_wstring(monitor.second.rcMonitor.right) + divider;
+            monitorsData += std::to_wstring(monitor.second.rcMonitor.bottom) + divider;
+            monitorsData += std::to_wstring(monitor.second.rcWork.left) + divider;
+            monitorsData += std::to_wstring(monitor.second.rcWork.top) + divider;
+            monitorsData += std::to_wstring(monitor.second.rcWork.right) + divider;
+            monitorsData += std::to_wstring(monitor.second.rcWork.bottom) + divider;
         }
     }
-    else
+
+    params += std::to_wstring(smallestDpi != -1 ? smallestDpi : DPIAware::DEFAULT_DPI) + divider; /* Smallest used DPI */
+    params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
+    params += monitorsData;
+
+    if (showDpiWarning)
     {
-        MONITORINFOEX mi;
-        mi.cbSize = sizeof(mi);
-
-        m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-                              GetMonitorInfo(monitor, &mi);
-                          } })
-            .wait();
-
-        const auto x = mi.rcWork.left;
-        const auto y = mi.rcWork.top;
-        const auto width = mi.rcWork.right - mi.rcWork.left;
-        const auto height = mi.rcWork.bottom - mi.rcWork.top;
-        editorLocation =
-            std::to_wstring(x) + L"_" +
-            std::to_wstring(y) + L"_" +
-            std::to_wstring(width) + L"_" +
-            std::to_wstring(height);
+        MessageBoxW(NULL,
+                    GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
+                    GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+                    MB_OK | MB_ICONWARNING);
     }
 
     const auto& fancyZonesData = FancyZonesDataInstance();
-
-    if (!fancyZonesData.SerializeDeviceInfoToTmpFile(zoneWindow->UniqueId()))
-    {
-        return;
-    }
-
-    const std::wstring params =
-        /*1*/ editorLocation + L" " +
-        /*2*/ L"\"" + std::to_wstring(GetCurrentProcessId()) + L"\"";
+    fancyZonesData.SerializeDeviceInfoToTmpFile(m_currentDesktopId);
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -930,11 +917,11 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
 
             if (monitor)
             {
-                uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
+                uniqueId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
             }
             else
             {
-                uniqueId = ZoneWindowUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get());
+                uniqueId = FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get());
             }
 
             std::wstring parentId{};

@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -213,8 +214,9 @@ namespace FancyZonesEditor
 
         private SnappyHelperBase NewDefaultSnappyHelper(bool isX, ResizeMode mode)
         {
-            int screenAxisOrigin = (int)(isX ? Settings.WorkArea.Left : Settings.WorkArea.Top);
-            int screenAxisSize = (int)(isX ? Settings.WorkArea.Width : Settings.WorkArea.Height);
+            Rect workingArea = WorkArea.WorkingAreaRect;
+            int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
+            int screenAxisSize = (int)(isX ? workingArea.Width : workingArea.Height);
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
         }
 

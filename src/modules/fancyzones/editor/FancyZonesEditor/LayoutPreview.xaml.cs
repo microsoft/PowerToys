@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -113,23 +114,21 @@ namespace FancyZonesEditor
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 
-            int width = (int)Settings.WorkArea.Width;
-            int height = (int)Settings.WorkArea.Height;
-
-            double totalWidth = width - (spacing * (cols + 1));
-            double totalHeight = height - (spacing * (rows + 1));
+            var workArea = WorkArea.WorkingAreaRect;
+            double width = workArea.Width - (spacing * (cols + 1));
+            double height = workArea.Height - (spacing * (rows + 1));
 
             double top = spacing;
             for (int row = 0; row < rows; row++)
             {
-                double cellHeight = rowInfo[row].Recalculate(top, totalHeight);
+                double cellHeight = rowInfo[row].Recalculate(top, height);
                 top += cellHeight + spacing;
             }
 
             double left = spacing;
             for (int col = 0; col < cols; col++)
             {
-                double cellWidth = colInfo[col].Recalculate(left, totalWidth);
+                double cellWidth = colInfo[col].Recalculate(left, width);
                 left += cellWidth + spacing;
             }
 
@@ -140,8 +139,8 @@ namespace FancyZonesEditor
             Body.Children.Add(viewbox);
             Canvas frame = new Canvas
             {
-                Width = width,
-                Height = height,
+                Width = workArea.Width,
+                Height = workArea.Height,
             };
             viewbox.Child = frame;
 
@@ -182,6 +181,14 @@ namespace FancyZonesEditor
                             (int)left, (int)top, (int)rect.Width, (int)rect.Height));
                     }
                 }
+            }
+
+            if (Settings.DebugMode)
+            {
+                TextBlock text = new TextBlock();
+                text.Text = "(" + workArea.X + "," + workArea.Y + ")";
+                text.FontSize = 42;
+                frame.Children.Add(text);
             }
         }
 
@@ -265,6 +272,8 @@ namespace FancyZonesEditor
 
         private void RenderCanvasPreview(CanvasLayoutModel canvas)
         {
+            var workArea = WorkArea.WorkingAreaRect;
+
             Viewbox viewbox = new Viewbox
             {
                 Stretch = Stretch.Uniform,
@@ -272,10 +281,11 @@ namespace FancyZonesEditor
             Body.Children.Add(viewbox);
             Canvas frame = new Canvas
             {
-                Width = Settings.WorkArea.Width,
-                Height = Settings.WorkArea.Height,
+                Width = workArea.Width,
+                Height = workArea.Height,
             };
             viewbox.Child = frame;
+
             foreach (Int32Rect zone in canvas.Zones)
             {
                 Rectangle rect = new Rectangle();
@@ -287,6 +297,14 @@ namespace FancyZonesEditor
                 rect.Stroke = Brushes.DarkGray;
                 rect.Fill = Brushes.LightGray;
                 frame.Children.Add(rect);
+            }
+
+            if (Settings.DebugMode)
+            {
+                TextBlock text = new TextBlock();
+                text.Text = "(" + workArea.X + "," + workArea.Y + ")";
+                text.FontSize = 42;
+                frame.Children.Add(text);
             }
         }
     }

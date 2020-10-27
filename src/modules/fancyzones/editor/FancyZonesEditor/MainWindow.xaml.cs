@@ -3,11 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
+using FancyZonesEditor.ViewModels;
 using MahApps.Metro.Controls;
 
 namespace FancyZonesEditor
@@ -19,12 +20,16 @@ namespace FancyZonesEditor
     {
         // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const int MaxZones = 40;
+        private const int DefaultWrapPanelItemSize = 262;
+        private const int SmallWrapPanelItemSize = 180;
+        private const int MinimalForDefaultWrapPanelsHeight = 900;
+
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
 
         // Localizable string
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
-        public int WrapPanelItemSize { get; set; } = 262;
+        public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
         public double SettingsTextMaxWidth
         {
@@ -41,11 +46,22 @@ namespace FancyZonesEditor
 
             KeyUp += MainWindow_KeyUp;
 
-            if (Settings.WorkArea.Height < 900)
+            if (Settings.SpanZonesAcrossMonitors)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
+
+            if (WorkArea.WorkingAreaRect.Height < MinimalForDefaultWrapPanelsHeight || MonitorViewModel.IsDesktopsPanelVisible)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
-                WrapPanelItemSize = 180;
+                WrapPanelItemSize = SmallWrapPanelItemSize;
             }
+        }
+
+        public void Update()
+        {
+            DataContext = _settings;
+            SetSelectedItem();
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
@@ -151,7 +167,7 @@ namespace FancyZonesEditor
                 model.Name = _defaultNamePrefix + (++maxCustomIndex);
             }
 
-            mainEditor.Edit();
+            mainEditor.OpenEditor();
 
             EditorWindow window;
             bool isGrid = false;
@@ -165,8 +181,7 @@ namespace FancyZonesEditor
                 window = new CanvasEditorWindow();
             }
 
-            window.Owner = EditorOverlay.Current;
-
+            window.Owner = EditorOverlay.Current.LayoutWindow;
             window.DataContext = model;
             window.Show();
 
@@ -199,15 +214,13 @@ namespace FancyZonesEditor
                 {
                     model.Apply();
                 }
-
-                Close();
             }
         }
 
         private void OnClosing(object sender, EventArgs e)
         {
             LayoutModel.SerializeDeletedCustomZoneSets();
-            EditorOverlay.Current.Close();
+            EditorOverlay.Current.CloseLayoutWindow();
         }
 
         private void OnInitialized(object sender, EventArgs e)
@@ -236,6 +249,21 @@ namespace FancyZonesEditor
             }
 
             model.Delete();
+        }
+
+        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            ScrollViewer scrollviewer = sender as ScrollViewer;
+            if (e.Delta > 0)
+            {
+                scrollviewer.LineLeft();
+            }
+            else
+            {
+                scrollviewer.LineRight();
+            }
+
+            e.Handled = true;
         }
     }
 }

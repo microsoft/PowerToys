@@ -1,11 +1,15 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
+using Microsoft.VisualStudio.Utilities;
 
 namespace FancyZonesEditor
 {
@@ -16,9 +20,19 @@ namespace FancyZonesEditor
     {
         public static EditorOverlay Current { get; set; }
 
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
-        private LayoutPreview _layoutPreview;
+        public Window LayoutWindow
+        {
+            get
+            {
+                return _layoutWindows[Settings.CurrentDesktopId];
+            }
+        }
 
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+
+        private LayoutOverlayWindow[] _layoutWindows;
+
+        private LayoutPreview _layoutPreview;
         private UserControl _editor;
 
         private static MainWindow _mainWindow = new MainWindow();
@@ -69,38 +83,57 @@ namespace FancyZonesEditor
             InitializeComponent();
             Current = this;
 
-            Left = Settings.WorkArea.Left;
-            Top = Settings.WorkArea.Top;
-            Width = Settings.WorkArea.Width;
-            Height = Settings.WorkArea.Height;
+            _layoutWindows = new LayoutOverlayWindow[Settings.DesktopsCount];
+
+            Rect workAreaUnion = WorkArea.WorkAreasUnion;
+            Left = workAreaUnion.Left;
+            Top = workAreaUnion.Top;
+            Width = workAreaUnion.Width;
+            Height = workAreaUnion.Height;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            ShowLayoutPicker();
-        }
-
-        public void ShowLayoutPicker()
-        {
-            _editor = null;
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
                 Opacity = 0.5,
             };
 
-            Content = _layoutPreview;
+            var colors = new Brush[] { Brushes.Yellow, Brushes.Orange, Brushes.OrangeRed };
 
-            _mainWindow.Owner = this;
-            _mainWindow.ShowActivated = true;
-            _mainWindow.Topmost = true;
-            _mainWindow.Show();
-            _mainWindow.LeftWindowCommands = null;
-            _mainWindow.RightWindowCommands = null;
+            for (int i = 0; i < Settings.DesktopsCount; i++)
+            {
+                _layoutWindows[i] = new LayoutOverlayWindow();
 
-            // window is set to topmost to make sure it shows on top of PowerToys settings page
-            // we can reset topmost flag now
-            _mainWindow.Topmost = false;
+                if (Settings.DebugMode)
+                {
+                    _layoutWindows[i].Opacity = 0.5;
+                    _layoutWindows[i].Background = colors[i % colors.Length];
+                }
+
+                var wa = WorkArea.GetWorkingArea(i);
+                var workArea = DpiAwareness.DeviceToLogicalRect(_layoutWindows[i], wa);
+
+                _layoutWindows[i].Left = workArea.X;
+                _layoutWindows[i].Top = workArea.Y;
+                _layoutWindows[i].Width = workArea.Width;
+                _layoutWindows[i].Height = workArea.Height;
+            }
+
+            ShowLayout();
+            OpenMainWindow();
+        }
+
+        public void ShowLayout()
+        {
+            _layoutWindows[Settings.CurrentDesktopId].Content = _layoutPreview;
+            _layoutWindows[Settings.CurrentDesktopId].DataContext = Current.DataContext;
+
+            for (int i = 0; i < Settings.DesktopsCount; i++)
+            {
+                _layoutWindows[i].Show();
+            }
         }
 
         // These event handlers are used to track the current state of the Shift and Ctrl keys on the keyboard
@@ -119,7 +152,20 @@ namespace FancyZonesEditor
             base.OnPreviewKeyUp(e);
         }
 
-        public void Edit()
+        private void OpenMainWindow()
+        {
+            // reset main window owner to keep it on the top
+            _mainWindow.Owner = this;
+            _mainWindow.ShowActivated = true;
+            _mainWindow.Topmost = true;
+            _mainWindow.Show();
+
+            // window is set to topmost to make sure it shows on top of PowerToys settings page
+            // we can reset topmost flag now
+            _mainWindow.Topmost = false;
+        }
+
+        public void OpenEditor()
         {
             _layoutPreview = null;
             if (DataContext is GridLayoutModel)
@@ -131,7 +177,52 @@ namespace FancyZonesEditor
                 _editor = new CanvasEditor();
             }
 
-            Content = _editor;
+            _layoutWindows[Settings.CurrentDesktopId].Content = _editor;
+        }
+
+        public void CloseEditor()
+        {
+            _editor = null;
+            _layoutPreview = new LayoutPreview
+            {
+                IsActualSize = true,
+                Opacity = 0.5,
+            };
+
+            _layoutWindows[Settings.CurrentDesktopId].Content = _layoutPreview;
+
+            OpenMainWindow();
+        }
+
+        public void Update()
+        {
+            CloseLayout();
+            _mainWindow.Update();
+            ShowLayout();
+        }
+
+        public void CloseLayoutWindow()
+        {
+            for (int i = 0; i < Settings.DesktopsCount; i++)
+            {
+                _layoutWindows[i].Close();
+            }
+
+            Current.Close();
+        }
+
+        private void CloseLayout()
+        {
+            _layoutWindows[Settings.CurrentDesktopId].Content = null;
+            _layoutWindows[Settings.CurrentDesktopId].DataContext = null;
+        }
+
+        private void Window_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (_layoutWindows[Settings.CurrentDesktopId] != null)
+            {
+                _layoutWindows[Settings.CurrentDesktopId].DataContext = Current.DataContext;
+            }
         }
     }
 }
