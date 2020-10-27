@@ -27,10 +27,10 @@ public:
     IFACEMETHODIMP PutFlags(_In_ DWORD flags);
     IFACEMETHODIMP Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result);
 
-    static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegEx **renameRegEx, bool useBoostLib = false);
+    static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegEx **renameRegEx);
 
 protected:
-    CPowerRenameRegEx(bool useBoostLib = false);
+    CPowerRenameRegEx();
     virtual ~CPowerRenameRegEx();
 
     void _OnSearchTermChanged();

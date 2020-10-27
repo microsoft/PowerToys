@@ -159,11 +159,11 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     return S_OK;
 }
 
-HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx, bool useBoostLib)
+HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx)
 {
     *renameRegEx = nullptr;
 
-    CPowerRenameRegEx *newRenameRegEx = new CPowerRenameRegEx(useBoostLib);
+    CPowerRenameRegEx *newRenameRegEx = new CPowerRenameRegEx();
     HRESULT hr = newRenameRegEx ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr))
     {
@@ -173,7 +173,7 @@ HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameR
     return hr;
 }
 
-CPowerRenameRegEx::CPowerRenameRegEx(bool useBoostLib) :
+CPowerRenameRegEx::CPowerRenameRegEx() :
     m_refCount(1)
 {
     // Init to empty strings
