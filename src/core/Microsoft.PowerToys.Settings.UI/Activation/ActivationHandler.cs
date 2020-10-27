@@ -20,10 +20,9 @@ namespace Microsoft.PowerToys.Settings.UI.Activation
     internal abstract class ActivationHandler<T> : ActivationHandler
         where T : class
     {
-        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Warning is intended for library code.")]
         public override async Task HandleAsync(object args)
         {
-            await HandleInternalAsync(args as T);
+            await HandleInternalAsync(args as T).ConfigureAwait(false);
         }
 
         public override bool CanHandle(object args)

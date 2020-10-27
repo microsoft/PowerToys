@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -79,14 +78,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             args.Handled = result;
         }
 
-        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Warning is intended for library code.")]
         private async void OnLoaded()
         {
             // Keyboard accelerators are added here to avoid showing 'Alt + left' tooltip on the page.
             // More info on tracking issue https://github.com/Microsoft/microsoft-ui-xaml/issues/8
             keyboardAccelerators.Add(altLeftKeyboardAccelerator);
             keyboardAccelerators.Add(backKeyboardAccelerator);
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         private void OnItemInvoked(WinUI.NavigationViewItemInvokedEventArgs args)
