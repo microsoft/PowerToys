@@ -105,6 +105,12 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     targetAppTextBox.PlaceholderText(KeyboardManagerConstants::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
 
+    // GotFocus handler will be called whenever the user tabs into or clicks on the textbox
+    targetAppTextBox.GotFocus([targetAppTextBox](auto const& sender, auto const& e) {
+        // Select all text for accessible purpose
+        targetAppTextBox.SelectAll();
+    });
+
     // LostFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
     targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, targetAppTextBox](auto const& sender, auto const& e) {
         // Get index of targetAppTextBox button
