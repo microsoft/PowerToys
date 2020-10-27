@@ -3,13 +3,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:local="clr-namespace:ColorPicker"
         mc:Ignorable="d"
         xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
+        ui:TitleBar.ExtendViewIntoTitleBar="True"
+        ui:TitleBar.ButtonStyle="{DynamicResource AppTitleBarButtonStyle}"
+        ui:WindowHelper.UseModernWindowStyle="True"
         BorderBrush="{DynamicResource WindowBorderBrush}"
         BorderThickness="1"
-        Title="ColorEditorWindow" Height="380" Width="400" ResizeMode="NoResize" WindowStyle="None" Background="Transparent" AllowsTransparency="True" Topmost="True">
+        Title="ColorEditorWindow"
+        Height="380"
+        Width="400"
+        ResizeMode="NoResize"
+        Topmost="True">
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior/>
     </e:Interaction.Behaviors>

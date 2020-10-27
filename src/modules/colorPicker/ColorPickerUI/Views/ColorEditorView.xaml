@@ -9,7 +9,10 @@
              xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:controls="clr-namespace:ColorPicker.Controls"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-             d:DesignHeight="380" d:DesignWidth="400" x:Name="colorEditorControl">
+             WindowChrome.IsHitTestVisibleInChrome="True"
+             d:DesignHeight="380"
+             d:DesignWidth="400"
+             x:Name="colorEditorControl">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="64"/>
@@ -30,7 +33,7 @@
                 CornerRadius="1.5"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Margin="0,2,0,0" />
+                Margin="0,1,0,0" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <ui:AppBarButton Width="40" >
                     <ui:AppBarButton.Icon>

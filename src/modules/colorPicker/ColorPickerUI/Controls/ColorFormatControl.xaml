@@ -55,7 +55,7 @@
                     <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=IsMouseOver, ElementName=MainBorder}" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Opacity" Value="0"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -63,7 +63,7 @@
             </Button>
         </Grid>
         <Border.Effect>
-            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+            <DropShadowEffect BlurRadius="6" Opacity="0.24" ShadowDepth="1" />
         </Border.Effect>
     </Border>
 </UserControl>
