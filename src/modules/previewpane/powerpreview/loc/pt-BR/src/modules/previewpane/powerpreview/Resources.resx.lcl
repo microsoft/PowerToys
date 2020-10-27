@@ -40,8 +40,8 @@
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Some of the File Explorer modules could not be turned off/on as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Não foi possível registrar/cancelar o registro de alguns dos módulos do Explorador de Arquivos de acordo com as configurações. Reinicie os PowerToys como administrador para que as alterações entrem em vigor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Não foi possível ativar/desativar alguns dos módulos do Explorador de Arquivos de acordo com as configurações. Reinicie o PowerToys como administrador para que as alterações entrem em vigor.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
@@ -70,7 +70,7 @@
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Couldn't modify File Explorer modules]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Falha ao modificar os módulos do Explorador de Arquivos]]></Val>
           </Tgt>
           <Prev Cat="Text">
