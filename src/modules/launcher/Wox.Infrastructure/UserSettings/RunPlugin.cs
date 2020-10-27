@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Wox.Infrastructure.UserSettings
 {
-    public class Plugin
+    public class RunPlugin
     {
         public string ID { get; set; }
 
@@ -14,7 +14,7 @@ namespace Wox.Infrastructure.UserSettings
 
         private List<string> _actionKeywords;
 
-        public Plugin(List<string> actionKeywords = null)
+        public RunPlugin(List<string> actionKeywords = null)
         {
             _actionKeywords = actionKeywords;
         }

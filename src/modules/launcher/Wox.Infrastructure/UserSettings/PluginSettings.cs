@@ -10,7 +10,7 @@ namespace Wox.Infrastructure.UserSettings
 {
     public class PluginSettings : BaseModel
     {
-        public Dictionary<string, Plugin> Plugins { get; private set; } = new Dictionary<string, Plugin>();
+        public Dictionary<string, RunPlugin> Plugins { get; private set; } = new Dictionary<string, RunPlugin>();
 
         public void UpdatePluginSettings(List<PluginMetadata> metadatas)
         {
@@ -34,7 +34,7 @@ namespace Wox.Infrastructure.UserSettings
                 }
                 else
                 {
-                    Plugins[metadata.ID] = new Plugin(metadata.ActionKeywords)
+                    Plugins[metadata.ID] = new RunPlugin(metadata.ActionKeywords)
                     {
                         ID = metadata.ID,
                         Name = metadata.Name,
