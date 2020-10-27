@@ -12,18 +12,27 @@
   "typings": "lib/index.d.ts",
   "license": "MIT",
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "just": "just-scripts",
     "clean": "rimraf build lib lib-commonjs && just-scripts clean",
-    "build": "rimraf build && just-scripts build --min --production && cp index.html build && react-snap && cp -r build/* ../editor/settings-html",
+    "build": "rimraf build && just-scripts build --min --production && copy *.html build && react-snap && xcopy build\\* ..\\settings\\settings-html /sy",
     "test": "just-scripts test",
     "test:update": "just-scripts jest -u",
     "test:start": "just-scripts start-test",
     "start": "just-scripts start",
     "stack:upgrade": "just-scripts upgrade-stack"
   },
+  "reactSnap": {
+    "include": [
+      "/index.html",
+      "/index-dark.html"
+    ]
+  },
   "dependencies": {
-    "@svgr/webpack": "^4.3.2",
-    "office-ui-fabric-react": "^7.4.3",
+    "@svgr/webpack": "^4.3.3",
+    "@uifabric/azure-themes": "^7.0.10",
+    "@uifabric/styling": "^7.10.1",
+    "office-ui-fabric-react": "^7.83.1",
     "react": "~16.8.0",
     "react-dom": "~16.8.0"
   },
@@ -38,5 +47,8 @@
   },
   "just": {
     "stack": "just-stack-uifabric"
+  },
+  "resolutions": {
+    "mkdirp": "0.5.5"
   }
 }

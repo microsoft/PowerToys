@@ -6,9 +6,6 @@
     <ClCompile Include="unhandled_exception_handler.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="lowlevel_keyboard_event.cpp">
-      <Filter>Events</Filter>
-    </ClCompile>
     <ClCompile Include="tray_icon.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -27,21 +24,26 @@
     <ClCompile Include="general_settings.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="powertoys_events.cpp">
+    <ClCompile Include="restart_elevated.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="win_hook_event.cpp">
-      <Filter>Events</Filter>
+    <ClCompile Include="update_state.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="update_utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="action_runner_utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="centralized_kb_hook.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="unhandled_exception_handler.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="lowlevel_keyboard_event.h">
-      <Filter>Events</Filter>
     </ClInclude>
     <ClInclude Include="tray_icon.h">
       <Filter>Utils</Filter>
@@ -61,11 +63,23 @@
     <ClInclude Include="general_settings.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="powertoys_events.h">
+    <ClInclude Include="restart_elevated.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="win_hook_event.h">
-      <Filter>Events</Filter>
+    <ClInclude Include="update_state.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="update_utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="action_runner_utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="centralized_kb_hook.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -75,12 +89,12 @@
     <Filter Include="svgs">
       <UniqueIdentifier>{1123565f-43ba-4eb8-a6f5-2d5f8f3ae6af}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Events">
-      <UniqueIdentifier>{d409b25e-c0f1-4913-bb32-da4a21339c76}</UniqueIdentifier>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{74d0b535-16ee-46cc-9adf-dc4668bbcfda}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="runner.rc" />
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{18a4e642-9246-4494-b916-8505aed19914}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="svgs\icon.ico" />
@@ -123,5 +137,16 @@
     <CopyFileToFolders Include="svgs\overlay_portrait.svg">
       <Filter>svgs</Filter>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="PowerToys.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="runner.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

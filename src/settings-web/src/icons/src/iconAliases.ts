@@ -8,6 +8,10 @@ export const registerIconAliases = () => {
   registerIconAlias('twelvepointstar', '12pointstar');
   registerIconAlias('toggleon', 'toggleleft');
   registerIconAlias('toggleoff', 'toggleright');
+  registerIconAlias('edgelogo', 'edgeoldlogo');
+  registerIconAlias('powerappscds', 'commondataservicecds');
+  registerIconAlias('d365talenthrcore', 'd365corehr');
+  registerIconAlias('crmcustomerinsightsapp', 'insights');
 }
 
 export default registerIconAliases;

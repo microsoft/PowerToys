@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Interaction logic for Window1.xaml
+    /// Interaction logic for WindowLayout.xaml
     /// </summary>
     public partial class WindowLayout : Window
     {
@@ -23,10 +15,10 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
         }
-        void onLoad(object sender, RoutedEventArgs e)
-        {
-            //WindowEditor window = new WindowEditor(); window.Show();
 
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            // WindowEditor window = new WindowEditor(); window.Show();
         }
     }
 }

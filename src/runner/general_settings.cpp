@@ -1,91 +1,247 @@
 #include "pch.h"
 #include "general_settings.h"
 #include "auto_start_helper.h"
+
+#include <common/common.h>
 #include <common/settings_helpers.h>
 #include "powertoy_module.h"
+#include <common/windows_colors.h>
+#include <common/winstore.h>
 
-using namespace web;
+#include "trace.h"
 
-web::json::value load_general_settings() {
-  return PTSettingsHelper::load_general_settings();
+// TODO: would be nice to get rid of these globals, since they're basically cached json settings
+static std::wstring settings_theme = L"system";
+static bool run_as_elevated = false;
+static bool download_updates_automatically = true;
+
+// TODO: add resource.rc for settings project and localize
+namespace localized_strings
+{
+    const std::wstring_view STARTUP_DISABLED_BY_POLICY = L"This setting has been disabled by your administrator.";
+    const std::wstring_view STARTUP_DISABLED_BY_USER = LR"(This setting has been disabled manually via <a href="https://ms_settings_startupapps" target="_blank">Startup Settings</a>.)";
 }
 
-web::json::value get_general_settings() {
-  json::value result = json::value::object();
-  bool startup = is_auto_start_task_active_for_this_user();
-  result.as_object()[L"startup"] = json::value::boolean(startup);
+json::JsonObject GeneralSettings::to_json()
+{
+    json::JsonObject result;
 
-  json::value enabled = json::value::object();
-  for (auto&[name, powertoy] : modules()) {
-    enabled.as_object()[name] = json::value::boolean(powertoy.is_enabled());
-  }
-  result.as_object()[L"enabled"] = enabled;
-  return result;
-}
-
-void apply_general_settings(const json::value& general_configs) {
-  bool contains_startup = general_configs.has_boolean_field(L"startup");
-  if (contains_startup) {
-    bool startup = general_configs.at(L"startup").as_bool();
-    bool current_startup = is_auto_start_task_active_for_this_user();
-    if (current_startup != startup) {
-      if (startup) {
-        enable_auto_start_task_for_this_user();
-      } else {
-        disable_auto_start_task_for_this_user();
-      }
+    result.SetNamedValue(L"packaged", json::value(isPackaged));
+    result.SetNamedValue(L"startup", json::value(isStartupEnabled));
+    if (!startupDisabledReason.empty())
+    {
+        result.SetNamedValue(L"startup_disabled_reason", json::value(startupDisabledReason));
     }
-  }
-  bool contains_enabled = general_configs.has_object_field(L"enabled");
-  if (contains_enabled) {
-    for (auto enabled_element : general_configs.at(L"enabled").as_object()) {
-      if (enabled_element.second.is_boolean() && modules().find(enabled_element.first) != modules().end()) {
-        bool module_inst_enabled = modules().at(enabled_element.first).is_enabled();
-        bool target_enabled = enabled_element.second.as_bool();
-        if (module_inst_enabled != target_enabled) {
-          if (target_enabled) {
-            modules().at(enabled_element.first).enable();
-          } else {
-            modules().at(enabled_element.first).disable();
-          }
+
+    json::JsonObject enabled;
+    for (const auto& [name, isEnabled] : isModulesEnabledMap)
+    {
+        enabled.SetNamedValue(name, json::value(isEnabled));
+    }
+    result.SetNamedValue(L"enabled", std::move(enabled));
+
+    result.SetNamedValue(L"is_elevated", json::value(isElevated));
+    result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
+    result.SetNamedValue(L"download_updates_automatically", json::value(downloadUpdatesAutomatically));
+    result.SetNamedValue(L"is_admin", json::value(isAdmin));
+    result.SetNamedValue(L"theme", json::value(theme));
+    result.SetNamedValue(L"system_theme", json::value(systemTheme));
+    result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
+
+    return result;
+}
+
+json::JsonObject load_general_settings()
+{
+    auto loaded = PTSettingsHelper::load_general_settings();
+    settings_theme = loaded.GetNamedString(L"theme", L"system");
+    if (settings_theme != L"dark" && settings_theme != L"light")
+    {
+        settings_theme = L"system";
+    }
+    run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
+    download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
+
+    return loaded;
+}
+
+GeneralSettings get_general_settings()
+{
+    const bool is_user_admin = check_user_is_admin();
+    GeneralSettings settings{
+        .isPackaged = winstore::running_as_packaged(),
+        .isElevated = is_process_elevated(),
+        .isRunElevated = run_as_elevated,
+        .isAdmin = is_user_admin,
+        .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
+        .theme = settings_theme,
+        .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
+        .powerToysVersion = get_product_version()
+    };
+
+    if (winstore::running_as_packaged())
+    {
+        using namespace localized_strings;
+        const auto task_state = winstore::get_startup_task_status_async().get();
+        switch (task_state)
+        {
+        case winstore::StartupTaskState::Disabled:
+            settings.isStartupEnabled = false;
+            break;
+        case winstore::StartupTaskState::Enabled:
+            settings.isStartupEnabled = true;
+            break;
+        case winstore::StartupTaskState::DisabledByPolicy:
+            settings.startupDisabledReason = STARTUP_DISABLED_BY_POLICY;
+            settings.isStartupEnabled = false;
+            break;
+        case winstore::StartupTaskState::DisabledByUser:
+            settings.startupDisabledReason = STARTUP_DISABLED_BY_USER;
+            settings.isStartupEnabled = false;
+            break;
         }
-      }
     }
-  }
-  json::value save_settings = get_general_settings();
-  PTSettingsHelper::save_general_settings(save_settings);
+    else
+    {
+        settings.isStartupEnabled = is_auto_start_task_active_for_this_user();
+    }
+
+    for (auto& [name, powertoy] : modules())
+    {
+        settings.isModulesEnabledMap[name] = powertoy->is_enabled();
+    }
+
+    return settings;
 }
 
-void start_initial_powertoys() {
-  bool only_enable_some_powertoys = false;
+void apply_general_settings(const json::JsonObject& general_configs, bool save)
+{
+    run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
-  std::unordered_set<std::wstring> powertoys_to_enable;
+    download_updates_automatically = general_configs.GetNamedBoolean(L"download_updates_automatically", true);
 
-  json::value general_settings;
-  try {
-    general_settings = load_general_settings();
-    json::value enabled = general_settings[L"enabled"];
-    for (auto enabled_element : enabled.as_object()) {
-      if (enabled_element.second.as_bool()) {
-        // Enable this powertoy.
-        powertoys_to_enable.emplace(enabled_element.first);
-      }
+    if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
+    {
+        const bool startup = general_configs.GetNamedBoolean(L"startup");
+        if (winstore::running_as_packaged())
+        {
+            winstore::switch_startup_task_state_async(startup).wait();
+        }
+        else
+        {
+            if (startup)
+            {
+                if (is_process_elevated())
+                {
+                    delete_auto_start_task_for_this_user();
+                    create_auto_start_task_for_this_user(general_configs.GetNamedBoolean(L"run_elevated", false));
+                }
+                else
+                {
+                    if (!is_auto_start_task_active_for_this_user())
+                    {
+                        delete_auto_start_task_for_this_user();
+                        create_auto_start_task_for_this_user(false);
+
+                        run_as_elevated = false;
+                    }
+                    else if (!general_configs.GetNamedBoolean(L"run_elevated", false))
+                    {
+                        delete_auto_start_task_for_this_user();
+                        create_auto_start_task_for_this_user(false);
+                    }
+                }
+            }
+            else
+            {
+                delete_auto_start_task_for_this_user();
+            }
+        }
     }
-    only_enable_some_powertoys = true;
-  }
-  catch (std::exception&) {
-    // Couldn't read the general settings correctly.
-    // Load all powertoys.
-    only_enable_some_powertoys = false;
-  }
-
-  for (auto&[name, powertoy] : modules()) {
-    if (only_enable_some_powertoys) {
-      if (powertoys_to_enable.find(name)!=powertoys_to_enable.end()) {
-        powertoy.enable();
-      }
-    } else {
-      powertoy.enable();
+    if (json::has(general_configs, L"enabled"))
+    {
+        for (const auto& enabled_element : general_configs.GetNamedObject(L"enabled"))
+        {
+            const auto value = enabled_element.Value();
+            if (value.ValueType() != json::JsonValueType::Boolean)
+            {
+                continue;
+            }
+            const std::wstring name{ enabled_element.Key().c_str() };
+            const bool found = modules().find(name) != modules().end();
+            if (!found)
+            {
+                continue;
+            }
+            const bool module_inst_enabled = modules().at(name)->is_enabled();
+            const bool target_enabled = value.GetBoolean();
+            if (module_inst_enabled == target_enabled)
+            {
+                continue;
+            }
+            if (target_enabled)
+            {
+                modules().at(name)->enable();
+            }
+            else
+            {
+                modules().at(name)->disable();
+            }
+        }
     }
-  }
+
+    if (json::has(general_configs, L"theme", json::JsonValueType::String))
+    {
+        settings_theme = general_configs.GetNamedString(L"theme");
+    }
+
+    if (save)
+    {
+        GeneralSettings save_settings = get_general_settings();
+        PTSettingsHelper::save_general_settings(save_settings.to_json());
+        Trace::SettingsChanged(save_settings);
+    }
+}
+
+void start_initial_powertoys()
+{
+    std::unordered_set<std::wstring> powertoys_to_disable;
+
+    json::JsonObject general_settings;
+    try
+    {
+        general_settings = load_general_settings();
+        if (general_settings.HasKey(L"enabled"))
+        {
+            json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
+            for (const auto& disabled_element : enabled)
+            {
+                if (!disabled_element.Value().GetBoolean())
+                {
+                    powertoys_to_disable.emplace(disabled_element.Key());
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+
+    if (powertoys_to_disable.empty())
+    {
+        for (auto& [name, powertoy] : modules())
+        {
+            powertoy->enable();
+        }
+    }
+    else
+    {
+        for (auto& [name, powertoy] : modules())
+        {
+            if (powertoys_to_disable.find(name) == powertoys_to_disable.end())
+            {
+                powertoy->enable();
+            }
+        }
+    }
 }

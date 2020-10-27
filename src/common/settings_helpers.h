@@ -1,13 +1,17 @@
 #pragma once
 #include <string>
 #include <Shlobj.h>
-#include <cpprest/json.h>
 
-namespace PTSettingsHelper {
+#include "json.h"
 
-  void save_module_settings(const std::wstring& powertoy_name, web::json::value& settings);
-  web::json::value load_module_settings(const std::wstring& powertoy_name);
-  void save_general_settings(web::json::value& settings);
-  web::json::value load_general_settings();
+namespace PTSettingsHelper
+{
+    std::wstring get_module_save_folder_location(std::wstring_view powertoy_name);
+    std::wstring get_root_save_folder_location();
+
+    void save_module_settings(std::wstring_view powertoy_name, json::JsonObject& settings);
+    json::JsonObject load_module_settings(std::wstring_view powertoy_name);
+    void save_general_settings(const json::JsonObject& settings);
+    json::JsonObject load_general_settings();
 
 }

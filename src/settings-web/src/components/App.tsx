@@ -1,7 +1,7 @@
 import React from 'react';
-import {Stack, Text, Nav, DefaultButton, PrimaryButton, ScrollablePane, INavLink, Spinner, SpinnerSize, Dialog, DialogType, DialogFooter} from 'office-ui-fabric-react';
+import {Stack, Text, Nav, DefaultButton, PrimaryButton, ScrollablePane, INavLink, Spinner, SpinnerSize, Dialog, DialogType, DialogFooter, getTheme} from 'office-ui-fabric-react';
 import {GeneralSettings} from './GeneralSettings';
-import {CustomSettingsScreen} from './CustomSettingsScreen';
+import {ModuleSettings} from './ModuleSettings';
 import '../css/layout.css';
 import {setup_powertoys_icons} from '../setup_icons';
 
@@ -123,10 +123,10 @@ export class App extends React.Component <any, any> {
         });
       }
     }
-
+    const theme = getTheme()
     return (
-      <div className='body'>
-        <div className='sidebar'>
+      <div className='body' style={{stroke: theme.palette.black}}>
+        <div className='sidebar' style={{backgroundColor: theme.palette.neutralLighter, color: theme.palette.black}}>
           <Nav
             selectedKey= {this.state.selected_menu}
             onLinkClick = {
@@ -146,27 +146,32 @@ export class App extends React.Component <any, any> {
             styles = {{
               navItems: { margin : '0'},
               compositeLink: {
-                backgroundColor : '#f3f2f1',
-                color: '#323130',
+                backgroundColor : theme.palette.neutralLighter,
+                color: theme.palette.neutralPrimary,
                 selectors: {
                   '&.is-selected button' : {
-                    backgroundColor: '#e1dfdd',
-                    color: '#201F1E',
+                    backgroundColor: theme.palette.neutralLight,
+                    color: theme.palette.neutralPrimaryAlt,
                     fontWeight: 'bold'
                   },
                   '&:hover button.ms-Nav-link' : {
-                    backgroundColor: '#e1dfdd',
-                    color: '#323130'
+                    backgroundColor: theme.palette.neutralLight,
+                    color: theme.palette.neutralPrimary
                   },
                   'i.ms-Button-icon' : {
-                    color: '#201F1E',
-                    fontWeight: 'normal'
+                    color: theme.palette.neutralPrimary,
+                    fontWeight: 'normal',
+                    paddingLeft: '5px',
+                    paddingRight: '5px'
+                  },
+                  '.ms-Button-icon > svg' : {
+                    paddingTop: '2px'
                   },
                   '&:hover i.ms-Button-icon' : {
-                    color: '#201F1E',
+                    color: theme.palette.neutralPrimary,
                   },
                   '&:active i.ms-Button-icon' : {
-                    color: '#201F1E',
+                    color: theme.palette.neutralPrimary,
                   },
                 },
               },
@@ -181,7 +186,7 @@ export class App extends React.Component <any, any> {
             ]}
           />
         </div>
-        <div className='editorzone'>
+        <div className='editorzone' style={{backgroundColor: theme.palette.white, color: theme.palette.black}}>
           <div className='editorhead'>
             <div className='editortitle'>
               <Text
@@ -233,7 +238,7 @@ export class App extends React.Component <any, any> {
                     ref={(input:any) => {this.settings_screen_ref = input;}}
                   />
                 } else if( this.state.settings.hasOwnProperty('powertoys') && this.state.selected_menu in this.state.settings.powertoys) {
-                  return <CustomSettingsScreen
+                  return <ModuleSettings
                     key={this.state.selected_menu}
                     settings_key={this.state.selected_menu}
                     powertoy={this.state.settings.powertoys[this.state.selected_menu]}

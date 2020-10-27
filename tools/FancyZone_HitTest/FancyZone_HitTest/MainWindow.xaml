@@ -1,0 +1,36 @@
+﻿<Window x:Class="FancyZone_HitTest.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FancyZone_HitTest"
+        mc:Ignorable="d"
+        Title="MainWindow" Width="1024" Height="768">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="200" />
+        </Grid.ColumnDefinitions>
+        <Grid MouseMove="Grid_MouseMove" Name="hitTestGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+
+            <Rectangle Fill="#ff0000" Grid.Column="0" Name="a" />
+            <Rectangle Fill="#00ff00" Grid.Column="1" Name="b" />
+            <Rectangle Fill="#0000ff" Grid.Column="2" Name="c" />
+            <Rectangle Fill="#aabbff" Grid.ColumnSpan="3" Name="d" Width="550"  Height="500" />
+            <!--Height="600"-->
+            <Rectangle Fill="#aabbff" Grid.ColumnSpan="3" Name="f" Height="400" Width="400"  />
+            <Rectangle Fill="Orange"  Grid.ColumnSpan="3" Name="e"/>
+
+        </Grid>
+        <StackPanel Grid.Column="1">
+            <TextBlock>Calculations</TextBlock>
+            <TextBlock x:Name="itemsHit" />
+        </StackPanel>
+    </Grid>
+</Window>

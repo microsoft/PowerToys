@@ -9,7 +9,8 @@ export class StringTextSettingsControl extends BaseSettingsControl {
     super(props);
     this.textref = null;
     this.state={
-      property_values: props.setting
+      property_values: props.setting,
+      multiline: !!props.setting.multiline
     }
   }
 
@@ -28,6 +29,10 @@ export class StringTextSettingsControl extends BaseSettingsControl {
     // Renders a UI Fabric TextField.
     return (
       <TextField
+        styles={{ fieldGroup: {
+          width: '350px',
+          alignSelf: 'start' 
+        }}}
         onChange = {
           (_event,_new_value) => {
             // Updates the state with the new value introduced in the TextField.
@@ -42,6 +47,7 @@ export class StringTextSettingsControl extends BaseSettingsControl {
             this.parent_on_change();
           }
         }
+        multiline={this.state.multiline}
         value={this.state.property_values.value}
         label={this.state.property_values.display_name}
         componentRef= {(input) => {this.textref=input;}}

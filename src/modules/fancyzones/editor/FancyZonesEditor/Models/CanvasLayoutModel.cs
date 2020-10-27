@@ -1,78 +1,68 @@
-﻿using System;
-using System.Collections;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
 using System.Windows;
-using System.Windows.Converters;
-using System.Windows.Documents;
 
 namespace FancyZonesEditor.Models
 {
-    // CanvasLayoutModel 
+    // CanvasLayoutModel
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
-        public CanvasLayoutModel(ushort version, string name, ushort id, byte[] data) : base(name, id)
+        // Localizable strings
+        private const string ErrorPersistingCanvasLayout = "Error persisting canvas layout";
+
+        // Non-localizable strings
+        private const string ModelTypeID = "canvas";
+
+        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight)
+            : base(uuid, name, type)
         {
-            if (version == c_latestVersion)
+            lastWorkAreaWidth = workAreaWidth;
+            lastWorkAreaHeight = workAreaHeight;
+            IsScaled = false;
+
+            if (ShouldScaleLayout())
             {
-                Load(data);
+                ScaleLayout(zones);
+            }
+            else
+            {
+                Zones = zones;
             }
         }
 
-        public CanvasLayoutModel(string name, ushort id, int referenceWidth, int referenceHeight) : base(name, id)
+        public CanvasLayoutModel(string name, LayoutType type)
+        : base(name, type)
         {
-            // Initialize Reference Size
-            _referenceWidth = referenceWidth;
-            _referenceHeight = referenceHeight;
+            IsScaled = false;
         }
 
-        public CanvasLayoutModel(string name, ushort id) : base(name, id) { }
-        public CanvasLayoutModel(string name) : base(name) { }
-        public CanvasLayoutModel() : base() { }
-
-        // ReferenceWidth - the reference width for the layout rect that all Zones are relative to
-        public int ReferenceWidth
+        public CanvasLayoutModel(string name)
+        : base(name)
         {
-            get { return _referenceWidth; }
-            set
-            {
-                if (_referenceWidth != value)
-                {
-                    _referenceWidth = value;
-                    FirePropertyChanged("ReferenceWidth");
-                }
-            }
         }
-        private int _referenceWidth;
-
-        // ReferenceHeight - the reference height for the layout rect that all Zones are relative to
-        public int ReferenceHeight
-        {
-            get { return _referenceHeight; }
-            set
-            {
-                if (_referenceHeight != value)
-                {
-                    _referenceHeight = value;
-                    FirePropertyChanged("ReferenceHeight");
-                }
-            }
-        }
-        private int _referenceHeight;
 
         // Zones - the list of all zones in this layout, described as independent rectangles
-        public IList<Int32Rect> Zones { get { return _zones; } }
-        private IList<Int32Rect> _zones = new List<Int32Rect>();
+        public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
+
+        private int lastWorkAreaWidth = (int)Settings.WorkArea.Width;
+
+        private int lastWorkAreaHeight = (int)Settings.WorkArea.Height;
+
+        public bool IsScaled { get; private set; }
 
         // RemoveZoneAt
         //  Removes the specified index from the Zones list, and fires a property changed notification for the Zones property
         public void RemoveZoneAt(int index)
         {
             Zones.RemoveAt(index);
-            FirePropertyChanged("Zones");
+            UpdateLayout();
         }
 
         // AddZone
@@ -80,27 +70,12 @@ namespace FancyZonesEditor.Models
         public void AddZone(Int32Rect zone)
         {
             Zones.Add(zone);
-            FirePropertyChanged("Zones");
+            UpdateLayout();
         }
 
-        private void Load(byte[] data)
+        private void UpdateLayout()
         {
-            // Initialize this CanvasLayoutModel based on the given persistence data
-            // Skip version (2 bytes), id (2 bytes), and type (1 bytes)
-            int i = 5;
-            _referenceWidth = data[i++] * 256 + data[i++];
-            _referenceHeight = data[i++] * 256 + data[i++];
-
-            int count = data[i++];
-
-            while (count-- > 0)
-            {
-                _zones.Add(new Int32Rect(
-                    data[i++] * 256 + data[i++],
-                    data[i++] * 256 + data[i++],
-                    data[i++] * 256 + data[i++],
-                    data[i++] * 256 + data[i++]));
-            }
+            FirePropertyChanged();
         }
 
         // Clone
@@ -109,10 +84,8 @@ namespace FancyZonesEditor.Models
         public override LayoutModel Clone()
         {
             CanvasLayoutModel layout = new CanvasLayoutModel(Name);
-            layout.ReferenceHeight = ReferenceHeight;
-            layout.ReferenceWidth = ReferenceWidth;
 
-            foreach(Int32Rect zone in Zones)
+            foreach (Int32Rect zone in Zones)
             {
                 layout.Zones.Add(zone);
             }
@@ -120,45 +93,120 @@ namespace FancyZonesEditor.Models
             return layout;
         }
 
-        // GetPersistData
-        //  Implements the LayoutModel.GetPersistData abstract method
-        //  Returns the state of this GridLayoutModel in persisted format
-        protected override byte[] GetPersistData()
+        public void RestoreTo(CanvasLayoutModel other)
         {
-            byte[] data = new byte[10 + (_zones.Count * 8)];
-            int i = 0;
-
-            // Common persisted values between all layout types
-            data[i++] = (byte)(c_latestVersion / 256);
-            data[i++] = (byte)(c_latestVersion % 256);
-            data[i++] = 1; // LayoutModelType: 1 == CanvasLayoutModel
-            data[i++] = (byte)(Id / 256);
-            data[i++] = (byte)(Id % 256);
-            // End common
-
-            data[i++] = (byte)(_referenceWidth / 256);
-            data[i++] = (byte)(_referenceWidth % 256);
-            data[i++] = (byte)(_referenceHeight / 256);
-            data[i++] = (byte)(_referenceHeight % 256);
-            data[i++] = (byte)_zones.Count;
-
-            foreach (Int32Rect rect in _zones)
+            other.Zones.Clear();
+            foreach (Int32Rect zone in Zones)
             {
-                data[i++] = (byte)(rect.X / 256);
-                data[i++] = (byte)(rect.X % 256);
-
-                data[i++] = (byte)(rect.Y / 256);
-                data[i++] = (byte)(rect.Y % 256);
-
-                data[i++] = (byte)(rect.Width / 256);
-                data[i++] = (byte)(rect.Width % 256);
-
-                data[i++] = (byte)(rect.Height / 256);
-                data[i++] = (byte)(rect.Height % 256);
+                other.Zones.Add(zone);
             }
-            return data;
         }
 
-        private static ushort c_latestVersion = 0;
+        private bool ShouldScaleLayout()
+        {
+            // Scale if:
+            // - at least one dimension changed
+            // - orientation remained the same
+            return (lastWorkAreaHeight != Settings.WorkArea.Height || lastWorkAreaWidth != Settings.WorkArea.Width) &&
+                ((lastWorkAreaHeight > lastWorkAreaWidth && Settings.WorkArea.Height > Settings.WorkArea.Width) ||
+                  (lastWorkAreaWidth > lastWorkAreaHeight && Settings.WorkArea.Width > Settings.WorkArea.Height));
+        }
+
+        private void ScaleLayout(IList<Int32Rect> zones)
+        {
+            foreach (Int32Rect zone in zones)
+            {
+                double widthFactor = (double)Settings.WorkArea.Width / lastWorkAreaWidth;
+                double heightFactor = (double)Settings.WorkArea.Height / lastWorkAreaHeight;
+                int scaledX = (int)(zone.X * widthFactor);
+                int scaledY = (int)(zone.Y * heightFactor);
+                int scaledWidth = (int)(zone.Width * widthFactor);
+                int scaledHeight = (int)(zone.Height * heightFactor);
+                Zones.Add(new Int32Rect(scaledX, scaledY, scaledWidth, scaledHeight));
+            }
+
+            lastWorkAreaHeight = (int)Settings.WorkArea.Height;
+            lastWorkAreaWidth = (int)Settings.WorkArea.Width;
+            IsScaled = true;
+        }
+
+        private struct Zone
+        {
+            public int X { get; set; }
+
+            public int Y { get; set; }
+
+            public int Width { get; set; }
+
+            public int Height { get; set; }
+        }
+
+        private struct CanvasLayoutInfo
+        {
+            public int RefWidth { get; set; }
+
+            public int RefHeight { get; set; }
+
+            public Zone[] Zones { get; set; }
+        }
+
+        private struct CanvasLayoutJson
+        {
+            public string Uuid { get; set; }
+
+            public string Name { get; set; }
+
+            public string Type { get; set; }
+
+            public CanvasLayoutInfo Info { get; set; }
+        }
+
+        // PersistData
+        // Implements the LayoutModel.PersistData abstract method
+        protected override void PersistData()
+        {
+            CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
+            {
+                RefWidth = lastWorkAreaWidth,
+                RefHeight = lastWorkAreaHeight,
+
+                Zones = new Zone[Zones.Count],
+            };
+            for (int i = 0; i < Zones.Count; ++i)
+            {
+                Zone zone = new Zone
+                {
+                    X = Zones[i].X,
+                    Y = Zones[i].Y,
+                    Width = Zones[i].Width,
+                    Height = Zones[i].Height,
+                };
+
+                layoutInfo.Zones[i] = zone;
+            }
+
+            CanvasLayoutJson jsonObj = new CanvasLayoutJson
+            {
+                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Name = Name,
+                Type = ModelTypeID,
+                Info = layoutInfo,
+            };
+
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = new DashCaseNamingPolicy(),
+            };
+
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(jsonObj, options);
+                File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                ShowExceptionMessageBox(ErrorPersistingCanvasLayout, ex);
+            }
+        }
     }
 }

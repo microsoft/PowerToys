@@ -1,46 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace FancyZonesEditor
 {
     public class RowColInfo
     {
+        private const int _multiplier = 10000;
+
+        public double Extent { get; set; }
+
+        public double Start { get; set; }
+
+        public double End { get; set; }
+
+        public int Percent { get; set; }
+
         public RowColInfo(int percent)
         {
             Percent = percent;
         }
 
-        public RowColInfo(int index, int count)
+        public RowColInfo(RowColInfo other)
         {
-            Percent = (c_multiplier / count) + ((index == 0) ? (c_multiplier % count) : 0);
+            Percent = other.Percent;
+            Extent = other.Extent;
+            Start = other.Start;
+            End = other.End;
         }
 
-        private const int c_multiplier = 10000;
+        public RowColInfo(int index, int count)
+        {
+            Percent = (_multiplier / count) + ((index == 0) ? (_multiplier % count) : 0);
+        }
 
-        public double SetExtent(double start, double totalExtent)
+        public double Recalculate(double start, double totalExtent)
         {
             Start = start;
-            Extent = totalExtent * Percent / c_multiplier;
+            Extent = totalExtent * Percent / _multiplier;
             End = Start + Extent;
             return Extent;
         }
 
-        public RowColInfo[] Split(double offset)
+        public void RecalculatePercent(double newTotalExtent)
+        {
+            Percent = (int)(Extent * _multiplier / newTotalExtent);
+        }
+
+        public RowColInfo[] Split(double offset, double space)
         {
             RowColInfo[] info = new RowColInfo[2];
 
-            int newPercent = (int)(Percent * offset / Extent);
-            info[0] = new RowColInfo(newPercent);
-            info[1] = new RowColInfo(Percent - newPercent);
+            double totalExtent = Extent * _multiplier / Percent;
+            totalExtent -= space;
+
+            int percent0 = (int)(offset * _multiplier / totalExtent);
+            int percent1 = (int)((Extent - space - offset) * _multiplier / totalExtent);
+
+            info[0] = new RowColInfo(percent0);
+            info[1] = new RowColInfo(percent1);
+
             return info;
         }
-
-        public int Percent;
-        public double Extent;
-        public double Start;
-        public double End;
     }
 }

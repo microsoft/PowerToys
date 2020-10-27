@@ -1,19 +1,21 @@
 #pragma once
 
+#include <compare>
+
 /*
   DLL Interface for PowerToys. The powertoy_create() (see below) must return
   an object that implements this interface.
 
-  See src/modules/example_powertoy for simple, noop, PowerToy implementation.
+  See tools/project_template/ModuleTemplate for simple, noop, PowerToy implementation.
 
   The PowerToys runner will, for each PowerToy DLL:
     - load the DLL,
     - call powertoy_create() to create the PowerToy.
 
   On the received object, the runner will call:
-    - get_name() to get the name of the PowerToy,
-    - get_events() to get the list of the events the PowerToy wants to subscribe to,
+    - get_key() to get the non localized ID of the PowerToy,
     - enable() to initialize the PowerToy.
+    - get_hotkeys() to register the hotkeys the PowerToy uses.
 
   While running, the runner might call the following methods between create_powertoy()
   and destroy():
@@ -21,51 +23,65 @@
     - get_config() to get the available configuration settings,
     - set_config() to set various settings,
     - call_custom_action() when the user selects clicks a custom action in settings,
-    - signal_event() to send an event the PowerToy registered to.
+    - get_hotkeys() when the settings change, to make sure the hotkey(s) are up to date.
+    - on_hotkey() when the corresponding hotkey is pressed.
 
   When terminating, the runner will:
-    - call disable(),
     - call destroy() which should free all the memory and delete the PowerToy object,
     - unload the DLL.
+
+  The runner will call on_hotkey() even if the module is disabled.
  */
 
-class PowertoyModuleIface {
+class PowertoyModuleIface
+{
 public:
-  /* Returns the name of the PowerToy, this will be cached by the runner. */
-  virtual const wchar_t* get_name() = 0;
-  /* Returns a null-terminated table of the names of the events the PowerToy wants to 
-     subscribe to. Available events:
-       * ll_keyboard
-       * win_hook_event
+    /* Describes a hotkey which can trigger an action in the PowerToy */
+    struct Hotkey
+    {
+        bool win = false;
+        bool ctrl = false;
+        bool shift = false;
+        bool alt = false;
+        unsigned char key = 0;
 
-     A nullptr can be returned to signal that the PowerToy does not want to subscribe
-     to any event.
-  */
-  virtual const wchar_t** get_events() = 0;
-  /* Fills a buffer with the available configuration settings.
-   * If 'buffer' is a null ptr or the buffer size is not large enough
-   * sets the required buffer size in 'buffer_size' and return false.
-   * Returns true if successful.
-   */
-  virtual bool get_config(wchar_t* buffer, int *buffer_size) = 0;
-  /* Sets the configuration values. */
-  virtual void set_config(const wchar_t* config) = 0;
-  /* Call custom action from settings screen. */
-  virtual void call_custom_action(const wchar_t* action) {};
-  /* Enables the PowerToy. */
-  virtual void enable() = 0;
-  /* Disables the PowerToy, should free as much memory as possible. */
-  virtual void disable() = 0;
-  /* Should return if the PowerToys is enabled or disabled. */
-  virtual bool is_enabled() = 0;
-  /* Handle event. Only the events the PowerToy subscribed to will be signaled.
-     The data argument and return value meaning are event-specific:
-       * ll_keyboard: see lowlevel_keyboard_event_data.h.
-       * win_hook_event: see win_hook_event_data.h
-  */
-  virtual intptr_t signal_event(const wchar_t* name, intptr_t data) = 0;
-  /* Destroy the PowerToy and free all memory. */
-  virtual void destroy() = 0;
+        std::strong_ordering operator<=>(const Hotkey&) const = default;
+    };
+
+    /* Returns the localized name of the PowerToy*/
+    virtual const wchar_t* get_name() = 0;
+    /* Returns non localized name of the PowerToy, this will be cached by the runner. */
+    virtual const wchar_t* get_key() = 0;
+    /* Fills a buffer with the available configuration settings.
+    * If 'buffer' is a null ptr or the buffer size is not large enough
+    * sets the required buffer size in 'buffer_size' and return false.
+    * Returns true if successful.
+    */
+    virtual bool get_config(wchar_t* buffer, int* buffer_size) = 0;
+    /* Sets the configuration values. */
+    virtual void set_config(const wchar_t* config) = 0;
+    /* Call custom action from settings screen. */
+    virtual void call_custom_action(const wchar_t* action){};
+    /* Enables the PowerToy. */
+    virtual void enable() = 0;
+    /* Disables the PowerToy, should free as much memory as possible. */
+    virtual void disable() = 0;
+    /* Should return if the PowerToys is enabled or disabled. */
+    virtual bool is_enabled() = 0;
+    /* Destroy the PowerToy and free all memory. */
+    virtual void destroy() = 0;
+
+    /* Get the list of hotkeys. Should return the number of available hotkeys and
+     * fill up the buffer to the minimum of the number of hotkeys and its size.
+     * Modules do not need to override this method, it will return zero by default.
+     * This method is called even when the module is disabled.
+     */
+    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) { return 0; }
+
+    /* Called when one of the registered hotkeys is pressed. Should return true
+     * if the key press is to be swallowed.
+     */
+    virtual bool on_hotkey(size_t hotkeyId) { return false; }
 };
 
 /*
@@ -83,4 +99,4 @@ public:
 
   In case of errors return nullptr.
 */
-typedef PowertoyModuleIface* (__cdecl *powertoy_create_func)();
+typedef PowertoyModuleIface*(__cdecl* powertoy_create_func)();

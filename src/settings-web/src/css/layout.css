@@ -11,7 +11,6 @@
   flex-basis: 228px;
   display: flex;
   flex-direction: column;
-  background-color: #f3f2f1;
 }
 
 .body .sidebar.collapsed {
@@ -58,4 +57,7 @@
   position: relative;
   flex-direction: column;
   flex-grow: 1;
+}
+.SubHeader{
+  font-weight: bold;
 }

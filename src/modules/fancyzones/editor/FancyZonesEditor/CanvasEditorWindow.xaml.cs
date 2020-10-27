@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using MahApps.Metro.Controls;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -24,16 +15,34 @@ namespace FancyZonesEditor
         public CanvasEditorWindow()
         {
             InitializeComponent();
-            Model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
+            _model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
+            _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            Model.AddZone(new Int32Rect(_offset, _offset, (int) (Model.ReferenceWidth * 0.6), (int) (Model.ReferenceHeight * 0.6)));
-            _offset += 100;
+            if (_offset + (int)(Settings.WorkArea.Width * 0.4) < (int)Settings.WorkArea.Width
+                && _offset + (int)(Settings.WorkArea.Height * 0.4) < (int)Settings.WorkArea.Height)
+            {
+                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
+            }
+            else
+            {
+                _offset = 100;
+                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
+            }
+
+            _offset += 50;
+        }
+
+        protected new void OnCancel(object sender, RoutedEventArgs e)
+        {
+            base.OnCancel(sender, e);
+            _stashedModel.RestoreTo(_model);
         }
 
         private int _offset = 100;
-        private CanvasLayoutModel Model;
+        private CanvasLayoutModel _model;
+        private CanvasLayoutModel _stashedModel;
     }
 }

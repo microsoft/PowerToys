@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="ColorPicker.Views.MainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModel="clr-namespace:ColorPicker.ViewModels"
+             xmlns:constants="clr-namespace:ColorPicker.Constants"
+             mc:Ignorable="d"
+             d:DesignHeight="50"
+             d:DesignWidth="{x:Static constants:WindowConstant.PickerWindowWidth}"
+             d:DataContext="{d:DesignInstance viewModel:MainViewModel, IsDesignTimeCreatable=True}" >
+
+    <Grid Background="Transparent" >
+        <Grid>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="50" />
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Column="2"
+                    Margin="0,1,1,1"
+                    Background="#202020"
+                    BorderBrush="#505050"
+                    BorderThickness="3,0,3,0"
+                    CornerRadius="0" />
+
+            <Border Grid.Column="1"
+                    Background="{Binding ColorBrush}"
+                    BorderBrush="Black"
+                    BorderThickness="1"
+                    CornerRadius="2,0,0,2" />
+
+            <Border Grid.Column="1"
+                    Grid.ColumnSpan="2"
+                    Background="Transparent"
+                    BorderThickness="1"
+                    BorderBrush="Black"
+                    CornerRadius="2" />
+
+            <TextBlock Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Margin="7,0,0,0"
+                       Foreground="White"
+                       Text="{Binding ColorText}" />
+
+        </Grid>
+    </Grid>
+
+</UserControl>

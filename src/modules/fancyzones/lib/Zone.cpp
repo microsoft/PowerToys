@@ -1,95 +1,146 @@
 #include "pch.h"
 
 
+#include <Shellscalingapi.h>
+
+#include <common/dpi_aware.h>
+#include <common/monitors.h>
+#include "Zone.h"
+#include "Settings.h"
+#include "util.h"
+
+namespace
+{
+    bool ValidateZoneRect(const RECT& rect)
+    {
+        int width  = rect.right - rect.left;
+        int height = rect.bottom - rect.top;
+        return rect.left   >= ZoneConstants::MAX_NEGATIVE_SPACING &&
+               rect.right  >= ZoneConstants::MAX_NEGATIVE_SPACING &&
+               rect.top    >= ZoneConstants::MAX_NEGATIVE_SPACING &&
+               rect.bottom >= ZoneConstants::MAX_NEGATIVE_SPACING &&
+               width >= 0 && height >= 0;
+    }
+
+    BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+    {
+        reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
+        return true;
+    }
+
+    bool allMonitorsHaveSameDpiScaling()
+    {
+        std::vector<HMONITOR> monitors;
+        EnumDisplayMonitors(NULL, NULL, saveDisplayToVector, reinterpret_cast<LPARAM>(&monitors));
+
+        if (monitors.size() < 2)
+        {
+            return true;
+        }
+
+        UINT firstMonitorDpiX;
+        UINT firstMonitorDpiY;
+
+        if (S_OK != GetDpiForMonitor(monitors[0], MDT_EFFECTIVE_DPI, &firstMonitorDpiX, &firstMonitorDpiY))
+        {
+            return false;
+        }
+
+        for (int i = 1; i < monitors.size(); i++)
+        {
+            UINT iteratedMonitorDpiX;
+            UINT iteratedMonitorDpiY;
+
+            if (S_OK != GetDpiForMonitor(monitors[i], MDT_EFFECTIVE_DPI, &iteratedMonitorDpiX, &iteratedMonitorDpiY) ||
+                iteratedMonitorDpiX != firstMonitorDpiX)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+}
+
 struct Zone : winrt::implements<Zone, IZone>
 {
 public:
-    Zone(RECT zoneRect) :
-        m_zoneRect(zoneRect)
+    Zone(RECT zoneRect, const size_t zoneId) :
+        m_zoneRect(zoneRect),
+        m_id(zoneId)
     {
     }
 
-    IFACEMETHODIMP_(RECT) GetZoneRect() noexcept { return m_zoneRect; }
-    IFACEMETHODIMP_(bool) IsEmpty() noexcept { return m_windows.empty(); };
-    IFACEMETHODIMP_(bool) ContainsWindow(HWND window) noexcept;
-    IFACEMETHODIMP_(void) AddWindowToZone(HWND window, HWND zoneWindow, bool stampZone) noexcept;
-    IFACEMETHODIMP_(void) RemoveWindowFromZone(HWND window, bool restoreSize) noexcept;
-    IFACEMETHODIMP_(void) SetId(size_t id) noexcept { m_id = id; }
-    IFACEMETHODIMP_(size_t) Id() noexcept { return m_id; }
+    IFACEMETHODIMP_(RECT) GetZoneRect() const noexcept { return m_zoneRect; }
+    IFACEMETHODIMP_(size_t) Id() const noexcept { return m_id; }
+    IFACEMETHODIMP_(RECT) ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept;
 
 private:
-    void SizeWindowToZone(HWND window, HWND zoneWindow) noexcept;
-    void StampZone(HWND window, bool stamp) noexcept;
-
     RECT m_zoneRect{};
-    size_t m_id{};
+    const size_t m_id{};
     std::map<HWND, RECT> m_windows{};
 };
 
-IFACEMETHODIMP_(bool) Zone::ContainsWindow(HWND window) noexcept
-{
-    return (m_windows.find(window) != m_windows.end());
-}
-
-IFACEMETHODIMP_(void) Zone::AddWindowToZone(HWND window, HWND zoneWindow, bool stampZone) noexcept
-{
-    WINDOWPLACEMENT placement;
-    ::GetWindowPlacement(window, &placement);
-    ::GetWindowRect(window, &placement.rcNormalPosition);
-    m_windows.emplace(std::pair<HWND, RECT>(window, placement.rcNormalPosition));
-
-    SizeWindowToZone(window, zoneWindow);
-    if (stampZone)
-    {
-        StampZone(window, true);
-    }
-}
-
-IFACEMETHODIMP_(void) Zone::RemoveWindowFromZone(HWND window, bool restoreSize) noexcept
-{
-    auto iter = m_windows.find(window);
-    if (iter != m_windows.end())
-    {
-        m_windows.erase(iter);
-        StampZone(window, false);
-    }
-}
-
-void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
+RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept
 {
     // Take care of 1px border
-    RECT zoneRect = m_zoneRect;
+    RECT newWindowRect = m_zoneRect;
 
     RECT windowRect{};
     ::GetWindowRect(window, &windowRect);
 
     RECT frameRect{};
-    // Failure is expected on down level systems.
+
+    const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
+    const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
+
     if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
     {
-        zoneRect.bottom -= (frameRect.bottom - windowRect.bottom);
-        zoneRect.right -= (frameRect.right - windowRect.right);
-        zoneRect.left -= (frameRect.left - windowRect.left);
+        LONG leftMargin = frameRect.left - windowRect.left;
+        LONG rightMargin = frameRect.right - windowRect.right;
+        LONG bottomMargin = frameRect.bottom - windowRect.bottom;
+        newWindowRect.left -= leftMargin;
+        newWindowRect.right -= rightMargin;
+        newWindowRect.bottom -= bottomMargin;
     }
 
     // Map to screen coords
-    MapWindowRect(zoneWindow, nullptr, &zoneRect);
-    ::SetWindowPos(window, nullptr, zoneRect.left, zoneRect.top, zoneRect.right - zoneRect.left, zoneRect.bottom - zoneRect.top, SWP_NOZORDER | SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+    MapWindowRect(zoneWindow, nullptr, &newWindowRect);
+
+    MONITORINFO mi{ sizeof(mi) };
+    if (GetMonitorInfoW(MonitorFromWindow(zoneWindow, MONITOR_DEFAULTTONEAREST), &mi))
+    {
+        const auto taskbar_left_size = std::abs(mi.rcMonitor.left - mi.rcWork.left);
+        const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
+        OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
+
+        if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
+        {
+            newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
+            newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
+            newWindowRect.top = max(mi.rcMonitor.top, newWindowRect.top);
+            newWindowRect.bottom = min(mi.rcMonitor.bottom - taskbar_top_size, newWindowRect.bottom);
+        }
+    }
+
+    if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
+    {
+        newWindowRect.right = newWindowRect.left + (windowRect.right - windowRect.left);
+        newWindowRect.bottom = newWindowRect.top + (windowRect.bottom - windowRect.top);
+    }
+
+    return newWindowRect;
 }
 
-void Zone::StampZone(HWND window, bool stamp) noexcept
+winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect, const size_t zoneId) noexcept
 {
-    if (stamp)
+    if (ValidateZoneRect(zoneRect) && zoneId >= 0)
     {
-        SetProp(window, ZONE_STAMP, reinterpret_cast<HANDLE>(m_id));
+        return winrt::make_self<Zone>(zoneRect, zoneId);
     }
     else
     {
-        RemoveProp(window, ZONE_STAMP);
+        return nullptr;
     }
-}
-
-winrt::com_ptr<IZone> MakeZone(RECT zoneRect) noexcept
-{
-    return winrt::make_self<Zone>(zoneRect);
 }

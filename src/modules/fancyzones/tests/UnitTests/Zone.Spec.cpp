@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "lib\Zone.h"
+#include "lib\Settings.h"
+
+#include "Util.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -7,48 +10,37 @@ namespace FancyZonesUnitTests
 {
     TEST_CLASS(ZoneUnitTests)
     {
+    private:
+        RECT m_zoneRect{ 10, 10, 200, 200 };
+        HINSTANCE m_hInst{};
+
+        TEST_METHOD_INITIALIZE(Init)
+        {
+            m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
+        }
+
     public:
         TEST_METHOD(TestCreateZone)
         {
-            RECT zoneRect{ 10, 10, 200, 200 };
-            winrt::com_ptr<IZone> zone = MakeZone(zoneRect);
+            winrt::com_ptr<IZone> zone = MakeZone(m_zoneRect, 1);
+            Assert::IsNotNull(&zone);
+            CustomAssert::AreEqual(m_zoneRect, zone->GetZoneRect());
+        }
+
+        TEST_METHOD(TestCreateZoneZeroRect)
+        {
+            RECT zoneRect{ 0, 0, 0, 0 };
+            winrt::com_ptr<IZone> zone = MakeZone(zoneRect, 1);
             Assert::IsNotNull(&zone);
             CustomAssert::AreEqual(zoneRect, zone->GetZoneRect());
-
-            constexpr size_t id = 10;
-            zone->SetId(id);
-            Assert::AreEqual(zone->Id(), id);
         }
 
-        TEST_METHOD(ContainsWindow)
+        TEST_METHOD(GetSetId)
         {
-            RECT zoneRect{ 10, 10, 200, 200 };
-            winrt::com_ptr<IZone> zone = MakeZone(zoneRect);
-            HWND newWindow = Mocks::Window();
-            Assert::IsFalse(zone->ContainsWindow(newWindow));
+            constexpr size_t zoneId = 123;
+            winrt::com_ptr<IZone> zone = MakeZone(m_zoneRect, zoneId);
+
+            Assert::AreEqual(zone->Id(), zoneId);
         }
-
-        TEST_METHOD(TestAddRemoveWindow)
-        {
-            RECT zoneRect{ 10, 10, 200, 200 };
-            winrt::com_ptr<IZone> zone = MakeZone(zoneRect);
-            HWND newWindow = Mocks::Window();
-
-            Assert::IsFalse(zone->ContainsWindow(newWindow));
-            zone->AddWindowToZone(newWindow, Mocks::Window(), true);
-            Assert::IsTrue(zone->ContainsWindow(newWindow));
-
-            zone->RemoveWindowFromZone(newWindow, false);
-            Assert::IsFalse(zone->ContainsWindow(newWindow));
-        }
-
-        TEST_METHOD(TestRemoveInvalidWindow)
-        {
-            RECT zoneRect{ 10, 10, 200, 200 };
-            winrt::com_ptr<IZone> zone = MakeZone(zoneRect);
-            HWND newWindow = Mocks::Window();
-            zone->RemoveWindowFromZone(newWindow, false);
-        }
-
     };
 }

@@ -1,5 +1,7 @@
 #pragma once
 #include <winrt/base.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <Windows.h>
 #include <dxgi1_3.h>
 #include <d3d11_2.h>
@@ -22,5 +24,10 @@
 #include <tuple>
 #include <unordered_set>
 #include <string>
-#include <common/common.h>
+#include <set>
 #include <ProjectTelemetry.h>
+
+#include <winrt/Windows.ApplicationModel.h>
+#include <winrt/Windows.Storage.h>
+
+#include <wil/resource.h>
