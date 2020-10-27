@@ -15,7 +15,7 @@ Please use issues and votes to guide the project to suggest new ideas and help u
 
 1. [Keyboard shortcut manager](https://github.com/microsoft/PowerToys/issues/6)
 2. [Win+R replacement](https://github.com/microsoft/PowerToys/issues/44)
-3. Resrouce use tool (maps between a resource like a file handle to an app and vice-versa)
+3. Resource use tool (maps between a resource like a file handle to an app and vice-versa)
 4. Performance analysis over time to track which processes have been slowing down your machine
 5. Better Alt+Tab including browser tab integration and search for running apps
 6. [Battery tracker](https://github.com/microsoft/PowerToys/issues/7)

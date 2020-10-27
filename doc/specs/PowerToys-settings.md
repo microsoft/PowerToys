@@ -3,7 +3,7 @@ The Power  Toys app will have a settings framework that each Power Toy can plug 
 
 Each Power Toy will line in a separate .dll and be run in a separate thread by the main Power Toys process.  The main Power Toys .exe will expose key global Windows event handlers so that there is only one system-level hook for these critical events.  The current set of Power Toys require these global events.  This list will be amended as new Power Toys are authored that require additional global hooks.
 * SetWinEventHook - FancyZones requires knowledge of when a window enters the move/size loop. It listens for EVENT_SYSTEM_MOVESIZESTART, EVENT_SYSTEM_MOVESIZEEND, and EVENT_OBJECT_LOCATIONCHANGE messages from SetWinEventHook.
-* Low-level keyboard hook - The Windows key Shortcut Guide and FancyZones both require low-level keybord hooks to intercept keyboard input and get a first chance to process it.  Other Power Toys will require this as well
+* Low-level keyboard hook - The Windows key Shortcut Guide and FancyZones both require low-level keyboard hooks to intercept keyboard input and get a first chance to process it.  Other Power Toys will require this as well
 
 * Each Power Toy must listen for 4 events:
     * Enable – When invoked, enables the Power Toys’ functionality and performs any necessary initialization.  Invoked with a JSON string from the persisted settings store
