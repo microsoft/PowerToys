@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
-using Microsoft.Plugin.Indexer.Interface;
 
 namespace Microsoft.Plugin.Indexer.DriveDetection
 {
