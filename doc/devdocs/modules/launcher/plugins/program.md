@@ -11,7 +11,7 @@ There are broadly two different categories of applications:
 ### [UWP](src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWP.cs)
 - The logic for indexing Packaged applications is present within the [`UWP.cs`](src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWP.cs) file.
 - There can be multiple applications present within a package. The [`UWPApplication.cs`](src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/UWPApplication.cs) file encapsulates the properties of a packaged application.
-- To index packaged applications, the `PackageManager` retrives all the packages for the current user and indexes all the applications.
+- To index packaged applications, the `PackageManager` retrivies all the packages for the current user and indexes all the applications.
 - To retrieve the app icon for packaged applications, the assets path is retrieved from the `Application Manifest` file. There are multiple icons corresponding to each scale, target size and theme. The best icon is chosen given the theme of powerToys Run.
 
 ### [Win32Program](src/modules/launcher/Plugins/Microsoft.Plugin.Program/Programs/Win32Program.cs)
