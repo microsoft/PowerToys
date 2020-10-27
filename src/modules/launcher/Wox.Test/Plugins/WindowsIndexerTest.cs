@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.Indexer;
 using Microsoft.Plugin.Indexer.DriveDetection;
+using Microsoft.Plugin.Indexer.Interface;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Search.Interop;
 using Moq;
@@ -348,17 +349,21 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console, contextMenuItems[1].Title);
         }
 
-        [TestCase(0, false, ExpectedResult = true)]
-        [TestCase(0, true, ExpectedResult = false)]
-        [TestCase(1, false, ExpectedResult = false)]
-        [TestCase(1, true, ExpectedResult = false)]
-        public bool DriveDetectionMustDisplayWarningWhenEnhancedModeIsOffAndWhenWarningIsNotDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus)
+        [TestCase(0, 2, false, ExpectedResult = true)]
+        [TestCase(0, 3, true, ExpectedResult = false)]
+        [TestCase(1, 2, false, ExpectedResult = false)]
+        [TestCase(1, 4, true, ExpectedResult = false)]
+        [TestCase(0, 1, false, ExpectedResult = false)]
+        public bool DriveDetectionMustDisplayWarningWhenEnhancedModeIsOffAndWhenWarningIsNotDisabled(int enhancedModeStatus, int driveCount, bool disableWarningCheckBoxStatus)
         {
             // Arrange
             var mockRegistry = new Mock<IRegistryWrapper>();
             mockRegistry.Setup(r => r.GetHKLMRegistryValue(It.IsAny<string>(), It.IsAny<string>())).Returns(enhancedModeStatus); // Enhanced mode is disabled
 
-            IndexerDriveDetection driveDetection = new IndexerDriveDetection(mockRegistry.Object);
+            var mockDriveInfo = new Mock<IDriveInfoWrapper>();
+            mockDriveInfo.Setup(d => d.GetDriveCount()).Returns(driveCount);
+
+            IndexerDriveDetection driveDetection = new IndexerDriveDetection(mockRegistry.Object, mockDriveInfo.Object);
             driveDetection.IsDriveDetectionWarningCheckBoxSelected = disableWarningCheckBoxStatus;
 
             // Act & Assert

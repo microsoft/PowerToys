@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Indexer
         private readonly WindowsSearchAPI _api = new WindowsSearchAPI(_search);
 
         // To obtain information regarding the drives that are indexed
-        private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper());
+        private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper(), new DriveInfoWrapper());
 
         // Reserved keywords in oleDB
         private readonly string reservedStringPattern = @"^[\/\\\$\%]+$|^.*[<>].*$";
