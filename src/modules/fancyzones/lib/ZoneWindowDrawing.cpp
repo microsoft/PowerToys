@@ -33,22 +33,22 @@ float ZoneWindowDrawing::GetAnimationAlpha()
 
 ID2D1Factory* ZoneWindowDrawing::GetD2DFactory()
 {
-    static ID2D1Factory* pD2DFactory = nullptr;
-    if (!pD2DFactory)
-    {
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2DFactory);
-    }
+    static auto pD2DFactory = [] {
+        ID2D1Factory* res = nullptr;
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &res);
+        return res;
+    }();
     return pD2DFactory;
 }
 
 IDWriteFactory* ZoneWindowDrawing::GetWriteFactory()
 {
-    static IUnknown* pDWriteFactory = nullptr;
-    if (!pDWriteFactory)
-    {
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &pDWriteFactory);
-    }
-    return reinterpret_cast<IDWriteFactory*>(pDWriteFactory);
+    static auto pDWriteFactory = [] {
+        IUnknown* res = nullptr;
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &res);
+        return reinterpret_cast<IDWriteFactory*>(res);
+    }();
+    return pDWriteFactory;
 }
 
 D2D1_COLOR_F ZoneWindowDrawing::ConvertColor(COLORREF color)
