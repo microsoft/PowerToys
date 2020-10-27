@@ -144,4 +144,7 @@
   <data name="Extended_Menu_Info" xml:space="preserve">
     <value>Only show the PowerRename menu item on the extended context menu (Shift + Right-click).</value>
   </data>
+  <data name="Use_Boost_Lib" xml:space="preserve">
+    <value>Use Boost Library, provides extended features but may behave different.</value>
+  </data>
 </root>

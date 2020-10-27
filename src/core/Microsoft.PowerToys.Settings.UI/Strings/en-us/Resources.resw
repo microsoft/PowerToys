@@ -817,4 +817,10 @@
   <data name="FancyZones_WindowBehavior_GroupSettings.Text" xml:space="preserve">
     <value>Window behavior</value>
   </data>
+  <data name="PowerRename_BehaviorHeader.Text" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="PowerRename_Toggle_UseBoostLib.Content" xml:space="preserve">
+    <value>Use Boost Library, provides extended features but may behave different</value>
+  </data>
 </root>
