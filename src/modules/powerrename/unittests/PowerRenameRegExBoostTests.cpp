@@ -341,26 +341,27 @@ TEST_METHOD(VerifyReplaceFirstWildNoFlags)
 TEST_METHOD(VerifyHandleCapturingGroups)
 {
     // This differs from the Standard Library: Boost does not recognize $xyz as $x and "yz".
-    // - 1st test: Boost does not replace $223 to bar23
-    // - 2nd test: Boost does not replace $123 to foo23
-    // - 5th test: Boost does not replace $12 to foo2
-    // - 6th test: Boost does not replace $10 to foo0
-    // - 8th test: Boost does not replace $11 to foo1
+    // To use a capturing group followed by numbers as replacement curly braces are needed.
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx, true) == S_OK);
     DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
-        //search, replace, test, result //
+        //search, replace, test, result
         { L"(foo)(bar)", L"$1_$002_$223_$001021_$00001", L"foobar", L"foo_$002__$001021_$00001" },
+        { L"(foo)(bar)", L"$1_$002_${2}23_$001021_$00001", L"foobar", L"foo_$002_bar23_$001021_$00001" },
         { L"(foo)(bar)", L"_$1$2_$123$040", L"foobar", L"_foobar_$040" },
+        { L"(foo)(bar)", L"_$1$2_${1}23$040", L"foobar", L"_foobar_foo23$040" },
         { L"(foo)(bar)", L"$$$1", L"foobar", L"$foo" },
         { L"(foo)(bar)", L"$$1", L"foobar", L"$1" },
         { L"(foo)(bar)", L"$12", L"foobar", L"" },
+        { L"(foo)(bar)", L"${1}2", L"foobar", L"foo2" },
         { L"(foo)(bar)", L"$10", L"foobar", L"" },
+        { L"(foo)(bar)", L"${1}0", L"foobar", L"foo0" },
         { L"(foo)(bar)", L"$01", L"foobar", L"$01" },
         { L"(foo)(bar)", L"$$$11", L"foobar", L"$" },
+        { L"(foo)(bar)", L"$$${1}1", L"foobar", L"$foo1" },
         { L"(foo)(bar)", L"$$$$113a", L"foobar", L"$$113a" },
     };
 
