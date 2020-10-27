@@ -61,7 +61,7 @@ D2D1_COLOR_F ZoneWindowDrawing::ConvertColor(COLORREF color)
 
 D2D1_RECT_F ZoneWindowDrawing::ConvertRect(RECT rect)
 {
-    return D2D1::RectF((float)rect.left + 0.5f, (float)rect.top + 0.5f, (float)rect.right + 0.5f, (float)rect.bottom + 0.5f);
+    return D2D1::RectF((float)rect.left + 0.5f, (float)rect.top + 0.5f, (float)rect.right - 0.5f, (float)rect.bottom - 0.5f);
 }
 
 ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
