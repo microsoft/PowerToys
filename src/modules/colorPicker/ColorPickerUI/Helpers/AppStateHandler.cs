@@ -48,18 +48,11 @@ namespace ColorPicker.Helpers
             {
                 _colorEditorWindow = new ColorEditorWindow();
                 _colorEditorWindow.Content = _colorEditorViewModel;
-                _colorEditorViewModel.CloseWindowRequested += ColorEditorViewModel_CloseWindowRequested;
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
             }
 
             _colorEditorViewModel.Initialize();
             _colorEditorWindow.Show();
-        }
-
-        public void CloseColorPickerEditor()
-        {
-            _colorEditorWindow.Close();
-            _colorEditorWindow = null;
         }
 
         public static void SetTopMost()
@@ -71,13 +64,6 @@ namespace ColorPicker.Helpers
         private void MainWindow_Closed(object sender, EventArgs e)
         {
             AppClosed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void ColorEditorViewModel_CloseWindowRequested(object sender, EventArgs e)
-        {
-            _colorEditorViewModel.OpenColorPickerRequested -= ColorEditorViewModel_OpenColorPickerRequested;
-            _colorEditorViewModel.CloseWindowRequested -= ColorEditorViewModel_CloseWindowRequested;
-            CloseColorPickerEditor();
         }
 
         private void ColorEditorViewModel_OpenColorPickerRequested(object sender, EventArgs e)

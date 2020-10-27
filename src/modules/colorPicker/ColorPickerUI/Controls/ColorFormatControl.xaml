@@ -6,14 +6,14 @@
              xmlns:local="clr-namespace:ColorPicker.Controls"
               xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     
     <Border x:Name="MainBorder"
-                    Margin="0,12,0,0"
+                    Margin="12,16,12,0"
                     Width="308"
                     Height="36"
-                    CornerRadius="4"
+                    CornerRadius="2"
                     HorizontalAlignment="Stretch"
                     Background="{DynamicResource ColorControlBackgroundBrush}">
         <Grid>
@@ -43,6 +43,7 @@
 
             <Button x:Name="CopyToClipboardButton"
                     ToolTipService.ToolTip="Copy to clipboard"
+                    Background="{DynamicResource ColorControlBackgroundBrush}"
                     Height="36"
                     Width="36"
                     Grid.Column="2">

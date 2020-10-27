@@ -12,11 +12,7 @@ namespace ColorPicker.ViewModelContracts
 {
     public interface IColorEditorViewModel
     {
-        event EventHandler CloseWindowRequested;
-
         event EventHandler OpenColorPickerRequested;
-
-        ICommand CloseWindowCommand { get; }
 
         ICommand OpenColorPickerCommand { get; }
 

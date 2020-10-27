@@ -108,7 +108,6 @@
   <ItemGroup>
     <Compile Include="Behaviors\DragAndDropReorderBehavior.cs" />
     <Compile Include="Behaviors\DragWindowBehavior.cs" />
-    <Compile Include="Behaviors\HideCloseButtonBehavior.cs" />
     <Compile Include="ColorEditorWindow.xaml.cs">
       <DependentUpon>ColorEditorWindow.xaml</DependentUpon>
     </Compile>
@@ -117,7 +116,6 @@
     </Compile>
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ColorToStringConverter.cs" />
-    <Compile Include="Converters\PixelsToGridLengthConverter.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
     <Compile Include="Constants\WindowConstant.cs" />

@@ -27,7 +27,6 @@ namespace ColorPicker.ViewModels
         [ImportingConstructor]
         public ColorEditorViewModel(IUserSettings userSettings)
         {
-            CloseWindowCommand = new RelayCommand(() => CloseWindowRequested?.Invoke(this, EventArgs.Empty));
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             RemoveColorCommand = new RelayCommand(DeleteSelectedColor);
             ColorsHistory.CollectionChanged += ColorsHistory_CollectionChanged;
@@ -35,11 +34,7 @@ namespace ColorPicker.ViewModels
             SetupAvailableColorRepresentations();
         }
 
-        public event EventHandler CloseWindowRequested;
-
         public event EventHandler OpenColorPickerRequested;
-
-        public ICommand CloseWindowCommand { get; }
 
         public ICommand OpenColorPickerCommand { get; }
 
@@ -87,6 +82,8 @@ namespace ColorPicker.ViewModels
             _initializing = true;
 
             ColorsHistory.Clear();
+            ColorsHistory.Add(Colors.Yellow);
+            ColorsHistory.Add(Colors.Yellow);
             foreach (var item in _userSettings.ColorHistory)
             {
                 var parts = item.Split('|');
@@ -159,6 +156,27 @@ namespace ColorPicker.ViewModels
                     FormatName = "CMYK",
                     Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.CMYK); },
                 });
+
+            ColorRepresentations.Add(
+    new ColorFormatModel()
+    {
+        FormatName = "CMYK",
+        Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.CMYK); },
+    });
+
+            ColorRepresentations.Add(
+    new ColorFormatModel()
+    {
+        FormatName = "CMYK",
+        Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.CMYK); },
+    });
+
+            ColorRepresentations.Add(
+    new ColorFormatModel()
+    {
+        FormatName = "CMYK",
+        Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.CMYK); },
+    });
 
             // Any other custom format to be added here as well
         }
