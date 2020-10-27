@@ -8,6 +8,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Accessibility;
 using Microsoft.Plugin.Program.Logger;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -131,6 +132,7 @@ namespace Microsoft.Plugin.Program.Programs
         public bool HasArguments { get; set; }
 
         // Retrieve the target path using Shell Link
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "HRESULT E_FAIL is thrown while fetching description and E_FAIL does not relate to any specific exception.")]
         public string RetrieveTargetPath(string path)
         {
             var link = new ShellLink();
@@ -160,8 +162,16 @@ namespace Microsoft.Plugin.Program.Programs
             if (!string.IsNullOrEmpty(target))
             {
                 buffer = new StringBuilder(MAX_PATH);
-                ((IShellLinkW)link).GetDescription(buffer, MAX_PATH);
-                Description = buffer.ToString();
+                try
+                {
+                    ((IShellLinkW)link).GetDescription(buffer, MAX_PATH);
+                    Description = buffer.ToString();
+                }
+                catch (Exception e)
+                {
+                    Log.Exception($"|Failed to fetch description for {target}, {e.Message}", e, GetType());
+                    Description = string.Empty;
+                }
 
                 StringBuilder argumentBuffer = new StringBuilder(MAX_PATH);
                 ((IShellLinkW)link).GetArguments(argumentBuffer, argumentBuffer.Capacity);

@@ -135,7 +135,7 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) const noexcept
 
 winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect, const size_t zoneId) noexcept
 {
-    if (ValidateZoneRect(zoneRect) && zoneId > 0)
+    if (ValidateZoneRect(zoneRect) && zoneId >= 0)
     {
         return winrt::make_self<Zone>(zoneRect, zoneId);
     }

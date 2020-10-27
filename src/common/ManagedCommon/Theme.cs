@@ -2,12 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-
-namespace Wox.Plugin
+namespace ManagedCommon
 {
-    public interface IDelayedExecutionPlugin
+    public enum Theme
     {
-        List<Result> Query(Query query, bool delayedExecution);
+        System,
+        Light,
+        Dark,
+        HighContrastOne,
+        HighContrastTwo,
+        HighContrastBlack,
+        HighContrastWhite,
     }
 }

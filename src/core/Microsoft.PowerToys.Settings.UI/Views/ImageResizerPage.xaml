@@ -65,7 +65,8 @@
                       SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.IsHorizontalRailEnabled="True">
+                      ScrollViewer.IsHorizontalRailEnabled="True"
+                      ContainerContentChanging="ImagesSizesListView_ContainerContentChanging">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -277,7 +278,9 @@
                       x:Uid="ImageResizer_FilenameFormatPlaceholder"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       Margin="{StaticResource SmallTopMargin}"
-                      AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_FilenameFormatHeader}">
+                      AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_FilenameFormatHeader}"
+                      AutomationProperties.HelpText="{Binding ElementName=FileFormatTextBlock, Path=Text}"
+                     >
                 <TextBox.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Name="ImageResizer_FilenameFormatHeader"
@@ -290,44 +293,34 @@
                     </StackPanel>
                 </TextBox.Header>
                 <ToolTipService.ToolTip>
-                    <StackPanel>
-                        <TextBlock x:Uid="ImageResizer_FileFormatDescription"/>
-                        <TextBlock Margin="{StaticResource SmallTopMargin}">
-                            <Run Text="%1" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_Filename" />
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%2" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_Sizename"/>
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%3" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_SelectedWidth"/>
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%4" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_SelectedHeight"/>
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%5" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_ActualWidth"/>
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%6" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
-                        </TextBlock>
-                    </StackPanel>
+                    <TextBlock x:Name="FileFormatTextBlock">
+                        <Run x:Uid="ImageResizer_FileFormatDescription"/>
+                        <LineBreak/>
+                        <LineBreak/>
+                        <Run Text="%1" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_Filename" />
+                        <LineBreak/>
+                        <Run Text="%2" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_Sizename"/>
+                        <LineBreak/>
+                        <Run Text="%3" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_SelectedWidth"/>
+                        <LineBreak/>
+                        <Run Text="%4" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_SelectedHeight"/>
+                        <LineBreak/>
+                        <Run Text="%5" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_ActualWidth"/>
+                        <LineBreak/>
+                        <Run Text="%6" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
+                    </TextBlock>
                 </ToolTipService.ToolTip>
             </TextBox>
 

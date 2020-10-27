@@ -294,8 +294,14 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         // Whenever a remap is added move to the bottom of the screen
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
     });
+
     // Set accessible name for the add shortcut button
     addShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON)));
+
+    // Add tooltip for add button which would appear on hover
+    ToolTip addShortcuttoolTip;
+    addShortcuttoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_ADD_SHORTCUT_BUTTON)));
+    ToolTipService::SetToolTip(addShortcut, addShortcuttoolTip);
 
     // Header and example text at the top of the window
     StackPanel helperText;

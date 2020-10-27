@@ -70,24 +70,33 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             if (SettingsExists(powertoy, fileName))
             {
-                // Given the file already exists, to deserialize the file and read it's content.
-                T deserializedSettings = GetFile<T>(powertoy, fileName);
-
-                // IF the file needs to be modified, to save the new configurations accordingly.
-                if (deserializedSettings.UpgradeSettingsConfiguration())
+                try
                 {
-                    SaveSettings(deserializedSettings.ToJsonString(), powertoy, fileName);
+                    // Given the file already exists, to deserialize the file and read it's content.
+                    T deserializedSettings = GetFile<T>(powertoy, fileName);
+
+                    // If the file needs to be modified, to save the new configurations accordingly.
+                    if (deserializedSettings.UpgradeSettingsConfiguration())
+                    {
+                        SaveSettings(deserializedSettings.ToJsonString(), powertoy, fileName);
+                    }
+
+                    return deserializedSettings;
                 }
 
-                return deserializedSettings;
+                // Catch json deserialization exceptions when the file is corrupt and has an invalid json.
+                // If there are any deserialization issues like in https://github.com/microsoft/PowerToys/issues/7500, log the error and create a new settings.json file.
+                // This is different from the case where we have trailing zeros following a valid json file, which we have handled by trimming the trailing zeros.
+                catch (JsonException ex)
+                {
+                    Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
+                }
             }
-            else
-            {
-                // If the settings file does not exist, to create a new object with default parameters and save it to a newly created settings file.
-                T newSettingsItem = new T();
-                SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
-                return newSettingsItem;
-            }
+
+            // If the settings file does not exist or if the file is corrupt, to create a new object with default parameters and save it to a newly created settings file.
+            T newSettingsItem = new T();
+            SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
+            return newSettingsItem;
         }
 
         // Given the powerToy folder name and filename to be accessed, this function deserializes and returns the file.

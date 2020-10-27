@@ -337,7 +337,7 @@
     <value>Open zones editor</value>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
-    <value>Set Shortcut</value>
+    <value>Shortcut setting</value>
   </data>
   <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
@@ -401,15 +401,6 @@
   </data>
   <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Dark.Content" xml:space="preserve">
-    <value>Dark</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Default.Content" xml:space="preserve">
-    <value>System default</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Light.Content" xml:space="preserve">
-    <value>Light</value>
   </data>
   <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
@@ -488,9 +479,6 @@
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
-  </data>
-  <data name="ShortcutGuide_Theme.Text" xml:space="preserve">
-    <value>Choose Shortcut Guide overlay color</value>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
@@ -684,8 +672,8 @@
   <data name="General_Version.Text" xml:space="preserve">
     <value>Version:</value>
   </data>
-  <data name="Shortcut_Overlay_Theme.Header" xml:space="preserve">
-    <value>Background theme</value>
+  <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
+    <value>Version</value>
   </data>
   <data name="Admin_mode.Text" xml:space="preserve">
     <value>Administrator mode</value>
@@ -773,5 +761,20 @@
   </data>
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
+  </data>
+  <data name="ColorModeHeader.Text" xml:space="preserve">
+    <value>Choose a mode</value>
+  </data>
+  <data name="Radio_Theme_Dark.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Radio_Theme_Light.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Radio_Theme_Default.Content" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="Windows_Color_Settings.Content" xml:space="preserve">
+    <value>Windows color settings</value>
   </data>
 </root>

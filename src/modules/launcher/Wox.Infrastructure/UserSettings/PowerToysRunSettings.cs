@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using ManagedCommon;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Wox.Plugin;
@@ -44,7 +45,7 @@ namespace Wox.Infrastructure.UserSettings
 
         public string Language { get; set; } = "en";
 
-        public string Theme { get; set; } = "Dark";
+        public Theme Theme { get; set; } = Theme.System;
 
         public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;
 

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Mono.Collections.Generic;
 using NUnit.Framework;
 using Wox.Core.Plugin;
 using Wox.Plugin;
@@ -26,7 +27,7 @@ namespace Wox.Test
             // Arrange
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" } } } },
+                { ">", new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" } ) } },
             };
             string searchQuery = ">   file.txt    file2 file3";
 
@@ -43,7 +44,7 @@ namespace Wox.Test
             // Arrange
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" }, Disabled = true } } },
+                { ">", new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" }) { Disabled = true } } },
             };
             string searchQuery = ">   file.txt    file2 file3";
 
@@ -72,7 +73,7 @@ namespace Wox.Test
         {
             // Arrange
             string searchQuery = "> query";
-            var firstPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" } } };
+            var firstPlugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { ">" } ) };
             var secondPlugin = new PluginPair { Metadata = new PluginMetadata { ActionKeyword = ">" } };
 
             var nonGlobalPluginWithActionKeywords = new Dictionary<string, PluginPair>
@@ -85,7 +86,7 @@ namespace Wox.Test
                 { ">", secondPlugin },
             };
             string[] terms = { ">", "query" };
-            Query expectedQuery = new Query("> query", "query", terms, ">");
+            Query expectedQuery = new Query("> query", "query", new ReadOnlyCollection<string>(terms), ">");
 
             // Act
             var queriesForPluginsWithActionKeywords = QueryBuilder.Build(ref searchQuery, nonGlobalPluginWithActionKeywords);
@@ -103,7 +104,7 @@ namespace Wox.Test
         public void QueryBuilderShouldGenerateCorrectQueriesForPluginsWithMultipleActionKeywords()
         {
             // Arrange
-            var plugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { "a", "b" } } };
+            var plugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { "a", "b" } ) };
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
                 { "a", plugin },
@@ -129,7 +130,7 @@ namespace Wox.Test
         public void QueryBuildShouldGenerateSameSearchQueryWithOrWithoutSpaceAfterActionKeyword()
         {
             // Arrange
-            var plugin = new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { "a" } } };
+            var plugin = new PluginPair { Metadata = new PluginMetadata(new List<string> { "a" } ) };
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
                 { "a", plugin },
@@ -198,8 +199,8 @@ namespace Wox.Test
 
             // Assert
             // Using Ordinal since this is used internally
-            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Length == 2);
-            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Length == 1);
+            Assert.IsTrue(firstQuery.Terms[0].Equals("cd", StringComparison.Ordinal) && firstQuery.Terms[1].Equals("efgh", StringComparison.Ordinal) && firstQuery.Terms.Count == 2);
+            Assert.IsTrue(secondQuery.Terms[0].Equals("efgh", StringComparison.Ordinal) && secondQuery.Terms.Count == 1);
         }
     }
 }

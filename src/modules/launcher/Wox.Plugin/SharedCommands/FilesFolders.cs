@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Wox.Plugin.Logger;
+using Wox.Plugin.Properties;
 
 namespace Wox.Plugin.SharedCommands
 {
@@ -56,9 +58,10 @@ namespace Wox.Plugin.SharedCommands
                 string error = $"Copying path {targetPath} has failed";
                 Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
-                throw e;
+                throw;
 #else
-                System.Windows.MessageBox.Show(string.Format("Copying path {0} has failed, it will now be deleted for consistency", targetPath));
+                // Using CurrentCulture since this is user facing
+                System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Resources.filesfolder_copy_failed, targetPath));
                 RemoveFolder(targetPath);
 #endif
             }
@@ -91,9 +94,10 @@ namespace Wox.Plugin.SharedCommands
                 string error = $"Unable to verify folders and files between {fromPath} and {toPath}";
                 Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
-                throw e;
+                throw;
 #else
-                System.Windows.MessageBox.Show(string.Format(error));
+                // Using CurrentCulture since this is user facing
+                System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Resources.filesfolder_verifybothfolderfilesequal_failed, fromPath, toPath));
                 return false;
 #endif
             }
@@ -113,12 +117,13 @@ namespace Wox.Plugin.SharedCommands
             catch (Exception e)
 #pragma warning restore CS0168 // Variable is declared but never used
             {
-                string error = $"Not able to delete folder {path}, please go to the location and manually delete it";
+                string error = $"Not able to delete folder {path}";
                 Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
-                throw e;
+                throw;
 #else
-                System.Windows.MessageBox.Show(string.Format(error));
+                // Using CurrentCulture since this is user facing
+                System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Resources.filesfolder_removefolder_failed, path));
 #endif
             }
         }
