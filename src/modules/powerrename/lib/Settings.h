@@ -51,6 +51,16 @@ public:
         settings.persistState = persistState;
     }
 
+    inline bool GetUseBoostLib() const
+    {
+        return settings.useBoostLib;
+    }
+
+    inline void SetUseBoostLib(bool useBoostLib)
+    {
+        settings.useBoostLib = useBoostLib;
+    }
+
     inline bool GetMRUEnabled() const
     {
         return settings.MRUEnabled;
@@ -114,6 +124,7 @@ private:
         bool showIconOnMenu{ true };
         bool extendedContextMenuOnly{ false }; // Disabled by default.
         bool persistState{ true };
+        bool useBoostLib{ false }; // Disabled by default.
         bool MRUEnabled{ true };
         unsigned int maxMRUSize{ 10 };
         unsigned int flags{ 0 };
