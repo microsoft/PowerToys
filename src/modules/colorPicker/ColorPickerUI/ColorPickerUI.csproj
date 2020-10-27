@@ -106,6 +106,7 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behaviors\DragAndDropReorderBehavior.cs" />
     <Compile Include="Behaviors\DragWindowBehavior.cs" />
     <Compile Include="Behaviors\HideCloseButtonBehavior.cs" />
     <Compile Include="ColorEditorWindow.xaml.cs">

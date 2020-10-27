@@ -94,7 +94,10 @@
             </ui:ListView>
         </Grid>
 
-        <ItemsControl ItemsSource="{Binding ColorRepresentations}" Grid.Column="1" Grid.Row="1">
+        <ItemsControl ItemsSource="{Binding ColorRepresentations}" Grid.Column="1" Grid.Row="1" AllowDrop="True" >
+            <e:Interaction.Behaviors>
+                <behaviors:DragAndDropReorderBehavior/>
+            </e:Interaction.Behaviors>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
