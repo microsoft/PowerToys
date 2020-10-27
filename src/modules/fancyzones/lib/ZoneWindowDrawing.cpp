@@ -130,11 +130,21 @@ void ZoneWindowDrawing::Render()
     // Draw backdrop
     m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
 
+    ID2D1SolidColorBrush* textBrush = nullptr;
+    IDWriteTextFormat* textFormat = nullptr;
+
+    m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black, animationAlpha), &textBrush);
+    auto writeFactory = GetWriteFactory();
+
+    if (writeFactory)
+    {
+        writeFactory->CreateTextFormat(NonLocalizable::SegoeUiFont, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 80.f, L"en-US", &textFormat);
+    }
+
     for (auto drawableRect : m_sceneRects)
     {
         ID2D1SolidColorBrush* borderBrush = nullptr;
         ID2D1SolidColorBrush* fillBrush = nullptr;
-        ID2D1SolidColorBrush* textBrush = nullptr;
 
         // Need to copy the rect from m_sceneRects
         drawableRect.borderColor.a *= animationAlpha;
@@ -142,7 +152,6 @@ void ZoneWindowDrawing::Render()
 
         m_renderTarget->CreateSolidColorBrush(drawableRect.borderColor, &borderBrush);
         m_renderTarget->CreateSolidColorBrush(drawableRect.fillColor, &fillBrush);
-        m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black, animationAlpha), &textBrush);
 
         if (fillBrush)
         {
@@ -158,30 +167,22 @@ void ZoneWindowDrawing::Render()
 
         std::wstring idStr = std::to_wstring(drawableRect.id);
 
-        IDWriteTextFormat* textFormat = nullptr;
-        auto writeFactory = GetWriteFactory();
-
-        if (writeFactory)
-        {
-            writeFactory->CreateTextFormat(NonLocalizable::SegoeUiFont, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 80.f, L"en-US", &textFormat);
-        }
-
         if (textFormat && textBrush)
         {
             textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
             textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
             m_renderTarget->DrawTextW(idStr.c_str(), (UINT32)idStr.size(), textFormat, drawableRect.rect, textBrush);
         }
+    }
 
-        if (textFormat)
-        {
-            textFormat->Release();
-        }
+    if (textFormat)
+    {
+        textFormat->Release();
+    }
 
-        if (textBrush)
-        {
-            textBrush->Release();
-        }
+    if (textBrush)
+    {
+        textBrush->Release();
     }
 
     m_renderTarget->EndDraw();
