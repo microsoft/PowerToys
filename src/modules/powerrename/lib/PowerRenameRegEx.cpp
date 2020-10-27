@@ -158,11 +158,11 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     return S_OK;
 }
 
-HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx)
+HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx, bool useBoostLib)
 {
     *renameRegEx = nullptr;
 
-    CPowerRenameRegEx *newRenameRegEx = new CPowerRenameRegEx();
+    CPowerRenameRegEx *newRenameRegEx = new CPowerRenameRegEx(useBoostLib);
     HRESULT hr = newRenameRegEx ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr))
     {
@@ -172,12 +172,14 @@ HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameR
     return hr;
 }
 
-CPowerRenameRegEx::CPowerRenameRegEx() :
+CPowerRenameRegEx::CPowerRenameRegEx(bool useBoostLib) :
     m_refCount(1)
 {
     // Init to empty strings
     SHStrDup(L"", &m_searchTerm);
     SHStrDup(L"", &m_replaceTerm);
+
+    _useBoostLib = useBoostLib;
 }
 
 CPowerRenameRegEx::~CPowerRenameRegEx()
@@ -221,16 +223,16 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
                 }
                 else
                 {
-                std::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? regex_constants::icase | regex_constants::ECMAScript : regex_constants::ECMAScript);
-                if (m_flags & MatchAllOccurences)
-                {
-                    res = regex_replace(wstring(source), pattern, replaceTerm);
+                    std::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? regex_constants::icase | regex_constants::ECMAScript : regex_constants::ECMAScript);
+                    if (m_flags & MatchAllOccurences)
+                    {
+                        res = regex_replace(wstring(source), pattern, replaceTerm);
+                    }
+                    else
+                    {
+                        res = regex_replace(wstring(source), pattern, replaceTerm, regex_constants::format_first_only);
+                    }
                 }
-                else
-                {
-                    res = regex_replace(wstring(source), pattern, replaceTerm, regex_constants::format_first_only);
-                }
-            }
             }
             else
             {
