@@ -190,7 +190,10 @@ void ZoneWindowDrawing::Render()
 
 void ZoneWindowDrawing::Hide()
 {
+    m_lowLatencyLock = true;
     std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
+
     if (m_animation)
     {
         m_animation.reset();
