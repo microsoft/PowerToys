@@ -72,7 +72,7 @@
             </ui:ListView>
         </Grid>
 
-        <ScrollViewer Grid.Column="1" Margin="0,107,0,0">
+        <ScrollViewer Grid.Column="1" Margin="0,92,0,0">
         <ItemsControl ItemsSource="{Binding ColorRepresentations}"  AllowDrop="True" >
             <e:Interaction.Behaviors>
                 <behaviors:DragAndDropReorderBehavior/>
@@ -84,7 +84,7 @@
             </ItemsControl.ItemTemplate>
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" Margin="0,0,0,16"/>
+                    <StackPanel Orientation="Vertical" Margin="0,16,0,16"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>

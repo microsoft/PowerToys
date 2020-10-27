@@ -10,7 +10,7 @@
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors" xmlns:ui="http://schemas.modernwpf.com/2019"
              d:DesignHeight="450" d:DesignWidth="800" Background="Transparent" Focusable="False">
 
-    <Border BorderBrush="{DynamicResource WindowBorderBrush}"
+    <Border x:Name="WindowBorder" BorderBrush="{DynamicResource WindowBorderBrush}"
                 Margin="12"
                 BorderThickness="1" Background="{DynamicResource PrimaryBackgroundBrush}"
                 CornerRadius="4">
@@ -18,25 +18,27 @@
             <DropShadowEffect BlurRadius="16" Opacity="0.28" ShadowDepth="1" />
         </Border.Effect>
         <Grid>
-        <Image Margin="3" Source="{Binding ZoomArea}" RenderOptions.BitmapScalingMode="NearestNeighbor" Stretch="Fill" Width="{Binding Width, Mode=TwoWay}" Height="{Binding Height, Mode=TwoWay}">
-            <e:Interaction.Behaviors>
-                <behaviors:ResizeBehavior Width="{Binding DesiredWidth}" Height="{Binding DesiredHeight}"/>
-                <behaviors:GridEffectBehavior Effect="{Binding ElementName=gridEffect}" ZoomFactor="{Binding ZoomFactor}"/>
-            </e:Interaction.Behaviors>
-            <Image.Effect>
-                <shaders:GridShaderEffect x:Name="gridEffect"/>
-            </Image.Effect>
-        </Image>
-            <!-- Close button, needs to be made smaller -->
-            <!--<Border HorizontalAlignment="Right"  VerticalAlignment="Top" CornerRadius="0,4,0,4" Background="{DynamicResource PrimaryBackgroundBrush}">
-                <ui:AppBarButton Height="40" Width="40">
-                <ui:AppBarButton.Icon>
-                    <ui:FontIcon
-                                FontFamily="Segoe MDL2 Assets"
-                                Glyph="&#xE10A;" />
-                </ui:AppBarButton.Icon>
-                </ui:AppBarButton>
-            </Border>-->
+            <Image Margin="3" Source="{Binding ZoomArea}" RenderOptions.BitmapScalingMode="NearestNeighbor" Stretch="Fill" Width="{Binding Width, Mode=TwoWay}" Height="{Binding Height, Mode=TwoWay}">
+                <e:Interaction.Behaviors>
+                    <behaviors:ResizeBehavior Width="{Binding DesiredWidth}" Height="{Binding DesiredHeight}"/>
+                    <behaviors:GridEffectBehavior Effect="{Binding ElementName=gridEffect}" ZoomFactor="{Binding ZoomFactor}"/>
+                </e:Interaction.Behaviors>
+                <Image.Effect>
+                    <shaders:GridShaderEffect x:Name="gridEffect"/>
+                </Image.Effect>
+            </Image>
+            <Border HorizontalAlignment="Right"  VerticalAlignment="Top" CornerRadius="0,4,0,4" Background="{DynamicResource PrimaryBackgroundBrush}">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsMouseOver, ElementName=WindowBorder}" Value="False">
+                                <Setter Property="Opacity" Value="0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Button Height="40" Width="40" Content="&#xE10A;" FontFamily="Segoe MDL2 Assets" Background="Transparent"/>
+            </Border>
         </Grid>
     </Border>
 </UserControl>
