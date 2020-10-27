@@ -15,6 +15,7 @@ namespace Wox.Infrastructure.Image
     public class ImageHashGenerator : IImageHashGenerator
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5350:Do Not Use Weak Cryptographic Algorithms", Justification = "Level of protection needed for the image data does not require a security guarantee")]
         public string GetHashFromImage(ImageSource imageSource)
         {
             if (!(imageSource is BitmapSource image))
