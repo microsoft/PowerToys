@@ -132,67 +132,52 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### September 2020 Update
+### October 2020 Update
 
-Our goals for 0.23 release cycle was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. We have a full accessibility pass being done starting end of September to audit all of PowerToys. Our localization efforts now had data flowing both directions as well.
+Our goals for 0.25 release cycle was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. Our first end to end localization pass has been done.  We know it isn't perfect but we are in 17 languages now.
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-#### Highlights from September
+#### Highlights from October 2020
 
-- We shipped [v0.23][github-release-link]! (0.24 Experimental build coming shortly)
+- We shipped [v0.25][github-release-link]
 
 **General**
+- First pass on localization complete.  17 different languages.  We know there will be some rough areas.  Please help us find them so we can correct them.
+- Logging added into the installer
+- Large sums of accessibility issues fixed.
+- Less notifications for installing
+- FxCop work is almost fully wrapped up
 
-- Localization pipeline is flowing from our Github to the loc system and back.  0.25 should be localized now.
-- The EXE installer should be at parity now with the MSI.  Please go to the wiki for [installer args](https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe)
+**Color Picker**
+- Additional color style selections such as 
 
 **FancyZones**
-
-- Fixed bug on not seeing a newly attached screen
-- Fixed spanning across monitors bug
-- Added in default layout for new users, a Priority Grid
-- Added keyboard support to grow / shrink to multiple zones
-- General bug fixes
-
-**PT Run**
-
-- Multiple crash bugs fixed.  Prioritized any users reported along with top hits from Watson reporting
-- Stopped PT Run from interfering with an install
-- Fixed folder bug if it had a # in it (Thanks @jjw24 for the PR!)
-- Fixed a screen flicker for 
-- General bug fixes
-- Allow Command Line args in PowerToys Run (Thanks @@royvou)
+- Multiple bugs fixed
+- Better zone drawing improvements
 
 **Keyboard manager**
+- Fixed terminal input map failure
+- Better app compat
+- Multiple bug fixes
+- Ability to directly disable keys/shortcuts
 
-- Multiple crash bugs fixed.  Prioritized any users reported along with top hits from Watson reporting
-- Fixed multiple accessibility issues.
-- General bug fixes
+**PowerToys Run**
+- expanded environment var searching such as %windr%
+- multiple crash bug fixes
+- Improvements on calculator plugin
+- Directly able to override theming
+- Windows will open to what shell you want
+- Better action key support
+  - `=` for direct calculator
+  - `?` for direct file searching
+  - `.` for direct for applications
+  - `//` for direct URL
 
-**Preview Pane**
+**Dev docs**
+- Added multiple developer related docs.
 
-- Added in Frontmatter and better (but still basic) latex support. 
-
-**Settings**
-
-- Fixed scaling issue for responsive design on Image Resizer
-- Fixed crash on empty color value.
-- Fixed crash for toggling FancyZones on/off
-- Fixed 0x00 NFTS crash for settings
-- Fixed multiple accessibility issues.
-- Layout adjustments (Thanks @niels9001)
-- General bug fixes
-
-**Dev related**
-
-- FxCop is being rolled out across all PowerToys. This should catch a lot of possible leaks.
-- Unified PT Run's log system
-- PT Run's calc plugin now has unit tests (Thanks @P-Storm)
-- Dev setup install script now supports VS preview (Thanks @TobiasSekan)
-- @CaelestisZ, @kameshkotwani, @adriancampos, @RahulDas782 for doc tweaks
-- Thanks @Aaron-Junker, @jay-o-way and @htcfreek for helping triage!
-- Thanks for everyone that filled an issue.  It really does help us prioritize
+I'd like to directly call out @p-storm, @TobiasSekan, @davidegiacometti, @royvou, @gordonwatts and @niels9001 for their continued community support
 
 #### Video / GIF capture functional spec for public review
 
@@ -200,13 +185,13 @@ Deondre Davis created our [functional spec for creating a light weight, video / 
 
 This is for work [post-stabilization of current roadmap work](https://github.com/microsoft/PowerToys/wiki/Roadmap#post-stabilization) and is only the spec for what we are thinking about support.  Just want to set expectations here.
 
-### What is being planned for 0.25
+### What is being planned for 0.27 - November 2020
 
-For [0.25](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F13), we are proactively working on:
+For [0.27](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F14), we are proactively working on:
 
 - Stability
-- Localization
-- Improve interactions with elevated windows and keeping most of the PT utilities non-elevated so we still have a 'shell' like experience
+- Accessibility
+- Video conference mute
 - OOBE work
 
 ### PowerToys roadmap
