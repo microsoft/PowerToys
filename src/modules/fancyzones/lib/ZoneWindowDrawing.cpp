@@ -165,7 +165,7 @@ void ZoneWindowDrawing::Render()
             borderBrush->Release();
         }
 
-        std::wstring idStr = std::to_wstring(drawableRect.id);
+        std::wstring idStr = std::to_wstring(drawableRect.id + 1);
 
         if (textFormat && textBrush)
         {
