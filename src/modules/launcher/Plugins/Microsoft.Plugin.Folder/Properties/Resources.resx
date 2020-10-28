@@ -137,6 +137,7 @@
   </data>
   <data name="Microsoft_plugin_folder_truncation_warning_subtitle" xml:space="preserve">
     <value>Showing {0:N0} of {1:N0} results</value>
+    <comment>Example: showing 25 of 540 results</comment>
   </data>
   <data name="Microsoft_plugin_folder_clipboard_failed" xml:space="preserve">
     <value>Fail to set text in clipboard</value>
