@@ -8,7 +8,8 @@
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
