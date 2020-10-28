@@ -84,9 +84,11 @@ int runner(bool isProcessElevated)
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64
-//Global error handlers to diagnose errors.
-//We prefer this not not show any longer until there's a bug to diagnose.
-//init_global_error_handlers();
+/*
+ * Global error handlers to diagnose errors.
+ * We prefer this not not show any longer until there's a bug to diagnose.
+ * init_global_error_handlers();
+ */
 #endif
     Trace::RegisterProvider();
     start_tray_icon();
@@ -164,8 +166,10 @@ int runner(bool isProcessElevated)
     return result;
 }
 
-// If the PT runner is launched as part of some action and manually by a user, e.g. being activated as a COM server
-// for background toast notification handling, we should execute corresponding code flow instead of the main code flow.
+/*
+ * If the PT runner is launched as part of some action and manually by a user, e.g. being activated as a COM server
+ * for background toast notification handling, we should execute corresponding code flow instead of the main code flow.
+ */
 enum class SpecialMode
 {
     None,
@@ -338,8 +342,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             return 0;
         }
 
-        // Check if the MSI version is running, if not, hold the
-        // mutex to prevent the old MSI versions to start.
+        /*
+         * Check if the MSI version is running, if not, hold the
+         * mutex to prevent the old MSI versions to start.
+         */
         msi_mutex = create_msi_mutex();
         if (!msi_mutex)
         {
@@ -358,8 +364,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
         else
         {
-            // Older MSI versions are not aware of the MSIX mutex, therefore
-            // hold the MSI mutex to prevent an old instance to start.
+            /*
+             * Older MSI versions are not aware of the MSIX mutex, therefore
+             * hold the MSI mutex to prevent an old instance to start.
+             */
         }
     }
     else
@@ -373,9 +381,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             return 0;
         }
 
-        // Check if an instance of the MSIX version is already running.
-        // Note: this check should always be negative since the MSIX version
-        // is holding both mutexes.
+        /*
+         * Check if an instance of the MSIX version is already running.
+         * Note: this check should always be negative since the MSIX version
+         * is holding both mutexes.
+         */
         msix_mutex = create_msix_mutex();
         if (!msix_mutex)
         {
@@ -393,8 +403,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     int result = 0;
     try
     {
-        // Singletons initialization order needs to be preserved, first events and
-        // then modules to guarantee the reverse destruction order.
+        /*
+         * Singletons initialization order needs to be preserved, first events and
+         * then modules to guarantee the reverse destruction order.
+         */
         modules();
 
         auto general_settings = load_general_settings();
