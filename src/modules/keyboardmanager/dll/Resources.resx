@@ -188,6 +188,7 @@
   </data>
   <data name="Type_Button" xml:space="preserve">
     <value>Type</value>
+    <comment>As in type a key</comment>
   </data>
   <data name="TypeKey_Title" xml:space="preserve">
     <value>Press a key on selected keyboard:</value>
@@ -266,9 +267,11 @@
   </data>
   <data name="Key_DropDown_Combobox" xml:space="preserve">
     <value>Key</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="Add_Key_Remap_Button" xml:space="preserve">
     <value>Add Key Remap</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="Add_Shortcut_Button" xml:space="preserve">
     <value>Add Shortcut Remapping</value>
