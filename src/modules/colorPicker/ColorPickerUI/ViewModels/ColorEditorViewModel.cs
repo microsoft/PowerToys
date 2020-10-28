@@ -29,6 +29,11 @@ namespace ColorPicker.ViewModels
         {
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             RemoveColorCommand = new RelayCommand(DeleteSelectedColor);
+            SelectedColorChangedCommand = new RelayCommand((newColor) =>
+            {
+                ColorsHistory.Insert(0, (Color)newColor);
+                SelectedColorIndex = 0;
+            });
             ColorsHistory.CollectionChanged += ColorsHistory_CollectionChanged;
             _userSettings = userSettings;
             SetupAvailableColorRepresentations();
@@ -39,6 +44,8 @@ namespace ColorPicker.ViewModels
         public ICommand OpenColorPickerCommand { get; }
 
         public ICommand RemoveColorCommand { get; }
+
+        public ICommand SelectedColorChangedCommand { get; }
 
         public ObservableCollection<Color> ColorsHistory { get; } = new ObservableCollection<Color>();
 

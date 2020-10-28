@@ -73,41 +73,24 @@
         </Grid>
 
         <ScrollViewer Grid.Column="1" Margin="0,92,0,0">
-        <ItemsControl ItemsSource="{Binding ColorRepresentations}"  AllowDrop="True" >
-            <e:Interaction.Behaviors>
-                <behaviors:DragAndDropReorderBehavior/>
-            </e:Interaction.Behaviors>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" Margin="0,16,0,16"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
+            <ItemsControl ItemsSource="{Binding ColorRepresentations}"  AllowDrop="True" >
+                <e:Interaction.Behaviors>
+                    <behaviors:DragAndDropReorderBehavior/>
+                </e:Interaction.Behaviors>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" Margin="0,16,0,16"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
         </ScrollViewer>
-        
-        <Grid Grid.Column="1" Height="48" Margin="12,44,12,0" VerticalAlignment="Top">
-            <Grid.Effect>
-                <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
-            </Grid.Effect>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="12*"/>
-                <ColumnDefinition Width="12*"/>
-                <ColumnDefinition Width="50*"/>
-                <ColumnDefinition Width="12*"/>
-                <ColumnDefinition Width="12*"/>
-            </Grid.ColumnDefinitions>
-            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" CornerRadius="2,0,0,2" Opacity="0.6" Grid.Column="0"/>
-            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" Grid.Column="1" Opacity="0.8"/>
-            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" Grid.Column="2"/>
-            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" Grid.Column="3" Opacity="0.8"/>
-            <Border Background="{Binding SelectedColor, Converter={StaticResource colorToBrushConverter}}" Grid.Column="4" Opacity="0.6" CornerRadius="0,2,2,0"/>
-        </Grid>
 
+        <controls:ColorPickerControl HorizontalAlignment="Left" Margin="12,44,12,0" SelectedColor="{Binding SelectedColor}" SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}" Grid.Column="1" VerticalAlignment="Top"/>
 
         <Border x:Name="CopiedBorderIndicator" Opacity="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="0" Background="{DynamicResource SystemControlBackgroundAccentBrush}">
             <TextBlock FontSize="16" Foreground="{DynamicResource PrimaryForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" >

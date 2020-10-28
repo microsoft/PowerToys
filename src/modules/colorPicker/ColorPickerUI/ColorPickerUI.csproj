@@ -114,6 +114,10 @@
     <Compile Include="Controls\ColorFormatControl.xaml.cs">
       <DependentUpon>ColorFormatControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ColorPickerControl.xaml.cs">
+      <DependentUpon>ColorPickerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\HSVColor.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ColorToStringConverter.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
@@ -162,6 +166,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ColorFormatControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ColorPickerControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
