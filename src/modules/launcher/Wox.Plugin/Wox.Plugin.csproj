@@ -62,7 +62,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.2.5">
+    <PackageReference Include="Fody" Version="6.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -73,10 +73,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.6.5" />
-    <PackageReference Include="PropertyChanged.Fody" Version="3.2.9">
+    <PackageReference Include="PropertyChanged.Fody" Version="3.2.10">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Runtime" Version="4.3.1" />
