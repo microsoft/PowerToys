@@ -40,8 +40,8 @@
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Some of the File Explorer modules could not be turned off/on as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[有一些檔案總管模組無法依據您的設定註冊/取消註冊。請以系統管理員身分重新啟動 PowerToys，如此變更才會生效。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[無法依據您的設定開啟/關閉某些檔案總管模組。請以系統管理員身分重新啟動 PowerToys，讓變更生效。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
@@ -70,7 +70,7 @@
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Couldn't modify File Explorer modules]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[無法修改檔案總管模組]]></Val>
           </Tgt>
           <Prev Cat="Text">
