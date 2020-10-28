@@ -10,6 +10,7 @@
 #include "util.h"
 #include "Zone.h"
 #include "ZoneSet.h"
+#include "FancyZones.h"
 
 class ZoneWindowDrawing
 {
