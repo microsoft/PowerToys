@@ -1603,6 +1603,9 @@
       <Item ItemId=";PowerLauncher_Theme.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Choose color]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Elija el color.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
