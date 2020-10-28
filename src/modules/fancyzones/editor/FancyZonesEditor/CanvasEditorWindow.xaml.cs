@@ -20,7 +20,7 @@ namespace FancyZonesEditor
 
             KeyUp += CanvasEditorWindow_KeyUp;
 
-            _model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
+            _model = App.Overlay.CurrentDataContext as CanvasLayoutModel;
             _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
 

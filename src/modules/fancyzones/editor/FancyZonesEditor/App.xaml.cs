@@ -46,7 +46,7 @@ namespace FancyZonesEditor
 
         public Settings ZoneSettings { get; }
 
-        public static EditorOverlay Overlay { get; private set; }
+        public static OverlayWindowsManager Overlay { get; private set; }
 
         public App()
         {
@@ -62,7 +62,7 @@ namespace FancyZonesEditor
                 Environment.Exit(0);
             });
 
-            Overlay = new EditorOverlay();
+            Overlay = new OverlayWindowsManager();
 
             Settings settings = ((App)Current).ZoneSettings;
             settings.UpdateSelectedLayoutModel();

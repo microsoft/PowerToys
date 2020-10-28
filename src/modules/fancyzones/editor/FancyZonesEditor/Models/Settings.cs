@@ -828,7 +828,7 @@ namespace FancyZonesEditor
             }
 
             foundModel.IsSelected = true;
-            App.Overlay.DataContext = foundModel;
+            App.Overlay.CurrentDataContext = foundModel;
         }
 
         // implementation of INotifyPropertyChanged

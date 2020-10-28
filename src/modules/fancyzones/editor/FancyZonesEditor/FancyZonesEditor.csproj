@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\..\..\..\Version.props" />
@@ -127,6 +127,7 @@
     <Compile Include="LayoutOverlayWindow.xaml.cs">
       <DependentUpon>LayoutOverlayWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OverlayWindowsManager.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />
@@ -147,9 +148,6 @@
     <Compile Include="Models\GridLayoutModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
     <Compile Include="Models\Settings.cs" />
-    <Compile Include="EditorOverlay.xaml.cs">
-      <DependentUpon>EditorOverlay.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Converters\ModelToVisibilityConverter.xaml.cs" />
     <Compile Include="Native.cs" />
     <Compile Include="RowColInfo.cs" />
@@ -210,10 +208,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="EditorOverlay.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="GridEditorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

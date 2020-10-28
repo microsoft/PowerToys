@@ -117,19 +117,19 @@ namespace FancyZonesEditor
 
         private void Select(LayoutModel newSelection)
         {
-            if (EditorOverlay.Current.DataContext is LayoutModel currentSelection)
+            if (App.Overlay.CurrentDataContext is LayoutModel currentSelection)
             {
                 currentSelection.IsSelected = false;
             }
 
             newSelection.IsSelected = true;
-            EditorOverlay.Current.DataContext = newSelection;
+            App.Overlay.CurrentDataContext = newSelection;
         }
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
-            EditorOverlay mainEditor = EditorOverlay.Current;
-            if (!(mainEditor.DataContext is LayoutModel model))
+            var mainEditor = App.Overlay;
+            if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
                 return;
             }
@@ -145,7 +145,7 @@ namespace FancyZonesEditor
                 {
                     // make a copy
                     model = model.Clone();
-                    mainEditor.DataContext = model;
+                    mainEditor.CurrentDataContext = model;
                 }
 
                 int maxCustomIndex = 0;
@@ -181,7 +181,7 @@ namespace FancyZonesEditor
                 window = new CanvasEditorWindow();
             }
 
-            window.Owner = EditorOverlay.Current.LayoutWindow;
+            window.Owner = App.Overlay.CurrentLayoutWindow;
             window.DataContext = model;
             window.Show();
 
@@ -201,9 +201,9 @@ namespace FancyZonesEditor
 
         private void Apply()
         {
-            EditorOverlay mainEditor = EditorOverlay.Current;
+            var mainEditor = App.Overlay;
 
-            if (mainEditor.DataContext is LayoutModel model)
+            if (mainEditor.CurrentDataContext is LayoutModel model)
             {
                 // If custom canvas layout has been scaled, persisting is needed
                 if (model is CanvasLayoutModel && (model as CanvasLayoutModel).IsScaled)
@@ -220,7 +220,7 @@ namespace FancyZonesEditor
         private void OnClosing(object sender, EventArgs e)
         {
             LayoutModel.SerializeDeletedCustomZoneSets();
-            EditorOverlay.Current.CloseLayoutWindow();
+            App.Overlay.CloseLayoutWindow();
         }
 
         private void OnInitialized(object sender, EventArgs e)
