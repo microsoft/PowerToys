@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
+using System.Linq;
 
 namespace Microsoft.Plugin.Indexer.DriveDetection
 {
@@ -12,7 +13,8 @@ namespace Microsoft.Plugin.Indexer.DriveDetection
 
         private static int GetDriveInfo()
         {
-            return DriveInfo.GetDrives().Length;
+            // To ignore removable type drives, CD ROMS, no root partitions which may not be formatted and only return the fixed drives in the system.
+            return DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed).Count();
         }
 
         public int GetDriveCount() => DriveCount;
