@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+using System.Windows.Media;
 
 namespace FancyZonesEditor
 {
@@ -25,8 +26,7 @@ namespace FancyZonesEditor
 
         private void Window_DpiChanged(object sender, DpiChangedEventArgs e)
         {
-            Width = Width * e.OldDpi.DpiScaleX / e.NewDpi.DpiScaleX;
-            Height = Height * e.OldDpi.DpiScaleY / e.NewDpi.DpiScaleY;
+            VisualTreeHelper.SetRootDpi(this, e.NewDpi);
         }
     }
 }
