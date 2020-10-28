@@ -137,10 +137,11 @@
   </data>
   <data name="reportWindow_file_bug" xml:space="preserve">
     <value>Please file a bug in the</value>
-    <comment>What follows is a URL link</comment>
+    <comment>reportWindow_file_bug + reportWindow_github_repo string</comment>
   </data>
   <data name="reportWindow_github_repo" xml:space="preserve">
     <value>PowerToys GitHub repository</value>
+    <comment>reportWindow_file_bug + reportWindow_github_repo string</comment>
   </data>
   <data name="reportWindow_upload_log" xml:space="preserve">
     <value>Make sure to upload the log file and to include the error message.</value>
