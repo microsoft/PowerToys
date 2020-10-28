@@ -131,6 +131,7 @@
   </data>
   <data name="RegisterClassFailed_ErrorMessage" xml:space="preserve">
     <value>Windows registration failed!</value>
+    <comment>Windows as in the OS</comment>
   </data>
   <data name="RegisterClassFailed_ErrorTitle" xml:space="preserve">
     <value>Error</value>
