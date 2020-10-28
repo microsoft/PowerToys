@@ -137,6 +137,7 @@
   </data>
   <data name="reportWindow_file_bug" xml:space="preserve">
     <value>Please file a bug in the</value>
+    <comment>What follows is a URL link</comment>
   </data>
   <data name="reportWindow_github_repo" xml:space="preserve">
     <value>PowerToys GitHub repository</value>
@@ -181,7 +182,7 @@
     <value>Title</value>
   </data>
   <data name="deseralization_error_title" xml:space="preserve">
-    <value>Powertoys Run deserialization error</value>
+    <value>PowerToys Run deserialization error</value>
   </data>
   <data name="deseralization_error_message" xml:space="preserve">
     <value>Settings will be reset to default and program will continue to function.</value>
