@@ -77,10 +77,13 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     }
 
     // Create a Direct2D render target
+    // We should always use the DPI value of 96 since we're running in DPI aware mode
     GetD2DFactory()->CreateHwndRenderTarget(
         D2D1::RenderTargetProperties(
             D2D1_RENDER_TARGET_TYPE_DEFAULT,
-            D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED)),
+            D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+            96.f,
+            96.f),
         D2D1::HwndRenderTargetProperties(
             window,
             D2D1::SizeU(
