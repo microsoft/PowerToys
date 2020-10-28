@@ -171,6 +171,8 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
   - `?` for direct file searching
   - `.` for direct for applications
   - `//` for direct URL
+  - `<` for running processes
+  - `>` for shell processes
 
 **Dev docs**
 - Added multiple developer related docs.
