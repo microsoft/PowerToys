@@ -5,7 +5,6 @@
 using System;
 using System.Linq;
 using System.Windows;
-using MahApps.Metro.Theming;
 using ManagedCommon;
 using Microsoft.Win32;
 
@@ -40,27 +39,27 @@ namespace Wox.Plugin
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     highContrastOneThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     highContrastTwoThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     highContrastBlackThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     highContrastWhiteThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     lightThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     darkThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
 
             ResetTheme();
             ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ControlzEx.Theming.ThemeSyncMode.SyncAll;
