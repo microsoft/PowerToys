@@ -88,16 +88,13 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 ## Installing and running Microsoft PowerToys
 
 #### Requirements
+
 - Windows 10 1803 (build 17134) or later.
 - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
-#### 0.18 users for updating via notifications
-
-- We adjusted how upgrading works in 0.20.  In 0.19 we accounted for this upcoming change but if you are going from 0.18 to 0.21, please directly use the installer file.
-
 ### Via GitHub with EXE [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.23.2-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.25.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -111,6 +108,8 @@ WinGet install powertoys
 ### Experiential PowerToys utility with Video conference muting
 
 Install the [pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from 0.23 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
+
+**Note:** We'll have 0.26 Experiemental out in the first week of November 2020.
 
 ### Other install methods
 
@@ -132,16 +131,14 @@ We currently support the matrix below.
 
 ### October 2020 Update
 
-Our goals for 0.25 release cycle was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. Our first end to end localization pass has been done.  We know it isn't perfect but we are in 17 languages now.
+Our goals for [0.25 release cycle][github-release-link] was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. Our first end to end localization pass has been done.  We know it isn't perfect but we are in 17 languages now. If you find an issue, please file a [localization bug][loc-bug].
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
 #### Highlights from October 2020
 
-- We shipped [v0.25][github-release-link]
-
 **General**
-- First pass on localization complete.  17 different languages.  We know there will be some rough areas.  Please help us find them so we can correct them.
+- First pass on localization complete.  17 different languages.  We know there will be some rough areas, please [make us aware so we can correct them][loc-bug].
 - Logging added into the installer
 - Large sums of accessibility issues fixed.
 - Less notifications for installing
@@ -177,7 +174,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 **Dev docs**
 - Added multiple developer related docs.
 
-I'd like to directly call out @p-storm, @TobiasSekan, @davidegiacometti, @royvou, @gordonwatts and @niels9001 for their continued community support
+I'd like to directly call out [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@davidegiacometti](https://github.com/davidegiacometti), [@royvou](https://github.com/royvou), [@gordonwatts](https://github.com/gordonwatts), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@niels9001](https://github.com/niels9001) for their continued community support and helping directly make PowerToys a better piece of software.
 
 #### Video / GIF capture functional spec for public review
 
@@ -231,3 +228,4 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
+[loc-bug]: https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=translation_issue.md&title=
