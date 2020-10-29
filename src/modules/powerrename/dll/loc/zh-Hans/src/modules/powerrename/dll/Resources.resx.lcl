@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[使用“搜索和替换”或正则表达式进行高级批量重命名操作的 Windows Shell 扩展]]></Val>
+            <Val><![CDATA[使用“搜索和替换”或正则表达式进行高级批量重命名操作的 Windows Shell 扩展。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
