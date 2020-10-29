@@ -225,7 +225,7 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 |1 | Populate the selection menu with recording options: Record, Cancel ([Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording)). | P0 |
 |2 | Keep the highlighted border around the selected recording region but remove the overlay that was created when the selection tool was activated. | P0 |
 |3 | Allow the user to interact with the system as needed to prepare for the initiation of the recording. | P0 |
-|4 | Allow the user to manually modify the recording region prior to the initiation of recording via click-and-drag functionality on the highlighted border like that shown in the UI mock-up depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-bounding-box-region-prior-to-recording). | P0 |
+|4 | Allow the user to manually modify the recording region prior to the initiation of recording via click-and-drag functionality on the highlighted border like that shown in the UI mock-up depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-bounding-box-region-prior-to-recording). | P2 |
 |5 | When ‘Record’ is selected, lock the highlighted border so that it can no longer be adjusted. | P0 |
 |6 | When ‘Record’ is selected, initiate the recording. | P0 |
 |7 | If the 'Pre-Recording Countdown' option in the settings menu ([figure 3.2.8](#figure-328---mock-up-of-video-gif-capture-powertoys-settings)) is non-zero, precede the recording with an overlay that decrements from the countdown option's value to zero. | P2 |
@@ -242,17 +242,18 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 |1 | Load the recording from [section 3.1.7](#317-recording) in an editor window as described in [Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing). | P0 |
 |2 | The loaded recording should add a solid border around the captured media (customizable from the settings menu) | P1 |
 |2 | A scrub bar should sit below the loaded media to trim the recording as shown in [Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing). | P0 |
-|3 | On the right-hand menu, display a selection menu for either Video or GIF. | P0 |
+|3 | On the right-hand menu, display a selection menu for either GIF or video. | P0 |
 |4 | The settings icon should display the PowerToys settings menu for VGC when clicked ([Figure 3.2.8](#figure-328---mock-up-of-video-gif-capture-powertoys-settings)). | P0 |
-|5 | Under the ‘Video’ menu ([Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing)), display options to: | P0 |
-|6 | - Save the video | P0 |
+|5 | Under the ‘GIF’ menu ([Figure 3.2.7](#figure-327---mock-up-of-video-gif-capture-gif-editing)), display options to: | P0 |
+|6 | - Save the GIF | P0 |
 |7 | - Adjust resolution quality | P1 |
-|8 | - Enable/disable system audio | P2 |
-|9 | Under the ‘GIF’ menu ([Figure 3.2.7](#figure-327---mock-up-of-video-gif-capture-gif-editing)), display options to: | P1 |
-|10 | - Save the GIF | P1 |
-|11 | - Adjust resolution quality | P2 |
-|12 | - Set frames-per-second | P2 |
-|13 | - Copy the GIF to the clipboard.| P3 |
+|8 | - Set frames-per-second | P1 |
+|9 | - Copy the GIF to the clipboard.| P3 |
+|10 | Under the ‘Video’ menu ([Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing)), display options to: | P1 |
+|11 | - Save the video | P1 |
+|12 | - Adjust resolution quality | P2 |
+|13 | - Enable/disable system audio | P3 |
+
 
 #### 3.1.9. Settings Menu
 
@@ -347,10 +348,10 @@ We plan to develop Video/GIF Capture in phases, gradually adding to the function
 
 |Release No. | Expectations |
 | - | - |
-|1 | All P0 requirements discussed in [Section 3](#3-requirements). Note that for this initial release we don't include GIF capture functionality.|
-|2 | P1 requirements for supporting GIF capture functionality in [Section 3.1.8](#318-editing). |
+|1 | All P0 requirements discussed in [Section 3](#3-requirements). Note that for this initial release we don't include video capture functionality (just GIF).|
+|2 | P1 requirements for supporting video capture functionality in [Section 3.1.8](#318-editing). |
 |3 | P1 requirements for region selection, recording and editing [Sections 3.1.2 - 3.1.8](#312-region-capture-dialog--mode-selection). |
 |4 | P1 requirements for settings menu [Section 3.1.9](#319-settings-menu) |
-|5 | P2 requirements for region selection, recording and editing [Sections 3.1.2 - 3.1.8](#312-region-capture-dialog--mode-selection). Note that this release primarily adds exact coordinate selection mode. |
+|5 | P2 requirements for region selection, recording and editing [Sections 3.1.2 - 3.1.8](#312-region-capture-dialog--mode-selection). Note that this release primarily adds exact coordinate selection mode and the ability to adjust the selected region during the pre-recording stage. |
 |6 | P2 requirements for settings menu [Section 3.1.9](#319-settings-menu). |
 |7 | All P3 requirements discussed in [Section 3](#3-requirements) along with any miscellaneous work items that arise. |
