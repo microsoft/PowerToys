@@ -25,6 +25,7 @@ Non-goals:
 Here are definitions of words and acronyms found throughout this document to ensure clarity:
 
 * **VGC:** Video GIF Capture  –  The tentative name for this PowerToy.
+* **Bounding Box:** The visual region on the screen which encases the desired content to be recorded. Typically designated by a rectangular border created by the capturing software that sits on the screen's foreground throughout the entirety of recording.
 
 ### 1.4. Narrative / Scenarios
 
@@ -46,6 +47,8 @@ Outcome from Using VGC for IT Guidance: A successful VGC would enable IT & admin
 
 ### 1.5. Existing Landscape
 
+Below we discuss some of the current screen recording softwares in relation to the proposed Video/GIF Capture PowerToy. While this is not an exhaustive list of all technologies in this space, we believe the applications listed provide a good overview of the range of options available to users with respect to functionality, performance, and price.
+
 | Category | Xbox Game Bar | ScreenToGIF | Camtasia | SnagIt | Snip and Sketch | Video GIF Capture |
 | -----    | -----         | -----       |  -----   | -----  | -----           | -----             |
 | Free                                       |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
@@ -55,14 +58,15 @@ Outcome from Using VGC for IT Guidance: A successful VGC would enable IT & admin
 | Full Screen Capture                        |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Explicit Recording Dimensions Capture      |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Trim Recording                             |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
-| Add Text Overlay to Recording              |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | System Audio                               |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
-| Optional Cursor Capture                    |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Click Capture                              |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| Cursor Capture                             |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Keystroke Capture                          |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
+| User Text Overlay                          |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Save to MP4                                |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Save to GIF                                |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Copy Captured Media to Clipboard           |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |
-| Microphone Audio                           |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
+| Microphone Audio                           |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |
 | Webcam Capture                             |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
 | Frame by Frame Editing                     |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
 | Edit Out Middle Sections from Recording    |![N](./images/GIFSpec/N.png "No") |![Y](./images/GIFSpec/Y.png "Yes") |![Y](./images/GIFSpec/Y.png "Yes") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |![N](./images/GIFSpec/N.png "No") |
@@ -154,87 +158,117 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 |No. | Requirement | Pri|
 | - | - | - |
 |1 | VGC launched via OS-Level key shortcut: Win + Shift + R.| P0 |
-|2 | VGC launched alternatively through PowerToys settings menu launch button. | P0 |
+|2 | VGC launched alternatively through PowerToys settings menu launch button. | P2 |
 |3 | On launch, overlay an intuitive action menu for region capture selection. | P0 |
 |4 | Once a region is selected, transition the displayed action menu to populate with recording options. | P0 |
 |5 | Once a recording is stopped, load the captured media in an editing window. | P0 |
 |6 | Once editing is completed, save recording to desired format. | P0 |
 |7 | At any point, the user should be able to close VGC, returning machine to original state. | P0 |
 
-#### 3.1.2. Region Capture Selection Capture
+#### 3.1.2. Region Capture Dialog / Mode Selection
 
 |No. | Requirement | Pri
 | - | - | - |
-|1 | On launch, display region capture selection options: Rectangular Selection, Window Selection, Full Screen Selection, Exact Coordinates Selection & Cancel. Styling should resemble that of the Snip and Sketch tool ([Figure 1.5.11](#figure-1511---snip-and-sketch-selection-interface)) and possess the options layout of the Selection Menu Mock-Up ([Figure 3.2.1](#figure-321---mock-up-of-video-gif-capture-selection-menu)). | P0 |
-|2 | Dim the background so the screen capture menu is in focus. | P0 |
-|3 | Default mode is Rectangular Selection. | P0 |
-|4 | Transition to the other selection modes via clicking the option’s corresponding button in the menu. | P0 |
-|5 | Alternatively transition to the other selection modes via the Tab key. | P0 |
-|6 | To cancel selection mode and close the VGC app, click the cancel button or press the OS-Level Key Shortcut: Win + Shift + R. | P0 |
-|7 | Alternatively cancel selection mode and close the VGC app via pressing the ESC key. | P0 |
-|8 | Once a region has been selected. Transition the menu interface to populate with options for recording as illustrated in [Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording). | P0 |
+|1 | On launch, display the region capture selection options listed below as described in the Selection Menu Mock-Up ([Figure 3.2.1](#figure-321---mock-up-of-video-gif-capture-selection-menu)): | P0 |
+|2 | - Rectangular Selection | P0 | 
+|3 | - Window Selection | P0 |
+|4 | - Full Screen Selection | P0 |
+|5 | - Exact Coordinates Selection | P2 |
+|6 | - Cancel | P0 |
+|7 | Dim the background so the screen capture menu is in focus. | P1 |
+|8 | Default mode is Rectangular Selection. | P2 |
+|9 | Transition to the other selection modes via clicking the option’s corresponding button in the menu. | P0 |
+|10 | Alternatively transition to the other selection modes via the Tab key. | P2 |
+|11 | Cancel selection mode and close the VGC app by selecting the 'Cancel' option. | P0 |
+|12 | Alternatively cancel selection mode and close the VGC app by pressing the ESC key. | P1 |
+|13 | Once a region has been selected. Transition the menu interface to populate with options for recording as illustrated in [Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording). | P0 |
 
-#### 3.1.3. Rectangular Selection
+#### 3.1.3. Region Capture Type: Rectangular Selection
 
 |No. | Requirement | Pri
 | - | - | - |
-|1 | In this mode, click and drag cursor over the desired region, displaying a highlighted border for visual confirmation like that of Camtasia’s bounding box in [Figure 1.5.8](#figure-158---camtasias-recording-interface). | P0 |
+|1 | In this mode, click and drag cursor over the desired region, displaying a highlighted border for visual confirmation like that shown in the UI mock-up depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-bounding-box-region-prior-to-recording). | P0 |
 |2 | Transition the selection menu to populate with recording options ([Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording)). | P0 |
 
-#### 3.1.4. Window/Application Selection
+#### 3.1.4. Region Capture Type: Window/Application Selection
 
 |No. | Requirement | Pri
 | - | - | - |
 |1 | In this mode, move the cursor across the screen, highlighting whatever window the cursor is currently hovering over. | P0 |
-|2 | Clicking on desired window causes it to come in focus, displaying a highlighted border for visual confirmation like that of Camtasia’s bounding box in [Figure 1.5.8](#figure-158---camtasias-recording-interface). | P0 |
-|3 | Transition the selection menu to populate with recording options ([Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording)). | P0 |
+|2 | Clicking on desired window causes it to come in focus, displaying a highlighted border for visual confirmation like that shown in the UI mock-up depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-bounding-box-region-prior-to-recording). | P0 |
+|3 | After the window comes into focus, dont
+|4 | Transition the selection menu to populate with recording options ([Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording)). | P0 |
 
-#### 3.1.5. Full Screen Selection
+#### 3.1.5. Region Capture Type: Full Screen Selection
 
 |No. | Requirement | Pri
 | - | - | - |
 |1 | In this mode, simply click the screen to confirm the recording selection. | P0 |
-|2 | In the case of multi-monitor displays. The screen that the cursor is currently located when clicking will be captured, displaying visual confirmation around the perimeter of the screen like that of Camtasia’s bounding box in [Figure 1.5.8](#figure-158---camtasias-recording-interface). | P0 |
+|2 | In the case of multi-monitor displays. The screen that the cursor is currently located when clicking will be captured, displaying visual confirmation around the perimeter of the screen like that shown in the UI mock-up depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-bounding-box-region-prior-to-recording). | P1 |
 |3 | Transition the selection menu to populate with recording options ([Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording)). | P0 |
 
-#### 3.1.6. Exact Coordinates Selection
+#### 3.1.6. Region Capture Type: Exact Coordinates Selection
 
 |No. | Requirement | Pri
 | - | - | - |
-|1 | In this mode, an additional drop-down panel from the selection menu should appear that displays the inputs: X, Y, Height, Width, and Confirm ([Figure 3.2.2](#figure-322---mock-up-of-video-gif-capture-expanded-selection-menu-for-exact-coordinate-selection)). | P0 |
-|2 | A highlighted rectangular border will be produced on the screen, of dimensions “Height” x “Width”, with the top-left corner of the border located at coordinate (X, Y) on the screen. Visualization equivalent to Camtasia’s bounding box in [Figure 1.5.8](#figure-158---camtasias-recording-interface). | P0 |
-|3 | The inputs can be adjusted textually via their corresponding text fields in the drop-down. | P0 |
-|4 | The inputs can also be adjusted manually via click-and-dragging the displayed tooltips along the highlighted border. | P0 |
-|5 | Dragging the tooltips located on the border’s corners will preserve the region’s current aspect-ratio while adjusting its size. | P0 |
-|6 | Selecting the ‘Confirm’ button from the drop-down menu causes the highlighted border to become locked in as the selection menu transitions to populate with recording options. | P0 |
+|1 | In this mode, an additional drop-down panel from the selection menu should appear that displays the inputs: X, Y, Height, Width, and Confirm ([Figure 3.2.2](#figure-322---mock-up-of-video-gif-capture-expanded-selection-menu-for-exact-coordinate-selection)). | P2 |
+|2 | A highlighted rectangular border will be produced on the screen, of dimensions “Height” x “Width”, with the top-left corner of the border located at coordinate (X, Y) on the screen. Visualization equivalent to that shown the UI mock-up depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-bounding-box-region-prior-to-recording). | P2 |
+|3 | The inputs can be adjusted textually via their corresponding text fields in the drop-down. | P2 |
+|4 | The inputs can also be adjusted manually via click-and-dragging the displayed tooltips along the highlighted border. | P2 |
+|5 | Dragging the tooltips located on the border’s corners will preserve the region’s current aspect-ratio while adjusting its size. | P2 |
+|6 | Selecting the ‘Confirm’ button from the drop-down menu causes the highlighted border to become locked in as the selection menu transitions to populate with recording options. | P2 |
 
 #### 3.1.7. Recording
 
 |No. | Requirement | Pri
 | - | - | - |
 |1 | Populate the selection menu with recording options: Record, Cancel ([Figure 3.2.3](#figure-323---mock-up-of-video-gif-capture-recording-interface-prior-to-recording)). | P0 |
-|2 | Keep the highlighted border around the selected recording region but remove the dimmed background effect that was created when the selection tool was activated. | P0 |
+|2 | Keep the highlighted border around the selected recording region but remove the overlay that was created when the selection tool was activated. | P0 |
 |3 | Allow the user to interact with the system as needed to prepare for the initiation of the recording. | P0 |
-|4 | Allow the user to manually modify the recording region prior to the initiation of recording via click-and-drag functionality on the highlighted border like Camtasia’s bounding box in [Figure 1.5.8](#figure-158---camtasias-recording-interface). | P0 |
-|5 | When ‘Play’ is selected, lock the highlighted border so that it can no longer be adjusted. | P0 |
-|6 | When ‘Play’ is selected, overlay the screen with a visual count-down, immediately followed by the initiation of the recording. | P0 |
-|7 |Alternatively start recording by pressing the OS level short-cut: Win + Shift + R. | P0 |
-|8 | When recording begins, transition the recording menu to the active state as depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-recording-interface-during-recording). | P0 |
-|9 | While the recording is active, the user is free to interact with the system as desired. | P0 |
-|10| When the user selects the ‘Stop’ button, the recording is ended and loaded into an editor window like that depicted in [Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-video-editing). | P0 |
-|11| Alternatively stop the recording and load it into an editor window by pressing the OS level short-cut: Win + Shift + R at any time while recording. | P0 |
+|4 | Allow the user to manually modify the recording region prior to the initiation of recording via click-and-drag functionality on the highlighted border like that shown in the UI mock-up depicted in [Figure 3.2.4](#figure-324---mock-up-of-video-gif-capture-bounding-box-region-prior-to-recording). | P0 |
+|5 | When ‘Record’ is selected, lock the highlighted border so that it can no longer be adjusted. | P0 |
+|6 | When ‘Record’ is selected, initiate the recording. | P0 |
+|7 | If the 'Pre-Recording Countdown' option in the settings menu ([figure 3.2.8](#figure-328---mock-up-of-video-gif-capture-powertoys-settings)) is non-zero, precede the recording with an overlay that decrements from the countdown option's value to zero. | P2 |
+|8 | Alternatively start recording by pressing the OS level short-cut: Win + Shift + R. | P1 |
+|9 | When recording begins, transition the recording menu to the active state as depicted in [Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-recording-interface-during-recording). | P0 |
+|10 | While the recording is active, the user is free to interact with the system as desired. | P0 |
+|11| When the user selects the ‘Stop’ button, the recording is ended and loaded into an editor window like that depicted in [Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing). | P0 |
+|12| Alternatively stop the recording and load it into an editor window by pressing the OS level short-cut: Win + Shift + R at any time while recording. | P0 |
 
 #### 3.1.8. Editing
 
 |No. | Requirement | Pri
 | - | - | - |
-|1 | Load the recording from [section 3.1.7](#317-recording) in an editor window as described in [Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-video-editing). | P0 |
-|2 | A scrub bar should be loaded to trim the recording. Scrubber UI should resemble that of the Photos app in [Figure 1.5.4](#figure-154--trimming-video-via-xbox-game-bar-note-that-the-editing-process-takes-the-user-through-file-explorer-movies--tv-and-photos-before-accessing-the-trimming-functionality). | P0 |
+|1 | Load the recording from [section 3.1.7](#317-recording) in an editor window as described in [Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing). | P0 |
+|2 | The loaded recording should add a solid border around the captured media (customizable from the settings menu) | P1 |
+|2 | A scrub bar should sit below the loaded media to trim the recording as shown in [Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing). | P0 |
 |3 | On the right-hand menu, display a selection menu for either Video or GIF. | P0 |
-|4 | Under the ‘Video’ menu, display options to adjust resolution quality, enable/disable system audio, and save the video ([Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-video-editing)). | P0 |
-|5 | Under the ‘GIF’ menu, display options to adjust the resolution, frames-per-second, and save the GIF ([Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-gif-editing)). | P0 |
-|6 | ‘GIF’ menu should allow the user to save the GIF to the clipboard.| P0 |
-|7 | The settings icon should display the PowerToys settings menu for VGC when clicked ([Figure 3.2.7](#figure-327---mock-up-of-video-gif-capture-powertoys-settings)). | P0 |
+|4 | The settings icon should display the PowerToys settings menu for VGC when clicked ([Figure 3.2.8](#figure-328---mock-up-of-video-gif-capture-powertoys-settings)). | P0 |
+|5 | Under the ‘Video’ menu ([Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing)), display options to: | P0 |
+|6 | - Save the video | P0 |
+|7 | - Adjust resolution quality | P1 |
+|8 | - Enable/disable system audio | P2 |
+|9 | Under the ‘GIF’ menu ([Figure 3.2.7](#figure-327---mock-up-of-video-gif-capture-gif-editing)), display options to: | P1 |
+|10 | - Save the GIF | P1 |
+|11 | - Adjust resolution quality | P2 |
+|12 | - Set frames-per-second | P2 |
+|13 | - Copy the GIF to the clipboard.| P3 |
+
+#### 3.1.9. Settings Menu
+
+|No. | Requirement | Pri
+| - | - | - |
+|1 | A section for the Video/GIF Capture PowerToy should be available in the PowerToys Settings Menu [Figure 3.2.8](#figure-328---mock-up-of-video-gif-capture-powertoys-settings) with the following options: | P0 |
+|2 | - Enable/Disable Video/GIF Capture | P0 |
+|3 | - Customize the hot keys to launch VGC | P1 |
+|4 | - Select the default mode for recording region selection | P1 |
+|5 | - Pre-recording countdown time | P1 |
+|6 | - Customize the color/thickness of the border that surrounds the recording region | P1 |
+|7 | - Enable/Disable the inclusion of a solid border around the recorded media | P1 |
+|8 | - Launch VGC from the settings menu | P1 |
+|9 | - Enable/Disable Click Capture | P2 |
+|10 | - Enable/Disable Mouse Capture | P2 |
+|11 | - Enable/Disable keystroke Capture | P3 |
 
 ### 3.2. Design Mock-Ups
 
@@ -246,23 +280,27 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 
 ![SelectionMenu2](./images/GIFSpec/VGCExpanded.png "Video GIF Capture expanded selection menu")
 
-###### *Figure 3.2.3 - Mock up of Video GIF Capture recording interface prior to recording*
+###### *Figure 3.2.3 - Mock up of Video GIF Capture recording UI prior to recording*
 
 ![RecordingMenu1](./images/GIFSpec/VGCRecordPre.png "Video GIF Capture pre-recording menu")
 
-###### *Figure 3.2.4 - Mock up of Video GIF Capture recording interface during recording*
+###### *Figure 3.2.4 - Mock up of Video GIF Capture bounding box region prior to recording*
+
+![RecordingBB](./images/GIFSpec/PreRecordingUI.png "Video GIF Capture post-recording menu")
+
+###### *Figure 3.2.5 - Mock up of Video GIF Capture recording interface during recording*
 
 ![RecordingMenu2](./images/GIFSpec/VGCRecordPost.png "Video GIF Capture post-recording menu")
 
-###### *Figure 3.2.5 - Mock up of Video GIF Capture video editing*
+###### *Figure 3.2.6 - Mock up of Video GIF Capture video editing*
 
 ![EditorVideo](./images/GIFSpec/EditorMenuVideo.png "Video GIF Capture video editing window")
 
-###### *Figure 3.2.6 - Mock up of Video GIF Capture GIF editing*
+###### *Figure 3.2.7 - Mock up of Video GIF Capture GIF editing*
 
 ![EditorGIF](./images/GIFSpec/EditorMenuGIF.png "Video GIF Capture GIF editing window")
 
-###### *Figure 3.2.7 - Mock up of Video GIF Capture PowerToys settings*
+###### *Figure 3.2.8 - Mock up of Video GIF Capture PowerToys settings*
 
 ![SettingMenu](./images/GIFSpec/VGCSettings.png "Video GIF Capture PowerToys settings")
 
@@ -302,3 +340,17 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 * Depending on implementation, Photos app base code for editor trimming
 * Depending on implementation, ScreenToGIF as possible OSS base partner
 * WinUI 3
+
+## 6. Release Milestones
+
+We plan to develop Video/GIF Capture in phases, gradually adding to the functionality as we complete the feature set described in this spec with each release. Below we list our tentative expectations for each major release of VGC.
+
+|Release No. | Expectations |
+| - | - |
+|1 | All P0 requirements discussed in [Section 3](#3-requirements). Note that for this initial release we don't include GIF capture functionality.|
+|2 | P1 requirements for supporting GIF capture functionality in [Section 3.1.8](#318-editing). |
+|3 | P1 requirements for region selection, recording and editing [Sections 3.1.2 - 3.1.8](#312-region-capture-dialog--mode-selection). |
+|4 | P1 requirements for settings menu [Section 3.1.9](#319-settings-menu) |
+|5 | P2 requirements for region selection, recording and editing [Sections 3.1.2 - 3.1.8](#312-region-capture-dialog--mode-selection). Note that this release primarily adds exact coordinate selection mode. |
+|6 | P2 requirements for settings menu [Section 3.1.9](#319-settings-menu) |
+|7 | All P3 requirements discussed in [Section 3](#3-requirements) along with any miscellaneous work items that arise. |
