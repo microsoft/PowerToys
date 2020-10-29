@@ -20,5 +20,7 @@ namespace ColorPicker.Settings
         ObservableCollection<string> ColorHistory { get; }
 
         SettingItem<int> ColorHistoryLimit { get; }
+
+        ObservableCollection<string> VisibleColorFormats { get; }
     }
 }

@@ -72,14 +72,15 @@
             </ui:ListView>
         </Grid>
 
-        <ScrollViewer Grid.Column="1" Margin="0,92,0,0">
+        <ScrollViewer Grid.Column="1" Margin="0,90,0,0">
             <ItemsControl ItemsSource="{Binding ColorRepresentations}"  AllowDrop="True" >
-                <e:Interaction.Behaviors>
+                <!--<e:Interaction.Behaviors>
                     <behaviors:DragAndDropReorderBehavior/>
-                </e:Interaction.Behaviors>
+                </e:Interaction.Behaviors>-->
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"/>
+                        <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
+                                                     HideCommand="{Binding ElementName=colorEditorControl, Path=DataContext.HideColorFormatCommand}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
                 <ItemsControl.ItemsPanel>
@@ -90,6 +91,13 @@
             </ItemsControl>
         </ScrollViewer>
 
+        <ToggleButton Content="&#xE710;" FontFamily="Segoe MDL2 Assets" Width="46" Height="32"  Background="Transparent" ToolTip="Add Color Format"  Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,10,0"  x:Name="toggleButton" IsChecked="False"/>
+        <Popup IsOpen="{Binding ElementName=toggleButton, Path=IsChecked}" StaysOpen="False" Placement="Bottom" PlacementTarget="{Binding ElementName=toggleButton}" AllowsTransparency="True">
+            <Border Background="Black">
+                <ListBox ItemsSource="{Binding AvailableColorFormats}" SelectedItem="{Binding SelectedColorFormat}"/>
+            </Border>
+        </Popup>
+        
         <controls:ColorPickerControl HorizontalAlignment="Left" Margin="12,44,12,0" SelectedColor="{Binding SelectedColor}" SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}" Grid.Column="1" VerticalAlignment="Top"/>
 
         <Border x:Name="CopiedBorderIndicator" Opacity="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="0" Background="{DynamicResource SystemControlBackgroundAccentBrush}">

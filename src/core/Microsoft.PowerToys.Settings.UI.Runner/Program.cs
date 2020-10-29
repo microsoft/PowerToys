@@ -18,9 +18,6 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         // Quantity of arguments
         private const int ArgumentsQty = 5;
 
-        // Create an instance of the  IPC wrapper.
-        private static TwoWayPipeMessageIPCManaged ipcmanager;
-
         public static bool IsElevated { get; set; }
 
         public static bool IsUserAnAdmin { get; set; }
@@ -36,62 +33,12 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             {
                 App app = new App();
                 app.InitializeComponent();
-
-                if (args.Length >= ArgumentsQty)
-                {
-                    int.TryParse(args[2], out int powerToysPID);
-                    PowerToysPID = powerToysPID;
-
-                    if (args[4] == "true")
-                    {
-                        IsElevated = true;
-                    }
-                    else
-                    {
-                        IsElevated = false;
-                    }
-
-                    if (args[5] == "true")
-                    {
-                        IsUserAnAdmin = true;
-                    }
-                    else
-                    {
-                        IsUserAnAdmin = false;
-                    }
-
-                    RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
-                    {
-                        Environment.Exit(0);
-                    });
-
-                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], (string message) =>
-                    {
-                        if (IPCMessageReceivedCallback != null && message.Length > 0)
-                        {
-                            Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
-                            {
-                                IPCMessageReceivedCallback(message);
-                            }));
-                        }
-                    });
-                    ipcmanager.Start();
-                    app.Run();
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "The application cannot be run as a standalone process. Please start the application through the runner.",
-                        "Forbidden",
-                        MessageBoxButton.OK);
-                    app.Shutdown();
-                }
             }
         }
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
         {
-            return ipcmanager;
+            return null;
         }
     }
 }

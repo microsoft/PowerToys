@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
@@ -22,6 +23,8 @@ namespace ColorPicker.Controls
         public static readonly DependencyProperty SelectedColorProperty = DependencyProperty.Register("SelectedColor", typeof(Color), typeof(ColorFormatControl), new PropertyMetadata(SelectedColorPropertyChanged));
 
         public static readonly DependencyProperty ColorCopiedNotificationBorderProperty = DependencyProperty.Register("ColorCopiedNotificationBorder", typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(ColorCopiedBorderPropertyChanged));
+
+        public static readonly DependencyProperty HideCommandProperty = DependencyProperty.Register("HideCommand", typeof(ICommand), typeof(ColorFormatControl));
 
         private const int CopyIndicatorStayTimeInMs = 3000;
         private IThrottledActionInvoker _actionInvoker;
@@ -43,6 +46,12 @@ namespace ColorPicker.Controls
         {
             get { return (FrameworkElement)GetValue(ColorCopiedNotificationBorderProperty); }
             set { SetValue(ColorCopiedNotificationBorderProperty, value); }
+        }
+
+        public ICommand HideCommand
+        {
+            get { return (ICommand)GetValue(HideCommandProperty); }
+            set { SetValue(HideCommandProperty, value); }
         }
 
         public ColorFormatControl()
@@ -100,6 +109,11 @@ namespace ColorPicker.Controls
             resize.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
             ColorCopiedNotificationBorder.BeginAnimation(Border.OpacityProperty, opacityDisappear);
             ColorCopiedNotificationBorder.BeginAnimation(Border.HeightProperty, resize);
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            HideCommand.Execute(ColorFormatModel);
         }
     }
 }

@@ -27,6 +27,7 @@ namespace ColorPicker.Settings
         private readonly object _loadingSettingsLock = new object();
 
         private bool _loadingColorsHistory;
+        private bool _loadingVisibleColorRepresentations;
 
         [ImportingConstructor]
         public UserSettings()
@@ -38,9 +39,20 @@ namespace ColorPicker.Settings
             UseEditor = new SettingItem<bool>(true);
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
+            VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
 
             LoadSettingsFromJson();
             _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", LoadSettingsFromJson);
+        }
+
+        private void VisibleColorFormats_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (!_loadingVisibleColorRepresentations)
+            {
+                var settings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
+                settings.Properties.VisibleColorFormats = VisibleColorFormats.ToList();
+                settings.Save(_settingsUtils);
+            }
         }
 
         private void ColorHistory_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -64,6 +76,8 @@ namespace ColorPicker.Settings
         public ObservableCollection<string> ColorHistory { get; private set; } = new ObservableCollection<string>();
 
         public SettingItem<int> ColorHistoryLimit { get; }
+
+        public ObservableCollection<string> VisibleColorFormats { get; private set; } = new ObservableCollection<string>();
 
         private void LoadSettingsFromJson()
         {
@@ -100,6 +114,12 @@ namespace ColorPicker.Settings
                                     settings.Properties.ColorHistory = new System.Collections.Generic.List<string>();
                                 }
 
+                                if (settings.Properties.VisibleColorFormats == null)
+                                {
+                                    // todo remove this default values, they should be in settings only
+                                    settings.Properties.VisibleColorFormats = new System.Collections.Generic.List<string>() { "HEX", "RGB", "HSL" };
+                                }
+
                                 _loadingColorsHistory = true;
                                 ColorHistory.Clear();
                                 foreach (var item in settings.Properties.ColorHistory)
@@ -108,6 +128,15 @@ namespace ColorPicker.Settings
                                 }
 
                                 _loadingColorsHistory = false;
+
+                                _loadingVisibleColorRepresentations = true;
+                                VisibleColorFormats.Clear();
+                                foreach (var item in settings.Properties.VisibleColorFormats)
+                                {
+                                    VisibleColorFormats.Add(item);
+                                }
+
+                                _loadingVisibleColorRepresentations = false;
                             }
 
                             retry = false;

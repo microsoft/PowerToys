@@ -20,11 +20,17 @@ namespace ColorPicker.ViewModelContracts
 
         ICommand SelectedColorChangedCommand { get; }
 
+        ICommand HideColorFormatCommand { get; }
+
         ObservableCollection<ColorFormatModel> ColorRepresentations { get; }
 
         ObservableCollection<Color> ColorsHistory { get; }
 
+        ObservableCollection<string> AvailableColorFormats { get; }
+
         Color SelectedColor { get; set; }
+
+        string SelectedColorFormat { get; set; }
 
         int SelectedColorIndex { get; set; }
 

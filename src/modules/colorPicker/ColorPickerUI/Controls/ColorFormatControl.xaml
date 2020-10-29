@@ -4,10 +4,20 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ColorPicker.Controls"
-              xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="Hide" Click="MenuItem_Click">
+                <MenuItem.Icon>
+                    <ui:FontIcon Glyph="&#xE107;" />
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+    </UserControl.ContextMenu>
     
     <Border x:Name="MainBorder"
                     Margin="12,16,12,0"
