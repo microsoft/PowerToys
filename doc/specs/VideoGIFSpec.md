@@ -233,7 +233,7 @@ Video GIF Capture is for power users and developers who are looking to tune and 
 |9 | When recording begins, transition the recording menu to the active state as depicted in [Figure 3.2.5](#figure-325---mock-up-of-video-gif-capture-recording-interface-during-recording). | P0 |
 |10 | While the recording is active, the user is free to interact with the system as desired. | P0 |
 |11| When the user selects the ‘Stop’ button, the recording is ended and loaded into an editor window like that depicted in [Figure 3.2.6](#figure-326---mock-up-of-video-gif-capture-video-editing). | P0 |
-|12| Alternatively stop the recording and load it into an editor window by pressing the OS level short-cut: Win + Shift + R at any time while recording. | P0 |
+|12| Alternatively stop the recording and load it into an editor window by pressing the OS level short-cut: Win + Shift + R at any time while recording. | P1 |
 
 #### 3.1.8. Editing
 
@@ -352,5 +352,5 @@ We plan to develop Video/GIF Capture in phases, gradually adding to the function
 |3 | P1 requirements for region selection, recording and editing [Sections 3.1.2 - 3.1.8](#312-region-capture-dialog--mode-selection). |
 |4 | P1 requirements for settings menu [Section 3.1.9](#319-settings-menu) |
 |5 | P2 requirements for region selection, recording and editing [Sections 3.1.2 - 3.1.8](#312-region-capture-dialog--mode-selection). Note that this release primarily adds exact coordinate selection mode. |
-|6 | P2 requirements for settings menu [Section 3.1.9](#319-settings-menu) |
+|6 | P2 requirements for settings menu [Section 3.1.9](#319-settings-menu). |
 |7 | All P3 requirements discussed in [Section 3](#3-requirements) along with any miscellaneous work items that arise. |
