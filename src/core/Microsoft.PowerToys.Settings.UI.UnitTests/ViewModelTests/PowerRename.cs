@@ -38,6 +38,7 @@ namespace ViewModelTests
         [DataRow("v0.19.2", "power-rename-settings.json")]
         [DataRow("v0.20.1", "power-rename-settings.json")]
         [DataRow("v0.22.0", "power-rename-settings.json")]
+        [DataRow("CorruptJson", "power-rename-settings.json")] // Should load default settings even if the json file is corrupt
         public void OriginalFilesModificationTest(string version, string fileName)
         {
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, PowerRenameSettings.ModuleName, fileName);

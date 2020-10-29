@@ -31,6 +31,7 @@ namespace ViewModelTests
         [DataRow("v0.20.1", "settings.json")]
         [DataRow("v0.21.1", "settings.json")]
         [DataRow("v0.22.0", "settings.json")]
+        [DataRow("CorruptJson", "settings.json")] // Should load default settings even if the json file is corrupt
         public void OriginalFilesModificationTest(string version, string fileName)
         {
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, FancyZonesSettings.ModuleName, fileName);
