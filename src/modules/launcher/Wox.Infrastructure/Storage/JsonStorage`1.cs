@@ -106,6 +106,7 @@ namespace Wox.Infrastructure.Storage
 
         private void BackupOriginFile()
         {
+            // Using CurrentCulture since this is user facing
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fffffff", CultureInfo.CurrentCulture);
             var directory = Path.GetDirectoryName(FilePath).NonNull();
             var originName = Path.GetFileNameWithoutExtension(FilePath);

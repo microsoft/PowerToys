@@ -122,7 +122,8 @@ namespace Wox.Infrastructure.Exception
                 {
                     foreach (string versionKeyName in ndpKey.GetSubKeyNames())
                     {
-                        if (versionKeyName.StartsWith("v", StringComparison.Ordinal))
+                        // Using InvariantCulture since this is internal and involves version key
+                        if (versionKeyName.StartsWith("v", StringComparison.InvariantCulture))
                         {
                             RegistryKey versionKey = ndpKey.OpenSubKey(versionKeyName);
                             string name = (string)versionKey.GetValue("Version", string.Empty);
@@ -132,10 +133,12 @@ namespace Wox.Infrastructure.Exception
                             {
                                 if (!string.IsNullOrEmpty(sp) && install == "1")
                                 {
+                                    // Using InvariantCulture since this is internal
                                     result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} SP{2}", versionKeyName, name, sp));
                                 }
                                 else
                                 {
+                                    // Using InvariantCulture since this is internal
                                     result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1}", versionKeyName, name));
                                 }
                             }
@@ -159,10 +162,12 @@ namespace Wox.Infrastructure.Exception
                                 {
                                     if (!string.IsNullOrEmpty(sp) && install == "1")
                                     {
+                                        // Using InvariantCulture since this is internal
                                         result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} {2} SP{3}", versionKeyName, subKeyName, name, sp));
                                     }
                                     else if (install == "1")
                                     {
+                                        // Using InvariantCulture since this is internal
                                         result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}", versionKeyName, subKeyName, name));
                                     }
                                 }

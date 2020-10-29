@@ -66,6 +66,8 @@ namespace Wox.Infrastructure
             }
 
             query = query.Trim();
+
+            // Using InvariantCulture since this is internal
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
             var queryWithoutCase = opt.IgnoreCase ? query.ToUpper(CultureInfo.InvariantCulture) : query;
 

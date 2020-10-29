@@ -57,38 +57,5 @@ namespace Wox.Infrastructure.Http
             client.DownloadFile(url.AbsoluteUri, filePath);
             client.Dispose();
         }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Warning is intended for libraries, not application code")]
-        public static async Task<string> Get([NotNull] Uri url, string encoding = "UTF-8")
-        {
-            if (url == null)
-            {
-                throw new ArgumentNullException(nameof(url));
-            }
-
-            Log.Debug($"Url <{url.AbsoluteUri}>", MethodBase.GetCurrentMethod().DeclaringType);
-
-            var request = WebRequest.CreateHttp(url);
-            request.Method = "GET";
-            request.Timeout = 1000;
-            request.Proxy = WebProxy();
-            request.UserAgent = UserAgent;
-            var response = await request.GetResponseAsync() as HttpWebResponse;
-            response = response.NonNull();
-            var stream = response.GetResponseStream().NonNull();
-
-            using (var reader = new StreamReader(stream, Encoding.GetEncoding(encoding)))
-            {
-                var content = await reader.ReadToEndAsync();
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return content;
-                }
-                else
-                {
-                    throw new HttpRequestException($"Error code <{response.StatusCode}> with content <{content}> returned from <{url.AbsoluteUri}>");
-                }
-            }
-        }
     }
 }
