@@ -15,6 +15,7 @@
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "common/common.h"
 #include "LoadingAndSavingRemappingHelper.h"
+#include "UIHelpers.h"
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
@@ -304,8 +305,12 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     addRemapKey.Margin({ 10, 10, 0, 25 });
     addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
+
         // Whenever a remap is added move to the bottom of the screen
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
+
+        // Set focus to the first Type Button in the newly added row
+        UIHelpers::SetFocusOnTypeButtonInLastRow(keyRemapTable, KeyboardManagerConstants::RemapTableColCount);
     });
 
     // Set accessible name for the addRemapKey button

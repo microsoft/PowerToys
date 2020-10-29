@@ -124,6 +124,7 @@
     <ClCompile Include="ShortcutControl.cpp" />
     <ClCompile Include="SingleKeyRemapControl.cpp" />
     <ClCompile Include="Styles.cpp" />
+    <ClCompile Include="UIHelpers.cpp" />
     <ClCompile Include="XamlBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -137,6 +138,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="ShortcutControl.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />
+    <ClInclude Include="UIHelpers.h" />
     <ClInclude Include="XamlBridge.h" />
   </ItemGroup>
   <ItemGroup>
