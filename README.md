@@ -145,7 +145,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - FxCop work is almost fully wrapped up
 
 **Color Picker**
-- Additional color style selections such as 
+- Additional color style selections such as CYMK and HSL
 
 **FancyZones**
 - Multiple bugs fixed
