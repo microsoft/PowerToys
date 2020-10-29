@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using System.Globalization;
+using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

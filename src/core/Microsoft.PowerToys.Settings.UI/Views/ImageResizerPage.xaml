@@ -3,13 +3,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"    
-    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Lib"
-    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.Lib.ViewModels"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <!--<viewModel:ImageResizerViewModel x:Key="ViewModel"/>-->
@@ -65,7 +66,8 @@
                       SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.IsHorizontalRailEnabled="True">
+                      ScrollViewer.IsHorizontalRailEnabled="True"
+                      ContainerContentChanging="ImagesSizesListView_ContainerContentChanging">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -90,7 +92,35 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
-                                    <ListViewItemPresenter CheckBrush="{ThemeResource ListViewItemCheckBrush}" ContentMargin="{TemplateBinding Padding}" CheckMode="{ThemeResource ListViewItemCheckMode}" ContentTransitions="{TemplateBinding ContentTransitions}" CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}" DragForeground="{ThemeResource ListViewItemDragForeground}" DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}" DragBackground="{ThemeResource ListViewItemDragBackground}" DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}" FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}" FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}" FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}" FocusVisualMargin="{TemplateBinding FocusVisualMargin}" FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}" FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}" FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Control.IsTemplateFocusTarget="True" PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}" PressedBackground="{ThemeResource ListViewItemBackgroundPressed}" PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}" PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}" ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}" SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}" SelectedForeground="{ThemeResource ListViewItemForegroundSelected}" SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}" SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                    <ListViewItemPresenter 
+                                        CheckBrush="{ThemeResource ListViewItemCheckBrush}" 
+                                        ContentMargin="{TemplateBinding Padding}" 
+                                        CheckMode="{ThemeResource ListViewItemCheckMode}" 
+                                        ContentTransitions="{TemplateBinding ContentTransitions}" 
+                                        CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}" 
+                                        DragForeground="{ThemeResource ListViewItemDragForeground}" 
+                                        DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}" 
+                                        DragBackground="{ThemeResource ListViewItemDragBackground}" 
+                                        DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}" 
+                                        FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}" 
+                                        FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}" 
+                                        FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}" 
+                                        FocusVisualMargin="{TemplateBinding FocusVisualMargin}" 
+                                        FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}" 
+                                        FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}" 
+                                        FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}" 
+                                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                        Control.IsTemplateFocusTarget="True" 
+                                        PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}" 
+                                        PressedBackground="{ThemeResource ListViewItemBackgroundPressed}"
+                                        PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}" 
+                                        PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}" ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" 
+                                        SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}" 
+                                        SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}" 
+                                        SelectedForeground="{ThemeResource ListViewItemForegroundSelected}" 
+                                        SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}" 
+                                        SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}" 
+                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -99,13 +129,12 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize" >
-                        <StackPanel Name="ImageResizer_Configurations" x:Uid="ImageResizer_Configurations" Orientation="Horizontal" Height="48" Padding="0" Spacing="4">
+                        <StackPanel Name="ImageResizer_Configurations" x:Uid="ImageResizer_Configurations" Orientation="Horizontal" Padding="0" Spacing="4">
                             <TextBox Name="ImageResizer_Name"
                                      x:Uid="ImageResizer_Name"
                                      Text="{x:Bind Path=Name, Mode=TwoWay}" 
                                      Width="90"
                                      VerticalAlignment="Center"
-                                     Height="34"
                                      Margin="{StaticResource SmallTopMargin}"/>
 
                             <ComboBox Name="ImageResizer_Fit_Property"
@@ -113,7 +142,6 @@
                                       SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
                                       Width="90"
                                       VerticalAlignment="Center"
-                                      Height="34"
                                       Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
@@ -123,8 +151,7 @@
                             <muxc:NumberBox Name="ImageResizer_Width_Property"
                                             x:Uid="ImageResizer_Width_Property"
                                             Value="{x:Bind Path=Width, Mode=TwoWay}" 
-                                            Width="68"
-                                            Height="34"
+                                            MinWidth="68"
                                             SpinButtonPlacementMode="Compact"
                                             VerticalAlignment="Center"
                                             Margin="{StaticResource SmallTopMargin}"/>
@@ -142,8 +169,7 @@
                             <muxc:NumberBox Name="ImageResizer_Height_Property"
                                             x:Uid="ImageResizer_Height_Property"
                                             Value="{x:Bind Path=Height, Mode=TwoWay}" 
-                                            Width="68"
-                                            Height="34"
+                                            MinWidth="68"
                                             VerticalAlignment="Center"
                                             SpinButtonPlacementMode="Compact"
                                             Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"
@@ -153,8 +179,7 @@
                             <ComboBox Name="ImageResizer_Size_Property"
                                       x:Uid="ImageResizer_Size_Property"
                                       SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
-                                      Width="120"
-                                      Height="34"
+                                      MinWidth="120"
                                       VerticalAlignment="Center"
                                       Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
@@ -166,7 +191,6 @@
                                     x:Uid="RemoveButton"
                                     Background="Transparent"
                                     FontFamily="Segoe MDL2 Assets"
-                                    Height="34"
                                     Width="34"
                                     Content="&#xE74D;"
                                     VerticalAlignment="Center"
@@ -183,7 +207,6 @@
             <StackPanel Orientation="Horizontal">
                 <AppBarButton Icon="Add"
                               x:Name="AddSizeButton"
-                              Width="560"
                               Style="{StaticResource AddItemAppBarButtonStyle}"
                               IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" 
                               x:Uid="ImageResizer_AddSizeButton"
@@ -199,7 +222,7 @@
 
             <ComboBox x:Uid="ImageResizer_FallBackEncoderText"
                           SelectedIndex="{x:Bind Path=ViewModel.Encoder, Mode=TwoWay}"
-                          Width="240"
+                          MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
@@ -214,7 +237,7 @@
                             Minimum="0"
                             Maximum="100"
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.JPEGQualityLevel}"
-                            Width="240"
+                            MinWidth="240"
                             Margin="{StaticResource SmallTopMargin}"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
@@ -224,7 +247,7 @@
 
             <ComboBox x:Uid="ImageResizer_PNGInterlacing"
                           SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.PngInterlaceOption}"
-                          Width="240"
+                          MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="Default"/>
@@ -234,7 +257,7 @@
 
             <ComboBox x:Uid="ImageResizer_TIFFCompression"
                           SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.TiffCompressOption}"
-                          Width="240"
+                          MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>
@@ -256,7 +279,9 @@
                       x:Uid="ImageResizer_FilenameFormatPlaceholder"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       Margin="{StaticResource SmallTopMargin}"
-                      AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_FilenameFormatHeader}">
+                      AutomationProperties.LabeledBy="{Binding ElementName=ImageResizer_FilenameFormatHeader}"
+                      AutomationProperties.HelpText="{Binding ElementName=FileFormatTextBlock, Path=Text}"
+                     >
                 <TextBox.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Name="ImageResizer_FilenameFormatHeader"
@@ -269,44 +294,34 @@
                     </StackPanel>
                 </TextBox.Header>
                 <ToolTipService.ToolTip>
-                    <StackPanel>
-                        <TextBlock x:Uid="ImageResizer_FileFormatDescription"/>
-                        <TextBlock Margin="{StaticResource SmallTopMargin}">
-                            <Run Text="%1" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_Filename" />
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%2" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_Sizename"/>
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%3" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_SelectedWidth"/>
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%4" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_SelectedHeight"/>
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%5" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_ActualWidth"/>
-                        </TextBlock>
-
-                        <TextBlock>
-                            <Run Text="%6" FontWeight="Bold" />
-                            <Run Text=" - "/>
-                            <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
-                        </TextBlock>
-                    </StackPanel>
+                    <TextBlock x:Name="FileFormatTextBlock">
+                        <Run x:Uid="ImageResizer_FileFormatDescription"/>
+                        <LineBreak/>
+                        <LineBreak/>
+                        <Run Text="%1" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_Filename" />
+                        <LineBreak/>
+                        <Run Text="%2" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_Sizename"/>
+                        <LineBreak/>
+                        <Run Text="%3" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_SelectedWidth"/>
+                        <LineBreak/>
+                        <Run Text="%4" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_SelectedHeight"/>
+                        <LineBreak/>
+                        <Run Text="%5" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_ActualWidth"/>
+                        <LineBreak/>
+                        <Run Text="%6" FontWeight="Bold" />
+                        <Run Text=" - "/>
+                        <Run x:Uid="ImageResizer_Formatting_ActualHeight"/>
+                    </TextBlock>
                 </ToolTipService.ToolTip>
             </TextBox>
 

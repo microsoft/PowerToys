@@ -1,13 +1,16 @@
-﻿using Moq;
+﻿using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Moq;
 using System;
-using System.IO;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq.Expressions;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
 {
     internal static class IIOProviderMocks
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
         /// <summary>
         /// This method mocks an IO provider so that it will always return data at the savePath location. 
         /// This mock is specific to a given module, and is verifiable that the stub file was read.

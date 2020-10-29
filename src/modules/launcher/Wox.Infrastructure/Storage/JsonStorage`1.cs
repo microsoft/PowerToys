@@ -7,7 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {

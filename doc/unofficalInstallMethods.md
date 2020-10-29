@@ -1,4 +1,4 @@
-# Unoffical community driven install methods
+# Unofficial community driven install methods
 
 These are community driven alternative install methods to Windows Package Manager (WinGet) and GitHub. The PowerToys teams does not update or manage these install methods. 
 

@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
-using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;

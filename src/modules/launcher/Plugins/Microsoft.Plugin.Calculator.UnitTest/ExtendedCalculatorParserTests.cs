@@ -34,6 +34,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
 
         [TestCase("42")]
         [TestCase("test")]
+        [TestCase("pi(2)")] // Incorrect input, constant is being treated as a function.
         public void Interpret_NoResult_WhenCalled(string input)
         {
             // Arrange
@@ -60,6 +61,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("2+2.11", 4.11D)]
         [TestCase("8.43 + 4.43 - 12.86", 0D)]
         [TestCase("8.43 + 4.43 - 12.8", 0.06D)]
+        [TestCase("exp(5)", 148.413159102577D)]
         public void Interpret_NoErrors_WhenCalledWithRounding(string input, decimal expectedResult)
         {
             // Arrange
@@ -110,7 +112,15 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("((1 * 2)", false)]
         [TestCase("(1 * 2)))", false)]
         [TestCase("abcde", false)]
-        [TestCase("plot( 2 * 3)", true)]
+        [TestCase("1 + 2 +", false)]
+        [TestCase("1+2*", false)]
+        [TestCase("1 && 3 &&", false)]
+        [TestCase("sqrt( 36)", true)]
+        [TestCase("max 4", false)]
+        [TestCase("sin(0)", true)]
+        [TestCase("cos", false)]
+        [TestCase("abs", false)]
+        [TestCase("1+1.1e3", true)]
         public void InputValid_TestValid_WhenCalled(string input, bool valid)
         {
             // Arrange
@@ -120,6 +130,39 @@ namespace Microsoft.Plugin.Calculator.UnitTests
 
             // Assert
             Assert.AreEqual(valid, result);
+        }
+
+        [TestCase("1-1")]
+        [TestCase("sin(0)")]
+        public void Interpret_MustReturnResult_WhenResultIsZero(string input)
+        {
+            // Arrange
+            var engine = new CalculateEngine();
+
+            // Act
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0.0, result.Result);
+        }
+
+        [TestCase("factorial(5)", 120)]
+        [TestCase("sign(-2)", -1)]
+        [TestCase("sign(2)", +1)]
+        [TestCase("abs(-2)", 2)]
+        [TestCase("abs(2)", 2)]
+        public void Interpret_MustReturnExpectedResult_WhenCalled(string input, decimal expectedResult)
+        {
+            // Arrange
+            var engine = new CalculateEngine();
+
+            // Act
+            var result = engine.Interpret(input, CultureInfo.InvariantCulture);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result.Result);
         }
     }
 }

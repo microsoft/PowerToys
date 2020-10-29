@@ -407,15 +407,15 @@ namespace FancyZonesEditor
                 _gridModel.ColumnPercents.Add(((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols));
             }
 
-            int index = ZoneCount - 1;
-            for (int col = cols - 1; col >= 0; col--)
+            int index = 0;
+            for (int row = 0; row < rows; row++)
             {
-                for (int row = rows - 1; row >= 0; row--)
+                for (int col = 0; col < cols; col++)
                 {
-                    _gridModel.CellChildMap[row, col] = index--;
-                    if (index < 0)
+                    _gridModel.CellChildMap[row, col] = index++;
+                    if (index == ZoneCount)
                     {
-                        index = 0;
+                        index--;
                     }
                 }
             }

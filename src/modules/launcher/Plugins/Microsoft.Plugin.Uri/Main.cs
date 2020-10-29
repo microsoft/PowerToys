@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Text;
+using ManagedCommon;
 using Microsoft.Plugin.Uri.UriHelper;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Uri
 {

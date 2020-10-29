@@ -145,6 +145,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ColorModeHeader.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Choose a mode]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Выберите режим]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorPicker_ActivationShortcut.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open Color Picker]]></Val>
@@ -276,6 +285,15 @@
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Чтобы исключить приложение из прикрепления к зонам, добавьте здесь его имя (по одному в строке). Эти приложения будут реагировать только на прикрепление окон.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_ExcludeApps_TextBoxControl.PlaceholderText" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Example: outlook.exe]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Пример: outlook.exe]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -460,6 +478,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FileExplorerPreview_AffectsAllUsers.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The settings on this page affect all users on the system]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Параметры на этой странице влияют на всех пользователей в системе.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FileExplorerPreview_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[These settings allow you to manage your Windows File Explorer custom preview handlers.]]></Val>
@@ -492,6 +519,24 @@
           <Val><![CDATA[Preview Pane]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Область предварительного просмотра]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorerPreview_RebootRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A reboot may be required for changes to these settings to take effect]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Чтобы изменения этих параметров вступили в силу, может потребоваться перезагрузка.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorerPreview_RunAsAdminRequired.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You need to run as administrator to modify these settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Для изменения этих параметров необходимо запустить программу от имени администратора.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -546,33 +591,6 @@
           <Val><![CDATA[Privacy statement]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Заявление о конфиденциальности]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";GeneralPage_Radio_Theme_Dark.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Dark]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Темная]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";GeneralPage_Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[System default]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Системная по умолчанию]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";GeneralPage_Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Light]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Светлая]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -708,6 +726,15 @@
           <Val><![CDATA[Updates]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Обновления]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";General_Version.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Версия]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -924,6 +951,15 @@
           <Val><![CDATA[Filename format]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Формат имени файла]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ImageResizer_FilenameFormatPlaceholder.PlaceholderText" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Example: %1 (%2)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Пример: %1 (%2)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1657,6 +1693,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Radio_Theme_Dark.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dark]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Темная]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Windows default]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Windows по умолчанию]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Light]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Светлая]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";RemapKeysList.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Current Key Remappings]]></Val>
@@ -1686,10 +1749,13 @@
       </Item>
       <Item ItemId=";SettingsPage_SetShortcut.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set Shortcut]]></Val>
+          <Val><![CDATA[Shortcut setting]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Задать сочетание клавиш]]></Val>
+            <Val><![CDATA[Настройка сочетаний клавиш]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set Shortcut]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1837,15 +1903,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ShortcutGuide_Theme.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Choose Shortcut Guide overlay color]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Выберите цвет наложения для Подсказок по сочетаниям клавиш]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";ShortcutWarningLabel.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Only shortcuts with the following hotkeys are valid:]]></Val>
@@ -1864,11 +1921,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Shortcut_Overlay_Theme.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Background theme]]></Val>
+          <Val><![CDATA[Windows color settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Фоновая тема]]></Val>
+            <Val><![CDATA[Параметры цвета Windows]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

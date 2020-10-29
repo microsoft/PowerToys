@@ -7,7 +7,8 @@
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>

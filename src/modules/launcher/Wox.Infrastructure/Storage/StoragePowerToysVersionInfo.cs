@@ -109,7 +109,7 @@ namespace Wox.Infrastructure.Storage
 
             // Get the previous version of PowerToys and cache Storage details from the CacheDetails.json storage file
             string previousVersion = GetPreviousVersion();
-            currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetProductVersion();
+            currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetProductVersion();
 
             // If the previous version is below a set threshold, then we want to delete the file
             // However, we do not want to delete the cache if the same version of powerToys is being launched

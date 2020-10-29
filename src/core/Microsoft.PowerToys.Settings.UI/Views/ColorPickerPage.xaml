@@ -9,7 +9,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" 
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
@@ -50,12 +51,12 @@
                           IsOn="{Binding IsEnabled, Mode=TwoWay}"/>
 
             <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
-                                          Width="240"
-                                          HorizontalAlignment="Left"
                                           Margin="{StaticResource MediumTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
                                           Keys="Win, Ctrl, Alt, Shift"
                                           Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                                          HorizontalAlignment="Left"
+                                          MinWidth="240"
                                           />
 
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
@@ -63,12 +64,16 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
         
             <ComboBox x:Uid="ColorPicker_CopiedColorRepresentation"
-                          SelectedIndex="{Binding CopiedColorRepresentationIndex, Mode=TwoWay}"
-                          Margin="{StaticResource SmallTopMargin}"
-                          Width="240"
-                          IsEnabled="{Binding IsEnabled}">
+                      SelectedIndex="{Binding CopiedColorRepresentationIndex, Mode=TwoWay}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{Binding IsEnabled}"
+                      HorizontalAlignment="Left"
+                      MinWidth="240">
                 <ComboBoxItem Content="HEX - #FFAA00"/>
-                <ComboBoxItem Content="RGB - RGB(100, 50, 75)"/>
+                <ComboBoxItem Content="RGB - rgb(100, 50, 75)"/>
+                <ComboBoxItem Content="CMYK - cmyk(100%, 50%, 75%, 0%)"/>
+                <ComboBoxItem Content="HSL - hsl(100, 50%, 75%)"/>
+                <ComboBoxItem Content="HSV - hsv(100, 50%, 75%)"/>
             </ComboBox>
 
                <!--

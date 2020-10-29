@@ -10,8 +10,8 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Folder
 {

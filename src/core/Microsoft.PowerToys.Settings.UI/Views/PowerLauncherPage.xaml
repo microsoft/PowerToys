@@ -9,7 +9,8 @@
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
@@ -54,21 +55,19 @@
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
-                                                  Width="240"
                                                   HorizontalAlignment="Left"
+                                                  MinWidth="240"
                                                   Margin="{StaticResource SmallTopMargin}"
                                                   HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
                                                   Keys="Win, Ctrl, Alt, Shift"
                                                   Enabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
             <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
-                                          Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
-                                          Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
@@ -76,7 +75,6 @@
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
-                                          Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenConsole, Mode=TwoWay}"
@@ -128,7 +126,7 @@
 
             <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults"
                             Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                            Width="240"
+                            MinWidth="240"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Minimum="1"
@@ -146,7 +144,31 @@
 	                IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableDriveDetectionWarning}"
 	                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
 	                />
+            <TextBlock x:Uid="Appearance_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
 
+            <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
+            The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
+            Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
+            <TextBlock x:Uid="ColorModeHeader"
+                       x:Name="RadioButtons_Name_Theme" 
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
+                <RadioButton x:Uid="Radio_Theme_Dark"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                             IsChecked="{Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}" />
+
+                <RadioButton x:Uid="Radio_Theme_Light"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                             IsChecked="{Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}" />
+
+                <RadioButton x:Uid="Radio_Theme_Default"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                             IsChecked="{Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}" />
+                <HyperlinkButton x:Uid="Windows_Color_Settings" NavigateUri="ms-settings:colors"/>
+            </StackPanel>
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 

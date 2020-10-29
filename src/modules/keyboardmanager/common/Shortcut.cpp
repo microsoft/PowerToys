@@ -652,10 +652,13 @@ bool IgnoreKeyCode(DWORD key)
     // Unassigned keys
     bool isUnassigned = in_range(key, 0x88, 0x8F) || in_range(key, 0x97, 0x9F) || in_range(key, 0xD8, 0xDA) || equals(key, 0xE8);
 
-    //OEM Specific keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/5225
+    // OEM Specific keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/5225
     bool isOEMSpecific = in_range(key, 0x92, 0x96) || equals(key, 0xE1) || in_range(key, 0xE3, 0xE4) || equals(key, 0xE6) || in_range(key, 0xE9, 0xF5);
 
-    if (isUndefined || isReserved || isUnassigned || isOEMSpecific)
+    // IME keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/6951
+    bool isIME = in_range(key, VK_KANA, 0x1A) || in_range(key, VK_CONVERT, VK_MODECHANGE) || equals(key, VK_PROCESSKEY);
+
+    if (isUndefined || isReserved || isUnassigned || isOEMSpecific || isIME)
     {
         return true;
     }

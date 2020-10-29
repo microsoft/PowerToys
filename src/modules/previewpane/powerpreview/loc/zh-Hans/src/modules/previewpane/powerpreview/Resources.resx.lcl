@@ -39,19 +39,43 @@
       </Item>
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          <Val><![CDATA[Some of the File Explorer modules could not be turned off/on as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[某些文件资源管理器模块无法根据你的设置进行注册/取消注册。为了让更改生效，请以管理员身份重启 PowerToys。]]></Val>
+            <Val><![CDATA[某些文件资源管理器模块无法根据你的设置进行禁用/启用。为了让更改生效，请以管理员身份重启 PowerToys。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorer_Admin_Restart_Warning_Dont_Show_Again" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Don't show again]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[不再显示]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorer_Admin_Restart_Warning_Open_Settings" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[打开设置]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
+          <Val><![CDATA[Couldn't modify File Explorer modules]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[无法修改文件资源管理器模块]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

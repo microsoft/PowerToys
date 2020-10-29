@@ -9,8 +9,8 @@ using System.Reflection;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Core.Plugin
 {
@@ -47,7 +47,7 @@ namespace Wox.Core.Plugin
                     return;
                 }
 
-                string pluginFolderPath = Infrastructure.Constant.PluginsDirectory;
+                string pluginFolderPath = Constant.PluginsDirectory;
 
                 // Using Ordinal since this is part of a path
                 string newPluginName = plugin.Name

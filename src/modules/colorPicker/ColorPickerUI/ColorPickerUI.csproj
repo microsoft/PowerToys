@@ -62,7 +62,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -73,7 +73,7 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -107,6 +107,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
+    <Compile Include="Constants\WindowConstant.cs" />
+    <Compile Include="Helpers\ColorHelper.cs" />
+    <Compile Include="Helpers\ColorRepresentationHelper.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
     <Compile Include="NativeMethods.cs" />
@@ -246,9 +249,9 @@
       <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
       <Name>Telemetry</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj">
+    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj">
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>
-      <Name>Microsoft.PowerToys.Settings.UI.Lib</Name>
+      <Name>Microsoft.PowerToys.Settings.UI.Library</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

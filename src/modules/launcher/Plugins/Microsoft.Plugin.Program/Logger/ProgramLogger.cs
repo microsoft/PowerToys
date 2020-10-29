@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Logger
 {

@@ -16,7 +16,7 @@ using System.Windows.Navigation;
 using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Logger;
 
 namespace PowerLauncher
 {

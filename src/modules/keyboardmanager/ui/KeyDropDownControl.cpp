@@ -67,6 +67,12 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
 
     // Attach flyout to the drop down
     warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
+
+    // Enable narrator for Content of FlyoutPresenter. For details https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.flyout?view=winrt-19041#accessibility
+    Style style = Style(winrt::xaml_typename<FlyoutPresenter>());
+    style.Setters().Append(Setter(Windows::UI::Xaml::Controls::Control::IsTabStopProperty(), winrt::box_value(true)));
+    style.Setters().Append(Setter(Windows::UI::Xaml::Controls::Control::TabNavigationProperty(), winrt::box_value(Windows::UI::Xaml::Input::KeyboardNavigationMode::Cycle)));
+    warningFlyout.as<Flyout>().FlyoutPresenterStyle(style);
     dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
     // To set the accessible name of the combo-box (by default index 1)
     SetAccessibleNameForComboBox(dropDown.as<ComboBox>(), 1);

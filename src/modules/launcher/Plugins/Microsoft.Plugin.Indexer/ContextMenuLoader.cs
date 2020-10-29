@@ -12,8 +12,8 @@ using System.Windows;
 using System.Windows.Input;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Indexer
 {

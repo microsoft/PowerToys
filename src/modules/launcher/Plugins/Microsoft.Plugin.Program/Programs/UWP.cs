@@ -12,7 +12,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Win32;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {

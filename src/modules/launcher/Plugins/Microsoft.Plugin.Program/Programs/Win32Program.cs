@@ -19,8 +19,8 @@ using Microsoft.Plugin.Program.Logger;
 using Microsoft.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -227,15 +227,10 @@ namespace Microsoft.Plugin.Program.Programs
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
+                ProgramArguments = queryArguments,
                 Action = e =>
                 {
-                    var info = new ProcessStartInfo
-                    {
-                        FileName = LnkResolvedPath ?? FullPath,
-                        WorkingDirectory = ParentDirectory,
-                        UseShellExecute = true,
-                        Arguments = queryArguments,
-                    };
+                    var info = GetProcessStartInfo(queryArguments);
 
                     Main.StartProcess(Process.Start, info);
 
@@ -245,7 +240,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             // To set the title for the result to always be the name of the application
             result.Title = Name;
-            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+            result.SetTitleHighlightData(StringMatcher.FuzzySearch(query, Name).MatchData);
 
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, FullPath);
@@ -255,7 +250,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
-        public List<ContextMenuResult> ContextMenus(IPublicAPI api)
+        public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)
             {
@@ -276,14 +271,7 @@ namespace Microsoft.Plugin.Program.Programs
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
-                        var info = new ProcessStartInfo
-                        {
-                            FileName = FullPath,
-                            WorkingDirectory = ParentDirectory,
-                            Verb = "runas",
-                            UseShellExecute = true,
-                        };
-
+                        var info = GetProcessStartInfo(queryArguments, true);
                         Task.Run(() => Main.StartProcess(Process.Start, info));
 
                         return true;
@@ -332,6 +320,18 @@ namespace Microsoft.Plugin.Program.Programs
                 });
 
             return contextMenus;
+        }
+
+        private ProcessStartInfo GetProcessStartInfo(string programArguments, bool runAsAdmin = false)
+        {
+            return new ProcessStartInfo
+            {
+                FileName = LnkResolvedPath ?? FullPath,
+                WorkingDirectory = ParentDirectory,
+                UseShellExecute = true,
+                Arguments = programArguments,
+                Verb = runAsAdmin ? "runas" : string.Empty,
+            };
         }
 
         public override string ToString()
