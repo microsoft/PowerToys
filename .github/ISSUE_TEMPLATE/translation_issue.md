@@ -1,6 +1,6 @@
 ---
 name: 📖 Localization/Translation issue
-about: Report errors or unexpected behavior
+about: Report incorrect translations.
 title: ''
 labels: Issue-Bug, Area-Localization
 assignees: ''
@@ -19,7 +19,7 @@ _Are there any useful screenshots? WinKey+Shift+S and then just paste them direc
 
 ### ❌ Actual phrase(s)
 
-_What is showing up_
+_What is there?_
 
 ### ✔️ Expected phrase(s)
 
