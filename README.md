@@ -177,12 +177,6 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 I'd like to directly call out [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@davidegiacometti](https://github.com/davidegiacometti), [@royvou](https://github.com/royvou), [@gordonwatts](https://github.com/gordonwatts), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@niels9001](https://github.com/niels9001) for their continued community support and helping directly make PowerToys a better piece of software.
 
-#### Video / GIF capture functional spec for public review
-
-Deondre Davis created our [functional spec for creating a light weight, video / GIF recording tool](https://github.com/microsoft/PowerToys/pull/6900). We encourage everyone to review it and please leave comments in the pull request so we can adjust as needed. We'll be closing it for feedback on October 12th, 2020.
-
-This is for work [post-stabilization of current roadmap work](https://github.com/microsoft/PowerToys/wiki/Roadmap#post-stabilization) and is only the spec for what we are thinking about support.  Just want to set expectations here.
-
 ### What is being planned for 0.27 - November 2020
 
 For [0.27](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F14), we are proactively working on:
