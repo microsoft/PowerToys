@@ -143,6 +143,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - Large sums of accessibility issues fixed.
 - Less notifications for installing
 - FxCop work is almost fully wrapped up
+- Wrapped up the [Video GIF capture spec](https://github.com/microsoft/PowerToys/wiki/Video-GIF-Capture).  This is laying out our plan for the future work.
 
 **Color Picker**
 - Additional color style selections such as CYMK and HSL
