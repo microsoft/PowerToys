@@ -112,7 +112,7 @@ namespace Wox.Infrastructure.Exception
         }
 
         // http://msdn.microsoft.com/en-us/library/hh925568%28v=vs.110%29.aspx
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static List<string> GetFrameworkVersionFromRegistry()
         {
             try

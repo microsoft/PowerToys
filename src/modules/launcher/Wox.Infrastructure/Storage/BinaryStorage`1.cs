@@ -75,7 +75,7 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private T Deserialize(FileStream stream, T defaultData)
         {
             // http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception

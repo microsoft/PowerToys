@@ -80,7 +80,7 @@ namespace Wox.Infrastructure
         }
 
         // Function to run as admin for context menu items
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void RunAsAdmin(string path)
         {
             var info = new ProcessStartInfo
