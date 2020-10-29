@@ -299,7 +299,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zone highlight opacity]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[区域突出显示不透明度]]></Val>
+            <Val><![CDATA[区域不透明度]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -848,7 +848,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zip]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[压缩]]></Val>
+            <Val><![CDATA[ZIP]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1289,7 +1289,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[将快捷键重映射到其他快捷键或键。此外，映射也可以特定应用程序为目标。]]></Val>
+            <Val><![CDATA[将快捷键重映射到其他快捷键或键。此外，映射也可仅以特定应用程序为目标。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1619,7 +1619,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[用于使用“搜索和替换”或正则表达式进行更高级的批量重命名的 Windows Shell 扩展。]]></Val>
+            <Val><![CDATA[使用“搜索和替换”或正则表达式进行高级批量重命名操作的 Windows Shell 扩展。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
