@@ -380,6 +380,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"abcd.*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Using InvariantCultureIgnoreCase since this relates to sql code in string form
             Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
             Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -394,6 +396,7 @@ namespace Wox.Test.Plugins
             var simplifiedSqlQuery = WindowsSearchAPI.SimplifyQuery(sqlQuery);
 
             // Assert
+            // Using InvariantCultureIgnoreCase since this relates to sql code in string form
             Assert.IsTrue(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
         }
 
@@ -408,6 +411,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\", \"System.FileExtension\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"ab.*\"',1033)) AND (CONTAINS(System.FileName,'\".cd*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Using InvariantCultureIgnoreCase since this relates to sql code in string form
             Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
             Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -423,6 +428,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"'ab.cd'*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Using InvariantCultureIgnoreCase since this relates to sql code in string form
             Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
             Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
         }

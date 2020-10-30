@@ -252,6 +252,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             // 1) There is a weird flashing behavior when trying
             //    to use ShowWindow for switching tabs in IE
             // 2) SetForegroundWindow fails on minimized windows
+            // Using Ordinal since this is internal
             if (ProcessName.ToUpperInvariant().Equals("IEXPLORE.EXE", StringComparison.Ordinal) || !Minimized)
             {
                 NativeMethods.SetForegroundWindow(Hwnd);
@@ -270,6 +271,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <returns>The title of the window</returns>
         public override string ToString()
         {
+            // Using CurrentCulture since this is user facing
             return Title + " (" + ProcessName.ToUpper(CultureInfo.CurrentCulture) + ")";
         }
 

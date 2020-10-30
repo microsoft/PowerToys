@@ -59,6 +59,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 }
 
                 // # is URI syntax for the fragment component, need to be encoded so LocalPath returns complete path
+                // Using OrdinalIgnoreCase since this is internal and used with symbols
                 var string_path = ((string)oleDBResult.FieldData[0]).Replace("#", "%23", StringComparison.OrdinalIgnoreCase);
                 var uri_path = new Uri(string_path);
 
@@ -89,10 +90,11 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // convert file pattern if it is not '*'. Don't create restriction for '*' as it includes all files.
             if (pattern != "*")
             {
-                pattern = pattern.Replace("*", "%", StringComparison.InvariantCulture);
-                pattern = pattern.Replace("?", "_", StringComparison.InvariantCulture);
+                // Using Ordinal since these are internal and used with symbols
+                pattern = pattern.Replace("*", "%", StringComparison.Ordinal);
+                pattern = pattern.Replace("?", "_", StringComparison.Ordinal);
 
-                if (pattern.Contains("%", StringComparison.InvariantCulture) || pattern.Contains("_", StringComparison.InvariantCulture))
+                if (pattern.Contains("%", StringComparison.Ordinal) || pattern.Contains("_", StringComparison.Ordinal))
                 {
                     queryHelper.QueryWhereRestrictions += " AND System.FileName LIKE '" + pattern + "' ";
                 }

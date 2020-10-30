@@ -24,6 +24,8 @@ namespace Microsoft.Plugin.Folder.Sources.Result
             var result = new Wox.Plugin.Result(StringMatcher.FuzzySearch(Search, Path.GetFileName(FilePath)).MatchData)
             {
                 Title = Title,
+
+                // Using CurrentCulture since this is user facing
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_file_result_subtitle, FilePath),
                 IcoPath = FilePath,
                 Action = c => ShellAction.Execute(FilePath, contextApi),

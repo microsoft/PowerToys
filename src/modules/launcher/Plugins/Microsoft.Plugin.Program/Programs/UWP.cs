@@ -204,6 +204,7 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (obj is UWP uwp)
             {
+                // Using CurrentCultureIgnoreCase since this is used with FamilyName
                 return FamilyName.Equals(uwp.FamilyName, StringComparison.CurrentCultureIgnoreCase);
             }
             else
@@ -214,6 +215,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public override int GetHashCode()
         {
+            // Using CurrentCultureIgnoreCase since this is used with FamilyName
             return FamilyName.GetHashCode(StringComparison.CurrentCultureIgnoreCase);
         }
 

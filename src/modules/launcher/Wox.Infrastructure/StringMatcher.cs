@@ -249,6 +249,7 @@ namespace Wox.Infrastructure
                 }
             }
 
+            // Using CurrentCultureIgnoreCase since this relates to queries input by user
             if (string.Equals(query, stringToCompare, StringComparison.CurrentCultureIgnoreCase))
             {
                 var bonusForExactMatch = 10;

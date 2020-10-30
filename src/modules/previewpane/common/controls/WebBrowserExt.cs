@@ -54,6 +54,7 @@ namespace PreviewHandlerCommon
 
                 if (name != null && name.Equals(DISPIDAMBIENTDLCONTROL, StringComparison.CurrentCulture))
                 {
+                    // Using CurrentCulture since this is user facing
                     result = Convert.ToInt32(
                         WebBrowserDownloadControlFlags.DLIMAGES |
                         WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE |

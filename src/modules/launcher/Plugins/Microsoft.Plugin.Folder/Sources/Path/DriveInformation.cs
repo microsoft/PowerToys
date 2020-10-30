@@ -17,6 +17,8 @@ namespace Microsoft.Plugin.Folder.Sources
         private static IEnumerable<string> InitialDriverList()
         {
             var directorySeparatorChar = System.IO.Path.DirectorySeparatorChar;
+
+            // Using InvariantCulture since this is internal
             return DriveInfo.GetDrives()
                 .Select(driver => driver.Name.ToLower(CultureInfo.InvariantCulture).TrimEnd(directorySeparatorChar));
         }

@@ -47,6 +47,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                 var elements = doc.Descendants().ToList();
                 foreach (XElement element in elements)
                 {
+                    // Using CurrentCulture since this is user facing
                     var elementName = element?.Name?.LocalName?.ToLower(CultureInfo.CurrentCulture);
                     if (elementName != null && blockedElementsName.ContainsKey(elementName))
                     {

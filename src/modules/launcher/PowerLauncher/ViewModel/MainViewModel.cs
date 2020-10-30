@@ -132,6 +132,7 @@ namespace PowerLauncher.ViewModel
 
             if (index != null)
             {
+                // Using InvariantCulture since this is internal
                 results.SelectedIndex = int.Parse(index.ToString(), CultureInfo.InvariantCulture);
             }
 
@@ -438,6 +439,7 @@ namespace PowerLauncher.ViewModel
 
         private void QueryHistory()
         {
+            // Using InvariantCulture since this is internal
 #pragma warning disable CA1308 // Normalize strings to uppercase
             var query = QueryText.ToLower(CultureInfo.InvariantCulture).Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
@@ -528,6 +530,7 @@ namespace PowerLauncher.ViewModel
 
                             lock (_addResultsLock)
                             {
+                                // Using CurrentCultureIgnoreCase since this is user facing
                                 if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                 {
                                     Results.Clear();
@@ -565,6 +568,7 @@ namespace PowerLauncher.ViewModel
                                             {
                                                 lock (_addResultsLock)
                                                 {
+                                                    // Using CurrentCultureIgnoreCase since this is user facing
                                                     if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                                     {
                                                         currentCancellationToken.ThrowIfCancellationRequested();
@@ -630,6 +634,7 @@ namespace PowerLauncher.ViewModel
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
+                // Using CurrentCultureIgnoreCase since this is user facing
                 if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                 {
                     Results.Results.NotifyChanges();
@@ -818,6 +823,7 @@ namespace PowerLauncher.ViewModel
                 }
             }
 
+            // Using CurrentCultureIgnoreCase since this is user facing
             if (originQuery.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
             {
                 ct.ThrowIfCancellationRequested();
@@ -879,6 +885,7 @@ namespace PowerLauncher.ViewModel
             }
             else
             {
+                // Using Ordinal this is internal
                 return string.IsNullOrEmpty(queryText) || autoCompleteText.IndexOf(queryText, StringComparison.Ordinal) != 0;
             }
         }
@@ -889,6 +896,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0)
                 {
+                    // Using OrdinalIgnoreCase since this is internal
                     if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // Use the same case as the input query for the matched portion of the string
@@ -906,6 +914,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0 && !string.IsNullOrEmpty(query))
                 {
+                    // Using OrdinalIgnoreCase since this is internal
                     if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         return query + input.Substring(query.Length);

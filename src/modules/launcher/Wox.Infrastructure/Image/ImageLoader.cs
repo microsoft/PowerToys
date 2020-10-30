@@ -131,6 +131,7 @@ namespace Wox.Infrastructure.Image
                     return new ImageResult(ImageCache[path], ImageType.Cache);
                 }
 
+                // Using OrdinalIgnoreCase since this is internal and used with paths
                 if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
                     var imageSource = new BitmapImage(new Uri(path));

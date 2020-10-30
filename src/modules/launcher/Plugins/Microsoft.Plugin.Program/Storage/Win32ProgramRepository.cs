@@ -145,6 +145,7 @@ namespace Microsoft.Plugin.Program.Storage
             try
             {
                 // To mitigate the issue of not having a FullPath for a shortcut app, we iterate through the items and find the app with the same hashcode.
+                // Using OrdinalIgnoreCase since this is used internally
                 if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     app = GetAppWithSameLnkResolvedPath(path);
@@ -189,6 +190,7 @@ namespace Microsoft.Plugin.Program.Storage
         {
             foreach (Programs.Win32Program app in Items)
             {
+                // Using CurrentCulture since this is user facing
                 if (lnkResolvedPath.ToLower(CultureInfo.CurrentCulture).Equals(app.LnkResolvedPath, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return app;
