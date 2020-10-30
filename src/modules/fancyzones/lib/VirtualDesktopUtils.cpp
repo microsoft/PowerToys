@@ -96,7 +96,7 @@ namespace VirtualDesktopUtils
         // Second fallback scenario is to get array of virtual desktops stored in registry, but not kept per
         // session. Note that we are taking first element from virtual desktop array, which is primary desktop.
         // If user has more than one virtual desktop, one of previous functions should return correct value,
-        // as desktop switch occured in current session.
+        // as desktop switch occurred in current session.
         else
         {
             std::vector<GUID> ids{};
