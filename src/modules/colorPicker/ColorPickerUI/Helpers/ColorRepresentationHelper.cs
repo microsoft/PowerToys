@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 namespace ColorPicker.Helpers
 {
     /// <summary>
-    /// Helper class to easier work with color represantation
+    /// Helper class to easier work with color representation
     /// </summary>
     internal static class ColorRepresentationHelper
     {
