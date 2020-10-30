@@ -28,7 +28,7 @@
         </Grid>
 
         <!--Details panel-->
-        <Grid Margin="0,10,0,0" Height="0" x:Name="detailsGrid">
+        <Grid Margin="0,10,0,0" Height="0" x:Name="detailsGrid" >
             <Border Background="#313233"/>
             <StackPanel x:Name="detailsStackPanel" Opacity="0">
                 <Grid Margin="6,10,0,0" x:Name="SpectrumGrid" HorizontalAlignment="Left" Height="40" Width="300" MouseLeftButtonDown="SpectrumGrid_MouseLeftButtonDown" MouseMove="SpectrumGrid_MouseMove">
@@ -52,12 +52,23 @@
                     <Border HorizontalAlignment="Left" x:Name="rgbGradientPointer" BorderBrush="Black" BorderThickness="1" Margin="150,0,0,0" Width="3" VerticalAlignment="Stretch" Background="White"/>
                 </Grid>
 
-                <WrapPanel Margin="0,10,0,0">
-                    <TextBlock Text="HEX" VerticalAlignment="Center"/>
-                    <TextBox x:Name="HexCode" Margin="10,0,0,0" Width="80" TextChanged="HexCode_TextChanged"  TextWrapping="Wrap"/>
-                </WrapPanel>
 
-                <WrapPanel HorizontalAlignment="Right" Margin="0,10,0,0">
+                <WrapPanel Grid.Column="1" Margin="0,10,0,0">
+                    <TextBlock Text="R" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="RTextBox" Margin="10,0,0,0" Width="70"/>
+
+                    <TextBlock Text="G" Margin="17,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="GTextBox" Margin="10,0,0,0" Width="70"/>
+
+                    <TextBlock Text="B" Margin="17,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="BTextBox" Margin="10,0,0,0" Width="70"/>
+                </WrapPanel>
+                <WrapPanel Margin="0,10,0,0">
+                        <TextBlock Text="HEX" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="HexCode" Margin="10,0,0,0" Width="80" TextChanged="HexCode_TextChanged"  TextWrapping="Wrap"/>
+                    </WrapPanel>
+
+                <WrapPanel HorizontalAlignment="Right" Margin="0,50,0,0" VerticalAlignment="Top">
                     <Button x:Name="CancelButton" Click="CancelButton_Click" Content="Cancel" Width="80"/>
                     <Button Margin="10,0,10,0" x:Name="OKButton" Click="OKButton_Click" Content="OK" Width="80"/>
                 </WrapPanel>

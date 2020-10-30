@@ -24,9 +24,7 @@ namespace ColorPicker.Views
     /// </summary>
     public partial class ColorEditorView : UserControl
     {
-        public ColorEditorView()
-        {
+        public ColorEditorView() =>
             InitializeComponent();
-        }
     }
 }

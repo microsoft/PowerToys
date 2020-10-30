@@ -73,30 +73,37 @@
         </Grid>
 
         <ScrollViewer Grid.Column="1" Margin="0,90,0,0">
-            <ItemsControl ItemsSource="{Binding ColorRepresentations}"  AllowDrop="True" >
-                <!--<e:Interaction.Behaviors>
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding ColorRepresentations}"  AllowDrop="True" >
+                    <!--<e:Interaction.Behaviors>
                     <behaviors:DragAndDropReorderBehavior/>
                 </e:Interaction.Behaviors>-->
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
                                                      HideCommand="{Binding ElementName=colorEditorControl, Path=DataContext.HideColorFormatCommand}"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" Margin="0,16,0,16"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-        </ScrollViewer>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" Margin="0,16,0,16"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
 
-        <ToggleButton Content="&#xE710;" FontFamily="Segoe MDL2 Assets" Width="46" Height="32"  Background="Transparent" ToolTip="Add Color Format"  Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,10,0"  x:Name="toggleButton" IsChecked="False"/>
-        <Popup IsOpen="{Binding ElementName=toggleButton, Path=IsChecked}" StaysOpen="False" Placement="Bottom" PlacementTarget="{Binding ElementName=toggleButton}" AllowsTransparency="True">
-            <Border Background="Black">
-                <ListBox ItemsSource="{Binding AvailableColorFormats}" SelectedItem="{Binding SelectedColorFormat}"/>
-            </Border>
-        </Popup>
+                <ToggleButton Content="&#xE710;" FontFamily="Segoe MDL2 Assets" ToolTip="Add Color Format"  Grid.Column="1" VerticalAlignment="Top" x:Name="toggleButton" IsChecked="False" Visibility="{Binding AvailableColorFormats.Count, Converter={StaticResource numberToVisibilityConverter}}"
+                               Margin="12,0,12,0"
+                    Width="308"
+                    Height="36"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource ColorControlBackgroundBrush}"/>
+                <Popup IsOpen="{Binding ElementName=toggleButton, Path=IsChecked}" StaysOpen="False" Placement="Top" HorizontalAlignment="Center" PlacementTarget="{Binding ElementName=toggleButton}" AllowsTransparency="True">
+                    <Border>
+                        <ListBox ItemsSource="{Binding AvailableColorFormats}" SelectedItem="{Binding SelectedColorFormat}" Visibility="{Binding ElementName=colorEditorControl, Path=DataContext.AvailableColorFormats.Count, Converter={StaticResource numberToVisibilityConverter}}"/>
+                    </Border>
+                </Popup>
+            </StackPanel>
+        </ScrollViewer>
         
         <controls:ColorPickerControl HorizontalAlignment="Left" Margin="12,44,12,0" SelectedColor="{Binding SelectedColor}" SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}" Grid.Column="1" VerticalAlignment="Top"/>
 

@@ -26,6 +26,13 @@ namespace ColorPicker
         public ColorEditorWindow()
         {
             InitializeComponent();
+            Closing += ColorEditorWindow_Closing;
+        }
+
+        private void ColorEditorWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
         }
     }
 }

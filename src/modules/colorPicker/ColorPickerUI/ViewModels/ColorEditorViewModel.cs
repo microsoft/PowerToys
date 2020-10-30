@@ -76,16 +76,14 @@ namespace ColorPicker.ViewModels
             {
                 if (!_settingSelectedColorFormat)
                 {
-                    _selectedColorFormat = value;
+                    _selectedColorFormat = null;
                     if (value != null)
                     {
                         ColorRepresentations.Add(_allColorRepresentations.First(it => it.FormatName == value));
                         _settingSelectedColorFormat = true;
                         AvailableColorFormats.Remove(value);
+                        _selectedColorFormat = null;
                     }
-
-                    _selectedColorFormat = null;
-                    OnPropertyChanged();
 
                     _settingSelectedColorFormat = false;
                 }

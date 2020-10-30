@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,12 +34,12 @@ namespace ColorPicker.Controls
 
             var g6 = HSVColor.GradientSpectrum();
 
-            LinearGradientBrush gradientBrush = new LinearGradientBrush();
+            var gradientBrush = new LinearGradientBrush();
             gradientBrush.StartPoint = new Point(0, 0);
             gradientBrush.EndPoint = new Point(1, 0);
             for (int i = 0; i < g6.Length; i++)
             {
-                GradientStop stop = new GradientStop(g6[i], i * 0.16);
+                var stop = new GradientStop(g6[i], i * 0.16);
                 gradientBrush.GradientStops.Add(stop);
             }
 
@@ -69,9 +70,16 @@ namespace ColorPicker.Controls
             var newColorBackground = new SolidColorBrush(newColor);
             ((ColorPickerControl)d).CurrentColorBorder.Background = newColorBackground;
             ((ColorPickerControl)d).HexCode.Text = ColorToHex(newColor);
-
+            ((ColorPickerControl)d).RTextBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
+            ((ColorPickerControl)d).GTextBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
+            ((ColorPickerControl)d).BTextBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
             var hsv = ColorHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
 
+            SetColorVariationsForCurrentColor(d, hsv);
+        }
+
+        private static void SetColorVariationsForCurrentColor(DependencyObject d, (double hue, double saturation, double value) hsv)
+        {
             var hueCoeficient = 0;
             var hueCoeficient2 = 0;
             if (1 - hsv.value < 0.15)
@@ -139,6 +147,9 @@ namespace ColorPicker.Controls
             {
                 _changedByPicker = true;
                 HexCode.Text = ColorToHex(c);
+                RTextBox.Text = c.R.ToString(CultureInfo.InvariantCulture);
+                GTextBox.Text = c.G.ToString(CultureInfo.InvariantCulture);
+                BTextBox.Text = c.B.ToString(CultureInfo.InvariantCulture);
                 _changedByPicker = false;
             }
         }
