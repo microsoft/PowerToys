@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -61,9 +61,14 @@ namespace Wox.Plugin
                     darkThemeUri,
                     CustomLibraryThemeProvider.DefaultInstance));
 
-            ResetTheme();
-            ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ControlzEx.Theming.ThemeSyncMode.SyncAll;
             ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
+
+            // Currently we don't need to sync all, because the accent is not used
+            // If we want to sync all and use runtime generated themes,
+            // then it's necessary to have a "GeneratorParameters.json" and "Theme.Template.xaml".
+            ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ControlzEx.Theming.ThemeSyncMode.SyncWithAppMode;
+
+            ControlzEx.Theming.ThemeManager.Current.SyncTheme();
         }
 
         public Theme GetCurrentTheme()
