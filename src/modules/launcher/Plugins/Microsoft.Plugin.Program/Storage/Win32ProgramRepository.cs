@@ -225,7 +225,7 @@ namespace Microsoft.Plugin.Program.Storage
         public void IndexPrograms()
         {
             var applications = Programs.Win32Program.All(_settings);
-            Set(applications);
+            SetList(applications);
         }
 
         public void Save()
@@ -236,7 +236,7 @@ namespace Microsoft.Plugin.Program.Storage
         public void Load()
         {
             var items = _storage.TryLoad(Array.Empty<Win32Program>());
-            Set(items);
+            SetList(items);
         }
     }
 }

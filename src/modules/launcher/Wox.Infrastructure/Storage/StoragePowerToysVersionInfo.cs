@@ -10,7 +10,7 @@ namespace Wox.Infrastructure.Storage
     public class StoragePowerToysVersionInfo
     {
         // This detail is accessed by the storage items and is used to decide if the cache must be deleted or not
-        public bool ClearCache { get; set; } = false;
+        public bool ClearCache { get; set; }
 
         private readonly string currentPowerToysVersion = string.Empty;
 
@@ -81,7 +81,7 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private string GetFilePath(string associatedFilePath, int type)
+        private static string GetFilePath(string associatedFilePath, int type)
         {
             string suffix = string.Empty;
             string cacheSuffix = ".cache";
@@ -102,6 +102,11 @@ namespace Wox.Infrastructure.Storage
 
         public StoragePowerToysVersionInfo(string associatedFilePath, int type)
         {
+            if (associatedFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(associatedFilePath));
+            }
+
             FilePath = GetFilePath(associatedFilePath, type);
 
             // Get the previous version of PowerToys and cache Storage details from the CacheDetails.json storage file

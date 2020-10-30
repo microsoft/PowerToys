@@ -22,14 +22,14 @@ namespace PowerLauncher
 {
     public partial class MainWindow : IDisposable
     {
-        private readonly Settings _settings;
+        private readonly PowerToysRunSettings _settings;
         private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
         private Timer _firstDeleteTimer = new Timer();
         private bool _coldStateHotkeyPressed;
 
-        public MainWindow(Settings settings, MainViewModel mainVM)
+        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
             : this()
         {
             DataContext = mainVM;

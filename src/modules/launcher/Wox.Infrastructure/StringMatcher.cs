@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -59,9 +60,16 @@ namespace Wox.Infrastructure
                 return new MatchResult(false, UserSettingSearchPrecision);
             }
 
+            if (opt == null)
+            {
+                throw new ArgumentNullException(nameof(opt));
+            }
+
             query = query.Trim();
-            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
-            var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
+
+            // Using InvariantCulture since this is internal
+            var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
+            var queryWithoutCase = opt.IgnoreCase ? query.ToUpper(CultureInfo.InvariantCulture) : query;
 
             var querySubstrings = queryWithoutCase.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             int currentQuerySubstringIndex = 0;
@@ -160,7 +168,7 @@ namespace Wox.Infrastructure
         }
 
         // To get the index of the closest space which preceeds the first matching index
-        private int CalculateClosestSpaceIndex(List<int> spaceIndices, int firstMatchIndex)
+        private static int CalculateClosestSpaceIndex(List<int> spaceIndices, int firstMatchIndex)
         {
             if (spaceIndices.Count == 0)
             {

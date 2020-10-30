@@ -29,7 +29,7 @@ namespace Wox.Infrastructure.Storage
         {
         }
 
-        public void Set(IList<T> items)
+        public void SetList(IList<T> items)
         {
             // enforce that internal representation
             try

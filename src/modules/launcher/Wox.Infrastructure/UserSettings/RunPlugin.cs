@@ -6,13 +6,28 @@ using System.Collections.Generic;
 
 namespace Wox.Infrastructure.UserSettings
 {
-    public class Plugin
+    public class RunPlugin
     {
         public string ID { get; set; }
 
         public string Name { get; set; }
 
-        public List<string> ActionKeywords { get; set; } // a reference of the action keywords from plugin manager
+        private List<string> _actionKeywords;
+
+        public RunPlugin(List<string> actionKeywords = null)
+        {
+            _actionKeywords = actionKeywords;
+        }
+
+        public List<string> GetActionKeywords()
+        {
+            return _actionKeywords;
+        }
+
+        public void SetActionKeywords(List<string> value)
+        {
+            _actionKeywords = value;
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether used only to save the state of the plugin in settings
