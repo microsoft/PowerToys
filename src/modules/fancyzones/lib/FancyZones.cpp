@@ -240,6 +240,7 @@ private:
     wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
 
     OnThreadExecutor m_dpiUnawareThread;
+    OnThreadExecutor m_dpiSystemThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
 
     // If non-recoverable error occurs, trigger disabling of entire FancyZones.
@@ -298,6 +299,10 @@ FancyZones::Run() noexcept
                           SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
                       } })
         .wait();
+
+    m_dpiSystemThread.submit(OnThreadExecutor::task_t{ [] {
+                         SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+    } }).wait();
 
     m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
     m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
@@ -643,7 +648,7 @@ void FancyZones::ToggleEditor() noexcept
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
         
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+    m_dpiSystemThread.submit(OnThreadExecutor::task_t{ [&] { allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>(); } }).wait();
     
     bool showDpiWarning = false;
     int prevDpiX = -1, prevDpiY = -1;
