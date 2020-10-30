@@ -242,7 +242,7 @@ namespace Microsoft.Plugin.Program.Programs
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)
