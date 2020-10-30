@@ -236,7 +236,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void UpdateWidthAndHeightShouldUpateSizeWhenCorrectValuesAreProvided()
+        public void UpdateWidthAndHeightShouldUpdateSizeWhenCorrectValuesAreProvided()
         {
             // arrange
             ImageSize imageSize = new ImageSize()
