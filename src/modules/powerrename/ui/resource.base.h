@@ -10,8 +10,8 @@
 #define IDC_EDIT_REPLACEWITH            3003
 #define IDC_LIST_PREVIEW                3004
 #define IDC_CHECK_USEREGEX              3005
-#define IDC_STATUS_MESSAGE_SELECTED		3006
-#define IDC_STATUS_MESSAGE_RENAMING		3007
+#define IDC_STATUS_MESSAGE_SELECTED     3006
+#define IDC_STATUS_MESSAGE_RENAMING     3007
 #define IDC_CHECK_EXCLUDESUBFOLDERS     3008
 #define IDC_CHECK_ENUMITEMS             3009
 #define IDC_CHECK_EXCLUDEFILES          3010
@@ -23,11 +23,11 @@
 #define IDC_PREVIEWGROUP                3016
 #define IDC_OPTIONSGROUP                3017
 #define IDC_SEARCHREPLACEGROUP          3018
-#define IDC_TRANSFORM_UPPERCASE		    3019
-#define IDC_TRANSFORM_LOWERCASE		    3020
-#define IDC_TRANSFORM_TITLECASE		    3021
-#define IDC_SEARCH_FOR					3022
-#define IDC_REPLACE_WITH				3023
+#define IDC_TRANSFORM_UPPERCASE         3019
+#define IDC_TRANSFORM_LOWERCASE         3020
+#define IDC_TRANSFORM_TITLECASE         3021
+#define IDC_SEARCH_FOR                  3022
+#define IDC_REPLACE_WITH                3023
 #define IDC_STATIC                      -1
 #define IDR_MAINFRAME                   3024
 #define IDD_MAIN                        3025
