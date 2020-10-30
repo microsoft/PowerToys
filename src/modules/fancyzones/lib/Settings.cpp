@@ -158,7 +158,7 @@ IFACEMETHODIMP_(void) FancyZonesSettings::CallCustomAction(PCWSTR action) noexce
     }
     catch (...)
     {
-        // Currently only custom action comming from main PowerToys window is request to launch editor.
+        // Currently only custom action coming from main PowerToys window is request to launch editor.
         // If new custom action is added, error message need to be modified.
         std::wstring errorMessage = GET_RESOURCE_STRING(IDS_FANCYZONES_EDITOR_LAUNCH_ERROR) + L" " + NonLocalizable::PowerToysIssuesURL;
         MessageBox(NULL,
