@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         public IStream Stream { get; private set; }
 
         /// <summary>
-        ///  The maxium dimension (width or height) thumbnail we will generate.
+        ///  The maximum dimension (width or height) thumbnail we will generate.
         /// </summary>
         private const uint MaxThumbnailSize = 10000;
 
