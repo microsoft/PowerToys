@@ -10,8 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
     {
         public bool CreateDirectory(string path)
         {
-            var directioryInfo = Directory.CreateDirectory(path);
-            return directioryInfo != null;
+            var directoryInfo = Directory.CreateDirectory(path);
+            return directoryInfo != null;
         }
 
         public void DeleteDirectory(string path)
