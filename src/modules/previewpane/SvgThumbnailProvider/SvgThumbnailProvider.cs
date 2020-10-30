@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <summary>
         /// Captures an image representation of browser contents.
         /// </summary>
-        /// <param name="browser">The WebBrowser instance rendring the SVG.</param>
+        /// <param name="browser">The WebBrowser instance rendering the SVG.</param>
         /// <param name="rectangle">The client rectangle to capture from.</param>
         /// <param name="backgroundColor">The default background color to apply.</param>
         /// <returns>A Bitmap representing the browser contents.</returns>
