@@ -167,8 +167,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                   </body>
                 </html>";
 
-            // Using CurrentCulture since this is user facing
-            return string.Format(CultureInfo.CurrentCulture, html, svg);
+            // Using InvariantCulture since this should be displayed as it is
+            return string.Format(CultureInfo.InvariantCulture, html, svg);
         }
 
         /// <summary>

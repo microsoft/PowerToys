@@ -18,10 +18,10 @@ namespace Microsoft.Plugin.Uri.UriHelper
             }
 
             // Handle common cases UriBuilder does not handle
-            // Using Ordinal since these are internal and used with symbols
-            if (input.EndsWith(":", StringComparison.Ordinal)
-                || input.EndsWith(".", StringComparison.Ordinal)
-                || input.EndsWith(":/", StringComparison.Ordinal))
+            // Using CurrentCulture since this is a user typed string
+            if (input.EndsWith(":", StringComparison.CurrentCulture)
+                || input.EndsWith(".", StringComparison.CurrentCulture)
+                || input.EndsWith(":/", StringComparison.CurrentCulture))
             {
                 result = default;
                 return false;

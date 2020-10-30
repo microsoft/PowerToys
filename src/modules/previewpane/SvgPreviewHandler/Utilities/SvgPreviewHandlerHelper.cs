@@ -48,7 +48,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                 foreach (XElement element in elements)
                 {
                     // Using CurrentCulture since this is user facing
-                    var elementName = element?.Name?.LocalName?.ToLower(CultureInfo.CurrentCulture);
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                    var elementName = element?.Name?.LocalName?.ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
                     if (elementName != null && blockedElementsName.ContainsKey(elementName))
                     {
                         foundBlockedElement = true;

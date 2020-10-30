@@ -439,9 +439,9 @@ namespace PowerLauncher.ViewModel
 
         private void QueryHistory()
         {
-            // Using InvariantCulture since this is internal
+            // Using CurrentCulture since query is received from user and used in downstream comparisons using CurrentCulture
 #pragma warning disable CA1308 // Normalize strings to uppercase
-            var query = QueryText.ToLower(CultureInfo.InvariantCulture).Trim();
+            var query = QueryText.ToLower(CultureInfo.CurrentCulture).Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
             History.Clear();
 
@@ -896,7 +896,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0)
                 {
-                    // Using OrdinalIgnoreCase since this is internal
+                    // Using OrdinalIgnoreCase because we want the characters to be exact in autocomplete text and the query
                     if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // Use the same case as the input query for the matched portion of the string
