@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using ColorPicker.Helpers;
 
 namespace ColorPicker.Controls
 {
@@ -63,14 +64,33 @@ namespace ColorPicker.Controls
 
         private static void SelectedColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ColorPickerControl)d)._originalColor = ((ColorPickerControl)d)._currentColor = (Color)e.NewValue;
-            var newColorBackground = new SolidColorBrush((Color)e.NewValue);
+            var newColor = (Color)e.NewValue;
+            ((ColorPickerControl)d)._originalColor = ((ColorPickerControl)d)._currentColor = newColor;
+            var newColorBackground = new SolidColorBrush(newColor);
             ((ColorPickerControl)d).CurrentColorBorder.Background = newColorBackground;
-            ((ColorPickerControl)d).leftLightColorBorder.Background = newColorBackground;
-            ((ColorPickerControl)d).leftColorBorder.Background = newColorBackground;
-            ((ColorPickerControl)d).rightColorBorder.Background = newColorBackground;
-            ((ColorPickerControl)d).rightLightColorBorder.Background = newColorBackground;
-            ((ColorPickerControl)d).HexCode.Text = ColorToHex((Color)e.NewValue);
+            ((ColorPickerControl)d).HexCode.Text = ColorToHex(newColor);
+
+            var hsv = ColorHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
+
+            var hueCoeficient = 0;
+            var hueCoeficient2 = 0;
+            if (1 - hsv.value < 0.15)
+            {
+                hueCoeficient = 1;
+            }
+
+            if (hsv.value - 0.3 < 0)
+            {
+                hueCoeficient2 = 1;
+            }
+
+            var s = hsv.saturation;
+
+            ((ColorPickerControl)d).colorVariation1Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoeficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
+            ((ColorPickerControl)d).colorVariation2Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoeficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
+
+            ((ColorPickerControl)d).colorVariation3Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
+            ((ColorPickerControl)d).colorVariation4Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
         }
 
         private void RgbGradient_MouseMove(object sender, MouseEventArgs e)
@@ -114,11 +134,6 @@ namespace ColorPicker.Controls
 
             _currentColor = c;
             CurrentColorBorder.Background = new SolidColorBrush(c);
-
-            leftColorBorder.Background = CurrentColorBorder.Background;
-            leftLightColorBorder.Background = CurrentColorBorder.Background;
-            rightColorBorder.Background = CurrentColorBorder.Background;
-            rightLightColorBorder.Background = CurrentColorBorder.Background;
 
             if (!skipUpdatingText)
             {
@@ -278,11 +293,14 @@ namespace ColorPicker.Controls
             // Revert to original color
             var originalColorBackground = new SolidColorBrush(_originalColor);
             CurrentColorBorder.Background = originalColorBackground;
-            leftLightColorBorder.Background = originalColorBackground;
-            leftColorBorder.Background = originalColorBackground;
-            rightColorBorder.Background = originalColorBackground;
-            rightLightColorBorder.Background = originalColorBackground;
+
             HexCode.Text = ColorToHex(_originalColor);
+        }
+
+        private void ColorVariationBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var selectedColor = ((SolidColorBrush)((Border)sender).Background).Color;
+            SelectedColorChangedCommand.Execute(selectedColor);
         }
     }
 }

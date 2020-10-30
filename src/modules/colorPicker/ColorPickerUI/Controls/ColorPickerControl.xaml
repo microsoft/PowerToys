@@ -20,10 +20,10 @@
                 <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
 
-            <Border Background="LightPink" x:Name="leftLightColorBorder" Opacity="0.5" CornerRadius="2,0,0,2"/>
-            <Border Grid.Column="1" Background="LightPink" x:Name="leftColorBorder" Opacity="0.7"/>
-            <Border Grid.Column="3" Background="LightPink" x:Name="rightColorBorder" Opacity="0.7"/>
-            <Border Grid.Column="4" Background="LightPink" x:Name="rightLightColorBorder" Opacity="0.5" CornerRadius="0,2,2,0"/>
+            <Border Grid.Column="0" Background="LightPink" x:Name="colorVariation1Border" Opacity="0.5" CornerRadius="2,0,0,2" MouseLeftButtonDown="ColorVariationBorder_MouseLeftButtonDown"/>
+            <Border Grid.Column="1" Background="LightPink" x:Name="colorVariation2Border" Opacity="0.7" MouseLeftButtonDown="ColorVariationBorder_MouseLeftButtonDown"/>
+            <Border Grid.Column="3" Background="LightPink" x:Name="colorVariation3Border" Opacity="0.7" MouseLeftButtonDown="ColorVariationBorder_MouseLeftButtonDown"/>
+            <Border Grid.Column="4" Background="LightPink" x:Name="colorVariation4Border" Opacity="0.5" CornerRadius="0,2,2,0" MouseLeftButtonDown="ColorVariationBorder_MouseLeftButtonDown"/>
             <Border HorizontalAlignment="Left" Grid.Column="0" Grid.ColumnSpan="5" Margin="80,0,0,0" Opacity="1" x:Name="CurrentColorBorder" Width="140" Background="Red" Height="40" MouseDown="CurrentColorBorder_MouseDown"/>
         </Grid>
 
