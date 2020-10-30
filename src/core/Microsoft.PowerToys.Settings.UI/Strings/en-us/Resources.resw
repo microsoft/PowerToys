@@ -373,10 +373,12 @@
     <value>Give feedback</value>
   </data>
   <data name="Module_overview.Text" xml:space="preserve">
-    <value>Module overview</value>
+    <value>Learn more</value>
+    <comment>This label is there to point people to additional overview for how to use the product</comment>
   </data>
   <data name="AttributionTitle.Text" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="GeneralPage_AboutPowerToysHeader.Text" xml:space="preserve">
     <value>About PowerToys</value>
@@ -392,12 +394,15 @@
   </data>
   <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
+    <comment>Report an issue inside powertoys</comment>
   </data>
   <data name="GeneralPage_RequestAFeature_URL.Text" xml:space="preserve">
     <value>Request a feature</value>
+    <comment>Tell our team what we should build</comment>
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
     <value>Restart as administrator</value>
+    <comment>running PowerToys as a higher level user, account is typically referred to as an admin / adminsitrator</comment>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
@@ -407,9 +412,11 @@
   </data>
   <data name="PowerRename_ShellIntegration.Text" xml:space="preserve">
     <value>Shell integration</value>
+    <comment>This refers to directly integrating in with Windows</comment>
   </data>
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
     <value>Enable PowerRename</value>
+    <comment>do not loc the Product name </comment>
   </data>
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
     <value>Settings theme</value>
