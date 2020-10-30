@@ -105,11 +105,11 @@ Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/release
 WinGet install powertoys
 ```
 
-### Experiential PowerToys utility with Video conference muting
+### Experimental PowerToys utility with Video conference muting
 
 Install the [pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from 0.23 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
-**Note:** We'll have 0.26 Experiemental out in the first week of November 2020.
+**Note:** We'll have 0.26 Experimental out in the first week of November 2020.
 
 ### Other install methods
 
