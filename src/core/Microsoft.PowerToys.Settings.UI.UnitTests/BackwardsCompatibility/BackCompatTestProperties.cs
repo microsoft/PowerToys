@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
         public static Mock<IIOProvider>GetModuleIOProvider(string version, string module, string fileName)
         {
-            
+            // Using StringComparison.Ordinal / CultureInfo.InvariantCulture since this is used internally
             var stubSettingsPath = string.Format(CultureInfo.InvariantCulture, BackCompatTestProperties.RootPathStubFiles, version, module, fileName);
             Expression<Func<string, bool>> filterExpression = (string s) => s.Contains(module, StringComparison.Ordinal);
             var mockIOProvider = IIOProviderMocks.GetMockIOReadWithStubFile(stubSettingsPath, filterExpression);
@@ -59,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
                 throw new ArgumentNullException(nameof(provider));
             }
 
+            // Using Ordinal since this is used internally
             Expression<Func<string, bool>> filterExpression = (string s) => s.Contains(module, StringComparison.Ordinal);
 
             IIOProviderMocks.VerifyIOReadWithStubFile(provider, filterExpression, expectedCallCount);
@@ -66,6 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
         public static Mock<IIOProvider> GetGeneralSettingsIOProvider(string version)
         {
+            // Using StringComparison.Ordinal / CultureInfo.InvariantCulture since this is used internally for a path
             var stubGeneralSettingsPath = string.Format(CultureInfo.InvariantCulture, BackCompatTestProperties.RootPathStubFiles, version, string.Empty, "settings.json");
             Expression<Func<string, bool>> filterExpression = (string s) => s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
             var mockGeneralIOProvider = IIOProviderMocks.GetMockIOReadWithStubFile(stubGeneralSettingsPath, filterExpression);
@@ -78,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
             {
                 throw new ArgumentNullException(nameof(provider));
             }
-
+            // Using Ordinal since this is used internally for a path
             Expression<Func<string, bool>> filterExpression = (string s) => s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
             IIOProviderMocks.VerifyIOReadWithStubFile(provider, filterExpression, expectedCallCount);
         }

@@ -68,6 +68,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
+            // Using InvariantCulture since this is internal
             var result = engine.Interpret(input, CultureInfo.InvariantCulture);
 
             // Assert
@@ -84,6 +85,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
+            // Using InvariantCulture since this is internal
             var result = engine.Interpret(input, CultureInfo.InvariantCulture);
 
             // Assert
@@ -140,6 +142,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
+            // Using InvariantCulture since this is internal
             var result = engine.Interpret(input, CultureInfo.InvariantCulture);
 
             // Assert
@@ -158,6 +161,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
+            // Using InvariantCulture since this is internal
             var result = engine.Interpret(input, CultureInfo.InvariantCulture);
 
             // Assert

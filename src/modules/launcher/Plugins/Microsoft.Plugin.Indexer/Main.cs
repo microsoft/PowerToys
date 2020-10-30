@@ -110,6 +110,8 @@ namespace Microsoft.Plugin.Indexer
                         foreach (var searchResult in searchResultsList)
                         {
                             var path = searchResult.Path;
+
+                            // Using CurrentCulture since this is user facing
                             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_name, searchResult.Title);
                             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_path, path);
                             string workingDir = null;

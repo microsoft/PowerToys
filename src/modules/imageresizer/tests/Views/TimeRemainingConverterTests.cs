@@ -28,6 +28,7 @@ namespace ImageResizer.Views
             var timeRemaining = new TimeSpan(hours, minutes, seconds);
             var converter = new TimeRemainingConverter();
 
+            // Using InvariantCulture since these are internal
             var result = converter.Convert(
                 timeRemaining,
                 targetType: null,

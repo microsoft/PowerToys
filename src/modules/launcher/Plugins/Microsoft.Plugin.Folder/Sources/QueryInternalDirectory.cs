@@ -60,6 +60,7 @@ namespace Microsoft.Plugin.Folder.Sources
                 }
 
                 // Remove everything after the last \ and add *
+                // Using InvariantCulture since this is internal
                 incompleteName = search.Substring(index + 1)
                     .ToLower(CultureInfo.InvariantCulture) + "*";
                 search = search.Substring(0, index + 1);
@@ -71,7 +72,8 @@ namespace Microsoft.Plugin.Folder.Sources
             else
             {
                 // folder exist, add \ at the end of doesn't exist
-                if (!search.EndsWith(@"\", StringComparison.InvariantCulture))
+                // Using Ordinal since this is internal and is used for a symbol
+                if (!search.EndsWith(@"\", StringComparison.Ordinal))
                 {
                     search += @"\";
                 }

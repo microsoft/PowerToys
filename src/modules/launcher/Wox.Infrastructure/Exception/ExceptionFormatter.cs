@@ -70,6 +70,8 @@ namespace Wox.Infrastructure.Exception
 
             sb.AppendLine("## Environment");
             sb.AppendLine($"* Command Line: {Environment.CommandLine}");
+
+            // Using InvariantCulture since this is internal
             sb.AppendLine($"* Timestamp: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             sb.AppendLine($"* Wox version: {Constant.Version}");
             sb.AppendLine($"* OS Version: {Environment.OSVersion.VersionString}");

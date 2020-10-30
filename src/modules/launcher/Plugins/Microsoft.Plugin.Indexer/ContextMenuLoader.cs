@@ -150,6 +150,7 @@ namespace Microsoft.Plugin.Indexer
             string fileExtension = Path.GetExtension(path);
             foreach (string extension in appExtensions)
             {
+                // Using OrdinalIgnoreCase since this is internal
                 if (extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
