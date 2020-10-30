@@ -9,13 +9,13 @@ using System.Windows.Data;
 
 namespace ImageResizer.Views
 {
-    [ValueConversion(typeof(Enum), typeof(string))]
-    internal class BoolValueConverter : IValueConverter
+    [ValueConversion(typeof(Visibility), typeof(bool))]
+    internal class VisibilityBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => (bool)value ? Visibility.Visible : Visibility.Collapsed;
+            => (Visibility)value == Visibility.Visible;
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => (Visibility)value == Visibility.Visible;
+            => (bool)value ? Visibility.Visible : Visibility.Collapsed;
     }
 }
