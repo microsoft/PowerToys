@@ -117,53 +117,41 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Microsoft.PowerToys.Settings.UI</value>
-    <comment>Application display name</comment>
-  </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Microsoft.PowerToys.Settings.UI</value>
-    <comment>Application description</comment>
-  </data>
-  <data name="Shell_Main.Content" xml:space="preserve">
-    <value>Main</value>
-    <comment>Navigation view item name for Main</comment>
-  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
-    <comment>Navigation view item name for PowerToys Run</comment>
+    <comment>Product name: Navigation view item name for PowerToys Run</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
     <value>PowerRename</value>
-    <comment>Navigation view item name for PowerRename</comment>
+    <comment>Product name: Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
     <value>Shortcut Guide</value>
-    <comment>Navigation view item name for Shortcut Guide</comment>
+    <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer</value>
-    <comment>Navigation view item name for File Explorer Preview</comment>
+    <comment>Product name: Navigation view item name for File Explorer Preview</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>Navigation view item name for FancyZones</comment>
+    <comment>Product name: Navigation view item name for FancyZones</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
     <value>Image Resizer</value>
-    <comment>Navigation view item name for Image Resizer</comment>
+    <comment>Product name: Navigation view item name for Image Resizer</comment>
   </data>
   <data name="Shell_ColorPicker.Content" xml:space="preserve">
     <value>Color Picker</value>
-    <comment>Navigation view item name for Color Picker</comment>
+    <comment>Product name: Navigation view item name for Color Picker</comment>
   </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
-    <comment>Navigation view item name for Keyboard Manager</comment>
+    <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
   <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
     <value>Current configuration</value>
@@ -770,11 +758,14 @@
   </data>
   <data name="Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
+    <comment>Light refers to color, not weight</comment>
   </data>
   <data name="Radio_Theme_Default.Content" xml:space="preserve">
     <value>Windows default</value>
+    <comment>Windows refers to the Operating system</comment>
   </data>
   <data name="Windows_Color_Settings.Content" xml:space="preserve">
     <value>Windows color settings</value>
+    <comment>Windows refers to the Operating system</comment>
   </data>
 </root>
