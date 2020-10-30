@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
                 var elements = doc.Descendants().ToList();
                 foreach (XElement element in elements)
                 {
-                    // Using CurrentCulture since this is user facing
+                    // Using Invariant since we are doing an exact match for HTML tags and we want it to behave the same in every culture
 #pragma warning disable CA1308 // Normalize strings to uppercase
                     var elementName = element?.Name?.LocalName?.ToLowerInvariant();
 #pragma warning restore CA1308 // Normalize strings to uppercase
