@@ -270,7 +270,7 @@
             
             <CheckBox x:Name="spaceAroundSetting" Content="{x:Static props:Resources.Show_Space_Zones}" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}" Grid.Row="0" Grid.Column="0"/>
 
-            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
                 <TextBlock x:Name="paddingValue" 
                            Text="{x:Static props:Resources.Space_Around_Zones}" 
                            Style="{StaticResource settingText}" 
@@ -280,7 +280,7 @@
                 <TextBox AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="32" IsEnabled="{Binding ShowSpacing}" />
             </StackPanel>
 
-            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
                 <TextBlock x:Name="sensitivityRadiusValue"
                            Text="{x:Static props:Resources.Distance_adjacent_zones}" 
                            Style="{StaticResource settingText}" 
