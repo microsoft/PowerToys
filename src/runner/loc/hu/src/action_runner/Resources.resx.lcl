@@ -13,12 +13,18 @@
       <Item ItemId=";DOTNET_CORE_DOWNLOAD_FAILURE" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Couldn't download .NET Core Desktop Runtime 3.1, please install it manually.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nem sikerült letölteni a .NET Core Desktop Runtime 3.1-et, kérjük telepítse manuálisan!]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";DOTNET_CORE_DOWNLOAD_FAILURE_TITLE" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[PowerToys installation error]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PowerToys telepítési hiba]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

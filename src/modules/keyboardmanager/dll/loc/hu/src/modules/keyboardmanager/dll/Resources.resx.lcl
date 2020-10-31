@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Select the key you want to change (Key) and then the key or shortcut you want it to become (Mapped To).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Válassza ki a módosítani kívánt billentyűt (Billentyű), majd azt a billentyűt vagy billentyűparancsot, amellyé át szeretné alakítani (Leképezve a következőre).]]></Val>
+            <Val><![CDATA[Válassza ki a módosítani kívánt billentyűt (Billentyű), majd azt a billentyűt vagy billentyűparancsot, amellyé át szeretné alakítani (Leképezve a következőre)!]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ha például az A billentyű lenyomásával szeretné aktiválni a Ctrl+C billentyűkombinációt, a Billentyű oszlopban az „A”, a Megfeleltetés célja oszlopban pedig a „Ctrl+C” értéket kell megadnia.]]></Val>
+            <Val><![CDATA[Ha például az A billentyű lenyomásával szeretné aktiválni a Ctrl+C billentyűkombinációt, a Billentyű oszlopban az „A”, a Megfeleltetés célja oszlopban pedig a „Ctrl+C” értéket kell megadnia!]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
@@ -170,7 +170,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Select the shortcut you want to change (Shortcut) and then the key or shortcut you want it to invoke (Mapped To).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Válassza ki a módosítani kívánt billentyűparancsot (Billentyűparancs), majd azt a billentyűt vagy billentyűparancsot, amelyet meg szeretne hívni azzal (Leképezve a következőre).]]></Val>
+            <Val><![CDATA[Válassza ki a módosítani kívánt billentyűparancsot (Billentyűparancs), majd azt a billentyűt vagy billentyűparancsot, amelyet meg szeretne hívni azzal (Leképezve a következőre)!]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
