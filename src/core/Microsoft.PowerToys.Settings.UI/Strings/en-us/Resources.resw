@@ -408,7 +408,7 @@
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
     <value>Restart as administrator</value>
-    <comment>running PowerToys as a higher level user, account is typically referred to as an admin / adminsitrator</comment>
+    <comment>running PowerToys as a higher level user, account is typically referred to as an admin / administrator</comment>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
