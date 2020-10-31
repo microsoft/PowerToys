@@ -42,7 +42,7 @@
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        Grid.Column="1"
                        Text="{Binding ColorText}"/>
-        </Grid>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

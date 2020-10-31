@@ -19,33 +19,6 @@
 
         <Border Grid.Column="1"
                 Background="{DynamicResource PrimaryBackgroundBrush}"/>
-        <Grid Grid.ColumnSpan="2"
-              Height="32"
-              Background="Transparent"
-              VerticalAlignment="Top"
-              IsHitTestVisible="True">
-            <e:Interaction.Behaviors>
-                <behaviors:DragWindowBehavior/>
-            </e:Interaction.Behaviors>
-            <Border
-                Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
-                Grid.ColumnSpan="2"
-                Width="30"
-                Opacity="0.9"
-                Height="3"
-                CornerRadius="1.5"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Margin="0,1,0,0" />
-            <Button Width="46"
-                    Height="32"
-                    Content="&#xE115;"
-                    Background="Transparent"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
-                    FontFamily="Segoe MDL2 Assets"
-                    HorizontalAlignment="Right"
-                    Margin="0,0,46,0"/>
-        </Grid>
         <Grid Background="{DynamicResource SecondaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="32"/>
@@ -56,17 +29,20 @@
                     Content="&#xEF3C;"
                     Command="{Binding OpenColorPickerCommand}"
                     Background="Transparent"
+                    FontFamily="Segoe MDL2 Assets"
                     ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
-                    FontFamily="Segoe MDL2 Assets" />
+                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}"
+                    />
             <ui:ListView Margin="0,12,0,0"
-                        Grid.Row="1"
+                         Grid.Row="1"
                          Padding="0"
                          ItemsSource="{Binding ColorsHistory}"
                          SelectedIndex="{Binding SelectedColorIndex}"
                          ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
                 <ui:ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="{x:Static p:Resources.Remove}" Command="{Binding RemoveColorCommand}">
+                        <MenuItem Header="{x:Static p:Resources.Remove}"
+                                  Command="{Binding RemoveColorCommand}">
                             <MenuItem.Icon>
                                 <ui:FontIcon Glyph="&#xE107;" />
                             </MenuItem.Icon>
@@ -93,6 +69,36 @@
             </ui:ListView>
         </Grid>
 
+        <Grid Grid.ColumnSpan="2"
+              Height="32"
+              Background="Transparent"
+              VerticalAlignment="Top"
+              IsHitTestVisible="True">
+            <e:Interaction.Behaviors>
+                <behaviors:DragWindowBehavior/>
+            </e:Interaction.Behaviors>
+            <Border
+                Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
+                Grid.ColumnSpan="2"
+                Width="30"
+                Opacity="0.9"
+                Height="3"
+                CornerRadius="1.5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="0,1,0,0" />
+            <Button Width="46"
+                    Height="32"
+                    Content="&#xE115;"
+                    Background="Transparent"
+                    FontFamily="Segoe MDL2 Assets"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,46,0"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
+                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}"
+                    />
+        </Grid>
+        
         <ScrollViewer Grid.Column="1" Margin="0,90,0,0">
             <StackPanel>
                 <ItemsControl ItemsSource="{Binding ColorRepresentations}"

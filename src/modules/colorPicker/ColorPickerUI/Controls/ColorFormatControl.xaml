@@ -47,14 +47,18 @@
                        BorderThickness="0"
                        IsReadOnly="True"
                        Margin="8"
-                       VerticalAlignment="Center" Style="{DynamicResource TextBoxStyle}"/>
+                       VerticalAlignment="Center"
+                       Style="{DynamicResource TextBoxStyle}"
+                       AutomationProperties.LabeledBy="{Binding FormatNameTextBlock}"
+                     />
 
             <Button x:Name="CopyToClipboardButton"
                     ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}"
                     Background="{DynamicResource ColorControlBackgroundBrush}"
                     Height="36"
                     Width="36"
-                    Grid.Column="2">
+                    Grid.Column="2"
+                    AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
                     <TextBlock FontFamily="Segoe MDL2 Assets"
                            Text="&#xE16F;"
