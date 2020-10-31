@@ -19,8 +19,13 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="1" Background="{DynamicResource PrimaryBackgroundBrush}"/>
-        <Grid Grid.ColumnSpan="2" Height="32" Background="Transparent" VerticalAlignment="Top" IsHitTestVisible="True">
+        <Border Grid.Column="1"
+                Background="{DynamicResource PrimaryBackgroundBrush}"/>
+        <Grid Grid.ColumnSpan="2"
+              Height="32"
+              Background="Transparent"
+              VerticalAlignment="Top"
+              IsHitTestVisible="True">
             <e:Interaction.Behaviors>
                 <behaviors:DragWindowBehavior/>
             </e:Interaction.Behaviors>
@@ -34,15 +39,33 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Margin="0,1,0,0" />
-            <Button Width="46" Height="32" Content="&#xE115;" Background="Transparent" ToolTipService.ToolTip="Open settings" FontFamily="Segoe MDL2 Assets" HorizontalAlignment="Right" Margin="0,0,46,0"/>
+            <Button Width="46"
+                    Height="32"
+                    Content="&#xE115;"
+                    Background="Transparent"
+                    ToolTipService.ToolTip="Open settings"
+                    FontFamily="Segoe MDL2 Assets"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,46,0"/>
         </Grid>
         <Grid Background="{DynamicResource SecondaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Button Width="64" Height="32" Content="&#xEF3C;" Command="{Binding OpenColorPickerCommand}" Background="Transparent" ToolTipService.ToolTip="Pick color" FontFamily="Segoe MDL2 Assets" />
-            <ui:ListView Margin="0,12,0,0" Grid.Row="1" Padding="0" ItemsSource="{Binding ColorsHistory}" SelectedIndex="{Binding SelectedColorIndex}" ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
+            <Button Width="64"
+                    Height="32"
+                    Content="&#xEF3C;"
+                    Command="{Binding OpenColorPickerCommand}"
+                    Background="Transparent"
+                    ToolTipService.ToolTip="Pick color"
+                    FontFamily="Segoe MDL2 Assets" />
+            <ui:ListView Margin="0,12,0,0"
+                        Grid.Row="1"
+                         Padding="0"
+                         ItemsSource="{Binding ColorsHistory}"
+                         SelectedIndex="{Binding SelectedColorIndex}"
+                         ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
                 <ui:ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Remove" Command="{Binding RemoveColorCommand}">
@@ -80,35 +103,70 @@
                 </e:Interaction.Behaviors>-->
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <controls:ColorFormatControl ColorFormatModel="{Binding }" SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
-                                                     HideCommand="{Binding ElementName=colorEditorControl, Path=DataContext.HideColorFormatCommand}"/>
+                            <controls:ColorFormatControl
+                                ColorFormatModel="{Binding }"
+                                SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}"
+                                ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
+                                HideCommand="{Binding ElementName=colorEditorControl, Path=DataContext.HideColorFormatCommand}"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" Margin="0,16,0,16"/>
+                            <StackPanel
+                                Orientation="Vertical"
+                                Margin="0,16,0,16"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
 
-                <ToggleButton Content="&#xE710;" FontFamily="Segoe MDL2 Assets" ToolTip="Add Color Format"  Grid.Column="1" VerticalAlignment="Top" x:Name="toggleButton" IsChecked="False" Visibility="{Binding AvailableColorFormats.Count, Converter={StaticResource numberToVisibilityConverter}}"
-                               Margin="12,0,12,0"
-                    Width="308"
-                    Height="36"
-                    HorizontalAlignment="Stretch"
-                    Background="{DynamicResource ColorControlBackgroundBrush}"/>
-                <Popup IsOpen="{Binding ElementName=toggleButton, Path=IsChecked}" StaysOpen="False" Placement="Top" HorizontalAlignment="Center" PlacementTarget="{Binding ElementName=toggleButton}" AllowsTransparency="True">
+                <ToggleButton Content="&#xE710;"
+                              FontFamily="Segoe MDL2 Assets"
+                              ToolTip="Add Color Format"
+                              Grid.Column="1"
+                              VerticalAlignment="Top"
+                              x:Name="toggleButton"
+                              IsChecked="False"
+                              Visibility="{Binding AvailableColorFormats.Count, Converter={StaticResource numberToVisibilityConverter}}"
+                              Margin="12,0,12,0"
+                              Width="308"
+                              Height="36"
+                              HorizontalAlignment="Stretch"
+                              Background="{DynamicResource ColorControlBackgroundBrush}"/>
+                <Popup IsOpen="{Binding ElementName=toggleButton, Path=IsChecked}"
+                       StaysOpen="False"
+                       Placement="Top"
+                       HorizontalAlignment="Center"
+                       PlacementTarget="{Binding ElementName=toggleButton}"
+                       AllowsTransparency="True">
                     <Border>
-                        <ListBox ItemsSource="{Binding AvailableColorFormats}" SelectedItem="{Binding SelectedColorFormat}" Visibility="{Binding ElementName=colorEditorControl, Path=DataContext.AvailableColorFormats.Count, Converter={StaticResource numberToVisibilityConverter}}"/>
+                        <ListBox ItemsSource="{Binding AvailableColorFormats}"
+                                 SelectedItem="{Binding SelectedColorFormat}"
+                                 Visibility="{Binding ElementName=colorEditorControl, Path=DataContext.AvailableColorFormats.Count, Converter={StaticResource numberToVisibilityConverter}}"/>
                     </Border>
                 </Popup>
             </StackPanel>
         </ScrollViewer>
         
-        <controls:ColorPickerControl HorizontalAlignment="Left" Margin="12,44,12,0" SelectedColor="{Binding SelectedColor}" SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}" Grid.Column="1" VerticalAlignment="Top"/>
+        <controls:ColorPickerControl
+            HorizontalAlignment="Left"
+            Margin="8,48,0,0"
+            SelectedColor="{Binding SelectedColor}"
+            SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
+            Grid.Column="1"
+            VerticalAlignment="Top"/>
 
-        <Border x:Name="CopiedBorderIndicator" Opacity="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="0" Background="{DynamicResource SystemControlBackgroundAccentBrush}">
-            <TextBlock FontSize="16" Foreground="{DynamicResource PrimaryForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" >
+        <Border x:Name="CopiedBorderIndicator"
+                Opacity="0"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Height="0"
+                Background="{DynamicResource SystemControlBackgroundAccentBrush}">
+            
+            <TextBlock FontSize="16"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" >
                 <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
                 <Run Text="Copied to clipboard" FontWeight="SemiBold"/>
             </TextBlock>

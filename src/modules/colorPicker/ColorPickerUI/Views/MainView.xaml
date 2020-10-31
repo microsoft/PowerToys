@@ -11,10 +11,14 @@
 
         <Border BorderBrush="{DynamicResource WindowBorderBrush}"
                 Margin="12"
-                BorderThickness="1" Background="{DynamicResource PrimaryBackgroundBrush}"
+                BorderThickness="1"
+                Background="{DynamicResource PrimaryBackgroundBrush}"
                 CornerRadius="4">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="16" Opacity="0.28" ShadowDepth="1" />
+                <DropShadowEffect
+                    BlurRadius="16"
+                    Opacity="0.28"
+                    ShadowDepth="1" />
             </Border.Effect>
 
             <Grid Margin="2">
