@@ -3,12 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:ColorPicker.Views"
              mc:Ignorable="d" 
              xmlns:shaders="clr-namespace:ColorPicker.Shaders"
              xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
              Background="Transparent"
              Focusable="False">
 

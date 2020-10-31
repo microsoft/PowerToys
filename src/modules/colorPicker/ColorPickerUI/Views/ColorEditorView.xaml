@@ -3,15 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:ColorPicker.Views"
+             xmlns:p="clr-namespace:ColorPicker.Properties"
              mc:Ignorable="d"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:controls="clr-namespace:ColorPicker.Controls"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-             WindowChrome.IsHitTestVisibleInChrome="True"
-             d:DesignHeight="380"
-             d:DesignWidth="400"
+             WindowChrome.IsHitTestVisibleInChrome="True"           
              x:Name="colorEditorControl">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -43,7 +41,7 @@
                     Height="32"
                     Content="&#xE115;"
                     Background="Transparent"
-                    ToolTipService.ToolTip="Open settings"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
                     FontFamily="Segoe MDL2 Assets"
                     HorizontalAlignment="Right"
                     Margin="0,0,46,0"/>
@@ -58,7 +56,7 @@
                     Content="&#xEF3C;"
                     Command="{Binding OpenColorPickerCommand}"
                     Background="Transparent"
-                    ToolTipService.ToolTip="Pick color"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
                     FontFamily="Segoe MDL2 Assets" />
             <ui:ListView Margin="0,12,0,0"
                         Grid.Row="1"
@@ -68,7 +66,7 @@
                          ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
                 <ui:ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Remove" Command="{Binding RemoveColorCommand}">
+                        <MenuItem Header="{x:Static p:Resources.Remove}" Command="{Binding RemoveColorCommand}">
                             <MenuItem.Icon>
                                 <ui:FontIcon Glyph="&#xE107;" />
                             </MenuItem.Icon>
@@ -97,7 +95,8 @@
 
         <ScrollViewer Grid.Column="1" Margin="0,90,0,0">
             <StackPanel>
-                <ItemsControl ItemsSource="{Binding ColorRepresentations}"  AllowDrop="True" >
+                <ItemsControl ItemsSource="{Binding ColorRepresentations}"
+                              AllowDrop="True" >
                     <!--<e:Interaction.Behaviors>
                     <behaviors:DragAndDropReorderBehavior/>
                 </e:Interaction.Behaviors>-->
@@ -121,7 +120,7 @@
 
                 <ToggleButton Content="&#xE710;"
                               FontFamily="Segoe MDL2 Assets"
-                              ToolTip="Add Color Format"
+                              ToolTip="{x:Static p:Resources.Add_color_format}"
                               Grid.Column="1"
                               VerticalAlignment="Top"
                               x:Name="toggleButton"
@@ -168,7 +167,7 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center" >
                 <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
-                <Run Text="Copied to clipboard" FontWeight="SemiBold"/>
+                <Run Text="{x:Static p:Resources.Copied_to_clipboard}" FontWeight="SemiBold"/>
             </TextBlock>
         </Border>
     </Grid>
