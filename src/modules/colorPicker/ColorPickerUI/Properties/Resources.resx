@@ -126,6 +126,10 @@
   <data name="Copy_to_clipboard" xml:space="preserve">
     <value>Copy to clipboard</value>
   </data>
+  <data name="cp_editor" xml:space="preserve">
+    <value>Color Picker editor</value>
+    <comment>Do not translate product name</comment>
+  </data>
   <data name="Hide" xml:space="preserve">
     <value>Hide</value>
   </data>

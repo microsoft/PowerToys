@@ -88,6 +88,15 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Color Picker editor.
+        /// </summary>
+        public static string cp_editor {
+            get {
+                return ResourceManager.GetString("cp_editor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hide.
         /// </summary>
         public static string Hide {
