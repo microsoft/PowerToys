@@ -25,13 +25,13 @@ namespace ColorPicker.Controls
             return rgbs;
         }
 
-        public static Color[] GradientSpectrum()
+        public static Color[] HueSpectrum(double saturation, double value)
         {
             var rgbs = new Color[7];
 
             for (int h = 0; h < 7; h++)
             {
-                rgbs[h] = RGBFromHSV(h * 60, 1f, 1f);
+                rgbs[h] = RGBFromHSV(h * 60, saturation, value);
             }
 
             return rgbs;

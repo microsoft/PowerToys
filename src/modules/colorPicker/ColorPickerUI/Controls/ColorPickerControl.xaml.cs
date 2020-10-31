@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,8 +19,12 @@ namespace ColorPicker.Controls
     /// </summary>
     public partial class ColorPickerControl : UserControl
     {
-        private double currH = 360;
-        private bool _changedByPicker;
+        private double _currH = 360;
+        private double _currS = 1;
+        private double _currV = 1;
+        private bool _ignoreHexChanges;
+        private bool _ignoreRGBChanges;
+        private bool _ignoreGradientsChanges;
         private bool _isCollapsed = true;
         private Color _originalColor;
         private Color _currentColor;
@@ -32,23 +37,7 @@ namespace ColorPicker.Controls
         {
             InitializeComponent();
 
-            var g6 = HSVColor.GradientSpectrum();
-
-            var gradientBrush = new LinearGradientBrush();
-            gradientBrush.StartPoint = new Point(0, 0);
-            gradientBrush.EndPoint = new Point(1, 0);
-            for (int i = 0; i < g6.Length; i++)
-            {
-                var stop = new GradientStop(g6[i], i * 0.16);
-                gradientBrush.GradientStops.Add(stop);
-            }
-
-            SpectrumGrid.Opacity = 1;
-            SpectrumGrid.Background = gradientBrush;
-
-            currH = 360 * ((RgbGradientGrid.Width / 2) - (1 / RgbGradientGrid.Width));
-            MiddleStop.Color = HSVColor.RGBFromHSV(currH, 1f, 1f);
-            UpdateRgbGradient((RgbGradientGrid.Width / 2) - 1);
+            UpdateHueGradient(1, 1);
         }
 
         public Color SelectedColor
@@ -69,13 +58,36 @@ namespace ColorPicker.Controls
             ((ColorPickerControl)d)._originalColor = ((ColorPickerControl)d)._currentColor = newColor;
             var newColorBackground = new SolidColorBrush(newColor);
             ((ColorPickerControl)d).CurrentColorBorder.Background = newColorBackground;
+
+            ((ColorPickerControl)d)._ignoreHexChanges = true;
+            ((ColorPickerControl)d)._ignoreRGBChanges = true;
             ((ColorPickerControl)d).HexCode.Text = ColorToHex(newColor);
             ((ColorPickerControl)d).RTextBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
             ((ColorPickerControl)d).GTextBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
             ((ColorPickerControl)d).BTextBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
+            ((ColorPickerControl)d).SetColorFromTextBoxes(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
+            ((ColorPickerControl)d)._ignoreRGBChanges = false;
+            ((ColorPickerControl)d)._ignoreHexChanges = false;
+
             var hsv = ColorHelper.ConvertToHSVColor(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
 
             SetColorVariationsForCurrentColor(d, hsv);
+        }
+
+        private void UpdateHueGradient(double saturation, double value)
+        {
+            var g6 = HSVColor.HueSpectrum(saturation, value);
+
+            var gradientBrush = new LinearGradientBrush();
+            gradientBrush.StartPoint = new Point(0, 0);
+            gradientBrush.EndPoint = new Point(1, 0);
+            for (int i = 0; i < g6.Length; i++)
+            {
+                var stop = new GradientStop(g6[i], i * 0.16);
+                gradientBrush.GradientStops.Add(stop);
+            }
+
+            HueGradientGrid.Background = gradientBrush;
         }
 
         private static void SetColorVariationsForCurrentColor(DependencyObject d, (double hue, double saturation, double value) hsv)
@@ -101,139 +113,59 @@ namespace ColorPicker.Controls
             ((ColorPickerControl)d).colorVariation4Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
         }
 
-        private void RgbGradient_MouseMove(object sender, MouseEventArgs e)
+        private void UpdateValueColorGradient(double posX)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var pos = System.Windows.Input.Mouse.GetPosition(sender as Grid);
-                UpdateRgbGradient(pos.X);
-            }
+            valueGradientPointer.Margin = new Thickness(posX - 2, 0, 0, 0);
+
+            _currV = posX / ValueGradientGrid.Width;
+
+            UpdateHueGradient(_currS, _currV);
+
+            SaturationStartColor.Color = HSVColor.RGBFromHSV(_currH, 0f, _currV);
+            SaturationStopColor.Color = HSVColor.RGBFromHSV(_currH, 1f, _currV);
         }
 
-        private void RgbGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void UpdateSaturationColorGradient(double posX)
         {
-            var pos = System.Windows.Input.Mouse.GetPosition(sender as Grid);
+            saturationGradientPointer.Margin = new Thickness(posX - 2, 0, 0, 0);
 
-            UpdateRgbGradient(pos.X);
+            _currS = posX / SaturationGradientGrid.Width;
+
+            UpdateHueGradient(_currS, _currV);
+
+            ValueStartColor.Color = HSVColor.RGBFromHSV(_currH, _currS, 0f);
+            ValueStopColor.Color = HSVColor.RGBFromHSV(_currH, _currS, 1f);
         }
 
-        private void UpdateRgbGradient(double posX, bool skipUpdatingText = false)
+        private void UpdateHueColorGradient(double posX)
         {
-            if (posX < 0)
-            {
-                posX = 0;
-            }
+            hueGradientPointer.Margin = new Thickness(posX - 2, 0, 0, 0);
 
-            var width = RgbGradientGrid.Width;
-            var x = width - posX;
+            _currH = posX / HueGradientGrid.Width * 360;
 
-            x = width - x;
+            SaturationStartColor.Color = HSVColor.RGBFromHSV(_currH, 0f, _currV);
+            SaturationStopColor.Color = HSVColor.RGBFromHSV(_currH, 1f, _currV);
 
-            rgbGradientPointer.Margin = new Thickness(posX - 1, 0, 0, 0);
-            Color c;
-            if (x < width / 2)
-            {
-                c = HSVColor.RGBFromHSV(currH, x / (width / 2), 1f);
-            }
-            else
-            {
-                c = HSVColor.RGBFromHSV(currH, 1f, ((width / 2) - (x - (width / 2))) / (width / 2));
-            }
-
-            _currentColor = c;
-            CurrentColorBorder.Background = new SolidColorBrush(c);
-
-            if (!skipUpdatingText)
-            {
-                _changedByPicker = true;
-                HexCode.Text = ColorToHex(c);
-                RTextBox.Text = c.R.ToString(CultureInfo.InvariantCulture);
-                GTextBox.Text = c.G.ToString(CultureInfo.InvariantCulture);
-                BTextBox.Text = c.B.ToString(CultureInfo.InvariantCulture);
-                _changedByPicker = false;
-            }
+            ValueStartColor.Color = HSVColor.RGBFromHSV(_currH, _currS, 0f);
+            ValueStopColor.Color = HSVColor.RGBFromHSV(_currH, _currS, 1f);
         }
 
-        private static string ColorToHex(Color color)
+        private void UpdateTextBoxesAndCurrentColor(Color currentColor)
         {
-            return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty);
-        }
-
-        private void UpdateColorAndHex()
-        {
-            var pointerPosition = rgbGradientPointer.Margin.Left + 1;
-            UpdateRgbGradient(pointerPosition);
-        }
-
-        private void SpectrumGrid_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (!_ignoreHexChanges)
             {
-                var x = e.GetPosition(SpectrumGrid).X;
-                OnSpectrumGridClick(x);
-            }
-        }
-
-        private void SpectrumGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var x = e.GetPosition(SpectrumGrid).X;
-            OnSpectrumGridClick(x);
-        }
-
-        private void OnSpectrumGridClick(double positionX)
-        {
-            if (positionX < 0)
-            {
-                positionX = 0;
+                HexCode.Text = ColorToHex(currentColor);
             }
 
-            if (positionX > RgbGradientGrid.Width)
+            if (!_ignoreRGBChanges)
             {
-                positionX = RgbGradientGrid.Width;
+                RTextBox.Text = currentColor.R.ToString(CultureInfo.InvariantCulture);
+                GTextBox.Text = currentColor.G.ToString(CultureInfo.InvariantCulture);
+                BTextBox.Text = currentColor.B.ToString(CultureInfo.InvariantCulture);
             }
 
-            spectrumGridPointer.Margin = new Thickness(positionX - 1, 0, 0, 0);
-            currH = 360 * (positionX / RgbGradientGrid.Width);
-            MiddleStop.Color = HSVColor.RGBFromHSV(currH, 1f, 1f);
-            UpdateColorAndHex();
-        }
-
-        private void HexCode_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            // TODO: add hex color validation
-            if (!_changedByPicker)
-            {
-                var converter = new System.Drawing.ColorConverter();
-
-                var color = (System.Drawing.Color)converter.ConvertFromString(HexCode.Text);
-
-                var min = Math.Min(Math.Min(color.R, color.G), color.B) / 255d;
-                var max = Math.Max(Math.Max(color.R, color.G), color.B) / 255d;
-
-                var sat = max == 0d ? 0d : (max - min) / max;
-                var v = max;
-
-                var hue = Math.Round(color.GetHue());
-                var saturation = Math.Round(sat * 100);
-                var value = Math.Round(v * 100);
-
-                spectrumGridPointer.Margin = new Thickness((hue / 360) * RgbGradientGrid.Width, 0, 0, 0);
-                MiddleStop.Color = HSVColor.RGBFromHSV(hue, 1f, 1f);
-                currH = hue;
-
-                var width = RgbGradientGrid.Width;
-
-                if (value == 100)
-                {
-                    rgbGradientPointer.Margin = new Thickness((sat * (width / 2)) - 1, 0, 0, 0);
-                    UpdateRgbGradient((sat * (width / 2)) - 1, true);
-                }
-                else if (saturation == 100)
-                {
-                    rgbGradientPointer.Margin = new Thickness((width - (value / 100.0 * (width / 2))) - 1, 0, 0, 0);
-                    UpdateRgbGradient((width - (value / 100.0 * (width / 2))) - 1, true);
-                }
-            }
+            _currentColor = currentColor;
+            CurrentColorBorder.Background = new SolidColorBrush(currentColor);
         }
 
         private void CurrentColorBorder_MouseDown(object sender, MouseButtonEventArgs e)
@@ -312,6 +244,149 @@ namespace ColorPicker.Controls
         {
             var selectedColor = ((SolidColorBrush)((Border)sender).Background).Color;
             SelectedColorChangedCommand.Execute(selectedColor);
+        }
+
+        private void ValueGradientGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var pos = GetMousePositionWithinGrid(sender as Grid);
+                UpdateValueColorGradient(pos.X);
+                _ignoreGradientsChanges = true;
+                UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
+                _ignoreGradientsChanges = false;
+            }
+        }
+
+        private void ValueGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var pos = GetMousePositionWithinGrid(sender as Grid);
+            UpdateValueColorGradient(pos.X);
+            _ignoreGradientsChanges = true;
+            UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
+            _ignoreGradientsChanges = false;
+        }
+
+        private void SaturationGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var pos = GetMousePositionWithinGrid(sender as Grid);
+            UpdateSaturationColorGradient(pos.X);
+            _ignoreGradientsChanges = true;
+            UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
+            _ignoreGradientsChanges = false;
+        }
+
+        private void SaturationGradientGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var pos = GetMousePositionWithinGrid(sender as Grid);
+                UpdateSaturationColorGradient(pos.X);
+                _ignoreGradientsChanges = true;
+                UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
+                _ignoreGradientsChanges = false;
+            }
+        }
+
+        private void HueGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var pos = GetMousePositionWithinGrid(sender as Grid);
+            UpdateHueColorGradient(pos.X);
+            _ignoreGradientsChanges = true;
+            UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
+            _ignoreGradientsChanges = false;
+        }
+
+        private void HueGradientGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var pos = GetMousePositionWithinGrid(sender as Grid);
+                UpdateHueColorGradient(pos.X);
+                _ignoreGradientsChanges = true;
+                UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
+                _ignoreGradientsChanges = false;
+            }
+        }
+
+        private static Point GetMousePositionWithinGrid(Grid grid)
+        {
+            var pos = System.Windows.Input.Mouse.GetPosition(grid);
+            if (pos.X < 0)
+            {
+                pos.X = 0;
+            }
+
+            if (pos.X > grid.Width)
+            {
+                pos.X = grid.Width;
+            }
+
+            return pos;
+        }
+
+        private void HexCode_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var newValue = (sender as TextBox).Text;
+
+            // support hex with 3 and 6 characters
+            var reg = new Regex("^#([0-9A-F]{3}){1,2}$");
+
+            if (!reg.IsMatch(newValue))
+            {
+                return;
+            }
+
+            if (!_ignoreHexChanges)
+            {
+                var converter = new System.Drawing.ColorConverter();
+
+                var color = (System.Drawing.Color)converter.ConvertFromString(HexCode.Text);
+                _ignoreHexChanges = true;
+                SetColorFromTextBoxes(color);
+                _ignoreHexChanges = false;
+            }
+        }
+
+        private void RGBTextBoxes_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var validNumber = int.TryParse((sender as TextBox).Text, out int result);
+            if (!validNumber || result < 0 || result > 255)
+            {
+                return;
+            }
+
+            if (!_ignoreRGBChanges)
+            {
+                var r = byte.Parse(RTextBox.Text, CultureInfo.InvariantCulture);
+                var g = byte.Parse(GTextBox.Text, CultureInfo.InvariantCulture);
+                var b = byte.Parse(BTextBox.Text, CultureInfo.InvariantCulture);
+                _ignoreRGBChanges = true;
+                SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
+                _ignoreRGBChanges = false;
+            }
+        }
+
+        private void SetColorFromTextBoxes(System.Drawing.Color color)
+        {
+            if (!_ignoreGradientsChanges)
+            {
+                var hsv = ColorHelper.ConvertToHSVColor(color);
+
+                var huePosition = (hsv.hue / 360) * HueGradientGrid.Width;
+                var saturationPosition = hsv.saturation * SaturationGradientGrid.Width;
+                var valuePosition = hsv.value * ValueGradientGrid.Width;
+                UpdateHueColorGradient(huePosition);
+                UpdateSaturationColorGradient(saturationPosition);
+                UpdateValueColorGradient(valuePosition);
+            }
+
+            UpdateTextBoxesAndCurrentColor(Color.FromRgb(color.R, color.G, color.B));
+        }
+
+        private static string ColorToHex(Color color)
+        {
+            return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty);
         }
     }
 }

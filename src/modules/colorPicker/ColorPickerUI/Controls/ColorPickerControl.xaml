@@ -29,46 +29,57 @@
 
         <!--Details panel-->
         <Grid Margin="0,10,0,0" Height="0" x:Name="detailsGrid" >
-            <Border Background="#313233"/>
+            <Border Background="{DynamicResource PrimaryBackgroundBrush}"/>
             <StackPanel x:Name="detailsStackPanel" Opacity="0">
-                <Grid Margin="6,10,0,0" x:Name="SpectrumGrid" HorizontalAlignment="Left" Height="40" Width="300" MouseLeftButtonDown="SpectrumGrid_MouseLeftButtonDown" MouseMove="SpectrumGrid_MouseMove">
+                <Grid Margin="6,10,0,0" x:Name="HueGradientGrid" HorizontalAlignment="Left" Height="40" Width="300" MouseLeftButtonDown="HueGradientGrid_MouseLeftButtonDown"  MouseMove="HueGradientGrid_MouseMove">
                     <Grid.Effect>
                         <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
                     </Grid.Effect>
-                    <Border VerticalAlignment="Stretch" Width="3" x:Name="spectrumGridPointer" Margin="150,0,0,0" Background="White" BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left"/>
+                    <Border VerticalAlignment="Stretch" Width="5" x:Name="hueGradientPointer" Margin="150,0,0,0" Background="White" BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left"/>
                 </Grid>
 
-                <Grid HorizontalAlignment="Left" Margin="6,10,0,0" Height="40" x:Name="RgbGradientGrid" Width="300" MouseLeftButtonDown="RgbGradientGrid_MouseLeftButtonDown" MouseMove="RgbGradient_MouseMove">
+                <Grid HorizontalAlignment="Left" Margin="6,10,0,0" Height="40" x:Name="SaturationGradientGrid" Width="300" MouseLeftButtonDown="SaturationGradientGrid_MouseLeftButtonDown"  MouseMove="SaturationGradientGrid_MouseMove">
                     <Grid.Effect>
                         <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
                     </Grid.Effect>
                     <Grid.Background>
                         <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
-                            <GradientStop Color="Black" Offset="1"/>
-                            <GradientStop x:Name="MiddleStop" Color="Red" Offset="0.5"/>
-                            <GradientStop Color="White"/>
+                            <GradientStop x:Name="SaturationStartColor" Color="Black"/>
+                            <GradientStop x:Name="SaturationStopColor" Color="Red" Offset="1"/>
                         </LinearGradientBrush>
                     </Grid.Background>
-                    <Border HorizontalAlignment="Left" x:Name="rgbGradientPointer" BorderBrush="Black" BorderThickness="1" Margin="150,0,0,0" Width="3" VerticalAlignment="Stretch" Background="White"/>
+                    <Border HorizontalAlignment="Left" x:Name="saturationGradientPointer" BorderBrush="Black" BorderThickness="1" Margin="150,0,0,0" Width="5" VerticalAlignment="Stretch" Background="White"/>
                 </Grid>
 
+                <Grid HorizontalAlignment="Left" Margin="6,10,0,0" Height="40" x:Name="ValueGradientGrid" Width="300" MouseLeftButtonDown="ValueGradientGrid_MouseLeftButtonDown"  MouseMove="ValueGradientGrid_MouseMove">
+                    <Grid.Effect>
+                        <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                    </Grid.Effect>
+                    <Grid.Background>
+                        <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
+                            <GradientStop x:Name="ValueStartColor" Color="Red"/>
+                            <GradientStop x:Name="ValueStopColor" Color="White" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Grid.Background>
+                    <Border HorizontalAlignment="Left" x:Name="valueGradientPointer" BorderBrush="Black" BorderThickness="1" Margin="150,0,0,0" Width="5" VerticalAlignment="Stretch" Background="White"/>
+                </Grid>
 
                 <WrapPanel Grid.Column="1" Margin="0,10,0,0">
                     <TextBlock Text="R" Margin="5,0,0,0" VerticalAlignment="Center"/>
-                    <TextBox x:Name="RTextBox" Margin="10,0,0,0" Width="70"/>
+                    <TextBox x:Name="RTextBox" Margin="10,0,0,0" Width="70" TextChanged="RGBTextBoxes_TextChanged" TextWrapping="Wrap"/>
 
                     <TextBlock Text="G" Margin="17,0,0,0" VerticalAlignment="Center"/>
-                    <TextBox x:Name="GTextBox" Margin="10,0,0,0" Width="70"/>
+                    <TextBox x:Name="GTextBox" Margin="10,0,0,0" Width="70" TextChanged="RGBTextBoxes_TextChanged" TextWrapping="Wrap"/>
 
                     <TextBlock Text="B" Margin="17,0,0,0" VerticalAlignment="Center"/>
-                    <TextBox x:Name="BTextBox" Margin="10,0,0,0" Width="70"/>
+                    <TextBox x:Name="BTextBox" Margin="10,0,0,0" Width="70" TextChanged="RGBTextBoxes_TextChanged"  TextWrapping="Wrap"/>
                 </WrapPanel>
                 <WrapPanel Margin="0,10,0,0">
-                        <TextBlock Text="HEX" Margin="5,0,0,0" VerticalAlignment="Center"/>
-                        <TextBox x:Name="HexCode" Margin="10,0,0,0" Width="80" TextChanged="HexCode_TextChanged"  TextWrapping="Wrap"/>
-                    </WrapPanel>
+                    <TextBlock Text="HEX" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="HexCode" Margin="10,0,0,0" Width="85" TextChanged="HexCode_TextChanged"  TextWrapping="Wrap"/>
+                </WrapPanel>
 
-                <WrapPanel HorizontalAlignment="Right" Margin="0,50,0,0" VerticalAlignment="Top">
+                <WrapPanel HorizontalAlignment="Right" Margin="0,0,0,0" VerticalAlignment="Top">
                     <Button x:Name="CancelButton" Click="CancelButton_Click" Content="Cancel" Width="80"/>
                     <Button Margin="10,0,10,0" x:Name="OKButton" Click="OKButton_Click" Content="OK" Width="80"/>
                 </WrapPanel>
