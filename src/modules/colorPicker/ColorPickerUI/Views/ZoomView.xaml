@@ -27,7 +27,9 @@
                     <shaders:GridShaderEffect x:Name="gridEffect"/>
                 </Image.Effect>
             </Image>
-            <Border HorizontalAlignment="Right"  VerticalAlignment="Top" CornerRadius="0,4,0,4" Background="{DynamicResource PrimaryBackgroundBrush}">
+            
+            <!-- Non functional close button -->
+            <Border HorizontalAlignment="Right" Visibility="Collapsed" VerticalAlignment="Top" CornerRadius="0,4,0,4" Background="{DynamicResource PrimaryBackgroundBrush}">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Style.Triggers>

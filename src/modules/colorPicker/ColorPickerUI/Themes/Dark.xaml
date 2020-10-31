@@ -15,14 +15,15 @@
     <system:String x:Key="Theme.ColorScheme">Accent1</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">Black</Color>
 
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#EE434447" />
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF313233" />
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF3a3a3a" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF333333" />
     <SolidColorBrush x:Key="WindowBorderBrush" Color="#FF535353"/>
+    <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF9a9a9a"/>
 
-    <SolidColorBrush x:Key="ListViewPointerOverBrush" Color="#242424"/>
-    <SolidColorBrush x:Key="ListViewPressedBrush" Color="#FF313233"/>
+    <SolidColorBrush x:Key="ListViewPointerOverBrush" Color="#FF242424"/>
+    <SolidColorBrush x:Key="ListViewPressedBrush" Color="#FF333333"/>
 
-    <SolidColorBrush x:Key="ColorControlBackgroundBrush" Color="#66000000"/>
+    <SolidColorBrush x:Key="ColorControlBackgroundBrush" Color="#FF454545"/>
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FFa1a1a1" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF6b6b6b" />
 </ResourceDictionary>

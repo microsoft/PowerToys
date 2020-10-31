@@ -25,7 +25,7 @@
                 <behaviors:DragWindowBehavior/>
             </e:Interaction.Behaviors>
             <Border
-                Background="{DynamicResource SecondaryForegroundBrush}"
+                Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
                 Grid.ColumnSpan="2"
                 Width="30"
                 Opacity="0.9"
