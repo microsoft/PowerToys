@@ -12,6 +12,7 @@
     <system:String x:Key="Theme.BaseColorScheme">HighContrast</system:String>
     <system:String x:Key="Theme.ColorScheme">Accent5</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
+    <system:Boolean x:Key="Theme.IsHighContrast">True</system:Boolean>
 
     <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
     <SolidColorBrush x:Key="SystemChromeLow" Color="White" options:Freeze="True" />
@@ -35,7 +36,7 @@
 
     <Color x:Key="ScrollBarBackgroundPointerOver">#FFf0f0f0</Color>
 
-    <SolidColorBrush x:Key="ScrollBarLineButtonForeground">#FF000000</SolidColorBrush>
+    <SolidColorBrush x:Key="ScrollBarLineButtonForeground" Color="#FF000000" />
     <Color x:Key="ScrollBarLineButtonForegroundPointerOver">#FF000000</Color>
     <Color x:Key="ScrollBarLineButtonForegroundPointerPressed">#FF000000</Color>
 
