@@ -4,7 +4,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -14,19 +13,15 @@ namespace Wox.Plugin.SharedCommands
     {
         public delegate bool EnumThreadDelegate(IntPtr hwnd, IntPtr lParam);
 
-        [DllImport("user32.dll")]
-        private static extern bool EnumThreadWindows(uint threadId, EnumThreadDelegate lpfn, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        private static extern int GetWindowText(IntPtr hwnd, StringBuilder lpString, int nMaxCount);
-
-        [DllImport("user32.dll")]
-        private static extern int GetWindowTextLength(IntPtr hwnd);
-
         private static bool containsSecurityWindow;
 
         public static Process RunAsDifferentUser(ProcessStartInfo processStartInfo)
         {
+            if (processStartInfo == null)
+            {
+                throw new ArgumentNullException(nameof(processStartInfo));
+            }
+
             processStartInfo.Verb = "RunAsUser";
             var process = Process.Start(processStartInfo);
 
@@ -55,7 +50,7 @@ namespace Wox.Plugin.SharedCommands
             ProcessThreadCollection ptc = Process.GetCurrentProcess().Threads;
             for (int i = 0; i < ptc.Count; i++)
             {
-                EnumThreadWindows((uint)ptc[i].Id, CheckSecurityThread, IntPtr.Zero);
+                NativeMethods.EnumThreadWindows((uint)ptc[i].Id, CheckSecurityThread, IntPtr.Zero);
             }
         }
 
@@ -71,8 +66,8 @@ namespace Wox.Plugin.SharedCommands
 
         private static string GetWindowTitle(IntPtr hwnd)
         {
-            StringBuilder sb = new StringBuilder(GetWindowTextLength(hwnd) + 1);
-            GetWindowText(hwnd, sb, sb.Capacity);
+            StringBuilder sb = new StringBuilder(NativeMethods.GetWindowTextLength(hwnd) + 1);
+            _ = NativeMethods.GetWindowText(hwnd, sb, sb.Capacity);
             return sb.ToString();
         }
 

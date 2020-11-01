@@ -170,6 +170,7 @@ namespace ImageResizer.Properties
 
             var result = ((IDataErrorInfo)settings)["JpegQualityLevel"];
 
+            // Using InvariantCulture since this is used internally
             Assert.Equal(
                 string.Format(CultureInfo.InvariantCulture, Resources.ValueMustBeBetween, 1, 100),
                 result);

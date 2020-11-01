@@ -32,7 +32,7 @@ namespace Wox.Core.Plugin
             return PluginMetadatas;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static void ParsePluginConfigs(IEnumerable<string> directories)
         {
             // todo use linq when diable plugin is implemented since parallel.foreach + list is not thread saft
@@ -60,7 +60,7 @@ namespace Wox.Core.Plugin
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static PluginMetadata GetPluginMetadata(string pluginDirectory)
         {
             string configPath = Path.Combine(pluginDirectory, PluginConfigName);
@@ -78,10 +78,10 @@ namespace Wox.Core.Plugin
                 metadata.PluginDirectory = pluginDirectory;
 
                 // for plugins which doesn't has ActionKeywords key
-                metadata.ActionKeywords = metadata.ActionKeywords ?? new List<string> { metadata.ActionKeyword };
+                metadata.SetActionKeywords(metadata.GetActionKeywords() ?? new List<string> { metadata.ActionKeyword });
 
                 // for plugin still use old ActionKeyword
-                metadata.ActionKeyword = metadata.ActionKeywords?[0];
+                metadata.ActionKeyword = metadata.GetActionKeywords()?[0];
             }
             catch (Exception e)
             {

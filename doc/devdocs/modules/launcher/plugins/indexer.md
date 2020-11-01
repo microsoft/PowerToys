@@ -18,7 +18,7 @@ The indexer plugin is used to search for files within the indexed locations of t
 ### [`WindowsSearchAPI`](src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/SearchHelper/WindowsSearchAPI.cs)
 - The [`WindowsSearchAPI`](src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/SearchHelper/WindowsSearchAPI.cs) class leverages the [`OleDBSearch.cs`](src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/SearchHelper/OleDBSearch.cs) class to execute the query.
 - It initializes the `QueryHelper` in the `InitQueryHelper()` function by creating a catalog manager to the SystemIndex catalog.
-- The metadata is initialized within the query helper, such as the number of results to retrive, the type of information to retrieve for each file (currently we retrieve the item URL, the file name and the file attributes).
+- The metadata is initialized within the query helper, such as the number of results to retrieve, the type of information to retrieve for each file (currently we retrieve the item URL, the file name and the file attributes).
 - The query helper matches results using the name of the file only and they are sorted by the last modified date, ensuring that the recently modified files are ranked higher.
 - The File attributes are utilized to filter out hidden files from being displayed. 
 

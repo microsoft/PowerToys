@@ -63,6 +63,7 @@ namespace ImageResizer.Properties
 
         public IEnumerable<ResizeSize> AllSizes { get; set; }
 
+        // Using OrdinalIgnoreCase since this is internal and used for comparison with symbols
         public string FileNameFormat
             => _fileNameFormat
                 ?? (_fileNameFormat = FileName
@@ -111,6 +112,7 @@ namespace ImageResizer.Properties
 
                 if (JpegQualityLevel < 1 || JpegQualityLevel > 100)
                 {
+                    // Using CurrentCulture since this is user facing
                     return string.Format(CultureInfo.CurrentCulture, Resources.ValueMustBeBetween, 1, 100);
                 }
 

@@ -11,13 +11,13 @@ using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public sealed partial class HotkeySettingsControl : UserControl
+    public sealed partial class HotkeySettingsControl : UserControl, IDisposable
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
 
-        private bool _shiftKeyDownOnEntering = false;
+        private bool _shiftKeyDownOnEntering;
 
-        private bool _shiftToggled = false;
+        private bool _shiftToggled;
 
         public string Header { get; set; }
 
@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 typeof(HotkeySettingsControl),
                 null);
 
-        private bool _enabled = false;
+        private bool _enabled;
 
         public bool Enabled
         {
@@ -73,6 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private HotkeySettings lastValidSettings;
         private HotkeySettingsControlHook hook;
         private bool _isActive;
+        private bool disposedValue;
 
         public HotkeySettings HotkeySettings
         {
@@ -109,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             hook.Dispose();
         }
 
-        private void KeyEventHandler(int key, bool matchValue, int matchValueCode, string matchValueText)
+        private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
         {
             switch ((Windows.System.VirtualKey)key)
             {
@@ -229,7 +230,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                KeyEventHandler(key, true, key, Library.Utilities.Helper.GetKeyName((uint)key));
+                KeyEventHandler(key, true, key);
 
                 // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
                 if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
@@ -244,7 +245,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                KeyEventHandler(key, false, 0, string.Empty);
+                KeyEventHandler(key, false, 0);
             });
         }
 
@@ -277,6 +278,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             HotkeyTextBox.Text = hotkeySettings.ToString();
             _isActive = false;
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                    hook.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

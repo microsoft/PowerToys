@@ -23,6 +23,8 @@ namespace Microsoft.Plugin.Folder.Sources.Result
             {
                 Title = Properties.Resources.Microsoft_plugin_folder_truncation_warning_title,
                 QueryTextDisplay = Search,
+
+                // Using CurrentCulture since this is user facing
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.Microsoft_plugin_folder_truncation_warning_subtitle, PostTruncationCount, PreTruncationCount),
                 IcoPath = WarningIconPath,
             };

@@ -24,13 +24,14 @@ namespace Microsoft.Plugin.Folder
 
         public Result Create(IPublicAPI contextApi)
         {
-            return new Result
+            return new Result(StringMatcher.FuzzySearch(Search, Title).MatchData)
             {
                 Title = Title,
                 IcoPath = Path,
+
+                // Using CurrentCulture since this is user facing
                 SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_folder_result_subtitle, Subtitle),
                 QueryTextDisplay = Path,
-                TitleHighlightData = StringMatcher.FuzzySearch(Search, Title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = Path },
                 Action = c => _shellAction.Execute(Path, contextApi),
             };

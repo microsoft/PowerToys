@@ -157,6 +157,8 @@ namespace FancyZonesEditor
 
             sb.AppendLine("## " + CrashReportEnvironmentTag);
             sb.AppendLine(CrashReportCommandLineTag + Environment.CommandLine);
+
+            // Using InvariantCulture since this is used for a timestamp internally
             sb.AppendLine(CrashReportTimestampTag + DateTime.Now.ToString(CultureInfo.InvariantCulture));
             sb.AppendLine(CrashReportOSVersionTag + Environment.OSVersion.VersionString);
             sb.AppendLine(CrashReportIntPtrLengthTag + IntPtr.Size);

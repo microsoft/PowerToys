@@ -9,7 +9,8 @@
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
@@ -146,19 +147,28 @@
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
-            <TextBlock x:Uid="PowerLauncher_Theme"
+
+            <!-- We cannot navigate to all the radio buttons using the arrow keys because of an XYNavigation issue in the RadioButtons control.
+            The screen reader does not read the heading when we tab into a radio button, even though the LabeledBy automation property is set.
+            Link to the issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
+            <TextBlock x:Uid="ColorModeHeader"
+                       x:Name="RadioButtons_Name_Theme" 
                        Margin="{StaticResource SmallTopMargin}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}" />
-            <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}">
-                <RadioButton x:Uid="PowerLauncher_Radio_Theme_Dark"
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
+                <RadioButton x:Uid="Radio_Theme_Dark"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                              IsChecked="{Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}" />
 
-                <RadioButton x:Uid="PowerLauncher_Radio_Theme_Light"
+                <RadioButton x:Uid="Radio_Theme_Light"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                              IsChecked="{Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}" />
 
-                <RadioButton x:Uid="PowerLauncher_Radio_Theme_Default"
+                <RadioButton x:Uid="Radio_Theme_Default"
+                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                              IsChecked="{Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}" />
-            </muxc:RadioButtons>
+                <HyperlinkButton x:Uid="Windows_Color_Settings" NavigateUri="ms-settings:colors"/>
+            </StackPanel>
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 

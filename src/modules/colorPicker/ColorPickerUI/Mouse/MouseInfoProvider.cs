@@ -24,6 +24,7 @@ namespace ColorPicker.Mouse
         private readonly IUserSettings _userSettings;
         private System.Windows.Point _previousMousePosition = new System.Windows.Point(-1, 1);
         private Color _previousColor = Color.Transparent;
+        private bool _colorFormatChanged;
 
         [ImportingConstructor]
         public MouseInfoProvider(AppStateHandler appStateMonitor, IUserSettings userSettings)
@@ -40,6 +41,7 @@ namespace ColorPicker.Mouse
 
             _mouseHook = new MouseHook();
             _userSettings = userSettings;
+            _userSettings.CopiedColorRepresentation.PropertyChanged += CopiedColorRepresentation_PropertyChanged;
         }
 
         public event EventHandler<Color> MouseColorChanged;
@@ -73,9 +75,10 @@ namespace ColorPicker.Mouse
             }
 
             var color = GetPixelColor(mousePosition);
-            if (_previousColor != color)
+            if (_previousColor != color || _colorFormatChanged)
             {
                 _previousColor = color;
+                _colorFormatChanged = false;
                 MouseColorChanged?.Invoke(this, color);
             }
         }
@@ -135,6 +138,11 @@ namespace ColorPicker.Mouse
         {
             DisposeHook();
             OnMouseDown?.Invoke(this, p);
+        }
+
+        private void CopiedColorRepresentation_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            _colorFormatChanged = true;
         }
 
         private void DisposeHook()

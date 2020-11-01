@@ -117,53 +117,41 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Microsoft.PowerToys.Settings.UI</value>
-    <comment>Application display name</comment>
-  </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Microsoft.PowerToys.Settings.UI</value>
-    <comment>Application description</comment>
-  </data>
-  <data name="Shell_Main.Content" xml:space="preserve">
-    <value>Main</value>
-    <comment>Navigation view item name for Main</comment>
-  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
-    <comment>Navigation view item name for PowerToys Run</comment>
+    <comment>Product name: Navigation view item name for PowerToys Run</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
     <value>PowerRename</value>
-    <comment>Navigation view item name for PowerRename</comment>
+    <comment>Product name: Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
     <value>Shortcut Guide</value>
-    <comment>Navigation view item name for Shortcut Guide</comment>
+    <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer</value>
-    <comment>Navigation view item name for File Explorer Preview</comment>
+    <comment>Product name: Navigation view item name for File Explorer Preview</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>Navigation view item name for FancyZones</comment>
+    <comment>Product name: Navigation view item name for FancyZones</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
     <value>Image Resizer</value>
-    <comment>Navigation view item name for Image Resizer</comment>
+    <comment>Product name: Navigation view item name for Image Resizer</comment>
   </data>
   <data name="Shell_ColorPicker.Content" xml:space="preserve">
     <value>Color Picker</value>
-    <comment>Navigation view item name for Color Picker</comment>
+    <comment>Product name: Navigation view item name for Color Picker</comment>
   </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
-    <comment>Navigation view item name for Keyboard Manager</comment>
+    <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
   <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
     <value>Current configuration</value>
@@ -230,12 +218,7 @@
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
     <value>Change cursor when picking a color</value>
   </data>
-  <data name="ColorPicker_UseEditor.Content" xml:space="preserve">
-    <value>Open color picker editor on activation shortcut</value>
-  </data>
-  <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
-    <value>Copied color representation</value>
-  </data>
+
   <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
     <value>Open Color Picker</value>
   </data>
@@ -305,9 +288,6 @@
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
   </data>
-  <data name="PowerLauncher_Theme.Text" xml:space="preserve">
-    <value>Choose color</value>
-  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
@@ -343,7 +323,7 @@
     <value>Open zones editor</value>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
-    <value>Set Shortcut</value>
+    <value>Shortcut setting</value>
   </data>
   <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
@@ -407,15 +387,6 @@
   </data>
   <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Dark.Content" xml:space="preserve">
-    <value>Dark</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Default.Content" xml:space="preserve">
-    <value>System default</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Light.Content" xml:space="preserve">
-    <value>Light</value>
   </data>
   <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
@@ -494,9 +465,6 @@
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
-  </data>
-  <data name="ShortcutGuide_Theme.Text" xml:space="preserve">
-    <value>Choose Shortcut Guide overlay color</value>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
@@ -690,8 +658,8 @@
   <data name="General_Version.Text" xml:space="preserve">
     <value>Version:</value>
   </data>
-  <data name="Shortcut_Overlay_Theme.Header" xml:space="preserve">
-    <value>Background theme</value>
+  <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
+    <value>Version</value>
   </data>
   <data name="Admin_mode.Text" xml:space="preserve">
     <value>Administrator mode</value>
@@ -780,13 +748,25 @@
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
   </data>
-  <data name="PowerLauncher_Radio_Theme_Dark.Content" xml:space="preserve">
+  <data name="ColorModeHeader.Text" xml:space="preserve">
+    <value>Choose a mode</value>
+  </data>
+  <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
   </data>
-  <data name="PowerLauncher_Radio_Theme_Default.Content" xml:space="preserve">
-    <value>System default</value>
-  </data>
-  <data name="PowerLauncher_Radio_Theme_Light.Content" xml:space="preserve">
+  <data name="Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
+    <comment>Light refers to color, not weight</comment>
+  </data>
+  <data name="Radio_Theme_Default.Content" xml:space="preserve">
+    <value>Windows default</value>
+    <comment>Windows refers to the Operating system</comment>
+  </data>
+  <data name="Windows_Color_Settings.Content" xml:space="preserve">
+    <value>Windows color settings</value>
+    <comment>Windows refers to the Operating system</comment>
+  </data>
+  <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
+    <value>Copied color representation</value>
   </data>
 </root>

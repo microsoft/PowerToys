@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -27,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
         /// General Settings page constructor.
         /// </summary>
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions from the IPC response handler should be caught and logged.")]
         public GeneralPage()
         {
             InitializeComponent();
@@ -58,28 +61,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     {
                         str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_VersionIsLatest");
                     }
-                    else if (version != string.Empty)
+                    else if (!string.IsNullOrEmpty(version))
                     {
                         str = ResourceLoader.GetForCurrentView().GetString("GeneralSettings_NewVersionIsAvailable");
-                        if (str != string.Empty)
+                        if (!string.IsNullOrEmpty(str))
                         {
                             str += ": " + version;
                         }
                     }
 
-                    ViewModel.LatestAvailableVersion = string.Format(str);
+                    // Using CurrentCulture since this is user-facing
+                    ViewModel.LatestAvailableVersion = string.Format(CultureInfo.CurrentCulture, str);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Logger.LogError("Exception encountered when reading the version.", e);
                 }
             });
 
             DataContext = ViewModel;
         }
 
-        public int UpdateUIThemeMethod(string themeName)
+        public static int UpdateUIThemeMethod(string themeName)
         {
-            switch (themeName.ToUpperInvariant())
+            switch (themeName?.ToUpperInvariant())
             {
                 case "LIGHT":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
@@ -89,6 +94,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     break;
                 case "SYSTEM":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    break;
+                default:
+                    Logger.LogError($"Unexpected theme name: {themeName}");
                     break;
             }
 

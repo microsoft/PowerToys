@@ -88,7 +88,7 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// Call initialize for all plugins
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void InitializePlugins(IPublicAPI api)
         {
             API = api ?? throw new ArgumentNullException(nameof(api));
@@ -125,7 +125,7 @@ namespace Wox.Core.Plugin
                 }
 
                 // Plugins may have multiple ActionKeywords, eg. WebSearch
-                plugin.Metadata.ActionKeywords.Where(x => x != Query.GlobalPluginWildcardSign)
+                plugin.Metadata.GetActionKeywords().Where(x => x != Query.GlobalPluginWildcardSign)
                                                 .ToList()
                                                 .ForEach(x => NonGlobalPlugins[x] = plugin);
             }
@@ -160,7 +160,7 @@ namespace Wox.Core.Plugin
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {
             if (pair == null)
@@ -244,7 +244,7 @@ namespace Wox.Core.Plugin
 
         private static bool IsGlobalPlugin(PluginMetadata metadata)
         {
-            return metadata.ActionKeywords.Contains(Query.GlobalPluginWildcardSign);
+            return metadata.GetActionKeywords().Contains(Query.GlobalPluginWildcardSign);
         }
 
         /// <summary>
@@ -258,12 +258,11 @@ namespace Wox.Core.Plugin
         }
 
         public static IEnumerable<PluginPair> GetPluginsForInterface<T>()
-            where T : IFeatures
         {
             return AllPlugins.Where(p => p.Plugin is T);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static List<ContextMenuResult> GetContextMenusForPlugin(Result result)
         {
             var pluginPair = _contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
@@ -320,7 +319,7 @@ namespace Wox.Core.Plugin
                 NonGlobalPlugins[newActionKeyword] = plugin;
             }
 
-            plugin.Metadata.ActionKeywords.Add(newActionKeyword);
+            plugin.Metadata.GetActionKeywords().Add(newActionKeyword);
         }
 
         /// <summary>
@@ -332,7 +331,7 @@ namespace Wox.Core.Plugin
             var plugin = GetPluginForId(id);
             if (oldActionkeyword == Query.GlobalPluginWildcardSign
                 && // Plugins may have multiple ActionKeywords that are global, eg. WebSearch
-                plugin.Metadata.ActionKeywords
+                plugin.Metadata.GetActionKeywords()
                                     .Where(x => x == Query.GlobalPluginWildcardSign)
                                     .ToList()
                                     .Count == 1)
@@ -345,7 +344,7 @@ namespace Wox.Core.Plugin
                 NonGlobalPlugins.Remove(oldActionkeyword);
             }
 
-            plugin.Metadata.ActionKeywords.Remove(oldActionkeyword);
+            plugin.Metadata.GetActionKeywords().Remove(oldActionkeyword);
         }
 
         public static void ReplaceActionKeyword(string id, string oldActionKeyword, string newActionKeyword)

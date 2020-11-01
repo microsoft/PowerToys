@@ -26,11 +26,13 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
                               savePath = path;
                               saveContent = content;
                           });
+            // Using Ordinal since this is used internally for a path
             mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
                           .Returns(() => saveContent);
-
+            // Using Ordinal since this is used internally for a path
             mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
                           .Returns(true);
+            // Using Ordinal since this is used internally for a path
             mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => !x.Equals(savePath, StringComparison.Ordinal))))
                           .Returns(false);
 

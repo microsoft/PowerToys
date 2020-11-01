@@ -27,6 +27,7 @@ namespace Microsoft.Plugin.Folder.Sources
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
+            // Using OrdinalIgnoreCase since this is internal
             return _folderLinks.FolderLinks()
                 .Where(x => x.Nickname.StartsWith(query, StringComparison.OrdinalIgnoreCase));
         }
@@ -38,7 +39,8 @@ namespace Microsoft.Plugin.Folder.Sources
                 throw new ArgumentNullException(nameof(search));
             }
 
-            if (search.StartsWith(@"\\", StringComparison.InvariantCulture))
+            // Using Ordinal this is internal and we're comparing symbols
+            if (search.StartsWith(@"\\", StringComparison.Ordinal))
             { // share folder
                 return true;
             }
@@ -48,6 +50,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
             if (driverNames.Any())
             {
+                // Using InvariantCultureIgnoreCase since this is searching for drive names
                 if (driverNames.Any(dn => search.StartsWith(dn, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     // normal drive letter

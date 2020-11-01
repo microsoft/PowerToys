@@ -8,7 +8,8 @@
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
@@ -89,21 +90,19 @@
 
             <!-- Replaced the Radiobuttons parent control with a StackPanel to mitigate the Tab and Arrow key related keyboard navigation issues due to XAML Islands
             Tracking issue in the winui repository - https://github.com/microsoft/microsoft-ui-xaml/issues/3156 -->
-            <TextBlock Name="RadioButtons_Name_Theme" 
-                       x:Uid="RadioButtons_Name_Theme"
+            <TextBlock x:Name="RadioButtons_Name_Theme" 
+                       x:Uid="ColorModeHeader"
                        Margin="{StaticResource SmallTopMargin}"/>
             <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=RadioButtons_Name_Theme}">
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
-                             Content="Dark"
+                <RadioButton x:Uid="Radio_Theme_Dark"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
 
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
-                             Content="Light"
+                <RadioButton x:Uid="Radio_Theme_Light" 
                              IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}"/>
 
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"
-                             Content="System default"
+                <RadioButton x:Uid="Radio_Theme_Default"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
+                <HyperlinkButton x:Uid="Windows_Color_Settings" NavigateUri="ms-settings:colors"/>
             </StackPanel>
 
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_RunAtStartUp"  
@@ -117,7 +116,7 @@
             <StackPanel Orientation="Horizontal" 
                         Margin="{StaticResource SmallTopMargin}"
                         AutomationProperties.LabeledBy="{Binding ElementName=General_Version}">
-                <TextBlock Text="Version: " x:Uid="General_Version"  />
+                <TextBlock x:Name="General_Version" x:Uid="General_Version" />
                 <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
                     <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
                 </HyperlinkButton>

@@ -30,12 +30,12 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
 
         public static NavigationViewHeaderMode GetHeaderMode(Page item)
         {
-            return (NavigationViewHeaderMode)item.GetValue(HeaderModeProperty);
+            return (NavigationViewHeaderMode)item?.GetValue(HeaderModeProperty);
         }
 
         public static void SetHeaderMode(Page item, NavigationViewHeaderMode value)
         {
-            item.SetValue(HeaderModeProperty, value);
+            item?.SetValue(HeaderModeProperty, value);
         }
 
         public static readonly DependencyProperty HeaderModeProperty =
@@ -43,12 +43,12 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
 
         public static object GetHeaderContext(Page item)
         {
-            return item.GetValue(HeaderContextProperty);
+            return item?.GetValue(HeaderContextProperty);
         }
 
         public static void SetHeaderContext(Page item, object value)
         {
-            item.SetValue(HeaderContextProperty, value);
+            item?.SetValue(HeaderContextProperty, value);
         }
 
         public static readonly DependencyProperty HeaderContextProperty =
@@ -56,12 +56,12 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
 
         public static DataTemplate GetHeaderTemplate(Page item)
         {
-            return (DataTemplate)item.GetValue(HeaderTemplateProperty);
+            return (DataTemplate)item?.GetValue(HeaderTemplateProperty);
         }
 
         public static void SetHeaderTemplate(Page item, DataTemplate value)
         {
-            item.SetValue(HeaderTemplateProperty, value);
+            item?.SetValue(HeaderTemplateProperty, value);
         }
 
         public static readonly DependencyProperty HeaderTemplateProperty =

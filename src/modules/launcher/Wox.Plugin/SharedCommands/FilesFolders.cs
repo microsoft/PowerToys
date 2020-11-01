@@ -3,15 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Wox.Plugin.Logger;
+using Wox.Plugin.Properties;
 
 namespace Wox.Plugin.SharedCommands
 {
     public static class FilesFolders
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void Copy(this string sourcePath, string targetPath)
         {
             // Get the subdirectories for the specified directory.
@@ -56,15 +58,16 @@ namespace Wox.Plugin.SharedCommands
                 string error = $"Copying path {targetPath} has failed";
                 Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
-                throw e;
+                throw;
 #else
-                System.Windows.MessageBox.Show(string.Format("Copying path {0} has failed, it will now be deleted for consistency", targetPath));
+                // Using CurrentCulture since this is user facing
+                System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Resources.filesfolder_copy_failed, targetPath));
                 RemoveFolder(targetPath);
 #endif
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static bool VerifyBothFolderFilesEqual(this string fromPath, string toPath)
         {
             try
@@ -91,15 +94,16 @@ namespace Wox.Plugin.SharedCommands
                 string error = $"Unable to verify folders and files between {fromPath} and {toPath}";
                 Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
-                throw e;
+                throw;
 #else
-                System.Windows.MessageBox.Show(string.Format(error));
+                // Using CurrentCulture since this is user facing
+                System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Resources.filesfolder_verifybothfolderfilesequal_failed, fromPath, toPath));
                 return false;
 #endif
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void RemoveFolder(this string path)
         {
             try
@@ -113,12 +117,13 @@ namespace Wox.Plugin.SharedCommands
             catch (Exception e)
 #pragma warning restore CS0168 // Variable is declared but never used
             {
-                string error = $"Not able to delete folder {path}, please go to the location and manually delete it";
+                string error = $"Not able to delete folder {path}";
                 Log.Exception(error, e, MethodBase.GetCurrentMethod().DeclaringType);
 #if DEBUG
-                throw e;
+                throw;
 #else
-                System.Windows.MessageBox.Show(string.Format(error));
+                // Using CurrentCulture since this is user facing
+                System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Resources.filesfolder_removefolder_failed, path));
 #endif
             }
         }
