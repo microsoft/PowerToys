@@ -87,7 +87,7 @@
             </ComboBox>
 
             <TextBlock Margin="{StaticResource MediumTopMargin}" TextWrapping="WrapWholeWords" Text="Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging."/>
-            <ListView ItemsSource="{x:Bind ColorFormats, Mode=TwoWay}" AllowDrop="True" CanReorderItems="True" Margin="-12,0,0,0">
+            <ListView ItemsSource="{x:Bind ColorFormats, Mode=TwoWay}" AllowDrop="True" CanReorderItems="True" Margin="-12,6,0,0">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:ColorFormat">
                         <Grid Width="480">
