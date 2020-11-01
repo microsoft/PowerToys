@@ -91,7 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
         {
-            return null;
+            return ipcmanager;
         }
     }
 }
