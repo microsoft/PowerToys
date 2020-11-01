@@ -182,15 +182,17 @@ namespace ColorPicker.Controls
             {
                 _isCollapsed = false;
 
-                var opacityAppear = new DoubleAnimation(1.0, new Duration(TimeSpan.FromMilliseconds(400)));
-                opacityAppear.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut };
+                var opacityAppear = new DoubleAnimation(1.0, new Duration(TimeSpan.FromMilliseconds(300)));
+                opacityAppear.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseInOut };
 
-                var resize = new DoubleAnimation(400, new Duration(TimeSpan.FromMilliseconds(400)));
-                resize.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseOut };
+                var resize = new DoubleAnimation(400, new Duration(TimeSpan.FromMilliseconds(300)));
+                resize.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                var resizeColor = new DoubleAnimation(300, new Duration(TimeSpan.FromMilliseconds(350)));
+                var resizeColor = new DoubleAnimation(309, new Duration(TimeSpan.FromMilliseconds(250)));
+                resizeColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                var moveColor = new ThicknessAnimation(new Thickness(0), new Duration(TimeSpan.FromMilliseconds(350)));
+                var moveColor = new ThicknessAnimation(new Thickness(0), new Duration(TimeSpan.FromMilliseconds(250)));
+                moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
                 CurrentColorBorder.BeginAnimation(Border.WidthProperty, resizeColor);
                 CurrentColorBorder.BeginAnimation(Border.MarginProperty, moveColor);
@@ -205,15 +207,17 @@ namespace ColorPicker.Controls
             {
                 _isCollapsed = true;
 
-                var opacityAppear = new DoubleAnimation(0, new Duration(TimeSpan.FromMilliseconds(250)));
-                opacityAppear.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut };
+                var opacityAppear = new DoubleAnimation(0, new Duration(TimeSpan.FromMilliseconds(150)));
+                opacityAppear.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseInOut };
 
-                var resize = new DoubleAnimation(0, new Duration(TimeSpan.FromMilliseconds(250)));
-                resize.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseOut };
+                var resize = new DoubleAnimation(0, new Duration(TimeSpan.FromMilliseconds(150)));
+                resize.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                var resizeColor = new DoubleAnimation(140, new Duration(TimeSpan.FromMilliseconds(250)));
+                var resizeColor = new DoubleAnimation(165, new Duration(TimeSpan.FromMilliseconds(150)));
+                resizeColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                var moveColor = new ThicknessAnimation(new Thickness(80, 0, 0, 0), new Duration(TimeSpan.FromMilliseconds(250)));
+                var moveColor = new ThicknessAnimation(new Thickness(72, 0, 0, 0), new Duration(TimeSpan.FromMilliseconds(150)));
+                moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
                 CurrentColorBorder.BeginAnimation(Border.WidthProperty, resizeColor);
                 CurrentColorBorder.BeginAnimation(Border.MarginProperty, moveColor);

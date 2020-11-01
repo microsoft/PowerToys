@@ -154,7 +154,7 @@
         
         <controls:ColorPickerControl
             HorizontalAlignment="Left"
-            Margin="8,48,0,0"
+            Margin="0,48,0,0"
             SelectedColor="{Binding SelectedColor}"
             SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
             Grid.Column="1"

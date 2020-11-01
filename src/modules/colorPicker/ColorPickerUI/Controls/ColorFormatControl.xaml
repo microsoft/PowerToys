@@ -5,8 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:p="clr-namespace:ColorPicker.Properties"
              xmlns:ui="http://schemas.modernwpf.com/2019"
-             mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
+             mc:Ignorable="d">
     <UserControl.ContextMenu>
         <ContextMenu>
             <MenuItem Header="{x:Static p:Resources.Hide}" Click="MenuItem_Click">
