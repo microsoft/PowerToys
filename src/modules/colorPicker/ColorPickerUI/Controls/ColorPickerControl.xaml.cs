@@ -194,6 +194,7 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(0), new Duration(TimeSpan.FromMilliseconds(250)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
+                CurrentColorBorder.CornerRadius = new CornerRadius(2);
                 CurrentColorBorder.BeginAnimation(Border.WidthProperty, resizeColor);
                 CurrentColorBorder.BeginAnimation(Border.MarginProperty, moveColor);
                 detailsStackPanel.BeginAnimation(StackPanel.OpacityProperty, opacityAppear);
@@ -219,6 +220,7 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(72, 0, 0, 0), new Duration(TimeSpan.FromMilliseconds(150)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
+                CurrentColorBorder.CornerRadius = new CornerRadius(0);
                 CurrentColorBorder.BeginAnimation(Border.WidthProperty, resizeColor);
                 CurrentColorBorder.BeginAnimation(Border.MarginProperty, moveColor);
                 detailsStackPanel.BeginAnimation(Window.OpacityProperty, opacityAppear);
@@ -254,7 +256,7 @@ namespace ColorPicker.Controls
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                var pos = GetMousePositionWithinGrid(sender as Grid);
+                var pos = GetMousePositionWithinGrid(sender as Border);
                 UpdateValueColorGradient(pos.X);
                 _ignoreGradientsChanges = true;
                 UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
@@ -264,7 +266,7 @@ namespace ColorPicker.Controls
 
         private void ValueGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var pos = GetMousePositionWithinGrid(sender as Grid);
+            var pos = GetMousePositionWithinGrid(sender as Border);
             UpdateValueColorGradient(pos.X);
             _ignoreGradientsChanges = true;
             UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
@@ -273,7 +275,7 @@ namespace ColorPicker.Controls
 
         private void SaturationGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var pos = GetMousePositionWithinGrid(sender as Grid);
+            var pos = GetMousePositionWithinGrid(sender as Border);
             UpdateSaturationColorGradient(pos.X);
             _ignoreGradientsChanges = true;
             UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
@@ -284,7 +286,7 @@ namespace ColorPicker.Controls
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                var pos = GetMousePositionWithinGrid(sender as Grid);
+                var pos = GetMousePositionWithinGrid(sender as Border);
                 UpdateSaturationColorGradient(pos.X);
                 _ignoreGradientsChanges = true;
                 UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
@@ -294,7 +296,7 @@ namespace ColorPicker.Controls
 
         private void HueGradientGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var pos = GetMousePositionWithinGrid(sender as Grid);
+            var pos = GetMousePositionWithinGrid(sender as Border);
             UpdateHueColorGradient(pos.X);
             _ignoreGradientsChanges = true;
             UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
@@ -305,7 +307,7 @@ namespace ColorPicker.Controls
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                var pos = GetMousePositionWithinGrid(sender as Grid);
+                var pos = GetMousePositionWithinGrid(sender as Border);
                 UpdateHueColorGradient(pos.X);
                 _ignoreGradientsChanges = true;
                 UpdateTextBoxesAndCurrentColor(HSVColor.RGBFromHSV(_currH, _currS, _currV));
@@ -313,17 +315,17 @@ namespace ColorPicker.Controls
             }
         }
 
-        private static Point GetMousePositionWithinGrid(Grid grid)
+        private static Point GetMousePositionWithinGrid(Border border)
         {
-            var pos = System.Windows.Input.Mouse.GetPosition(grid);
+            var pos = System.Windows.Input.Mouse.GetPosition(border);
             if (pos.X < 0)
             {
                 pos.X = 0;
             }
 
-            if (pos.X > grid.Width)
+            if (pos.X > border.Width)
             {
-                pos.X = grid.Width;
+                pos.X = border.Width;
             }
 
             return pos;

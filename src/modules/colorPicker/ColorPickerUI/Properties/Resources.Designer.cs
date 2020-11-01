@@ -61,6 +61,24 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Blue value.
+        /// </summary>
+        public static string Blue_value {
+            get {
+                return ResourceManager.GetString("Blue_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copied to clipboard.
         /// </summary>
         public static string Copied_to_clipboard {
@@ -88,6 +106,33 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Green value.
+        /// </summary>
+        public static string Green_value {
+            get {
+                return ResourceManager.GetString("Green_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hex value.
+        /// </summary>
+        public static string Hex_value {
+            get {
+                return ResourceManager.GetString("Hex_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string OK {
+            get {
+                return ResourceManager.GetString("OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open settings.
         /// </summary>
         public static string Open_settings {
@@ -102,6 +147,15 @@ namespace ColorPicker.Properties {
         public static string Pick_color {
             get {
                 return ResourceManager.GetString("Pick_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Red value.
+        /// </summary>
+        public static string Red_value {
+            get {
+                return ResourceManager.GetString("Red_value", resourceCulture);
             }
         }
         

@@ -13,6 +13,7 @@
         ui:TitleBar.ButtonStyle="{DynamicResource AppTitleBarButtonStyle}"
         ui:WindowHelper.UseModernWindowStyle="True"
         BorderBrush="{DynamicResource WindowBorderBrush}"
+        Background="{DynamicResource PrimaryBackgroundBrush}" 
         BorderThickness="1"
         Title="Color Picker"
         Height="380"

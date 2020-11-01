@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Blue_value" xml:space="preserve">
+    <value>Blue value</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
   <data name="Copied_to_clipboard" xml:space="preserve">
     <value>Copied to clipboard</value>
   </data>
@@ -127,11 +133,23 @@
     <value>Color Picker editor</value>
     <comment>Do not translate product name</comment>
   </data>
+  <data name="Green_value" xml:space="preserve">
+    <value>Green value</value>
+  </data>
+  <data name="Hex_value" xml:space="preserve">
+    <value>Hex value</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
   <data name="Open_settings" xml:space="preserve">
     <value>Open settings</value>
   </data>
   <data name="Pick_color" xml:space="preserve">
     <value>Pick color</value>
+  </data>
+  <data name="Red_value" xml:space="preserve">
+    <value>Red value</value>
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove</value>

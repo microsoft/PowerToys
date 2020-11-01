@@ -17,23 +17,9 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="1"
-                Background="{DynamicResource PrimaryBackgroundBrush}"/>
+        <!-- Side bar -->
         <Grid Background="{DynamicResource SecondaryBackgroundBrush}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="32"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Button Width="64"
-                    Height="32"
-                    Content="&#xEF3C;"
-                    Command="{Binding OpenColorPickerCommand}"
-                    Background="Transparent"
-                    FontFamily="Segoe MDL2 Assets"
-                    ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
-                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}"
-                    />
-            <ui:ListView Margin="0,12,0,0"
+            <ui:ListView Margin="0,48,0,0"
                          Grid.Row="1"
                          Padding="0"
                          ItemsSource="{Binding ColorsHistory}"
@@ -69,6 +55,7 @@
             </ui:ListView>
         </Grid>
 
+        <!-- Title bar -->
         <Grid Grid.ColumnSpan="2"
               Height="32"
               Background="Transparent"
@@ -81,12 +68,12 @@
                 Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
                 Grid.ColumnSpan="2"
                 Width="30"
-                Opacity="0.9"
                 Height="3"
                 CornerRadius="1.5"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Margin="0,1,0,0" />
+            
             <Button Width="46"
                     Height="32"
                     Content="&#xE115;"
@@ -95,59 +82,50 @@
                     HorizontalAlignment="Right"
                     Margin="0,0,46,0"
                     ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}"
-                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}"
-                    />
+                    AutomationProperties.Name="{x:Static p:Resources.Open_settings}" />
+            
+            <Button Width="64"
+                    Height="32"
+                    Content="&#xEF3C;"
+                    Command="{Binding OpenColorPickerCommand}"
+                    Background="Transparent"
+                    FontFamily="Segoe MDL2 Assets"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}"
+                    AutomationProperties.Name="{x:Static p:Resources.Pick_color}"/>
         </Grid>
-        
-        <ScrollViewer Grid.Column="1" Margin="0,90,0,0">
-            <StackPanel>
-                <ItemsControl ItemsSource="{Binding ColorRepresentations}"
-                              AllowDrop="True" >
-                    <!--<e:Interaction.Behaviors>
-                    <behaviors:DragAndDropReorderBehavior/>
-                </e:Interaction.Behaviors>-->
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <controls:ColorFormatControl
+
+        <!-- Main grid -->
+        <Grid Grid.Column="1">
+            <ScrollViewer Grid.Column="1" Margin="0,90,0,0">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding ColorRepresentations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:ColorFormatControl
                                 ColorFormatModel="{Binding }"
                                 SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}"
-                                ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
-                                HideCommand="{Binding ElementName=colorEditorControl, Path=DataContext.HideColorFormatCommand}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel
+                                ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel
                                 Orientation="Vertical"
                                 Margin="0,16,0,16"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
 
-               
-                <Popup IsOpen="{Binding ElementName=toggleButton, Path=IsChecked}"
-                       StaysOpen="False"
-                       Placement="Top"
-                       HorizontalAlignment="Center"
-                       PlacementTarget="{Binding ElementName=toggleButton}"
-                       AllowsTransparency="True">
-                    <Border>
-                        <ListBox ItemsSource="{Binding AvailableColorFormats}"
-                                 SelectedItem="{Binding SelectedColorFormat}"
-                               />
-                    </Border>
-                </Popup>
-            </StackPanel>
-        </ScrollViewer>
-        
-        <controls:ColorPickerControl
+            <controls:ColorPickerControl
             HorizontalAlignment="Left"
-            Margin="0,48,0,0"
+            Margin="0,44,0,0"
             SelectedColor="{Binding SelectedColor}"
             SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
             Grid.Column="1"
             VerticalAlignment="Top"/>
-
+        </Grid>
         <Border x:Name="CopiedBorderIndicator"
                 Opacity="0"
                 Grid.ColumnSpan="2"
@@ -155,9 +133,9 @@
                 VerticalAlignment="Bottom"
                 Height="0"
                 Background="{DynamicResource SystemControlBackgroundAccentBrush}">
-            
+
             <TextBlock FontSize="16"
-                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                       Foreground="White"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center" >
                 <Run Text="&#xE16F; " FontFamily="Segoe MDL2 Assets"/>
