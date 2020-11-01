@@ -4,6 +4,7 @@ _What is this about?_
 
 ## PR Checklist
 * [ ] Closes #xxx
+<!--Use "Applies to #xxx" if the PR is not a complete solution to the issue-->
 * [ ] CLA signed. If not, go over [here](https://cla.opensource.microsoft.com/microsoft/PowerToys) and sign the CLA
 * [ ] Tests added/passed
 * [ ] Requires documentation to be updated
