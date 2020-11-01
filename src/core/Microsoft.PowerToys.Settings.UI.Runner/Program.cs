@@ -18,6 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         // Quantity of arguments
         private const int ArgumentsQty = 5;
 
+        // Create an instance of the  IPC wrapper.
+        private static TwoWayPipeMessageIPCManaged ipcmanager;
+
         public static bool IsElevated { get; set; }
 
         public static bool IsUserAnAdmin { get; set; }

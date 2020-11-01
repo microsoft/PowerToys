@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" 
@@ -50,19 +51,28 @@
             <ToggleSwitch x:Uid="ColorPicker_EnableColorPicker" 
                           IsOn="{Binding IsEnabled, Mode=TwoWay}"/>
 
+            <TextBlock x:Uid="Shortcuts"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
             <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
-                                          Margin="{StaticResource MediumTopMargin}"
+                                          Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
                                           Keys="Win, Ctrl, Alt, Shift"
                                           Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                           HorizontalAlignment="Left"
                                           MinWidth="240"
                                           />
-
-            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
+            
+            <CheckBox x:Uid="ColorPicker_UseEditor" 
+                      IsChecked="{Binding UseEditor, Mode=TwoWay}" 
+                      Margin="{StaticResource SmallTopMargin}" 
+                      IsEnabled="{Binding IsEnabled}"/>
+            
+            <TextBlock x:Uid="ColorFormats"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-        
+            
             <ComboBox x:Uid="ColorPicker_CopiedColorRepresentation"
                       SelectedIndex="{Binding CopiedColorRepresentationIndex, Mode=TwoWay}"
                       Margin="{StaticResource SmallTopMargin}"
@@ -76,10 +86,22 @@
                 <ComboBoxItem Content="HSV - hsv(100, 50%, 75%)"/>
             </ComboBox>
 
-            <CheckBox x:Uid="ColorPicker_UseEditor" 
-                      IsChecked="{Binding UseEditor, Mode=TwoWay}" 
-                      Margin="{StaticResource SmallTopMargin}" 
-                      IsEnabled="{Binding IsEnabled}"/>
+            <TextBlock Margin="{StaticResource MediumTopMargin}" TextWrapping="WrapWholeWords" Text="Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging."/>
+            <ListView ItemsSource="{x:Bind ColorFormats, Mode=TwoWay}" AllowDrop="True" CanReorderItems="True" Margin="-12,0,0,0">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ColorFormat">
+                        <Grid Width="480">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock FontWeight="SemiBold" FontSize="16" Margin="0,8,0,0" Text="{x:Bind Name}"/>
+                            <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind Example}" Grid.Row="1" Margin="0,0,0,8"/>
+                            <ToggleSwitch IsOn="{x:Bind IsShown}" Grid.RowSpan="2" HorizontalAlignment="Right" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
             
             <!--
             Disabling this until we have a safer way to reset cursor as 

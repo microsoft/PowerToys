@@ -218,7 +218,6 @@
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
     <value>Change cursor when picking a color</value>
   </data>
-
   <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
     <value>Open Color Picker</value>
   </data>
@@ -258,7 +257,7 @@
   <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
     <value>Maximum number of results</value>
   </data>
-  <data name="PowerLauncher_Shortcuts.Text" xml:space="preserve">
+  <data name="Shortcuts.Text" xml:space="preserve">
     <value>Shortcuts</value>
   </data>
   <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
@@ -768,5 +767,11 @@
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
     <value>Copied color representation</value>
+  </data>
+  <data name="ColorPicker_UseEditor.Content" xml:space="preserve">
+    <value>Open editor on activation shortcut</value>
+  </data>
+  <data name="ColorFormats.Text" xml:space="preserve">
+    <value>Color formats</value>
   </data>
 </root>
