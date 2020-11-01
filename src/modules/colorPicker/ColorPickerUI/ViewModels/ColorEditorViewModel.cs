@@ -27,19 +27,13 @@ namespace ColorPicker.ViewModels
         private Color _selectedColor;
         private bool _initializing;
         private int _selectedColorIndex;
-        private string _selectedColorFormat;
-        private bool _settingSelectedColorFormat;
 
         [ImportingConstructor]
         public ColorEditorViewModel(IUserSettings userSettings)
         {
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             RemoveColorCommand = new RelayCommand(DeleteSelectedColor);
-            HideColorFormatCommand = new RelayCommand((removed) =>
-            {
-                AvailableColorFormats.Add(((ColorFormatModel)removed).FormatName);
-                ColorRepresentations.Remove((ColorFormatModel)removed);
-            });
+
             SelectedColorChangedCommand = new RelayCommand((newColor) =>
             {
                 ColorsHistory.Insert(0, (Color)newColor);
@@ -62,33 +56,6 @@ namespace ColorPicker.ViewModels
         public ICommand HideColorFormatCommand { get; }
 
         public ObservableCollection<Color> ColorsHistory { get; } = new ObservableCollection<Color>();
-
-        public ObservableCollection<string> AvailableColorFormats { get; } = new ObservableCollection<string>();
-
-        public string SelectedColorFormat
-        {
-            get
-            {
-                return _selectedColorFormat;
-            }
-
-            set
-            {
-                if (!_settingSelectedColorFormat)
-                {
-                    _selectedColorFormat = null;
-                    if (value != null)
-                    {
-                        ColorRepresentations.Add(_allColorRepresentations.First(it => it.FormatName == value));
-                        _settingSelectedColorFormat = true;
-                        AvailableColorFormats.Remove(value);
-                        _selectedColorFormat = null;
-                    }
-
-                    _settingSelectedColorFormat = false;
-                }
-            }
-        }
 
         public ObservableCollection<ColorFormatModel> ColorRepresentations { get; } = new ObservableCollection<ColorFormatModel>();
 
@@ -216,11 +183,6 @@ namespace ColorPicker.ViewModels
                 {
                     ColorRepresentations.Add(colorRepresentation);
                 }
-            }
-
-            foreach (var colorFormat in _allColorRepresentations.Except(ColorRepresentations))
-            {
-                AvailableColorFormats.Add(colorFormat.FormatName);
             }
         }
     }

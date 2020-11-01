@@ -124,19 +124,7 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
 
-                <ToggleButton Content="&#xE710;"
-                              FontFamily="Segoe MDL2 Assets"
-                              ToolTip="{x:Static p:Resources.Add_color_format}"
-                              Grid.Column="1"
-                              VerticalAlignment="Top"
-                              x:Name="toggleButton"
-                              IsChecked="False"
-                              Visibility="{Binding AvailableColorFormats.Count, Converter={StaticResource numberToVisibilityConverter}}"
-                              Margin="12,0,12,0"
-                              Width="308"
-                              Height="36"
-                              HorizontalAlignment="Stretch"
-                              Background="{DynamicResource ColorControlBackgroundBrush}"/>
+               
                 <Popup IsOpen="{Binding ElementName=toggleButton, Path=IsChecked}"
                        StaysOpen="False"
                        Placement="Top"
@@ -146,7 +134,7 @@
                     <Border>
                         <ListBox ItemsSource="{Binding AvailableColorFormats}"
                                  SelectedItem="{Binding SelectedColorFormat}"
-                                 Visibility="{Binding ElementName=colorEditorControl, Path=DataContext.AvailableColorFormats.Count, Converter={StaticResource numberToVisibilityConverter}}"/>
+                               />
                     </Border>
                 </Popup>
             </StackPanel>

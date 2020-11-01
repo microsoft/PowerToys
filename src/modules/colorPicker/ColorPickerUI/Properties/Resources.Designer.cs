@@ -61,15 +61,6 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add color format.
-        /// </summary>
-        public static string Add_color_format {
-            get {
-                return ResourceManager.GetString("Add_color_format", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Copied to clipboard.
         /// </summary>
         public static string Copied_to_clipboard {
