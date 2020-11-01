@@ -3,7 +3,7 @@
 _What is this about?_
 
 ## PR Checklist
-* [ ] Applies to #xxx
+* [ ] Closes #xxx
 * [ ] CLA signed. If not, go over [here](https://cla.opensource.microsoft.com/microsoft/PowerToys) and sign the CLA
 * [ ] Tests added/passed
 * [ ] Requires documentation to be updated
