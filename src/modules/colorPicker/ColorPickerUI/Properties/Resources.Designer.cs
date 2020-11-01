@@ -88,15 +88,6 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide.
-        /// </summary>
-        public static string Hide {
-            get {
-                return ResourceManager.GetString("Hide", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Open settings.
         /// </summary>
         public static string Open_settings {

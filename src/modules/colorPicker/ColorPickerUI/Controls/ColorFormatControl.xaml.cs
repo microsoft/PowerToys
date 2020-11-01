@@ -24,8 +24,6 @@ namespace ColorPicker.Controls
 
         public static readonly DependencyProperty ColorCopiedNotificationBorderProperty = DependencyProperty.Register("ColorCopiedNotificationBorder", typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(ColorCopiedBorderPropertyChanged));
 
-        public static readonly DependencyProperty HideCommandProperty = DependencyProperty.Register("HideCommand", typeof(ICommand), typeof(ColorFormatControl));
-
         private const int CopyIndicatorStayTimeInMs = 3000;
         private IThrottledActionInvoker _actionInvoker;
         private bool _copyIndicatorVisible;
@@ -46,12 +44,6 @@ namespace ColorPicker.Controls
         {
             get { return (FrameworkElement)GetValue(ColorCopiedNotificationBorderProperty); }
             set { SetValue(ColorCopiedNotificationBorderProperty, value); }
-        }
-
-        public ICommand HideCommand
-        {
-            get { return (ICommand)GetValue(HideCommandProperty); }
-            set { SetValue(HideCommandProperty, value); }
         }
 
         public ColorFormatControl()
@@ -109,11 +101,6 @@ namespace ColorPicker.Controls
             resize.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
             ColorCopiedNotificationBorder.BeginAnimation(Border.OpacityProperty, opacityDisappear);
             ColorCopiedNotificationBorder.BeginAnimation(Border.HeightProperty, resize);
-        }
-
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            HideCommand.Execute(ColorFormatModel);
         }
     }
 }

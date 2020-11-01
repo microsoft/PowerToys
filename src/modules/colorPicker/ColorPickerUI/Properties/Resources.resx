@@ -127,9 +127,6 @@
     <value>Color Picker editor</value>
     <comment>Do not translate product name</comment>
   </data>
-  <data name="Hide" xml:space="preserve">
-    <value>Hide</value>
-  </data>
   <data name="Open_settings" xml:space="preserve">
     <value>Open settings</value>
   </data>

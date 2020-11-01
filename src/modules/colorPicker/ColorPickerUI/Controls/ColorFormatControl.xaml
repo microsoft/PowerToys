@@ -6,16 +6,7 @@
              xmlns:p="clr-namespace:ColorPicker.Properties"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d">
-    <UserControl.ContextMenu>
-        <ContextMenu>
-            <MenuItem Header="{x:Static p:Resources.Hide}" Click="MenuItem_Click">
-                <MenuItem.Icon>
-                    <ui:FontIcon Glyph="&#xE107;" />
-                </MenuItem.Icon>
-            </MenuItem>
-        </ContextMenu>
-    </UserControl.ContextMenu>
-    
+
     <Border x:Name="MainBorder"
                     Margin="12,16,12,0"
                     Width="308"
