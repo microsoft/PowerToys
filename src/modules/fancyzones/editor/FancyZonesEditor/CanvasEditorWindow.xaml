@@ -70,7 +70,7 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="0,5,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="Background" Value="#949494"/>
             <Setter Property="Margin" Value="16,10,0,0" />
             <Setter Property="Width" Value="239"/>
             <Setter Property="Height" Value="32"/>
@@ -154,7 +154,7 @@
             <Setter Property="Margin" Value="16,12,0,0"/>
         </Style>
         <Style x:Key="textBox" TargetType="TextBox">
-            <Setter Property="BorderBrush" Value="#cccccc"/>
+            <Setter Property="BorderBrush" Value="#949494"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="SegoeUI"/>
             <Setter Property="FontWeight" Value="Regular"/>

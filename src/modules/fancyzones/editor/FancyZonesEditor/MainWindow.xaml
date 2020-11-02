@@ -79,7 +79,7 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="0,5,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="Background" Value="#949494"/>
             <Setter Property="Margin" Value="16,0,0,0" />
             <Setter Property="Width" Value="378"/>
             <Setter Property="Height" Value="32"/>
