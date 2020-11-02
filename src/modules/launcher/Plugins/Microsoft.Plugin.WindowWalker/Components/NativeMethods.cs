@@ -563,6 +563,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             public override string ToString()
             {
+                // Using CurrentCulture since this is user facing
                 return string.Format(System.Globalization.CultureInfo.CurrentCulture, "{{Left={0},Top={1},Right={2},Bottom={3}}}", Left, Top, Right, Bottom);
             }
         }

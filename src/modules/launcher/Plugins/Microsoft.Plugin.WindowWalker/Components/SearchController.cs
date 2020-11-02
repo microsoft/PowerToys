@@ -54,6 +54,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
 
             set
             {
+                // Using CurrentCulture since this is user facing
                 searchText = value.ToLower(CultureInfo.CurrentCulture).Trim();
             }
         }

@@ -73,15 +73,17 @@ namespace Microsoft.Plugin.Folder.UnitTests
             switch (isRecursive)
             {
                 case false:
-                    folderSearchFunc = s => s.Equals(search, StringComparison.CurrentCultureIgnoreCase);
+                    // Using Ordinal since this is internal
+                    folderSearchFunc = s => s.Equals(search, StringComparison.Ordinal);
 
                     var regexSearch = TrimDirectoryEnd(search);
 
                     fileSearchFunc = s => Regex.IsMatch(s, $"^{Regex.Escape(regexSearch)}[^\\\\]*$");
                     break;
                 case true:
-                    folderSearchFunc = s => s.StartsWith(search, StringComparison.CurrentCultureIgnoreCase);
-                    fileSearchFunc = s => s.StartsWith(search, StringComparison.CurrentCultureIgnoreCase);
+                    // Using Ordinal since this is internal
+                    folderSearchFunc = s => s.StartsWith(search, StringComparison.Ordinal);
+                    fileSearchFunc = s => s.StartsWith(search, StringComparison.Ordinal);
                     break;
             }
 

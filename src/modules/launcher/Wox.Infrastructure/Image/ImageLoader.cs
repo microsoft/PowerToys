@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -113,6 +114,7 @@ namespace Wox.Infrastructure.Image
             Cache,
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static ImageResult LoadInternal(string path, bool loadFullImage = false)
         {
             ImageSource image;
@@ -129,6 +131,7 @@ namespace Wox.Infrastructure.Image
                     return new ImageResult(ImageCache[path], ImageType.Cache);
                 }
 
+                // Using OrdinalIgnoreCase since this is internal and used with paths
                 if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
                     var imageSource = new BitmapImage(new Uri(path));
@@ -154,7 +157,10 @@ namespace Wox.Infrastructure.Image
                 }
                 else if (File.Exists(path))
                 {
-                    var extension = Path.GetExtension(path).ToLower();
+#pragma warning disable CA1308 // Normalize strings to uppercase. Reason: extension is used with the enum ImageExtensions, which contains all lowercase values
+                    // Using InvariantCulture since this is internal
+                    var extension = Path.GetExtension(path).ToLower(CultureInfo.InvariantCulture);
+#pragma warning restore CA1308 // Normalize strings to uppercase
                     if (ImageExtensions.Contains(extension))
                     {
                         type = ImageType.ImageFile;
@@ -200,7 +206,7 @@ namespace Wox.Infrastructure.Image
             return new ImageResult(image, type);
         }
 
-        private static readonly bool _enableImageHash = true;
+        private const bool _enableImageHash = true;
 
         public static ImageSource Load(string path, bool loadFullImage = false)
         {

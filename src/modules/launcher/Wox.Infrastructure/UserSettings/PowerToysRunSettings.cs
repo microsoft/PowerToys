@@ -12,7 +12,7 @@ using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
 {
-    public class Settings : BaseModel
+    public class PowerToysRunSettings : BaseModel
     {
         private string _hotkey = "Alt + Space";
         private string _previousHotkey = string.Empty;
@@ -95,7 +95,7 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
 
-        public bool AutoUpdates { get; set; } = false;
+        public bool AutoUpdates { get; set; }
 
         public double WindowLeft { get; set; }
 
@@ -126,13 +126,7 @@ namespace Wox.Infrastructure.UserSettings
         [JsonProperty(Order = 1)]
         public PluginSettings PluginSettings { get; set; } = new PluginSettings();
 
-        public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new ObservableCollection<CustomPluginHotkey>();
-
-        [Obsolete]
-        public double Opacity { get; set; } = 1;
-
-        [Obsolete]
-        public OpacityMode OpacityMode { get; set; } = OpacityMode.Normal;
+        public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; } = new ObservableCollection<CustomPluginHotkey>();
 
         public bool DontPromptUpdateMsg { get; set; }
 
@@ -162,7 +156,7 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool HideWhenDeactivated { get; set; } = true;
 
-        public bool ClearInputOnLaunch { get; set; } = false;
+        public bool ClearInputOnLaunch { get; set; }
 
         public bool RememberLastLaunchLocation { get; set; }
 
@@ -181,13 +175,5 @@ namespace Wox.Infrastructure.UserSettings
         Selected,
         Empty,
         Preserved,
-    }
-
-    [Obsolete]
-    public enum OpacityMode
-    {
-        Normal = 0,
-        LayeredWindow = 1,
-        DWM = 2,
     }
 }

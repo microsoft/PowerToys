@@ -83,7 +83,8 @@ private:
         int searchReplaceWidthDiff;
         int listPreviewWidthDiff;
         int listPreviewHeightDiff;
-        int statusMessageYDiff;
+        int statusMessageSelectedYDiff;
+        int statusMessageRenamingYDiff;
         int renameButtonXDiff;
         int renameButtonYDiff;
         int helpButtonXDiff;

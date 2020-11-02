@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
+using System.Windows.Input;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -15,6 +16,9 @@ namespace FancyZonesEditor
         public CanvasEditorWindow()
         {
             InitializeComponent();
+
+            KeyUp += CanvasEditorWindow_KeyUp;
+
             _model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
             _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
@@ -39,6 +43,14 @@ namespace FancyZonesEditor
         {
             base.OnCancel(sender, e);
             _stashedModel.RestoreTo(_model);
+        }
+
+        private void CanvasEditorWindow_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                OnCancel(sender, null);
+            }
         }
 
         private int _offset = 100;

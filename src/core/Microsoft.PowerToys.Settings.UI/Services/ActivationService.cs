@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 // Initialize services that you need before app activation
                 // take into account that the splash screen is shown while this code runs.
-                await InitializeAsync();
+                await InitializeAsync().ConfigureAwait(false);
 
                 // Do not repeat app initialization when the Window already has content,
                 // just ensure that the window is active
@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             // Depending on activationArgs one of ActivationHandlers or DefaultActivationHandler
             // will navigate to the first page
-            await HandleActivationAsync(activationArgs);
+            await HandleActivationAsync(activationArgs).ConfigureAwait(false);
             lastActivationArgs = activationArgs;
 
             if (IsInteractive(activationArgs))
@@ -60,13 +60,13 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 Window.Current.Activate();
 
                 // Tasks after activation
-                await StartupAsync();
+                await StartupAsync().ConfigureAwait(false);
             }
         }
 
-        private async Task InitializeAsync()
+        private static async Task InitializeAsync()
         {
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         private async Task HandleActivationAsync(object activationArgs)
@@ -76,7 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             if (activationHandler != null)
             {
-                await activationHandler.HandleAsync(activationArgs);
+                await activationHandler.HandleAsync(activationArgs).ConfigureAwait(false);
             }
 
             if (IsInteractive(activationArgs))
@@ -84,22 +84,22 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 var defaultHandler = new DefaultActivationHandler(defaultNavItem);
                 if (defaultHandler.CanHandle(activationArgs))
                 {
-                    await defaultHandler.HandleAsync(activationArgs);
+                    await defaultHandler.HandleAsync(activationArgs).ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task StartupAsync()
+        private static async Task StartupAsync()
         {
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
-        private IEnumerable<ActivationHandler> GetActivationHandlers()
+        private static IEnumerable<ActivationHandler> GetActivationHandlers()
         {
             yield break;
         }
 
-        private bool IsInteractive(object args)
+        private static bool IsInteractive(object args)
         {
             return args is IActivatedEventArgs;
         }

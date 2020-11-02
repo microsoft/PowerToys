@@ -98,6 +98,7 @@ namespace Microsoft.Plugin.Program.Programs
             // To Filter PWAs when the user searches for the main application
             // All Chromium based applications contain the --app-id argument
             // Reference : https://codereview.chromium.org/399045/show
+            // Using Ordinal IgnoreCase since this is used internally
             bool isWebApplication = FullPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase) && Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase);
             return isWebApplication;
         }
@@ -121,6 +122,7 @@ namespace Microsoft.Plugin.Program.Programs
             // check if any space separated query is a part of the app name or path name
             foreach (var subquery in subqueries)
             {
+                // Using OrdinalIgnoreCase since these are used internally
                 if (FullPath.Contains(subquery, StringComparison.OrdinalIgnoreCase))
                 {
                     pathContainsQuery = true;
@@ -172,6 +174,7 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (query != null && AppType == ApplicationType.RunCommand)
             {
+                // Using OrdinalIgnoreCase since this is used internally
                 if (!query.Equals(Name, StringComparison.OrdinalIgnoreCase) && !query.Equals(ExecutableName, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
@@ -235,6 +238,7 @@ namespace Microsoft.Plugin.Program.Programs
             result.Title = Name;
             result.SetTitleHighlightData(StringMatcher.FuzzySearch(query, Name).MatchData);
 
+            // Using CurrentCulture since this is user facing
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, FullPath);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
@@ -342,6 +346,8 @@ namespace Microsoft.Plugin.Program.Programs
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
                     IcoPath = path,
+
+                    // Using CurrentCulture since this is user facing
                     FullPath = path.ToLower(CultureInfo.CurrentCulture),
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
@@ -384,6 +390,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 foreach (string line in lines)
                 {
+                    // Using OrdinalIgnoreCase since this is used internally
                     if (line.StartsWith(urlPrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         urlPath = line.Substring(urlPrefix.Length);
@@ -407,6 +414,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                     }
 
+                    // Using OrdinalIgnoreCase since this is used internally
                     if (line.StartsWith(iconFilePrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         iconPath = line.Substring(iconFilePrefix.Length);
@@ -465,6 +473,8 @@ namespace Microsoft.Plugin.Program.Programs
                     if (File.Exists(target) || Directory.Exists(target))
                     {
                         program.LnkResolvedPath = program.FullPath;
+
+                        // Using CurrentCulture since this is user facing
                         program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
                         program.AppType = GetAppTypeFromPath(target);
 
@@ -543,6 +553,7 @@ namespace Microsoft.Plugin.Program.Programs
             string extension = Extension(path);
             ApplicationType appType = ApplicationType.GenericFile;
 
+            // Using OrdinalIgnoreCase since these are used internally with paths
             if (ExecutableApplicationExtensions.Contains(extension))
             {
                 appType = ApplicationType.Win32Application;
@@ -677,6 +688,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         private static string Extension(string path)
         {
+            // Using CurrentCulture since this is user facing
             var extension = Path.GetExtension(path)?.ToLower(CultureInfo.CurrentCulture);
 
             if (!string.IsNullOrEmpty(extension))
@@ -734,6 +746,7 @@ namespace Microsoft.Plugin.Program.Programs
                         .Distinct()
                         .ToArray();
 
+            // Using OrdinalIgnoreCase since this is used internally with paths
             var programs1 = allPaths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
             var programs2 = allPaths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(CreateWin32Program);
             var programs3 = allPaths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
@@ -768,6 +781,7 @@ namespace Microsoft.Plugin.Program.Programs
                         .Distinct()
                         .ToArray();
 
+            // Using OrdinalIgnoreCase since this is used internally with paths
             var programs1 = paths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(CreateWin32Program);
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
@@ -908,6 +922,7 @@ namespace Microsoft.Plugin.Program.Programs
                     && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName)
                     && !string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath))
                 {
+                    // Using OrdinalIgnoreCase since this is used internally
                     return app1.Name.Equals(app2.Name, StringComparison.OrdinalIgnoreCase)
                         && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase)
                         && app1.FullPath.Equals(app2.FullPath, StringComparison.OrdinalIgnoreCase);
@@ -924,6 +939,8 @@ namespace Microsoft.Plugin.Program.Programs
                 int fullPathPrime = 31;
 
                 int result = 1;
+
+                // Using Ordinal since this is used internally
                 result = (result * namePrime) + obj.Name.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
                 result = (result * executablePrime) + obj.ExecutableName.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
                 result = (result * fullPathPrime) + obj.FullPath.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);

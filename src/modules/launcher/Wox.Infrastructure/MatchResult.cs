@@ -53,9 +53,9 @@ namespace Wox.Infrastructure
         }
 
         /// <summary>
-        /// Gets or sets matched data to highlight.
+        /// Gets matched data to highlight.
         /// </summary>
-        public List<int> MatchData { get; set; }
+        public List<int> MatchData { get; private set; }
 
         public SearchPrecisionScore SearchPrecision { get; set; }
 

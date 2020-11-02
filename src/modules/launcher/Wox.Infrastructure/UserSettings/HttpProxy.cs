@@ -6,7 +6,7 @@ namespace Wox.Infrastructure.UserSettings
 {
     public class HttpProxy
     {
-        public bool Enabled { get; set; } = false;
+        public bool Enabled { get; set; }
 
         public string Server { get; set; }
 

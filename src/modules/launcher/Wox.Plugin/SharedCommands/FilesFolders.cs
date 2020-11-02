@@ -13,7 +13,7 @@ namespace Wox.Plugin.SharedCommands
 {
     public static class FilesFolders
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void Copy(this string sourcePath, string targetPath)
         {
             // Get the subdirectories for the specified directory.
@@ -67,7 +67,7 @@ namespace Wox.Plugin.SharedCommands
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static bool VerifyBothFolderFilesEqual(this string fromPath, string toPath)
         {
             try
@@ -103,7 +103,7 @@ namespace Wox.Plugin.SharedCommands
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception has been logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void RemoveFolder(this string path)
         {
             try

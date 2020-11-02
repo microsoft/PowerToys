@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Linq;
 using System.Windows;
-using MahApps.Metro.Theming;
 using ManagedCommon;
 using Microsoft.Win32;
 
@@ -40,31 +39,35 @@ namespace Wox.Plugin
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     highContrastOneThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     highContrastTwoThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     highContrastBlackThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     highContrastWhiteThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     lightThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new ControlzEx.Theming.LibraryTheme(
                     darkThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
 
-            ResetTheme();
-            ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ControlzEx.Theming.ThemeSyncMode.SyncAll;
             ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
+
+            // Currently there is an issue in ControlzEx, so we must use SyncAll to sync also HighContrast themes.
+            // We can change this after using next release.
+            ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ControlzEx.Theming.ThemeSyncMode.SyncAll;
+
+            ControlzEx.Theming.ThemeManager.Current.SyncTheme();
         }
 
         public Theme GetCurrentTheme()
@@ -119,22 +122,22 @@ namespace Wox.Plugin
             else if (theme == Theme.HighContrastOne)
             {
                 currentTheme = Theme.HighContrastOne;
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastOneTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastOneTheme, true);
             }
             else if (theme == Theme.HighContrastTwo)
             {
                 currentTheme = Theme.HighContrastTwo;
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastTwoTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastTwoTheme, true);
             }
             else if (theme == Theme.HighContrastWhite)
             {
                 currentTheme = Theme.HighContrastWhite;
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastWhiteTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastWhiteTheme, true);
             }
             else if (theme == Theme.HighContrastBlack)
             {
                 currentTheme = Theme.HighContrastBlack;
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastBlackTheme);
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastBlackTheme, true);
             }
             else if (theme == Theme.Light)
             {
@@ -157,7 +160,15 @@ namespace Wox.Plugin
 
         private void Current_ThemeChanged(object sender, ControlzEx.Theming.ThemeChangedEventArgs e)
         {
-            ResetTheme();
+            ControlzEx.Theming.ThemeManager.Current.ThemeChanged -= Current_ThemeChanged;
+            try
+            {
+                ResetTheme();
+            }
+            finally
+            {
+                ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
+            }
         }
 
         protected virtual void Dispose(bool disposing)

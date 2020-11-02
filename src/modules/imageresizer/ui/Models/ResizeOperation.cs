@@ -189,6 +189,7 @@ namespace ImageResizer.Models
                 extension = supportedExtensions.FirstOrDefault();
             }
 
+            // Using CurrentCulture since this is user facing
             var fileName = string.Format(
                 CultureInfo.CurrentCulture,
                 _settings.FileNameFormat,

@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Set Default IPC Message callback function.
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
-        public void SetDefaultSndMessageCallback(IPCMessageCallback implementation)
+        public static void SetDefaultSndMessageCallback(IPCMessageCallback implementation)
         {
             DefaultSndMSGCallback = implementation;
         }
@@ -101,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Set restart as admin IPC callback function.
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
-        public void SetRestartAdminSndMessageCallback(IPCMessageCallback implementation)
+        public static void SetRestartAdminSndMessageCallback(IPCMessageCallback implementation)
         {
             SndRestartAsAdminMsgCallback = implementation;
         }
@@ -110,17 +110,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Set check for updates IPC callback function.
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
-        public void SetCheckForUpdatesMessageCallback(IPCMessageCallback implementation)
+        public static void SetCheckForUpdatesMessageCallback(IPCMessageCallback implementation)
         {
             CheckForUpdatesMsgCallback = implementation;
         }
 
-        public void SetElevationStatus(bool isElevated)
+        public static void SetElevationStatus(bool isElevated)
         {
             IsElevated = isElevated;
         }
 
-        public void SetIsUserAnAdmin(bool isAdmin)
+        public static void SetIsUserAnAdmin(bool isAdmin)
         {
             IsUserAnAdmin = isAdmin;
         }

@@ -44,21 +44,21 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             if (shellPage != null)
             {
                 // send IPC Message
-                shellPage.SetDefaultSndMessageCallback(msg =>
+                ShellPage.SetDefaultSndMessageCallback(msg =>
                 {
                     // IPC Manager is null when launching runner directly
                     Program.GetTwoWayIPCManager()?.Send(msg);
                 });
 
                 // send IPC Message
-                shellPage.SetRestartAdminSndMessageCallback(msg =>
+                ShellPage.SetRestartAdminSndMessageCallback(msg =>
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
                     System.Windows.Application.Current.Shutdown(); // close application
                 });
 
                 // send IPC Message
-                shellPage.SetCheckForUpdatesMessageCallback(msg =>
+                ShellPage.SetCheckForUpdatesMessageCallback(msg =>
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
                 });
@@ -83,8 +83,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     }
                 };
 
-                shellPage.SetElevationStatus(Program.IsElevated);
-                shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
+                ShellPage.SetElevationStatus(Program.IsElevated);
+                ShellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();
             }
 

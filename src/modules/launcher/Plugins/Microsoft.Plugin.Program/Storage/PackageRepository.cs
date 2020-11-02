@@ -80,7 +80,7 @@ namespace Microsoft.Plugin.Program.Storage
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
 
             var applications = support ? Programs.UWP.All() : Array.Empty<UWPApplication>();
-            Set(applications);
+            SetList(applications);
         }
 
         public void Save()
@@ -91,7 +91,7 @@ namespace Microsoft.Plugin.Program.Storage
         public void Load()
         {
             var items = _storage.TryLoad(Array.Empty<UWPApplication>());
-            Set(items);
+            SetList(items);
         }
     }
 }
