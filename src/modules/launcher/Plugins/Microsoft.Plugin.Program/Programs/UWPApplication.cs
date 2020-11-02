@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -31,6 +32,10 @@ namespace Microsoft.Plugin.Program.Programs
     [Serializable]
     public class UWPApplication : IProgram
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         public string AppListEntry { get; set; }
 
         public string UniqueIdentifier { get; set; }

@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
+using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private const string PowerToyName = "Keyboard Manager";
 
         private readonly CoreDispatcher dispatcher;
-        private readonly FileSystemWatcher watcher;
+        private readonly IFileSystemWatcher watcher;
 
         public KeyboardManagerViewModel ViewModel { get; }
 
@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             dispatcher = Window.Current.Dispatcher;
 
-            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            var settingsUtils = new SettingsUtils();
             ViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, FilterRemapKeysList);
 
             watcher = Helper.GetFileWatcher(

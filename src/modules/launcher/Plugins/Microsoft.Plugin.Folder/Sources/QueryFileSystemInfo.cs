@@ -2,20 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
-using Wox.Infrastructure.FileSystemHelper;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
-    public class QueryFileSystemInfo : DirectoryWrapper,  IQueryFileSystemInfo
+    public class QueryFileSystemInfo : IQueryFileSystemInfo
     {
+        private readonly IDirectoryInfoFactory _directoryInfoFactory;
+
+        public QueryFileSystemInfo(IDirectoryInfoFactory directoryInfoFactory)
+        {
+            _directoryInfoFactory = directoryInfoFactory;
+        }
+
         public IEnumerable<DisplayFileInfo> MatchFileSystemInfo(string search, string incompleteName, bool isRecursive)
         {
             // search folder and add results
-            var directoryInfo = new DirectoryInfo(search);
+            var directoryInfo = _directoryInfoFactory.FromDirectoryName(search);
             var fileSystemInfos = directoryInfo.EnumerateFileSystemInfos(incompleteName, new EnumerationOptions()
             {
                 MatchType = MatchType.Win32,
@@ -30,7 +36,7 @@ namespace Microsoft.Plugin.Folder.Sources
                 .Select(CreateDisplayFileInfo);
         }
 
-        private static DisplayFileInfo CreateDisplayFileInfo(FileSystemInfo fileSystemInfo)
+        private static DisplayFileInfo CreateDisplayFileInfo(IFileSystemInfo fileSystemInfo)
         {
             return new DisplayFileInfo()
             {
@@ -40,9 +46,9 @@ namespace Microsoft.Plugin.Folder.Sources
             };
         }
 
-        private static DisplayType GetDisplayType(FileSystemInfo fileSystemInfo)
+        private static DisplayType GetDisplayType(IFileSystemInfo fileSystemInfo)
         {
-            if (fileSystemInfo is DirectoryInfo)
+            if (fileSystemInfo is IDirectoryInfo)
             {
                 return DisplayType.Directory;
             }

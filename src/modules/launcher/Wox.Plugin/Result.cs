@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
+using System.IO.Abstractions;
 using System.Windows;
 using System.Windows.Media;
 
@@ -13,6 +13,9 @@ namespace Wox.Plugin
 {
     public class Result
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+
         private string _title;
         private ToolTipData _toolTipData;
         private string _pluginDirectory;

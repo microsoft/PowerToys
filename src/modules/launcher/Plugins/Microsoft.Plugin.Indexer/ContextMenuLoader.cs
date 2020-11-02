@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,6 +19,8 @@ namespace Microsoft.Plugin.Indexer
 {
     internal class ContextMenuLoader : IContextMenu
     {
+        private readonly IPath _path = new FileSystem().Path;
+
         private readonly PluginInitContext _context;
 
         public enum ResultType
@@ -41,7 +43,7 @@ namespace Microsoft.Plugin.Indexer
             var contextMenus = new List<ContextMenuResult>();
             if (selectedResult.ContextData is SearchResult record)
             {
-                ResultType type = Path.HasExtension(record.Path) ? ResultType.File : ResultType.Folder;
+                ResultType type = _path.HasExtension(record.Path) ? ResultType.File : ResultType.Folder;
 
                 if (type == ResultType.File)
                 {
@@ -95,7 +97,7 @@ namespace Microsoft.Plugin.Indexer
                         {
                             if (type == ResultType.File)
                             {
-                                Helper.OpenInConsole(Path.GetDirectoryName(record.Path));
+                                Helper.OpenInConsole(_path.GetDirectoryName(record.Path));
                             }
                             else
                             {
@@ -147,7 +149,7 @@ namespace Microsoft.Plugin.Indexer
         // Function to test if the file can be run as admin
         private bool CanFileBeRunAsAdmin(string path)
         {
-            string fileExtension = Path.GetExtension(path);
+            string fileExtension = _path.GetExtension(path);
             foreach (string extension in appExtensions)
             {
                 // Using OrdinalIgnoreCase since this is internal
