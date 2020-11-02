@@ -65,19 +65,6 @@ namespace FancyZonesEditor.Models
         private const string PriorityGridJsonTag = "priority-grid";
         private const string CustomJsonTag = "custom";
 
-        private const string PowerToysIssuesURL = "https://aka.ms/powerToysReportBug";
-
-        public static void ShowExceptionMessageBox(string message, Exception exception = null)
-        {
-            string fullMessage = ErrorMessageBoxMessage + PowerToysIssuesURL + " \n" + message;
-            if (exception != null)
-            {
-                fullMessage += ": " + exception.Message;
-            }
-
-            MessageBox.Show(fullMessage, ErrorMessageBoxTitle);
-        }
-
         protected LayoutModel()
         {
             _guid = Guid.NewGuid();
