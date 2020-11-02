@@ -4,10 +4,8 @@
 
 using System;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Interactivity;
 using System.Windows.Media.Animation;
-using ColorPicker.Constants;
 
 namespace ColorPicker.Behaviors
 {
@@ -46,13 +44,7 @@ namespace ColorPicker.Behaviors
                 EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut },
             };
 
-            var resize = new DoubleAnimation(0d, WindowConstant.PickerWindowWidth, duration)
-            {
-                 EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut },
-            };
-
             AssociatedObject.BeginAnimation(UIElement.OpacityProperty, opacityAppear);
-            AssociatedObject.BeginAnimation(FrameworkElement.WidthProperty, resize);
         }
 
         private void Hide()
@@ -60,10 +52,8 @@ namespace ColorPicker.Behaviors
             var duration = new Duration(TimeSpan.FromMilliseconds(1));
 
             var opacityAppear = new DoubleAnimation(0d, duration);
-            var resize = new DoubleAnimation(0d, duration);
 
             AssociatedObject.BeginAnimation(UIElement.OpacityProperty, opacityAppear);
-            AssociatedObject.BeginAnimation(FrameworkElement.WidthProperty, resize);
         }
     }
 }

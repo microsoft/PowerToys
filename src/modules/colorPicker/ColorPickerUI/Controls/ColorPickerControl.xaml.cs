@@ -19,6 +19,7 @@ namespace ColorPicker.Controls
     /// </summary>
     public partial class ColorPickerControl : UserControl
     {
+        private const int GradientPointerHalfWidth = 3;
         private double _currH = 360;
         private double _currS = 1;
         private double _currV = 1;
@@ -115,7 +116,7 @@ namespace ColorPicker.Controls
 
         private void UpdateValueColorGradient(double posX)
         {
-            valueGradientPointer.Margin = new Thickness(posX - 2, 0, 0, 0);
+            valueGradientPointer.Margin = new Thickness(posX - GradientPointerHalfWidth, 0, 0, 0);
 
             _currV = posX / ValueGradientGrid.Width;
 
@@ -127,7 +128,7 @@ namespace ColorPicker.Controls
 
         private void UpdateSaturationColorGradient(double posX)
         {
-            saturationGradientPointer.Margin = new Thickness(posX - 2, 0, 0, 0);
+            saturationGradientPointer.Margin = new Thickness(posX - GradientPointerHalfWidth, 0, 0, 0);
 
             _currS = posX / SaturationGradientGrid.Width;
 
@@ -139,7 +140,7 @@ namespace ColorPicker.Controls
 
         private void UpdateHueColorGradient(double posX)
         {
-            hueGradientPointer.Margin = new Thickness(posX - 2, 0, 0, 0);
+            hueGradientPointer.Margin = new Thickness(posX - GradientPointerHalfWidth, 0, 0, 0);
 
             _currH = posX / HueGradientGrid.Width * 360;
 

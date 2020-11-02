@@ -35,7 +35,7 @@
                     x:Name="ColorBorder"
                     CornerRadius="4"/>
 
-            <TextBlock Margin="8,5,0,8"
+            <TextBlock Margin="8,5,8,8"
                        FontSize="16"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
