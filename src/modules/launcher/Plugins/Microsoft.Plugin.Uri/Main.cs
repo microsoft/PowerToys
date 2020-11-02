@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Text;
 using ManagedCommon;
 using Microsoft.Plugin.Uri.UriHelper;
@@ -17,6 +17,10 @@ namespace Microsoft.Plugin.Uri
 {
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IDisposable
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         private readonly ExtendedUriParser _uriParser;
         private readonly UriResolver _uriResolver;
         private readonly PluginJsonStorage<UriSettings> _storage;

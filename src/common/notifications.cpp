@@ -33,8 +33,7 @@ using winrt::Windows::UI::Notifications::ToastNotificationManager;
 
 namespace fs = std::filesystem;
 
-// This namespace contains strings that SHOULD NOT be localized
-namespace
+namespace // Strings in this namespace should not be localized
 {
     constexpr std::wstring_view TASK_NAME = L"PowerToysBackgroundNotificationsHandler";
     constexpr std::wstring_view TASK_ENTRYPOINT = L"PowerToysNotifications.BackgroundHandler";
@@ -43,11 +42,6 @@ namespace
 
     std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
     constexpr std::wstring_view DEFAULT_TOAST_GROUP = L"PowerToysToastTag";
-}
-
-namespace localized_strings
-{
-    constexpr std::wstring_view SNOOZE_BUTTON = L"Snooze";
 }
 
 static DWORD loop_thread_id()
@@ -365,7 +359,7 @@ void notifications::show_toast_with_activations(std::wstring message,
                                toast_xml += '"';
                            }
                            toast_xml += LR"( content=")";
-                           toast_xml += localized_strings::SNOOZE_BUTTON;
+                           toast_xml += b.snooze_button_title;
                            toast_xml += LR"(" />)";
                        } },
                    actions[i]);

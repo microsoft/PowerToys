@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using System.Windows.Input;
 using ManagedCommon;
@@ -26,14 +27,14 @@ namespace PowerLauncher
 
         private const int MaxRetries = 10;
         private static readonly object _watcherSyncObject = new object();
-        private readonly FileSystemWatcher _watcher;
+        private readonly IFileSystemWatcher _watcher;
         private readonly PowerToysRunSettings _settings;
 
         private readonly ThemeManager _themeManager;
 
         public SettingsWatcher(PowerToysRunSettings settings, ThemeManager themeManager)
         {
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = new SettingsUtils();
             _settings = settings;
             _themeManager = themeManager;
 

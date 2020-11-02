@@ -114,18 +114,18 @@
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
                                     <TextBlock Grid.Column="6" Margin="5,0,0,0" VerticalAlignment="Center">
-                                        <Hyperlink Command="{Binding DataContext.RemoveSizeCommand,ElementName=_this}" CommandParameter="{Binding}">
+                                        <local:AccessibleHyperlink ControlType="Button"  Command="{Binding DataContext.RemoveSizeCommand,ElementName=_this}" CommandParameter="{Binding}">
                                             <Run Text="{x:Static p:Resources.Advanced_DeleteSize}"/>
-                                        </Hyperlink>
+                                        </local:AccessibleHyperlink>
                                     </TextBlock>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <TextBlock>
-                        <Hyperlink Command="{Binding AddSizeCommand}">
+                        <local:AccessibleHyperlink ControlType="Button" Command="{Binding AddSizeCommand}">
                             <Run Text="{x:Static p:Resources.Advanced_CreateSize}"/>
-                        </Hyperlink>
+                        </local:AccessibleHyperlink>
                     </TextBlock>
                 </StackPanel>
             </TabItem>

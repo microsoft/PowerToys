@@ -28,6 +28,7 @@ namespace notifications
     {
         std::wstring snooze_title;
         std::vector<snooze_duration> durations;
+        std::wstring snooze_button_title;
     };
 
     struct link_button
@@ -45,7 +46,7 @@ namespace notifications
 
     struct progress_bar_params
     {
-        std::wstring_view progress_title;
+        std::wstring progress_title;
         float progress = 0.f;
     };
 

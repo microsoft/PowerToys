@@ -73,5 +73,85 @@
   <data name="AUTOUPDATE_SUCCESS" xml:space="preserve">
     <value>PowerToys was successfully updated!</value>
   </data>
-
+  <data name="MSI_VERSION_IS_ALREADY_RUNNING" xml:space="preserve">
+    <value>An older version of PowerToys is already running.</value>
+  </data>
+  <data name="DOWNLOAD_UPDATE_ERROR" xml:space="preserve">
+    <value>Couldn't download PowerToys update! Please report the issue on Github.</value>
+  </data>
+  <data name="OLDER_MSIX_UNINSTALLED" xml:space="preserve">
+    <value>An older MSIX version of PowerToys was uninstalled.</value>
+  </data>
+  <data name="PT_UPDATE_MESSAGE_BOX_TEXT" xml:space="preserve">
+    <value>PowerToys was updated successfully!</value>
+  </data>
+  <data name="STARTUP_DISABLED_BY_POLICY" xml:space="preserve">
+    <value>This setting has been disabled by your administrator.</value>
+  </data>
+  <data name="STARTUP_DISABLED_BY_USER" xml:space="preserve">
+    <value>This setting has been disabled manually via &lt;a href=&quot;https://ms_settings_startupapps&quot; target=&quot;_blank&quot;&gt;Startup Settings&lt;/a&gt;.</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_AVAILABLE" xml:space="preserve">
+    <value>An update to PowerToys is available.</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_DOWNLOAD_STARTED" xml:space="preserve">
+    <value>PowerToys download started.</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_READY_TO_INSTALL" xml:space="preserve">
+    <value>An update to PowerToys is ready to install.</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR" xml:space="preserve">
+    <value>Error: couldn't download PowerToys installer. Visit our GitHub page to update.</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_UPDATE_NOW" xml:space="preserve">
+    <value>Update now</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART" xml:space="preserve">
+    <value>At next launch</value>
+  </data>
+  <data name="UNINSTALLATION_UNKNOWN_ERROR" xml:space="preserve">
+    <value>Error: please uninstall the previous version of PowerToys manually.</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT" xml:space="preserve">
+    <value>An update to PowerToys is available. Visit our GitHub page to update.</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_UNAVAILABLE" xml:space="preserve">
+    <value>PowerToys is up to date.</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_VISIT" xml:space="preserve">
+    <value>Visit</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_MORE_INFO" xml:space="preserve">
+    <value>More info...</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_ABORT" xml:space="preserve">
+    <value>Abort</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_SNOOZE_TITLE" xml:space="preserve">
+    <value>Click Snooze to be reminded in:</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D" xml:space="preserve">
+    <value>1 day</value>
+  </data>
+  <data name="GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D" xml:space="preserve">
+    <value>5 days</value>
+  </data>
+  <data name="DOWNLOAD_IN_PROGRESS" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="DOWNLOAD_COMPLETE" xml:space="preserve">
+    <value>Download complete</value>
+  </data>
+  <data name="TOAST_TITLE" xml:space="preserve">
+    <value>PowerToys Update</value>
+  </data>
+  <data name="OFFER_UNINSTALL_MSI" xml:space="preserve">
+    <value>We've detected a previous installation of PowerToys. Would you like to remove it?</value>
+  </data>
+  <data name="OFFER_UNINSTALL_MSI_TITLE" xml:space="preserve">
+    <value>PowerToys: uninstall previous version?</value>
+  </data>
+  <data name="SNOOZE_BUTTON" xml:space="preserve">
+    <value>Snooze</value>
+  </data>
 </root>
