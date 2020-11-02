@@ -48,7 +48,7 @@ namespace FancyZonesEditor.Utils
         {
             get
             {
-                if (Settings.DebugMode)
+                if (App.DebugMode)
                 {
                     var rect = WorkArea.GetWorkingArea(Index - 1);
                     return "Screen: (" + rect.X + ", " + rect.Y + "); (" + rect.Width + ", " + rect.Height + ")";

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
@@ -167,8 +166,6 @@ namespace FancyZonesEditor
         public Settings()
         {
             string tmpDirPath = _fileSystem.Path.GetTempPath();
-            DebugModeCheck();
-
             DesktopsCount = Screen.AllScreens.Length;
             Area = new WorkArea(DesktopsCount);
             AppliedLayouts = new List<AppliedZoneset>(DesktopsCount);
@@ -426,22 +423,6 @@ namespace FancyZonesEditor
 
         public static bool SpanZonesAcrossMonitors { get; private set; }
 
-        public static bool DebugMode
-        {
-            get
-            {
-                return _debugMode;
-            }
-        }
-
-        private static bool _debugMode = false;
-
-        [Conditional("DEBUG")]
-        private void DebugModeCheck()
-        {
-            _debugMode = true;
-        }
-
         // UpdateLayoutModels
         // Update the five default layouts based on the new ZoneCount
         private void UpdateLayoutModels()
@@ -653,7 +634,7 @@ namespace FancyZonesEditor
             UsedWorkAreas = new List<Rect> { WorkArea.WorkingAreaRect };
             string[] args = Environment.GetCommandLineArgs();
 
-            if (args.Length < 2 && !DebugMode)
+            if (args.Length < 2 && !App.DebugMode)
             {
                     MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                     ((App)Application.Current).Shutdown();

@@ -17,7 +17,7 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
 
-            if (Settings.DebugMode)
+            if (App.DebugMode)
             {
                 Background = System.Windows.Media.Brushes.BlanchedAlmond;
                 Opacity = 0.7;

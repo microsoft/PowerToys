@@ -4,15 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using FancyZonesEditor.Models;
 using ManagedCommon;
 
 namespace FancyZonesEditor
@@ -48,8 +46,25 @@ namespace FancyZonesEditor
 
         public static OverlayWindowsManager Overlay { get; private set; }
 
+        public static bool DebugMode
+        {
+            get
+            {
+                return _debugMode;
+            }
+        }
+
+        private static bool _debugMode = false;
+
+        [Conditional("DEBUG")]
+        private void DebugModeCheck()
+        {
+            _debugMode = true;
+        }
+
         public App()
         {
+            DebugModeCheck();
             ZoneSettings = new Settings();
         }
 

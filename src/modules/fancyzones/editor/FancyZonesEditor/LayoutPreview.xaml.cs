@@ -183,7 +183,7 @@ namespace FancyZonesEditor
                 }
             }
 
-            if (Settings.DebugMode)
+            if (App.DebugMode)
             {
                 TextBlock text = new TextBlock();
                 text.Text = "(" + workArea.X + "," + workArea.Y + ")";
@@ -299,7 +299,7 @@ namespace FancyZonesEditor
                 frame.Children.Add(rect);
             }
 
-            if (Settings.DebugMode)
+            if (App.DebugMode)
             {
                 TextBlock text = new TextBlock();
                 text.Text = "(" + workArea.X + "," + workArea.Y + ")";

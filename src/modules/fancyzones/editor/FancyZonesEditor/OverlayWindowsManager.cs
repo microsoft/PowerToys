@@ -61,7 +61,7 @@ namespace FancyZonesEditor
             {
                 _layoutWindows[i] = new LayoutOverlayWindow();
 
-                if (Settings.DebugMode)
+                if (App.DebugMode)
                 {
                     _layoutWindows[i].Opacity = 0.5;
                     _layoutWindows[i].Background = colors[i % colors.Length];
