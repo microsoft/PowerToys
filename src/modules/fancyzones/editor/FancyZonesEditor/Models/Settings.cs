@@ -138,41 +138,16 @@ namespace FancyZonesEditor
             }
         }
 
-        public class AppliedZoneset
-        {
-            public static bool DefaultShowSpacing => true;
-
-            public static int DefaultSpacing => 16;
-
-            public static int DefaultZoneCount => 3;
-
-            public static int DefaultSensitivityRadius => 20;
-
-            public string DeviceId { get; set; } = string.Empty;
-
-            public string ZonesetUuid { get; set; } = string.Empty;
-
-            public LayoutType Type { get; set; } = LayoutType.Focus;
-
-            public bool ShowSpacing { get; set; } = DefaultShowSpacing;
-
-            public int Spacing { get; set; } = DefaultSpacing;
-
-            public int ZoneCount { get; set; } = DefaultZoneCount;
-
-            public int SensitivityRadius { get; set; } = DefaultSensitivityRadius;
-        }
-
         public Settings()
         {
             string tmpDirPath = _fileSystem.Path.GetTempPath();
             DesktopsCount = Screen.AllScreens.Length;
             Area = new WorkArea(DesktopsCount);
-            AppliedLayouts = new List<AppliedZoneset>(DesktopsCount);
+            AppliedLayouts = new List<LayoutSettings>(DesktopsCount);
 
             for (int i = 0; i < DesktopsCount; i++)
             {
-                AppliedLayouts.Add(new AppliedZoneset());
+                AppliedLayouts.Add(new LayoutSettings());
             }
 
             ActiveZoneSetTmpFile = tmpDirPath + ActiveZoneSetsTmpFileName;
@@ -223,7 +198,7 @@ namespace FancyZonesEditor
                     return AppliedLayouts[CurrentDesktop].ZoneCount;
                 }
 
-                return AppliedZoneset.DefaultZoneCount;
+                return LayoutSettings.DefaultZoneCount;
             }
 
             set
@@ -247,7 +222,7 @@ namespace FancyZonesEditor
                     return AppliedLayouts[CurrentDesktop].Spacing;
                 }
 
-                return AppliedZoneset.DefaultSpacing;
+                return LayoutSettings.DefaultSpacing;
             }
 
             set
@@ -272,7 +247,7 @@ namespace FancyZonesEditor
                     return AppliedLayouts[CurrentDesktop].ShowSpacing;
                 }
 
-                return AppliedZoneset.DefaultShowSpacing;
+                return LayoutSettings.DefaultShowSpacing;
             }
 
             set
@@ -296,7 +271,7 @@ namespace FancyZonesEditor
                     return AppliedLayouts[CurrentDesktop].SensitivityRadius;
                 }
 
-                return AppliedZoneset.DefaultSensitivityRadius;
+                return LayoutSettings.DefaultSensitivityRadius;
             }
 
             set
@@ -585,7 +560,7 @@ namespace FancyZonesEditor
                             {
                                 if (monitors[s].Id == deviceId && s < DesktopsCount)
                                 {
-                                    AppliedLayouts[s] = new AppliedZoneset
+                                    AppliedLayouts[s] = new LayoutSettings
                                     {
                                         DeviceId = deviceId,
                                         ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
@@ -606,7 +581,7 @@ namespace FancyZonesEditor
                             if (isLayoutMultiMonitor)
                             {
                                 // one zoneset for all desktops
-                                AppliedLayouts[CurrentDesktop] = new AppliedZoneset
+                                AppliedLayouts[CurrentDesktop] = new LayoutSettings
                                 {
                                     DeviceId = deviceId,
                                     ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
@@ -754,7 +729,7 @@ namespace FancyZonesEditor
         public void UpdateSelectedLayoutModel()
         {
             LayoutModel foundModel = null;
-            AppliedZoneset currentApplied = AppliedLayouts[CurrentDesktop];
+            LayoutSettings currentApplied = AppliedLayouts[CurrentDesktop];
 
             // reset previous selected layout
             foreach (LayoutModel model in CustomModels)

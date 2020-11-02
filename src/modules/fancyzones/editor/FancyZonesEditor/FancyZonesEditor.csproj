@@ -121,6 +121,7 @@
     <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>
     </Compile>
+    <Compile Include="Models\LayoutSettings.cs" />
     <Compile Include="DashCaseNamingPolicy.cs" />
     <Compile Include="GridData.cs" />
     <Compile Include="GridDragHandles.cs" />
