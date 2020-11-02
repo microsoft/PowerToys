@@ -105,8 +105,6 @@ namespace FancyZonesEditor
         private const string PriorityGridJsonTag = "priority-grid";
         private const string CustomJsonTag = "custom";
 
-        private const string Debug = "Debug";
-
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
         {

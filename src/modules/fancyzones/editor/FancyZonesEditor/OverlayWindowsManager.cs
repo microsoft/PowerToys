@@ -67,8 +67,7 @@ namespace FancyZonesEditor
                     _layoutWindows[i].Background = colors[i % colors.Length];
                 }
 
-                var wa = WorkArea.GetWorkingArea(i);
-                var workArea = DpiAwareness.DeviceToLogicalRect(_layoutWindows[i], wa);
+                var workArea = DpiAwareness.DeviceToLogicalRect(_layoutWindows[i], WorkArea.GetWorkingArea(i));
 
                 _layoutWindows[i].Left = workArea.X;
                 _layoutWindows[i].Top = workArea.Y;

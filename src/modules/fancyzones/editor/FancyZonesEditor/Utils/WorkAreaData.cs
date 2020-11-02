@@ -25,15 +25,5 @@ namespace FancyZonesEditor.Utils
             WorkAreaRect = workArea;
             Bounds = monitor;
         }
-
-        public double ConvertDpi(double value)
-        {
-            return Math.Round(value * WorkArea.SmallestUsedDPI / Dpi);
-        }
-
-        private double ConvertDefaultDpi(double value)
-        {
-            return Math.Round(value * WorkArea.DefaultDPI / WorkArea.SmallestUsedDPI);
-        }
     }
 }
