@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
@@ -17,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
         private readonly ISettingsUtils _settingsUtils;
 
-        private ColorPickerSettings _colorPickerSettings;
+        private readonly ColorPickerSettings _colorPickerSettings;
 
         private bool _isEnabled;
 
@@ -30,6 +31,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 throw new ArgumentNullException(nameof(settingsRepository));
             }
+
+            SelectableColorRepresentations = new Dictionary<ColorRepresentationType, string>
+            {
+                { ColorRepresentationType.CMYK, "CMYK - cmyk(100%, 50%, 75%, 0%)" },
+                { ColorRepresentationType.HEX,  "HEX - #FFAA00" },
+                { ColorRepresentationType.HSB,  "HSB - hsb(100, 50%, 75%)" },
+                { ColorRepresentationType.HSI,  "HSI - hsi(100, 50%, 75%)" },
+                { ColorRepresentationType.HSL,  "HSL - hsl(100, 50%, 75%)" },
+                { ColorRepresentationType.HSV,  "HSV - hsv(100, 50%, 75%)" },
+                { ColorRepresentationType.HWB,  "HWB - hwb(100, 50%, 75%)" },
+                { ColorRepresentationType.NCol, "NCol - R10, 50%, 75%" },
+                { ColorRepresentationType.RGB,  "RGB - rgb(100, 50, 75)" },
+            };
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
@@ -49,80 +63,77 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 
+        /// <summary>
+        /// Gets a list with all selectable <see cref="ColorRepresentationType"/>s
+        /// </summary>
+        public IReadOnlyDictionary<ColorRepresentationType, string> SelectableColorRepresentations { get; }
+
         public bool IsEnabled
         {
-            get
-            {
-                return _isEnabled;
-            }
-
+            get => _isEnabled;
             set
             {
-                if (_isEnabled != value)
+                if (_isEnabled == value)
                 {
-                    _isEnabled = value;
-                    OnPropertyChanged(nameof(IsEnabled));
-
-                    // Set the status of ColorPicker in the general settings
-                    GeneralSettingsConfig.Enabled.ColorPicker = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-
-                    SendConfigMSG(outgoing.ToString());
+                    return;
                 }
+
+                _isEnabled = value;
+                OnPropertyChanged(nameof(IsEnabled));
+
+                // Set the status of ColorPicker in the general settings
+                GeneralSettingsConfig.Enabled.ColorPicker = value;
+                var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+
+                SendConfigMSG(outgoing.ToString());
             }
         }
 
         public bool ChangeCursor
         {
-            get
-            {
-                return _colorPickerSettings.Properties.ChangeCursor;
-            }
-
+            get => _colorPickerSettings.Properties.ChangeCursor;
             set
             {
-                if (_colorPickerSettings.Properties.ChangeCursor != value)
+                if (_colorPickerSettings.Properties.ChangeCursor == value)
                 {
-                    _colorPickerSettings.Properties.ChangeCursor = value;
-                    OnPropertyChanged(nameof(ChangeCursor));
-                    NotifySettingsChanged();
+                    return;
                 }
+
+                _colorPickerSettings.Properties.ChangeCursor = value;
+                OnPropertyChanged(nameof(ChangeCursor));
+                NotifySettingsChanged();
             }
         }
 
         public HotkeySettings ActivationShortcut
         {
-            get
-            {
-                return _colorPickerSettings.Properties.ActivationShortcut;
-            }
-
+            get => _colorPickerSettings.Properties.ActivationShortcut;
             set
             {
-                if (_colorPickerSettings.Properties.ActivationShortcut != value)
+                if (_colorPickerSettings.Properties.ActivationShortcut == value)
                 {
-                    _colorPickerSettings.Properties.ActivationShortcut = value;
-                    OnPropertyChanged(nameof(ActivationShortcut));
-                    NotifySettingsChanged();
+                    return;
                 }
+
+                _colorPickerSettings.Properties.ActivationShortcut = value;
+                OnPropertyChanged(nameof(ActivationShortcut));
+                NotifySettingsChanged();
             }
         }
 
-        public int CopiedColorRepresentationIndex
+        public ColorRepresentationType SelectedColorRepresentationValue
         {
-            get
-            {
-                return (int)_colorPickerSettings.Properties.CopiedColorRepresentation;
-            }
-
+            get => _colorPickerSettings.Properties.CopiedColorRepresentation;
             set
             {
-                if (_colorPickerSettings.Properties.CopiedColorRepresentation != (ColorRepresentationType)value)
+                if (_colorPickerSettings.Properties.CopiedColorRepresentation == value)
                 {
-                    _colorPickerSettings.Properties.CopiedColorRepresentation = (ColorRepresentationType)value;
-                    OnPropertyChanged(nameof(CopiedColorRepresentationIndex));
-                    NotifySettingsChanged();
+                    return;
                 }
+
+                _colorPickerSettings.Properties.CopiedColorRepresentation = value;
+                OnPropertyChanged(nameof(SelectedColorRepresentationValue));
+                NotifySettingsChanged();
             }
         }
 
