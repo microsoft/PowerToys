@@ -109,24 +109,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";AppDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";AppDisplayName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";Appearance_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Appearance]]></Val>
@@ -185,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[빠르고 간단한 시스템 수준의 색 선택입니다.]]></Val>
+            <Val><![CDATA[빠르고 간단한 시스템 수준의 Color Picker입니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -968,7 +950,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fit Property]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fit 속성]]></Val>
+            <Val><![CDATA[맞춤 속성]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1085,7 +1067,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fill]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[채우기]]></Val>
+            <Val><![CDATA[늘이기]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1486,33 +1468,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerLauncher_Radio_Theme_Dark.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Dark]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[어둡게]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";PowerLauncher_Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[System default]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[시스템 기본값]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";PowerLauncher_Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Light]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[밝게]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";PowerLauncher_SearchResultPreference.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Search result preference]]></Val>
@@ -1599,15 +1554,6 @@
           <Val><![CDATA[Shortcuts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[바로 가기]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";PowerLauncher_Theme.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Choose color]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[색 선택]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1738,7 +1684,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows default]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1747,7 +1693,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Light]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1845,15 +1791,6 @@
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Keyboard Manager]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Shell_Main.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Main]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[주]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1957,7 +1894,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows color settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
