@@ -66,6 +66,7 @@ namespace ColorPicker.Helpers
             saturation = Math.Round(saturation * 100);
             lightness = Math.Round(lightness * 100);
 
+            // Using InvariantCulture since this is used for color representation
             return $"hsl({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {lightness.ToString(CultureInfo.InvariantCulture)}%)";
@@ -84,6 +85,7 @@ namespace ColorPicker.Helpers
             saturation = Math.Round(saturation * 100);
             value = Math.Round(value * 100);
 
+            // Using InvariantCulture since this is used for color representation
             return $"hsv({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {value.ToString(CultureInfo.InvariantCulture)}%)";
@@ -103,6 +105,7 @@ namespace ColorPicker.Helpers
             yellow = Math.Round(yellow * 100);
             blackKey = Math.Round(blackKey * 100);
 
+            // Using InvariantCulture since this is used for color representation
             return $"cmyk({cyan.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {magenta.ToString(CultureInfo.InvariantCulture)}%"
                  + $", {yellow.ToString(CultureInfo.InvariantCulture)}%"

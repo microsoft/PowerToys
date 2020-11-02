@@ -133,9 +133,9 @@
                 
                 <TextBlock VerticalAlignment="Center"
                            Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}">
-                    <Hyperlink Command="{Binding ShowAdvancedCommand}">
+                    <local:AccessibleHyperlink ControlType="Button" Command="{Binding ShowAdvancedCommand}">
                         <Run Text="{x:Static p:Resources.Input_ShowAdvanced}"/>
-                    </Hyperlink>
+                    </local:AccessibleHyperlink>
                 </TextBlock>
                 
                 <Button Grid.Column="1"

@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 using System.Windows;
 
@@ -237,7 +236,7 @@ namespace FancyZonesEditor.Models
             try
             {
                 string jsonString = JsonSerializer.Serialize(jsonObj, options);
-                File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
+                FileSystem.File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
             }
             catch (Exception ex)
             {

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
@@ -29,6 +30,10 @@ namespace PowerLauncher.Helper
     public static class SingleInstance<TApplication>
                 where TApplication : Application, ISingleInstanceApp
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         /// <summary>
         /// String delimiter used in channel names.
         /// </summary>

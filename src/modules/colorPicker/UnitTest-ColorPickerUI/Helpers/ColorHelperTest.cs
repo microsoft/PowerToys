@@ -167,7 +167,7 @@ namespace UnitTest_ColorPickerUI.Helpers
                     {
                         var color = Color.FromArgb(red, green, blue);
 
-                        Exception? exception = null;
+                        Exception exception = null;
 
                         try
                         {

@@ -18,7 +18,7 @@ For a video overview of PowerToys, including install steps and a walkthrough of 
 
 ### Color Picker
 
-[<img align="left" src="https://aka.ms/powerToysColorPickerImageSmall" />](https://aka.ms/PowerToysOverview_ColorPicker) [ColorPicker](https://aka.ms/PowerToysOverview_ColorPicker) is a simple and quick system-wide color picker with <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
+[<img align="left" src="https://aka.ms/powerToysColorPickerImageSmall" />](https://aka.ms/PowerToysOverview_ColorPicker) [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) is a simple and quick system-wide color picker with <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
 <br/>
 <br/>
 <br/>
@@ -105,7 +105,7 @@ Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/release
 WinGet install powertoys
 ```
 
-### Experiential PowerToys utility with Video conference muting
+### Experimental PowerToys utility with Video conference muting
 
 Install the [pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from 0.23 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 

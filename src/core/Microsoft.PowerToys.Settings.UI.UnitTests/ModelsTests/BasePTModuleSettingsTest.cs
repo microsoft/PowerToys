@@ -6,9 +6,9 @@ using System;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
+using System.IO.Abstractions.TestingHelpers;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 
@@ -25,11 +25,8 @@ namespace CommonLibTest
         public void ToJsonStringShouldReturnValidJSONOfModelWhenSuccessful()
         {
             //Mock Disk access
-            string saveContent = string.Empty;
-            string savePath = string.Empty;
-            var mockIOProvider = IIOProviderMocks.GetMockIOProviderForSaveLoadExists();
-
-            var settingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
 
             // Arrange
             string file_name = "test\\BasePTModuleSettingsTest";

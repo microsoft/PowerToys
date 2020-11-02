@@ -78,6 +78,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 

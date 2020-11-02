@@ -69,6 +69,9 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.IO.Abstractions">
+      <Version>12.2.5</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\interop\interop.vcxproj" />

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading.Tasks;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.Logger;
@@ -17,6 +18,9 @@ namespace Microsoft.Plugin.Program.Storage
 {
     internal class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+
         private const string LnkExtension = ".lnk";
         private const string UrlExtension = ".url";
 
@@ -145,6 +149,7 @@ namespace Microsoft.Plugin.Program.Storage
             try
             {
                 // To mitigate the issue of not having a FullPath for a shortcut app, we iterate through the items and find the app with the same hashcode.
+                // Using OrdinalIgnoreCase since this is used internally
                 if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     app = GetAppWithSameLnkResolvedPath(path);
@@ -174,6 +179,7 @@ namespace Microsoft.Plugin.Program.Storage
         {
             foreach (Win32Program app in Items)
             {
+                // Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190
                 if (name.Equals(app.Name, StringComparison.CurrentCultureIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return app;
@@ -189,7 +195,8 @@ namespace Microsoft.Plugin.Program.Storage
         {
             foreach (Programs.Win32Program app in Items)
             {
-                if (lnkResolvedPath.ToLower(CultureInfo.CurrentCulture).Equals(app.LnkResolvedPath, StringComparison.CurrentCultureIgnoreCase))
+                // Using Invariant / OrdinalIgnoreCase since we're comparing paths
+                if (lnkResolvedPath.ToUpperInvariant().Equals(app.LnkResolvedPath, StringComparison.OrdinalIgnoreCase))
                 {
                     return app;
                 }
@@ -201,7 +208,9 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase) && !Path.GetExtension(path).Equals(LnkExtension, StringComparison.CurrentCultureIgnoreCase))
+
+            // Using OrdinalIgnoreCase since we're comparing extensions
+            if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.OrdinalIgnoreCase) && !Path.GetExtension(path).Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
             {
                 Programs.Win32Program app = Programs.Win32Program.GetAppFromPath(path);
                 if (app != null)
@@ -214,7 +223,9 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppChanged(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.CurrentCultureIgnoreCase) || Path.GetExtension(path).Equals(LnkExtension, StringComparison.CurrentCultureIgnoreCase))
+
+            // Using OrdinalIgnoreCase since we're comparing extensions
+            if (Path.GetExtension(path).Equals(UrlExtension, StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
             {
                 // When a url or lnk app is installed, multiple created and changed events are triggered.
                 // To prevent the code from acting on the first such event (which may still be during app installation), the events are added a common queue and dequeued by a background task at regular intervals - https://github.com/microsoft/PowerToys/issues/6429.

@@ -1,4 +1,4 @@
-using System.IO;
+using System.IO.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium.Appium;
@@ -9,6 +9,8 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesEditorTemplatesEditTests : FancyZonesEditor
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
         private void ChangeLayout()
         {
             new Actions(session).MoveToElement(creatorWindow.FindElementByAccessibilityId("PART_TitleBar")).MoveByOffset(0, -50).Click().Perform();
