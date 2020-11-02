@@ -198,45 +198,24 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyRemapInfoExample.TextWrapping(TextWrapping::Wrap);
 
     // Table to display the key remaps
-    Grid keyRemapTable;
-    ColumnDefinition originalColumn;
-    originalColumn.MinWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
-    originalColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
-    ColumnDefinition arrowColumn;
-    arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
-    ColumnDefinition newColumn;
-    newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
-    newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
-    ColumnDefinition removeColumn;
-    removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
-    keyRemapTable.Margin({ 10, 10, 10, 20 });
-    keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
-    keyRemapTable.ColumnDefinitions().Append(originalColumn);
-    keyRemapTable.ColumnDefinitions().Append(arrowColumn);
-    keyRemapTable.ColumnDefinitions().Append(newColumn);
-    keyRemapTable.ColumnDefinitions().Append(removeColumn);
-    keyRemapTable.RowDefinitions().Append(RowDefinition());
-    keyRemapTable.MinWidth(KeyboardManagerConstants::EditKeyboardTableMinWidth);
+    StackPanel keyRemapTable;
 
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_SOURCEHEADER));
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
-    originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
+    StackPanel originalKeyHeaderContainer = KeyboardManagerHelper::GetWrapped(originalKeyRemapHeader, KeyboardManagerConstants::RemapTableDropDownWidth + KeyboardManagerConstants::TableArrowColWidth).as<StackPanel>();
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
     newKeyRemapHeader.Text(GET_RESOURCE_STRING(IDS_EDITKEYBOARD_TARGETHEADER));
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
-    newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
-    keyRemapTable.SetColumn(originalKeyRemapHeader, KeyboardManagerConstants::RemapTableOriginalColIndex);
-    keyRemapTable.SetRow(originalKeyRemapHeader, 0);
-    keyRemapTable.SetColumn(newKeyRemapHeader, KeyboardManagerConstants::RemapTableNewColIndex);
-    keyRemapTable.SetRow(newKeyRemapHeader, 0);
-
-    keyRemapTable.Children().Append(originalKeyRemapHeader);
-    keyRemapTable.Children().Append(newKeyRemapHeader);
+    StackPanel tableHeader = StackPanel();
+    tableHeader.Orientation(Orientation::Horizontal);
+    tableHeader.Margin({ 10, 0, 0, 10 });
+    tableHeader.Children().Append(originalKeyHeaderContainer);
+    tableHeader.Children().Append(newKeyRemapHeader);
 
     // Store handle of edit keyboard window
     SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;
@@ -323,6 +302,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Remapping table
     StackPanel mappingsPanel;
+    mappingsPanel.Children().Append(tableHeader);
     mappingsPanel.Children().Append(keyRemapTable);
     mappingsPanel.Children().Append(addRemapKey);
 
