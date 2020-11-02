@@ -90,9 +90,6 @@ namespace FancyZonesEditor
 
             for (int i = 0; i < Settings.DesktopsCount; i++)
             {
-                _layoutWindows[i].Content = _layoutPreview;
-                _layoutWindows[i].DataContext = CurrentDataContext;
-
                 _layoutWindows[i].Show();
             }
         }
