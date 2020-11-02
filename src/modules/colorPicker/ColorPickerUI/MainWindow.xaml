@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-        Height="56"
+        Height="64"
         Width="{x:Static constants:WindowConstant.PickerWindowWidth}"
         WindowStyle="None"
         Opacity="0.01"

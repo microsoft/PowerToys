@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ColorPicker.Views"
              xmlns:viewModel="clr-namespace:ColorPicker.ViewModels"
-             mc:Ignorable="d"  
+             mc:Ignorable="d" d:DesignHeight="64" 
              d:DataContext="{d:DesignInstance viewModel:MainViewModel, IsDesignTimeCreatable=True}">
     <Grid Background="Transparent">
 
@@ -38,7 +38,6 @@
             <TextBlock Margin="8,5,0,8"
                        FontSize="16"
                        FontWeight="SemiBold"
-                       VerticalAlignment="Center"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        Grid.Column="1"
                        Text="{Binding ColorText}"/>
