@@ -1,14 +1,11 @@
 ﻿using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 {
@@ -16,7 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
     {
         public const string RootPathStubFiles = "..\\..\\..\\..\\src\\core\\Microsoft.PowerToys.Settings.UI.UnitTests\\BackwardsCompatibility\\TestFiles\\{0}\\Microsoft\\PowerToys\\{1}\\{2}";
 
-        private static readonly Expression<Func<string, bool>> SettingsFilterExpression = (string s) => s == null || s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
+        // Using Ordinal since this is used internally for a path
+        private static readonly Expression<Func<string, bool>> SettingsFilterExpression = s => s == null || s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
 
         internal class MockSettingsRepository<T> : ISettingsRepository<T> where T : ISettingsConfig, new()
         {
@@ -78,7 +76,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
         private static Expression<Func<string, bool>> ModuleFilterExpression(string module)
         {
-            return (string s) => s == null || s.Contains(module, StringComparison.Ordinal);
+            // Using Ordinal since this is used internally for a path
+            return s => s == null || s.Contains(module, StringComparison.Ordinal);
         }
 
         public static Mock<IFile> GetGeneralSettingsIOProvider(string version)

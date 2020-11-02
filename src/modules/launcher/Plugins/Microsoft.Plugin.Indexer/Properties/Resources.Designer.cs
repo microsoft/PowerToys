@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Warning: Not all drives are indexed..
+        ///   Looks up a localized string similar to Warning: Not all files are indexed..
         /// </summary>
         public static string Microsoft_plugin_indexer_drivedetectionwarning {
             get {

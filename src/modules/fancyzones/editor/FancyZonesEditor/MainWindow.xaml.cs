@@ -26,6 +26,14 @@ namespace FancyZonesEditor
 
         public int WrapPanelItemSize { get; set; } = 262;
 
+        public double SettingsTextMaxWidth
+        {
+            get
+            {
+                return (Width / 2) - 60;
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();

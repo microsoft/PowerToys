@@ -90,6 +90,7 @@ namespace Microsoft.Plugin.Shell
                 {
                     if (m.Key == cmd)
                     {
+                        // Using CurrentCulture since this is user facing
                         result.SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value);
                         return null;
                     }
@@ -97,6 +98,8 @@ namespace Microsoft.Plugin.Shell
                     var ret = new Result
                     {
                         Title = m.Key,
+
+                        // Using CurrentCulture since this is user facing
                         SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value),
                         IcoPath = IconPath,
                         Action = c =>
@@ -134,6 +137,8 @@ namespace Microsoft.Plugin.Shell
                 .Select(m => new Result
                 {
                     Title = m.Key,
+
+                    // Using CurrentCulture since this is user facing
                     SubTitle = Properties.Resources.wox_plugin_cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_cmd_cmd_has_been_executed_times, m.Value),
                     IcoPath = IconPath,
                     Action = c =>

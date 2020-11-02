@@ -32,7 +32,7 @@ namespace Wox.Infrastructure.Storage
         public string DirectoryPath { get; set; }
 
         // This storage helper returns whether or not to delete the json storage items
-        private static readonly int _jsonStorage = 1;
+        private const int _jsonStorage = 1;
         private StoragePowerToysVersionInfo _storageHelper;
 
         internal JsonStorage()
@@ -111,7 +111,8 @@ namespace Wox.Infrastructure.Storage
 
         private void BackupOriginFile()
         {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fffffff", CultureInfo.CurrentUICulture);
+            // Using InvariantCulture since this is internal
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fffffff", CultureInfo.InvariantCulture);
             var directory = Path.GetDirectoryName(FilePath).NonNull();
             var originName = Path.GetFileNameWithoutExtension(FilePath);
             var backupName = $"{originName}-{timestamp}{FileSuffix}";

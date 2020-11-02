@@ -29,7 +29,7 @@ namespace PowerLauncher
 
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed;
-        private Settings _settings;
+        private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
         private ThemeManager _themeManager;
@@ -107,7 +107,7 @@ namespace PowerLauncher
                 Current.MainWindow.Title = Constant.ExeFileName;
 
                 // main windows needs initialized before theme change because of blur settings
-                Http.Proxy = _settings.Proxy;
+                HttpClient.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
 

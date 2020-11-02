@@ -23,6 +23,7 @@ namespace Microsoft.Plugin.Program
                 {
                     for (var i = 1; i < query.Terms.Count; i++)
                     {
+                        // Using Ordinal since this is internal and used with a symbol
                         if (!string.Equals(query.Terms[i], DoubleDash, StringComparison.Ordinal))
                         {
                             continue;

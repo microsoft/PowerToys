@@ -123,6 +123,7 @@ namespace Microsoft.Plugin.Uri
                     ?? _registeryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\" + progId + "\\DefaultIcon", null);
 
                 // "Handles 'Indirect Strings' (UWP programs)"
+                // Using Ordinal since this is internal and used with a symbol
                 if (programLocation.StartsWith("@", StringComparison.Ordinal))
                 {
                     var directProgramLocationStringBuilder = new StringBuilder(128);
@@ -141,6 +142,7 @@ namespace Microsoft.Plugin.Uri
                 }
                 else
                 {
+                    // Using Ordinal since this is internal and used with a symbol
                     var indexOfComma = programLocation.IndexOf(',', StringComparison.Ordinal);
                     BrowserIconPath = indexOfComma > 0
                         ? programLocation.Substring(0, indexOfComma)

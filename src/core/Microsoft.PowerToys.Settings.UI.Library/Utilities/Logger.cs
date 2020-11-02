@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 Directory.CreateDirectory(ApplicationLogPath);
             }
 
+            // Using InvariantCulture since this is used for a log file name
             var logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));

@@ -8,7 +8,9 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,7 +21,6 @@ namespace CommonLibTest
     [TestClass]
     public class SettingsUtilsTests
     {
-
 
         [TestMethod]
         public void SaveSettingsSaveSettingsToFileWhenFilePathExists()
@@ -80,6 +81,21 @@ namespace CommonLibTest
             Assert.IsTrue(pathFound);
         }
 
+        [TestMethod]
+        public void SettingsUtilsMustReturnDefaultItemWhenFileIsCorrupt()
+        {
+            // Arrange
+            var mockFileSystem = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(mockFileSystem);
+
+            // Act
+            TestClass settings = mockSettingsUtils.GetSettings<TestClass>(string.Empty);
+
+            // Assert
+            Assert.AreEqual(settings.TestInt, 100);
+            Assert.AreEqual(settings.TestString, "test");
+        }
+
         public static string RandomString()
         {
             Random random = new Random();
@@ -88,6 +104,27 @@ namespace CommonLibTest
 
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        partial class TestClass : ISettingsConfig
+        {
+            public int TestInt { get; set; } = 100;
+            public string TestString { get; set; } = "test";
+
+            public string GetModuleName()
+            {
+                throw new NotImplementedException();
+            }
+
+            public string ToJsonString()
+            {
+                return JsonSerializer.Serialize(this);
+            }
+
+            public bool UpgradeSettingsConfiguration()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

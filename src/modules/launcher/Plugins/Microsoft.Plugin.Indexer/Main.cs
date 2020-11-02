@@ -40,7 +40,7 @@ namespace Microsoft.Plugin.Indexer
         private readonly WindowsSearchAPI _api = new WindowsSearchAPI(_search);
 
         // To obtain information regarding the drives that are indexed
-        private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper());
+        private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper(), new DriveDetection.DriveInfoWrapper());
 
         // Reserved keywords in oleDB
         private readonly string reservedStringPattern = @"^[\/\\\$\%]+$|^.*[<>].*$";
@@ -112,6 +112,8 @@ namespace Microsoft.Plugin.Indexer
                         foreach (var searchResult in searchResultsList)
                         {
                             var path = searchResult.Path;
+
+                            // Using CurrentCulture since this is user facing
                             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_name, searchResult.Title);
                             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_path, path);
                             string workingDir = null;

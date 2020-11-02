@@ -21,7 +21,8 @@ namespace ColorPicker.Helpers
                 _fileSystem.Directory.CreateDirectory(ApplicationLogPath);
             }
 
-            var logFilePath = _fileSystem.Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.CurrentCulture) + ".txt");
+            // Using InvariantCulture since this is used for a log file name
+            var logFilePath = _fileSystem.Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 

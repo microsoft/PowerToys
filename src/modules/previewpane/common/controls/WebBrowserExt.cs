@@ -54,6 +54,7 @@ namespace PreviewHandlerCommon
 
                 if (name != null && name.Equals(DISPIDAMBIENTDLCONTROL, StringComparison.CurrentCulture))
                 {
+                    // Using InvariantCulture since this is used for web browser configurations
                     result = Convert.ToInt32(
                         WebBrowserDownloadControlFlags.DLIMAGES |
                         WebBrowserDownloadControlFlags.PRAGMA_NO_CACHE |
@@ -66,7 +67,7 @@ namespace PreviewHandlerCommon
                         WebBrowserDownloadControlFlags.NO_DLACTIVEXCTLS |
                         WebBrowserDownloadControlFlags.NO_RUNACTIVEXCTLS |
                         WebBrowserDownloadControlFlags.NO_BEHAVIORS |
-                        WebBrowserDownloadControlFlags.SILENT, CultureInfo.CurrentCulture);
+                        WebBrowserDownloadControlFlags.SILENT, CultureInfo.InvariantCulture);
                 }
                 else
                 {
