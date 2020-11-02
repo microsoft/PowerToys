@@ -166,8 +166,8 @@
         <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Table_Layout}" Style="{StaticResource titleText}"  />
 
         <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}" Style="{StaticResource textLabel}" TextWrapping="Wrap" />
-        <TextBlock Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
-        <TextBox Text="{Binding Name}" Style="{StaticResource textBox}" />
+        <TextBlock x:Name="customLayoutName" Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
+        <TextBox Text="{Binding Name}" AutomationProperties.LabeledBy="{Binding ElementName=customLayoutName}" Style="{StaticResource textBox}" />
 <!--        
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
             <CheckBox x:Name="showGridSetting" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" Margin="21,4,0,0"/>
