@@ -6,10 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
-using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Forms;
 using FancyZonesEditor.Models;
@@ -22,33 +19,6 @@ namespace FancyZonesEditor
     //  Other UIs in the editor will subscribe to change events on the properties to stay up to date as these properties change
     public class Settings : INotifyPropertyChanged
     {
-        private enum CmdArgs
-        {
-            PowerToysPID = 0,
-            SpanZones,
-            TargetMonitorId,
-            SmallestDPI,
-            MonitorsCount,
-            MonitorId,
-            DPI,
-            MonitorLeft,
-            MonitorTop,
-            MonitorRight,
-            MonitorBottom,
-            WorkAreaLeft,
-            WorkAreaTop,
-            WorkAreaRight,
-            WorkAreaBottom,
-        }
-
-        private enum ParseDeviceMode
-        {
-            Prod,
-            Debug,
-        }
-
-        private static readonly IFileSystem _fileSystem = new FileSystem();
-
         private enum DeviceIdParts
         {
             Name = 0,
@@ -78,31 +48,8 @@ namespace FancyZonesEditor
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
         public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
 
-        private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
-        private const string ActiveZoneSetsTmpFileName = "FancyZonesActiveZoneSets.json";
-        private const string AppliedZoneSetsTmpFileName = "FancyZonesAppliedZoneSets.json";
-        private const string DeletedCustomZoneSetsTmpFileName = "FancyZonesDeletedCustomZoneSets.json";
-
         private const string LayoutTypeBlankStr = "blank";
         private const string NullUuidStr = "null";
-
-        // DeviceInfo JSON tags
-        private const string AppliedZonesetsJsonTag = "applied-zonesets";
-        private const string DeviceIdJsonTag = "device-id";
-        private const string ActiveZoneSetJsonTag = "active-zoneset";
-        private const string UuidJsonTag = "uuid";
-        private const string TypeJsonTag = "type";
-        private const string EditorShowSpacingJsonTag = "editor-show-spacing";
-        private const string EditorSpacingJsonTag = "editor-spacing";
-        private const string EditorZoneCountJsonTag = "editor-zone-count";
-        private const string EditorSensitivityRadiusJsonTag = "editor-sensitivity-radius";
-
-        private const string FocusJsonTag = "focus";
-        private const string ColumnsJsonTag = "columns";
-        private const string RowsJsonTag = "rows";
-        private const string GridJsonTag = "grid";
-        private const string PriorityGridJsonTag = "priority-grid";
-        private const string CustomJsonTag = "custom";
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -150,13 +97,6 @@ namespace FancyZonesEditor
                 AppliedLayouts.Add(new LayoutSettings());
             }
 
-            ActiveZoneSetTmpFile = tmpDirPath + ActiveZoneSetsTmpFileName;
-            AppliedZoneSetTmpFile = tmpDirPath + AppliedZoneSetsTmpFileName;
-            DeletedCustomZoneSetsTmpFile = tmpDirPath + DeletedCustomZoneSetsTmpFileName;
-
-            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            FancyZonesSettingsFile = localAppDataDir + ZonesSettingsFile;
-
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
             _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
@@ -184,7 +124,6 @@ namespace FancyZonesEditor
 
             _blankCustomModel = new CanvasLayoutModel(Properties.Resources.Custom_Layout_Create_New, LayoutType.Blank);
 
-            ParseCommandLineArgs();
             UpdateLayoutModels();
         }
 
@@ -505,201 +444,6 @@ namespace FancyZonesEditor
                 _priorityGridModel.RowPercents = _gridModel.RowPercents;
                 _priorityGridModel.ColumnPercents = _gridModel.ColumnPercents;
                 _priorityGridModel.CellChildMap = _gridModel.CellChildMap;
-            }
-        }
-
-        private void ParseDeviceInfoData(ParseDeviceMode mode = ParseDeviceMode.Prod)
-        {
-            try
-            {
-                JsonElement jsonObject = default(JsonElement);
-
-                if (_fileSystem.File.Exists(Settings.ActiveZoneSetTmpFile))
-                {
-                    Stream inputStream = _fileSystem.File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
-                    jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
-                    inputStream.Close();
-
-                    JsonElement info = jsonObject.GetProperty(AppliedZonesetsJsonTag);
-
-                    int layoutId = 0;
-                    for (int i = 0; i < info.GetArrayLength() && layoutId < DesktopsCount; i++)
-                    {
-                        var zonesetData = info[i];
-
-                        string deviceId = zonesetData.GetProperty(DeviceIdJsonTag).GetString();
-
-                        string currentLayoutType = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(TypeJsonTag).GetString();
-                        LayoutType type = LayoutType.Blank;
-                        switch (currentLayoutType)
-                        {
-                            case FocusJsonTag:
-                                type = LayoutType.Focus;
-                                break;
-                            case ColumnsJsonTag:
-                                type = LayoutType.Columns;
-                                break;
-                            case RowsJsonTag:
-                                type = LayoutType.Rows;
-                                break;
-                            case GridJsonTag:
-                                type = LayoutType.Grid;
-                                break;
-                            case PriorityGridJsonTag:
-                                type = LayoutType.PriorityGrid;
-                                break;
-                            case CustomJsonTag:
-                                type = LayoutType.Custom;
-                                break;
-                        }
-
-                        if (!SpanZonesAcrossMonitors)
-                        {
-                            var monitors = WorkArea.Monitors;
-                            for (int s = 0; s < monitors.Count; s++)
-                            {
-                                if (monitors[s].Id == deviceId && s < DesktopsCount)
-                                {
-                                    AppliedLayouts[s] = new LayoutSettings
-                                    {
-                                        DeviceId = deviceId,
-                                        ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
-                                        ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
-                                        Spacing = zonesetData.GetProperty(EditorSpacingJsonTag).GetInt32(),
-                                        Type = type,
-                                        ZoneCount = zonesetData.GetProperty(EditorZoneCountJsonTag).GetInt32(),
-                                        SensitivityRadius = zonesetData.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32(),
-                                    };
-
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            bool isLayoutMultiMonitor = deviceId.StartsWith("FancyZones#MultiMonitorDevice");
-                            if (isLayoutMultiMonitor)
-                            {
-                                // one zoneset for all desktops
-                                AppliedLayouts[CurrentDesktop] = new LayoutSettings
-                                {
-                                    DeviceId = deviceId,
-                                    ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
-                                    ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
-                                    Spacing = zonesetData.GetProperty(EditorSpacingJsonTag).GetInt32(),
-                                    Type = type,
-                                    ZoneCount = zonesetData.GetProperty(EditorZoneCountJsonTag).GetInt32(),
-                                    SensitivityRadius = zonesetData.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32(),
-                                };
-
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LayoutModel.ShowExceptionMessageBox(Properties.Resources.Error_Parsing_Device_Info, ex);
-            }
-        }
-
-        private void ParseCommandLineArgs()
-        {
-            UsedWorkAreas = new List<Rect> { WorkArea.WorkingAreaRect };
-            string[] args = Environment.GetCommandLineArgs();
-
-            if (args.Length < 2 && !App.DebugMode)
-            {
-                    MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
-                    ((App)Application.Current).Shutdown();
-            }
-
-            try
-            {
-                /*
-                * Divider: /
-                * Parts:
-                * (1) Process id
-                * (2) Span zones across monitors
-                * (3) Monitor id where the Editor should be opened
-                * (4) Smallest used DPI
-                * (5) Monitors count
-                *
-                * Data for each monitor:
-                * (6) Monitor id
-                * (7) Dpi
-                * (8) monitor X-coordinate
-                * (9) monitor Y-coordinate
-                * (10) monitor width
-                * (11) monitor height
-                * (12) work area X-coordinate
-                * (13) work area Y-coordinate
-                * (14) work area width
-                * (15) work area height
-                * ...
-                */
-                var argsParts = args[1].Split('/');
-
-                // Process ID
-                PowerToysPID = int.Parse(argsParts[(int)CmdArgs.PowerToysPID]);
-
-                // Span zones across monitors
-                SpanZonesAcrossMonitors = int.Parse(argsParts[(int)CmdArgs.SpanZones]) == 1;
-
-                // Target monitor id
-                string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
-
-                // Smallest used DPI
-                WorkArea.SmallestUsedDPI = int.Parse(argsParts[(int)CmdArgs.SmallestDPI]);
-
-                // Monitors count
-                int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount]);
-                if (count != DesktopsCount)
-                {
-                        MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
-                        ((App)Application.Current).Shutdown();
-                }
-
-                const int monitorArgsCount = 10;
-                for (int i = 0; i < count; i++)
-                {
-                    string id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)]; // Monitor id
-                    int dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]); // Dpi
-                    int monitorLeft = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
-                    int monitorTop = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
-                    int monitorRight = int.Parse(argsParts[(int)CmdArgs.MonitorRight + (i * monitorArgsCount)]);
-                    int monitorBottom = int.Parse(argsParts[(int)CmdArgs.MonitorBottom + (i * monitorArgsCount)]);
-                    int workAreaLeft = int.Parse(argsParts[(int)CmdArgs.WorkAreaLeft + (i * monitorArgsCount)]);
-                    int workAreaTop = int.Parse(argsParts[(int)CmdArgs.WorkAreaTop + (i * monitorArgsCount)]);
-                    int workAreaRight = int.Parse(argsParts[(int)CmdArgs.WorkAreaRight + (i * monitorArgsCount)]);
-                    int workAreaBottom = int.Parse(argsParts[(int)CmdArgs.WorkAreaBottom + (i * monitorArgsCount)]);
-
-                    Rect monitor = new Rect(monitorLeft, monitorTop, monitorRight - monitorLeft, monitorBottom - monitorTop);
-                    Rect workArea = new Rect(workAreaLeft, workAreaTop, workAreaRight - workAreaLeft, workAreaBottom - workAreaTop);
-
-                    Area.Add(new WorkAreaData(id, dpi, monitor, workArea));
-
-                    if (SpanZonesAcrossMonitors)
-                    {
-                        UsedWorkAreas.Add(workArea);
-                    }
-                }
-
-                ParseDeviceInfoData();
-                for (int i = 0; i < WorkArea.Monitors.Count; i++)
-                {
-                    if (WorkArea.Monitors[i].Id == targetMonitorName)
-                    {
-                        CurrentDesktop = i;
-                        break;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
-                ((App)Application.Current).Shutdown();
             }
         }
 

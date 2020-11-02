@@ -48,6 +48,8 @@ namespace FancyZonesEditor
 
         public Settings ZoneSettings { get; }
 
+        public static FancyZonesEditorIO FancyZonesEditorIO { get; private set; }
+
         public static OverlayWindowsManager Overlay { get; private set; }
 
         public static bool DebugMode
@@ -70,6 +72,7 @@ namespace FancyZonesEditor
         {
             DebugModeCheck();
             ZoneSettings = new Settings();
+            FancyZonesEditorIO = new FancyZonesEditorIO();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -86,6 +89,8 @@ namespace FancyZonesEditor
             Settings settings = ((App)Current).ZoneSettings;
             settings.UpdateSelectedLayoutModel();
 
+            FancyZonesEditorIO.ParseCommandLineArguments();
+            FancyZonesEditorIO.ParseDeviceInfoData();
             Overlay.Show();
         }
 
