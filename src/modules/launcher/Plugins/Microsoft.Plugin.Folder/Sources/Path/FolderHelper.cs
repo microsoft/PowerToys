@@ -82,7 +82,7 @@ namespace Microsoft.Plugin.Folder.Sources
             }
 
             // Absolute path of system drive: \Windows\System32
-            if (search.Length > 2 && search[0] == '\\' && search[1] != '\\')
+            if (search[0] == '\\' && (search.Length == 1 || search[1] != '\\'))
             {
                 search = Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), search.Substring(1));
             }
