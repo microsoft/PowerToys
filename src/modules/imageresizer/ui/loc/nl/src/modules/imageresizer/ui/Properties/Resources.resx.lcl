@@ -527,7 +527,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Stretch]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Spreiden]]></Val>
+            <Val><![CDATA[Uitrekken]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -536,7 +536,7 @@
         <Str Cat="Text">
           <Val><![CDATA[stretches to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[strekt zich uit tot]]></Val>
+            <Val><![CDATA[uitgerekt tot]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
