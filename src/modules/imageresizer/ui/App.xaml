@@ -25,7 +25,7 @@
         <v:BoolValueConverter x:Key="BoolValueConverter"/>
         <Style x:Key="MainInstructionTextBlockStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12pt"/>
-            <Setter Property="Foreground" Value="#039"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HotTrackColor}}"/>
         </Style>
         <Style TargetType="TextBox">
             <Setter Property="VerticalContentAlignment" Value="Center"/>
