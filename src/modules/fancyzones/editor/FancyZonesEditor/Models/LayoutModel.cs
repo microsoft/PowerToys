@@ -15,17 +15,6 @@ using System.Windows;
 
 namespace FancyZonesEditor.Models
 {
-    public enum LayoutType
-    {
-        Blank = -1,
-        Focus,
-        Columns,
-        Rows,
-        Grid,
-        PriorityGrid,
-        Custom,
-    }
-
     // Base LayoutModel
     //  Manages common properties and base persistence
     public abstract class LayoutModel : INotifyPropertyChanged

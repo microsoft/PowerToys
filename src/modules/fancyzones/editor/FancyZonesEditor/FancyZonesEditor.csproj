@@ -127,6 +127,7 @@
     <Compile Include="LayoutOverlayWindow.xaml.cs">
       <DependentUpon>LayoutOverlayWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\LayoutType.cs" />
     <Compile Include="OverlayWindowsManager.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
