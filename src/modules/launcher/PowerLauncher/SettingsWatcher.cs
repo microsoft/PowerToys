@@ -9,7 +9,6 @@ using System.Threading;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerLauncher.Helper;
 using Wox.Core.Plugin;
 using Wox.Infrastructure.Hotkey;
@@ -43,6 +42,9 @@ namespace PowerLauncher
 
             // Load initial settings file
             OverloadSettings();
+
+            // Apply theme at startup
+            _themeManager.ChangeTheme(_settings.Theme, _settings.Theme == Theme.System);
         }
 
         public void CreateSettingsIfNotExists()
