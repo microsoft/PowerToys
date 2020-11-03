@@ -70,7 +70,7 @@ namespace FancyZonesEditor
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Rect workingArea = WorkArea.WorkingAreaRect;
+            Rect workingArea = App.Overlay.WorkArea;
             Size actualSize = new Size(workingArea.Width, workingArea.Height);
 
             // Only enter if this is the newest instance
@@ -250,7 +250,7 @@ namespace FancyZonesEditor
                 }
 
                 _dragHandles.UpdateAfterVerticalSplit(foundCol);
-                _data.SplitColumn(foundCol, spliteeIndex, newChildIndex, space, offset, WorkArea.WorkingAreaRect.Width);
+                _data.SplitColumn(foundCol, spliteeIndex, newChildIndex, space, offset, App.Overlay.WorkArea.Width);
                 _dragHandles.AddDragHandle(Orientation.Vertical, foundRow, foundCol, model);
             }
             else
@@ -300,11 +300,11 @@ namespace FancyZonesEditor
                 }
 
                 _dragHandles.UpdateAfterHorizontalSplit(foundRow);
-                _data.SplitRow(foundRow, spliteeIndex, newChildIndex, space, offset, WorkArea.WorkingAreaRect.Height);
+                _data.SplitRow(foundRow, spliteeIndex, newChildIndex, space, offset, App.Overlay.WorkArea.Height);
                 _dragHandles.AddDragHandle(Orientation.Horizontal, foundRow, foundCol, model);
             }
 
-            var workArea = WorkArea.WorkingAreaRect;
+            var workArea = App.Overlay.WorkArea;
             Size actualSize = new Size(workArea.Width, workArea.Height);
             ArrangeGridRects(actualSize);
         }
@@ -357,7 +357,7 @@ namespace FancyZonesEditor
 
         private void OnGridDimensionsChanged()
         {
-            Rect workingArea = WorkArea.WorkingAreaRect;
+            Rect workingArea = App.Overlay.WorkArea;
             Size actualSize = new Size(workingArea.Width, workingArea.Height);
             if (actualSize.Width > 0)
             {
@@ -367,7 +367,7 @@ namespace FancyZonesEditor
 
         private void ArrangeGridRects(Size arrangeSize)
         {
-            var workArea = WorkArea.WorkingAreaRect;
+            var workArea = App.Overlay.WorkArea;
             Preview.Width = workArea.Width;
             Preview.Height = workArea.Height;
 
@@ -430,7 +430,7 @@ namespace FancyZonesEditor
                 }
             }
 
-            Rect workingArea = WorkArea.WorkingAreaRect;
+            Rect workingArea = App.Overlay.WorkArea;
             Size actualSize = new Size(workingArea.Width, workingArea.Height);
             ArrangeGridRects(actualSize);
             AdornerLayer.UpdateLayout();
@@ -442,7 +442,7 @@ namespace FancyZonesEditor
             int index = _data.SwappedIndexAfterResize(resizer);
             if (index != -1)
             {
-                Rect workingArea = WorkArea.WorkingAreaRect;
+                Rect workingArea = App.Overlay.WorkArea;
                 Size actualSize = new Size(workingArea.Width, workingArea.Height);
                 ArrangeGridRects(actualSize);
             }

@@ -170,14 +170,14 @@ namespace FancyZonesEditor.Utils
                 * Data for each monitor:
                 * (6) Monitor id
                 * (7) Dpi
-                * (8) monitor X-coordinate
-                * (9) monitor Y-coordinate
-                * (10) monitor width
-                * (11) monitor height
-                * (12) work area X-coordinate
-                * (13) work area Y-coordinate
-                * (14) work area width
-                * (15) work area height
+                * (8) monitor left
+                * (9) monitor top
+                * (10) monitor right
+                * (11) monitor bottom
+                * (12) work area left
+                * (13) work area top
+                * (14) work area right
+                * (15) work area bottom
                 * ...
                 */
                 var argsParts = args[1].Split('/');
@@ -191,22 +191,15 @@ namespace FancyZonesEditor.Utils
                 // Target monitor id
                 string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
 
-                // Smallest used DPI
-                WorkArea.SmallestUsedDPI = int.Parse(argsParts[(int)CmdArgs.SmallestDPI]);
-
                 // Monitors count
                 int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount]);
-                if (count != App.Overlay.DesktopsCount)
-                {
-                    MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
-                    ((App)Application.Current).Shutdown();
-                }
 
+                Rect workAreaUnion = default(Rect);
                 const int monitorArgsCount = 10;
                 for (int i = 0; i < count; i++)
                 {
-                    string id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)]; // Monitor id
-                    int dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]); // Dpi
+                    string id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                    int dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
                     int monitorLeft = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
                     int monitorTop = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
                     int monitorRight = int.Parse(argsParts[(int)CmdArgs.MonitorRight + (i * monitorArgsCount)]);
@@ -219,17 +212,25 @@ namespace FancyZonesEditor.Utils
                     Rect monitor = new Rect(monitorLeft, monitorTop, monitorRight - monitorLeft, monitorBottom - monitorTop);
                     Rect workArea = new Rect(workAreaLeft, workAreaTop, workAreaRight - workAreaLeft, workAreaBottom - workAreaTop);
 
-                    App.Area.Add(new WorkAreaData(id, dpi, monitor, workArea));
-
                     if (App.Overlay.SpanZonesAcrossMonitors)
                     {
                         App.Overlay.UsedWorkAreas.Add(workArea);
+                        workAreaUnion = Rect.Union(workAreaUnion, workArea);
+                    }
+                    else
+                    {
+                        App.Overlay.Add(id, dpi, monitor, workArea);
                     }
                 }
 
-                for (int i = 0; i < WorkArea.Monitors.Count; i++)
+                if (App.Overlay.SpanZonesAcrossMonitors)
                 {
-                    if (WorkArea.Monitors[i].Id == targetMonitorName)
+                    App.Overlay.Add(string.Empty, 0, default(Rect), workAreaUnion);
+                }
+
+                for (int i = 0; i < App.Overlay.DesktopsCount && !App.Overlay.SpanZonesAcrossMonitors; i++)
+                {
+                    if (App.Overlay.Monitors[i].Device.Id == targetMonitorName)
                     {
                         App.Overlay.CurrentDesktop = i;
                         break;
@@ -290,12 +291,12 @@ namespace FancyZonesEditor.Utils
 
                         if (!App.Overlay.SpanZonesAcrossMonitors)
                         {
-                            var monitors = WorkArea.Monitors;
+                            var monitors = App.Overlay.Monitors;
                             for (int s = 0; s < monitors.Count; s++)
                             {
-                                if (monitors[s].Id == deviceId && s < App.Overlay.DesktopsCount)
+                                if (monitors[s].Device.Id == deviceId && s < App.Overlay.DesktopsCount)
                                 {
-                                    App.Overlay.LayoutData[s] = new LayoutSettings
+                                    App.Overlay.Monitors[s].Settings = new LayoutSettings
                                     {
                                         DeviceId = deviceId,
                                         ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
@@ -316,7 +317,7 @@ namespace FancyZonesEditor.Utils
                             if (isLayoutMultiMonitor)
                             {
                                 // one zoneset for all desktops
-                                App.Overlay.LayoutData[App.Overlay.CurrentDesktop] = new LayoutSettings
+                                App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings = new LayoutSettings
                                 {
                                     DeviceId = deviceId,
                                     ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
@@ -488,8 +489,9 @@ namespace FancyZonesEditor.Utils
             AppliedZonesetsToDesktops applied = new AppliedZonesetsToDesktops { };
             applied.AppliedZonesets = new List<AppliedZoneSet>();
 
-            foreach (LayoutSettings zoneset in App.Overlay.LayoutData)
+            foreach (var monitor in App.Overlay.Monitors)
             {
+                LayoutSettings zoneset = monitor.Settings;
                 if (zoneset.ZonesetUuid.Length == 0)
                 {
                     continue;

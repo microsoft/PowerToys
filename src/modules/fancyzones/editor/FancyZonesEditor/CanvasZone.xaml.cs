@@ -85,7 +85,7 @@ namespace FancyZonesEditor
                     }
                 }
 
-                foreach (Rect singleMonitor in Settings.UsedWorkAreas)
+                foreach (Rect singleMonitor in App.Overlay.UsedWorkAreas)
                 {
                     int monitorPositionLow = (int)(isX ? singleMonitor.Left : singleMonitor.Top);
                     int monitorPositionHigh = (int)(isX ? singleMonitor.Right : singleMonitor.Bottom);
@@ -214,7 +214,7 @@ namespace FancyZonesEditor
 
         private SnappyHelperBase NewDefaultSnappyHelper(bool isX, ResizeMode mode)
         {
-            Rect workingArea = WorkArea.WorkingAreaRect;
+            Rect workingArea = App.Overlay.WorkArea;
             int screenAxisOrigin = (int)(isX ? workingArea.Left : workingArea.Top);
             int screenAxisSize = (int)(isX ? workingArea.Width : workingArea.Height);
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);

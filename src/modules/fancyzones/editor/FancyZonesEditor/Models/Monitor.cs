@@ -1,0 +1,44 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Media;
+using FancyZonesEditor.Utils;
+using Microsoft.VisualStudio.Utilities;
+
+namespace FancyZonesEditor.Models
+{
+    public class Monitor
+    {
+        public LayoutOverlayWindow Window { get; private set; }
+
+        public LayoutSettings Settings { get; set; }
+
+        public Device Device { get; set; }
+
+        public Monitor(string id, int dpi, Rect bounds, Rect workArea)
+        {
+            Window = new LayoutOverlayWindow();
+            Settings = new LayoutSettings();
+
+            workArea = DpiAwareness.DeviceToLogicalRect(Window, workArea);
+            Device = new Device(id, dpi, bounds, workArea);
+
+            if (App.DebugMode)
+            {
+                long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                PropertyInfo[] properties = typeof(Brushes).GetProperties();
+                Window.Opacity = 0.5;
+                Window.Background = (Brush)properties[milliseconds % properties.Length].GetValue(null, null);
+            }
+
+            Window.Left = workArea.X;
+            Window.Top = workArea.Y;
+            Window.Width = workArea.Width;
+            Window.Height = workArea.Height;
+        }
+    }
+}

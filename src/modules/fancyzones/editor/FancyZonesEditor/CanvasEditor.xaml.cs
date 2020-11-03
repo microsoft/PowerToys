@@ -47,7 +47,7 @@ namespace FancyZonesEditor
 
         private void UpdateZoneRects()
         {
-            var workArea = WorkArea.WorkingAreaRect;
+            var workArea = App.Overlay.WorkArea;
             Preview.Width = workArea.Width;
             Preview.Height = workArea.Height;
 

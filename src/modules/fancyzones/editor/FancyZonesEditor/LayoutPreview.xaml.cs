@@ -114,7 +114,7 @@ namespace FancyZonesEditor
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 
-            var workArea = WorkArea.WorkingAreaRect;
+            var workArea = App.Overlay.WorkArea;
             double width = workArea.Width - (spacing * (cols + 1));
             double height = workArea.Height - (spacing * (rows + 1));
 
@@ -272,7 +272,7 @@ namespace FancyZonesEditor
 
         private void RenderCanvasPreview(CanvasLayoutModel canvas)
         {
-            var workArea = WorkArea.WorkingAreaRect;
+            var workArea = App.Overlay.WorkArea;
 
             Viewbox viewbox = new Viewbox
             {

@@ -129,7 +129,8 @@
       <DependentUpon>LayoutOverlayWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\LayoutType.cs" />
-    <Compile Include="OverlayWindowsManager.cs" />
+    <Compile Include="Models\Monitor.cs" />
+    <Compile Include="Overlay.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />
@@ -164,8 +165,7 @@
     <Compile Include="Models\MonitorInfoModel.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\RelayCommand`1.cs" />
-    <Compile Include="Utils\WorkArea.cs" />
-    <Compile Include="Utils\WorkAreaData.cs" />
+    <Compile Include="Models\Device.cs" />
     <Compile Include="ViewModels\MonitorViewModel.cs" />
     <Compile Include="WindowLayout.xaml.cs">
       <DependentUpon>WindowLayout.xaml</DependentUpon>

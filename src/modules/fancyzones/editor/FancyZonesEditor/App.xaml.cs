@@ -11,6 +11,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using FancyZonesEditor.Utils;
 using ManagedCommon;
 
 namespace FancyZonesEditor
@@ -50,7 +51,9 @@ namespace FancyZonesEditor
 
         public static FancyZonesEditorIO FancyZonesEditorIO { get; private set; }
 
-        public static OverlayWindowsManager Overlay { get; private set; }
+        public static Overlay Overlay { get; private set; }
+
+        public static int PowerToysPID { get; set; }
 
         public static bool DebugMode
         {
@@ -71,8 +74,11 @@ namespace FancyZonesEditor
         public App()
         {
             DebugModeCheck();
-            ZoneSettings = new Settings();
             FancyZonesEditorIO = new FancyZonesEditorIO();
+            Overlay = new Overlay();
+
+            FancyZonesEditorIO.ParseCommandLineArguments();
+            ZoneSettings = new Settings();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -84,13 +90,12 @@ namespace FancyZonesEditor
                 Environment.Exit(0);
             });
 
-            Overlay = new OverlayWindowsManager();
+            FancyZonesEditorIO.ParseDeviceInfoData();
 
             Settings settings = ((App)Current).ZoneSettings;
             settings.UpdateSelectedLayoutModel();
 
-            FancyZonesEditorIO.ParseCommandLineArguments();
-            FancyZonesEditorIO.ParseDeviceInfoData();
+            Overlay.UpdateSelectedLayoutModel();
             Overlay.Show();
         }
 

@@ -8,9 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Forms;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -87,16 +85,6 @@ namespace FancyZonesEditor
 
         public Settings()
         {
-            string tmpDirPath = _fileSystem.Path.GetTempPath();
-            DesktopsCount = Screen.AllScreens.Length;
-            Area = new WorkArea(DesktopsCount);
-            AppliedLayouts = new List<LayoutSettings>(DesktopsCount);
-
-            for (int i = 0; i < DesktopsCount; i++)
-            {
-                AppliedLayouts.Add(new LayoutSettings());
-            }
-
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
             _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
@@ -132,19 +120,14 @@ namespace FancyZonesEditor
         {
             get
             {
-                if (CurrentDesktop < AppliedLayouts.Count)
-                {
-                    return AppliedLayouts[CurrentDesktop].ZoneCount;
-                }
-
-                return LayoutSettings.DefaultZoneCount;
+                return App.Overlay.CurrentLayoutSettings.ZoneCount;
             }
 
             set
             {
-                if (AppliedLayouts[CurrentDesktop].ZoneCount != value)
+                if (App.Overlay.CurrentLayoutSettings.ZoneCount != value)
                 {
-                    AppliedLayouts[CurrentDesktop].ZoneCount = value;
+                    App.Overlay.CurrentLayoutSettings.ZoneCount = value;
                     UpdateLayoutModels();
                     FirePropertyChanged(nameof(ZoneCount));
                 }
@@ -156,22 +139,17 @@ namespace FancyZonesEditor
         {
             get
             {
-                if (CurrentDesktop < AppliedLayouts.Count)
-                {
-                    return AppliedLayouts[CurrentDesktop].Spacing;
-                }
-
-                return LayoutSettings.DefaultSpacing;
+                return App.Overlay.CurrentLayoutSettings.Spacing;
             }
 
             set
             {
                 value = Math.Max(0, value);
-                if (AppliedLayouts[CurrentDesktop].Spacing != value)
+                if (App.Overlay.CurrentLayoutSettings.Spacing != value)
                 {
-                    AppliedLayouts[CurrentDesktop].Spacing = value;
-                    FirePropertyChanged(nameof(Spacing));
+                    App.Overlay.CurrentLayoutSettings.Spacing = value;
                     UpdateLayoutModels();
+                    FirePropertyChanged(nameof(Spacing));
                 }
             }
         }
@@ -181,21 +159,16 @@ namespace FancyZonesEditor
         {
             get
             {
-                if (CurrentDesktop < AppliedLayouts.Count)
-                {
-                    return AppliedLayouts[CurrentDesktop].ShowSpacing;
-                }
-
-                return LayoutSettings.DefaultShowSpacing;
+                return App.Overlay.CurrentLayoutSettings.ShowSpacing;
             }
 
             set
             {
-                if (AppliedLayouts[CurrentDesktop].ShowSpacing != value)
+                if (App.Overlay.CurrentLayoutSettings.ShowSpacing != value)
                 {
-                    AppliedLayouts[CurrentDesktop].ShowSpacing = value;
-                    FirePropertyChanged(nameof(ShowSpacing));
+                    App.Overlay.CurrentLayoutSettings.ShowSpacing = value;
                     UpdateLayoutModels();
+                    FirePropertyChanged(nameof(ShowSpacing));
                 }
             }
         }
@@ -205,22 +178,17 @@ namespace FancyZonesEditor
         {
             get
             {
-                if (CurrentDesktop < AppliedLayouts.Count)
-                {
-                    return AppliedLayouts[CurrentDesktop].SensitivityRadius;
-                }
-
-                return LayoutSettings.DefaultSensitivityRadius;
+                return App.Overlay.CurrentLayoutSettings.SensitivityRadius;
             }
 
             set
             {
                 value = Math.Max(0, value);
-                if (AppliedLayouts[CurrentDesktop].SensitivityRadius != value)
+                if (App.Overlay.CurrentLayoutSettings.SensitivityRadius != value)
                 {
-                    AppliedLayouts[CurrentDesktop].SensitivityRadius = value;
-                    FirePropertyChanged(nameof(SensitivityRadius));
+                    App.Overlay.CurrentLayoutSettings.SensitivityRadius = value;
                     UpdateLayoutModels();
+                    FirePropertyChanged(nameof(SensitivityRadius));
                 }
             }
         }
@@ -265,78 +233,6 @@ namespace FancyZonesEditor
 
         private bool _isCtrlKeyPressed;
 
-        public static WorkArea Area { get; private set; }
-
-        public static List<Rect> UsedWorkAreas { get; private set; }
-
-        public static string ActiveZoneSetTmpFile { get; private set; }
-
-        public static string AppliedZoneSetTmpFile { get; private set; }
-
-        public static string DeletedCustomZoneSetsTmpFile { get; private set; }
-
-        public static string FancyZonesSettingsFile { get; private set; }
-
-        public static int PowerToysPID { get; private set; }
-
-        public static int PreviousDesktop { get; private set; }
-
-        public int CurrentDesktop
-        {
-            get
-            {
-                return _currentDesktop;
-            }
-
-            set
-            {
-                if (value != _currentDesktop)
-                {
-                    if (value < 0 || value >= DesktopsCount)
-                    {
-                        return;
-                    }
-
-                    PreviousDesktop = _currentDesktop;
-                    _currentDesktop = value;
-                    UpdateLayoutModels();
-
-                    if (AppliedLayouts[PreviousDesktop].ZoneCount != AppliedLayouts[value].ZoneCount)
-                    {
-                        FirePropertyChanged(nameof(ZoneCount));
-                    }
-
-                    if (AppliedLayouts[PreviousDesktop].Spacing != AppliedLayouts[value].Spacing)
-                    {
-                        FirePropertyChanged(nameof(Spacing));
-                    }
-
-                    if (AppliedLayouts[PreviousDesktop].ShowSpacing != AppliedLayouts[value].ShowSpacing)
-                    {
-                        FirePropertyChanged(nameof(ShowSpacing));
-                    }
-
-                    if (AppliedLayouts[PreviousDesktop].SensitivityRadius != AppliedLayouts[value].SensitivityRadius)
-                    {
-                        FirePropertyChanged(nameof(SensitivityRadius));
-                    }
-                }
-            }
-        }
-
-        public static int CurrentDesktopId
-        {
-            get { return _currentDesktop; }
-        }
-
-        private static int _currentDesktop = 0;
-
-        public static int DesktopsCount { get; private set; }
-
-        public static List<AppliedZoneset> AppliedLayouts { get; set; }
-
-        public static bool SpanZonesAcrossMonitors { get; private set; }
-
         // UpdateLayoutModels
         // Update the five default layouts based on the new ZoneCount
         private void UpdateLayoutModels()
@@ -352,7 +248,7 @@ namespace FancyZonesEditor
 
             // If changing focus layout zones size and/or increment,
             // same change should be applied in ZoneSet.cpp (ZoneSet::CalculateFocusLayout)
-            var workingArea = WorkArea.WorkingAreaRect;
+            var workingArea = App.Overlay.WorkArea;
             Int32Rect focusZoneRect = new Int32Rect(100, 100, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4));
             int focusRectXIncrement = (ZoneCount <= 1) ? 0 : 50;
             int focusRectYIncrement = (ZoneCount <= 1) ? 0 : 50;
@@ -473,7 +369,7 @@ namespace FancyZonesEditor
         public void UpdateSelectedLayoutModel()
         {
             LayoutModel foundModel = null;
-            LayoutSettings currentApplied = AppliedLayouts[CurrentDesktop];
+            LayoutSettings currentApplied = App.Overlay.CurrentLayoutSettings;
 
             // reset previous selected layout
             foreach (LayoutModel model in CustomModels)
@@ -527,6 +423,31 @@ namespace FancyZonesEditor
 
             foundModel.IsSelected = true;
             App.Overlay.CurrentDataContext = foundModel;
+        }
+
+        public void UpdateDesktopDependantProperties(LayoutSettings prevSettings)
+        {
+            UpdateLayoutModels();
+
+            if (prevSettings.ZoneCount != ZoneCount)
+            {
+                FirePropertyChanged(nameof(ZoneCount));
+            }
+
+            if (prevSettings.Spacing != Spacing)
+            {
+                FirePropertyChanged(nameof(Spacing));
+            }
+
+            if (prevSettings.ShowSpacing != ShowSpacing)
+            {
+                FirePropertyChanged(nameof(ShowSpacing));
+            }
+
+            if (prevSettings.SensitivityRadius != SensitivityRadius)
+            {
+                FirePropertyChanged(nameof(SensitivityRadius));
+            }
         }
 
         // implementation of INotifyPropertyChanged

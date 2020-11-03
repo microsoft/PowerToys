@@ -184,8 +184,8 @@ namespace FancyZonesEditor.Models
         public void Apply()
         {
             // update settings
-            App.Overlay.LayoutData[App.Overlay.CurrentDesktopId].ZonesetUuid = Uuid;
-            App.Overlay.LayoutData[App.Overlay.CurrentDesktopId].Type = Type;
+            App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;
+            App.Overlay.CurrentLayoutSettings.Type = Type;
 
             // update temp file
             App.FancyZonesEditorIO.SerializeAppliedLayouts();

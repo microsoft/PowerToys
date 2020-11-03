@@ -50,7 +50,7 @@ namespace FancyZonesEditor.Utils
             {
                 if (App.DebugMode)
                 {
-                    var rect = WorkArea.GetWorkingArea(Index - 1);
+                    var rect = App.Overlay.Monitors[Index - 1].Device.WorkAreaRect;
                     return "Screen: (" + rect.X + ", " + rect.Y + "); (" + rect.Width + ", " + rect.Height + ")";
                 }
                 else

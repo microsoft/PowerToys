@@ -25,7 +25,7 @@ namespace FancyZonesEditor.ViewModels
         {
             get
             {
-                return Settings.DesktopsCount > 1 && !Settings.SpanZonesAcrossMonitors;
+                return App.Overlay.DesktopsCount > 1 && !App.Overlay.SpanZonesAcrossMonitors;
             }
         }
 
@@ -53,13 +53,14 @@ namespace FancyZonesEditor.ViewModels
             double maxDimension = 0, minDimension = double.MaxValue;
 
             int i = 1;
-            foreach (WorkAreaData screen in WorkArea.Monitors)
+            foreach (var monitor in App.Overlay.Monitors)
             {
-                var bounds = screen.Bounds;
+                Device device = monitor.Device;
+                var bounds = device.Bounds;
                 maxDimension = System.Math.Max(System.Math.Max(maxDimension, bounds.Height), bounds.Width);
                 minDimension = System.Math.Min(System.Math.Min(minDimension, bounds.Height), bounds.Width);
 
-                Monitors.Add(new MonitorInfoModel(i, (int)bounds.Height, (int)bounds.Width, screen.Dpi, Settings.CurrentDesktopId == i - 1));
+                Monitors.Add(new MonitorInfoModel(i, (int)bounds.Height, (int)bounds.Width, device.Dpi, App.Overlay.CurrentDesktop == i - 1));
                 i++;
             }
 
@@ -80,13 +81,11 @@ namespace FancyZonesEditor.ViewModels
 
         private void SelectCommandExecute(MonitorInfoModel monitorInfo)
         {
-            Monitors[Settings.CurrentDesktopId].Selected = false;
+            Monitors[App.Overlay.CurrentDesktop].Selected = false;
             Monitors[monitorInfo.Index - 1].Selected = true;
 
-            Settings settings = ((App)Application.Current).ZoneSettings;
-            settings.CurrentDesktop = monitorInfo.Index - 1;
-            settings.UpdateSelectedLayoutModel();
-
+            App.Overlay.CurrentDesktop = monitorInfo.Index - 1;
+            App.Overlay.UpdateSelectedLayoutModel();
             App.Overlay.Update();
         }
     }

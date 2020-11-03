@@ -4,10 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO.Abstractions;
 using System.Text.Json;
 using System.Windows;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor.Models
 {
@@ -49,9 +47,9 @@ namespace FancyZonesEditor.Models
         // Zones - the list of all zones in this layout, described as independent rectangles
         public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
 
-        private int lastWorkAreaWidth = (int)WorkArea.WorkingAreaRect.Width;
+        private int lastWorkAreaWidth = (int)App.Overlay.WorkArea.Width;
 
-        private int lastWorkAreaHeight = (int)WorkArea.WorkingAreaRect.Height;
+        private int lastWorkAreaHeight = (int)App.Overlay.WorkArea.Height;
 
         public bool IsScaled { get; private set; }
 
@@ -105,7 +103,7 @@ namespace FancyZonesEditor.Models
             // Scale if:
             // - at least one dimension changed
             // - orientation remained the same
-            Rect workingArea = WorkArea.WorkingAreaRect;
+            Rect workingArea = App.Overlay.WorkArea;
             return (lastWorkAreaHeight != workingArea.Height || lastWorkAreaWidth != workingArea.Width) &&
                 ((lastWorkAreaHeight > lastWorkAreaWidth && workingArea.Height > workingArea.Width) ||
                   (lastWorkAreaWidth > lastWorkAreaHeight && workingArea.Width > workingArea.Height));
@@ -113,7 +111,7 @@ namespace FancyZonesEditor.Models
 
         private void ScaleLayout(IList<Int32Rect> zones)
         {
-            Rect workingArea = WorkArea.WorkingAreaRect;
+            Rect workingArea = App.Overlay.WorkArea;
             foreach (Int32Rect zone in zones)
             {
                 double widthFactor = (double)workingArea.Width / lastWorkAreaWidth;

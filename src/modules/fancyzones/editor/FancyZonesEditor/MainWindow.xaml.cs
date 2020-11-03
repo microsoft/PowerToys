@@ -46,12 +46,12 @@ namespace FancyZonesEditor
 
             KeyUp += MainWindow_KeyUp;
 
-            if (Settings.SpanZonesAcrossMonitors)
+            if (App.Overlay.SpanZonesAcrossMonitors)
             {
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
 
-            if (WorkArea.WorkingAreaRect.Height < MinimalForDefaultWrapPanelsHeight || MonitorViewModel.IsDesktopsPanelVisible)
+            if (App.Overlay.WorkArea.Height < MinimalForDefaultWrapPanelsHeight || MonitorViewModel.IsDesktopsPanelVisible)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = SmallWrapPanelItemSize;
@@ -167,31 +167,7 @@ namespace FancyZonesEditor
                 model.Name = _defaultNamePrefix + (++maxCustomIndex);
             }
 
-            mainEditor.OpenEditor();
-
-            EditorWindow window;
-            bool isGrid = false;
-            if (model is GridLayoutModel)
-            {
-                window = new GridEditorWindow();
-                isGrid = true;
-            }
-            else
-            {
-                window = new CanvasEditorWindow();
-            }
-
-            window.Owner = App.Overlay.CurrentLayoutWindow;
-            window.DataContext = model;
-            window.Show();
-
-            if (isGrid)
-            {
-                (window as GridEditorWindow).NameTextBox().Focus();
-            }
-
-            window.LeftWindowCommands = null;
-            window.RightWindowCommands = null;
+            mainEditor.OpenEditor(model);
         }
 
         private void Apply_Click(object sender, RoutedEventArgs e)

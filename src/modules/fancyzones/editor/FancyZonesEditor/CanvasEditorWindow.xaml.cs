@@ -26,7 +26,7 @@ namespace FancyZonesEditor
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            Rect workingArea = WorkArea.WorkingAreaRect;
+            Rect workingArea = App.Overlay.WorkArea;
             if (_offset + (int)(workingArea.Width * 0.4) < (int)workingArea.Width
                 && _offset + (int)(workingArea.Height * 0.4) < (int)workingArea.Height)
             {

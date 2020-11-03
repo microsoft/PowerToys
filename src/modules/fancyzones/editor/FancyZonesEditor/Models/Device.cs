@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace FancyZonesEditor.Utils
 {
-    public class WorkAreaData
+    public class Device
     {
         public string Id { get; private set; }
 
@@ -17,13 +17,13 @@ namespace FancyZonesEditor.Utils
 
         public int Dpi { get; private set; }
 
-        public WorkAreaData(string id, int dpi, Rect monitor, Rect workArea)
+        public Device(string id, int dpi, Rect bounds, Rect workArea)
         {
             Id = id;
             Dpi = dpi;
 
             WorkAreaRect = workArea;
-            Bounds = monitor;
+            Bounds = bounds;
         }
     }
 }
