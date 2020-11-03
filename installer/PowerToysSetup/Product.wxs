@@ -386,6 +386,7 @@
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.ValueTuple.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedCommon.dll" />	  
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Telemetry.dll" />
+        <File Id="FancyZone_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.IO.Abstractions.dll" />
       </Component>
     </DirectoryRef>
 
@@ -491,6 +492,7 @@
         <File Id="Module_ImageResizer_Microsoft_Xaml_Behaviors" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.Xaml.Behaviors.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />		  
         <File Id="ImageResizer_interop" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToysInterop.dll" />
+        <File Id="ImageResizer_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\System.IO.Abstractions.dll" />
 
         <!-- VCRuntime -->
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
@@ -592,7 +594,7 @@
 
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-        <?foreach File in ColorPicker.dll;ColorPicker.exe;ColorPicker.exe.config;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Expression.Interactions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Buffers.dll;System.Memory.dll;System.Numerics.Vectors.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll;System.ValueTuple.dll;System.Windows.Interactivity.dll;Telemetry.dll;ManagedCommon.dll;System.Runtime.CompilerServices.Unsafe.dll?>
+        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPicker.exe;ColorPicker.exe.config;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Expression.Interactions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Buffers.dll;System.Memory.dll;System.Numerics.Vectors.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll;System.ValueTuple.dll;System.Windows.Interactivity.dll;Telemetry.dll;ManagedCommon.dll;System.Runtime.CompilerServices.Unsafe.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -627,6 +629,7 @@
         <File Id="FileExplorerPreview_Memory" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.Memory.dll" />
         <File Id="FileExplorerPreview_Numerics" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.Numerics.Vectors.dll" />
         <File Id="FileExplorerPreview_Unsafe" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Id="FileExplorerPreview_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\FileExplorerPreview\System.IO.Abstractions.dll" />
       </Component>
     </DirectoryRef>
 
@@ -637,7 +640,7 @@
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.exe"/>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.exe"/>
         <!-- dll -->
-        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Telemetry.dll;ManagedCommon.dll?>
+        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Telemetry.dll;ManagedCommon.dll?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\$(var.File)" />
         <?endforeach?>
         <!-- json -->
@@ -883,7 +886,7 @@
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;System.IO.Abstractions.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
