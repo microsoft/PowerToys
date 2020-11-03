@@ -16,7 +16,7 @@ using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
-namespace Wox.Core.Plugin
+namespace PowerLauncher.Plugin
 {
     /// <summary>
     /// The entry for managing Wox plugins

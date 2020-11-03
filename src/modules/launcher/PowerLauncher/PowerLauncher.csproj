@@ -109,6 +109,7 @@
     <PackageReference Include="PropertyChanged.Fody" Version="3.2.9">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="SharpZipLib" Version="1.2.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.113.1" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />    
@@ -124,7 +125,6 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
     <ProjectReference Include="..\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj" />
-    <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
   </ItemGroup>

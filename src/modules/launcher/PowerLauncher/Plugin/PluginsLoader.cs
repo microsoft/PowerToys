@@ -5,14 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Loader;
 using Wox.Infrastructure;
-using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
-using Wox.Plugin.Logger;
 
-namespace Wox.Core.Plugin
+namespace PowerLauncher.Plugin
 {
     public static class PluginsLoader
     {

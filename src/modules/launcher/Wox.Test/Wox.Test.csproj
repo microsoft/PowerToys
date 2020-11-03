@@ -51,7 +51,6 @@
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj" />
     <ProjectReference Include="..\PowerLauncher\PowerLauncher.csproj" />
-    <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
   </ItemGroup>

@@ -8,7 +8,7 @@ using System.Linq;
 using Mono.Collections.Generic;
 using Wox.Plugin;
 
-namespace Wox.Core.Plugin
+namespace PowerLauncher.Plugin
 {
     public static class QueryBuilder
     {
