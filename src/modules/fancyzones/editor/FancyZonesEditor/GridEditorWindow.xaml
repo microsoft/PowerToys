@@ -64,11 +64,11 @@
         <Style x:Key="secondaryButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="0,5,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="Background" Value="#767676"/>
             <Setter Property="Width" Value="239"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="Template">
@@ -82,7 +82,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#BCBCBD"/>
+                    <Setter Property="Background" Value="#5D5D5D"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -151,7 +151,7 @@
             <Setter Property="Margin" Value="0,12,0,0"/>
         </Style>
         <Style x:Key="textBox" TargetType="TextBox">
-            <Setter Property="BorderBrush" Value="#cccccc"/>
+            <Setter Property="BorderBrush" Value="#949494"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="SegoeUI"/>
             <Setter Property="FontWeight" Value="Regular"/>
@@ -166,8 +166,8 @@
         <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Table_Layout}" Style="{StaticResource titleText}"  />
 
         <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}" Style="{StaticResource textLabel}" TextWrapping="Wrap" />
-        <TextBlock Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
-        <TextBox Text="{Binding Name}" Style="{StaticResource textBox}" />
+        <TextBlock x:Name="customLayoutName" Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
+        <TextBox Text="{Binding Name}" AutomationProperties.LabeledBy="{Binding ElementName=customLayoutName}" Style="{StaticResource textBox}" />
 <!--        
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
             <CheckBox x:Name="showGridSetting" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" Margin="21,4,0,0"/>

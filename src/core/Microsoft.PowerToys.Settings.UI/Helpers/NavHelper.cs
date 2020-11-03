@@ -8,7 +8,7 @@ using Windows.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-    public class NavHelper
+    public static class NavHelper
     {
         // This helper class allows to specify the page that will be shown when you click on a NavigationViewItem
         //
@@ -19,12 +19,12 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         // NavHelper.SetNavigateTo(navigationViewItem, typeof(MainPage));
         public static Type GetNavigateTo(NavigationViewItem item)
         {
-            return (Type)item.GetValue(NavigateToProperty);
+            return (Type)item?.GetValue(NavigateToProperty);
         }
 
         public static void SetNavigateTo(NavigationViewItem item, Type value)
         {
-            item.SetValue(NavigateToProperty, value);
+            item?.SetValue(NavigateToProperty, value);
         }
 
         public static readonly DependencyProperty NavigateToProperty =

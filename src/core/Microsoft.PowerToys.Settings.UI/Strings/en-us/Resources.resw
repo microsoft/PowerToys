@@ -117,53 +117,41 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Microsoft.PowerToys.Settings.UI</value>
-    <comment>Application display name</comment>
-  </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Microsoft.PowerToys.Settings.UI</value>
-    <comment>Application description</comment>
-  </data>
-  <data name="Shell_Main.Content" xml:space="preserve">
-    <value>Main</value>
-    <comment>Navigation view item name for Main</comment>
-  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
-    <comment>Navigation view item name for PowerToys Run</comment>
+    <comment>Product name: Navigation view item name for PowerToys Run</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
     <value>PowerRename</value>
-    <comment>Navigation view item name for PowerRename</comment>
+    <comment>Product name: Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
     <value>Shortcut Guide</value>
-    <comment>Navigation view item name for Shortcut Guide</comment>
+    <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer</value>
-    <comment>Navigation view item name for File Explorer Preview</comment>
+    <comment>Product name: Navigation view item name for File Explorer Preview</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>Navigation view item name for FancyZones</comment>
+    <comment>Product name: Navigation view item name for FancyZones</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
     <value>Image Resizer</value>
-    <comment>Navigation view item name for Image Resizer</comment>
+    <comment>Product name: Navigation view item name for Image Resizer</comment>
   </data>
   <data name="Shell_ColorPicker.Content" xml:space="preserve">
     <value>Color Picker</value>
-    <comment>Navigation view item name for Color Picker</comment>
+    <comment>Product name: Navigation view item name for Color Picker</comment>
   </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
-    <comment>Navigation view item name for Keyboard Manager</comment>
+    <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
   <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
     <value>Current configuration</value>
@@ -175,7 +163,10 @@
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
     <value>Enable Keyboard Manager</value>
-    <comment>Keyboard Manager enable toggle header</comment>
+    <comment>
+      Keyboard Manager enable toggle header
+      do not loc the Product name.  Do you want this feature on / off
+    </comment>
   </data>
   <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
     <value>Select the profile to display the active key remap and shortcuts</value>
@@ -226,6 +217,7 @@
   </data>
   <data name="ColorPicker_EnableColorPicker.Header" xml:space="preserve">
     <value>Enable Color Picker</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
     <value>Change cursor when picking a color</value>
@@ -241,6 +233,7 @@
   </data>
   <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
     <value>Enable PowerToys Run</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="PowerLauncher_SearchResults.Text" xml:space="preserve">
     <value>Search &amp; results</value>
@@ -323,6 +316,7 @@
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable FancyZones</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="FancyZones_ExcludeApps.Text" xml:space="preserve">
     <value>Excluded apps</value>
@@ -385,10 +379,12 @@
     <value>Give feedback</value>
   </data>
   <data name="Module_overview.Text" xml:space="preserve">
-    <value>Module overview</value>
+    <value>Learn more</value>
+    <comment>This label is there to point people to additional overview for how to use the product</comment>
   </data>
   <data name="AttributionTitle.Text" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="GeneralPage_AboutPowerToysHeader.Text" xml:space="preserve">
     <value>About PowerToys</value>
@@ -404,12 +400,15 @@
   </data>
   <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
+    <comment>Report an issue inside powertoys</comment>
   </data>
   <data name="GeneralPage_RequestAFeature_URL.Text" xml:space="preserve">
     <value>Request a feature</value>
+    <comment>Tell our team what we should build</comment>
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
     <value>Restart as administrator</value>
+    <comment>running PowerToys as a higher level user, account is typically referred to as an admin / administrator</comment>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
@@ -419,9 +418,11 @@
   </data>
   <data name="PowerRename_ShellIntegration.Text" xml:space="preserve">
     <value>Shell integration</value>
+    <comment>This refers to directly integrating in with Windows</comment>
   </data>
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
     <value>Enable PowerRename</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
     <value>Settings theme</value>
@@ -440,12 +441,15 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Enable Markdown (.md) preview</value>
+    <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Enable SVG (.svg) preview</value>
+    <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Header" xml:space="preserve">
     <value>Enable SVG (.svg) thumbnails</value>
+    <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_Description.Text" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
@@ -476,6 +480,7 @@
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
@@ -488,6 +493,7 @@
   </data>
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
     <value>Enable Image Resizer</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ImagesSizesListView.AutomationProperties.Name" xml:space="preserve">
     <value>Image Size</value>
@@ -770,11 +776,14 @@
   </data>
   <data name="Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
+    <comment>Light refers to color, not weight</comment>
   </data>
   <data name="Radio_Theme_Default.Content" xml:space="preserve">
     <value>Windows default</value>
+    <comment>Windows refers to the Operating system</comment>
   </data>
   <data name="Windows_Color_Settings.Content" xml:space="preserve">
     <value>Windows color settings</value>
+    <comment>Windows refers to the Operating system</comment>
   </data>
 </root>

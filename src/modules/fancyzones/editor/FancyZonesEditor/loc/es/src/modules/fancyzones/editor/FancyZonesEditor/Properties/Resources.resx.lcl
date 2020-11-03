@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones main editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editor principal de FancyZones]]></Val>
+            <Val><![CDATA[Editor principal de Diseños sofisticados]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

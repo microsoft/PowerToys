@@ -23,9 +23,6 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        [DllImport("user32.dll")]
-        public static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop naming consistancy")]
         public const int SW_HIDE = 0;
     }

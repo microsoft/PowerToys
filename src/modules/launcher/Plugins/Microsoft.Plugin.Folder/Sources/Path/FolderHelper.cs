@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.Plugin.Folder.Sources
@@ -27,6 +28,7 @@ namespace Microsoft.Plugin.Folder.Sources
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
+            // Using OrdinalIgnoreCase since this is internal
             return _folderLinks.FolderLinks()
                 .Where(x => x.Nickname.StartsWith(query, StringComparison.OrdinalIgnoreCase));
         }
@@ -38,7 +40,8 @@ namespace Microsoft.Plugin.Folder.Sources
                 throw new ArgumentNullException(nameof(search));
             }
 
-            if (search.StartsWith(@"\\", StringComparison.InvariantCulture))
+            // Using Ordinal this is internal and we're comparing symbols
+            if (search.StartsWith(@"\\", StringComparison.Ordinal))
             { // share folder
                 return true;
             }
@@ -48,6 +51,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
             if (driverNames.Any())
             {
+                // Using InvariantCultureIgnoreCase since this is searching for drive names
                 if (driverNames.Any(dn => search.StartsWith(dn, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     // normal drive letter
@@ -75,6 +79,17 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public static string Expand(string search)
         {
+            if (search == null)
+            {
+                throw new ArgumentNullException(nameof(search));
+            }
+
+            // Absolute path of system drive: \Windows\System32
+            if (search[0] == '\\' && (search.Length == 1 || search[1] != '\\'))
+            {
+                search = Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), search.Substring(1));
+            }
+
             return Environment.ExpandEnvironmentVariables(search);
         }
     }

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
 using ColorPicker.Helpers;
 using Microsoft.Win32;
 
@@ -28,11 +28,13 @@ namespace ColorPicker.Mouse
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
         private const int SPIF_SENDCHANGE = 0x02;
 
+        private static readonly IFileSystem _fileSystem = new FileSystem();
+
         public static void SetColorPickerCursor()
         {
             BackupOriginalCursors();
 
-            var colorPickerCursorPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ColorPickerCursorName);
+            var colorPickerCursorPath = _fileSystem.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ColorPickerCursorName);
             ChangeCursor(colorPickerCursorPath, ArrowRegistryName);
             ChangeCursor(colorPickerCursorPath, IBeamRegistryName);
         }

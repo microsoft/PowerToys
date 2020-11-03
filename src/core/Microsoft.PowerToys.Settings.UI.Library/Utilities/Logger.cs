@@ -5,12 +5,16 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
+using System.IO.Abstractions;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 {
     public static class Logger
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         private static readonly string ApplicationLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\Settings Logs");
 
         static Logger()
@@ -20,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 Directory.CreateDirectory(ApplicationLogPath);
             }
 
+            // Using InvariantCulture since this is used for a log file name
             var logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));

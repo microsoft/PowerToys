@@ -11,11 +11,11 @@ namespace PowerLauncher.ViewModel
 {
     public class SettingWindowViewModel : BaseModel
     {
-        private readonly WoxJsonStorage<Settings> _storage;
+        private readonly WoxJsonStorage<PowerToysRunSettings> _storage;
 
         public SettingWindowViewModel()
         {
-            _storage = new WoxJsonStorage<Settings>();
+            _storage = new WoxJsonStorage<PowerToysRunSettings>();
             Settings = _storage.Load();
             Settings.PropertyChanged += (s, e) =>
             {
@@ -26,7 +26,7 @@ namespace PowerLauncher.ViewModel
             };
         }
 
-        public Settings Settings { get; set; }
+        public PowerToysRunSettings Settings { get; set; }
 
         public void Save()
         {

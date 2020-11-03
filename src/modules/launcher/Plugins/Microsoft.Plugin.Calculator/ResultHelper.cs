@@ -27,6 +27,7 @@ namespace Microsoft.Plugin.Calculator
 
             return new Result
             {
+                // Using CurrentCulture since this is user facing
                 Title = roundedResult?.ToString(CultureInfo.CurrentCulture),
                 IcoPath = iconPath,
                 Score = 300,
@@ -45,6 +46,7 @@ namespace Microsoft.Plugin.Calculator
                 {
                     try
                     {
+                        // Using CurrentUICulture since this is user facing
                         Clipboard.SetText(roundedResult?.ToString(CultureInfo.CurrentUICulture.NumberFormat));
                         ret = true;
                     }

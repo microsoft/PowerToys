@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opacity of the Shortcut Guide's overlay background (%)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Dekking van de overlay-achtergrond van de Snelkoppelingsgids (%)]]></Val>
+            <Val><![CDATA[Dekking van de overlay-achtergrond van Shortcut Guide (%)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[How long to press the Windows key before showing the Shortcut Guide (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hoe lang de Windows-toets moet worden ingedrukt voordat de Snelkoppelingsgids wordt weergegeven (ms)]]></Val>
+            <Val><![CDATA[Hoe lang de Windows-toets moet worden ingedrukt voordat Shortcut Guide wordt weergegeven (ms)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Choose Shortcut Guide overlay color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Overlaykleur voor de Snelkoppelingsgids kiezen]]></Val>
+            <Val><![CDATA[Overlaykleur voor Shortcut Guide kiezen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Snelkoppelingsgids]]></Val>
+            <Val><![CDATA[Shortcut Guide]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

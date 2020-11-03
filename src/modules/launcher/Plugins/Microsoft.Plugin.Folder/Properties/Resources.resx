@@ -137,6 +137,7 @@
   </data>
   <data name="Microsoft_plugin_folder_truncation_warning_subtitle" xml:space="preserve">
     <value>Showing {0:N0} of {1:N0} results</value>
+    <comment>Example: showing 25 of 540 results</comment>
   </data>
   <data name="Microsoft_plugin_folder_clipboard_failed" xml:space="preserve">
     <value>Fail to set text in clipboard</value>
@@ -149,14 +150,17 @@
   </data>
   <data name="wox_plugin_folder_select_folder_first_result_title" xml:space="preserve">
     <value>Open</value>
+    <comment>Open as a verb.  Open this folder.</comment>
   </data>
   <data name="wox_plugin_folder_select_folder_OpenFileOrFolder_error_message" xml:space="preserve">
     <value>Could not start</value>
   </data>
   <data name="wox_plugin_folder_select_file_result_subtitle" xml:space="preserve">
     <value>File: {0}</value>
+    <comment>the arg following is file path</comment>
   </data>
   <data name="wox_plugin_folder_select_folder_result_subtitle" xml:space="preserve">
     <value>Folder: {0}</value>
+    <comment>the arg following is the folder path</comment>
   </data>
 </root>

@@ -221,7 +221,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[影像大小調整器]]></Val>
+            <Val><![CDATA[圖像大小調整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -518,7 +518,7 @@
         <Str Cat="Text">
           <Val><![CDATA[fits within]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[調整大小]]></Val>
+            <Val><![CDATA[最適大小]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

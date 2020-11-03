@@ -69,8 +69,10 @@ namespace Microsoft.Plugin.Folder.UnitTests
         {
             // Setup
             var folderHelperMock = new Mock<IFolderHelper>();
+
+            // Using Ordinal since this is used with paths
             folderHelperMock.Setup(r => r.IsDriveOrSharedFolder(It.IsAny<string>()))
-                .Returns<string>(s => s.StartsWith("C:", StringComparison.CurrentCultureIgnoreCase));
+                .Returns<string>(s => s.StartsWith("C:", StringComparison.Ordinal));
 
             var itemResultMock = new Mock<IItemResult>();
 
