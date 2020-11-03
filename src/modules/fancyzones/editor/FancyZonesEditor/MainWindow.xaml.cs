@@ -206,5 +206,13 @@ namespace FancyZonesEditor
 
             model.Delete();
         }
+
+        private void SpaceAroundSetting_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                spaceAroundSetting.IsChecked = !spaceAroundSetting.IsChecked;
+            }
+        }
     }
 }

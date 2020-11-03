@@ -268,7 +268,7 @@
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
             
-            <CheckBox x:Name="spaceAroundSetting" Content="{x:Static props:Resources.Show_Space_Zones}" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}" Grid.Row="0" Grid.Column="0"/>
+            <CheckBox x:Name="spaceAroundSetting" KeyUp="SpaceAroundSetting_KeyUp" Content="{x:Static props:Resources.Show_Space_Zones}" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}" Grid.Row="0" Grid.Column="0"/>
 
             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
                 <TextBlock x:Name="paddingValue" 
