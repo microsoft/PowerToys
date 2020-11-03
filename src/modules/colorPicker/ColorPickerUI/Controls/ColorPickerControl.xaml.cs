@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ColorPicker.Helpers;
+using ModernWpf.Controls.Primitives;
 
 namespace ColorPicker.Controls
 {
@@ -58,7 +59,7 @@ namespace ColorPicker.Controls
             var newColor = (Color)e.NewValue;
             ((ColorPickerControl)d)._originalColor = ((ColorPickerControl)d)._currentColor = newColor;
             var newColorBackground = new SolidColorBrush(newColor);
-            ((ColorPickerControl)d).CurrentColorBorder.Background = newColorBackground;
+            ((ColorPickerControl)d).CurrentColorButton.Background = newColorBackground;
 
             ((ColorPickerControl)d)._ignoreHexChanges = true;
             ((ColorPickerControl)d)._ignoreRGBChanges = true;
@@ -107,11 +108,11 @@ namespace ColorPicker.Controls
 
             var s = hsv.saturation;
 
-            ((ColorPickerControl)d).colorVariation1Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoeficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
-            ((ColorPickerControl)d).colorVariation2Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoeficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
+            ((ColorPickerControl)d).colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoeficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
+            ((ColorPickerControl)d).colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoeficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
 
-            ((ColorPickerControl)d).colorVariation3Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
-            ((ColorPickerControl)d).colorVariation4Border.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
+            ((ColorPickerControl)d).colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
+            ((ColorPickerControl)d).colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
         }
 
         private void UpdateValueColorGradient(double posX)
@@ -166,21 +167,19 @@ namespace ColorPicker.Controls
             }
 
             _currentColor = currentColor;
-            CurrentColorBorder.Background = new SolidColorBrush(currentColor);
+            CurrentColorButton.Background = new SolidColorBrush(currentColor);
         }
 
-        private void CurrentColorBorder_MouseDown(object sender, MouseButtonEventArgs e)
+        private void CurrentColorButton_Click(object sender, RoutedEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                ShowDetails();
-            }
+            ShowDetails();
         }
 
         private void ShowDetails()
         {
             if (_isCollapsed)
             {
+                detailsGrid.Visibility = Visibility.Visible;
                 _isCollapsed = false;
 
                 var opacityAppear = new DoubleAnimation(1.0, new Duration(TimeSpan.FromMilliseconds(300)));
@@ -195,9 +194,9 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(0), new Duration(TimeSpan.FromMilliseconds(250)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                CurrentColorBorder.CornerRadius = new CornerRadius(2);
-                CurrentColorBorder.BeginAnimation(Border.WidthProperty, resizeColor);
-                CurrentColorBorder.BeginAnimation(Border.MarginProperty, moveColor);
+                ControlHelper.SetCornerRadius(CurrentColorButton, new CornerRadius(2));
+                CurrentColorButton.BeginAnimation(Button.WidthProperty, resizeColor);
+                CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
                 detailsStackPanel.BeginAnimation(StackPanel.OpacityProperty, opacityAppear);
                 detailsGrid.BeginAnimation(Grid.HeightProperty, resize);
             }
@@ -221,11 +220,12 @@ namespace ColorPicker.Controls
                 var moveColor = new ThicknessAnimation(new Thickness(72, 0, 0, 0), new Duration(TimeSpan.FromMilliseconds(150)));
                 moveColor.EasingFunction = new ExponentialEase() { EasingMode = EasingMode.EaseInOut };
 
-                CurrentColorBorder.CornerRadius = new CornerRadius(0);
-                CurrentColorBorder.BeginAnimation(Border.WidthProperty, resizeColor);
-                CurrentColorBorder.BeginAnimation(Border.MarginProperty, moveColor);
+                ControlHelper.SetCornerRadius(CurrentColorButton, new CornerRadius(0));
+                CurrentColorButton.BeginAnimation(Button.WidthProperty, resizeColor);
+                CurrentColorButton.BeginAnimation(Button.MarginProperty, moveColor);
                 detailsStackPanel.BeginAnimation(Window.OpacityProperty, opacityAppear);
                 detailsGrid.BeginAnimation(Grid.HeightProperty, resize);
+                detailsGrid.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -242,14 +242,14 @@ namespace ColorPicker.Controls
 
             // Revert to original color
             var originalColorBackground = new SolidColorBrush(_originalColor);
-            CurrentColorBorder.Background = originalColorBackground;
+            CurrentColorButton.Background = originalColorBackground;
 
             HexCode.Text = ColorToHex(_originalColor);
         }
 
-        private void ColorVariationBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void ColorVariationButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedColor = ((SolidColorBrush)((Border)sender).Background).Color;
+            var selectedColor = ((SolidColorBrush)((Button)sender).Background).Color;
             SelectedColorChangedCommand.Execute(selectedColor);
         }
 

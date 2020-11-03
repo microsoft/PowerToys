@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ColorPicker.Controls"
              xmlns:p="clr-namespace:ColorPicker.Properties"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d"
              Height="350"
              Width="333">
@@ -12,7 +13,7 @@
                 Orientation="Vertical"
                 Background="{x:Null}" >
         <!--Top panel-->
-        <Grid HorizontalAlignment="Stretch" Margin="12,0,12,0">
+        <Grid HorizontalAlignment="Stretch" Background="White" Margin="12,0,12,0">
             <Grid.Effect>
                 <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
             </Grid.Effect>
@@ -24,39 +25,55 @@
                 <ColumnDefinition Width="36"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
+            <Button x:Name="colorVariation1Button"
+                    Grid.Column="0"
+                    ui:ControlHelper.CornerRadius="2,0,0,2"
                     Background="LightPink"
-                    x:Name="colorVariation1Border"
-                    CornerRadius="2,0,0,2"
-                    MouseLeftButtonDown="ColorVariationBorder_MouseLeftButtonDown"/>
-            <Border Grid.Column="1"
+                    Click="ColorVariationButton_Click"
+                    AutomationProperties.Name="Color shade 1"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+            <Button x:Name="colorVariation2Button"
+                    Grid.Column="1"
+                    ui:ControlHelper.CornerRadius="0"
                     Background="LightPink"
-                    x:Name="colorVariation2Border"
-                    MouseLeftButtonDown="ColorVariationBorder_MouseLeftButtonDown"/>
-            <Border Grid.Column="3"
+                    Click="ColorVariationButton_Click"
+                    AutomationProperties.Name="Color shade 2"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+            <Button x:Name="colorVariation3Button"
+                    Grid.Column="3"
+                    ui:ControlHelper.CornerRadius="0"
                     Background="LightPink"
-                    x:Name="colorVariation3Border"
-                    MouseLeftButtonDown="ColorVariationBorder_MouseLeftButtonDown"/>
-            <Border Grid.Column="4"
+                    Click="ColorVariationButton_Click"
+                    AutomationProperties.Name="Color shade 3"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+            <Button x:Name="colorVariation4Button"
+                    Grid.Column="4"
+                    ui:ControlHelper.CornerRadius="0,2,2,0"
                     Background="LightPink"
-                    x:Name="colorVariation4Border"
-                    CornerRadius="0,2,2,0"
-                    MouseLeftButtonDown="ColorVariationBorder_MouseLeftButtonDown"/>
-            <Border HorizontalAlignment="Left"
+                    Click="ColorVariationButton_Click"
+                    AutomationProperties.Name="Color shade 5"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+            <Button x:Name="CurrentColorButton"
+                    HorizontalAlignment="Left"
                     Grid.Column="0"
                     Grid.ColumnSpan="5"
-                    Margin="72,0,0,0"
                     Opacity="1"
-                    x:Name="CurrentColorBorder"
-                    Width="165"
+                    ui:ControlHelper.CornerRadius="0"
                     Background="Red"
+                    Width="165"
                     Height="48"
-                    MouseDown="CurrentColorBorder_MouseDown"/>
+                    Margin="72,0,0,0"
+                    AutomationProperties.Name="{x:Static p:Resources.Selected_color}"
+                    AutomationProperties.HelpText="{x:Static p:Resources.Selected_color_helptext}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Selected_color_tooltip}"
+                    Click="CurrentColorButton_Click"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
         </Grid>
 
         <!--Details panel-->
         <Grid Margin="0,4,0,12"
               Height="0"
+              Visibility="Collapsed"
               x:Name="detailsGrid">
             <Border Background="{DynamicResource PrimaryBackgroundBrush}"/>
             <StackPanel x:Name="detailsStackPanel" 
@@ -84,6 +101,7 @@
                       HorizontalAlignment="Left"
                       VerticalAlignment="Center"
                       Height="24"
+                      AutomationProperties.Name="{x:Static p:Resources.Hue_slider}"
                       Width="289"
                       CornerRadius="2"
                       MouseLeftButtonDown="HueGradientGrid_MouseLeftButtonDown"
@@ -114,6 +132,7 @@
                       Margin="0,12,12,0"
                       VerticalAlignment="Center"
                       Height="24"
+                      AutomationProperties.Name="{x:Static p:Resources.Saturation_slider}"
                       x:Name="SaturationGradientGrid"
                       Width="289"
                       CornerRadius="2"
@@ -154,6 +173,7 @@
                       CornerRadius="2"
                       x:Name="ValueGradientGrid"
                       Width="289"
+                      AutomationProperties.Name="{x:Static p:Resources.Value_slider}"
                       MouseLeftButtonDown="ValueGradientGrid_MouseLeftButtonDown"
                       MouseMove="ValueGradientGrid_MouseMove">
                         <Border.Effect>
@@ -176,10 +196,6 @@
                             Background="#88FFFFFF"/>
                     </Border>
                 </Grid>
-
-             
-
-               
 
                 <Grid HorizontalAlignment="Stretch" Margin="12,16,12,8">
                     <Grid.ColumnDefinitions>
@@ -223,7 +239,7 @@
                                FontWeight="SemiBold"
                                Grid.Row="2"
                                VerticalAlignment="Center"/>
-                    
+
                     <TextBox x:Name="BTextBox"
                              Width="68"
                              Height="32"
@@ -255,9 +271,10 @@
                             AutomationProperties.Name="{x:Static p:Resources.Cancel}"
                             Content="Cancel"
                             Width="80"/>
-                    <Button Margin="10,0,10,0"
+                    <Button Margin="12,0,12,0"
                             x:Name="OKButton"
                             Click="OKButton_Click"
+                            Style="{StaticResource AccentButtonStyle}"
                             AutomationProperties.Name="{x:Static p:Resources.OK}"
                             Content="OK"
                             Width="80"/>

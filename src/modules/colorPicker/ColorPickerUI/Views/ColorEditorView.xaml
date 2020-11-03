@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:p="clr-namespace:ColorPicker.Properties"
              mc:Ignorable="d"
+
              xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:controls="clr-namespace:ColorPicker.Controls"

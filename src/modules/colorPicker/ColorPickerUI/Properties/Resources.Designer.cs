@@ -124,6 +124,15 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hue slider.
+        /// </summary>
+        public static string Hue_slider {
+            get {
+                return ResourceManager.GetString("Hue_slider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to OK.
         /// </summary>
         public static string OK {
@@ -165,6 +174,51 @@ namespace ColorPicker.Properties {
         public static string Remove {
             get {
                 return ResourceManager.GetString("Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saturation slider.
+        /// </summary>
+        public static string Saturation_slider {
+            get {
+                return ResourceManager.GetString("Saturation_slider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected color.
+        /// </summary>
+        public static string Selected_color {
+            get {
+                return ResourceManager.GetString("Selected_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This color can be adjusted.
+        /// </summary>
+        public static string Selected_color_helptext {
+            get {
+                return ResourceManager.GetString("Selected_color_helptext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adjust color.
+        /// </summary>
+        public static string Selected_color_tooltip {
+            get {
+                return ResourceManager.GetString("Selected_color_tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value slider.
+        /// </summary>
+        public static string Value_slider {
+            get {
+                return ResourceManager.GetString("Value_slider", resourceCulture);
             }
         }
     }

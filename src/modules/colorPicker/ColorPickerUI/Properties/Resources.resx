@@ -139,6 +139,9 @@
   <data name="Hex_value" xml:space="preserve">
     <value>Hex value</value>
   </data>
+  <data name="Hue_slider" xml:space="preserve">
+    <value>Hue slider</value>
+  </data>
   <data name="OK" xml:space="preserve">
     <value>OK</value>
   </data>
@@ -153,5 +156,20 @@
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove</value>
+  </data>
+  <data name="Saturation_slider" xml:space="preserve">
+    <value>Saturation slider</value>
+  </data>
+  <data name="Selected_color" xml:space="preserve">
+    <value>Selected color</value>
+  </data>
+  <data name="Selected_color_helptext" xml:space="preserve">
+    <value>This color can be adjusted</value>
+  </data>
+  <data name="Selected_color_tooltip" xml:space="preserve">
+    <value>Adjust color</value>
+  </data>
+  <data name="Value_slider" xml:space="preserve">
+    <value>Value slider</value>
   </data>
 </root>
