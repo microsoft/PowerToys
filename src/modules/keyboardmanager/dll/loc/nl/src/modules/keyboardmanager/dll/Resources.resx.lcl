@@ -10,11 +10,11 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
-      <Item ItemId=";Add_Key_Remap_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Add_Key_Remap_Button" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add Key Remap]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nieuwe toewijzing van toets toevoegen]]></Val>
+            <Val><![CDATA[Item voor opnieuw toewijzen van toets toevoegen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -394,7 +394,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -410,7 +410,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Toetsenbordbeheer]]></Val>
+            <Val><![CDATA[Keyboard Manager]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -424,7 +424,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";RegisterClassFailed_ErrorMessage" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";RegisterClassFailed_ErrorMessage" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows registration failed!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -487,7 +487,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Type_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Type_Button" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Type]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

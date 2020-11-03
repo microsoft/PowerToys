@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Informatie over de kleurenkiezer]]></Val>
+            <Val><![CDATA[Informatie over Color Picker]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Informatie over toetsenbordbeheer]]></Val>
+            <Val><![CDATA[Informatie over Keyboard Manager]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -86,7 +86,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Informatie over de Snelkoppelingsgids]]></Val>
+            <Val><![CDATA[Informatie over Shortcut Guide]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -105,24 +105,6 @@
           <Val><![CDATA[Administrator mode]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Beheerdersmodus]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";AppDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Instellingen.UI]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";AppDisplayName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Instellingen.UI]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kleurkiezer openen]]></Val>
+            <Val><![CDATA[Color Picker openen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +176,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kleurkiezer inschakelen]]></Val>
+            <Val><![CDATA[Color Picker inschakelen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +185,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kleurkiezer]]></Val>
+            <Val><![CDATA[Color Picker]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1103,7 +1085,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Stretch]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Spreiden]]></Val>
+            <Val><![CDATA[Uitrekken]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1211,7 +1193,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Toetsenbordbeheer inschakelen]]></Val>
+            <Val><![CDATA[Keyboard Manager inschakelen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1220,7 +1202,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Toetsenbordbeheer]]></Val>
+            <Val><![CDATA[Keyboard Manager]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1702,7 +1684,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows default]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1711,7 +1693,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Light]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1772,7 +1754,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kleurkiezer]]></Val>
+            <Val><![CDATA[Color Picker]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1808,16 +1790,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Toetsenbordbeheer]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Shell_Main.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Main]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hoofd]]></Val>
+            <Val><![CDATA[Keyboard Manager]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1853,7 +1826,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Snelkoppelingsgids]]></Val>
+            <Val><![CDATA[Shortcut Guide]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1880,7 +1853,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Snelkoppelingsgids inschakelen]]></Val>
+            <Val><![CDATA[Shortcut Guide inschakelen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1916,12 +1889,12 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Snelkoppelingsgids]]></Val>
+            <Val><![CDATA[Shortcut Guide]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows color settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
