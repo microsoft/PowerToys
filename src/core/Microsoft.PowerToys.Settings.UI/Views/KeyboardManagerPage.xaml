@@ -227,6 +227,9 @@
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
                           IsOn="{x:Bind Path=ViewModel.Enabled, Mode=TwoWay}"/>
 
+            <HyperlinkButton x:Uid="KBM_Learnmore"
+                             NavigateUri="https://aka.ms/powerToysCannotRemapKeys"/>
+            
             <!--<TextBlock x:Uid="KeyboardManager_ConfigHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
