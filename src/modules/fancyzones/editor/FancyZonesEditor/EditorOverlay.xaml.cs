@@ -95,6 +95,8 @@ namespace FancyZonesEditor
             _mainWindow.ShowActivated = true;
             _mainWindow.Topmost = true;
             _mainWindow.Show();
+            _mainWindow.LeftWindowCommands = null;
+            _mainWindow.RightWindowCommands = null;
 
             // window is set to topmost to make sure it shows on top of PowerToys settings page
             // we can reset topmost flag now

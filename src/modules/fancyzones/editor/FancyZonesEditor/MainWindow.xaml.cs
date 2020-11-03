@@ -166,12 +166,17 @@ namespace FancyZonesEditor
             }
 
             window.Owner = EditorOverlay.Current;
+
             window.DataContext = model;
             window.Show();
+
             if (isGrid)
             {
                 (window as GridEditorWindow).NameTextBox().Focus();
             }
+
+            window.LeftWindowCommands = null;
+            window.RightWindowCommands = null;
         }
 
         private void Apply_Click(object sender, RoutedEventArgs e)
