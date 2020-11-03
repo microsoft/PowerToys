@@ -42,7 +42,7 @@
         <Style x:Key="tabText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#C4C4C4"/>
+            <Setter Property="Foreground" Value="#767676"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="LineHeight" Value="20" />
             <Setter Property="Margin" Value="24,20,0,0" />
