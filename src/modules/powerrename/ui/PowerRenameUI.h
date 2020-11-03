@@ -142,6 +142,7 @@ private:
 
     void _EnumerateItems(_In_ IUnknown* pdtobj);
     void _UpdateCounts();
+    void _UpdateCountLabel(_In_ UINT formatId, _In_ UINT controlId, _In_ UINT count);
 
     void _CollectItemPosition(_In_ DWORD id);
 

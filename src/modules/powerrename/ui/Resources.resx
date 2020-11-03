@@ -187,8 +187,8 @@ Please select from the options above to show items.</value>
   <data name="Replace_With" xml:space="preserve">
     <value>Replace with:</value>
   </data>
-  <data name="Items_Selected" xml:space="preserve">
-    <value>Items Selected: 0 | Renaming: 0</value>
+  <data name="Items_Selected_Format" xml:space="preserve">
+    <value>Items Selected: %u</value>
   </data>
   <data name="Options" xml:space="preserve">
     <value>Options</value>
@@ -198,5 +198,8 @@ Please select from the options above to show items.</value>
   </data>
   <data name="Rename_Criteria" xml:space="preserve">
     <value>Enter the criteria below to rename the items</value>
+  </data>
+  <data name="Items_Renaming_Format" xml:space="preserve">
+    <value>Items Renaming: %u</value>
   </data>
 </root>

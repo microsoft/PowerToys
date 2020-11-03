@@ -679,10 +679,12 @@ void CPowerRenameUI::_InitDlgText()
     UpdateDlgControl(m_hwnd, IDCANCEL, IDS_CANCEL_BUTTON);
     UpdateDlgControl(m_hwnd, IDC_SEARCH_FOR, IDS_SEARCH_FOR);
     UpdateDlgControl(m_hwnd, IDC_REPLACE_WITH, IDS_REPLACE_WITH);
-    UpdateDlgControl(m_hwnd, IDC_STATUS_MESSAGE, IDS_ITEMS_SELECTED);
     UpdateDlgControl(m_hwnd, IDC_OPTIONSGROUP, IDS_OPTIONS);
     UpdateDlgControl(m_hwnd, IDC_PREVIEWGROUP, IDS_PREVIEW);
     UpdateDlgControl(m_hwnd, IDC_SEARCHREPLACEGROUP, IDS_RENAME_CRITERIA);
+
+    _UpdateCountLabel(IDS_ITEMS_SELECTED_FORMAT, IDC_STATUS_MESSAGE, 0);
+    _UpdateCountLabel(IDS_ITEMS_RENAMING_FORMAT, IDC_STATUS_MESSAGE2, 0);
 }
 
 void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
@@ -860,7 +862,9 @@ void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags)
         break;
     case IDC_PREVIEWGROUP:
         height = mainWindowHeight - static_cast<int>(m_itemsPositioning.previewGroupHeightDiff * scale);
+        __fallthrough;
     case IDC_SEARCHREPLACEGROUP:
+        __fallthrough;
     case IDC_OPTIONSGROUP:
         width = mainWindowWidth - static_cast<int>(m_itemsPositioning.groupsWidthDiff * scale);
         break;
@@ -999,17 +1003,25 @@ void CPowerRenameUI::_UpdateCounts()
         m_selectedCount = selectedCount;
         m_renamingCount = renamingCount;
 
-        // Update selected and rename count label
-        wchar_t countsLabelFormat[100] = { 0 };
-        LoadString(g_hInst, IDS_COUNTSLABELFMT, countsLabelFormat, ARRAYSIZE(countsLabelFormat));
+        // Update selected count label
+        _UpdateCountLabel(IDS_ITEMS_SELECTED_FORMAT, IDC_STATUS_MESSAGE, m_selectedCount);
 
-        wchar_t countsLabel[100] = { 0 };
-        StringCchPrintf(countsLabel, ARRAYSIZE(countsLabel), countsLabelFormat, selectedCount, renamingCount);
-        SetDlgItemText(m_hwnd, IDC_STATUS_MESSAGE, countsLabel);
+        // Update renaming count label
+        _UpdateCountLabel(IDS_ITEMS_RENAMING_FORMAT, IDC_STATUS_MESSAGE2, m_renamingCount);
 
         // Update Rename button state
         EnableWindow(GetDlgItem(m_hwnd, ID_RENAME), (renamingCount > 0));
     }
+}
+
+void CPowerRenameUI::_UpdateCountLabel(_In_ UINT formatId, _In_ UINT controlId, _In_ UINT count)
+{
+    wchar_t countsLabelFormat[100] = { 0 };
+    LoadString(g_hInst, formatId, countsLabelFormat, ARRAYSIZE(countsLabelFormat));
+
+    wchar_t countsLabel[100] = { 0 };
+    StringCchPrintf(countsLabel, ARRAYSIZE(countsLabel), countsLabelFormat, count);
+    SetDlgItemText(m_hwnd, controlId, countsLabel);
 }
 
 void CPowerRenameUI::_CollectItemPosition(_In_ DWORD id)
