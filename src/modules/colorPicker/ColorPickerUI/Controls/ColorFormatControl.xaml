@@ -33,6 +33,7 @@
                        FontFamily="Consolas"
                        Grid.Column="1"
                        FontSize="14"
+                       IsTabStop="False"
                        Background="Transparent"
                        BorderThickness="0"
                        IsReadOnly="True"
@@ -48,6 +49,7 @@
                     Height="36"
                     Width="36"
                     Grid.Column="2"
+                    AutomationProperties.HelpText="{Binding ElementName=FormatNameTextBlock, Path=Text}"
                     AutomationProperties.Name="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
                     <TextBlock FontFamily="Segoe MDL2 Assets"
