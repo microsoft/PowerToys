@@ -55,24 +55,43 @@
         </Grid>
 
         <!--Details panel-->
-        <Grid Margin="0,0,0,12"
+        <Grid Margin="0,4,0,12"
               Height="0"
               x:Name="detailsGrid">
             <Border Background="{DynamicResource PrimaryBackgroundBrush}"/>
             <StackPanel x:Name="detailsStackPanel" 
                         Opacity="0">
-                <Border Margin="12,12,12,0" 
+
+                <Grid Margin="12,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="36"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="H"
+                               FontWeight="SemiBold"
+                               Margin="0,10,0,0"
+                               VerticalAlignment="Center"/>
+
+                    <Border Grid.Column="1" 
+                      Margin="0,12,12,0"  
                       x:Name="HueGradientGrid"
                       HorizontalAlignment="Left"
+                      VerticalAlignment="Center"
                       Height="24"
-                      Width="309"
+                      Width="289"
                       CornerRadius="2"
                       MouseLeftButtonDown="HueGradientGrid_MouseLeftButtonDown"
                       MouseMove="HueGradientGrid_MouseMove">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
-                    </Border.Effect>
-                    <Border VerticalAlignment="Stretch"
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                        </Border.Effect>
+                        <Border VerticalAlignment="Stretch"
                             Width="6"
                             x:Name="hueGradientPointer"
                             Margin="154,0,0,0"
@@ -81,26 +100,35 @@
                             CornerRadius="2"
                             BorderThickness="1"
                             HorizontalAlignment="Left"/>
-                </Border>
+                    </Border>
 
-                <Border HorizontalAlignment="Left"
-                      Margin="12,12,12,0"
+                    <TextBlock Text="S"
+                               Grid.Row="1"
+                               Margin="0,10,0,0"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+
+                    <Border HorizontalAlignment="Left"
+                      Grid.Column="1"
+                      Grid.Row="1"
+                      Margin="0,12,12,0"
+                      VerticalAlignment="Center"
                       Height="24"
                       x:Name="SaturationGradientGrid"
-                      Width="309"
+                      Width="289"
                       CornerRadius="2"
                       MouseLeftButtonDown="SaturationGradientGrid_MouseLeftButtonDown"
                       MouseMove="SaturationGradientGrid_MouseMove">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
-                    </Border.Effect>
-                    <Border.Background>
-                        <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
-                            <GradientStop x:Name="SaturationStartColor" Color="Black"/>
-                            <GradientStop x:Name="SaturationStopColor" Color="Red" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Border HorizontalAlignment="Left"
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                        </Border.Effect>
+                        <Border.Background>
+                            <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
+                                <GradientStop x:Name="SaturationStartColor" Color="Black"/>
+                                <GradientStop x:Name="SaturationStopColor" Color="Red" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border HorizontalAlignment="Left"
                             x:Name="saturationGradientPointer"
                             BorderBrush="Black"
                             BorderThickness="1"
@@ -109,26 +137,35 @@
                             Width="6"
                             VerticalAlignment="Stretch"
                             Background="#88FFFFFF"/>
-                </Border>
+                    </Border>
 
-                <Border HorizontalAlignment="Left"
-                      Margin="12,12,12,0"
+                    <TextBlock Text="V"
+                               Grid.Row="2"
+                               Margin="0,10,0,0"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+
+                    <Border HorizontalAlignment="Left"
+                      Grid.Column="1"
+                      Grid.Row="2"
+                      Margin="0,12,12,0"
                       Height="24"
+                      VerticalAlignment="Center"
                       CornerRadius="2"
                       x:Name="ValueGradientGrid"
-                      Width="309"
+                      Width="289"
                       MouseLeftButtonDown="ValueGradientGrid_MouseLeftButtonDown"
                       MouseMove="ValueGradientGrid_MouseMove">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
-                    </Border.Effect>
-                    <Border.Background>
-                        <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
-                            <GradientStop x:Name="ValueStartColor" Color="Red"/>
-                            <GradientStop x:Name="ValueStopColor" Color="White" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Border HorizontalAlignment="Left"
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                        </Border.Effect>
+                        <Border.Background>
+                            <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
+                                <GradientStop x:Name="ValueStartColor" Color="Red"/>
+                                <GradientStop x:Name="ValueStopColor" Color="White" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border HorizontalAlignment="Left"
                             x:Name="valueGradientPointer"
                             BorderBrush="Black"
                             BorderThickness="1"
@@ -137,9 +174,14 @@
                             CornerRadius="2"
                             VerticalAlignment="Stretch"
                             Background="#88FFFFFF"/>
-                </Border>
+                    </Border>
+                </Grid>
 
-                <Grid HorizontalAlignment="Stretch" Margin="12,16,12,12">
+             
+
+               
+
+                <Grid HorizontalAlignment="Stretch" Margin="12,16,12,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="20"/>
                         <ColumnDefinition Width="68"/>
