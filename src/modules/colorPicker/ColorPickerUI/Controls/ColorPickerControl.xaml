@@ -27,6 +27,7 @@
 
             <Button x:Name="colorVariation1Button"
                     Grid.Column="0"
+                    TabIndex="4"
                     ui:ControlHelper.CornerRadius="2,0,0,2"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
@@ -35,12 +36,14 @@
             <Button x:Name="colorVariation2Button"
                     Grid.Column="1"
                     ui:ControlHelper.CornerRadius="0"
+                    TabIndex="5"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
                     AutomationProperties.Name="Color shade 2"
                     Style="{DynamicResource ColorShadeButtonStyle}"/>
             <Button x:Name="colorVariation3Button"
                     Grid.Column="3"
+                    TabIndex="7"
                     ui:ControlHelper.CornerRadius="0"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
@@ -48,6 +51,7 @@
                     Style="{DynamicResource ColorShadeButtonStyle}"/>
             <Button x:Name="colorVariation4Button"
                     Grid.Column="4"
+                    TabIndex="8"
                     ui:ControlHelper.CornerRadius="0,2,2,0"
                     Background="LightPink"
                     Click="ColorVariationButton_Click"
@@ -56,6 +60,7 @@
             <Button x:Name="CurrentColorButton"
                     HorizontalAlignment="Left"
                     Grid.Column="0"
+                    TabIndex="6"
                     Grid.ColumnSpan="5"
                     Opacity="1"
                     ui:ControlHelper.CornerRadius="0"
