@@ -787,6 +787,6 @@
     <comment>Windows refers to the Operating system</comment>
   </data>
   <data name="KBM_Learnmore.Content" xml:space="preserve">
-    <value>Learn more about what keys cannot be remapped</value>
+    <value>View what cannot be remapped</value>
   </data>
 </root>
