@@ -6,12 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.Win32;
+using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Exception
 {
-    public class ExceptionFormatter
+    public static class ExceptionFormatter
     {
         public static string FormatException(System.Exception exception)
         {
@@ -67,6 +70,8 @@ namespace Wox.Infrastructure.Exception
 
             sb.AppendLine("## Environment");
             sb.AppendLine($"* Command Line: {Environment.CommandLine}");
+
+            // Using InvariantCulture since this is internal
             sb.AppendLine($"* Timestamp: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             sb.AppendLine($"* Wox version: {Constant.Version}");
             sb.AppendLine($"* OS Version: {Environment.OSVersion.VersionString}");
@@ -109,6 +114,7 @@ namespace Wox.Infrastructure.Exception
         }
 
         // http://msdn.microsoft.com/en-us/library/hh925568%28v=vs.110%29.aspx
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static List<string> GetFrameworkVersionFromRegistry()
         {
             try
@@ -118,25 +124,28 @@ namespace Wox.Infrastructure.Exception
                 {
                     foreach (string versionKeyName in ndpKey.GetSubKeyNames())
                     {
-                        if (versionKeyName.StartsWith("v"))
+                        // Using InvariantCulture since this is internal and involves version key
+                        if (versionKeyName.StartsWith("v", StringComparison.InvariantCulture))
                         {
                             RegistryKey versionKey = ndpKey.OpenSubKey(versionKeyName);
                             string name = (string)versionKey.GetValue("Version", string.Empty);
                             string sp = versionKey.GetValue("SP", string.Empty).ToString();
                             string install = versionKey.GetValue("Install", string.Empty).ToString();
-                            if (install != string.Empty)
+                            if (!string.IsNullOrEmpty(install))
                             {
-                                if (sp != string.Empty && install == "1")
+                                if (!string.IsNullOrEmpty(sp) && install == "1")
                                 {
-                                    result.Add(string.Format("{0} {1} SP{2}", versionKeyName, name, sp));
+                                    // Using InvariantCulture since this is internal
+                                    result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} SP{2}", versionKeyName, name, sp));
                                 }
                                 else
                                 {
-                                    result.Add(string.Format("{0} {1}", versionKeyName, name));
+                                    // Using InvariantCulture since this is internal
+                                    result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1}", versionKeyName, name));
                                 }
                             }
 
-                            if (name != string.Empty)
+                            if (!string.IsNullOrEmpty(name))
                             {
                                 continue;
                             }
@@ -145,21 +154,23 @@ namespace Wox.Infrastructure.Exception
                             {
                                 RegistryKey subKey = versionKey.OpenSubKey(subKeyName);
                                 name = (string)subKey.GetValue("Version", string.Empty);
-                                if (name != string.Empty)
+                                if (!string.IsNullOrEmpty(name))
                                 {
                                     sp = subKey.GetValue("SP", string.Empty).ToString();
                                 }
 
                                 install = subKey.GetValue("Install", string.Empty).ToString();
-                                if (install != string.Empty)
+                                if (!string.IsNullOrEmpty(install))
                                 {
-                                    if (sp != string.Empty && install == "1")
+                                    if (!string.IsNullOrEmpty(sp) && install == "1")
                                     {
-                                        result.Add(string.Format("{0} {1} {2} SP{3}", versionKeyName, subKeyName, name, sp));
+                                        // Using InvariantCulture since this is internal
+                                        result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} {2} SP{3}", versionKeyName, subKeyName, name, sp));
                                     }
                                     else if (install == "1")
                                     {
-                                        result.Add(string.Format("{0} {1} {2}", versionKeyName, subKeyName, name));
+                                        // Using InvariantCulture since this is internal
+                                        result.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}", versionKeyName, subKeyName, name));
                                     }
                                 }
                             }
@@ -190,8 +201,9 @@ namespace Wox.Infrastructure.Exception
 
                 return result;
             }
-            catch (System.Exception)
+            catch (System.Exception e)
             {
+                Log.Exception("Could not get framework version from registry", e, MethodBase.GetCurrentMethod().DeclaringType);
                 return new List<string>();
             }
         }

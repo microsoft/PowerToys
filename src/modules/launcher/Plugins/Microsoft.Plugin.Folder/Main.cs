@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Controls;
+using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure.Storage;
@@ -20,9 +22,10 @@ namespace Microsoft.Plugin.Folder
         public const string DeleteFileFolderImagePath = "Images\\delete.dark.png";
         public const string CopyImagePath = "Images\\copy.dark.png";
 
+        private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
         private static readonly FolderSettings _settings = _storage.Load();
-        private static readonly IQueryInternalDirectory _internalDirectory = new QueryInternalDirectory(_settings, new QueryFileSystemInfo());
+        private static readonly IQueryInternalDirectory _internalDirectory = new QueryInternalDirectory(_settings, new QueryFileSystemInfo(_fileSystem.DirectoryInfo), _fileSystem.Directory);
         private static readonly FolderHelper _folderHelper = new FolderHelper(new DriveInformation(), new FolderLinksSettings(_settings));
 
         private static readonly ICollection<IFolderProcessor> _processors = new IFolderProcessor[]

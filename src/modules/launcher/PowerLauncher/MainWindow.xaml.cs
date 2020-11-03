@@ -15,21 +15,21 @@ using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using Log = Wox.Infrastructure.Logger.Log;
+using Log = Wox.Plugin.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
 
 namespace PowerLauncher
 {
     public partial class MainWindow : IDisposable
     {
-        private readonly Settings _settings;
+        private readonly PowerToysRunSettings _settings;
         private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
         private Timer _firstDeleteTimer = new Timer();
         private bool _coldStateHotkeyPressed;
 
-        public MainWindow(Settings settings, MainViewModel mainVM)
+        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
             : this()
         {
             DataContext = mainVM;

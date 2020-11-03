@@ -1,10 +1,9 @@
 ﻿using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
 {
@@ -26,11 +25,13 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
                               savePath = path;
                               saveContent = content;
                           });
+            // Using Ordinal since this is used internally for a path
             mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
                           .Returns(() => saveContent);
-
+            // Using Ordinal since this is used internally for a path
             mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => x.Equals(savePath, StringComparison.Ordinal))))
                           .Returns(true);
+            // Using Ordinal since this is used internally for a path
             mockIOProvider.Setup(x => x.FileExists(It.Is<string>(x => !x.Equals(savePath, StringComparison.Ordinal))))
                           .Returns(false);
 
@@ -39,6 +40,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
 
 
 
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
         /// <summary>
         /// This method mocks an IO provider so that it will always return data at the savePath location. 
         /// This mock is specific to a given module, and is verifiable that the stub file was read.
@@ -46,25 +49,25 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
         /// <param name="savePath">The path to the stub settings file</param>
         /// <param name="expectedPathSubstring">The substring in the path that identifies the module eg. Microsoft\\PowerToys\\ColorPicker</param>
         /// <returns></returns>
-        internal static Mock<IIOProvider> GetMockIOReadWithStubFile(string savePath, Expression<Func<string, bool>> filterExpression)
+        internal static Mock<IFile> GetMockIOReadWithStubFile(string savePath, Expression<Func<string, bool>> filterExpression)
         {
             string saveContent = File.ReadAllText(savePath);
-            var mockIOProvider = new Mock<IIOProvider>();
+            var fileMock = new Mock<IFile>();
 
 
-            mockIOProvider.Setup(x => x.ReadAllText(It.Is<string>(filterExpression)))
+            fileMock.Setup(x => x.ReadAllText(It.Is<string>(filterExpression)))
                          .Returns(() => saveContent).Verifiable();
 
             
-            mockIOProvider.Setup(x => x.FileExists(It.Is<string>(filterExpression)))
+            fileMock.Setup(x => x.Exists(It.Is<string>(filterExpression)))
                           .Returns(true);
 
-            return mockIOProvider;
+            return fileMock;
         }
 
-        internal static void VerifyIOReadWithStubFile(Mock<IIOProvider> mockIOProvider, Expression<Func<string, bool>> filterExpression, int expectedCallCount)
+        internal static void VerifyIOReadWithStubFile(Mock<IFile> fileMock, Expression<Func<string, bool>> filterExpression, int expectedCallCount)
         {
-            mockIOProvider.Verify(x => x.ReadAllText(It.Is<string>(filterExpression)), Times.Exactly(expectedCallCount));
+            fileMock.Verify(x => x.ReadAllText(It.Is<string>(filterExpression)), Times.Exactly(expectedCallCount));
         }
     }
 }

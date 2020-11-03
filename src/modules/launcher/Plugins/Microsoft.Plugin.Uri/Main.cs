@@ -5,17 +5,22 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Text;
+using ManagedCommon;
 using Microsoft.Plugin.Uri.UriHelper;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Uri
 {
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IDisposable
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         private readonly ExtendedUriParser _uriParser;
         private readonly UriResolver _uriResolver;
         private readonly PluginJsonStorage<UriSettings> _storage;
@@ -118,6 +123,7 @@ namespace Microsoft.Plugin.Uri
                     ?? _registeryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\" + progId + "\\DefaultIcon", null);
 
                 // "Handles 'Indirect Strings' (UWP programs)"
+                // Using Ordinal since this is internal and used with a symbol
                 if (programLocation.StartsWith("@", StringComparison.Ordinal))
                 {
                     var directProgramLocationStringBuilder = new StringBuilder(128);
@@ -136,6 +142,7 @@ namespace Microsoft.Plugin.Uri
                 }
                 else
                 {
+                    // Using Ordinal since this is internal and used with a symbol
                     var indexOfComma = programLocation.IndexOf(',', StringComparison.Ordinal);
                     BrowserIconPath = indexOfComma > 0
                         ? programLocation.Substring(0, indexOfComma)

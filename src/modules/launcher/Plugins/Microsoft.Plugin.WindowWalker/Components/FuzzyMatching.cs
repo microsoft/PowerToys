@@ -37,6 +37,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 throw new ArgumentNullException(nameof(text));
             }
 
+            // Using CurrentCulture since this is user facing
             searchText = searchText.ToLower(CultureInfo.CurrentCulture);
             text = text.ToLower(CultureInfo.CurrentCulture);
 

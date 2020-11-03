@@ -42,7 +42,7 @@
         <Style x:Key="tabText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#C4C4C4"/>
+            <Setter Property="Foreground" Value="#767676"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="LineHeight" Value="20" />
             <Setter Property="Margin" Value="24,20,0,0" />
@@ -54,7 +54,7 @@
             <Setter Property="Foreground" Value="Black"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="LineHeight" Value="20" />
-            <Setter Property="Margin" Value="40,10,0,0" />
+            <Setter Property="Margin" Value="7,10,0,0" />
             <Setter Property="TextAlignment" Value="Left" />
         </Style>
         <Style x:Key="settingCheckBoxText" TargetType="CheckBox">
@@ -75,11 +75,11 @@
         <Style x:Key="secondaryButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="0,5,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="Background" Value="#767676"/>
             <Setter Property="Margin" Value="16,0,0,0" />
             <Setter Property="Width" Value="378"/>
             <Setter Property="Height" Value="32"/>
@@ -94,7 +94,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#BCBCBD"/>
+                    <Setter Property="Background" Value="#5D5D5D"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -258,13 +258,37 @@
             </TabItem>
         </TabControl>
 
-		<StackPanel Orientation="Horizontal" Margin="10,4,0,8">
-			<CheckBox x:Name="spaceAroundSetting" Content="{x:Static props:Resources.Show_Space_Zones}" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}"/>
-            <TextBlock x:Name="paddingValue" Text="{x:Static props:Resources.Space_Around_Zones}" Style="{StaticResource settingText}" IsEnabled="{Binding ShowSpacing}" />
-			<TextBox AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="32" IsEnabled="{Binding ShowSpacing}"/>
-            <TextBlock x:Name="sensitivityRadiusValue"  Text="{x:Static props:Resources.Distance_adjacent_zones}" Style="{StaticResource settingText}"/>
-			<TextBox AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" Text="{Binding Path=SensitivityRadius,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="40"/>
-		</StackPanel>
+		<Grid Margin="10,4,10,8" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            
+            <CheckBox x:Name="spaceAroundSetting" Content="{x:Static props:Resources.Show_Space_Zones}" Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}" Grid.Row="0" Grid.Column="0"/>
+
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                <TextBlock x:Name="paddingValue" 
+                           Text="{x:Static props:Resources.Space_Around_Zones}" 
+                           Style="{StaticResource settingText}" 
+                           IsEnabled="{Binding ShowSpacing}" 
+                           MaxWidth="{Binding Path=SettingsTextMaxWidth, ElementName=MainWindow1}" 
+                           TextWrapping="Wrap"/>
+                <TextBox AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="32" IsEnabled="{Binding ShowSpacing}" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
+                <TextBlock x:Name="sensitivityRadiusValue"
+                           Text="{x:Static props:Resources.Distance_adjacent_zones}" 
+                           Style="{StaticResource settingText}" 
+                           MaxWidth="{Binding Path=SettingsTextMaxWidth, ElementName=MainWindow1}" 
+                           TextWrapping="Wrap"/>
+			    <TextBox AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}" Text="{Binding Path=SensitivityRadius,Mode=TwoWay}" Style="{StaticResource textBox}" MinWidth="40"/>
+            </StackPanel>
+        </Grid>
 
 		<StackPanel Orientation="Horizontal" Margin="0,10,0,16">
 			<Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>

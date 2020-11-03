@@ -176,8 +176,15 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
     });
+
     // To set the accessible name of the delete button
     deleteRemapKeys.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+
+    // Add tooltip for delete button which would appear on hover
+    ToolTip deleteRemapKeystoolTip;
+    deleteRemapKeystoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+    ToolTipService::SetToolTip(deleteRemapKeys, deleteRemapKeystoolTip);
+
     parent.SetColumn(deleteRemapKeys, KeyboardManagerConstants::RemapTableRemoveColIndex);
     parent.SetRow(deleteRemapKeys, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteRemapKeys);

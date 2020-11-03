@@ -1,13 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
-using ControlzEx.Theming;
-using MahApps.Metro.Theming;
+using ManagedCommon;
 using Microsoft.Win32;
 
 namespace Wox.Plugin
@@ -23,7 +21,7 @@ namespace Wox.Plugin
         private const string HighContrastWhiteTheme = "HighContrast.Accent5";
 
         private Theme currentTheme;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public event ThemeChangedHandler ThemeChanged;
 
@@ -39,33 +37,37 @@ namespace Wox.Plugin
             Uri darkThemeUri = new Uri("pack://application:,,,/Themes/Dark.xaml");
 
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(
+                new ControlzEx.Theming.LibraryTheme(
                     highContrastOneThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(
+                new ControlzEx.Theming.LibraryTheme(
                     highContrastTwoThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(
+                new ControlzEx.Theming.LibraryTheme(
                     highContrastBlackThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(
+                new ControlzEx.Theming.LibraryTheme(
                     highContrastWhiteThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(
+                new ControlzEx.Theming.LibraryTheme(
                     lightThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
-                new LibraryTheme(
+                new ControlzEx.Theming.LibraryTheme(
                     darkThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
 
-            ResetTheme();
-            ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
             ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
+
+            // Currently there is an issue in ControlzEx, so we must use SyncAll to sync also HighContrast themes.
+            // We can change this after using next release.
+            ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ControlzEx.Theming.ThemeSyncMode.SyncAll;
+
+            ControlzEx.Theming.ThemeManager.Current.SyncTheme();
         }
 
         public Theme GetCurrentTheme()
@@ -90,69 +92,83 @@ namespace Wox.Plugin
                 case "hcblack":
                     return Theme.HighContrastBlack;
                 default:
-                    return Theme.None;
+                    return Theme.HighContrastOne;
             }
         }
 
         private void ResetTheme()
         {
-            if (WindowsThemeHelper.IsHighContrastEnabled())
-            {
-                Theme highContrastBaseType = GetHighContrastBaseType();
-                ChangeTheme(highContrastBaseType);
-            }
-            else
-            {
-                string baseColor = WindowsThemeHelper.GetWindowsBaseColor();
-                ChangeTheme((Theme)Enum.Parse(typeof(Theme), baseColor));
-            }
+            ChangeTheme(currentTheme, false);
         }
 
-        private void ChangeTheme(Theme theme)
+        public void ChangeTheme(Theme theme, bool forceSystem)
         {
             Theme oldTheme = currentTheme;
 
-            if (theme == Theme.HighContrastOne)
+            if (theme == Theme.System)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastOneTheme);
+                currentTheme = Theme.System;
+                if (ControlzEx.Theming.WindowsThemeHelper.IsHighContrastEnabled())
+                {
+                    Theme highContrastBaseType = GetHighContrastBaseType();
+                    ChangeTheme(highContrastBaseType, true);
+                }
+                else
+                {
+                    string baseColor = ControlzEx.Theming.WindowsThemeHelper.GetWindowsBaseColor();
+                    ChangeTheme((Theme)Enum.Parse(typeof(Theme), baseColor), true);
+                }
+            }
+            else if (theme == Theme.HighContrastOne)
+            {
                 currentTheme = Theme.HighContrastOne;
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastOneTheme, true);
             }
             else if (theme == Theme.HighContrastTwo)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastTwoTheme);
                 currentTheme = Theme.HighContrastTwo;
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastTwoTheme, true);
             }
             else if (theme == Theme.HighContrastWhite)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastWhiteTheme);
                 currentTheme = Theme.HighContrastWhite;
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastWhiteTheme, true);
             }
             else if (theme == Theme.HighContrastBlack)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastBlackTheme);
                 currentTheme = Theme.HighContrastBlack;
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastBlackTheme, true);
             }
             else if (theme == Theme.Light)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, LightTheme);
                 currentTheme = Theme.Light;
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, LightTheme);
             }
             else if (theme == Theme.Dark)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, DarkTheme);
                 currentTheme = Theme.Dark;
-            }
-            else
-            {
-                currentTheme = Theme.None;
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, DarkTheme);
             }
 
             ThemeChanged?.Invoke(oldTheme, currentTheme);
+
+            if (forceSystem)
+            {
+                currentTheme = Theme.System;
+            }
         }
 
-        private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
+        private void Current_ThemeChanged(object sender, ControlzEx.Theming.ThemeChangedEventArgs e)
         {
-            ResetTheme();
+            ControlzEx.Theming.ThemeManager.Current.ThemeChanged -= Current_ThemeChanged;
+            try
+            {
+                ResetTheme();
+            }
+            finally
+            {
+                ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
+            }
         }
 
         protected virtual void Dispose(bool disposing)
@@ -175,15 +191,4 @@ namespace Wox.Plugin
     }
 
     public delegate void ThemeChangedHandler(Theme oldTheme, Theme newTheme);
-
-    public enum Theme
-    {
-        None,
-        Light,
-        Dark,
-        HighContrastOne,
-        HighContrastTwo,
-        HighContrastBlack,
-        HighContrastWhite,
-    }
 }

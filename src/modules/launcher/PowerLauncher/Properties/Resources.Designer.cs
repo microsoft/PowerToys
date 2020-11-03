@@ -124,7 +124,7 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Powertoys Run deserialization error.
+        ///   Looks up a localized string similar to PowerToys Run deserialization error.
         /// </summary>
         public static string deseralization_error_title {
             get {

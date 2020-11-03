@@ -10,6 +10,7 @@ using System.Runtime.Loader;
 using Wox.Infrastructure;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Core.Plugin
 {
@@ -23,7 +24,7 @@ namespace Wox.Core.Plugin
             return csharpPlugins;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static IEnumerable<PluginPair> CSharpPlugins(List<PluginMetadata> source)
         {
             var plugins = new List<PluginPair>();
@@ -46,7 +47,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Infrastructure.Logger.Log.Exception($"Couldn't load assembly for {metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        Log.Exception($"Couldn't load assembly for {metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 
@@ -58,7 +59,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (InvalidOperationException e)
                     {
-                        Infrastructure.Logger.Log.Exception($"Can't find class implement IPlugin for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        Log.Exception($"Can't find class implement IPlugin for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 
@@ -69,7 +70,7 @@ namespace Wox.Core.Plugin
                     }
                     catch (Exception e)
                     {
-                        Infrastructure.Logger.Log.Exception($"Can't create instance for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                        Log.Exception($"Can't create instance for <{metadata.Name}>", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return;
                     }
 #endif

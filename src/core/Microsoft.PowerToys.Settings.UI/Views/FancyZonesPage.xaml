@@ -12,7 +12,8 @@
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:Core="using:Microsoft.Xaml.Interactions.Core"        
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
@@ -62,10 +63,10 @@
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                     AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_LaunchEditorButtonControl}">
                 <StackPanel Orientation="Horizontal">
-                    <Viewbox Height="12" Width="12">
-                        <PathIcon Data="M896 0v896H0V0h896zM768 768V128H128v640h640zM0 1920v-896h1920v896H0zm128-768v640h1664v-640H128zM1024 0h896v896h-896V0zm768 768V128h-640v640h640z"/>
+                    <Viewbox Height="14" Width="14" Margin="-1,1,0,0">
+                        <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
                     </Viewbox>
-                    <TextBlock Margin="12,0,0,0"
+                    <TextBlock Margin="8,0,0,0"
                                Name="FancyZones_LaunchEditorButtonControl"
                                x:Uid="FancyZones_LaunchEditorButtonControl"/>
                 </StackPanel>

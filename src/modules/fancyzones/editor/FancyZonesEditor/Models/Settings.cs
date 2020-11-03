@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
@@ -38,6 +39,8 @@ namespace FancyZonesEditor
             Prod,
             Debug,
         }
+
+        private static readonly IFileSystem _fileSystem = new FileSystem();
 
         private static CanvasLayoutModel _blankCustomModel;
         private readonly CanvasLayoutModel _focusModel;
@@ -137,7 +140,7 @@ namespace FancyZonesEditor
 
         public Settings()
         {
-            string tmpDirPath = Path.GetTempPath();
+            string tmpDirPath = _fileSystem.Path.GetTempPath();
 
             ActiveZoneSetTmpFile = tmpDirPath + ActiveZoneSetsTmpFileName;
             AppliedZoneSetTmpFile = tmpDirPath + AppliedZoneSetsTmpFileName;
@@ -404,15 +407,15 @@ namespace FancyZonesEditor
                 _gridModel.ColumnPercents.Add(((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols));
             }
 
-            int index = ZoneCount - 1;
-            for (int col = cols - 1; col >= 0; col--)
+            int index = 0;
+            for (int row = 0; row < rows; row++)
             {
-                for (int row = rows - 1; row >= 0; row--)
+                for (int col = 0; col < cols; col++)
                 {
-                    _gridModel.CellChildMap[row, col] = index--;
-                    if (index < 0)
+                    _gridModel.CellChildMap[row, col] = index++;
+                    if (index == ZoneCount)
                     {
-                        index = 0;
+                        index--;
                     }
                 }
             }
@@ -441,9 +444,9 @@ namespace FancyZonesEditor
                 ActiveZoneSetUUid = NullUuidStr;
                 JsonElement jsonObject = default(JsonElement);
 
-                if (File.Exists(Settings.ActiveZoneSetTmpFile))
+                if (_fileSystem.File.Exists(Settings.ActiveZoneSetTmpFile))
                 {
-                    FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
+                    Stream inputStream = _fileSystem.File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
                     jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
                     inputStream.Close();
                     UniqueKey = jsonObject.GetProperty(DeviceIdJsonTag).GetString();

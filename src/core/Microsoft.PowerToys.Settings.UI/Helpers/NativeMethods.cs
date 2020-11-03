@@ -13,5 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern short GetAsyncKeyState(int vKey);
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);
     }
 }

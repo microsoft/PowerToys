@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -29,7 +29,7 @@ namespace Wox.Infrastructure.Storage
         {
         }
 
-        public void Set(IList<T> items)
+        public void SetList(IList<T> items)
         {
             // enforce that internal representation
             try

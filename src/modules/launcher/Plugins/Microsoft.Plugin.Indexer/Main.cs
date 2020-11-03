@@ -7,22 +7,25 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
+using ManagedCommon;
 using Microsoft.Plugin.Indexer.DriveDetection;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.Search.Interop;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Indexer
 {
     internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable, IDelayedExecutionPlugin
     {
+        private static readonly IFileSystem _fileSystem = new FileSystem();
+
         // This variable contains metadata about the Plugin
         private PluginInitContext _context;
 
@@ -37,7 +40,7 @@ namespace Microsoft.Plugin.Indexer
         private readonly WindowsSearchAPI _api = new WindowsSearchAPI(_search);
 
         // To obtain information regarding the drives that are indexed
-        private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper());
+        private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper(), new DriveDetection.DriveInfoWrapper());
 
         // Reserved keywords in oleDB
         private readonly string reservedStringPattern = @"^[\/\\\$\%]+$|^.*[<>].*$";
@@ -109,12 +112,14 @@ namespace Microsoft.Plugin.Indexer
                         foreach (var searchResult in searchResultsList)
                         {
                             var path = searchResult.Path;
+
+                            // Using CurrentCulture since this is user facing
                             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_name, searchResult.Title);
                             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", Properties.Resources.Microsoft_plugin_indexer_path, path);
                             string workingDir = null;
                             if (_settings.UseLocationAsWorkingDir)
                             {
-                                workingDir = Path.GetDirectoryName(path);
+                                workingDir = _fileSystem.Path.GetDirectoryName(path);
                             }
 
                             Result r = new Result();
@@ -148,7 +153,7 @@ namespace Microsoft.Plugin.Indexer
                             r.ContextData = searchResult;
 
                             // If the result is a directory, then it's display should show a directory.
-                            if (Directory.Exists(path))
+                            if (_fileSystem.Directory.Exists(path))
                             {
                                 r.QueryTextDisplay = path;
                             }

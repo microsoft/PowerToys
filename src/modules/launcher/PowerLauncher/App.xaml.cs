@@ -16,9 +16,9 @@ using Wox.Core.Plugin;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
-using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -27,11 +27,9 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
 
-        private readonly Alphabet _alphabet = new Alphabet();
-
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed;
-        private Settings _settings;
+        private PowerToysRunSettings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
         private ThemeManager _themeManager;
@@ -95,26 +93,25 @@ namespace PowerLauncher
                 _settings = _settingsVM.Settings;
                 _settings.UsePowerToysRunnerKeyboardHook = e.Args.Contains("--centralized-kb-hook");
 
-                _alphabet.Initialize(_settings);
-                _stringMatcher = new StringMatcher(_alphabet);
+                _stringMatcher = new StringMatcher();
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
-                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _themeManager);
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
 
                 // main windows needs initialized before theme change because of blur settings
-                Http.Proxy = _settings.Proxy;
+                HttpClient.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
 
-                _settingsWatcher = new SettingsWatcher(_settings);
+                _settingsWatcher = new SettingsWatcher(_settings, _themeManager);
 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();

@@ -3,11 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Logger
 {

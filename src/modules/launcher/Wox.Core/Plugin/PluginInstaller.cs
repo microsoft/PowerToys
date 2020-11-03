@@ -4,17 +4,23 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Core.Plugin
 {
     internal class PluginInstaller
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         internal static void Install(string path)
         {
             if (File.Exists(path))
@@ -35,13 +41,13 @@ namespace Wox.Core.Plugin
                 }
 
                 PluginMetadata plugin = GetMetadataFromJson(tempFolder);
-                if (plugin == null || plugin.Name == null)
+                if (plugin?.Name == null)
                 {
                     MessageBox.Show("Install failed: plugin config is invalid");
                     return;
                 }
 
-                string pluginFolderPath = Infrastructure.Constant.PluginsDirectory;
+                string pluginFolderPath = Constant.PluginsDirectory;
 
                 // Using Ordinal since this is part of a path
                 string newPluginName = plugin.Name
@@ -98,7 +104,7 @@ namespace Wox.Core.Plugin
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All exception information is being logged")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static PluginMetadata GetMetadataFromJson(string pluginDirectory)
         {
             string configPath = Path.Combine(pluginDirectory, "plugin.json");
@@ -196,7 +202,7 @@ namespace Wox.Core.Plugin
                     {
                         if ((File.Exists(strDirectory + directoryName + fileName) && overWrite) || (!File.Exists(strDirectory + directoryName + fileName)))
                         {
-                            using (FileStream streamWriter = File.Create(strDirectory + directoryName + fileName))
+                            using (Stream streamWriter = File.Create(strDirectory + directoryName + fileName))
                             {
                                 byte[] data = new byte[2048];
                                 while (true)

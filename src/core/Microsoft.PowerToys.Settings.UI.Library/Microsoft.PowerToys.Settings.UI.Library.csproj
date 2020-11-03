@@ -41,6 +41,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
       <Version>3.3.0</Version>
@@ -51,6 +52,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\common\interop\interop.vcxproj" />
+    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj" />
   </ItemGroup>
 

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -16,12 +17,13 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Win32;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 using Wox.Plugin.SharedCommands;
 using static Microsoft.Plugin.Program.Programs.UWP;
 
@@ -30,6 +32,10 @@ namespace Microsoft.Plugin.Program.Programs
     [Serializable]
     public class UWPApplication : IProgram
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         public string AppListEntry { get; set; }
 
         public string UniqueIdentifier { get; set; }
@@ -108,8 +114,9 @@ namespace Microsoft.Plugin.Program.Programs
 
             // To set the title to always be the displayname of the packaged application
             result.Title = DisplayName;
-            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+            result.SetTitleHighlightData(StringMatcher.FuzzySearch(query, Name).MatchData);
 
+            // Using CurrentCulture since this is user facing
             var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_name, result.Title);
             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", Properties.Resources.powertoys_run_plugin_program_file_path, Package.Location);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
@@ -262,6 +269,8 @@ namespace Microsoft.Plugin.Program.Programs
                 if (File.Exists(manifest))
                 {
                     var file = File.ReadAllText(manifest);
+
+                    // Using OrdinalIgnoreCase since this is used internally
                     if (file.Contains("TrustLevel=\"mediumIL\"", StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
@@ -275,12 +284,16 @@ namespace Microsoft.Plugin.Program.Programs
         internal string ResourceFromPri(string packageFullName, string resourceReference)
         {
             const string prefix = "ms-resource:";
+
+            // Using OrdinalIgnoreCase since this is used internally
             if (!string.IsNullOrWhiteSpace(resourceReference) && resourceReference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 // magic comes from @talynone
                 // https://github.com/talynone/Wox.Plugin.WindowsUniversalAppLauncher/blob/master/StoreAppLauncher/Helpers/NativeApiHelper.cs#L139-L153
                 string key = resourceReference.Substring(prefix.Length);
                 string parsed;
+
+                // Using Ordinal/OrdinalIgnorcase since these are used internally
                 if (key.StartsWith("//", StringComparison.Ordinal))
                 {
                     parsed = prefix + key;
@@ -539,6 +552,8 @@ namespace Microsoft.Plugin.Program.Programs
             // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
             string path;
             bool isLogoUriSet;
+
+            // Using Ordinal since this is used internally with uri
             if (uri.Contains("\\", StringComparison.Ordinal))
             {
                 path = Path.Combine(Package.Location, uri);
@@ -597,6 +612,7 @@ namespace Microsoft.Plugin.Program.Programs
                 string currentBackgroundColor;
                 if (BackgroundColor == "transparent")
                 {
+                    // Using InvariantCulture since this is internal
                     currentBackgroundColor = SystemParameters.WindowGlassBrush.ToString(CultureInfo.InvariantCulture);
                 }
                 else

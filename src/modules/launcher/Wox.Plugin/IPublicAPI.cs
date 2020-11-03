@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using ManagedCommon;
 
 namespace Wox.Plugin
 {
@@ -71,7 +72,6 @@ namespace Wox.Plugin
         /// <summary>
         /// Get all loaded plugins
         /// </summary>
-        /// <returns></returns>
         List<PluginPair> GetAllPlugins();
     }
 }

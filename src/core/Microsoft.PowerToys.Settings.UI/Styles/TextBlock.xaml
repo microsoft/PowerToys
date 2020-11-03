@@ -22,6 +22,7 @@
     <Style x:Key="SettingsGroupTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}">
         <Setter Property="Margin" Value="0,34,0,4" />
         <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="AutomationProperties.HeadingLevel" Value="Level2" />
     </Style>
 
     <Style x:Key="SettingsGroupTitleStyleAsHeader" TargetType="TextBlock" BasedOn="{StaticResource SettingsGroupTitleStyle}">

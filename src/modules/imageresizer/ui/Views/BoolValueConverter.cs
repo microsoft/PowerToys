@@ -16,6 +16,6 @@ namespace ImageResizer.Views
             => (bool)value ? Visibility.Visible : Visibility.Collapsed;
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+            => (Visibility)value == Visibility.Visible;
     }
 }

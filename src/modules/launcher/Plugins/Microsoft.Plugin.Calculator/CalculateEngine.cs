@@ -15,6 +15,7 @@ namespace Microsoft.Plugin.Calculator
 
         public CalculateResult Interpret(string input)
         {
+            // Using CurrentCulture this is user facing
             return Interpret(input, CultureInfo.CurrentCulture);
         }
 

@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
@@ -43,21 +44,21 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             if (shellPage != null)
             {
                 // send IPC Message
-                shellPage.SetDefaultSndMessageCallback(msg =>
+                ShellPage.SetDefaultSndMessageCallback(msg =>
                 {
                     // IPC Manager is null when launching runner directly
                     Program.GetTwoWayIPCManager()?.Send(msg);
                 });
 
                 // send IPC Message
-                shellPage.SetRestartAdminSndMessageCallback(msg =>
+                ShellPage.SetRestartAdminSndMessageCallback(msg =>
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
                     System.Windows.Application.Current.Shutdown(); // close application
                 });
 
                 // send IPC Message
-                shellPage.SetCheckForUpdatesMessageCallback(msg =>
+                ShellPage.SetCheckForUpdatesMessageCallback(msg =>
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
                 });
@@ -67,22 +68,23 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 {
                     if (ShellPage.ShellHandler.IPCResponseHandleList != null)
                     {
-                        try
+                        var success = JsonObject.TryParse(msg, out JsonObject json);
+                        if (success)
                         {
-                            JsonObject json = JsonObject.Parse(msg);
                             foreach (Action<JsonObject> handle in ShellPage.ShellHandler.IPCResponseHandleList)
                             {
                                 handle(json);
                             }
                         }
-                        catch (Exception)
+                        else
                         {
+                            Logger.LogError("Failed to parse JSON from IPC message.");
                         }
                     }
                 };
 
-                shellPage.SetElevationStatus(Program.IsElevated);
-                shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
+                ShellPage.SetElevationStatus(Program.IsElevated);
+                ShellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();
             }
 

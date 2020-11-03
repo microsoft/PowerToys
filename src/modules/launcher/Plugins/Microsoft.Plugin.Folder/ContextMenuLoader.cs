@@ -5,18 +5,19 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Folder
 {
     internal class ContextMenuLoader : IContextMenu
     {
+        private readonly IFileSystem _fileSystem = new FileSystem();
         private readonly PluginInitContext _context;
 
         public ContextMenuLoader(PluginInitContext context)
@@ -76,7 +77,7 @@ namespace Microsoft.Plugin.Folder
                         {
                             if (record.Type == ResultType.File)
                             {
-                                Helper.OpenInConsole(Path.GetDirectoryName(record.FullPath));
+                                Helper.OpenInConsole(_fileSystem.Path.GetDirectoryName(record.FullPath));
                             }
                             else
                             {

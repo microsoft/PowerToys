@@ -5,8 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Wox.Infrastructure.Logger;
+using ManagedCommon;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Calculator
 {
@@ -34,6 +35,7 @@ namespace Microsoft.Plugin.Calculator
 
             try
             {
+                // Using CurrentUICulture since this is user facing
                 var result = CalculateEngine.Interpret(query.Search, CultureInfo.CurrentUICulture);
 
                 // This could happen for some incorrect queries, like pi(2)
