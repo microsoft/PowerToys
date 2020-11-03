@@ -13,7 +13,7 @@
                 Orientation="Vertical"
                 Background="{x:Null}" >
         <!--Top panel-->
-        <Grid HorizontalAlignment="Stretch" Background="White" Margin="12,0,12,0">
+        <Grid HorizontalAlignment="Stretch" Margin="12,0,12,0">
             <Grid.Effect>
                 <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
             </Grid.Effect>
