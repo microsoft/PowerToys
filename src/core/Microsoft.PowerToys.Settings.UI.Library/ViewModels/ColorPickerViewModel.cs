@@ -73,19 +73,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => _isEnabled;
             set
             {
-                if (_isEnabled == value)
+                if (_isEnabled != value)
                 {
-                    return;
+                    _isEnabled = value;
+                    OnPropertyChanged(nameof(IsEnabled));
+
+                    // Set the status of ColorPicker in the general settings
+                    GeneralSettingsConfig.Enabled.ColorPicker = value;
+                    var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+
+                    SendConfigMSG(outgoing.ToString());
                 }
-
-                _isEnabled = value;
-                OnPropertyChanged(nameof(IsEnabled));
-
-                // Set the status of ColorPicker in the general settings
-                GeneralSettingsConfig.Enabled.ColorPicker = value;
-                var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-
-                SendConfigMSG(outgoing.ToString());
             }
         }
 
@@ -94,14 +92,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => _colorPickerSettings.Properties.ChangeCursor;
             set
             {
-                if (_colorPickerSettings.Properties.ChangeCursor == value)
+                if (_colorPickerSettings.Properties.ChangeCursor != value)
                 {
-                    return;
+                    _colorPickerSettings.Properties.ChangeCursor = value;
+                    OnPropertyChanged(nameof(ChangeCursor));
+                    NotifySettingsChanged();
                 }
-
-                _colorPickerSettings.Properties.ChangeCursor = value;
-                OnPropertyChanged(nameof(ChangeCursor));
-                NotifySettingsChanged();
             }
         }
 
@@ -110,14 +106,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => _colorPickerSettings.Properties.ActivationShortcut;
             set
             {
-                if (_colorPickerSettings.Properties.ActivationShortcut == value)
+                if (_colorPickerSettings.Properties.ActivationShortcut != value)
                 {
-                    return;
+                    _colorPickerSettings.Properties.ActivationShortcut = value;
+                    OnPropertyChanged(nameof(ActivationShortcut));
+                    NotifySettingsChanged();
                 }
-
-                _colorPickerSettings.Properties.ActivationShortcut = value;
-                OnPropertyChanged(nameof(ActivationShortcut));
-                NotifySettingsChanged();
             }
         }
 
@@ -126,14 +120,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             get => _colorPickerSettings.Properties.CopiedColorRepresentation;
             set
             {
-                if (_colorPickerSettings.Properties.CopiedColorRepresentation == value)
+                if (_colorPickerSettings.Properties.CopiedColorRepresentation != value)
                 {
-                    return;
+                    _colorPickerSettings.Properties.CopiedColorRepresentation = value;
+                    OnPropertyChanged(nameof(SelectedColorRepresentationValue));
+                    NotifySettingsChanged();
                 }
-
-                _colorPickerSettings.Properties.CopiedColorRepresentation = value;
-                OnPropertyChanged(nameof(SelectedColorRepresentationValue));
-                NotifySettingsChanged();
             }
         }
 
