@@ -227,7 +227,7 @@
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
                           IsOn="{x:Bind Path=ViewModel.Enabled, Mode=TwoWay}"/>
 
-            <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys">
+            <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys" Margin="{StaticResource XSmallTopMargin}">
                 <TextBlock x:Uid="KBM_KeysCannotBeRemapped" />
             </HyperlinkButton>
             
