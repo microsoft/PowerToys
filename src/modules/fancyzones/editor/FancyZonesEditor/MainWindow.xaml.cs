@@ -24,7 +24,7 @@ namespace FancyZonesEditor
         private const int SmallWrapPanelItemSize = 180;
         private const int MinimalForDefaultWrapPanelsHeight = 900;
 
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+        private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
 
         // Localizable string
         private static readonly string _defaultNamePrefix = "Custom Layout ";
@@ -137,9 +137,9 @@ namespace FancyZonesEditor
             model.IsSelected = false;
             Hide();
 
-            bool isPredefinedLayout = Settings.IsPredefinedLayout(model);
+            bool isPredefinedLayout = MainWindowSettingsModel.IsPredefinedLayout(model);
 
-            if (!Settings.CustomModels.Contains(model) || isPredefinedLayout)
+            if (!MainWindowSettingsModel.CustomModels.Contains(model) || isPredefinedLayout)
             {
                 if (isPredefinedLayout)
                 {
@@ -149,7 +149,7 @@ namespace FancyZonesEditor
                 }
 
                 int maxCustomIndex = 0;
-                foreach (LayoutModel customModel in Settings.CustomModels)
+                foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
                 {
                     string name = customModel.Name;
                     if (name.StartsWith(_defaultNamePrefix))
@@ -206,7 +206,7 @@ namespace FancyZonesEditor
 
         private void SetSelectedItem()
         {
-            foreach (LayoutModel model in Settings.CustomModels)
+            foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
             {
                 if (model.IsSelected)
                 {

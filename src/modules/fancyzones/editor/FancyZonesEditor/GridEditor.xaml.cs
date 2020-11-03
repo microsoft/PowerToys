@@ -33,7 +33,7 @@ namespace FancyZonesEditor
             InitializeComponent();
             Loaded += GridEditor_Loaded;
             Unloaded += GridEditor_Unloaded;
-            ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
         }
 
@@ -383,7 +383,7 @@ namespace FancyZonesEditor
                 return;
             }
 
-            Settings settings = ((App)Application.Current).ZoneSettings;
+            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 
@@ -411,7 +411,7 @@ namespace FancyZonesEditor
                 if (_dragHandles.HasSnappedNonAdjacentResizers(resizer))
                 {
                     double spacing = 0;
-                    Settings settings = ((App)Application.Current).ZoneSettings;
+                    MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                     if (settings.ShowSpacing)
                     {
                         spacing = settings.Spacing;

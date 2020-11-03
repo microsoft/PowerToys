@@ -15,7 +15,7 @@ namespace FancyZonesEditor
     // Settings
     //  These are the configuration settings used by the rest of the editor
     //  Other UIs in the editor will subscribe to change events on the properties to stay up to date as these properties change
-    public class Settings : INotifyPropertyChanged
+    public class MainWindowSettingsModel : INotifyPropertyChanged
     {
         private enum DeviceIdParts
         {
@@ -83,7 +83,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public Settings()
+        public MainWindowSettingsModel()
         {
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
@@ -393,7 +393,7 @@ namespace FancyZonesEditor
             // set new layout
             if (currentApplied.Type == LayoutType.Custom)
             {
-                foreach (LayoutModel model in Settings.CustomModels)
+                foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
                 {
                     if ("{" + model.Guid.ToString().ToUpper() + "}" == currentApplied.ZonesetUuid.ToUpper())
                     {

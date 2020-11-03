@@ -45,9 +45,7 @@ namespace FancyZonesEditor
         private const string ErrorMessageBoxTitle = "FancyZones Editor Exception Handler";
         private const string ErrorMessageBoxMessage = "Please report the bug to ";
 
-        private readonly IFileSystem _fileSystem = new FileSystem();
-
-        public Settings ZoneSettings { get; }
+        public MainWindowSettingsModel MainWindowSettings { get; }
 
         public static FancyZonesEditorIO FancyZonesEditorIO { get; private set; }
 
@@ -78,7 +76,7 @@ namespace FancyZonesEditor
             Overlay = new Overlay();
 
             FancyZonesEditorIO.ParseCommandLineArguments();
-            ZoneSettings = new Settings();
+            MainWindowSettings = new MainWindowSettingsModel();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -92,7 +90,7 @@ namespace FancyZonesEditor
 
             FancyZonesEditorIO.ParseDeviceInfoData();
 
-            Settings settings = ((App)Current).ZoneSettings;
+            MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;
             settings.UpdateSelectedLayoutModel();
 
             Overlay.UpdateSelectedLayoutModel();

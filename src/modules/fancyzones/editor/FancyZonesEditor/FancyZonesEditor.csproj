@@ -150,7 +150,7 @@
     <Compile Include="Models\CanvasLayoutModel.cs" />
     <Compile Include="Models\GridLayoutModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
-    <Compile Include="Models\Settings.cs" />
+    <Compile Include="Models\MainWindowSettingsModel.cs" />
     <Compile Include="Converters\ModelToVisibilityConverter.xaml.cs" />
     <Compile Include="Native.cs" />
     <Compile Include="RowColInfo.cs" />

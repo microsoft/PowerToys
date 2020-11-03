@@ -75,7 +75,7 @@ namespace FancyZonesEditor
                     var prevSettings = Monitors[_currentDesktop].Settings;
                     _currentDesktop = value;
 
-                    Settings settings = ((App)Application.Current).ZoneSettings;
+                    MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                     if (settings != null)
                     {
                         settings.UpdateDesktopDependantProperties(prevSettings);
@@ -241,10 +241,10 @@ namespace FancyZonesEditor
             LayoutModel foundModel = null;
             LayoutSettings currentApplied = CurrentLayoutSettings;
 
-            Settings settings = ((App)Application.Current).ZoneSettings;
+            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
 
             // reset previous selected layout
-            foreach (LayoutModel model in Settings.CustomModels)
+            foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
             {
                 if (model.IsSelected)
                 {
@@ -265,7 +265,7 @@ namespace FancyZonesEditor
             // set new layout
             if (currentApplied.Type == LayoutType.Custom)
             {
-                foreach (LayoutModel model in Settings.CustomModels)
+                foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
                 {
                     if ("{" + model.Guid.ToString().ToUpper() + "}" == currentApplied.ZonesetUuid.ToUpper())
                     {
