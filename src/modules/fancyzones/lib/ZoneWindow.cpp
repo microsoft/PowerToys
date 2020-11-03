@@ -35,7 +35,7 @@ namespace ZoneWindowUtils
         {
             Rect const monitorRect(mi.rcMonitor);
             // Unique identifier format: <parsed-device-id>_<width>_<height>_<virtual-desktop-id>
-            return ParseDeviceId(deviceId) +
+            return TrimDeviceId(deviceId) +
                    L'_' +
                    std::to_wstring(monitorRect.width()) +
                    L'_' +

@@ -45,6 +45,8 @@ namespace FancyZonesEditor
         private const string ErrorMessageBoxTitle = "FancyZones Editor Exception Handler";
         private const string ErrorMessageBoxMessage = "Please report the bug to ";
 
+        private readonly IFileSystem _fileSystem = new FileSystem();
+
         public MainWindowSettingsModel MainWindowSettings { get; }
 
         public static FancyZonesEditorIO FancyZonesEditorIO { get; private set; }
@@ -83,7 +85,7 @@ namespace FancyZonesEditor
         {
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            RunnerHelper.WaitForPowerToysRunner(Settings.PowerToysPID, () =>
+            RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
             {
                 Environment.Exit(0);
             });

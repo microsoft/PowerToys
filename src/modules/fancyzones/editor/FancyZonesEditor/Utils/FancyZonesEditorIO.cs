@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text.Json;
 using System.Windows;
@@ -64,6 +65,8 @@ namespace FancyZonesEditor.Utils
         private const string ActiveZoneSetsTmpFileName = "FancyZonesActiveZoneSets.json";
         private const string AppliedZoneSetsTmpFileName = "FancyZonesAppliedZoneSets.json";
         private const string DeletedCustomZoneSetsTmpFileName = "FancyZonesDeletedCustomZoneSets.json";
+
+        private readonly IFileSystem _fileSystem = new FileSystem();
 
         private JsonSerializerOptions _options = new JsonSerializerOptions
         {
@@ -136,7 +139,7 @@ namespace FancyZonesEditor.Utils
 
         public FancyZonesEditorIO()
         {
-            string tmpDirPath = Path.GetTempPath();
+            string tmpDirPath = _fileSystem.Path.GetTempPath();
 
             ActiveZoneSetTmpFile = tmpDirPath + ActiveZoneSetsTmpFileName;
             AppliedZoneSetTmpFile = tmpDirPath + AppliedZoneSetsTmpFileName;
@@ -250,9 +253,9 @@ namespace FancyZonesEditor.Utils
             {
                 JsonElement jsonObject = default(JsonElement);
 
-                if (File.Exists(ActiveZoneSetTmpFile))
+                if (_fileSystem.File.Exists(ActiveZoneSetTmpFile))
                 {
-                    FileStream inputStream = File.Open(ActiveZoneSetTmpFile, FileMode.Open);
+                    Stream inputStream = _fileSystem.File.Open(ActiveZoneSetTmpFile, FileMode.Open);
                     jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
                     inputStream.Close();
 
@@ -344,7 +347,7 @@ namespace FancyZonesEditor.Utils
         {
             try
             {
-                FileStream inputStream = File.Open(FancyZonesSettingsFile, FileMode.Open);
+                Stream inputStream = _fileSystem.File.Open(FancyZonesSettingsFile, FileMode.Open);
                 JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
                 JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty(CustomZoneSetsJsonTag).EnumerateArray();
 
@@ -538,7 +541,7 @@ namespace FancyZonesEditor.Utils
             try
             {
                 string jsonString = JsonSerializer.Serialize(applied, _options);
-                File.WriteAllText(ActiveZoneSetTmpFile, jsonString);
+                _fileSystem.File.WriteAllText(ActiveZoneSetTmpFile, jsonString);
             }
             catch (Exception ex)
             {
@@ -556,7 +559,7 @@ namespace FancyZonesEditor.Utils
             try
             {
                 string jsonString = JsonSerializer.Serialize(deletedLayouts, _options);
-                File.WriteAllText(DeletedCustomZoneSetsTmpFile, jsonString);
+                _fileSystem.File.WriteAllText(DeletedCustomZoneSetsTmpFile, jsonString);
             }
             catch (Exception ex)
             {
@@ -574,7 +577,7 @@ namespace FancyZonesEditor.Utils
             try
             {
                 string jsonString = JsonSerializer.Serialize(layouts, _options);
-                File.WriteAllText(AppliedZoneSetTmpFile, jsonString);
+                _fileSystem.File.WriteAllText(AppliedZoneSetTmpFile, jsonString);
             }
             catch (Exception ex)
             {
