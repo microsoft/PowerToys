@@ -3,18 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:constants="clr-namespace:ColorPicker.Constants"
         mc:Ignorable="d"
         xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-        Height="56"
-        Width="{x:Static constants:WindowConstant.PickerWindowWidth}"
+        Height="64"
         WindowStyle="None"
         Opacity="0.01"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
         Topmost="True"
         Background="Transparent"
+        SizeToContent="Width"
         AllowsTransparency="True">
     <e:Interaction.Behaviors>
         <behaviors:ChangeWindowPositionBehavior/>

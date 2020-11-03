@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,6 +16,10 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesSettingsTests : PowerToysSession
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
+
+
         private JObject _initialSettingsJson;
 
         private static WindowsElement _saveButton;

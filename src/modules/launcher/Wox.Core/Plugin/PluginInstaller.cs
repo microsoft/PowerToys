@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Windows;
 using ICSharpCode.SharpZipLib.Zip;
@@ -15,6 +16,11 @@ namespace Wox.Core.Plugin
 {
     internal class PluginInstaller
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         internal static void Install(string path)
         {
             if (File.Exists(path))
@@ -35,7 +41,7 @@ namespace Wox.Core.Plugin
                 }
 
                 PluginMetadata plugin = GetMetadataFromJson(tempFolder);
-                if (plugin == null || plugin.Name == null)
+                if (plugin?.Name == null)
                 {
                     MessageBox.Show("Install failed: plugin config is invalid");
                     return;
@@ -196,7 +202,7 @@ namespace Wox.Core.Plugin
                     {
                         if ((File.Exists(strDirectory + directoryName + fileName) && overWrite) || (!File.Exists(strDirectory + directoryName + fileName)))
                         {
-                            using (FileStream streamWriter = File.Create(strDirectory + directoryName + fileName))
+                            using (Stream streamWriter = File.Create(strDirectory + directoryName + fileName))
                             {
                                 byte[] data = new byte[2048];
                                 while (true)

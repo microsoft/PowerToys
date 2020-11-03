@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "general_settings.h"
 #include "auto_start_helper.h"
+#include "Generated files/resource.h"
 
 #include <common/common.h>
 #include <common/settings_helpers.h>
@@ -15,12 +16,7 @@ static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
 
-// TODO: add resource.rc for settings project and localize
-namespace localized_strings
-{
-    const std::wstring_view STARTUP_DISABLED_BY_POLICY = L"This setting has been disabled by your administrator.";
-    const std::wstring_view STARTUP_DISABLED_BY_USER = LR"(This setting has been disabled manually via <a href="https://ms_settings_startupapps" target="_blank">Startup Settings</a>.)";
-}
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 json::JsonObject GeneralSettings::to_json()
 {
@@ -81,7 +77,6 @@ GeneralSettings get_general_settings()
 
     if (winstore::running_as_packaged())
     {
-        using namespace localized_strings;
         const auto task_state = winstore::get_startup_task_status_async().get();
         switch (task_state)
         {
@@ -92,11 +87,11 @@ GeneralSettings get_general_settings()
             settings.isStartupEnabled = true;
             break;
         case winstore::StartupTaskState::DisabledByPolicy:
-            settings.startupDisabledReason = STARTUP_DISABLED_BY_POLICY;
+            settings.startupDisabledReason = GET_RESOURCE_STRING(IDS_STARTUP_DISABLED_BY_POLICY);
             settings.isStartupEnabled = false;
             break;
         case winstore::StartupTaskState::DisabledByUser:
-            settings.startupDisabledReason = STARTUP_DISABLED_BY_USER;
+            settings.startupDisabledReason = GET_RESOURCE_STRING(IDS_STARTUP_DISABLED_BY_USER);
             settings.isStartupEnabled = false;
             break;
         }

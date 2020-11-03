@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
@@ -209,7 +210,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
 
             // File.ReadAllLines must be mocked for url applications
-            var mockFile = new Mock<IFileWrapper>();
+            var mockFile = new Mock<IFile>();
             mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
             Win32Program.FileWrapper = mockFile.Object;
 
@@ -256,7 +257,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Deleted, directory, path);
 
             // File.ReadAllLines must be mocked for url applications
-            var mockFile = new Mock<IFileWrapper>();
+            var mockFile = new Mock<IFile>();
             mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
             Win32Program.FileWrapper = mockFile.Object;
 
@@ -279,7 +280,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, newpath, oldpath);
 
             // File.ReadAllLines must be mocked for url applications
-            var mockFile = new Mock<IFileWrapper>();
+            var mockFile = new Mock<IFile>();
             mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
             Win32Program.FileWrapper = mockFile.Object;
 

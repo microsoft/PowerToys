@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using NLog;
 using NLog.Config;
@@ -13,6 +13,10 @@ namespace Wox.Plugin.Logger
 {
     public static class Log
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         public const string DirectoryName = "Logs";
 
         public static string CurrentLogDirectory { get; }

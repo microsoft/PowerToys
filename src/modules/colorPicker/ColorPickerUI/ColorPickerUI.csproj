@@ -122,7 +122,6 @@
     <Compile Include="Converters\ColorToStringConverter.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
-    <Compile Include="Constants\WindowConstant.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\ColorRepresentationHelper.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
@@ -292,6 +291,9 @@
     </PackageReference>
     <PackageReference Include="ModernWpfUI">
       <Version>0.9.2</Version>
+    </PackageReference>
+    <PackageReference Include="System.IO.Abstractions">
+      <Version>12.2.5</Version>
     </PackageReference>
     <PackageReference Include="System.Windows.Interactivity.WPF">
       <Version>2.0.20525</Version>

@@ -5,12 +5,16 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
+using System.IO.Abstractions;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 {
     public static class Logger
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         private static readonly string ApplicationLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\Settings Logs");
 
         static Logger()
