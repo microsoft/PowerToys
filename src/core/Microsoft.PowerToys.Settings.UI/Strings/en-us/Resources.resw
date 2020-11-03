@@ -782,11 +782,11 @@
     <value>Windows default</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
-  <data name="Windows_Color_Settings.Content" xml:space="preserve">
+  <data name="Windows_Color_Settings.Text" xml:space="preserve">
     <value>Windows color settings</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
-  <data name="KBM_Learnmore.Content" xml:space="preserve">
+  <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
     <value>View what cannot be remapped</value>
   </data>
 </root>
