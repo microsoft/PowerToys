@@ -337,6 +337,7 @@
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
     <value>Open layout editor</value>  
+    <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut setting</value>
@@ -346,6 +347,7 @@
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
     <value>Launch layout editor</value>
+    <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
     <value>Make dragged window transparent</value>
