@@ -7,7 +7,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Uri
 {
-    public class RegisteryWrapper : IRegistryWrapper
+    public class RegistryWrapper : IRegistryWrapper
     {
         public string GetRegistryValue(string registryLocation, string valueName)
         {

@@ -97,7 +97,7 @@ Our installer is two parts, an EXE and an MSI.  The EXE contains the MSI and han
 - From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 
-### Compiling Bootstraper Installer (.EXE)
+### Compiling Bootstrapper Installer (.EXE)
 
 - MSI Installer needs to be built in release mode
 - Build `PowerToysBootstrapper` solution (`installer\PowerToysBootstrapper\`)

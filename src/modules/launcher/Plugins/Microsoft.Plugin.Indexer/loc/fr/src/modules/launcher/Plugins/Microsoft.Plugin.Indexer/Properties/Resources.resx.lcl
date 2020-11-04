@@ -39,10 +39,13 @@
       </Item>
       <Item ItemId=";Microsoft_plugin_indexer_drivedetectionwarning" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Warning: Not all drives are indexed.]]></Val>
+          <Val><![CDATA[Warning: Not all files are indexed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Avertissement : Les lecteurs ne sont pas tous indexés.]]></Val>
+            <Val><![CDATA[Avertissement : Les fichiers ne sont pas tous indexés.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Warning: Not all drives are indexed.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
