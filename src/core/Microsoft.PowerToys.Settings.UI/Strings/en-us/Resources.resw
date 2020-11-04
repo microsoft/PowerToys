@@ -521,9 +521,11 @@
   </data>
   <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
     <value>Remove</value>
+    <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
   <data name="RemoveTooltip.Text" xml:space="preserve">
     <value>Remove</value>
+    <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
   <data name="ImageResizer_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
