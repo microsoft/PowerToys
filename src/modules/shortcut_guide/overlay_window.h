@@ -1,7 +1,7 @@
 #pragma once
-#include "common/d2d_svg.h"
-#include "common/d2d_window.h"
-#include "common/d2d_text.h"
+#include "d2d_svg.h"
+#include "d2d_window.h"
+#include "d2d_text.h"
 #include "common/monitors.h"
 #include "common/animation.h"
 #include "common/windows_colors.h"
