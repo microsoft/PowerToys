@@ -21,9 +21,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.base.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Resource Files">
@@ -41,23 +38,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="resource.base.h" />
+    <None Include="PowerRenameUI.base.rc" />
+    <None Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/PowerRenameUI.rc">
       <Filter>Generated Files</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="PowerRenameUI.base.rc">
-      <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Rename.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources.resx">
-      <Filter>Resource Files</Filter>
-    </EmbeddedResource>
   </ItemGroup>
 </Project>
