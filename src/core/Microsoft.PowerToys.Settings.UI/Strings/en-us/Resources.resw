@@ -787,6 +787,7 @@
     <comment>Windows refers to the Operating system</comment>
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
-    <value>View what cannot be remapped</value>
+    <value>Learn more about remapping limitations</value>
+    <comment>This is a link that will discuss what is and is not possible for Keyboard manager to remap</comment>
   </data>
 </root>
