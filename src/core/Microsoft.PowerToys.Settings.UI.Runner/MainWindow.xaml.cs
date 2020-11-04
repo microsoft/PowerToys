@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 shellPage.Refresh();
             }
 
-            // XAML Islands: If the window is open, explicity force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
+            // XAML Islands: If the window is open, explicitly force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
             if (isOpen)
             {
                 Show();

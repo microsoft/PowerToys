@@ -76,7 +76,7 @@ int GetHighlightedZoneIdx(const std::vector<RECT>& zones, const POINT& cursorPos
 
 void ShowZoneWindow()
 {
-    // InvalidateRect will esentially send WM_PAINT to main window.
+    // InvalidateRect will essentially send WM_PAINT to main window.
     UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
     SetWindowPos(mainWindow, nullptr, 0, 0, 0, 0, flags);
 

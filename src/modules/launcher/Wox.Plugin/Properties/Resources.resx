@@ -127,6 +127,6 @@
   </data>
   <data name="filesfolder_verifybothfolderfilesequal_failed" xml:space="preserve">
     <value>Unable to verify folders and files between {0} and {1}</value>
-    <comment>paramaters: fromPath, toPath</comment>
+    <comment>parameters: fromPath, toPath</comment>
   </data>
 </root>
