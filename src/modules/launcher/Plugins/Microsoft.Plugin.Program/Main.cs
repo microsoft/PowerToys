@@ -26,7 +26,7 @@ namespace Microsoft.Plugin.Program
         private static readonly IProgramArgumentParser[] _programArgumentParsers = new IProgramArgumentParser[]
         {
             new DoubleDashProgramArgumentParser(),
-            new InferedProgramArgumentParser(),
+            new InferredProgramArgumentParser(),
             new NoArgumentsArgumentParser(),
         };
 

@@ -184,7 +184,6 @@ IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* 
 
 IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ DWORD filter, _In_ DWORD flags, _Out_ bool* isItemVisible)
 {
-    bool shouldRenameItem = false;
     switch (filter)
     {
     case PowerRenameFilters::None:
