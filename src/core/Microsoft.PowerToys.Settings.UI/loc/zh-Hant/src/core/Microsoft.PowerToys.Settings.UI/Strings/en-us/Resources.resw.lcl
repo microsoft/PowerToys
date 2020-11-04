@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[關於色彩選擇器]]></Val>
+            <Val><![CDATA[關於顏色選擇器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[關於影像大小調整器]]></Val>
+            <Val><![CDATA[關於圖像大小調整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -86,7 +86,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[關於快速鍵指南]]></Val>
+            <Val><![CDATA[關於快捷鍵指南]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -105,24 +105,6 @@
           <Val><![CDATA[Administrator mode]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[系統管理員模式]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";AppDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";AppDisplayName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[開啟色彩選擇器]]></Val>
+            <Val><![CDATA[開啟顏色選擇器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +176,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[啟用色彩選擇器]]></Val>
+            <Val><![CDATA[啟用顏色選擇器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +185,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[色彩選擇器]]></Val>
+            <Val><![CDATA[顏色選擇器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -860,7 +842,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[啟用影像大小調整器]]></Val>
+            <Val><![CDATA[啟用圖像大小調整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1040,7 +1022,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[影像大小調整器]]></Val>
+            <Val><![CDATA[圖像大小調整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1625,7 +1607,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[啟用大量重新命名]]></Val>
+            <Val><![CDATA[啟用 PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1702,7 +1684,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows default]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1711,7 +1693,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Light]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1772,7 +1754,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[色彩選擇器]]></Val>
+            <Val><![CDATA[顏色選擇器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1799,7 +1781,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[影像大小調整器]]></Val>
+            <Val><![CDATA[圖像大小調整器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1809,15 +1791,6 @@
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[鍵盤管理器]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Shell_Main.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Main]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[主要]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1844,7 +1817,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[大量重新命名]]></Val>
+            <Val><![CDATA[PowerRename]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1853,7 +1826,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快速鍵指南]]></Val>
+            <Val><![CDATA[快捷鍵指南]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1880,7 +1853,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[啟用快速鍵指南]]></Val>
+            <Val><![CDATA[啟用快捷鍵指南]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1916,12 +1889,12 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快速鍵指南]]></Val>
+            <Val><![CDATA[快捷鍵指南]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows color settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

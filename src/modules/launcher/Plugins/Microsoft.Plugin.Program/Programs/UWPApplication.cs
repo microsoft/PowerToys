@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -31,6 +32,10 @@ namespace Microsoft.Plugin.Program.Programs
     [Serializable]
     public class UWPApplication : IProgram
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         public string AppListEntry { get; set; }
 
         public string UniqueIdentifier { get; set; }
@@ -119,7 +124,7 @@ namespace Microsoft.Plugin.Program.Programs
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)
@@ -197,7 +202,7 @@ namespace Microsoft.Plugin.Program.Programs
             return contextMenus;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive, and showing the user an error message")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive, and showing the user an error message")]
         private async void Launch(IPublicAPI api, string queryArguments)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();

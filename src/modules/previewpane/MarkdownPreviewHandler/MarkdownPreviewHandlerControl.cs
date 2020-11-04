@@ -4,7 +4,7 @@
 
 using System;
 using System.Drawing;
-using System.IO;
+using System.IO.Abstractions;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Common;
@@ -21,6 +21,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
     /// </summary>
     public class MarkdownPreviewHandlerControl : FormHandlerControl
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         /// <summary>
         /// Extension to modify markdown AST.
         /// </summary>

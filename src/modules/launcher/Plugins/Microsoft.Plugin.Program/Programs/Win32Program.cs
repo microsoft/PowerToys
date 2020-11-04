@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Security;
@@ -20,12 +21,18 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
 namespace Microsoft.Plugin.Program.Programs
 {
     [Serializable]
     public class Win32Program : IProgram
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         public string Name { get; set; }
 
         public string UniqueIdentifier { get; set; }
@@ -57,7 +64,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Wrappers for File Operations
         public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
 
-        public static IFileWrapper FileWrapper { get; set; } = new FileWrapper();
+        public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
         public static IShellLinkHelper Helper { get; set; } = new ShellLinkHelper();
 
@@ -246,7 +253,7 @@ namespace Microsoft.Plugin.Program.Programs
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)

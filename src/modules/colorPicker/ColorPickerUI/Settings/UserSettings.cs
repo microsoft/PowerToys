@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -20,14 +21,14 @@ namespace ColorPicker.Settings
         private const int MaxNumberOfRetry = 5;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
-        private readonly FileSystemWatcher _watcher;
+        private readonly IFileSystemWatcher _watcher;
 
         private readonly object _loadingSettingsLock = new object();
 
         [ImportingConstructor]
         public UserSettings()
         {
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = new SettingsUtils();
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);

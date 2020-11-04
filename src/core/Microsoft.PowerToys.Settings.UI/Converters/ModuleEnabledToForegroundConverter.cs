@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
@@ -14,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public sealed class ModuleEnabledToForegroundConverter : IValueConverter
     {
-        private readonly ISettingsUtils settingsUtils = new SettingsUtils(new SystemIOProvider());
+        private readonly ISettingsUtils settingsUtils = new SettingsUtils();
 
         private string selectedTheme = string.Empty;
 

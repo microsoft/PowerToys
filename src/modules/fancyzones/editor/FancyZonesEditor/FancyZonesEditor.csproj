@@ -248,7 +248,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MahApps.Metro">
-      <Version>2.3.0</Version>
+      <Version>2.3.2</Version>
+    </PackageReference>
+    <PackageReference Include="System.IO.Abstractions">
+      <Version>12.2.5</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
       <Version>4.7.2</Version>

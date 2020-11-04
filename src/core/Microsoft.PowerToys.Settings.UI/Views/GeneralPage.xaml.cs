@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Load string resources
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
-            var settingsUtils = new SettingsUtils(new SystemIOProvider());
+            var settingsUtils = new SettingsUtils();
 
             ViewModel = new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

@@ -5,7 +5,7 @@ The following basic functions are common to each of the plugins. They perform so
 Each plugin implements the `IPlugin` interface which comprises of the `Init()` and `Query()` functions.
 
 ### `Init`
-- The `Init()` function initializes the context, storage and settings of each plugin. This is equivalent to a contructor and is the first function to be called in the `Main.cs` file for each plugin.
+- The `Init()` function initializes the context, storage and settings of each plugin. This is equivalent to a constructor and is the first function to be called in the `Main.cs` file for each plugin.
 
 ### `Query`
 - For every query that the user enters into PT Run, the `PluginManager.cs` executes the `Query()` function in the `Main.cs` file corresponding to each Plugin.

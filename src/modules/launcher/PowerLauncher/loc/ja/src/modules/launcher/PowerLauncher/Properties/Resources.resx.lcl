@@ -120,10 +120,13 @@
       </Item>
       <Item ItemId=";deseralization_error_title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Powertoys Run deserialization error]]></Val>
+          <Val><![CDATA[PowerToys Run deserialization error]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Powertoys Run のシリアル化解除エラー]]></Val>
+            <Val><![CDATA[PowerToys Run の逆シリアル化エラー]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Powertoys Run deserialization error]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -154,7 +157,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";reportWindow_file_bug" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";reportWindow_file_bug" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please file a bug in the]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -163,7 +166,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";reportWindow_github_repo" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";reportWindow_github_repo" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[PowerToys GitHub repository]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

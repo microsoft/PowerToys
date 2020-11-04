@@ -1,4 +1,4 @@
-using System.IO;
+using System.IO.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
@@ -11,6 +11,9 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesEditorCustomLayoutsTests : FancyZonesEditor
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
+
         private void SetLayoutName(string name)
         {
             AppiumWebElement textBox = creatorWindow.FindElementByClassName("TextBox");

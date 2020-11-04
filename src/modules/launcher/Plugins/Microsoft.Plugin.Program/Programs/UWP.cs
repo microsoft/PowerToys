@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -19,6 +19,8 @@ namespace Microsoft.Plugin.Program.Programs
     [Serializable]
     public partial class UWP
     {
+        private static readonly IPath Path = new FileSystem().Path;
+
         public string Name { get; }
 
         public string FullName { get; }
@@ -132,7 +134,7 @@ namespace Microsoft.Plugin.Program.Programs
             Version = PackageVersion.Unknown;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public static UWPApplication[] All()
         {
             var windows10 = new Version(10, 0);
@@ -170,7 +172,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         private static IEnumerable<IPackage> CurrentUserPackages()
         {
             var ps = PackageManagerWrapper.FindPackagesForCurrentUser();
