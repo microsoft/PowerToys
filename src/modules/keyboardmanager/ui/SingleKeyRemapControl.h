@@ -40,7 +40,7 @@ public:
     static RemapBuffer singleKeyRemapBuffer;
 
     // constructor
-    SingleKeyRemapControl(const int rowIndex, const int colIndex);
+    SingleKeyRemapControl(StackPanel table, StackPanel row, const int colIndex);
 
     // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
     static void AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey = NULL, const KeyShortcutUnion newKey = NULL);
