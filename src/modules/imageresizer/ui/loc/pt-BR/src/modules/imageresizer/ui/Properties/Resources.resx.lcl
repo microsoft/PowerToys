@@ -491,7 +491,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fill]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Preencher]]></Val>
+            <Val><![CDATA[Preenchimento]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -509,7 +509,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ajustar]]></Val>
+            <Val><![CDATA[Ajuste]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -518,7 +518,7 @@
         <Str Cat="Text">
           <Val><![CDATA[fits within]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ajusta-se dentro]]></Val>
+            <Val><![CDATA[ajusta-se em]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
