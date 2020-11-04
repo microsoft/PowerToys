@@ -178,7 +178,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilderShouldSetTermsCorrentlyWhenCalled()
+        public void QueryBuilderShouldSetTermsCorrectlyWhenCalled()
         {
             // Arrange
             string searchQuery = "abcd efgh";

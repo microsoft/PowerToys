@@ -618,13 +618,13 @@ std::wstring KeyboardManagerState::GetCurrentConfigName()
     return currentConfig;
 }
 
-// Sets the activated target application in app-specfic shortcut
+// Sets the activated target application in app-specific shortcut
 void KeyboardManagerState::SetActivatedApp(const std::wstring& appName)
 {
     activatedAppSpecificShortcutTarget = appName;
 }
 
-// Gets the activated target application in app-specfic shortcut
+// Gets the activated target application in app-specific shortcut
 std::wstring KeyboardManagerState::GetActivatedApp()
 {
     return activatedAppSpecificShortcutTarget;

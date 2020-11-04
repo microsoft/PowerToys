@@ -2237,7 +2237,7 @@ namespace RemappingLogicTests
         }
 
         // Test that shortcut is not disabled if the shortcut which was remapped to Disable is pressed followed by another key
-        TEST_METHOD (ShortcutDisable_ShouldNotDisableShortcutSuperset_AfterShorcutWasDisabled)
+        TEST_METHOD (ShortcutDisable_ShouldNotDisableShortcutSuperset_AfterShortcutWasDisabled)
         {
             Shortcut src;
             src.SetKey(VK_CONTROL);

@@ -65,7 +65,7 @@ namespace ViewModelTests
                 ipcMSGCheckForUpdatesCallBackFunc: SendCheckForUpdatesIPCMessage,
                 configFileSubfolder: string.Empty);
 
-            // Verifiy that the old settings persisted
+            // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.AutoDownloadUpdates, viewModel.AutoDownloadUpdates);
             Assert.AreEqual(originalGeneralSettings.Packaged, viewModel.Packaged);
             Assert.AreEqual(originalGeneralSettings.PowertoysVersion, viewModel.PowerToysVersion);

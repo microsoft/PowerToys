@@ -85,7 +85,7 @@ private:
     std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
     std::mutex keyDelays_mutex;
 
-    // Stores the activated target application in app-specfic shortcut
+    // Stores the activated target application in app-specific shortcut
     std::wstring activatedAppSpecificShortcutTarget;
 
     // Thread safe boolean value to check if remappings are currently enabled. This is used to disable remappings while the remap tables are being updated by the UI thread
@@ -225,10 +225,10 @@ public:
     // Gets the Current Active Configuration Name.
     std::wstring GetCurrentConfigName();
 
-    // Sets the activated target application in app-specfic shortcut
+    // Sets the activated target application in app-specific shortcut
     void SetActivatedApp(const std::wstring& appName);
 
-    // Gets the activated target application in app-specfic shortcut
+    // Gets the activated target application in app-specific shortcut
     std::wstring GetActivatedApp();
 
     bool AreRemappingsEnabled();
