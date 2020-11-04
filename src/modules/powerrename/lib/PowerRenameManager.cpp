@@ -166,18 +166,17 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemByIndex(_In_ UINT index, _COM_
     }
     else if (SUCCEEDED(GetVisibleItemCount(&count)) && index < count)
     {
-        UINT realIndex = 0;
-        int visibleIndex = -1;
+        UINT realIndex = 0, visibleIndex = 0;
         for (size_t i = 0; i < m_isVisible.size(); i++)
         {
-            if (m_isVisible[i])
-            {
-                visibleIndex++;
-            }
-            if (visibleIndex == index)
+            if (m_isVisible[i]  && visibleIndex == index)
             {
                 realIndex = static_cast<UINT>(i);
                 break;
+            }
+            if (m_isVisible[i])
+            {
+                visibleIndex++;
             }
         }
         hr = GetItemByIndex(realIndex, ppItem);
