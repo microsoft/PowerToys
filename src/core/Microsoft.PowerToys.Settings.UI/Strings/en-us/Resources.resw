@@ -295,7 +295,7 @@
     <value>Ignore shortcuts in fullscreen mode</value>
   </data>
   <data name="PowerLauncher_DisableDriveDetectionWarning.Content" xml:space="preserve">
-    <value>Disable drive detection warning for the indexer plugin</value>
+    <value>Disable drive detection warning for the file search plugin</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
