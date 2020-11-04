@@ -312,12 +312,15 @@
   </data>
   <data name="Fancyzones_Image.AutomationProperties.Name" xml:space="preserve">
     <value>FancyZones windows</value>
+    <comment>do not loc the Product name</comment>
   </data>
   <data name="FancyZones_Description.Text" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
+    <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
     <value>Keep windows in their zones when the screen resolution changes</value>
+    <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable FancyZones</value>
@@ -333,7 +336,7 @@
     <value>Zone highlight opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
-    <value>Open zones editor</value>
+    <value>Open zones editor</value>  
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut setting</value>
