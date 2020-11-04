@@ -196,6 +196,7 @@
   </data>
   <data name="KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" xml:space="preserve">
     <value>Key Remapping</value>
+    <comment>key as in keyboard key</comment>
   </data>
   <data name="KeyboardManager_RemappedShortcutsListItem.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Remapping</value>
@@ -208,9 +209,11 @@
   </data>
   <data name="KeyboardManager_TargetApp.AutomationProperties.Name" xml:space="preserve">
     <value>For Target Application</value>
+    <comment>What computer application would this be for</comment>
   </data>
   <data name="KeyboardManager_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Keyboard Manager</value>
+    <comment>do not loc, product name</comment>
   </data>
   <data name="ColorPicker_Description.Text" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
@@ -227,6 +230,7 @@
   </data>
   <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
     <value>Open Color Picker</value>
+    <comment>do not loc product name</comment>
   </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
@@ -279,6 +283,7 @@
   </data>
   <data name="PowerLauncher_OpenConsole.Header" xml:space="preserve">
     <value>Open console</value>
+    <comment>console refers to Windows command prompt</comment>
   </data>
   <data name="PowerLauncher_OverrideWinRKey.Content" xml:space="preserve">
     <value>Override Win+R shortcut</value>
@@ -542,6 +547,7 @@
   </data>
   <data name="File.Text" xml:space="preserve">
     <value>File</value>
+    <comment>as in a computer file</comment>
   </data>
   <data name="Default.Content" xml:space="preserve">
     <value>Default</value>
@@ -587,12 +593,15 @@
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
     <value>Fill</value>
+    <comment>Refers to filling an image into a certain size. It could overflow</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fit.Content" xml:space="preserve">
     <value>Fit</value>
+    <comment>Refers to fitting an image into a certain size. It won't overflow</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Stretch.Content" xml:space="preserve">
     <value>Stretch</value>
+    <comment>Refers to stretching an image into a certain size. Won't overflow but could distort.</comment>
   </data>
   <data name="ImageResizer_Sizes_Units_CM.Content" xml:space="preserve">
     <value>Centimeters</value>
@@ -740,12 +749,13 @@
   </data>
   <data name="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows based on their position</value>
+    <comment>Windows refers to application windows</comment>
   </data>
   <data name="GeneralSettings_NewVersionIsAvailable" xml:space="preserve">
     <value>New update available</value>
   </data>
   <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
-    <value>You have the latest available version.</value>
+    <value>PowerToys is up-to-date.</value>
   </data>
   <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
     <value>Icon Preview</value>
@@ -773,6 +783,7 @@
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
+    <comment>Dark refers to color, not weight</comment>
   </data>
   <data name="Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
