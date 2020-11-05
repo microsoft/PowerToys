@@ -881,6 +881,7 @@ HLOCAL
 HLSL
 hmenu
 hmodule
+hmon
 hmonitor
 HMONITOR
 HOLDENTER
@@ -1008,6 +1009,7 @@ IMarkdown
 IME
 ime
 img
+IMonitor
 IMouse
 impl
 IMulti
@@ -1911,6 +1913,7 @@ screenshot
 Scrollable
 scrollable
 scrollbar
+scrollviewer
 scss
 sddl
 sdk
@@ -2370,6 +2373,7 @@ VCRT
 vcruntime
 vcvars
 vcxproj
+VDId
 vec
 VERBSONLY
 VERBW
