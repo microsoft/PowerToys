@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows.Media;
 using PowerLauncher.Helper;
-using Wox.Core.Plugin;
+using PowerLauncher.Plugin;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
