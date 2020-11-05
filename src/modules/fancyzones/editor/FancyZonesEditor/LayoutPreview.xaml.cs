@@ -272,7 +272,11 @@ namespace FancyZonesEditor
 
         private void RenderCanvasPreview(CanvasLayoutModel canvas)
         {
-            var workArea = App.Overlay.WorkArea;
+            var workArea = canvas.CanvasRect;
+            if (workArea.Width == 0 || workArea.Height == 0)
+            {
+                workArea = App.Overlay.WorkArea;
+            }
 
             Viewbox viewbox = new Viewbox
             {

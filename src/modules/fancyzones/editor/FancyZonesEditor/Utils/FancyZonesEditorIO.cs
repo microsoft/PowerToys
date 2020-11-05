@@ -454,7 +454,7 @@ namespace FancyZonesEditor.Utils
                             continue;
                         }
 
-                        custom.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, zones));
+                        custom.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, zones, workAreaWidth, workAreaHeight));
                     }
                 }
 

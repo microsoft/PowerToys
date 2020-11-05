@@ -16,10 +16,13 @@ namespace FancyZonesEditor.Models
         // Non-localizable strings
         private const string ModelTypeID = "canvas";
 
-        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones)
+        public Rect CanvasRect { get; private set; }
+
+        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int width, int height)
             : base(uuid, name, type)
         {
             Zones = zones;
+            CanvasRect = new Rect(new Size(width, height));
         }
 
         public CanvasLayoutModel(string name, LayoutType type)
@@ -117,11 +120,10 @@ namespace FancyZonesEditor.Models
         {
             AddCustomLayout(this);
 
-            var workArea = App.Overlay.WorkArea;
             CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
             {
-                RefWidth = (int)workArea.Width,
-                RefHeight = (int)workArea.Height,
+                RefWidth = (int)CanvasRect.Width,
+                RefHeight = (int)CanvasRect.Height,
                 Zones = new Zone[Zones.Count],
             };
 
