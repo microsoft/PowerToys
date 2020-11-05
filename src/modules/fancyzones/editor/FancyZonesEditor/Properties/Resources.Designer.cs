@@ -239,5 +239,23 @@ namespace FancyZonesEditor.Properties {
                 return ResourceManager.GetString("Templates", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decrement number of zones in template layout.
+        /// </summary>
+        public static string Zone_Count_Decrement {
+            get {
+                return ResourceManager.GetString("Zone_Count_Decrement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Increment number of zones in template layout.
+        /// </summary>
+        public static string Zone_Count_Increment {
+            get {
+                return ResourceManager.GetString("Zone_Count_Increment", resourceCulture);
+            }
+        }
     }
 }
