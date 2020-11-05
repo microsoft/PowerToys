@@ -19,6 +19,47 @@ namespace FancyZonesEditor
 
         public List<Monitor> Monitors { get; private set; }
 
+        public Rect WorkArea
+        {
+            get
+            {
+                if (Monitors.Count > 0 && CurrentDesktop < Monitors.Count)
+                {
+                    return Monitors[CurrentDesktop].Device.WorkAreaRect;
+                }
+
+                return default(Rect);
+            }
+        }
+
+        public LayoutSettings CurrentLayoutSettings
+        {
+            get
+            {
+                if (Monitors.Count > 0 && CurrentDesktop < Monitors.Count)
+                {
+                    return Monitors[CurrentDesktop].Settings;
+                }
+
+                return new LayoutSettings();
+            }
+        }
+
+        public Window CurrentLayoutWindow
+        {
+            get
+            {
+                if (Monitors.Count > 0 && CurrentDesktop < Monitors.Count)
+                {
+                    return Monitors[CurrentDesktop].Window;
+                }
+
+                return default(Window);
+            }
+        }
+
+        public List<Rect> UsedWorkAreas { get; private set; }
+
         public object CurrentDataContext
         {
             get
@@ -29,24 +70,11 @@ namespace FancyZonesEditor
             set
             {
                 _dataContext = value;
-                Monitors[CurrentDesktop].Window.DataContext = value;
+                CurrentLayoutWindow.DataContext = value;
             }
         }
 
         private object _dataContext;
-
-        public LayoutSettings CurrentLayoutSettings
-        {
-            get
-            {
-                if (Monitors == null || Monitors.Count <= CurrentDesktop)
-                {
-                    return new LayoutSettings();
-                }
-
-                return Monitors[CurrentDesktop].Settings;
-            }
-        }
 
         public int DesktopsCount
         {
@@ -72,7 +100,7 @@ namespace FancyZonesEditor
                         return;
                     }
 
-                    var prevSettings = Monitors[_currentDesktop].Settings;
+                    var prevSettings = CurrentLayoutSettings;
                     _currentDesktop = value;
 
                     MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
@@ -89,21 +117,6 @@ namespace FancyZonesEditor
         private int _currentDesktop = 0;
 
         public bool SpanZonesAcrossMonitors { get; set; }
-
-        public Rect WorkArea
-        {
-            get
-            {
-                if (Monitors.Count > 0 && CurrentDesktop < Monitors.Count)
-                {
-                    return Monitors[CurrentDesktop].Device.WorkAreaRect;
-                }
-
-                return default(Rect);
-            }
-        }
-
-        public List<Rect> UsedWorkAreas { get; set; }
 
         public Overlay()
         {
@@ -154,7 +167,7 @@ namespace FancyZonesEditor
         {
             UpdateSelectedLayoutModel();
 
-            var window = Monitors[CurrentDesktop].Window;
+            var window = CurrentLayoutWindow;
             window.Content = _layoutPreview;
             window.DataContext = CurrentDataContext;
 
@@ -176,7 +189,7 @@ namespace FancyZonesEditor
                 _editor = new CanvasEditor();
             }
 
-            Monitors[App.Overlay.CurrentDesktop].Window.Content = _editor;
+            CurrentLayoutWindow.Content = _editor;
 
             EditorWindow window;
             if (model is GridLayoutModel)
@@ -202,7 +215,7 @@ namespace FancyZonesEditor
                 Opacity = 0.5,
             };
 
-            Monitors[CurrentDesktop].Window.Content = _layoutPreview;
+            CurrentLayoutWindow.Content = _layoutPreview;
 
             OpenMainWindow();
         }
@@ -229,7 +242,7 @@ namespace FancyZonesEditor
 
         private void CloseLayout()
         {
-            var window = Monitors[CurrentDesktop].Window;
+            var window = CurrentLayoutWindow;
             window.Content = null;
             window.DataContext = null;
         }
@@ -238,11 +251,11 @@ namespace FancyZonesEditor
         {
             if (_mainWindow == null)
             {
-                _mainWindow = new MainWindow();
+                _mainWindow = new MainWindow(SpanZonesAcrossMonitors, WorkArea);
             }
 
             // reset main window owner to keep it on the top
-            _mainWindow.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
+            _mainWindow.Owner = CurrentLayoutWindow;
             _mainWindow.ShowActivated = true;
             _mainWindow.Topmost = true;
             _mainWindow.Show();

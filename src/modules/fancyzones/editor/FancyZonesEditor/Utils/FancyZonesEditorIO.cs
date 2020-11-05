@@ -231,9 +231,10 @@ namespace FancyZonesEditor.Utils
                     App.Overlay.Add(string.Empty, 0, default(Rect), workAreaUnion);
                 }
 
+                var monitors = App.Overlay.Monitors;
                 for (int i = 0; i < App.Overlay.DesktopsCount && !App.Overlay.SpanZonesAcrossMonitors; i++)
                 {
-                    if (App.Overlay.Monitors[i].Device.Id == targetMonitorName)
+                    if (monitors[i].Device.Id == targetMonitorName)
                     {
                         App.Overlay.CurrentDesktop = i;
                         break;
@@ -278,7 +279,7 @@ namespace FancyZonesEditor.Utils
                             {
                                 if (monitors[monitorIndex].Device.Id == deviceId)
                                 {
-                                    App.Overlay.Monitors[monitorIndex].Settings = new LayoutSettings
+                                    monitors[monitorIndex].Settings = new LayoutSettings
                                     {
                                         DeviceId = deviceId,
                                         ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),

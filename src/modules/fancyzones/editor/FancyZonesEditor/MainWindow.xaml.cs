@@ -39,19 +39,19 @@ namespace FancyZonesEditor
             }
         }
 
-        public MainWindow()
+        public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
             InitializeComponent();
             DataContext = _settings;
 
             KeyUp += MainWindow_KeyUp;
 
-            if (App.Overlay.SpanZonesAcrossMonitors)
+            if (spanZonesAcrossMonitors)
             {
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
 
-            if (App.Overlay.WorkArea.Height < MinimalForDefaultWrapPanelsHeight || MonitorViewModel.IsDesktopsPanelVisible)
+            if (workArea.Height < MinimalForDefaultWrapPanelsHeight || MonitorViewModel.IsDesktopsPanelVisible)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = SmallWrapPanelItemSize;
