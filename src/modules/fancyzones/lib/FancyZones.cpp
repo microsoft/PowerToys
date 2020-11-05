@@ -898,9 +898,12 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         if (changeType == DisplayChangeType::Initialization)
         {
             std::vector<std::wstring> ids{};
-            if (VirtualDesktopUtils::GetVirtualDesktopIds(ids) && !ids.empty())
+            if (VirtualDesktopUtils::GetVirtualDesktopIds(ids))
             {
-                FancyZonesDataInstance().UpdatePrimaryDesktopData(ids[0]);
+                if (ids.size() > 0)
+                {
+                    FancyZonesDataInstance().UpdatePrimaryDesktopData(ids[0]);
+                }
                 FancyZonesDataInstance().RemoveDeletedDesktops(ids);
             }
         }
@@ -1312,6 +1315,10 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
     std::vector<std::wstring> active{};
     if (VirtualDesktopUtils::GetVirtualDesktopIds(active))
     {
+        if (active.size() > 0)
+        {
+            FancyZonesDataInstance().UpdatePrimaryDesktopData(active[0]);
+        }
         FancyZonesDataInstance().RemoveDeletedDesktops(active);
     }
 }
