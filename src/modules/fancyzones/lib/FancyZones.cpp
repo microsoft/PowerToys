@@ -643,13 +643,7 @@ void FancyZones::ToggleEditor() noexcept
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
         
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-
-    OnThreadExecutor dpiSystemThread;
-    dpiSystemThread.submit(OnThreadExecutor::task_t{ [&] {
-                        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
-                        allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-                     } })
-        .wait();
+    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
     
     bool showDpiWarning = false;
     int prevDpiX = -1, prevDpiY = -1;
@@ -712,6 +706,8 @@ void FancyZones::ToggleEditor() noexcept
 
     const auto& fancyZonesData = FancyZonesDataInstance();
     fancyZonesData.SerializeDeviceInfoToTmpFile(m_currentDesktopId);
+    OutputDebugStringW(params.c_str());
+    OutputDebugStringW(L"\n");
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -797,6 +793,29 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         // Display resolution changed. Invalidate cached work-areas so they can be recreated with latest information.
         m_workAreaHandler.Clear();
         OnDisplayChange(DisplayChangeType::DisplayChange);
+    }
+    break;
+
+    case WM_DPICHANGED:
+    {
+        std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
+
+        OnThreadExecutor dpiSystemThread;
+        dpiSystemThread.submit(OnThreadExecutor::task_t{ [&] {
+                           SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+                           allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+                       } })
+            .wait();
+        std::wstring out;
+        out.append(std::to_wstring(allMonitors[0].second.rcMonitor.left));
+        out.append(L" ");
+        out.append(std::to_wstring(allMonitors[0].second.rcMonitor.top));
+        out.append(L" ");
+        out.append(std::to_wstring(allMonitors[0].second.rcMonitor.right));
+        out.append(L" ");
+        out.append(std::to_wstring(allMonitors[0].second.rcMonitor.bottom));
+        out.append(L"\n");
+        OutputDebugStringW(out.c_str());
     }
     break;
 

@@ -124,12 +124,11 @@ namespace FancyZonesEditor
             Monitors = new List<Monitor>();
         }
 
-        public void Add(string id, int dpi, Rect bounds, Rect workArea)
+        public void Add(string id, int dpi, Rect bounds, Rect workAreaRect)
         {
-            var monitor = new Monitor(id, dpi, bounds, workArea);
+            var monitor = new Monitor(id, dpi, bounds, workAreaRect);
 
             bool inserted = false;
-            var workAreaRect = workArea;
             for (int i = 0; i < Monitors.Count && !inserted; i++)
             {
                 var rect = Monitors[i].Device.WorkAreaRect;

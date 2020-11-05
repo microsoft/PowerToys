@@ -10,6 +10,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Forms;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor.Utils
@@ -155,8 +156,8 @@ namespace FancyZonesEditor.Utils
 
             if (args.Length < 2 && !App.DebugMode)
             {
-                MessageBox.Show(ErrorNonStandaloneApp, ErrorMessageBoxTitle);
-                ((App)Application.Current).Shutdown();
+                System.Windows.MessageBox.Show(ErrorNonStandaloneApp, ErrorMessageBoxTitle);
+                ((App)System.Windows.Application.Current).Shutdown();
             }
 
             try
@@ -196,6 +197,7 @@ namespace FancyZonesEditor.Utils
 
                 // Monitors count
                 int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount]);
+                int count2 = Screen.AllScreens.Length;
 
                 Rect workAreaUnion = default(Rect);
                 const int monitorArgsCount = 10;
@@ -212,17 +214,27 @@ namespace FancyZonesEditor.Utils
                     int workAreaRight = int.Parse(argsParts[(int)CmdArgs.WorkAreaRight + (i * monitorArgsCount)]);
                     int workAreaBottom = int.Parse(argsParts[(int)CmdArgs.WorkAreaBottom + (i * monitorArgsCount)]);
 
-                    Rect monitor = new Rect(monitorLeft, monitorTop, monitorRight - monitorLeft, monitorBottom - monitorTop);
-                    Rect workArea = new Rect(workAreaLeft, workAreaTop, workAreaRight - workAreaLeft, workAreaBottom - workAreaTop);
+                    Rect monitorRect = new Rect(0, 0, 0, 0);
+                    Rect workAreaRect = new Rect(0, 0, 0, 0);
+
+                    for (int j = 0; j < count2; j++)
+                    {
+                        if (Screen.AllScreens[j].Bounds.Top == monitorTop && Screen.AllScreens[j].Bounds.Left == monitorLeft)
+                        {
+                            monitorRect = new Rect(monitorLeft, monitorTop, Screen.AllScreens[j].Bounds.Right - Screen.AllScreens[j].Bounds.Left, Screen.AllScreens[j].Bounds.Bottom - Screen.AllScreens[j].Bounds.Top);
+                            workAreaRect = new Rect(workAreaLeft, workAreaTop, Screen.AllScreens[j].WorkingArea.Right - Screen.AllScreens[j].WorkingArea.Left, Screen.AllScreens[j].WorkingArea.Bottom - Screen.AllScreens[j].WorkingArea.Top);
+                            break;
+                        }
+                    }
 
                     if (App.Overlay.SpanZonesAcrossMonitors)
                     {
-                        App.Overlay.UsedWorkAreas.Add(workArea);
-                        workAreaUnion = Rect.Union(workAreaUnion, workArea);
+                        App.Overlay.UsedWorkAreas.Add(workAreaRect);
+                        workAreaUnion = Rect.Union(workAreaUnion, workAreaRect);
                     }
                     else
                     {
-                        App.Overlay.Add(id, dpi, monitor, workArea);
+                        App.Overlay.Add(id, dpi, monitorRect, workAreaRect);
                     }
                 }
 
@@ -243,8 +255,8 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception)
             {
-                MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
-                ((App)Application.Current).Shutdown();
+                System.Windows.MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                ((App)System.Windows.Application.Current).Shutdown();
             }
         }
 
