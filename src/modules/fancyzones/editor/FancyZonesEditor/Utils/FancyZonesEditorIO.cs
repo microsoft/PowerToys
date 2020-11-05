@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -259,47 +259,26 @@ namespace FancyZonesEditor.Utils
                     jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
                     inputStream.Close();
 
-                    JsonElement info = jsonObject.GetProperty(AppliedZonesetsJsonTag);
+                    JsonElement json = jsonObject.GetProperty(AppliedZonesetsJsonTag);
 
                     int layoutId = 0;
-                    for (int i = 0; i < info.GetArrayLength() && layoutId < App.Overlay.DesktopsCount; i++)
+                    for (int i = 0; i < json.GetArrayLength() && layoutId < App.Overlay.DesktopsCount; i++)
                     {
-                        var zonesetData = info[i];
+                        var zonesetData = json[i];
 
                         string deviceId = zonesetData.GetProperty(DeviceIdJsonTag).GetString();
 
                         string currentLayoutType = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(TypeJsonTag).GetString();
-                        LayoutType type = LayoutType.Blank;
-                        switch (currentLayoutType)
-                        {
-                            case FocusJsonTag:
-                                type = LayoutType.Focus;
-                                break;
-                            case ColumnsJsonTag:
-                                type = LayoutType.Columns;
-                                break;
-                            case RowsJsonTag:
-                                type = LayoutType.Rows;
-                                break;
-                            case GridJsonTag:
-                                type = LayoutType.Grid;
-                                break;
-                            case PriorityGridJsonTag:
-                                type = LayoutType.PriorityGrid;
-                                break;
-                            case CustomJsonTag:
-                                type = LayoutType.Custom;
-                                break;
-                        }
+                        LayoutType type = JsonTagToLayoutType(currentLayoutType);
 
                         if (!App.Overlay.SpanZonesAcrossMonitors)
                         {
                             var monitors = App.Overlay.Monitors;
-                            for (int s = 0; s < monitors.Count; s++)
+                            for (int monitorIndex = 0; monitorIndex < monitors.Count; monitorIndex++)
                             {
-                                if (monitors[s].Device.Id == deviceId && s < App.Overlay.DesktopsCount)
+                                if (monitors[monitorIndex].Device.Id == deviceId)
                                 {
-                                    App.Overlay.Monitors[s].Settings = new LayoutSettings
+                                    App.Overlay.Monitors[monitorIndex].Settings = new LayoutSettings
                                     {
                                         DeviceId = deviceId,
                                         ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
@@ -505,27 +484,7 @@ namespace FancyZonesEditor.Utils
                     Uuid = zoneset.ZonesetUuid,
                 };
 
-                switch (zoneset.Type)
-                {
-                    case LayoutType.Focus:
-                        activeZoneSet.Type = FocusJsonTag;
-                        break;
-                    case LayoutType.Rows:
-                        activeZoneSet.Type = RowsJsonTag;
-                        break;
-                    case LayoutType.Columns:
-                        activeZoneSet.Type = ColumnsJsonTag;
-                        break;
-                    case LayoutType.Grid:
-                        activeZoneSet.Type = GridJsonTag;
-                        break;
-                    case LayoutType.PriorityGrid:
-                        activeZoneSet.Type = PriorityGridJsonTag;
-                        break;
-                    case LayoutType.Custom:
-                        activeZoneSet.Type = CustomJsonTag;
-                        break;
-                }
+                activeZoneSet.Type = LayoutTypeToJsonTag(zoneset.Type);
 
                 applied.AppliedZonesets.Add(new AppliedZoneSet
                 {
@@ -583,6 +542,55 @@ namespace FancyZonesEditor.Utils
             {
                 App.ShowExceptionMessageBox(ErrorPersistingCustomLayout, ex);
             }
+        }
+
+        private LayoutType JsonTagToLayoutType(string tag)
+        {
+            LayoutType type = LayoutType.Blank;
+            switch (tag)
+            {
+                case FocusJsonTag:
+                    type = LayoutType.Focus;
+                    break;
+                case ColumnsJsonTag:
+                    type = LayoutType.Columns;
+                    break;
+                case RowsJsonTag:
+                    type = LayoutType.Rows;
+                    break;
+                case GridJsonTag:
+                    type = LayoutType.Grid;
+                    break;
+                case PriorityGridJsonTag:
+                    type = LayoutType.PriorityGrid;
+                    break;
+                case CustomJsonTag:
+                    type = LayoutType.Custom;
+                    break;
+            }
+
+            return type;
+        }
+
+        private string LayoutTypeToJsonTag(LayoutType type)
+        {
+            switch (type)
+            {
+                case LayoutType.Focus:
+                    return FocusJsonTag;
+                case LayoutType.Rows:
+                    return RowsJsonTag;
+                case LayoutType.Columns:
+                    return ColumnsJsonTag;
+                case LayoutType.Grid:
+                    return GridJsonTag;
+                case LayoutType.PriorityGrid:
+                    return PriorityGridJsonTag;
+                case LayoutType.Custom:
+                    return CustomJsonTag;
+            }
+
+            return string.Empty;
         }
     }
 }
