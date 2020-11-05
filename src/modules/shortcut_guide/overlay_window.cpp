@@ -71,7 +71,7 @@ ScaleResult D2DOverlaySVG::get_thumbnail_rect_and_scale(int x_offset, int y_offs
     }
     float scale_h = fill * thumbnail_scaled_rect_width / window_cx;
     float scale_v = fill * thumbnail_scaled_rect_heigh / window_cy;
-    float use_scale = min(scale_h, scale_v);
+    float use_scale = std::min(scale_h, scale_v);
     RECT thumb_rect;
     thumb_rect.left = thumbnail_scaled_rect.left + (int)(thumbnail_scaled_rect_width - use_scale * window_cx) / 2 + x_offset;
     thumb_rect.right = thumbnail_scaled_rect.right - (int)(thumbnail_scaled_rect_width - use_scale * window_cx) / 2 + x_offset;
@@ -254,10 +254,10 @@ void D2DOverlayWindow::show(HWND active_window, bool snappable)
     total_screen = ScreenSize(monitors[0].rect);
     for (auto& monitor : monitors)
     {
-        total_screen.rect.left = min(total_screen.rect.left, monitor.rect.left);
-        total_screen.rect.top = min(total_screen.rect.top, monitor.rect.top);
-        total_screen.rect.right = max(total_screen.rect.right, monitor.rect.right);
-        total_screen.rect.bottom = max(total_screen.rect.bottom, monitor.rect.bottom);
+        total_screen.rect.left = std::min(total_screen.rect.left, monitor.rect.left);
+        total_screen.rect.top = std::min(total_screen.rect.top, monitor.rect.top);
+        total_screen.rect.right = std::max(total_screen.rect.right, monitor.rect.right);
+        total_screen.rect.bottom = std::max(total_screen.rect.bottom, monitor.rect.bottom);
     }
     // make sure top-right corner of all the monitor rects is (0,0)
     monitor_dx = -total_screen.left();
@@ -693,10 +693,10 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     auto total_monitor_with_screen = total_screen;
     if (thumb_window)
     {
-        total_monitor_with_screen.rect.left = min(total_monitor_with_screen.rect.left, thumb_window->left + monitor_dx);
-        total_monitor_with_screen.rect.top = min(total_monitor_with_screen.rect.top, thumb_window->top + monitor_dy);
-        total_monitor_with_screen.rect.right = max(total_monitor_with_screen.rect.right, thumb_window->right + monitor_dx);
-        total_monitor_with_screen.rect.bottom = max(total_monitor_with_screen.rect.bottom, thumb_window->bottom + monitor_dy);
+        total_monitor_with_screen.rect.left = std::min(total_monitor_with_screen.rect.left, thumb_window->left + monitor_dx);
+        total_monitor_with_screen.rect.top = std::min(total_monitor_with_screen.rect.top, thumb_window->top + monitor_dy);
+        total_monitor_with_screen.rect.right = std::max(total_monitor_with_screen.rect.right, thumb_window->right + monitor_dx);
+        total_monitor_with_screen.rect.bottom = std::max(total_monitor_with_screen.rect.bottom, thumb_window->bottom + monitor_dy);
     }
     // Only allow the new rect being slight bigger.
     if (total_monitor_with_screen.width() - total_screen.width() > (thumb_window->right - thumb_window->left) / 2 ||
