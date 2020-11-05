@@ -170,7 +170,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         ShortcutControl::SetAccessibleNameForTextBox(targetAppTextBox, rowIndex + 1);
     });
 
-    StackPanel targetAppContainer = KeyboardManagerHelper::GetWrapped(targetAppTextBox, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
+    // We need two containers in order to align it horizontally and vertically
+    StackPanel targetAppHorizontal = KeyboardManagerHelper::GetWrapped(targetAppTextBox, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
+    targetAppHorizontal.Orientation(Orientation::Horizontal);
+    targetAppHorizontal.HorizontalAlignment(HorizontalAlignment::Left);
+    StackPanel targetAppContainer = KeyboardManagerHelper::GetWrapped(targetAppHorizontal, KeyboardManagerConstants::TableTargetAppColWidth).as<StackPanel>();
     targetAppContainer.Orientation(Orientation::Vertical);
     targetAppContainer.VerticalAlignment(VerticalAlignment::Bottom);
     row.Children().Append(targetAppContainer);
