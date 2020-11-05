@@ -206,7 +206,9 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             row.Background(i % 2 ? brush : Media::SolidColorBrush(Colors::Transparent()));
             StackPanel sourceCol = row.Children().GetAt(0).as<StackPanel>();
             StackPanel targetCol = row.Children().GetAt(2).as<StackPanel>();
-            TextBox targetApp = row.Children().GetAt(3).as<StackPanel>().Children().GetAt(0).as<TextBox>();
+            TextBox targetApp = row.Children().GetAt(3).as<StackPanel>()
+                .Children().GetAt(0).as<StackPanel>()
+                .Children().GetAt(0).as<TextBox>();
             Button delButton = row.Children().GetAt(4).as<StackPanel>().Children().GetAt(0).as<Button>();
             UpdateAccessibleNames(sourceCol, targetCol, targetApp, delButton, i);
         }
