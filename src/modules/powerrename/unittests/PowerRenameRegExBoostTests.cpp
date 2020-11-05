@@ -351,7 +351,7 @@ TEST_METHOD(VerifyReplaceFirstWildNoFlags)
 
 TEST_METHOD(VerifyHandleCapturingGroups)
 {
-    // This differs from the Standard Library: Boost does not recognize $xyz as $x and "yz".
+    // This differs from the Standard Library: Boost does not recognize $123 as $1 and "23".
     // To use a capturing group followed by numbers as replacement curly braces are needed.
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
