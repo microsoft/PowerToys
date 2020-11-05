@@ -16,12 +16,6 @@ namespace FancyZonesEditor
         public LayoutOverlayWindow()
         {
             InitializeComponent();
-
-            if (App.DebugMode)
-            {
-                Background = System.Windows.Media.Brushes.BlanchedAlmond;
-                Opacity = 0.7;
-            }
         }
 
         private void Window_DpiChanged(object sender, DpiChangedEventArgs e)
