@@ -491,7 +491,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fill]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Dolgu]]></Val>
+            <Val><![CDATA[Doldur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
