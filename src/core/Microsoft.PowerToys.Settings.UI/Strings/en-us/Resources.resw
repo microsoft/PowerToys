@@ -196,6 +196,7 @@
   </data>
   <data name="KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" xml:space="preserve">
     <value>Key Remapping</value>
+    <comment>key as in keyboard key</comment>
   </data>
   <data name="KeyboardManager_RemappedShortcutsListItem.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Remapping</value>
@@ -208,9 +209,11 @@
   </data>
   <data name="KeyboardManager_TargetApp.AutomationProperties.Name" xml:space="preserve">
     <value>For Target Application</value>
+    <comment>What computer application would this be for</comment>
   </data>
   <data name="KeyboardManager_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Keyboard Manager</value>
+    <comment>do not loc, product name</comment>
   </data>
   <data name="ColorPicker_Description.Text" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
@@ -227,6 +230,7 @@
   </data>
   <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
     <value>Open Color Picker</value>
+    <comment>do not loc product name</comment>
   </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
@@ -279,6 +283,7 @@
   </data>
   <data name="PowerLauncher_OpenConsole.Header" xml:space="preserve">
     <value>Open console</value>
+    <comment>console refers to Windows command prompt</comment>
   </data>
   <data name="PowerLauncher_OverrideWinRKey.Content" xml:space="preserve">
     <value>Override Win+R shortcut</value>
@@ -290,7 +295,7 @@
     <value>Ignore shortcuts in fullscreen mode</value>
   </data>
   <data name="PowerLauncher_DisableDriveDetectionWarning.Content" xml:space="preserve">
-    <value>Disable drive detection warning for the indexer plugin</value>
+    <value>Disable drive detection warning for the file search plugin</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -307,12 +312,15 @@
   </data>
   <data name="Fancyzones_Image.AutomationProperties.Name" xml:space="preserve">
     <value>FancyZones windows</value>
+    <comment>do not loc the Product name</comment>
   </data>
   <data name="FancyZones_Description.Text" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
+    <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
     <value>Keep windows in their zones when the screen resolution changes</value>
+    <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable FancyZones</value>
@@ -328,7 +336,8 @@
     <value>Zone highlight opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
-    <value>Open zones editor</value>
+    <value>Open layout editor</value>  
+    <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut setting</value>
@@ -337,7 +346,8 @@
     <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
-    <value>Launch zones editor</value>
+    <value>Launch layout editor</value>
+    <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
     <value>Make dragged window transparent</value>
@@ -521,6 +531,11 @@
   </data>
   <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
     <value>Remove</value>
+    <comment>Removes a user defined setting group for Image Resizer</comment>
+  </data>
+  <data name="RemoveTooltip.Text" xml:space="preserve">
+    <value>Remove</value>
+    <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
   <data name="ImageResizer_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
@@ -542,6 +557,7 @@
   </data>
   <data name="File.Text" xml:space="preserve">
     <value>File</value>
+    <comment>as in a computer file</comment>
   </data>
   <data name="Default.Content" xml:space="preserve">
     <value>Default</value>
@@ -587,12 +603,15 @@
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
     <value>Fill</value>
+    <comment>Refers to filling an image into a certain size. It could overflow</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fit.Content" xml:space="preserve">
     <value>Fit</value>
+    <comment>Refers to fitting an image into a certain size. It won't overflow</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Stretch.Content" xml:space="preserve">
     <value>Stretch</value>
+    <comment>Refers to stretching an image into a certain size. Won't overflow but could distort.</comment>
   </data>
   <data name="ImageResizer_Sizes_Units_CM.Content" xml:space="preserve">
     <value>Centimeters</value>
@@ -740,12 +759,13 @@
   </data>
   <data name="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows based on their position</value>
+    <comment>Windows refers to application windows</comment>
   </data>
   <data name="GeneralSettings_NewVersionIsAvailable" xml:space="preserve">
     <value>New update available</value>
   </data>
   <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
-    <value>You have the latest available version.</value>
+    <value>PowerToys is up-to-date.</value>
   </data>
   <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
     <value>Icon Preview</value>
@@ -773,6 +793,7 @@
   </data>
   <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
+    <comment>Dark refers to color, not weight</comment>
   </data>
   <data name="Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
@@ -782,9 +803,13 @@
     <value>Windows default</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
-  <data name="Windows_Color_Settings.Content" xml:space="preserve">
+  <data name="Windows_Color_Settings.Text" xml:space="preserve">
     <value>Windows color settings</value>
     <comment>Windows refers to the Operating system</comment>
+  </data>
+  <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
+    <value>Learn more about remapping limitations</value>
+    <comment>This is a link that will discuss what is and is not possible for Keyboard manager to remap</comment>
   </data>
   <data name="FancyZones_Editor_GroupSettings.Text" xml:space="preserve">
     <value>Editor</value>

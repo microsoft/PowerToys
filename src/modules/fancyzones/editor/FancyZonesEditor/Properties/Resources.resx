@@ -129,7 +129,10 @@
   <data name="Canvas_Layout_Editor" xml:space="preserve">
     <value>Canvas layout editor</value>
   </data>
-  <data name="Choose_Layout" xml:space="preserve">
+  <data name="Grid_Layout_Editor" xml:space="preserve">
+    <value>Grid layout editor</value>
+  </data>
+	<data name="Choose_Layout" xml:space="preserve">
     <value>Choose your layout for this desktop</value>
   </data>
   <data name="Crash_Report_Message_Box_Text_Part1" xml:space="preserve">

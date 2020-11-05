@@ -187,6 +187,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Grid layout editor.
+        /// </summary>
+        public static string Grid_Layout_Editor {
+            get {
+                return ResourceManager.GetString("Grid_Layout_Editor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         public static string Name {

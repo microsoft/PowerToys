@@ -293,7 +293,7 @@ namespace Microsoft.Plugin.Program.Programs
                 string key = resourceReference.Substring(prefix.Length);
                 string parsed;
 
-                // Using Ordinal/OrdinalIgnorcase since these are used internally
+                // Using Ordinal/OrdinalIgnoreCase since these are used internally
                 if (key.StartsWith("//", StringComparison.Ordinal))
                 {
                     parsed = prefix + key;
