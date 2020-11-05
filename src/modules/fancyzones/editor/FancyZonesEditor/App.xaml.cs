@@ -76,8 +76,6 @@ namespace FancyZonesEditor
             DebugModeCheck();
             FancyZonesEditorIO = new FancyZonesEditorIO();
             Overlay = new Overlay();
-
-            FancyZonesEditorIO.ParseCommandLineArguments();
             MainWindowSettings = new MainWindowSettingsModel();
         }
 
@@ -90,12 +88,12 @@ namespace FancyZonesEditor
                 Environment.Exit(0);
             });
 
+            FancyZonesEditorIO.ParseCommandLineArguments();
             FancyZonesEditorIO.ParseDeviceInfoData();
 
             MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;
             settings.UpdateSelectedLayoutModel();
 
-            Overlay.UpdateSelectedLayoutModel();
             Overlay.Show();
         }
 

@@ -85,8 +85,6 @@ namespace FancyZonesEditor.ViewModels
             Monitors[monitorInfo.Index - 1].Selected = true;
 
             App.Overlay.CurrentDesktop = monitorInfo.Index - 1;
-            App.Overlay.UpdateSelectedLayoutModel();
-            App.Overlay.Update();
         }
     }
 }

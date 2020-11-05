@@ -80,6 +80,8 @@ namespace FancyZonesEditor
                     {
                         settings.UpdateDesktopDependantProperties(prevSettings);
                     }
+
+                    Update();
                 }
             }
         }
@@ -92,7 +94,12 @@ namespace FancyZonesEditor
         {
             get
             {
-                return Monitors[CurrentDesktop].Device.WorkAreaRect;
+                if (Monitors.Count > 0 && CurrentDesktop < Monitors.Count)
+                {
+                    return Monitors[CurrentDesktop].Device.WorkAreaRect;
+                }
+
+                return default(Rect);
             }
         }
 
@@ -145,8 +152,11 @@ namespace FancyZonesEditor
 
         public void ShowLayout()
         {
-            Monitors[CurrentDesktop].Window.Content = _layoutPreview;
-            Monitors[CurrentDesktop].Window.DataContext = CurrentDataContext;
+            UpdateSelectedLayoutModel();
+
+            var window = Monitors[CurrentDesktop].Window;
+            window.Content = _layoutPreview;
+            window.DataContext = CurrentDataContext;
 
             for (int i = 0; i < DesktopsCount; i++)
             {
@@ -197,13 +207,6 @@ namespace FancyZonesEditor
             OpenMainWindow();
         }
 
-        public void Update()
-        {
-            CloseLayout();
-            _mainWindow.Update();
-            ShowLayout();
-        }
-
         public void CloseLayoutWindow()
         {
             for (int i = 0; i < DesktopsCount; i++)
@@ -212,10 +215,23 @@ namespace FancyZonesEditor
             }
         }
 
+        private void Update()
+        {
+            CloseLayout();
+
+            if (_mainWindow != null)
+            {
+                _mainWindow.Update();
+            }
+
+            ShowLayout();
+        }
+
         private void CloseLayout()
         {
-            Monitors[CurrentDesktop].Window.Content = null;
-            Monitors[CurrentDesktop].Window.DataContext = null;
+            var window = Monitors[CurrentDesktop].Window;
+            window.Content = null;
+            window.DataContext = null;
         }
 
         private void OpenMainWindow()
@@ -236,7 +252,7 @@ namespace FancyZonesEditor
             _mainWindow.Topmost = false;
         }
 
-        public void UpdateSelectedLayoutModel()
+        private void UpdateSelectedLayoutModel()
         {
             LayoutModel foundModel = null;
             LayoutSettings currentApplied = CurrentLayoutSettings;
