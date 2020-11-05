@@ -262,16 +262,17 @@ void FancyZonesData::RemoveDeletedDesktops(const std::vector<std::wstring>& acti
     for (auto it = std::begin(deviceInfoMap); it != std::end(deviceInfoMap);)
     {
         std::wstring desktopId = ExtractVirtualDesktopId(it->first);
-        auto foundId = active.find(desktopId);
-        if (foundId == std::end(active))
+        if (desktopId != NonLocalizable::DefaultGuid)
         {
-            RemoveDesktopAppZoneHistory(desktopId);
-            it = deviceInfoMap.erase(it);
+            auto foundId = active.find(desktopId);
+            if (foundId == std::end(active))
+            {
+                RemoveDesktopAppZoneHistory(desktopId);
+                it = deviceInfoMap.erase(it);
+                continue;
+            }
         }
-        else
-        {
-            ++it;
-        }
+        ++it;
     }
     SaveFancyZonesData();
 }
