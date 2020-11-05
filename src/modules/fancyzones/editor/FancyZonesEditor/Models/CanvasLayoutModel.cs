@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -16,27 +16,15 @@ namespace FancyZonesEditor.Models
         // Non-localizable strings
         private const string ModelTypeID = "canvas";
 
-        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight)
+        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones)
             : base(uuid, name, type)
         {
-            lastWorkAreaWidth = workAreaWidth;
-            lastWorkAreaHeight = workAreaHeight;
-            IsScaled = false;
-
-            if (ShouldScaleLayout())
-            {
-                ScaleLayout(zones);
-            }
-            else
-            {
-                Zones = zones;
-            }
+            Zones = zones;
         }
 
         public CanvasLayoutModel(string name, LayoutType type)
         : base(name, type)
         {
-            IsScaled = false;
         }
 
         public CanvasLayoutModel(string name)
@@ -46,12 +34,6 @@ namespace FancyZonesEditor.Models
 
         // Zones - the list of all zones in this layout, described as independent rectangles
         public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
-
-        private int lastWorkAreaWidth = (int)App.Overlay.WorkArea.Width;
-
-        private int lastWorkAreaHeight = (int)App.Overlay.WorkArea.Height;
-
-        public bool IsScaled { get; private set; }
 
         // RemoveZoneAt
         //  Removes the specified index from the Zones list, and fires a property changed notification for the Zones property
@@ -98,36 +80,6 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private bool ShouldScaleLayout()
-        {
-            // Scale if:
-            // - at least one dimension changed
-            // - orientation remained the same
-            Rect workingArea = App.Overlay.WorkArea;
-            return (lastWorkAreaHeight != workingArea.Height || lastWorkAreaWidth != workingArea.Width) &&
-                ((lastWorkAreaHeight > lastWorkAreaWidth && workingArea.Height > workingArea.Width) ||
-                  (lastWorkAreaWidth > lastWorkAreaHeight && workingArea.Width > workingArea.Height));
-        }
-
-        private void ScaleLayout(IList<Int32Rect> zones)
-        {
-            Rect workingArea = App.Overlay.WorkArea;
-            foreach (Int32Rect zone in zones)
-            {
-                double widthFactor = (double)workingArea.Width / lastWorkAreaWidth;
-                double heightFactor = (double)workingArea.Height / lastWorkAreaHeight;
-                int scaledX = (int)(zone.X * widthFactor);
-                int scaledY = (int)(zone.Y * heightFactor);
-                int scaledWidth = (int)(zone.Width * widthFactor);
-                int scaledHeight = (int)(zone.Height * heightFactor);
-                Zones.Add(new Int32Rect(scaledX, scaledY, scaledWidth, scaledHeight));
-            }
-
-            lastWorkAreaHeight = (int)workingArea.Height;
-            lastWorkAreaWidth = (int)workingArea.Width;
-            IsScaled = true;
-        }
-
         private struct Zone
         {
             public int X { get; set; }
@@ -165,10 +117,11 @@ namespace FancyZonesEditor.Models
         {
             AddCustomLayout(this);
 
+            var workArea = App.Overlay.WorkArea;
             CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
             {
-                RefWidth = lastWorkAreaWidth,
-                RefHeight = lastWorkAreaHeight,
+                RefWidth = (int)workArea.Width,
+                RefHeight = (int)workArea.Height,
                 Zones = new Zone[Zones.Count],
             };
 

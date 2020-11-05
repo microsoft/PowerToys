@@ -418,15 +418,15 @@ namespace FancyZonesEditor.Utils
                     }
                     else if (type.Equals(CanvasJsonTag))
                     {
-                        int lastWorkAreaWidth = info.GetProperty(RefWidthJsonTag).GetInt32();
-                        int lastWorkAreaHeight = info.GetProperty(RefHeightJsonTag).GetInt32();
+                        int workAreaWidth = info.GetProperty(RefWidthJsonTag).GetInt32();
+                        int workAreaHeight = info.GetProperty(RefHeightJsonTag).GetInt32();
 
                         JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty(ZonesJsonTag).EnumerateArray();
                         IList<Int32Rect> zones = new List<Int32Rect>();
 
                         bool error = false;
 
-                        if (lastWorkAreaWidth <= 0 || lastWorkAreaHeight <= 0)
+                        if (workAreaWidth <= 0 || workAreaHeight <= 0)
                         {
                             error = true;
                         }
@@ -454,7 +454,7 @@ namespace FancyZonesEditor.Utils
                             continue;
                         }
 
-                        custom.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, zones, lastWorkAreaWidth, lastWorkAreaHeight));
+                        custom.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, zones));
                     }
                 }
 
