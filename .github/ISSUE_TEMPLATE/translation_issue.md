@@ -2,7 +2,7 @@
 name: 📖 Localization/Translation issue
 about: Report incorrect translations.
 title: ''
-labels: Issue-Bug,Area-Localization
+labels: Issue-Bug,Area-Localization,Issue-Translation 
 assignees: ''
 
 ---
