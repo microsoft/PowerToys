@@ -21,7 +21,7 @@ namespace PowerRenameRegExTests
         public:
 TEST_CLASS_INITIALIZE(ClassInitialize)
 {
-    CSettingsInstance().SetUseBoostLib(true);
+    CSettingsInstance().SetUseBoostLib(false);
 }
 
 TEST_METHOD(GeneralReplaceTest)

@@ -180,7 +180,6 @@ CPowerRenameRegEx::CPowerRenameRegEx() :
     SHStrDup(L"", &m_searchTerm);
     SHStrDup(L"", &m_replaceTerm);
 
-    CSettingsInstance().Load();
     _useBoostLib = CSettingsInstance().GetUseBoostLib();
 }
 
