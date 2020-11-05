@@ -803,9 +803,13 @@
     <value>Windows default</value>
     <comment>Windows refers to the Operating system</comment>
   </data>
-  <data name="Windows_Color_Settings.Content" xml:space="preserve">
+  <data name="Windows_Color_Settings.Text" xml:space="preserve">
     <value>Windows color settings</value>
     <comment>Windows refers to the Operating system</comment>
+  </data>
+  <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
+    <value>Learn more about remapping limitations</value>
+    <comment>This is a link that will discuss what is and is not possible for Keyboard manager to remap</comment>
   </data>
   <data name="FancyZones_Editor_GroupSettings.Text" xml:space="preserve">
     <value>Editor</value>
