@@ -180,4 +180,10 @@
   <data name="Templates" xml:space="preserve">
     <value>Templates</value>
   </data>
+  <data name="Zone_Count_Decrement" xml:space="preserve">
+    <value>Decrement number of zones in template layout</value>
+  </data>
+  <data name="Zone_Count_Increment" xml:space="preserve">
+    <value>Increment number of zones in template layout</value>
+  </data>
 </root>
