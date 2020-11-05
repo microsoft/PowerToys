@@ -821,6 +821,6 @@
     <value>Behavior</value>
   </data>
   <data name="PowerRename_Toggle_UseBoostLib.Content" xml:space="preserve">
-    <value>Use Boost Library, provides extended features but may behave different</value>
+    <value>Use Boost Library (provides extended features but may use different regex syntax)</value>
   </data>
 </root>
