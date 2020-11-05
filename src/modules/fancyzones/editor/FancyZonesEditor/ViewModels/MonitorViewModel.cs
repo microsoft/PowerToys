@@ -63,9 +63,9 @@ namespace FancyZonesEditor.ViewModels
                 i++;
             }
 
-            double maxMultipier = MaxPreviewDisplaySize / maxDimension;
-            double minMultipier = MinPreviewDisplaySize / minDimension;
-            DesktopPreviewMultiplier = (minMultipier + maxMultipier) / 2;
+            double maxMultiplier = MaxPreviewDisplaySize / maxDimension;
+            double minMultiplier = MinPreviewDisplaySize / minDimension;
+            DesktopPreviewMultiplier = (minMultiplier + maxMultiplier) / 2;
         }
 
         private void RaisePropertyChanged(string propertyName)
