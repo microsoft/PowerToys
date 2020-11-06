@@ -49,6 +49,17 @@ namespace FancyZonesEditor_DPI_test
 
             for (int i = 0; i < screens.Length; i++)
             {
+                if (screens[i].Primary)
+                {
+                    double monitorDPI;
+                    DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out monitorDPI, out monitorDPI);
+                    primaryMonitorDPI = monitorDPI;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < screens.Length; i++)
+            {
                 // bool en = DpiAwareness.IsPerMonitorAwarenessEnabled;
                 // MessageBox.Show("DPI awereness per monitor: " + en);
 
@@ -66,11 +77,6 @@ namespace FancyZonesEditor_DPI_test
                 double monitorDPI;
                 DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out monitorDPI, out monitorDPI);
                 screenInfo.MonitorDPI = (int)monitorDPI;
-
-                if (screens[i].Primary)
-                {
-                    primaryMonitorDPI = monitorDPI;
-                }
 
                 // resolution
                 screenInfo.Resolution = new Rect(monitor.MonitorInfo.monitor.left, monitor.MonitorInfo.monitor.top, 
