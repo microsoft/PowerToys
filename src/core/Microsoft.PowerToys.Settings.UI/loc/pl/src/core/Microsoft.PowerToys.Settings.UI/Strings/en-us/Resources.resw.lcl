@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft PowerToys to zestaw narzędzi przeznaczonych dla użytkowników zaawansowanych na potrzeby dostrajania i usprawniania ich środowiska systemu Windows w celu zwiększenia wydajności.]]></Val>
+            <Val><![CDATA[Microsoft PowerToys jest zestawem narzędzi przeznaczonych dla użytkowników zaawansowanych, które umożliwiają dostosowanie i usprawnienie środowiska Windows w celu zwiększenia produktywności.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -590,7 +590,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Request a feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zawnioskuj o dodanie funkcji]]></Val>
+            <Val><![CDATA[Zaproponuj dodanie funkcji]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -617,7 +617,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Download updates automatically (Except on metered connections)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pobieranie aktualizacji automatycznie (z wyjątkiem połączeń taryfowych)]]></Val>
+            <Val><![CDATA[Automatyczne pobieranie aktualizacji (za wyjątkiem połączeń taryfowych)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -626,7 +626,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Run at startup]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uruchom podczas uruchamiania]]></Val>
+            <Val><![CDATA[Uruchom podczas startu systemu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -662,7 +662,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Running as administrator]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uruchamianie jako administrator]]></Val>
+            <Val><![CDATA[Uruchomione jako administrator]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -671,7 +671,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Running as user]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uruchamianie jako użytkownik]]></Val>
+            <Val><![CDATA[Uruchomione jako użytkownik]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

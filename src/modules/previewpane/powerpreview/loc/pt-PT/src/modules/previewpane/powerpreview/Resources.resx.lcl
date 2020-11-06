@@ -128,7 +128,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Svg Previewer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pré-visualizador SVG]]></Val>
+            <Val><![CDATA[Pré-visualizador de SVG]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -137,7 +137,7 @@
         <Str Cat="Text">
           <Val><![CDATA[SVG Previewer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pré-visualizador SVG]]></Val>
+            <Val><![CDATA[Pré-visualizador de SVG]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
