@@ -239,7 +239,15 @@
                                                HorizontalAlignment="Stretch" 
                                                LastChildFill="True">
                                         <DockPanel DockPanel.Dock="Top" LastChildFill="True" >
-                                            <Button x:Name="DeleteButton" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" DockPanel.Dock="Right" MaxHeight="10" Click="OnDelete" Padding="8,4,8,4" Margin="0,0,8,0" BorderThickness="0" Background="#f2f2f2">
+                                            <Button x:Name="DeleteButton" AutomationProperties.Name="{x:Static props:Resources.Custom_Layout_Delete_Button}"
+                                                    Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}"
+                                                    DockPanel.Dock="Right"
+                                                    MaxHeight="10"
+                                                    Click="OnDelete"
+                                                    Padding="8,4,8,4"
+                                                    Margin="0,0,8,0"
+                                                    BorderThickness="0"
+                                                    Background="#f2f2f2">
                                                 <Image Source="images/Delete.png" />
                                             </Button>
                                             <TextBlock DockPanel.Dock="Top" 
