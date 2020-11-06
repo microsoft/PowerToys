@@ -173,7 +173,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Third header textblock in the header row of the shortcut table
     TextBlock targetAppHeader;
     targetAppHeader.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_TARGETAPPHEADER));
-    targetAppHeader.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     targetAppHeader.FontWeight(Text::FontWeights::Bold());
     targetAppHeader.HorizontalAlignment(HorizontalAlignment::Center);
 
