@@ -360,4 +360,12 @@ namespace KeyboardManagerHelper
         // If we have at least two keys equal to 'selectedKeyCode' than modifier was repeated
         return numberOfSameType > 1;
     }
+
+    winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width)
+    {
+        StackPanel sp = StackPanel();
+        sp.Width(width);
+        sp.Children().Append(element.as<FrameworkElement>());
+        return sp;
+    }
 }

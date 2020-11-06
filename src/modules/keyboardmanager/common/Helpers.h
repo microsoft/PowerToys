@@ -107,4 +107,6 @@ namespace KeyboardManagerHelper
 
     // Function to check if a modifier has been repeated in the previous drop downs
     bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCodes);
+
+    winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width);
 }
