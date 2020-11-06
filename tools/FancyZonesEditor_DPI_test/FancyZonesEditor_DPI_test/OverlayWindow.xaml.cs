@@ -16,7 +16,6 @@ namespace FancyZonesEditor_DPI_test
 
         private void Window_DpiChanged(object sender, DpiChangedEventArgs e)
         {
-            //VisualTreeHelper.SetRootDpi(this, e.NewDpi);
         }
     }
 

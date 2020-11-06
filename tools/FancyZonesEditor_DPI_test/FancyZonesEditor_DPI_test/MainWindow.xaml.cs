@@ -78,7 +78,7 @@ namespace FancyZonesEditor_DPI_test
                 DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out monitorDPI, out monitorDPI);
                 screenInfo.MonitorDPI = (int)monitorDPI;
 
-                // resolution
+                // screen resolution
                 screenInfo.Resolution = new Rect(monitor.MonitorInfo.monitor.left, monitor.MonitorInfo.monitor.top, 
                     monitor.MonitorInfo.monitor.width, monitor.MonitorInfo.monitor.height);
 
@@ -86,13 +86,11 @@ namespace FancyZonesEditor_DPI_test
                 Rect workedArea = new Rect(monitor.MonitorInfo.work.left, monitor.MonitorInfo.work.top,
                     monitor.MonitorInfo.work.width, monitor.MonitorInfo.work.height);
 
-                double scalePosition = 96f / primaryMonitorDPI;
-                workedArea.X *= scalePosition;
-                workedArea.Y *= scalePosition;
-
-                double scaleSize = 96f / monitorDPI;
-                workedArea.Width *= scaleSize;
-                workedArea.Height *= scaleSize;
+                double scaleFactor = 96f / primaryMonitorDPI;
+                workedArea.X *= scaleFactor;
+                workedArea.Y *= scaleFactor;
+                workedArea.Width *= scaleFactor;
+                workedArea.Height *= scaleFactor;
 
                 screenInfo.WorkArea = workedArea;
 
@@ -107,6 +105,7 @@ namespace FancyZonesEditor_DPI_test
 
                 workAreaWindows.Add(window);
                 window.Show();
+
             }
 
             MonitorList.ItemsSource = screenInfoList;
