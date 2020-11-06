@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using ColorPicker.Common;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace ColorPicker.Settings
@@ -17,7 +18,7 @@ namespace ColorPicker.Settings
 
         SettingItem<bool> UseEditor { get; }
 
-        ObservableCollection<string> ColorHistory { get; }
+        RangeObservableCollection<string> ColorHistory { get; }
 
         SettingItem<int> ColorHistoryLimit { get; }
 

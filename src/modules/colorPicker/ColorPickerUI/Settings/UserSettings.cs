@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
+using ColorPicker.Common;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
@@ -21,6 +22,7 @@ namespace ColorPicker.Settings
         private const string ColorPickerModuleName = "ColorPicker";
         private const string DefaultActivationShortcut = "Ctrl + Break";
         private const int MaxNumberOfRetry = 5;
+        private const int SettingsReadOnChangeDelayInMs = 300;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
         private readonly IFileSystemWatcher _watcher;
@@ -28,10 +30,9 @@ namespace ColorPicker.Settings
         private readonly object _loadingSettingsLock = new object();
 
         private bool _loadingColorsHistory;
-        private bool _loadingVisibleColorRepresentations;
 
         [ImportingConstructor]
-        public UserSettings()
+        public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
         {
             _settingsUtils = new SettingsUtils();
             ChangeCursor = new SettingItem<bool>(true);
@@ -40,20 +41,11 @@ namespace ColorPicker.Settings
             UseEditor = new SettingItem<bool>(true);
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
-            VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
 
             LoadSettingsFromJson();
-            _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", LoadSettingsFromJson);
-        }
 
-        private void VisibleColorFormats_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            if (!_loadingVisibleColorRepresentations)
-            {
-                var settings = _settingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
-                settings.Properties.VisibleColorFormats = VisibleColorFormats.ToList();
-                settings.Save(_settingsUtils);
-            }
+            // delay loading settings on change by some time to avoid file in use exception
+            _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", () => throttledActionInvoker.ScheduleAction(LoadSettingsFromJson, SettingsReadOnChangeDelayInMs));
         }
 
         private void ColorHistory_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -74,7 +66,7 @@ namespace ColorPicker.Settings
 
         public SettingItem<bool> UseEditor { get; private set; }
 
-        public ObservableCollection<string> ColorHistory { get; private set; } = new ObservableCollection<string>();
+        public RangeObservableCollection<string> ColorHistory { get; private set; } = new RangeObservableCollection<string>();
 
         public SettingItem<int> ColorHistoryLimit { get; }
 
@@ -110,6 +102,7 @@ namespace ColorPicker.Settings
                                 CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
                                 UseEditor.Value = settings.Properties.UseEditor;
                                 ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
+
                                 if (settings.Properties.ColorHistory == null)
                                 {
                                     settings.Properties.ColorHistory = new System.Collections.Generic.List<string>();
@@ -130,14 +123,11 @@ namespace ColorPicker.Settings
 
                                 _loadingColorsHistory = false;
 
-                                _loadingVisibleColorRepresentations = true;
                                 VisibleColorFormats.Clear();
                                 foreach (var item in settings.Properties.VisibleColorFormats)
                                 {
                                     VisibleColorFormats.Add(item);
                                 }
-
-                                _loadingVisibleColorRepresentations = false;
                             }
 
                             retry = false;

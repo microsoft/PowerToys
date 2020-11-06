@@ -118,11 +118,13 @@ namespace ColorPicker.ViewModels
         {
             if (!_initializing)
             {
-                _userSettings.ColorHistory.Clear();
+                _userSettings.ColorHistory.ClearWithoutNotification();
                 foreach (var item in ColorsHistory)
                 {
-                    _userSettings.ColorHistory.Add(item.A + "|" + item.R + "|" + item.G + "|" + item.B);
+                    _userSettings.ColorHistory.AddWithoutNotification(item.A + "|" + item.R + "|" + item.G + "|" + item.B);
                 }
+
+                _userSettings.ColorHistory.ReleaseNotification();
             }
         }
 

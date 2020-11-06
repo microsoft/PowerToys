@@ -111,6 +111,7 @@
     <Compile Include="ColorEditorWindow.xaml.cs">
       <DependentUpon>ColorEditorWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Common\RangeObservableCollection.cs" />
     <Compile Include="Controls\ColorFormatControl.xaml.cs">
       <DependentUpon>ColorFormatControl.xaml</DependentUpon>
     </Compile>
