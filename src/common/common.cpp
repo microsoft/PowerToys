@@ -479,7 +479,7 @@ bool check_user_is_admin()
     };
 
     HANDLE hToken;
-    DWORD dwSize = 0, dwResult = 0;
+    DWORD dwSize = 0;
     PTOKEN_GROUPS pGroupInfo;
     SID_IDENTIFIER_AUTHORITY SIDAuth = SECURITY_NT_AUTHORITY;
     PSID pSID = NULL;
@@ -493,8 +493,7 @@ bool check_user_is_admin()
     // Call GetTokenInformation to get the buffer size.
     if (!GetTokenInformation(hToken, TokenGroups, NULL, dwSize, &dwSize))
     {
-        dwResult = GetLastError();
-        if (dwResult != ERROR_INSUFFICIENT_BUFFER)
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
         {
             return true;
         }
