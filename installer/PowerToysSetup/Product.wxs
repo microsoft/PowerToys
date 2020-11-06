@@ -594,7 +594,7 @@
 
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPicker.exe;ColorPicker.exe.config;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Expression.Interactions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Buffers.dll;System.Memory.dll;System.Numerics.Vectors.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll;System.ValueTuple.dll;System.Windows.Interactivity.dll;Telemetry.dll;ManagedCommon.dll;System.Runtime.CompilerServices.Unsafe.dll?>
+        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPicker.exe;ColorPicker.exe.config;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Expression.Interactions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Buffers.dll;System.Memory.dll;System.Numerics.Vectors.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll;System.ValueTuple.dll;System.Windows.Interactivity.dll;Telemetry.dll;ManagedCommon.dll;System.Runtime.CompilerServices.Unsafe.dll;ControlzEx.dll;MahApps.Metro.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
