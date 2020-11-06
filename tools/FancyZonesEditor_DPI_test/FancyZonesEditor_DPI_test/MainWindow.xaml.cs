@@ -23,11 +23,10 @@ namespace FancyZonesEditor_DPI_test
 
             public override string ToString()
             {
-                var resolution = String.Format("(L:{0,5}, T:{1,3}, W:{2,4}, H:{3,4})", Resolution.Left, Resolution.Top, Resolution.Width, Resolution.Height);
-                var workArea = String.Format("(L:{0,5}, T:{1,3}, W:{2,4}, H:{3,4})", WorkArea.Left, WorkArea.Top, WorkArea.Width, WorkArea.Height);
+                var resolution = String.Format("X:{0,5}, Y:{1,5}, W:{2,5}, H:{3,5}", Resolution.Left, Resolution.Top, Resolution.Width, Resolution.Height);
+                var workArea = String.Format("X:{0,5}, Y:{1,5}, W:{2,5}, H:{3,5}", WorkArea.Left, WorkArea.Top, WorkArea.Width, WorkArea.Height);
 
-                return "Window DPI: " + WindowDPI + ", Monitor DPI: " + MonitorDPI +
-                    ", Resolution: " + resolution + ", WorkArea: " + workArea;
+                return "Monitor DPI: " + MonitorDPI + " - Resolution: " + resolution + " - WorkArea: " + workArea;
             }
         }
 
@@ -37,10 +36,12 @@ namespace FancyZonesEditor_DPI_test
         {
             InitializeComponent();
 
-            var colors = new Brush[] { Brushes.Yellow, Brushes.Orange, Brushes.OrangeRed };
+            double primaryMonitorDPI = 96f;
+
+            var colors = new Brush[] { Brushes.Green, Brushes.Blue, Brushes.Red };
 
             var screens = System.Windows.Forms.Screen.AllScreens;
-            List<ScreenInfo> items = new List<ScreenInfo>();
+            List<ScreenInfo> screenInfoList = new List<ScreenInfo>();
 
             workAreaWindows = new List<OverlayWindow>();
 
@@ -48,45 +49,61 @@ namespace FancyZonesEditor_DPI_test
 
             for (int i = 0; i < screens.Length; i++)
             {
+                // bool en = DpiAwareness.IsPerMonitorAwarenessEnabled;
+                // MessageBox.Show("DPI awereness per monitor: " + en);
+
                 var monitor = monitors[i];
                 ScreenInfo screenInfo = new ScreenInfo();
-                var window = new OverlayWindow();
-                window.Opacity = 0.5;
-                window.Background = colors[i % colors.Length];
+                var window = new OverlayWindow
+                {
+                    Opacity = 0.8,
+                    Background = colors[i % colors.Length],
+                    BorderBrush = Brushes.White,
+                    BorderThickness = new Thickness(4, 4, 4, 4)
+                };
+
+                // get monitor dpi
+                double monitorDPI;
+                DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out monitorDPI, out monitorDPI);
+                screenInfo.MonitorDPI = (int)monitorDPI;
+
+                if (screens[i].Primary)
+                {
+                    primaryMonitorDPI = monitorDPI;
+                }
 
                 // resolution
                 screenInfo.Resolution = new Rect(monitor.MonitorInfo.monitor.left, monitor.MonitorInfo.monitor.top, 
                     monitor.MonitorInfo.monitor.width, monitor.MonitorInfo.monitor.height);
 
                 // work area
-                var workArea = DpiAwareness.DeviceToLogicalRect(window, new Rect(monitor.MonitorInfo.work.left, monitor.MonitorInfo.work.top,
-                    monitor.MonitorInfo.work.width, monitor.MonitorInfo.work.height));
-                screenInfo.WorkArea = workArea;
+                Rect workedArea = new Rect(monitor.MonitorInfo.work.left, monitor.MonitorInfo.work.top,
+                    monitor.MonitorInfo.work.width, monitor.MonitorInfo.work.height);
 
-                // dpi
-                bool en = DpiAwareness.IsPerMonitorAwarenessEnabled;
+                double scalePosition = 96f / primaryMonitorDPI;
+                workedArea.X *= scalePosition;
+                workedArea.Y *= scalePosition;
+
+                double scaleSize = 96f / monitorDPI;
+                workedArea.Width *= scaleSize;
+                workedArea.Height *= scaleSize;
+
+                screenInfo.WorkArea = workedArea;
 
                 screenInfo.WindowDPI = window.GetDpiX();
+                screenInfoList.Add(screenInfo);
 
                 // open window
-                window.Left = workArea.X;
-                window.Top = workArea.Y;
-                window.Width = workArea.Width;
-                window.Height = workArea.Height;
+                window.Left = workedArea.X;
+                window.Top = workedArea.Y;
+                window.Width = workedArea.Width;
+                window.Height = workedArea.Height;
 
                 workAreaWindows.Add(window);
                 window.Show();
-
-                // get monitor dpi
-                double dpiX = 0, dpiY = 0;
-                DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out dpiX, out dpiY);
-
-                screenInfo.MonitorDPI = (int)dpiX;
-
-                items.Add(screenInfo);
             }
 
-            MonitorList.ItemsSource = items;
+            MonitorList.ItemsSource = screenInfoList;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
