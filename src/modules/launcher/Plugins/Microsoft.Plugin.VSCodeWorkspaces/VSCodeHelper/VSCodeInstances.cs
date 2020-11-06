@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper
@@ -25,42 +26,38 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper
 
                 _systemPath = Environment.GetEnvironmentVariable("PATH");
                 var paths = _systemPath.Split(";");
+                paths = paths.Where(x => x.Contains("VS Code")).ToArray();
                 foreach (var path in paths)
                 {
-                    if (path.Contains("\\Microsoft VS Code\\"))
+                    var files = Directory.GetFiles(path);
+                    files = files.Where(x => x.Contains("code") && !x.EndsWith(".cmd")).ToArray();
+
+                    if (files.Length > 0)
                     {
-                        var path_executable = System.IO.Path.GetFullPath(path.Replace("\\bin", "\\Code.exe"));
-                        if (File.Exists(path_executable))
+                        var file = files[0];
+                        if (file.EndsWith("code"))
                         {
                             instances.Add(new VSCodeInstance
                             {
-                                ExecutablePath = path_executable,
+                                ExecutablePath = file,
                                 AppData = Path.Combine(_userAppDataPath, "Code"),
                                 VSCodeVersion = VSCodeVersion.Stable
                             });
                         }
-                    }
-                    else if (path.Contains("\\Microsoft VS Code Insiders\\"))
-                    {
-                        var path_executable = System.IO.Path.GetFullPath(path.Replace("\\bin", "\\Code - Insiders.exe"));
-                        if (File.Exists(path_executable))
+                        else if (file.EndsWith("code-insiders"))
                         {
                             instances.Add(new VSCodeInstance
                             {
-                                ExecutablePath = path_executable,
+                                ExecutablePath = file,
                                 AppData = Path.Combine(_userAppDataPath, "Code - Insiders"),
                                 VSCodeVersion = VSCodeVersion.Insiders
                             });
                         }
-                    }
-                    else if (path.Contains("\\Microsoft VS Code Exploration\\"))
-                    {
-                        var path_executable = System.IO.Path.GetFullPath(path.Replace("\\bin", "\\Code - Exploration.exe"));
-                        if (File.Exists(path_executable))
+                        else if (file.EndsWith("code-exploration"))
                         {
                             instances.Add(new VSCodeInstance
                             {
-                                ExecutablePath = path_executable,
+                                ExecutablePath = file,
                                 AppData = Path.Combine(_userAppDataPath, "Code - Exploration"),
                                 VSCodeVersion = VSCodeVersion.Exploration
                             });

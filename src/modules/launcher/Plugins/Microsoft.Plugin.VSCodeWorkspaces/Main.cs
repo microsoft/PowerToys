@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using Microsoft.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
 using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper;
@@ -51,12 +52,15 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                         bool hide;
                         try
                         {
-                            Process.Start(new ProcessStartInfo
+                            var process = new ProcessStartInfo
                             {
                                 FileName = a.VSCodeInstance.ExecutablePath,
-                                UseShellExecute = false,
-                                Arguments = $"--folder-uri {a.Path}"
-                            });
+                                UseShellExecute = true,
+                                Arguments = $"--folder-uri {a.Path}",
+                                WindowStyle = ProcessWindowStyle.Hidden
+                            };
+                            Process.Start(process);
+
                             hide = true;
                         }
                         catch (Win32Exception)
@@ -91,12 +95,15 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                         bool hide;
                         try
                         {
-                            Process.Start(new ProcessStartInfo
+                            var process = new ProcessStartInfo()
                             {
                                 FileName = a.VSCodeInstance.ExecutablePath,
-                                UseShellExecute = false,
-                                Arguments = $"--remote ssh-remote+{a.Host}"
-                            });
+                                UseShellExecute = true,
+                                Arguments = $"--remote ssh-remote+\"{a.Host}\"",
+                                WindowStyle = ProcessWindowStyle.Hidden,
+                            };
+                            Process.Start(process);
+
                             hide = true;
                         }
                         catch (Win32Exception)
