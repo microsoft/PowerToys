@@ -8,7 +8,7 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program
 {
-    public class InferedProgramArgumentParser : IProgramArgumentParser
+    public class InferredProgramArgumentParser : IProgramArgumentParser
     {
         private static readonly Regex ArgumentPrefixRegex = new Regex("^(-|--|/)[a-zA-Z]+", RegexOptions.Compiled);
 

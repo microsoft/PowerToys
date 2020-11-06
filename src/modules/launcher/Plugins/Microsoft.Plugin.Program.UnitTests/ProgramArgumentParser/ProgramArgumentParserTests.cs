@@ -28,7 +28,7 @@ namespace Microsoft.Plugin.Program.UnitTests.ProgramArgumentParser
             var argumentParsers = new IProgramArgumentParser[]
            {
                 new DoubleDashProgramArgumentParser(),
-                new InferedProgramArgumentParser(),
+                new InferredProgramArgumentParser(),
                 new NoArgumentsArgumentParser(),
            };
 

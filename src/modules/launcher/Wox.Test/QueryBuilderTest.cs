@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Mono.Collections.Generic;
 using NUnit.Framework;
-using Wox.Core.Plugin;
+using PowerLauncher.Plugin;
 using Wox.Plugin;
 
 namespace Wox.Test
@@ -178,7 +178,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void QueryBuilderShouldSetTermsCorrentlyWhenCalled()
+        public void QueryBuilderShouldSetTermsCorrectlyWhenCalled()
         {
             // Arrange
             string searchQuery = "abcd efgh";

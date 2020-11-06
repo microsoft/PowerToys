@@ -79,15 +79,18 @@ namespace KeyboardManagerConstants
     inline const long ShortcutTableNewColIndex = 2;
     inline const long ShortcutTableTargetAppColIndex = 3;
     inline const long ShortcutTableRemoveColIndex = 4;
+    inline const long ShortcutArrowColumnWidth = 90;
     inline const DWORD64 ShortcutTableDropDownWidth = 110;
     inline const DWORD64 ShortcutTableDropDownSpacing = 10;
+    inline const long ShortcutOriginColumnWidth = 3 * ShortcutTableDropDownWidth + 2 * ShortcutTableDropDownSpacing;
+    inline const long ShortcutTargetColumnWidth = 3 * ShortcutTableDropDownWidth + 2 * ShortcutTableDropDownSpacing + 25;
 
     // Drop down height used for both Edit Keyboard and Edit Shortcuts
     inline const DWORD64 TableDropDownHeight = 200;
-    inline const DWORD64 TableArrowColWidth = 20;
+    inline const DWORD64 TableArrowColWidth = 230;
     inline const DWORD64 TableRemoveColWidth = 20;
     inline const DWORD64 TableWarningColWidth = 20;
-    inline const DWORD64 TableTargetAppColWidth = ShortcutTableDropDownWidth + 50;
+    inline const DWORD64 TableTargetAppColWidth = ShortcutTableDropDownWidth + TableRemoveColWidth * 2;
 
     // Shared style constants for both Remap Table and Shortcut Table
     inline const DWORD64 HeaderButtonWidth = 100;

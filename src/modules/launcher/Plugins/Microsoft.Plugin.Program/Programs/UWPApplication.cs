@@ -124,7 +124,7 @@ namespace Microsoft.Plugin.Program.Programs
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(string queryArguments, IPublicAPI api)
         {
             if (api == null)
@@ -202,7 +202,7 @@ namespace Microsoft.Plugin.Program.Programs
             return contextMenus;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive, and showing the user an error message")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally keeping the process alive, and showing the user an error message")]
         private async void Launch(IPublicAPI api, string queryArguments)
         {
             var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
@@ -293,7 +293,7 @@ namespace Microsoft.Plugin.Program.Programs
                 string key = resourceReference.Substring(prefix.Length);
                 string parsed;
 
-                // Using Ordinal/OrdinalIgnorcase since these are used internally
+                // Using Ordinal/OrdinalIgnoreCase since these are used internally
                 if (key.StartsWith("//", StringComparison.Ordinal))
                 {
                     parsed = prefix + key;

@@ -42,7 +42,7 @@ namespace ViewModelTests
             ColorPickerViewModel viewModel = new ColorPickerViewModel(mockSettingsUtils, generalSettingsRepository, ColorPickerIsEnabledByDefaultIPC);
 
             //Assert
-            // Verifiy that the old settings persisted
+            // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ColorPicker, viewModel.IsEnabled);
             Assert.AreEqual(originalSettings.Properties.ActivationShortcut.ToString(), viewModel.ActivationShortcut.ToString());
             Assert.AreEqual(originalSettings.Properties.ChangeCursor, viewModel.ChangeCursor);

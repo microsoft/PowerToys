@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
-namespace Wox.Core.Plugin
+namespace PowerLauncher.Plugin
 {
     internal abstract class PluginConfig
     {

@@ -197,7 +197,11 @@
                                     Margin="{StaticResource SmallTopMargin}" 
                                     UseLayoutRounding="False"
                                     Click="DeleteCustomSize"
-                                    CommandParameter="{Binding Id}"/>
+                                    CommandParameter="{Binding Id}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="RemoveTooltip"/>
+                                </ToolTipService.ToolTip>
+                            </Button>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

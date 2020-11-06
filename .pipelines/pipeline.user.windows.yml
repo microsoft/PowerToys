@@ -100,7 +100,6 @@ build:
             - 'modules\launcher\PowerLauncher.UI.exe'
             - 'modules\launcher\PowerToysInterop.dll'
             - 'modules\launcher\Telemetry.dll'
-            - 'modules\launcher\Wox.Core.dll'
             - 'modules\launcher\Wox.dll'
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'

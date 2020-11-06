@@ -3,14 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 using Wox.Plugin.Logger;
 
-namespace Wox.Core.Resource
+namespace PowerLauncher.Helper
 {
     public static class FontHelper
     {

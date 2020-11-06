@@ -22,7 +22,7 @@ namespace ColorPicker.Helpers
             _timer.Tick += Timer_Tick;
         }
 
-        public void ScheduleAction(Action action, int miliseconds)
+        public void ScheduleAction(Action action, int milliseconds)
         {
             lock (_invokerLock)
             {
@@ -32,7 +32,7 @@ namespace ColorPicker.Helpers
                 }
 
                 _actionToRun = action;
-                _timer.Interval = new TimeSpan(0, 0, 0, 0, miliseconds);
+                _timer.Interval = new TimeSpan(0, 0, 0, 0, milliseconds);
 
                 _timer.Start();
             }

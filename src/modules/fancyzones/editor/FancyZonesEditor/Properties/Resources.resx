@@ -129,6 +129,9 @@
   <data name="Canvas_Layout_Editor" xml:space="preserve">
     <value>Canvas layout editor</value>
   </data>
+  <data name="Grid_Layout_Editor" xml:space="preserve">
+    <value>Grid layout editor</value>
+  </data>
   <data name="Choose_Layout" xml:space="preserve">
     <value>Choose your layout for this desktop</value>
   </data>
@@ -176,5 +179,14 @@
   </data>
   <data name="Templates" xml:space="preserve">
     <value>Templates</value>
+  </data>
+  <data name="Zone_Count_Decrement" xml:space="preserve">
+    <value>Decrement number of zones in template layout</value>
+  </data>
+  <data name="Zone_Count_Increment" xml:space="preserve">
+    <value>Increment number of zones in template layout</value>
+  </data>
+  <data name="Custom_Layout_Delete_Button" xml:space="preserve">
+    <value>Delete custom layout</value>
   </data>
 </root>
