@@ -248,6 +248,7 @@
                                Target="{Binding ElementName=_fileNameTextBox}"/>
                         <TextBox Grid.Column="1"
                                  Height="23"
+                                 TabIndex="1"
                                  TextWrapping="Wrap"
                                  Name="_fileNameTextBox"
                                  Text="{Binding Settings.FileName}"/>

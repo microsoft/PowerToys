@@ -31,6 +31,7 @@
                 Padding="12,12">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button MinWidth="76"
+                        Style="{StaticResource AccentButtonStyle}"
                         Command="{Binding StopCommand}"
                         Content="{x:Static p:Resources.Progress_Stop}"
                         IsCancel="True"/>

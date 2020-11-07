@@ -259,7 +259,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to © 2019 Brice Lambson. All rights reserved..
+        ///   Looks up a localized string similar to © 2020 Brice Lambson. All rights reserved..
         /// </summary>
         public static string Copyright {
             get {
@@ -286,7 +286,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Select a size..
+        ///   Looks up a localized string similar to _Select a size.
         /// </summary>
         public static string Input_Content {
             get {

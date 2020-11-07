@@ -184,7 +184,7 @@
     <value>Cancel</value>
   </data>
   <data name="Copyright" xml:space="preserve">
-    <value>© 2019 Brice Lambson. All rights reserved.</value>
+    <value>© 2020 Brice Lambson. All rights reserved.</value>
   </data>
   <data name="ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>
@@ -193,7 +193,7 @@
     <value>(auto)</value>
   </data>
   <data name="Input_Content" xml:space="preserve">
-    <value>_Select a size.</value>
+    <value>_Select a size</value>
   </data>
   <data name="Input_Custom" xml:space="preserve">
     <value>Custom</value>
