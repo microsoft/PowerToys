@@ -215,7 +215,7 @@ There are 260 new PowerToys ideas. So I wanted to clean that up. Here's the list
 * 
 
 # Implement in other PowerToy
-## To FanzyZones
+## To FancyZones
 * #4
 * #39
 * #269
