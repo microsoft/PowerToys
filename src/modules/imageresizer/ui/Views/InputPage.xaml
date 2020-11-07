@@ -6,7 +6,7 @@
              xmlns:p="clr-namespace:ImageResizer.Properties"
              MinWidth="350">
 
-    <StackPanel>
+    <StackPanel Background="{DynamicResource PrimaryBackgroundBrush}">
         <TextBlock Margin="11,11,11,0"
                    Style="{StaticResource MainInstructionTextBlockStyle}"
                    Text="{x:Static p:Resources.Input_MainInstruction}"/>

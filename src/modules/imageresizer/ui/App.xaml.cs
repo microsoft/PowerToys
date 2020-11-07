@@ -13,8 +13,12 @@ using ImageResizer.Views;
 
 namespace ImageResizer
 {
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
     public partial class App : Application
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
     {
+        private ThemeManager _themeManager;
+
         static App()
         {
             Console.InputEncoding = Encoding.Unicode;
@@ -27,6 +31,8 @@ namespace ImageResizer
             // TODO: Add command-line parameters that can be used in lieu of the input page (issue #14)
             var mainWindow = new MainWindow(new MainViewModel(batch, Settings.Default));
             mainWindow.Show();
+
+            _themeManager = new ThemeManager(this);
 
             // Temporary workaround for issue #1273
             BecomeForegroundWindow(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
