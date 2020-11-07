@@ -81,7 +81,7 @@ namespace ImageResizer.ViewModels
             }
             else
             {
-                _mainView.Close();
+               // _mainView.Close();
             }
         }
 

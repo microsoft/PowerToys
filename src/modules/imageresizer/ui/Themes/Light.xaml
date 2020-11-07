@@ -16,7 +16,7 @@
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFededed" />
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFe5e5e5" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="WindowBorderBrush" Color="#FFf7f7f7"/>
     <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF949494"/>
 

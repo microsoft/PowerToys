@@ -4,17 +4,17 @@
              xmlns:local="clr-namespace:ImageResizer.Views"
              xmlns:m="clr-namespace:ImageResizer.Models"
              xmlns:p="clr-namespace:ImageResizer.Properties"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              MinWidth="350">
 
     <StackPanel Background="{DynamicResource PrimaryBackgroundBrush}">
-        <TextBlock Margin="11,11,11,0"
-                   Style="{StaticResource MainInstructionTextBlockStyle}"
-                   Text="{x:Static p:Resources.Input_MainInstruction}"/>
-        <Label Margin="11,11,11,0"
+        <Label Margin="12,12,12,0"
+               FontSize="16"
                Content="{x:Static p:Resources.Input_Content}"
                Target="{Binding ElementName=_selectedSizeListBox}"/>
-        <ListBox Margin="20,0,11,0"
+        <ListBox Margin="12,12,12,0"
                  BorderThickness="0"
+                 Background="Transparent"
                  ItemsSource="{Binding Settings.AllSizes}"
                  Name="_selectedSizeListBox"
                  SelectedIndex="{Binding Settings.SelectedSizeIndex}">
@@ -23,8 +23,9 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">
-                                <RadioButton Margin="0,7,0,0"
-                                             VerticalContentAlignment="Center"
+                                <RadioButton Margin="0,4,0,0"
+                                             VerticalAlignment="Center"
+                                             VerticalContentAlignment="Top"
                                              Focusable="False"
                                              IsChecked="{Binding IsSelected,RelativeSource={RelativeSource TemplatedParent}}">
                                     <ContentPresenter/>
@@ -37,35 +38,33 @@
             <ListBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Name}"/>
-                        <TextBlock Text=" ("/>
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                        <TextBlock Text="(" Margin="4,0,0,0"/>
                         <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}"/>
-                        <TextBlock Text=" "/>
-                        <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}"/>
-                        <TextBlock Text=" × " Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
-                        <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
-                        <TextBlock Text=" "/>
-                        <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}"/>
+                        <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Margin="4,0,0,0"/>
+                        <TextBlock Text="x" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0"/>
+                        <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0"/>
+                        <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}" Margin="4,0,0,0"/>
                         <TextBlock Text=")"/>
                     </StackPanel>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type m:CustomSize}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
-                        <ComboBox Height="23"
-                                  Margin="5,0,0,0"
+                    <StackPanel Orientation="Horizontal" Margin="0,-8,0,0">
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" FontWeight="Bold"/>
+                        <ComboBox 
+                                  Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
-                                  SelectedItem="{Binding Fit}"
-                                  ItemContainerStyle="{StaticResource AccessibleComboBoxStyle}">
+                                  SelectedItem="{Binding Fit}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeFit}">
                                     <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <TextBox Width="43"
-                                 Height="23"
-                                 Margin="7,0,0,0">
+                        <TextBox Width="56"
+                                 Style="{StaticResource DefaultTextBoxStyle}"
+                                 TextWrapping="Wrap"
+                                 Margin="8,0,0,0">
                             <TextBox.Text>
                                 <Binding Converter="{StaticResource AutoDoubleConverter}"
                                          Path="Width"
@@ -76,14 +75,14 @@
                                 </Binding>
                             </TextBox.Text>
                         </TextBox>
-                        <TextBlock Margin="5,0,0,0"
+                        <TextBlock Margin="8,0,0,0"
                                    VerticalAlignment="Center"
                                    Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
-                            ×
                         </TextBlock>
-                        <TextBox Width="43"
-                                 Height="23"
-                                 Margin="5,0,0,0"
+                        <TextBox Width="56"
+                                 Style="{StaticResource DefaultTextBoxStyle}"
+                                 Margin="0,0,0,0"
+                                 TextWrapping="Wrap"
                                  Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
                             <TextBox.Text>
                                 <Binding Converter="{StaticResource AutoDoubleConverter}"
@@ -95,11 +94,11 @@
                                 </Binding>
                             </TextBox.Text>
                         </TextBox>
-                        <ComboBox Height="23"
-                                  Margin="7,0,0,0"
+                        <ComboBox 
+                                  Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
                                   SelectedItem="{Binding Unit}"
-                                  ItemContainerStyle="{StaticResource AccessibleComboBoxStyle}">
+                                  >
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeUnit}">
                                     <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
@@ -110,22 +109,20 @@
                 </DataTemplate>
             </ListBox.Resources>
         </ListBox>
-        <CheckBox Margin="11,11,11,0"
+        <CheckBox Margin="12,24,12,0"
                   Content="{x:Static p:Resources.Input_ShrinkOnly}"
                   IsChecked="{Binding Settings.ShrinkOnly}"/>
         <!-- TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
                    to overwrite any files in the directory instead (issue #88) -->
-        <CheckBox Margin="11,7,11,0"
+        <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_Replace}"
                   IsChecked="{Binding Settings.Replace}"/>
-        <CheckBox Margin="11,7,11,0"
+        <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_IgnoreOrientation}"
                   IsChecked="{Binding Settings.IgnoreOrientation}"/>
-        <Border Margin="0,11,0,0"
-                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
-                BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
-                BorderThickness="0,1,0,0"
-                Padding="11,11">
+        <Border Margin="0,24,0,0"
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                Padding="12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -133,26 +130,26 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock x:Name="AdvancedSettingsTextBlock"
-                           VerticalAlignment="Center"
-                           Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}"
-                           IsEnabled="{Binding Visibility,ElementName=AdvancedSettingsTextBlock, Converter={StaticResource VisibilityBoolConverter}}"
-                           Focusable="{Binding Visibility,ElementName=AdvancedSettingsTextBlock, Converter={StaticResource VisibilityBoolConverter}}">
-                    <local:AccessibleHyperlink ControlType="Button" Command="{Binding ShowAdvancedCommand}">
-                        <Run Text="{x:Static p:Resources.Input_ShowAdvanced}"/>
-                    </local:AccessibleHyperlink>
-                </TextBlock>
-                
+                <Button Content="&#xE115;"
+                        FontFamily="Segoe MDL2 Assets"
+                        Style="{StaticResource DefaultButtonStyle}"
+                        FontSize="16"
+                        ToolTip="{x:Static p:Resources.Input_ShowAdvanced}"
+                        Background="Transparent"
+                        Command="{Binding ShowAdvancedCommand}"
+                        />
+                <!-- Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}" -->
                 <Button Grid.Column="1"
-                        Height="23"
-                        MinWidth="75"
+                        Style="{StaticResource AccentButtonStyle}"
+                        MinWidth="76"
                         Command="{Binding ResizeCommand}"
                         Content="{x:Static p:Resources.Input_Resize}"
                         IsDefault="True"/>
+                
                 <Button Grid.Column="2"
-                        Height="23"
-                        MinWidth="75"
-                        Margin="7,0,0,0"
+                        Style="{StaticResource DefaultButtonStyle}"
+                        MinWidth="76"
+                        Margin="12,0,0,0"
                         Command="{Binding CancelCommand}"
                         Content="{x:Static p:Resources.Cancel}"
                         IsCancel="True"/>

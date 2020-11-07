@@ -232,7 +232,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Advanced Options.
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string Advanced_Title {
             get {
@@ -268,7 +268,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Image Resizer for Windows.
+        ///   Looks up a localized string similar to Image Resizer.
         /// </summary>
         public static string ImageResizer {
             get {
@@ -313,15 +313,6 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resize your pictures.
-        /// </summary>
-        public static string Input_MainInstruction {
-            get {
-                return ResourceManager.GetString("Input_MainInstruction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to R_esize the original pictures (don&apos;t create copies).
         /// </summary>
         public static string Input_Replace {
@@ -340,7 +331,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Advanced options....
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string Input_ShowAdvanced {
             get {

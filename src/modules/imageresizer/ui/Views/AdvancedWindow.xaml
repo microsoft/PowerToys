@@ -5,9 +5,12 @@
         xmlns:m="clr-namespace:ImageResizer.Models"
         xmlns:p="clr-namespace:ImageResizer.Properties"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
         MinWidth="390"
         MinHeight="340"
-        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        ui:TitleBar.IsIconVisible="True"
+        Background="{DynamicResource PrimaryBackgroundBrush}"
         Name="_this"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
@@ -33,19 +36,19 @@
         <local:ContainerFormatConverter x:Key="ContainerFormatConverter"/>
     </Window.Resources>
 
-    <Grid Margin="11">
+    <Grid Margin="0">
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TabControl>
             <TabItem Header="{x:Static p:Resources.Advanced_Sizes}">
-                <StackPanel Margin="11">
+                <StackPanel Margin="12">
                     <!-- TODO: Allow these to be drag-and-drop reordered (issue #15) -->
                     <ItemsControl Grid.IsSharedSizeScope="True" ItemsSource="{Binding Settings.Sizes}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="m:ResizeSize">
-                                <Grid Margin="0,0,0,7">
+                                <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition SharedSizeGroup="0"/>
                                         <ColumnDefinition SharedSizeGroup="1"/>
@@ -55,10 +58,12 @@
                                         <ColumnDefinition SharedSizeGroup="5"/>
                                         <ColumnDefinition SharedSizeGroup="6"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Width="66" Text="{Binding Name}"/>
+                                    <TextBox Width="96"
+                                             MaxWidth="96"
+                                             TextWrapping="Wrap"
+                                             Text="{Binding Name}"/>
                                     <ComboBox Grid.Column="1"
-                                              Height="23"
-                                              Margin="5,0,0,0"
+                                              Margin="8,0,0,0"
                                               ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
                                               SelectedItem="{Binding Fit}">
                                         <ComboBox.ItemTemplate>
@@ -68,9 +73,10 @@
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
                                     <TextBox Grid.Column="2"
-                                             Width="43"
-                                             Height="23"
-                                             Margin="7,0,0,0">
+                                             Width="56"
+                                             MaxWidth="56"
+                                             TextWrapping="Wrap"
+                                             Margin="8,0,0,0">
                                         <TextBox.Text>
                                             <Binding Converter="{StaticResource AutoDoubleConverter}"
                                                      Path="Width"
@@ -82,15 +88,15 @@
                                         </TextBox.Text>
                                     </TextBox>
                                     <TextBlock Grid.Column="3"
-                                               Margin="5,0,0,0"
+                                               Margin="8,0,0,0"
                                                VerticalAlignment="Center"
                                                Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
-                                        ×
                                     </TextBlock>
                                     <TextBox Grid.Column="4"
-                                             Width="43"
-                                             Height="23"
-                                             Margin="5,0,0,0"
+                                             Width="56"
+                                             MaxWidth="56"
+                                             TextWrapping="Wrap"
+                                             Margin="8,0,0,0"
                                              Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
                                         <TextBox.Text>
                                             <Binding Converter="{StaticResource AutoDoubleConverter}"
@@ -103,8 +109,7 @@
                                         </TextBox.Text>
                                     </TextBox>
                                     <ComboBox Grid.Column="5"
-                                              Height="23"
-                                              Margin="7,0,0,0"
+                                              Margin="8,0,0,0"
                                               ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
                                               SelectedItem="{Binding Unit}">
                                         <ComboBox.ItemTemplate>
@@ -113,11 +118,15 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
-                                    <TextBlock Grid.Column="6" Margin="5,0,0,0" VerticalAlignment="Center">
-                                        <local:AccessibleHyperlink ControlType="Button"  Command="{Binding DataContext.RemoveSizeCommand,ElementName=_this}" CommandParameter="{Binding}">
-                                            <Run Text="{x:Static p:Resources.Advanced_DeleteSize}"/>
-                                        </local:AccessibleHyperlink>
-                                    </TextBlock>
+                                    <Button Content="&#xE107;"
+                                            FontFamily="Segoe MDL2 Assets"
+                                            Background="Transparent"
+                                            Grid.Column="6"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            ToolTip="{x:Static p:Resources.Advanced_DeleteSize}" 
+                                            Command="{Binding DataContext.RemoveSizeCommand,ElementName=_this}"
+                                            CommandParameter="{Binding}" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -130,7 +139,7 @@
                 </StackPanel>
             </TabItem>
             <TabItem Header="{x:Static p:Resources.Advanced_Encoding}">
-                <Grid Margin="11" VerticalAlignment="Top">
+                <Grid Margin="12" VerticalAlignment="Top">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition/>
@@ -142,10 +151,9 @@
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Label Content="{x:Static p:Resources.Advanced_FallbackEncoder}"
-                           Padding="0,5,5,0"
+                           Padding="0,8,8,0"
                            Target="{Binding ElementName=_fallbackEncoderComboBox}"/>
                     <ComboBox Grid.Column="1"
-                              Height="23"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding Encoders}"
                               Name="_fallbackEncoderComboBox"
@@ -157,27 +165,26 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <Label Grid.Row="1"
-                           Margin="0,7,0,0"
+                           Margin="0,8,0,0"
                            Content="{x:Static p:Resources.Advanced_JpegQualityLevel}"
-                           Padding="0,5,5,0"
+                           Padding="0,8,8,0"
                            Target="{Binding ElementName=_jpegQualityLevelTextBox}"/>
                     <TextBox Grid.Row="1"
                              Grid.Column="1"
-                             Width="34"
-                             Height="23"
-                             Margin="0,7,0,0"
+                             Width="56"
+                             TextWrapping="Wrap"
+                             Margin="0,8,0,0"
                              HorizontalAlignment="Left"
                              Name="_jpegQualityLevelTextBox"
                              Text="{Binding Settings.JpegQualityLevel,ValidatesOnExceptions=True,ValidatesOnDataErrors=True}"/>
                     <Label Grid.Row="2"
-                           Margin="0,7,0,0"
+                           Margin="0,8,0,0"
                            Content="{x:Static p:Resources.Advanced_PngInterlaceOption}"
-                           Padding="0,5,5,0"
+                           Padding="0,8,8,0"
                            Target="{Binding ElementName=_pngInterlaceComboBox}"/>
                     <ComboBox Grid.Row="2"
                               Grid.Column="1"
-                              Height="23"
-                              Margin="0,7,0,0"
+                              Margin="0,8,0,0"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding Source={StaticResource PngInterlaceOptionValues}}"
                               Name="_pngInterlaceComboBox"
@@ -189,14 +196,13 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <Label Grid.Row="3"
-                           Margin="0,7,0,0"
+                           Margin="0,8,0,0"
                            Content="{x:Static p:Resources.Advanced_TiffCompressOption}"
-                           Padding="0,5,5,0"
+                           Padding="0,8,8,0"
                            Target="{Binding ElementName=_tiffCompressComboBox}"/>
                     <ComboBox Grid.Row="3"
                               Grid.Column="1"
-                              Height="23"
-                              Margin="0,7,0,0"
+                              Margin="0,8,0,0"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding Source={StaticResource TiffCompressOptionValues}}"
                               Name="_tiffCompressComboBox"
@@ -210,9 +216,9 @@
                 </Grid>
             </TabItem>
             <TabItem Header="{x:Static p:Resources.Advanced_File}">
-                <StackPanel Margin="11,9">
+                <StackPanel Margin="12,8">
                     <TextBlock Text="{x:Static p:Resources.Advanced_FileNameTokens}"/>
-                    <TextBlock Margin="9,5,0,0">
+                    <TextBlock Margin="0,8,0,0">
                         <Run Text="%1 -"/>
                         <Run Text="{x:Static p:Resources.Advanced_FileNameToken1}"/>
                         <LineBreak/>
@@ -231,42 +237,46 @@
                         <Run>%6 -</Run>
                         <Run Text="{x:Static p:Resources.Advanced_FileNameToken6}"/>
                     </TextBlock>
-                    <Grid Margin="0,7,0,0">
+                    <Grid Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
                         <Label HorizontalAlignment="Left"
                                Content="{x:Static p:Resources.Advanced_FileName}"
-                               Padding="0,5,5,0"
+                               Padding="0,4,4,0"
                                Target="{Binding ElementName=_fileNameTextBox}"/>
                         <TextBox Grid.Column="1"
                                  Height="23"
+                                 TextWrapping="Wrap"
                                  Name="_fileNameTextBox"
                                  Text="{Binding Settings.FileName}"/>
                     </Grid>
-                    <Separator Margin="0,11,0,0"/>
-                    <CheckBox Margin="0,11,0,0"
+                    <Separator Margin="0,12,0,0"/>
+                    <CheckBox Margin="0,12,0,0"
                               Content="{x:Static p:Resources.Advanced_KeepDateModified}"
                               IsChecked="{Binding Settings.KeepDateModified}"/>
                 </StackPanel>
             </TabItem>
         </TabControl>
-        <StackPanel Grid.Row="1"
-                    Margin="0,11,0,0"
+        <Border Grid.Row="1"
+                Margin="0,24,0,0"
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                Padding="12">
+
+            <StackPanel 
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
-            <Button Height="23"
-                    MinWidth="75"
+                <Button MinWidth="76"
                     Click="HandleAcceptClick"
+                    Style="{StaticResource AccentButtonStyle}"
                     Content="{x:Static p:Resources.OK}"
                     IsDefault="True"/>
-            <Button Height="23"
-                    MinWidth="75"
-                    Margin="7,0,0,0"
+                <Button MinWidth="76"
+                    Margin="8,0,0,0"
                     Content="{x:Static p:Resources.Cancel}"
                     IsCancel="True"/>
-        </StackPanel>
+            </StackPanel>
+        </Border>
     </Grid>
-
 </Window>

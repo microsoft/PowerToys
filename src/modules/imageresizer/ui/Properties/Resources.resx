@@ -201,9 +201,6 @@
   <data name="Input_IgnoreOrientation" xml:space="preserve">
     <value>Ign_ore the orientation of pictures</value>
   </data>
-  <data name="Input_MainInstruction" xml:space="preserve">
-    <value>Resize your pictures</value>
-  </data>
   <data name="Input_Replace" xml:space="preserve">
     <value>R_esize the original pictures (don't create copies)</value>
   </data>
