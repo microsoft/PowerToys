@@ -36,3 +36,11 @@ _What is the actual result of the above steps?_
 ## 📷 Screenshots
 
 _Are there any useful screenshots? WinKey+Shift+S and then just paste them directly into the form_
+
+## 📝 Log files
+
+_Are there any useful log files. If yes upload the file in here_
+
+<details>
+  <!-- or copy the content of the file in here -->
+</details>
