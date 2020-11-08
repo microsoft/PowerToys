@@ -115,6 +115,7 @@
                                    Text="&#xE711;"
                                    FontFamily="Segoe MDL2 Assets"
                                    Width="25"
+                                   Foreground="{DynamicResource PrimaryForegroundBrush}"
                                    Name="Times_Symbol"
                                    AutomationProperties.Name="{x:Static p:Resources.Times_Symbol}"
                                    TextAlignment="Center"
