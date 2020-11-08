@@ -277,6 +277,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Height.
+        /// </summary>
+        public static string Height {
+            get {
+                return ResourceManager.GetString("Height", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Image Resizer.
         /// </summary>
         public static string ImageResizer {
@@ -556,6 +565,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Resize type.
+        /// </summary>
+        public static string Resize_Type {
+            get {
+                return ResourceManager.GetString("Resize_Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fill.
         /// </summary>
         public static string ResizeFit_Fill {
@@ -736,6 +754,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unit.
+        /// </summary>
+        public static string Unit {
+            get {
+                return ResourceManager.GetString("Unit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value must be between &apos;{0}&apos; and &apos;{1}&apos;..
         /// </summary>
         public static string ValueMustBeBetween {
@@ -750,6 +777,15 @@ namespace ImageResizer.Properties {
         public static string Version {
             get {
                 return ResourceManager.GetString("Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Width.
+        /// </summary>
+        public static string Width {
+            get {
+                return ResourceManager.GetString("Width", resourceCulture);
             }
         }
     }

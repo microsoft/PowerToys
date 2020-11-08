@@ -189,6 +189,9 @@
   <data name="Copyright" xml:space="preserve">
     <value>© 2020 Brice Lambson. All rights reserved.</value>
   </data>
+  <data name="Height" xml:space="preserve">
+    <value>Height</value>
+  </data>
   <data name="ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>
   </data>
@@ -312,6 +315,9 @@
   <data name="Resize_Tooltip" xml:space="preserve">
     <value>Resize pictures</value>
   </data>
+  <data name="Resize_Type" xml:space="preserve">
+    <value>Resize type</value>
+  </data>
   <data name="Results_Close" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -342,10 +348,16 @@
   <data name="TiffCompressOption_Zip" xml:space="preserve">
     <value>Zip</value>
   </data>
+  <data name="Unit" xml:space="preserve">
+    <value>Unit</value>
+  </data>
   <data name="ValueMustBeBetween" xml:space="preserve">
     <value>Value must be between '{0}' and '{1}'.</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>
+  </data>
+  <data name="Width" xml:space="preserve">
+    <value>Width</value>
   </data>
 </root>

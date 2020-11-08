@@ -6,7 +6,7 @@
         xmlns:p="clr-namespace:ImageResizer.Properties"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        MinWidth="390"
+        MinWidth="560"
         MinHeight="340"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
@@ -65,6 +65,7 @@
                                     <ComboBox Grid.Column="1"
                                               Margin="8,0,0,0"
                                               ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
+                                              AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
                                               SelectedItem="{Binding Fit}">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate DataType="{x:Type m:ResizeFit}">
@@ -76,6 +77,7 @@
                                              Width="56"
                                              MaxWidth="56"
                                              TextWrapping="Wrap"
+                                             AutomationProperties.Name="{x:Static p:Resources.Width}"
                                              Margin="8,0,0,0">
                                         <TextBox.Text>
                                             <Binding Converter="{StaticResource AutoDoubleConverter}"
@@ -96,6 +98,7 @@
                                              Width="56"
                                              MaxWidth="56"
                                              TextWrapping="Wrap"
+                                             AutomationProperties.Name="{x:Static p:Resources.Height}"
                                              Margin="8,0,0,0"
                                              Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
                                         <TextBox.Text>
@@ -111,6 +114,7 @@
                                     <ComboBox Grid.Column="5"
                                               Margin="8,0,0,0"
                                               ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
+                                              AutomationProperties.Name="{x:Static p:Resources.Unit}"
                                               SelectedItem="{Binding Unit}">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate DataType="{x:Type m:ResizeUnit}">
@@ -262,6 +266,8 @@
         </TabControl>
         <Border Grid.Row="1"
                 Margin="0,24,0,0"
+                BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                BorderThickness="0,1,0,0"
                 Background="{DynamicResource SecondaryBackgroundBrush}"
                 Padding="12">
 

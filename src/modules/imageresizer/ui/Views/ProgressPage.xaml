@@ -20,14 +20,19 @@
     <StackPanel>
         <TextBlock Margin="12,12,12,0"
                    FontSize="16"
+                   Foreground="{DynamicResource PrimaryForegroundBrush}"
                    Text="{x:Static p:Resources.Progress_MainInstruction}"/>
-        <TextBlock Margin="12,12,12,0" Text="{Binding TimeRemaining,Converter={StaticResource TimeRemainingConverter}}"/>
+        <TextBlock Margin="12,12,12,0"
+                   Foreground="{DynamicResource PrimaryForegroundBrush}"
+                   Text="{Binding TimeRemaining,Converter={StaticResource TimeRemainingConverter}}"/>
         <ProgressBar Height="16"
                      Margin="12,12,12,0"
                      Value="{Binding Progress}"
                      Maximum="1"/>
         <Border Margin="0,12,0,0"
                 Background="{DynamicResource SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                BorderThickness="0,1,0,0"
                 Padding="12,12">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button MinWidth="76"

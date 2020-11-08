@@ -37,7 +37,7 @@
                Content="{x:Static p:Resources.Input_Content}"
                Target="{Binding ElementName=_selectedSizeListBox}"/>
         
-        <ListBox Margin="12,12,12,0"
+        <ListBox Margin="12,24,12,0"
                  BorderThickness="0"
                  Background="Transparent"
                  AutomationProperties.Name="Sizes listbox"
@@ -87,6 +87,7 @@
                         <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
                                   Style="{StaticResource DisabledWhenUnselectedComboBoxStyle}"
+                                  AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
                                   SelectedItem="{Binding Fit}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeFit}">
@@ -97,6 +98,7 @@
                         <TextBox Width="56"
                                  TextWrapping="Wrap"
                                  Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
+                                 AutomationProperties.Name="{x:Static p:Resources.Width}"
                                  Margin="8,0,0,0">
                             <TextBox.Text>
                                 <Binding Converter="{StaticResource AutoDoubleConverter}"
@@ -115,6 +117,7 @@
                         <TextBox Width="56"
                                  Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
                                  TextWrapping="Wrap"
+                                 AutomationProperties.Name="{x:Static p:Resources.Height}"
                                  Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
                             <TextBox.Text>
                                 <Binding Converter="{StaticResource AutoDoubleConverter}"
@@ -129,6 +132,7 @@
                         <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
                                   Style="{StaticResource DisabledWhenUnselectedComboBoxStyle}"
+                                  AutomationProperties.Name="{x:Static p:Resources.Unit}"
                                   SelectedItem="{Binding Unit}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeUnit}">
@@ -141,7 +145,7 @@
             </ListBox.Resources>
         </ListBox>
         
-        <CheckBox Margin="12,24,12,0"
+        <CheckBox Margin="12,36,12,0"
                   Content="{x:Static p:Resources.Input_ShrinkOnly}"
                   IsChecked="{Binding Settings.ShrinkOnly}"/>
         <!-- TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
@@ -156,6 +160,8 @@
         
         <Border Margin="0,24,0,0"
                 Background="{DynamicResource SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                BorderThickness="0,1,0,0"
                 Padding="12">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -168,7 +174,7 @@
                         FontFamily="Segoe MDL2 Assets"
                         Style="{StaticResource DefaultButtonStyle}"
                         FontSize="16"
-                        Margin="-10,0,0,0"
+                        Margin="-6,0,0,0"
                         AutomationProperties.Name="{x:Static p:Resources.Input_ShowAdvanced}"
                         ToolTip="{x:Static p:Resources.Input_ShowAdvanced}"
                         Background="Transparent"

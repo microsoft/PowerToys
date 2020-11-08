@@ -8,6 +8,7 @@
     <StackPanel>
         <TextBlock Margin="12,12,12,0"
                    FontSize="16"
+                   Foreground="{DynamicResource PrimaryForegroundBrush}"
                    Text="{x:Static p:Resources.Results_MainInstruction}"/>
         <ScrollViewer MaxWidth="363"
                       MaxHeight="350"
@@ -28,7 +29,7 @@
         </ScrollViewer>
         <Border Margin="0,12,0,0"
                 Background="{DynamicResource SecondaryBackgroundBrush}"
-                BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+                BorderBrush="{DynamicResource PrimaryBorderBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="12,12">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
