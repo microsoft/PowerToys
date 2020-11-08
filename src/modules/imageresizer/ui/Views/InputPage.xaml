@@ -111,8 +111,13 @@
                                 </Binding>
                             </TextBox.Text>
                         </TextBox>
-                        <TextBlock Margin="8,0,0,0"
-                                   VerticalAlignment="Center"
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="&#xE711;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   Width="25"
+                                   Name="Times_Symbol"
+                                   AutomationProperties.Name="{x:Static p:Resources.Times_Symbol}"
+                                   TextAlignment="Center"
                                    Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
 
                         <TextBox Width="56"

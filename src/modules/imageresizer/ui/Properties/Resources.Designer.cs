@@ -790,6 +790,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Times Symbol.
+        /// </summary>
+        public static string Times_Symbol {
+            get {
+                return ResourceManager.GetString("Times_Symbol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unit.
         /// </summary>
         public static string Unit {

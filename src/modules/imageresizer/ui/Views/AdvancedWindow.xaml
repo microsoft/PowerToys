@@ -65,6 +65,7 @@
                                              Text="{Binding Name}"/>
                                     <ComboBox Grid.Column="1"
                                               Margin="8,0,0,0"
+                                              Width="90"
                                               ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
                                               AutomationProperties.Name="{x:Static p:Resources.Resize_Type}"
                                               SelectedItem="{Binding Fit}">
@@ -91,16 +92,20 @@
                                         </TextBox.Text>
                                     </TextBox>
                                     <TextBlock Grid.Column="3"
-                                               Margin="8,0,0,0"
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                               Name="Times_Symbol"
+                                               AutomationProperties.Name="{x:Static p:Resources.Times_Symbol}"
                                                VerticalAlignment="Center"
-                                               Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
-                                    </TextBlock>
+                                               Text="&#xE711;"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               Width="25"
+                                               TextAlignment="Center"
+                                               Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
                                     <TextBox Grid.Column="4"
                                              Width="56"
                                              MaxWidth="56"
                                              TextWrapping="Wrap"
                                              AutomationProperties.Name="{x:Static p:Resources.Height}"
-                                             Margin="8,0,0,0"
                                              Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
                                         <TextBox.Text>
                                             <Binding Converter="{StaticResource AutoDoubleConverter}"
@@ -114,6 +119,7 @@
                                     </TextBox>
                                     <ComboBox Grid.Column="5"
                                               Margin="8,0,0,0"
+                                              MinWidth="120"
                                               ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
                                               AutomationProperties.Name="{x:Static p:Resources.Unit}"
                                               SelectedItem="{Binding Unit}">
@@ -159,6 +165,7 @@
                            Target="{Binding ElementName=_fallbackEncoderComboBox}"/>
                     <ComboBox Grid.Column="1"
                               HorizontalAlignment="Left"
+                              MinWidth="148"
                               ItemsSource="{Binding Encoders}"
                               AutomationProperties.Name="{x:Static p:Resources.Advanced_FallbackEncoder_Name}"
                               Name="_fallbackEncoderComboBox"
@@ -177,6 +184,7 @@
                     <TextBox Grid.Row="1"
                              Grid.Column="1"
                              Width="56"
+                             MinWidth="148"
                              TextWrapping="Wrap"
                              AutomationProperties.Name="{x:Static p:Resources.Advanced_JpegQualityLevel_Name}"
                              Margin="0,8,0,0"
@@ -191,6 +199,7 @@
                     <ComboBox Grid.Row="2"
                               Grid.Column="1"
                               Margin="0,8,0,0"
+                              MinWidth="148"
                               HorizontalAlignment="Left"
                               AutomationProperties.Name="{x:Static p:Resources.Advanced_PngInterlaceOption_Name}"
                               ItemsSource="{Binding Source={StaticResource PngInterlaceOptionValues}}"
@@ -209,6 +218,7 @@
                            Target="{Binding ElementName=_tiffCompressComboBox}"/>
                     <ComboBox Grid.Row="3"
                               Grid.Column="1"
+                              MinWidth="148"
                               Margin="0,8,0,0"
                               HorizontalAlignment="Left"
                               AutomationProperties.Name="{x:Static p:Resources.Advanced_TiffCompressOption_Name}"
@@ -257,7 +267,9 @@
                                Target="{Binding ElementName=fileNameTextBox}"/>
                         <TextBox Grid.Column="1"
                                  Height="23"
+                                MinWidth="240"
                                  TabIndex="0"
+                                 HorizontalAlignment="Left"
                                  TextWrapping="Wrap"
                                  Name="fileNameTextBox"
                                  AutomationProperties.Name="{x:Static p:Resources.Advanced_FileName_Name}"
