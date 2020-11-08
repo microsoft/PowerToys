@@ -6,7 +6,31 @@
              xmlns:p="clr-namespace:ImageResizer.Properties"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              MinWidth="350">
-
+    <UserControl.Resources>
+        <Style x:Key="DisabledWhenUnselectedComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                    <Setter Property="IsEnabled" Value="True"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisabledWhenUnselectedTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                    <Setter Property="IsEnabled" Value="True"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    
+    
+    
     <StackPanel Background="{DynamicResource PrimaryBackgroundBrush}">
         <Label Margin="12,12,12,0"
                FontSize="16"
@@ -62,6 +86,7 @@
                                    FontWeight="Bold"/>
                         <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
+                                  Style="{StaticResource DisabledWhenUnselectedComboBoxStyle}"
                                   SelectedItem="{Binding Fit}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeFit}">
@@ -70,8 +95,8 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                         <TextBox Width="56"
-                                 Style="{StaticResource DefaultTextBoxStyle}"
                                  TextWrapping="Wrap"
+                                 Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
                                  Margin="8,0,0,0">
                             <TextBox.Text>
                                 <Binding Converter="{StaticResource AutoDoubleConverter}"
@@ -88,8 +113,7 @@
                                    Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
 
                         <TextBox Width="56"
-                                 Style="{StaticResource DefaultTextBoxStyle}"
-                                 Margin="0,0,0,0"
+                                 Style="{StaticResource DisabledWhenUnselectedTextBoxStyle}"
                                  TextWrapping="Wrap"
                                  Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
                             <TextBox.Text>
@@ -104,6 +128,7 @@
                         </TextBox>
                         <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
+                                  Style="{StaticResource DisabledWhenUnselectedComboBoxStyle}"
                                   SelectedItem="{Binding Unit}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeUnit}">
