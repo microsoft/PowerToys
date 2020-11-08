@@ -121,6 +121,8 @@
     <Compile Include="Controls\HSVColor.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ColorToStringConverter.cs" />
+    <Compile Include="Converters\NumberToInvertedVisibilityConverter.cs" />
+    <Compile Include="Converters\NumberToVisibilityConverter.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />

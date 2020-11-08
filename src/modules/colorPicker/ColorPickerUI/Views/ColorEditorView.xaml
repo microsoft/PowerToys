@@ -100,7 +100,7 @@
         </Grid>
 
         <!-- Main grid -->
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="1" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
             <ScrollViewer Grid.Column="1" Margin="0,90,0,0">
                 <StackPanel>
                     <ItemsControl ItemsSource="{Binding ColorRepresentations}">
@@ -131,6 +131,12 @@
             Grid.Column="1"
             VerticalAlignment="Top"/>
         </Grid>
+
+        <!-- Empty history -->
+        <Grid Grid.Column="1" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
+            <TextBlock Margin="0,90,0,0" Text="No colors add some!"/>
+        </Grid>
+
         <Border x:Name="CopiedBorderIndicator"
                 Opacity="0"
                 Grid.ColumnSpan="2"

@@ -19,7 +19,8 @@
         Height="380"
         Width="400"
         ResizeMode="NoResize"
-        Topmost="True">
+        Topmost="True"
+        WindowStartupLocation="CenterScreen">
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior/>
     </e:Interaction.Behaviors>

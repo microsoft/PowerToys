@@ -6,16 +6,19 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media;
 
 namespace ColorPicker.Converters
 {
-    public class ColorToBrushConverter : IValueConverter
+    public class NumberToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var color = (Color)value;
-            return new SolidColorBrush(color);
+            if ((int)value <= 0)
+            {
+                return Visibility.Collapsed;
+            }
+
+            return Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

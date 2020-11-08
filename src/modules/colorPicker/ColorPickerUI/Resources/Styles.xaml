@@ -6,6 +6,8 @@
     <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
     <converters:ColorToBrushConverter x:Key="colorToBrushConverter"/>
     <converters:ColorToStringConverter x:Key="colorToStringConverter"/>
+    <converters:NumberToVisibilityConverter x:Key="numberToVisibilityConverter"/>
+    <converters:NumberToInvertedVisibilityConverter x:Key="numberToInvertedVisibilityConverter"/>
 
     <Style x:Key="ColorHistoryListViewStyle" TargetType="{x:Type ListBoxItem}">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
