@@ -159,6 +159,9 @@
   <data name="Advanced_FileNameTokens" xml:space="preserve">
     <value>The following parameters can be used.</value>
   </data>
+  <data name="Advanced_FileName_Tooltip" xml:space="preserve">
+    <value>Filename</value>
+  </data>
   <data name="Advanced_JpegQualityLevel" xml:space="preserve">
     <value>_JPEG quality level:</value>
   </data>
@@ -221,6 +224,9 @@
   </data>
   <data name="OK" xml:space="preserve">
     <value>OK</value>
+  </data>
+  <data name="OK_Tooltip" xml:space="preserve">
+    <value>Apply settings</value>
   </data>
   <data name="Phone" xml:space="preserve">
     <value>Phone</value>
@@ -302,6 +308,9 @@
   </data>
   <data name="ResizeUnit_Pixel" xml:space="preserve">
     <value>Pixels</value>
+  </data>
+  <data name="Resize_Tooltip" xml:space="preserve">
+    <value>Resize pictures</value>
   </data>
   <data name="Results_Close" xml:space="preserve">
     <value>Close</value>

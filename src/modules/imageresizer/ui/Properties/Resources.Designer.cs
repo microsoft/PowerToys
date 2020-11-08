@@ -124,6 +124,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filename.
+        /// </summary>
+        public static string Advanced_FileName_Tooltip {
+            get {
+                return ResourceManager.GetString("Advanced_FileName_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Original filename.
         /// </summary>
         public static string Advanced_FileNameToken1 {
@@ -376,6 +385,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Apply settings.
+        /// </summary>
+        public static string OK_Tooltip {
+            get {
+                return ResourceManager.GetString("OK_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Phone.
         /// </summary>
         public static string Phone {
@@ -525,6 +543,15 @@ namespace ImageResizer.Properties {
         public static string Progress_TimeRemaining_Seconds {
             get {
                 return ResourceManager.GetString("Progress_TimeRemaining_Seconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resize pictures.
+        /// </summary>
+        public static string Resize_Tooltip {
+            get {
+                return ResourceManager.GetString("Resize_Tooltip", resourceCulture);
             }
         }
         

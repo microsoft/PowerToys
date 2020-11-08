@@ -41,11 +41,11 @@
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TabControl>
+        <TabControl Style="{StaticResource TabControlPivotStyle}">
             <TabItem Header="{x:Static p:Resources.Advanced_Sizes}">
-                <StackPanel Margin="12">
+                <StackPanel Margin="0,12,0,12">
                     <!-- TODO: Allow these to be drag-and-drop reordered (issue #15) -->
-                    <ItemsControl Grid.IsSharedSizeScope="True" ItemsSource="{Binding Settings.Sizes}">
+                    <ItemsControl Grid.IsSharedSizeScope="True" TabIndex="0" ItemsSource="{Binding Settings.Sizes}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="m:ResizeSize">
                                 <Grid Margin="0,0,0,8">
@@ -131,15 +131,13 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock>
-                        <local:AccessibleHyperlink ControlType="Button" Command="{Binding AddSizeCommand}">
-                            <Run Text="{x:Static p:Resources.Advanced_CreateSize}"/>
-                        </local:AccessibleHyperlink>
-                    </TextBlock>
+                    <Button Margin="0,12,0,0"
+                            Command="{Binding AddSizeCommand}"
+                            Content="{x:Static p:Resources.Advanced_CreateSize}"/>
                 </StackPanel>
             </TabItem>
             <TabItem Header="{x:Static p:Resources.Advanced_Encoding}">
-                <Grid Margin="12" VerticalAlignment="Top">
+                <Grid Margin="0,12,0,12" VerticalAlignment="Top">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition/>
@@ -216,7 +214,7 @@
                 </Grid>
             </TabItem>
             <TabItem Header="{x:Static p:Resources.Advanced_File}">
-                <StackPanel Margin="12,8">
+                <StackPanel Margin="0,12,0,12">
                     <TextBlock Text="{x:Static p:Resources.Advanced_FileNameTokens}"/>
                     <TextBlock Margin="0,8,0,0">
                         <Run Text="%1 -"/>
@@ -243,14 +241,16 @@
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
                         <Label HorizontalAlignment="Left"
+                               x:Name="fileNameTextBoxLabel"
                                Content="{x:Static p:Resources.Advanced_FileName}"
                                Padding="0,4,4,0"
-                               Target="{Binding ElementName=_fileNameTextBox}"/>
+                               Target="{Binding ElementName=fileNameTextBox}"/>
                         <TextBox Grid.Column="1"
                                  Height="23"
-                                 TabIndex="1"
+                                 TabIndex="0"
                                  TextWrapping="Wrap"
-                                 Name="_fileNameTextBox"
+                                 Name="fileNameTextBox"
+                                 AutomationProperties.Name="{x:Static p:Resources.Advanced_FileName_Tooltip}"
                                  Text="{Binding Settings.FileName}"/>
                     </Grid>
                     <Separator Margin="0,12,0,0"/>
@@ -269,12 +269,16 @@
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
                 <Button MinWidth="76"
-                    Click="HandleAcceptClick"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Content="{x:Static p:Resources.OK}"
-                    IsDefault="True"/>
+                        TabIndex="100"
+                        Click="HandleAcceptClick"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Content="{x:Static p:Resources.OK}"
+                        AutomationProperties.Name="{x:Static p:Resources.OK_Tooltip}"
+                        IsDefault="True"/>
+
                 <Button MinWidth="76"
                     Margin="8,0,0,0"
+                    TabIndex="101"
                     Content="{x:Static p:Resources.Cancel}"
                     IsCancel="True"/>
             </StackPanel>

@@ -16,6 +16,7 @@
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
         ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
+        AutomationProperties.Name="Image Resizer"
         >
 
     <Window.Resources>

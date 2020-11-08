@@ -12,12 +12,15 @@
                FontSize="16"
                Content="{x:Static p:Resources.Input_Content}"
                Target="{Binding ElementName=_selectedSizeListBox}"/>
+        
         <ListBox Margin="12,12,12,0"
                  BorderThickness="0"
                  Background="Transparent"
+                 AutomationProperties.Name="Sizes listbox"
                  ItemsSource="{Binding Settings.AllSizes}"
                  Name="_selectedSizeListBox"
                  SelectedIndex="{Binding Settings.SelectedSizeIndex}">
+            
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Template">
@@ -26,6 +29,7 @@
                                 <RadioButton Margin="0,4,0,0"
                                              VerticalAlignment="Center"
                                              VerticalContentAlignment="Top"
+                                             AutomationProperties.Name="{Binding Name}"
                                              Focusable="False"
                                              IsChecked="{Binding IsSelected,RelativeSource={RelativeSource TemplatedParent}}">
                                     <ContentPresenter/>
@@ -33,26 +37,30 @@
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
+                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}"/>
                 </Style>
             </ListBox.ItemContainerStyle>
+            
             <ListBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                        <TextBlock Text="(" Margin="4,0,0,0"/>
-                        <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}"/>
-                        <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Margin="4,0,0,0"/>
-                        <TextBlock Text="x" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0"/>
-                        <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0"/>
-                        <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}" Margin="4,0,0,0"/>
-                        <TextBlock Text=")"/>
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                        <TextBlock Text="(" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text="x" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text=")" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                     </StackPanel>
                 </DataTemplate>
+                
                 <DataTemplate DataType="{x:Type m:CustomSize}">
                     <StackPanel Orientation="Horizontal" Margin="0,-8,0,0">
-                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" FontWeight="Bold"/>
-                        <ComboBox 
-                                  Margin="8,0,0,0"
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="{Binding Name}"
+                                   FontWeight="Bold"/>
+                        <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
                                   SelectedItem="{Binding Fit}">
                             <ComboBox.ItemTemplate>
@@ -77,8 +85,8 @@
                         </TextBox>
                         <TextBlock Margin="8,0,0,0"
                                    VerticalAlignment="Center"
-                                   Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
-                        </TextBlock>
+                                   Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
+
                         <TextBox Width="56"
                                  Style="{StaticResource DefaultTextBoxStyle}"
                                  Margin="0,0,0,0"
@@ -94,11 +102,9 @@
                                 </Binding>
                             </TextBox.Text>
                         </TextBox>
-                        <ComboBox 
-                                  Margin="8,0,0,0"
+                        <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
-                                  SelectedItem="{Binding Unit}"
-                                  >
+                                  SelectedItem="{Binding Unit}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeUnit}">
                                     <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
@@ -109,6 +115,7 @@
                 </DataTemplate>
             </ListBox.Resources>
         </ListBox>
+        
         <CheckBox Margin="12,24,12,0"
                   Content="{x:Static p:Resources.Input_ShrinkOnly}"
                   IsChecked="{Binding Settings.ShrinkOnly}"/>
@@ -117,9 +124,11 @@
         <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_Replace}"
                   IsChecked="{Binding Settings.Replace}"/>
+        
         <CheckBox Margin="12,4,12,0"
                   Content="{x:Static p:Resources.Input_IgnoreOrientation}"
                   IsChecked="{Binding Settings.IgnoreOrientation}"/>
+        
         <Border Margin="0,24,0,0"
                 Background="{DynamicResource SecondaryBackgroundBrush}"
                 Padding="12">
@@ -134,18 +143,20 @@
                         FontFamily="Segoe MDL2 Assets"
                         Style="{StaticResource DefaultButtonStyle}"
                         FontSize="16"
+                        Margin="-10,0,0,0"
+                        AutomationProperties.Name="{x:Static p:Resources.Input_ShowAdvanced}"
                         ToolTip="{x:Static p:Resources.Input_ShowAdvanced}"
                         Background="Transparent"
-                        Command="{Binding ShowAdvancedCommand}"
-                        />
+                        Command="{Binding ShowAdvancedCommand}"/>
                 <!-- Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}" -->
                 <Button Grid.Column="1"
                         Style="{StaticResource AccentButtonStyle}"
                         MinWidth="76"
                         Command="{Binding ResizeCommand}"
+                        AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
                         Content="{x:Static p:Resources.Input_Resize}"
                         IsDefault="True"/>
-                
+
                 <Button Grid.Column="2"
                         Style="{StaticResource DefaultButtonStyle}"
                         MinWidth="76"
@@ -156,5 +167,4 @@
             </Grid>
         </Border>
     </StackPanel>
-
 </UserControl>
