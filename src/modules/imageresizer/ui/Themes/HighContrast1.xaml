@@ -19,5 +19,5 @@
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFffff00" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF00ff00" />
-    <SolidColorBrush x:Key="PrimaryBorderBrush" Color="Transparent"/>
+    <SolidColorBrush x:Key="PrimaryBorderBrush" Color="#FFffff00"/>
 </ResourceDictionary>

@@ -106,6 +106,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fallback encoder.
+        /// </summary>
+        public static string Advanced_FallbackEncoder_Name {
+            get {
+                return ResourceManager.GetString("Advanced_FallbackEncoder_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File.
         /// </summary>
         public static string Advanced_File {
@@ -126,9 +135,9 @@ namespace ImageResizer.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Filename.
         /// </summary>
-        public static string Advanced_FileName_Tooltip {
+        public static string Advanced_FileName_Name {
             get {
-                return ResourceManager.GetString("Advanced_FileName_Tooltip", resourceCulture);
+                return ResourceManager.GetString("Advanced_FileName_Name", resourceCulture);
             }
         }
         
@@ -205,6 +214,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to JPEG quality level.
+        /// </summary>
+        public static string Advanced_JpegQualityLevel_Name {
+            get {
+                return ResourceManager.GetString("Advanced_JpegQualityLevel_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to _Use original date modified.
         /// </summary>
         public static string Advanced_KeepDateModified {
@@ -223,6 +241,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PNG interlacing.
+        /// </summary>
+        public static string Advanced_PngInterlaceOption_Name {
+            get {
+                return ResourceManager.GetString("Advanced_PngInterlaceOption_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sizes.
         /// </summary>
         public static string Advanced_Sizes {
@@ -237,6 +264,15 @@ namespace ImageResizer.Properties {
         public static string Advanced_TiffCompressOption {
             get {
                 return ResourceManager.GetString("Advanced_TiffCompressOption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TIFF compression.
+        /// </summary>
+        public static string Advanced_TiffCompressOption_Name {
+            get {
+                return ResourceManager.GetString("Advanced_TiffCompressOption_Name", resourceCulture);
             }
         }
         

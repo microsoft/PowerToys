@@ -132,6 +132,9 @@
   <data name="Advanced_FallbackEncoder" xml:space="preserve">
     <value>_Fallback encoder:</value>
   </data>
+  <data name="Advanced_FallbackEncoder_Name" xml:space="preserve">
+    <value>Fallback encoder</value>
+  </data>
   <data name="Advanced_File" xml:space="preserve">
     <value>File</value>
   </data>
@@ -159,11 +162,14 @@
   <data name="Advanced_FileNameTokens" xml:space="preserve">
     <value>The following parameters can be used.</value>
   </data>
-  <data name="Advanced_FileName_Tooltip" xml:space="preserve">
+  <data name="Advanced_FileName_Name" xml:space="preserve">
     <value>Filename</value>
   </data>
   <data name="Advanced_JpegQualityLevel" xml:space="preserve">
     <value>_JPEG quality level:</value>
+  </data>
+  <data name="Advanced_JpegQualityLevel_Name" xml:space="preserve">
+    <value>JPEG quality level</value>
   </data>
   <data name="Advanced_KeepDateModified" xml:space="preserve">
     <value>_Use original date modified</value>
@@ -171,11 +177,17 @@
   <data name="Advanced_PngInterlaceOption" xml:space="preserve">
     <value>_PNG interlacing:</value>
   </data>
+  <data name="Advanced_PngInterlaceOption_Name" xml:space="preserve">
+    <value>PNG interlacing</value>
+  </data>
   <data name="Advanced_Sizes" xml:space="preserve">
     <value>Sizes</value>
   </data>
   <data name="Advanced_TiffCompressOption" xml:space="preserve">
     <value>_TIFF compression:</value>
+  </data>
+  <data name="Advanced_TiffCompressOption_Name" xml:space="preserve">
+    <value>TIFF compression</value>
   </data>
   <data name="Advanced_Title" xml:space="preserve">
     <value>Settings</value>

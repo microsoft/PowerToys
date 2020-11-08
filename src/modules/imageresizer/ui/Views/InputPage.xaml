@@ -83,6 +83,7 @@
                     <StackPanel Orientation="Horizontal" Margin="0,-8,0,0">
                         <TextBlock VerticalAlignment="Center"
                                    Text="{Binding Name}"
+                                   Foreground="{DynamicResource PrimaryForegroundBrush}"
                                    FontWeight="Bold"/>
                         <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"

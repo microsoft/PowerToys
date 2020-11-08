@@ -61,6 +61,7 @@
                                     <TextBox Width="96"
                                              MaxWidth="96"
                                              TextWrapping="Wrap"
+                                             AutomationProperties.Name="{Binding Name}"
                                              Text="{Binding Name}"/>
                                     <ComboBox Grid.Column="1"
                                               Margin="8,0,0,0"
@@ -128,6 +129,7 @@
                                             Grid.Column="6"
                                             Margin="8,0,0,0"
                                             VerticalAlignment="Center"
+                                            AutomationProperties.Name="{x:Static p:Resources.Advanced_DeleteSize}"
                                             ToolTip="{x:Static p:Resources.Advanced_DeleteSize}" 
                                             Command="{Binding DataContext.RemoveSizeCommand,ElementName=_this}"
                                             CommandParameter="{Binding}" />
@@ -158,6 +160,7 @@
                     <ComboBox Grid.Column="1"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding Encoders}"
+                              AutomationProperties.Name="{x:Static p:Resources.Advanced_FallbackEncoder_Name}"
                               Name="_fallbackEncoderComboBox"
                               SelectedItem="{Binding Settings.FallbackEncoder}">
                         <ComboBox.ItemTemplate>
@@ -175,6 +178,7 @@
                              Grid.Column="1"
                              Width="56"
                              TextWrapping="Wrap"
+                             AutomationProperties.Name="{x:Static p:Resources.Advanced_JpegQualityLevel_Name}"
                              Margin="0,8,0,0"
                              HorizontalAlignment="Left"
                              Name="_jpegQualityLevelTextBox"
@@ -188,6 +192,7 @@
                               Grid.Column="1"
                               Margin="0,8,0,0"
                               HorizontalAlignment="Left"
+                              AutomationProperties.Name="{x:Static p:Resources.Advanced_PngInterlaceOption_Name}"
                               ItemsSource="{Binding Source={StaticResource PngInterlaceOptionValues}}"
                               Name="_pngInterlaceComboBox"
                               SelectedItem="{Binding Settings.PngInterlaceOption}">
@@ -206,6 +211,7 @@
                               Grid.Column="1"
                               Margin="0,8,0,0"
                               HorizontalAlignment="Left"
+                              AutomationProperties.Name="{x:Static p:Resources.Advanced_TiffCompressOption_Name}"
                               ItemsSource="{Binding Source={StaticResource TiffCompressOptionValues}}"
                               Name="_tiffCompressComboBox"
                               SelectedItem="{Binding Settings.TiffCompressOption}">
@@ -254,7 +260,7 @@
                                  TabIndex="0"
                                  TextWrapping="Wrap"
                                  Name="fileNameTextBox"
-                                 AutomationProperties.Name="{x:Static p:Resources.Advanced_FileName_Tooltip}"
+                                 AutomationProperties.Name="{x:Static p:Resources.Advanced_FileName_Name}"
                                  Text="{Binding Settings.FileName}"/>
                     </Grid>
                     <Separator Margin="0,12,0,0"/>
