@@ -42,5 +42,6 @@ _Are there any useful screenshots? WinKey+Shift+S and then just paste them direc
 _Are there any useful log files. If yes upload the file in here_
 
 <details>
+  <summary>Log files</summary>
   <!-- or copy the content of the file in here -->
 </details>
