@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels"
+    xmlns:Color="using:Microsoft.PowerToys.Settings.UI.Library.ViewModels" xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" 
@@ -86,18 +86,50 @@
                 <ComboBoxItem Content="HSV - hsv(100, 50%, 75%)"/>
             </ComboBox>
 
-            <TextBlock Margin="{StaticResource MediumTopMargin}" TextWrapping="WrapWholeWords" Text="Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging."/>
-            <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}" AllowDrop="True" CanReorderItems="True" Margin="-12,6,0,0">
+            <TextBlock Margin="{StaticResource MediumTopMargin}"
+                       TextWrapping="WrapWholeWords"
+                       Text="Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging."/>
+            <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
+                      AllowDrop="True"
+                      MaxWidth="466"
+                      CanReorderItems="True"
+                      HorizontalAlignment="Left"
+                      Margin="-12,6,0,0">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Width="480">
+                        <Grid Width="466" Background="Transparent">
+                            <Interactivity:Interaction.Behaviors>
+                                <Core:EventTriggerBehavior EventName="PointerEntered">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=GripperIcon}" PropertyName="Visibility" Value="Visible" />
+                                </Core:EventTriggerBehavior>
+                                <Core:EventTriggerBehavior EventName="PointerExited">
+                                    <Core:ChangePropertyAction TargetObject="{Binding ElementName=GripperIcon}" PropertyName="Visibility" Value="Collapsed" />
+                                </Core:EventTriggerBehavior>
+                            </Interactivity:Interaction.Behaviors>
                             <Grid.RowDefinitions>
                                 <RowDefinition/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <TextBlock FontWeight="SemiBold" FontSize="16" Margin="0,8,0,0" Text="{Binding Name}"/>
-                            <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{Binding Example}" Grid.Row="1" Margin="0,0,0,8"/>
-                            <ToggleSwitch IsOn="{Binding IsShown, Mode=TwoWay}" Grid.RowSpan="2" HorizontalAlignment="Right" />
+                            <TextBlock FontWeight="SemiBold"
+                                       FontSize="16"
+                                       Margin="0,8,0,0"
+                                       Text="{Binding Name}"/>
+                            <TextBlock Foreground="{ThemeResource SystemAccentColor}"
+                                       Text="{Binding Example}"
+                                       Grid.Row="1"
+                                       Margin="0,0,0,8"/>
+                            <ToggleSwitch IsOn="{Binding IsShown, Mode=TwoWay}"
+                                          Grid.RowSpan="2"
+                                          HorizontalAlignment="Right" />
+                            <TextBlock Text="&#xE76F;"
+                                       Visibility="Collapsed"
+                                       x:Name="GripperIcon"
+                                       VerticalAlignment="Center"
+                                       Grid.RowSpan="2"
+                                       FontSize="16"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,0,36,0"
+                                       FontFamily="Segoe MDL2 Assets" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -119,9 +151,11 @@
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
             <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_ColorPicker" x:Name="AboutTitle" Grid.ColumnSpan="2"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="About_ColorPicker"
+                           x:Name="AboutTitle"
+                           Grid.ColumnSpan="2"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="ColorPicker_Description"
                            TextWrapping="Wrap"
                            Grid.Row="1" />
