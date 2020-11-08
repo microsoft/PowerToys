@@ -133,6 +133,15 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Press the color pick button to start picking your favorite colors..
+        /// </summary>
+        public static string No_colors_yet {
+            get {
+                return ResourceManager.GetString("No_colors_yet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to OK.
         /// </summary>
         public static string OK {

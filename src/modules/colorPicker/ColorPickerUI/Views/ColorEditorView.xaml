@@ -133,9 +133,19 @@
         </Grid>
 
         <!-- Empty history -->
-        <Grid Grid.Column="1" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
-            <TextBlock Margin="0,90,0,0" Text="No colors add some!"/>
-        </Grid>
+        <StackPanel Grid.Column="1" Margin="12" VerticalAlignment="Center" Orientation="Vertical" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
+            <TextBlock Text="&#xEF3C;"
+                       FontFamily="Segoe MDL2 Assets"
+                       FontSize="44"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}" />
+            <TextBlock Margin="0,16,0,0"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       Text="{x:Static p:Resources.No_colors_yet}"/>
+        </StackPanel>
 
         <Border x:Name="CopiedBorderIndicator"
                 Opacity="0"
