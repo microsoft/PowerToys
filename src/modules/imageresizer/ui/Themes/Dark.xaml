@@ -17,13 +17,6 @@
 
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF1f1f1f" />
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="WindowBorderBrush" Color="#FF535353"/>
-    <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF9a9a9a"/>
-
-    <SolidColorBrush x:Key="ListViewPointerOverBrush" Color="#FF242424"/>
-    <SolidColorBrush x:Key="ListViewPressedBrush" Color="#FF333333"/>
-
-    <SolidColorBrush x:Key="ColorControlBackgroundBrush" Color="#FF454545"/>
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF999999" />
 </ResourceDictionary>
