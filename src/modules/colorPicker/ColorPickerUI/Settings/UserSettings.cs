@@ -108,12 +108,6 @@ namespace ColorPicker.Settings
                                     settings.Properties.ColorHistory = new System.Collections.Generic.List<string>();
                                 }
 
-                                if (settings.Properties.VisibleColorFormats == null)
-                                {
-                                    // todo remove this default values, they should be in settings only
-                                    settings.Properties.VisibleColorFormats = new System.Collections.Generic.List<string>() { "HEX", "RGB", "HSL" };
-                                }
-
                                 _loadingColorsHistory = true;
                                 ColorHistory.Clear();
                                 foreach (var item in settings.Properties.ColorHistory)
@@ -126,7 +120,10 @@ namespace ColorPicker.Settings
                                 VisibleColorFormats.Clear();
                                 foreach (var item in settings.Properties.VisibleColorFormats)
                                 {
-                                    VisibleColorFormats.Add(item);
+                                    if (item.Value)
+                                    {
+                                        VisibleColorFormats.Add(item.Key);
+                                    }
                                 }
                             }
 

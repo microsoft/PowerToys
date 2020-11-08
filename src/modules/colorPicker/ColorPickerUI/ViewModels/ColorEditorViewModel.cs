@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using ColorPicker.Common;
@@ -173,11 +172,20 @@ namespace ColorPicker.ViewModels
                     Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.CMYK); },
                 });
 
+            _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
+
             // Any other custom format to be added here as well that are read from settings
+        }
+
+        private void VisibleColorFormats_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            SetupAvailableColorRepresentations();
         }
 
         private void SetupAvailableColorRepresentations()
         {
+            ColorRepresentations.Clear();
+
             foreach (var colorFormat in _userSettings.VisibleColorFormats)
             {
                 var colorRepresentation = _allColorRepresentations.FirstOrDefault(it => it.FormatName.ToUpperInvariant() == colorFormat.ToUpperInvariant());

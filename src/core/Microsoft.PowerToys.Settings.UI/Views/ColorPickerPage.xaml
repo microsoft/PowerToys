@@ -87,17 +87,17 @@
             </ComboBox>
 
             <TextBlock Margin="{StaticResource MediumTopMargin}" TextWrapping="WrapWholeWords" Text="Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging."/>
-            <ListView ItemsSource="{x:Bind ColorFormats, Mode=TwoWay}" AllowDrop="True" CanReorderItems="True" Margin="-12,6,0,0">
+            <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}" AllowDrop="True" CanReorderItems="True" Margin="-12,6,0,0">
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="local:ColorFormat">
+                    <DataTemplate>
                         <Grid Width="480">
                             <Grid.RowDefinitions>
                                 <RowDefinition/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <TextBlock FontWeight="SemiBold" FontSize="16" Margin="0,8,0,0" Text="{x:Bind Name}"/>
-                            <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind Example}" Grid.Row="1" Margin="0,0,0,8"/>
-                            <ToggleSwitch IsOn="{x:Bind IsShown}" Grid.RowSpan="2" HorizontalAlignment="Right" />
+                            <TextBlock FontWeight="SemiBold" FontSize="16" Margin="0,8,0,0" Text="{Binding Name}"/>
+                            <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{Binding Example}" Grid.Row="1" Margin="0,0,0,8"/>
+                            <ToggleSwitch IsOn="{Binding IsShown, Mode=TwoWay}" Grid.RowSpan="2" HorizontalAlignment="Right" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

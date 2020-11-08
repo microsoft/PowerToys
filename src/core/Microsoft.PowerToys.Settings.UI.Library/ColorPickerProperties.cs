@@ -45,7 +45,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             UseEditor = true;
             ColorHistory = new List<string>();
             ColorHistoryLimit = 20;
-            VisibleColorFormats = new List<string>() { "HEX", "RGB", "HSL" };
+            VisibleColorFormats = new Dictionary<string, bool>();
+            VisibleColorFormats.Add("HEX", true);
+            VisibleColorFormats.Add("RGB", true);
+            VisibleColorFormats.Add("HSL", true);
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -70,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("visiblecolorformats")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Need to change this collection")]
-        public List<string> VisibleColorFormats { get; set; }
+        public Dictionary<string, bool> VisibleColorFormats { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this);

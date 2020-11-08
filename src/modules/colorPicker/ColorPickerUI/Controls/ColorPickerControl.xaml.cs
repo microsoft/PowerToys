@@ -94,25 +94,25 @@ namespace ColorPicker.Controls
 
         private static void SetColorVariationsForCurrentColor(DependencyObject d, (double hue, double saturation, double value) hsv)
         {
-            var hueCoeficient = 0;
-            var hueCoeficient2 = 0;
+            var hueCoefficient = 0;
+            var hueCoefficient2 = 0;
             if (1 - hsv.value < 0.15)
             {
-                hueCoeficient = 1;
+                hueCoefficient = 1;
             }
 
             if (hsv.value - 0.3 < 0)
             {
-                hueCoeficient2 = 1;
+                hueCoefficient2 = 1;
             }
 
             var s = hsv.saturation;
 
-            ((ColorPickerControl)d).colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoeficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
-            ((ColorPickerControl)d).colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoeficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
+            ((ColorPickerControl)d).colorVariation1Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 8), 360), s, Math.Min(hsv.value + 0.3, 1)));
+            ((ColorPickerControl)d).colorVariation2Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Min(hsv.hue + (hueCoefficient * 4), 360), s, Math.Min(hsv.value + 0.15, 1)));
 
-            ((ColorPickerControl)d).colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
-            ((ColorPickerControl)d).colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoeficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
+            ((ColorPickerControl)d).colorVariation3Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 4), 0), s, Math.Max(hsv.value - 0.2, 0)));
+            ((ColorPickerControl)d).colorVariation4Button.Background = new SolidColorBrush(HSVColor.RGBFromHSV(Math.Max(hsv.hue - (hueCoefficient2 * 8), 0), s, Math.Max(hsv.value - 0.3, 0)));
         }
 
         private void UpdateValueColorGradient(double posX)
