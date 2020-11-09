@@ -33,3 +33,6 @@
 
 "Area-Localization":
   - ./**/*.resw
+
+"Product-Settings":
+  - ./src/core/**/*
