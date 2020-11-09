@@ -99,7 +99,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                             {
                                 FileName = a.VSCodeInstance.ExecutablePath,
                                 UseShellExecute = true,
-                                Arguments = $"--remote ssh-remote+\"{a.Host}\"",
+                                Arguments = $"--remote ssh-remote+'{a.Host}'",
                                 WindowStyle = ProcessWindowStyle.Hidden,
                             };
                             Process.Start(process);
