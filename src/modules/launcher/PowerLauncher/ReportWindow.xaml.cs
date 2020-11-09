@@ -42,9 +42,9 @@ namespace PowerLauncher
         {
             string path = Log.CurrentLogDirectory;
             var directory = new DirectoryInfo(path);
-            var log = directory.GetFiles().OrderByDescending(f => f.LastWriteTime).First();
+            var log = directory.GetFiles().OrderByDescending(f => f.LastWriteTime).FirstOrDefault();
 
-            LogFilePathBox.Text = log.FullName;
+            LogFilePathBox.Text = log?.FullName;
 
             StringBuilder content = new StringBuilder();
             content.AppendLine(ErrorReporting.RuntimeInfo());
