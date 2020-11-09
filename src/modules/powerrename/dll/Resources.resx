@@ -145,6 +145,7 @@
     <value>Only show the PowerRename menu item on the extended context menu (Shift + Right-click).</value>
   </data>
   <data name="Use_Boost_Lib" xml:space="preserve">
-    <value>Use Boost Library, provides extended features but may behave different.</value>
+    <value>Use Boost library (provides extended features but may use different regex syntax).</value>
+    <comment>Boost is a product name, should not be translated</comment>
   </data>
 </root>
