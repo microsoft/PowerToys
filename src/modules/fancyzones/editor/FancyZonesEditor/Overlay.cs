@@ -118,7 +118,35 @@ namespace FancyZonesEditor
 
         private int _currentDesktop = 0;
 
-        public bool SpanZonesAcrossMonitors { get; set; }
+        public bool SpanZonesAcrossMonitors
+        {
+            get
+            {
+                return _spanZonesAcrossMonitors;
+            }
+
+            set
+            {
+                _spanZonesAcrossMonitors = value;
+
+                if (_spanZonesAcrossMonitors)
+                {
+                    Rect workArea = default(Rect);
+                    Rect bounds = default(Rect);
+
+                    foreach (Monitor monitor in Monitors)
+                    {
+                        workArea = Rect.Union(workArea, monitor.Device.WorkAreaRect);
+                        bounds = Rect.Union(bounds, monitor.Device.Bounds);
+                    }
+
+                    Monitors.Clear();
+                    Monitors.Add(new Monitor(bounds, workArea));
+                }
+            }
+        }
+
+        private bool _spanZonesAcrossMonitors;
 
         public Overlay()
         {
