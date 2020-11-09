@@ -163,6 +163,7 @@
     <Compile Include="Utils\EventRaiser.cs" />
     <Compile Include="Utils\MonitorChangedEventArgs.cs" />
     <Compile Include="Models\MonitorInfoModel.cs" />
+    <Compile Include="Utils\MonitorInfoUtils.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\RelayCommand`1.cs" />
     <Compile Include="Models\Device.cs" />
