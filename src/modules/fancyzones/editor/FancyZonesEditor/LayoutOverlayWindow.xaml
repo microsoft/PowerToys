@@ -10,5 +10,4 @@
         ResizeMode="NoResize"
         WindowStyle="None"
         AllowsTransparency="True"
-        Background="Transparent"
-        DpiChanged="Window_DpiChanged"/>
+        Background="Transparent"/>
