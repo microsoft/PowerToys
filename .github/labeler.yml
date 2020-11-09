@@ -28,3 +28,5 @@
 "Product-Shortcut Guide":
   - ./src/modules/shortcut_guide/**/* 
  
+"Area-Setup/Install":
+  - ./installer/**/*
