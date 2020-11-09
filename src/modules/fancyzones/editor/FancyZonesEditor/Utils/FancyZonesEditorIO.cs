@@ -203,7 +203,7 @@ namespace FancyZonesEditor.Utils
 
                     double primaryMonitorDPI = 96f;
 
-                    // parse per monitordata
+                    // parse per monitor data
                     List<MonitorData> monitorData = new List<MonitorData>();
                     const int monitorArgsCount = 4;
                     for (int i = 0; i < count; i++)
