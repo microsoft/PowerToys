@@ -234,6 +234,11 @@ public:
             GET_RESOURCE_STRING(IDS_EXTENDED_MENU_INFO),
             CSettingsInstance().GetExtendedContextMenuOnly());
 
+        settings.add_bool_toggle(
+            L"bool_use_boost_lib",
+            GET_RESOURCE_STRING(IDS_USE_BOOST_LIB),
+            CSettingsInstance().GetUseBoostLib());
+
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -252,6 +257,7 @@ public:
             CSettingsInstance().SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
             CSettingsInstance().SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
             CSettingsInstance().SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
+            CSettingsInstance().SetUseBoostLib(values.get_bool_value(L"bool_use_boost_lib").value());
             CSettingsInstance().Save();
 
             Trace::SettingsChanged();

@@ -7,7 +7,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace PowerRenameRegExTests
+namespace PowerRenameRegExBoostTests
 {
     struct SearchReplaceExpected
     {
@@ -17,9 +17,15 @@ namespace PowerRenameRegExTests
         PCWSTR expected;
     };
 
-    TEST_CLASS(SimpleTests){
-        public:
+    TEST_CLASS(SimpleTests)
+    {
+    public:
 TEST_CLASS_INITIALIZE(ClassInitialize)
+{
+    CSettingsInstance().SetUseBoostLib(true);
+}
+
+TEST_CLASS_CLEANUP(ClassCleanup)
 {
     CSettingsInstance().SetUseBoostLib(false);
 }
@@ -267,8 +273,11 @@ TEST_METHOD(VerifyMatchAllWildcardUseRegEx)
     DWORD flags = MatchAllOccurences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
+    // This differs from the Standard Library: .* has two matches (all and nothing).
     SearchReplaceExpected sreTable[] = {
-        { L".*", L"Foo", L"AAAAAA", L"Foo" },
+        //search, replace, test, result
+        { L".*", L"Foo", L"AAAAAA", L"FooFoo" },
+        { L".+", L"Foo", L"AAAAAA", L"Foo" },
     };
 
     for (int i = 0; i < ARRAYSIZE(sreTable); i++)
@@ -310,9 +319,11 @@ TEST_METHOD(VerifyReplaceFirstWildCardUseRegex)
 
 TEST_METHOD(VerifyReplaceFirstWildCardUseRegexMatchAllOccurrences)
 {
+    // This differs from the Standard Library: .* has two matches (all and nothing).
     SearchReplaceExpected sreTable[] = {
         //search, replace, test, result
-        { L".*", L"Foo", L"AAAAAA", L"Foo" },
+        { L".*", L"Foo", L"AAAAAA", L"FooFoo" },
+        { L".+", L"Foo", L"AAAAAA", L"Foo" },
     };
     VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions | MatchAllOccurences);
 }
@@ -340,6 +351,8 @@ TEST_METHOD(VerifyReplaceFirstWildNoFlags)
 
 TEST_METHOD(VerifyHandleCapturingGroups)
 {
+    // This differs from the Standard Library: Boost does not recognize $123 as $1 and "23".
+    // To use a capturing group followed by numbers as replacement curly braces are needed.
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
@@ -347,14 +360,19 @@ TEST_METHOD(VerifyHandleCapturingGroups)
 
     SearchReplaceExpected sreTable[] = {
         //search, replace, test, result
-        { L"(foo)(bar)", L"$1_$002_$223_$001021_$00001", L"foobar", L"foo_$002_bar23_$001021_$00001" },
-        { L"(foo)(bar)", L"_$1$2_$123$040", L"foobar", L"_foobar_foo23$040" },
+        { L"(foo)(bar)", L"$1_$002_$223_$001021_$00001", L"foobar", L"foo_$002__$001021_$00001" },
+        { L"(foo)(bar)", L"$1_$002_${2}23_$001021_$00001", L"foobar", L"foo_$002_bar23_$001021_$00001" },
+        { L"(foo)(bar)", L"_$1$2_$123$040", L"foobar", L"_foobar_$040" },
+        { L"(foo)(bar)", L"_$1$2_${1}23$040", L"foobar", L"_foobar_foo23$040" },
         { L"(foo)(bar)", L"$$$1", L"foobar", L"$foo" },
         { L"(foo)(bar)", L"$$1", L"foobar", L"$1" },
-        { L"(foo)(bar)", L"$12", L"foobar", L"foo2" },
-        { L"(foo)(bar)", L"$10", L"foobar", L"foo0" },
+        { L"(foo)(bar)", L"$12", L"foobar", L"" },
+        { L"(foo)(bar)", L"${1}2", L"foobar", L"foo2" },
+        { L"(foo)(bar)", L"$10", L"foobar", L"" },
+        { L"(foo)(bar)", L"${1}0", L"foobar", L"foo0" },
         { L"(foo)(bar)", L"$01", L"foobar", L"$01" },
-        { L"(foo)(bar)", L"$$$11", L"foobar", L"$foo1" },
+        { L"(foo)(bar)", L"$$$11", L"foobar", L"$" },
+        { L"(foo)(bar)", L"$$${1}1", L"foobar", L"$foo1" },
         { L"(foo)(bar)", L"$$$$113a", L"foobar", L"$$113a" },
     };
 
@@ -369,13 +387,16 @@ TEST_METHOD(VerifyHandleCapturingGroups)
     }
 }
 
-TEST_METHOD(VerifyLookbehindFails)
+TEST_METHOD(VerifyLookbehind)
 {
-    // Standard Library Regex Engine does not support lookbehind, thus test should fail.
     SearchReplaceExpected sreTable[] = {
         //search, replace, test, result
-        { L"(?<=E12).*", L"Foo", L"AAAAAA", nullptr },
-        { L"(?<!E12).*", L"Foo", L"AAAAAA", nullptr },
+        { L"(?<=E12).*", L"Foo", L"AAE12BBB", L"AAE12Foo" },
+        { L"(?<=E12).+", L"Foo", L"AAE12BBB", L"AAE12Foo" },
+        { L"(?<=E\\d\\d).+", L"Foo", L"AAE12BBB", L"AAE12Foo" },
+        { L"(?<!E12).*", L"Foo", L"AAE12BBB", L"Foo" },
+        { L"(?<!E12).+", L"Foo", L"AAE12BBB", L"Foo" },
+        { L"(?<!E\\d\\d).+", L"Foo", L"AAE12BBB", L"Foo" },
     };
 
     CComPtr<IPowerRenameRegEx> renameRegEx;
@@ -387,8 +408,8 @@ TEST_METHOD(VerifyLookbehindFails)
         PWSTR result = nullptr;
         Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
         Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == E_FAIL);
-        Assert::AreEqual(sreTable[i].expected, result);
+        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
+        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
         CoTaskMemFree(result);
     }
 }
@@ -412,6 +433,5 @@ TEST_METHOD(VerifyEventsFire)
     Assert::IsTrue(renameRegEx->UnAdvise(cookie) == S_OK);
     mockEvents->Release();
 }
-}
-;
+};
 }
