@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
-        /// Event is called when the <see cref="ComboBox"/> is completly loaded, inclusive the ItemSource
+        /// Event is called when the <see cref="ComboBox"/> is completely loaded, inclusive the ItemSource
         /// </summary>
         /// <param name="sender">The sender of this event</param>
         /// <param name="e">The arguments of this event</param>
@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
            /**
             * UWP hack
-            * because UWP load the binded ItemSource of the ComboBox asyncronous,
+            * because UWP load the bound ItemSource of the ComboBox asynchronous,
             * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
             * Selection via SelectedItem and SelectedValue is still not working too
             */

@@ -74,15 +74,15 @@ namespace ColorPicker.Helpers
         /// <returns>A <see cref="string"/> representation of a HSB color</returns>
         private static string ColorToHSB(Color color)
         {
-            var (hue, saturation, brightnes) = ColorHelper.ConvertToHSBColor(color);
+            var (hue, saturation, brightness) = ColorHelper.ConvertToHSBColor(color);
 
             hue = Math.Round(hue);
             saturation = Math.Round(saturation * 100);
-            brightnes = Math.Round(brightnes * 100);
+            brightness = Math.Round(brightness * 100);
 
             return $"hsb({hue.ToString(CultureInfo.InvariantCulture)}"
                  + $", {saturation.ToString(CultureInfo.InvariantCulture)}%"
-                 + $", {brightnes.ToString(CultureInfo.InvariantCulture)}%)";
+                 + $", {brightness.ToString(CultureInfo.InvariantCulture)}%)";
         }
 
         /// <summary>

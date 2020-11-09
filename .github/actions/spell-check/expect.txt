@@ -903,6 +903,8 @@ hresult
 hrgn
 HRSRC
 HSCROLL
+hsb
+hsi
 hsl
 hstring
 hsv
@@ -913,6 +915,7 @@ html
 htt
 http
 hu
+hwb
 HWINEVENTHOOK
 hwnd
 HWNDFIRST
@@ -1087,6 +1090,7 @@ IPrincipal
 IProgram
 IPublic
 IQuery
+IReadOnlyDictionary
 IReflect
 IRegistered
 IRegistration
@@ -1438,6 +1442,7 @@ NCMBUTTONDOWN
 NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
+NCol
 NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
