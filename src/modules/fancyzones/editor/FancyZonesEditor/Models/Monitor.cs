@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -18,11 +18,11 @@ namespace FancyZonesEditor.Models
 
         public Device Device { get; set; }
 
-        public Monitor(Rect bounds, Rect workArea)
+        public Monitor(Rect bounds, Rect workArea, bool primary)
         {
             Window = new LayoutOverlayWindow();
             Settings = new LayoutSettings();
-            Device = new Device(bounds, workArea);
+            Device = new Device(bounds, workArea, primary);
 
             if (App.DebugMode)
             {
@@ -38,10 +38,11 @@ namespace FancyZonesEditor.Models
             Window.Height = workArea.Height;
         }
 
-        public Monitor(string id, int dpi, Rect bounds, Rect workArea)
-            : this(bounds, workArea)
+        public Monitor(string id, int dpi, Rect bounds, Rect workArea, bool primary)
+            : this(bounds, workArea, primary)
         {
-            Device = new Device(id, dpi, bounds, workArea);
+            Device = new Device(id, dpi, bounds, workArea, primary);
         }
+
     }
 }

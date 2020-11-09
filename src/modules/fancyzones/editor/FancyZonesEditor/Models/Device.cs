@@ -17,18 +17,23 @@ namespace FancyZonesEditor.Utils
 
         public int Dpi { get; private set; }
 
-        public Device(string id, int dpi, Rect bounds, Rect workArea)
+        public bool Primary { get; private set; }
+
+        public Device(string id, int dpi, Rect bounds, Rect workArea, bool primary)
         {
             Id = id;
             Dpi = dpi;
             WorkAreaRect = workArea;
             Bounds = bounds;
+            Primary = primary;
         }
 
-        public Device(Rect bounds, Rect workArea)
+        public Device(Rect bounds, Rect workArea, bool primary)
         {
             WorkAreaRect = workArea;
             Bounds = bounds;
+            Primary = primary;
         }
+
     }
 }

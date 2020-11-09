@@ -141,7 +141,7 @@ namespace FancyZonesEditor
                     }
 
                     Monitors.Clear();
-                    Monitors.Add(new Monitor(bounds, workArea));
+                    Monitors.Add(new Monitor(bounds, workArea, true));
                 }
             }
         }
@@ -183,19 +183,18 @@ namespace FancyZonesEditor
                 var workAreaRect = monitor.Bounds;
                 Rect workArea = new Rect(workAreaRect.Left, workAreaRect.Top, workAreaRect.Width, workAreaRect.Height);
 
-                double scaleFactor = 96f / primaryMonitorDPI;
+                Add(bounds, workArea, monitor.Primary);
                 workArea.X *= scaleFactor;
                 workArea.Y *= scaleFactor;
                 workArea.Width *= scaleFactor;
                 workArea.Height *= scaleFactor;
 
-                Add(string.Empty, (int)monitorDPI, bounds, workArea);
             }
         }
 
-        public void Add(string id, int dpi, Rect bounds, Rect workArea)
+        private void Add(Rect bounds, Rect workArea, bool primary)
         {
-            var monitor = new Monitor(id, dpi, bounds, workArea);
+            var monitor = new Monitor(bounds, workArea, primary);
 
             bool inserted = false;
             var workAreaRect = workArea;
