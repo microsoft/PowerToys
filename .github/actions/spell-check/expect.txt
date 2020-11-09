@@ -1332,6 +1332,8 @@ memset
 Mensching
 MENUITEMINFO
 menurc
+menuitem
+MENUITEMINFOW
 MENUSTART
 messagebox
 METACHARSET
