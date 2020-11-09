@@ -30,3 +30,6 @@
  
 "Area-Setup/Install":
   - ./installer/**/*
+
+"Area-Localization":
+  - ./**/*.resw
