@@ -86,18 +86,10 @@ namespace FancyZonesEditor.Utils
             PowerToysPID = 0,
             SpanZones,
             TargetMonitorId,
-            SmallestDPI,
             MonitorsCount,
             MonitorId,
-            DPI,
             MonitorLeft,
             MonitorTop,
-            MonitorRight,
-            MonitorBottom,
-            WorkAreaLeft,
-            WorkAreaTop,
-            WorkAreaRight,
-            WorkAreaBottom,
         }
 
         private struct ActiveZoneSetWrapper
@@ -167,20 +159,12 @@ namespace FancyZonesEditor.Utils
                 * (1) Process id
                 * (2) Span zones across monitors
                 * (3) Monitor id where the Editor should be opened
-                * (4) Smallest used DPI
-                * (5) Monitors count
+                * (4) Monitors count
                 *
                 * Data for each monitor:
-                * (6) Monitor id
-                * (7) Dpi
-                * (8) monitor left
-                * (9) monitor top
-                * (10) monitor right
-                * (11) monitor bottom
-                * (12) work area left
-                * (13) work area top
-                * (14) work area right
-                * (15) work area bottom
+                * (5) Monitor id
+                * (6) monitor left
+                * (7) monitor top
                 * ...
                 */
                 var argsParts = args[1].Split('/');
@@ -191,53 +175,44 @@ namespace FancyZonesEditor.Utils
                 // Span zones across monitors
                 App.Overlay.SpanZonesAcrossMonitors = int.Parse(argsParts[(int)CmdArgs.SpanZones]) == 1;
 
-                // Target monitor id
-                string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
-
-                // Monitors count
-                int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount]);
-
-                Rect workAreaUnion = default(Rect);
-                const int monitorArgsCount = 10;
-                for (int i = 0; i < count; i++)
+                if (!App.Overlay.SpanZonesAcrossMonitors)
                 {
-                    string id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
-                    int dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
-                    int monitorLeft = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
-                    int monitorTop = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
-                    int monitorRight = int.Parse(argsParts[(int)CmdArgs.MonitorRight + (i * monitorArgsCount)]);
-                    int monitorBottom = int.Parse(argsParts[(int)CmdArgs.MonitorBottom + (i * monitorArgsCount)]);
-                    int workAreaLeft = int.Parse(argsParts[(int)CmdArgs.WorkAreaLeft + (i * monitorArgsCount)]);
-                    int workAreaTop = int.Parse(argsParts[(int)CmdArgs.WorkAreaTop + (i * monitorArgsCount)]);
-                    int workAreaRight = int.Parse(argsParts[(int)CmdArgs.WorkAreaRight + (i * monitorArgsCount)]);
-                    int workAreaBottom = int.Parse(argsParts[(int)CmdArgs.WorkAreaBottom + (i * monitorArgsCount)]);
+                    // Target monitor id
+                    string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
 
-                    Rect monitor = new Rect(monitorLeft, monitorTop, monitorRight - monitorLeft, monitorBottom - monitorTop);
-                    Rect workArea = new Rect(workAreaLeft, workAreaTop, workAreaRight - workAreaLeft, workAreaBottom - workAreaTop);
-
-                    if (App.Overlay.SpanZonesAcrossMonitors)
+                    // Monitors count
+                    int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount]);
+                    if (count != App.Overlay.DesktopsCount)
                     {
-                        App.Overlay.UsedWorkAreas.Add(workArea);
-                        workAreaUnion = Rect.Union(workAreaUnion, workArea);
+                        MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                        ((App)Application.Current).Shutdown();
                     }
-                    else
+
+                    const int monitorArgsCount = 3;
+                    for (int i = 0; i < count; i++)
                     {
-                        App.Overlay.Add(id, dpi, monitor, workArea);
+                        string id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                        int monitorLeft = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
+                        int monitorTop = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
+
+                        foreach (Monitor m in App.Overlay.Monitors)
+                        {
+                            if (m.Device.Bounds.Top == monitorTop && m.Device.Bounds.Left == monitorLeft)
+                            {
+                                m.Device.Id = id;
+                                break;
+                            }
+                        }
                     }
-                }
 
-                if (App.Overlay.SpanZonesAcrossMonitors)
-                {
-                    App.Overlay.Add(string.Empty, 0, default(Rect), workAreaUnion);
-                }
-
-                var monitors = App.Overlay.Monitors;
-                for (int i = 0; i < App.Overlay.DesktopsCount && !App.Overlay.SpanZonesAcrossMonitors; i++)
-                {
-                    if (monitors[i].Device.Id == targetMonitorName)
+                    var monitors = App.Overlay.Monitors;
+                    for (int i = 0; i < App.Overlay.DesktopsCount && !App.Overlay.SpanZonesAcrossMonitors; i++)
                     {
-                        App.Overlay.CurrentDesktop = i;
-                        break;
+                        if (monitors[i].Device.Id == targetMonitorName)
+                        {
+                            App.Overlay.CurrentDesktop = i;
+                            break;
+                        }
                     }
                 }
             }

@@ -619,20 +619,12 @@ void FancyZones::ToggleEditor() noexcept
     * (1) Process id
     * (2) Span zones across monitors
     * (3) Monitor id where the Editor should be opened
-    * (4) Smallest used DPI
-    * (5) Monitors count
-    * 
+    * (4) Monitors count
+    *
     * Data for each monitor:
-    * (6) Monitor id
-    * (7) Dpi
-    * (8) monitor X-coordinate
-    * (9) monitor Y-coordinate
-    * (10) monitor width
-    * (11) monitor height
-    * (12) work area X-coordinate
-    * (13) work area Y-coordinate
-    * (14) work area width
-    * (15) work area height
+    * (5) Monitor id
+    * (6) monitor left
+    * (7) monitor top
     * ...
     */
     std::wstring params;
@@ -653,7 +645,6 @@ void FancyZones::ToggleEditor() noexcept
     
     bool showDpiWarning = false;
     int prevDpiX = -1, prevDpiY = -1;
-    int smallestDpi = -1;
     std::wstring monitorsData;
     for (auto& monitor : allMonitors)
     {
@@ -671,13 +662,6 @@ void FancyZones::ToggleEditor() noexcept
             UINT dpiY = 0;
             if (GetDpiForMonitor(monitor.first, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
             {
-                if (smallestDpi == -1 || smallestDpi > static_cast<int>(dpiX))
-                {
-                    smallestDpi = dpiX;
-                }
-
-                monitorsData += std::to_wstring(dpiX) + divider; /* Dpi */
-
                 if (spanZonesAcrossMonitors && prevDpiX != -1 && (prevDpiX != dpiX || prevDpiY != dpiY))
                 {
                     showDpiWarning = true;
@@ -689,16 +673,9 @@ void FancyZones::ToggleEditor() noexcept
 
             monitorsData += std::to_wstring(monitor.second.rcMonitor.left) + divider;
             monitorsData += std::to_wstring(monitor.second.rcMonitor.top) + divider;
-            monitorsData += std::to_wstring(monitor.second.rcMonitor.right) + divider;
-            monitorsData += std::to_wstring(monitor.second.rcMonitor.bottom) + divider;
-            monitorsData += std::to_wstring(monitor.second.rcWork.left) + divider;
-            monitorsData += std::to_wstring(monitor.second.rcWork.top) + divider;
-            monitorsData += std::to_wstring(monitor.second.rcWork.right) + divider;
-            monitorsData += std::to_wstring(monitor.second.rcWork.bottom) + divider;
         }
     }
 
-    params += std::to_wstring(smallestDpi != -1 ? smallestDpi : DPIAware::DEFAULT_DPI) + divider; /* Smallest used DPI */
     params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
     params += monitorsData;
 
