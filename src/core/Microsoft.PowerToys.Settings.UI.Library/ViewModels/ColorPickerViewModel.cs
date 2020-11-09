@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
-        // Delay saving of settings in order to avoid calling save multiple times and hitting file in use execption. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
+        // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
