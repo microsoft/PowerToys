@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Globalization;
 using ColorPicker.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -41,7 +42,7 @@ namespace UnitTest_ColorPickerUI.Helpers
         [DataRow(315, 100, 050, 100, 000, 075)]      // Red-magenta
         [DataRow(330, 100, 050, 100, 000, 050)]      // Blue-red
         [DataRow(345, 100, 050, 100, 000, 025)]      // Light blue-red
-        public void ColorRGBtoHSL(double hue, double saturation, double lightness, int red, int green, int blue)
+        public void ColorRGBtoHSLTest(double hue, double saturation, double lightness, int red, int green, int blue)
         {
             red   = Convert.ToInt32(Math.Round(255d / 100d * red));     // [0%..100%] to [0..255]
             green = Convert.ToInt32(Math.Round(255d / 100d * green));   // [0%..100%] to [0..255]
@@ -90,7 +91,7 @@ namespace UnitTest_ColorPickerUI.Helpers
         [DataRow(315, 100, 100, 100, 000, 075)]      // Red-magenta
         [DataRow(330, 100, 100, 100, 000, 050)]      // Blue-red
         [DataRow(345, 100, 100, 100, 000, 025)]      // Light blue-red
-        public void ColorRGBtoHSV(double hue, double saturation, double value, int red, int green, int blue)
+        public void ColorRGBtoHSVTest(double hue, double saturation, double value, int red, int green, int blue)
         {
             red   = Convert.ToInt32(Math.Round(255d / 100d * red));         // [0%..100%] to [0..255]
             green = Convert.ToInt32(Math.Round(255d / 100d * green));       // [0%..100%] to [0..255]
@@ -138,7 +139,7 @@ namespace UnitTest_ColorPickerUI.Helpers
         [DataRow(000, 100, 025, 000, 255, 000, 192)]     // Red-magenta
         [DataRow(000, 100, 050, 000, 255, 000, 128)]     // Blue-red
         [DataRow(000, 100, 075, 000, 255, 000, 064)]     // Light blue-red
-        public void ColorRGBtoCMYK(int cyan, int magenta, int yellow, int blackKey, int red, int green, int blue)
+        public void ColorRGBtoCMYKTest(int cyan, int magenta, int yellow, int blackKey, int red, int green, int blue)
         {
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToCMYKColor(color);
@@ -156,8 +157,130 @@ namespace UnitTest_ColorPickerUI.Helpers
             Assert.AreEqual(result.blackKey * 100d, blackKey, 0.5d);
         }
 
+        // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
         [TestMethod]
-        public void ColorRGBtoCMYKZeroDiv()
+        [DataRow("FFFFFF", 000.0, 000.0, 100.0)]         // white
+        [DataRow("808080", 000.0, 000.0, 050.0)]         // gray
+        [DataRow("000000", 000.0, 000.0, 000.0)]         // black
+        [DataRow("FF0000", 000.0, 100.0, 033.3)]         // red
+        [DataRow("BFBF00", 060.0, 100.0, 050.0)]         // yellow
+        [DataRow("008000", 120.0, 100.0, 016.7)]         // green
+        [DataRow("80FFFF", 180.0, 040.0, 083.3)]         // cyan
+        [DataRow("8080FF", 240.0, 025.0, 066.7)]         // blue
+        [DataRow("BF40BF", 300.0, 057.1, 058.3)]         // magenta
+        [DataRow("A0A424", 061.8, 069.9, 047.1)]
+        [DataRow("411BEA", 251.1, 075.6, 042.6)]
+        [DataRow("1EAC41", 134.9, 066.7, 034.9)]
+        [DataRow("F0C80E", 049.5, 091.1, 059.3)]
+        [DataRow("B430E5", 283.7, 068.6, 059.6)]
+        [DataRow("ED7651", 014.3, 044.6, 057.0)]
+        [DataRow("FEF888", 056.9, 036.3, 083.5)]
+        [DataRow("19CB97", 162.4, 080.0, 049.5)]
+        [DataRow("362698", 248.3, 053.3, 031.9)]
+        [DataRow("7E7EB8", 240.5, 013.5, 057.0)]
+        public void ColorRGBtoHSITest(string hexValue, double hue, double saturation, double intensity)
+        {
+            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
+            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
+            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorHelper.ConvertToHSIColor(color);
+
+            // hue[0°..360°]
+            Assert.AreEqual(result.hue, hue, 0.5d);
+
+            // saturation[0..1]
+            Assert.AreEqual(result.saturation * 100d, saturation, 0.5d);
+
+            // intensity[0..1]
+            Assert.AreEqual(result.intensity * 100d, intensity, 0.5d);
+        }
+
+        // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
+        // and manual convert via https://colorconv.com/hwb
+        [TestMethod]
+        [DataRow("FFFFFF", 000, 100, 000)]         // white
+        [DataRow("808080", 000, 050, 050)]         // gray
+        [DataRow("000000", 000, 000, 100)]         // black
+        [DataRow("FF0000", 000, 000, 000)]         // red
+        [DataRow("BFBF00", 060, 000, 025)]         // yellow
+        [DataRow("008000", 120, 000, 050)]         // green
+        [DataRow("80FFFF", 180, 050, 000)]         // cyan
+        [DataRow("8080FF", 240, 050, 000)]         // blue
+        [DataRow("BF40BF", 300, 025, 025)]         // magenta
+        [DataRow("A0A424", 062, 014, 036)]
+        [DataRow("411BEA", 251, 011, 008)]
+        [DataRow("1EAC41", 135, 012, 033)]
+        [DataRow("F0C80E", 049, 005, 006)]
+        [DataRow("B430E5", 284, 019, 010)]
+        [DataRow("ED7651", 014, 032, 007)]
+        [DataRow("FEF888", 057, 053, 000)]
+        [DataRow("19CB97", 162, 010, 020)]
+        [DataRow("362698", 248, 015, 040)]
+        [DataRow("7E7EB8", 240, 049, 028)]
+        public void ColorRGBtoHWBTest(string hexValue, double hue, double whiteness, double blackness)
+        {
+            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
+            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
+            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorHelper.ConvertToHWBColor(color);
+
+            // hue[0°..360°]
+            Assert.AreEqual(result.hue, hue, 0.5d);
+
+            // whiteness[0..1]
+            Assert.AreEqual(result.whiteness * 100d, whiteness, 0.5d);
+
+            // blackness[0..1]
+            Assert.AreEqual(result.blackness * 100d, blackness, 0.5d);
+        }
+
+        // values taken from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
+        // and manual convert via https://colorconv.com/hwb
+        [TestMethod]
+        [DataRow("FFFFFF", "R0", 100, 000)]         // white
+        [DataRow("808080", "R0", 050, 050)]         // gray
+        [DataRow("000000", "R0", 000, 100)]         // black
+        [DataRow("FF0000", "R0", 000, 000)]         // red
+        [DataRow("BFBF00", "Y0", 000, 025)]         // yellow
+        [DataRow("008000", "G0", 000, 050)]         // green
+        [DataRow("80FFFF", "C0", 050, 000)]         // cyan
+        [DataRow("8080FF", "B0", 050, 000)]         // blue
+        [DataRow("BF40BF", "M0", 025, 025)]         // magenta
+        [DataRow("A0A424", "Y3", 014, 036)]
+        [DataRow("411BEA", "B18", 011, 008)]
+        [DataRow("1EAC41", "G25", 012, 033)]
+        [DataRow("F0C80E", "R82", 005, 006)]
+        [DataRow("B430E5", "B73", 019, 010)]
+        [DataRow("ED7651", "R24", 032, 007)]
+        [DataRow("FEF888", "R95", 053, 000)]
+        [DataRow("19CB97", "G71", 010, 020)]
+        [DataRow("362698", "B14", 015, 040)]
+        [DataRow("7E7EB8", "B0", 049, 028)]
+        public void ColorRGBtoNColTest(string hexValue, string hue, double whiteness, double blackness)
+        {
+            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
+            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
+            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorHelper.ConvertToNaturalColor(color);
+
+            // hue
+            Assert.AreEqual(result.hue, hue);
+
+            // whiteness[0..1]
+            Assert.AreEqual(result.whiteness * 100d, whiteness, 0.5d);
+
+            // blackness[0..1]
+            Assert.AreEqual(result.blackness * 100d, blackness, 0.5d);
+        }
+
+        [TestMethod]
+        public void ColorRGBtoCMYKZeroDivTest()
         {
             for(var red = 0; red < 256; red++)
             {

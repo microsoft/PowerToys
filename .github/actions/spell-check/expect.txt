@@ -295,6 +295,7 @@ codeofconduct
 codereview
 COINIT
 Colorbrush
+colorconv
 colorpicker
 colorpickerref
 COLORREF
@@ -903,6 +904,8 @@ hresult
 hrgn
 HRSRC
 HSCROLL
+hsb
+hsi
 hsl
 hstring
 hsv
@@ -913,6 +916,7 @@ html
 htt
 http
 hu
+hwb
 HWINEVENTHOOK
 hwnd
 HWNDFIRST
@@ -1087,6 +1091,7 @@ IPrincipal
 IProgram
 IPublic
 IQuery
+IRead
 IReflect
 IRegistered
 IRegistration
@@ -1439,6 +1444,7 @@ NCMBUTTONDOWN
 NCMBUTTONUP
 NCMOUSELEAVE
 NCMOUSEMOVE
+NCol
 NCPAINT
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
