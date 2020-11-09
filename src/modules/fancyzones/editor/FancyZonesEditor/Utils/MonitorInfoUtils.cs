@@ -108,10 +108,10 @@ namespace FancyZonesEditor.Utils
                 MonitorHandle = monitorHandle;
                 Primary = monitorInfo.Flags == 1;
 
-                RECT monitorRect = monitorInfo.Monitor;
+                RECT monitorRect = monitorInfo.Work;
                 WorkArea = new Rect(monitorRect.Left, monitorRect.Top, monitorRect.Width, monitorRect.Height);
 
-                RECT boundsRect = monitorInfo.Work;
+                RECT boundsRect = monitorInfo.Monitor;
                 Bounds = new Rect(boundsRect.Left, boundsRect.Top, boundsRect.Width, boundsRect.Height);
             }
         }

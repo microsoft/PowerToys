@@ -157,43 +157,7 @@ namespace FancyZonesEditor
             for (int i = 0; i < monitors.Length; i++)
             {
                 var monitor = monitors[i];
-
-                // screen resolution
-                var monitorRect = monitor.WorkArea;
-                var bounds = new Rect(monitorRect.Left, monitorRect.Top, monitorRect.Width, monitorRect.Height);
-
-                // work area
-                var workAreaRect = monitor.Bounds;
-                Rect workArea = new Rect(workAreaRect.Left, workAreaRect.Top, workAreaRect.Width, workAreaRect.Height);
-
-                Add(bounds, workArea, monitor.Primary);
-            }
-        }
-
-        private void Add(Rect bounds, Rect workArea, bool primary)
-        {
-            var monitor = new Monitor(bounds, workArea, primary);
-
-            bool inserted = false;
-            var workAreaRect = workArea;
-            for (int i = 0; i < Monitors.Count && !inserted; i++)
-            {
-                var rect = Monitors[i].Device.WorkAreaRect;
-                if (workAreaRect.Left < rect.Left && (workAreaRect.Top <= rect.Top || workAreaRect.Top == 0))
-                {
-                    Monitors.Insert(i, monitor);
-                    inserted = true;
-                }
-                else if (workAreaRect.Left == rect.Left && workAreaRect.Top < rect.Top)
-                {
-                    Monitors.Insert(i, monitor);
-                    inserted = true;
-                }
-            }
-
-            if (!inserted)
-            {
-                Monitors.Add(monitor);
+                Add(monitor.Bounds, monitor.WorkArea, monitor.Primary);
             }
         }
 
@@ -370,6 +334,33 @@ namespace FancyZonesEditor
 
             foundModel.IsSelected = true;
             CurrentDataContext = foundModel;
+        }
+
+        private void Add(Rect bounds, Rect workArea, bool primary)
+        {
+            var monitor = new Monitor(bounds, workArea, primary);
+
+            bool inserted = false;
+            var workAreaRect = workArea;
+            for (int i = 0; i < Monitors.Count && !inserted; i++)
+            {
+                var rect = Monitors[i].Device.WorkAreaRect;
+                if (workAreaRect.Left < rect.Left && (workAreaRect.Top <= rect.Top || workAreaRect.Top == 0))
+                {
+                    Monitors.Insert(i, monitor);
+                    inserted = true;
+                }
+                else if (workAreaRect.Left == rect.Left && workAreaRect.Top < rect.Top)
+                {
+                    Monitors.Insert(i, monitor);
+                    inserted = true;
+                }
+            }
+
+            if (!inserted)
+            {
+                Monitors.Add(monitor);
+            }
         }
 
         public Int32Rect[] GetZoneRects()
