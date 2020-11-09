@@ -44,9 +44,9 @@ namespace FancyZonesEditor.Models
             Device = new Device(id, dpi, bounds, workArea, primary);
         }
 
-        public void ScaleWorkArea(double scaleFactor)
+        public void Scale(double scaleFactor)
         {
-            Device.ScaleWorkArea(scaleFactor);
+            Device.Scale(scaleFactor);
 
             var workArea = Device.WorkAreaRect;
             Window.Left = workArea.X;

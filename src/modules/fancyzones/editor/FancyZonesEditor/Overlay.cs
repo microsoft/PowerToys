@@ -137,7 +137,7 @@ namespace FancyZonesEditor
                     foreach (Monitor monitor in Monitors)
                     {
                         workArea = Rect.Union(workArea, monitor.Device.WorkAreaRect);
-                        bounds = Rect.Union(bounds, monitor.Device.Bounds);
+                        bounds = Rect.Union(bounds, monitor.Device.ScaledBounds);
                     }
 
                     Monitors.Clear();

@@ -93,6 +93,17 @@ namespace FancyZonesEditor.Utils
             MonitorTop,
         }
 
+        private struct MonitorData
+        {
+            public string Id { get; set; }
+
+            public int Dpi { get; set; }
+
+            public int X { get; set; }
+
+            public int Y { get; set; }
+        }
+
         private struct ActiveZoneSetWrapper
         {
             public string Uuid { get; set; }
@@ -190,50 +201,51 @@ namespace FancyZonesEditor.Utils
                         ((App)Application.Current).Shutdown();
                     }
 
-                    // get monitor Id and Dpi
+                    double primaryMonitorDPI = 96f;
+
+                    // parse per monitordata
+                    List<MonitorData> monitorData = new List<MonitorData>();
                     const int monitorArgsCount = 4;
                     for (int i = 0; i < count; i++)
                     {
-                        string id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
-                        int dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
-                        int monitorLeft = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
-                        int monitorTop = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
+                        var data = default(MonitorData);
+                        data.Id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                        data.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
+                        data.X = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
+                        data.Y = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
+                        monitorData.Add(data);
 
-                        foreach (Monitor monitor in App.Overlay.Monitors)
+                        if (data.X == 0 && data.Y == 0)
                         {
-                            if (monitor.Device.Bounds.Top == monitorTop && monitor.Device.Bounds.Left == monitorLeft)
-                            {
-                                monitor.Device.Id = id;
-                                monitor.Device.Dpi = dpi;
-                                break;
-                            }
+                            primaryMonitorDPI = data.Dpi;
                         }
                     }
 
                     var monitors = App.Overlay.Monitors;
 
-                    // get primary monitor DPI for scaling
-                    double primaryMonitorDPI = 96f;
-                    for (int i = 0; i < monitors.Count; i++)
-                    {
-                        if (monitors[i].Device.Primary)
-                        {
-                            primaryMonitorDPI = monitors[i].Device.Dpi;
-                            break;
-                        }
-                    }
-
-                    // scale work areas
+                    // update monitors data
                     double scaleFactor = 96f / primaryMonitorDPI;
                     foreach (Monitor monitor in monitors)
                     {
-                        monitor.ScaleWorkArea(scaleFactor);
+                        monitor.Scale(scaleFactor);
+
+                        foreach (MonitorData data in monitorData)
+                        {
+                            if (monitor.Device.ScaledBounds.Left == data.X && monitor.Device.ScaledBounds.Top == data.Y)
+                            {
+                                monitor.Device.Id = data.Id;
+                                monitor.Device.Dpi = data.Dpi;
+                                monitorData.Remove(data);
+                                break;
+                            }
+                        }
                     }
 
                     // set active desktop
                     for (int i = 0; i < monitors.Count; i++)
                     {
-                        if (monitors[i].Device.Id == targetMonitorName)
+                        var monitor = monitors[i];
+                        if (monitor.Device.Id == targetMonitorName)
                         {
                             App.Overlay.CurrentDesktop = i;
                             break;

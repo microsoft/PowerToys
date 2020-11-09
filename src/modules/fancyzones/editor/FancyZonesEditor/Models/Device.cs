@@ -11,7 +11,9 @@ namespace FancyZonesEditor.Utils
     {
         public string Id { get; set; }
 
-        public Rect Bounds { get; private set; }
+        public Rect UnscaledBounds { get; private set; }
+
+        public Rect ScaledBounds { get; private set; }
 
         public Rect WorkAreaRect { get; private set; }
 
@@ -24,20 +26,23 @@ namespace FancyZonesEditor.Utils
             Id = id;
             Dpi = dpi;
             WorkAreaRect = workArea;
-            Bounds = bounds;
+            UnscaledBounds = bounds;
+            ScaledBounds = bounds;
             Primary = primary;
         }
 
         public Device(Rect bounds, Rect workArea, bool primary)
         {
             WorkAreaRect = workArea;
-            Bounds = bounds;
+            UnscaledBounds = bounds;
+            ScaledBounds = bounds;
             Primary = primary;
         }
 
-        public void ScaleWorkArea(double scaleFactor)
+        public void Scale(double scaleFactor)
         {
             WorkAreaRect = new Rect(WorkAreaRect.X * scaleFactor, WorkAreaRect.Y * scaleFactor, WorkAreaRect.Width * scaleFactor, WorkAreaRect.Height * scaleFactor);
+            ScaledBounds = new Rect(ScaledBounds.X * scaleFactor, ScaledBounds.Y * scaleFactor, ScaledBounds.Width * scaleFactor, ScaledBounds.Height * scaleFactor);
         }
     }
 }

@@ -55,7 +55,7 @@ namespace FancyZonesEditor.ViewModels
             foreach (var monitor in App.Overlay.Monitors)
             {
                 Device device = monitor.Device;
-                var bounds = device.Bounds;
+                var bounds = device.UnscaledBounds;
                 maxDimension = System.Math.Max(System.Math.Max(maxDimension, bounds.Height), bounds.Width);
                 minDimension = System.Math.Min(System.Math.Min(minDimension, bounds.Height), bounds.Width);
 
