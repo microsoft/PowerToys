@@ -2,4 +2,4 @@
   - .github/**/*
 
 "Issue-Docs":
-  - **/*.md
+  - ./**/*.md
