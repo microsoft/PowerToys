@@ -60,9 +60,6 @@ namespace FancyZonesEditor_DPI_netcore_test
 
             for (int i = 0; i < screens.Length; i++)
             {
-                // bool en = DpiAwareness.IsPerMonitorAwarenessEnabled;
-                // MessageBox.Show("DPI awereness per monitor: " + en);
-
                 var monitor = monitors[i];
                 ScreenInfo screenInfo = new ScreenInfo();
                 var window = new OverlayWindow
