@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
+using Microsoft.VisualStudio.Utilities;
 
 namespace FancyZonesEditor
 {
@@ -122,6 +124,45 @@ namespace FancyZonesEditor
         {
             UsedWorkAreas = new List<Rect>();
             Monitors = new List<Monitor>();
+
+            var monitors = MonitorInfoUtils.GetMonitors();
+            double primaryMonitorDPI = 96f;
+
+            for (int i = 0; i < monitors.Length; i++)
+            {
+                if (monitors[i].Primary)
+                {
+                    double monitorDPI;
+                    DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out monitorDPI, out monitorDPI);
+                    primaryMonitorDPI = monitorDPI;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < monitors.Length; i++)
+            {
+                var monitor = monitors[i];
+
+                // get monitor dpi
+                double monitorDPI;
+                DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out monitorDPI, out monitorDPI);
+
+                // screen resolution
+                var monitorRect = monitor.WorkArea;
+                var bounds = new Rect(monitorRect.Left, monitorRect.Top, monitorRect.Width, monitorRect.Height);
+
+                // work area
+                var workAreaRect = monitor.Bounds;
+                Rect workArea = new Rect(workAreaRect.Left, workAreaRect.Top, workAreaRect.Width, workAreaRect.Height);
+
+                double scaleFactor = 96f / primaryMonitorDPI;
+                workArea.X *= scaleFactor;
+                workArea.Y *= scaleFactor;
+                workArea.Width *= scaleFactor;
+                workArea.Height *= scaleFactor;
+
+                Add(string.Empty, (int)monitorDPI, bounds, workArea);
+            }
         }
 
         public void Add(string id, int dpi, Rect bounds, Rect workArea)

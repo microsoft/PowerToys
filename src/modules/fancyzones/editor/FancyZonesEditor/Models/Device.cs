@@ -9,7 +9,7 @@ namespace FancyZonesEditor.Utils
 {
     public class Device
     {
-        public string Id { get; private set; }
+        public string Id { get; set; }
 
         public Rect Bounds { get; private set; }
 
@@ -21,7 +21,12 @@ namespace FancyZonesEditor.Utils
         {
             Id = id;
             Dpi = dpi;
+            WorkAreaRect = workArea;
+            Bounds = bounds;
+        }
 
+        public Device(Rect bounds, Rect workArea)
+        {
             WorkAreaRect = workArea;
             Bounds = bounds;
         }

@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 using FancyZonesEditor.Utils;
-using Microsoft.VisualStudio.Utilities;
 
 namespace FancyZonesEditor.Models
 {
@@ -19,13 +18,11 @@ namespace FancyZonesEditor.Models
 
         public Device Device { get; set; }
 
-        public Monitor(string id, int dpi, Rect bounds, Rect workArea)
+        public Monitor(Rect bounds, Rect workArea)
         {
             Window = new LayoutOverlayWindow();
             Settings = new LayoutSettings();
-
-            workArea = DpiAwareness.DeviceToLogicalRect(Window, workArea);
-            Device = new Device(id, dpi, bounds, workArea);
+            Device = new Device(bounds, workArea);
 
             if (App.DebugMode)
             {
@@ -39,6 +36,12 @@ namespace FancyZonesEditor.Models
             Window.Top = workArea.Y;
             Window.Width = workArea.Width;
             Window.Height = workArea.Height;
+        }
+
+        public Monitor(string id, int dpi, Rect bounds, Rect workArea)
+            : this(bounds, workArea)
+        {
+            Device = new Device(id, dpi, bounds, workArea);
         }
     }
 }
