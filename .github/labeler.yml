@@ -1,0 +1,5 @@
+"Area-GitHub workflow":
+  - .github/**/*
+
+"Issue-Docs":
+  - **/*.md
