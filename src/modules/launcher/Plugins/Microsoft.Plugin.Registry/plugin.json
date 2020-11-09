@@ -1,0 +1,12 @@
+{
+  "ID": "303417D927BF4C97BCFFC78A123BE0C8",
+  "ActionKeyword": "*",
+  "Name": "Registry",
+  "Description": "Serach inside the Windows Registry",
+  "Author": "TobiasSekan",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://aka.ms/powertoys",
+  "ExecuteFileName": "Microsoft.Plugin.Registry.dll",
+  "IcoPath": "Images\\uri.dark.png"
+}
