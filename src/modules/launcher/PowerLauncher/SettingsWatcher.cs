@@ -10,7 +10,7 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;
-using Wox.Core.Plugin;
+using PowerLauncher.Plugin;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;

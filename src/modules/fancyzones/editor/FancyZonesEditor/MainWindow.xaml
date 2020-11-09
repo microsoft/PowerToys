@@ -72,6 +72,15 @@
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+        <Style x:Key="customButtonFocusVisualStyle">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="1" Stroke="White" StrokeDashArray="1 2" StrokeThickness="1" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="secondaryButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -83,6 +92,7 @@
             <Setter Property="Margin" Value="16,0,0,0" />
             <Setter Property="Width" Value="378"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -109,6 +119,7 @@
             <Setter Property="Margin" Value="16,0,16,0" />
             <Setter Property="Width" Value="377"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -185,9 +196,9 @@
             <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}">
                 <StackPanel>
                     <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button x:Name="decrementZones" Width="40" Height="40" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
+                        <Button x:Name="decrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
                         <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" Style="{StaticResource zoneCount}"/>
-                        <Button x:Name="incrementZones" Width="40" Height="40" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click"/>
+                        <Button x:Name="incrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click"/>
                     </StackPanel>
                     <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,0,0,0">
                         <ItemsControl.ItemsPanel>
@@ -239,7 +250,15 @@
                                                HorizontalAlignment="Stretch" 
                                                LastChildFill="True">
                                         <DockPanel DockPanel.Dock="Top" LastChildFill="True" >
-                                            <Button x:Name="DeleteButton" Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}" DockPanel.Dock="Right" MaxHeight="10" Click="OnDelete" Padding="8,4,8,4" Margin="0,0,8,0" BorderThickness="0" Background="#f2f2f2">
+                                            <Button x:Name="DeleteButton" AutomationProperties.Name="{x:Static props:Resources.Custom_Layout_Delete_Button}"
+                                                    Visibility="{Binding Converter={StaticResource ModelToVisibilityConverter}}"
+                                                    DockPanel.Dock="Right"
+                                                    MaxHeight="10"
+                                                    Click="OnDelete"
+                                                    Padding="8,4,8,4"
+                                                    Margin="0,0,8,0"
+                                                    BorderThickness="0"
+                                                    Background="#f2f2f2">
                                                 <Image Source="images/Delete.png" />
                                             </Button>
                                             <TextBlock DockPanel.Dock="Top" 

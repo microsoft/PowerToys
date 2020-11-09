@@ -142,6 +142,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete custom layout.
+        /// </summary>
+        public static string Custom_Layout_Delete_Button {
+            get {
+                return ResourceManager.GetString("Custom_Layout_Delete_Button", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom table layout creator.
         /// </summary>
         public static string Custom_Table_Layout {
@@ -183,6 +192,15 @@ namespace FancyZonesEditor.Properties {
         public static string Fancy_Zones_Main_Editor {
             get {
                 return ResourceManager.GetString("Fancy_Zones_Main_Editor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grid layout editor.
+        /// </summary>
+        public static string Grid_Layout_Editor {
+            get {
+                return ResourceManager.GetString("Grid_Layout_Editor", resourceCulture);
             }
         }
         
@@ -237,6 +255,24 @@ namespace FancyZonesEditor.Properties {
         public static string Templates {
             get {
                 return ResourceManager.GetString("Templates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decrement number of zones in template layout.
+        /// </summary>
+        public static string Zone_Count_Decrement {
+            get {
+                return ResourceManager.GetString("Zone_Count_Decrement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Increment number of zones in template layout.
+        /// </summary>
+        public static string Zone_Count_Increment {
+            get {
+                return ResourceManager.GetString("Zone_Count_Increment", resourceCulture);
             }
         }
     }

@@ -370,24 +370,24 @@ namespace FancyZonesEditor
 
                 if (delta > 0)
                 {
-                    int sourcRow = 0;
+                    int sourceRow = 0;
                     for (int row = 0; row < rows; row++)
                     {
                         for (int col = 0; col < cols; col++)
                         {
                             if (row == draggedResizerStartRow + 1 && (col < resizer.StartCol || col >= resizer.EndCol))
                             {
-                                newCellChildMap[row, col] = cellChildMap[sourcRow + 1, col];
+                                newCellChildMap[row, col] = cellChildMap[sourceRow + 1, col];
                             }
                             else
                             {
-                                newCellChildMap[row, col] = cellChildMap[sourcRow, col];
+                                newCellChildMap[row, col] = cellChildMap[sourceRow, col];
                             }
                         }
 
                         if (row != draggedResizerStartRow)
                         {
-                            sourcRow++;
+                            sourceRow++;
                         }
                     }
 

@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Internet shortcut application]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Tastenkombination für Internet (Anwendung)]]></Val>
+            <Val><![CDATA[Internetverknüpfung (Anwendung)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

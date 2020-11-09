@@ -30,20 +30,20 @@
   },
   "dependencies": {
     "@svgr/webpack": "^4.3.3",
-    "@uifabric/azure-themes": "^7.0.10",
-    "@uifabric/styling": "^7.10.1",
-    "office-ui-fabric-react": "^7.83.1",
+    "@uifabric/azure-themes": "^7.5.39",
+    "@uifabric/styling": "^7.16.17",
+    "office-ui-fabric-react": "^7.149.4",
     "react": "~16.8.0",
     "react-dom": "~16.8.0"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.0",
-    "@types/react": "~16.8.0",
-    "@types/react-dom": "~16.8.0",
+    "@types/jest": "^24.9.1",
+    "@types/react": "^16.8.25",
+    "@types/react-dom": "^16.8.5",
     "just-scripts": "^0.18.0",
-    "just-stack-uifabric": ">=0.11.4",
+    "just-stack-uifabric": "^1.0.2",
     "react-snap": "^1.23.0",
-    "rimraf": "^3.0.0"
+    "rimraf": "^3.0.2"
   },
   "just": {
     "stack": "just-stack-uifabric"

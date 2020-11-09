@@ -109,24 +109,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";AppDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";AppDisplayName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";Appearance_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Appearance]]></Val>
@@ -185,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ermöglicht eine schnelle und einfache systemweite Farbauswahl.]]></Val>
+            <Val><![CDATA[Schneller und einfacher systemweiter Farbwähler.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -608,7 +590,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Request a feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Feature anfordern]]></Val>
+            <Val><![CDATA[Neue Funktion vorschlagen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1265,7 +1247,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap keys to other keys or shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ordnen Sie Tasten anderen Tasten oder Tastenkombinationen zu.]]></Val>
+            <Val><![CDATA[Ordnen Sie Tasten anderen Tasten oder Tastenkombinationen neu zu.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1535,7 +1517,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Search type preference]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Einstellung für Suchtyp]]></Val>
+            <Val><![CDATA[Suchtypeinstellung]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1616,7 +1598,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable autocomplete for the search and replace fields]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Autovervollständigen in den Feldern zum Suchen und Ersetzen aktivieren]]></Val>
+            <Val><![CDATA[AutoVervollständigen in den Feldern zum Suchen und Ersetzen aktivieren]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1702,7 +1684,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows default]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1711,7 +1693,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Light]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1813,15 +1795,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Shell_Main.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Main]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Übergeordnet]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";Shell_PowerLauncher.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run]]></Val>
@@ -1871,7 +1844,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hiermit wird beim Drücken der Windows-Taste eine Hilfeüberlagerung mit Windows-Tastenkombinationen angezeigt.]]></Val>
+            <Val><![CDATA[Zeigt beim Drücken der WINDOWS-Taste eine Hilfeübersicht mit den Windows-Tastenkombinationen an.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1921,7 +1894,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows color settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

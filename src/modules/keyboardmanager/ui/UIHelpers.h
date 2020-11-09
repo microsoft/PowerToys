@@ -4,5 +4,5 @@
 namespace UIHelpers
 {
     // This method sets focus to the first Type button on the last row of the Grid
-    void SetFocusOnTypeButtonInLastRow(Grid& parent, long colCount);
+    void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount);
 }

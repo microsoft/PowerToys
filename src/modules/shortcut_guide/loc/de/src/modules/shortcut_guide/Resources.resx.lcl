@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hiermit wird beim Drücken der Windows-Taste eine Hilfeüberlagerung mit Windows-Tastenkombinationen angezeigt.]]></Val>
+            <Val><![CDATA[Zeigt beim Drücken der WINDOWS-Taste eine Hilfeübersicht mit den Windows-Tastenkombinationen an.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

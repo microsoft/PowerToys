@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft PowerToys to zestaw narzędzi przeznaczonych dla użytkowników zaawansowanych na potrzeby dostrajania i usprawniania ich środowiska systemu Windows w celu zwiększenia wydajności.]]></Val>
+            <Val><![CDATA[Microsoft PowerToys jest zestawem narzędzi przeznaczonych dla użytkowników zaawansowanych, które umożliwiają dostosowanie i usprawnienie środowiska Windows w celu zwiększenia produktywności.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -105,24 +105,6 @@
           <Val><![CDATA[Administrator mode]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Tryb administratora]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";AppDescription" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";AppDisplayName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft.PowerToys.Settings.UI]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -608,7 +590,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Request a feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zawnioskuj o dodanie funkcji]]></Val>
+            <Val><![CDATA[Zaproponuj dodanie funkcji]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -635,7 +617,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Download updates automatically (Except on metered connections)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pobieranie aktualizacji automatycznie (z wyjątkiem połączeń taryfowych)]]></Val>
+            <Val><![CDATA[Automatyczne pobieranie aktualizacji (za wyjątkiem połączeń taryfowych)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -644,7 +626,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Run at startup]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uruchom podczas uruchamiania]]></Val>
+            <Val><![CDATA[Uruchom podczas startu systemu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -680,7 +662,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Running as administrator]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uruchamianie jako administrator]]></Val>
+            <Val><![CDATA[Uruchomione jako administrator]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -689,7 +671,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Running as user]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uruchamianie jako użytkownik]]></Val>
+            <Val><![CDATA[Uruchomione jako użytkownik]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1202,7 +1184,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Reconfigure your keyboard by remapping keys and shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Skonfiguruj ponownie klawiaturę przez ponowne zamapowanie klawiszy i skrótów.]]></Val>
+            <Val><![CDATA[Skonfiguruj ponownie klawiaturę przez zamapowanie ponowne klawiszy i skrótów.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1238,7 +1220,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Select the profile to display the active key remap and shortcuts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wybierz profil, aby wyświetlić aktywne ponowne mapowanie klawiszy i skróty]]></Val>
+            <Val><![CDATA[Wybierz profil, aby wyświetlić aktywne mapowanie ponowne klawiszy i skróty]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1247,7 +1229,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap a key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponownie zamapuj klawisz]]></Val>
+            <Val><![CDATA[Zamapuj ponownie klawisz]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1256,7 +1238,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponowne mapowanie kluczy]]></Val>
+            <Val><![CDATA[Mapowanie ponowne kluczy]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1265,7 +1247,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap keys to other keys or shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponowne mapowanie klawiszy na inne klawisze lub skróty.]]></Val>
+            <Val><![CDATA[Mapowanie ponowne klawiszy na inne klawisze lub skróty.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1274,7 +1256,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap a shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponownie zamapuj skrót]]></Val>
+            <Val><![CDATA[Zamapuj ponownie skrót]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1283,7 +1265,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponowne mapowanie skrótów]]></Val>
+            <Val><![CDATA[Mapowanie ponowne skrótów]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1292,7 +1274,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponowne mapowanie skrótów na inne skróty lub klawisze. Ponadto mapowania można również kierować do konkretnych aplikacji.]]></Val>
+            <Val><![CDATA[Mapowanie ponowne skrótów na inne skróty lub klawisze. Ponadto mapowania można również kierować do konkretnych aplikacji.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1301,7 +1283,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Key Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponowne mapowanie klawiszy]]></Val>
+            <Val><![CDATA[Mapowanie ponowne klawiszy]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1310,7 +1292,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ponowne mapowanie skrótu]]></Val>
+            <Val><![CDATA[Mapowanie ponowne skrótu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1702,7 +1684,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Default.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows default]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1711,7 +1693,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Light.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Light]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1724,7 +1706,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Current Key Remappings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bieżące ponowne mapowania klawiszy]]></Val>
+            <Val><![CDATA[Bieżące mapowania ponowne klawiszy]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1733,7 +1715,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Current Shortcut Remappings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bieżące ponowne mapowania skrótów]]></Val>
+            <Val><![CDATA[Bieżące mapowania ponowne skrótów]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1809,15 +1791,6 @@
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Menedżer klawiatury]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";Shell_Main.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Main]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Główne]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1921,7 +1894,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows color settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

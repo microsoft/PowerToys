@@ -158,60 +158,32 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutRemapInfoExample.TextWrapping(TextWrapping::Wrap);
 
     // Table to display the shortcuts
-    Windows::UI::Xaml::Controls::Grid shortcutTable;
-    Grid keyRemapTable;
-    ColumnDefinition originalColumn;
-    originalColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
-    originalColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
-    ColumnDefinition arrowColumn;
-    arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
-    ColumnDefinition newColumn;
-    newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
-    newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
-    ColumnDefinition targetAppColumn;
-    targetAppColumn.MinWidth(KeyboardManagerConstants::TableTargetAppColWidth);
-    ColumnDefinition removeColumn;
-    removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
-    shortcutTable.Margin({ 10, 10, 10, 20 });
-    shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
-    shortcutTable.ColumnDefinitions().Append(originalColumn);
-    shortcutTable.ColumnDefinitions().Append(arrowColumn);
-    shortcutTable.ColumnDefinitions().Append(newColumn);
-    shortcutTable.ColumnDefinitions().Append(targetAppColumn);
-    shortcutTable.ColumnDefinitions().Append(removeColumn);
-    shortcutTable.RowDefinitions().Append(RowDefinition());
-    shortcutTable.MinWidth(KeyboardManagerConstants::EditShortcutsTableMinWidth);
+    StackPanel shortcutTable;
 
     // First header textblock in the header row of the shortcut table
     TextBlock originalShortcutHeader;
     originalShortcutHeader.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_SOURCEHEADER));
     originalShortcutHeader.FontWeight(Text::FontWeights::Bold());
-    originalShortcutHeader.Margin({ 0, 0, 0, 10 });
 
     // Second header textblock in the header row of the shortcut table
     TextBlock newShortcutHeader;
     newShortcutHeader.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_TARGETHEADER));
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
-    newShortcutHeader.Margin({ 0, 0, 0, 10 });
 
     // Third header textblock in the header row of the shortcut table
     TextBlock targetAppHeader;
     targetAppHeader.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_TARGETAPPHEADER));
-    targetAppHeader.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     targetAppHeader.FontWeight(Text::FontWeights::Bold());
-    targetAppHeader.Margin({ 0, 0, 0, 10 });
     targetAppHeader.HorizontalAlignment(HorizontalAlignment::Center);
 
-    shortcutTable.SetColumn(originalShortcutHeader, KeyboardManagerConstants::ShortcutTableOriginalColIndex);
-    shortcutTable.SetRow(originalShortcutHeader, 0);
-    shortcutTable.SetColumn(newShortcutHeader, KeyboardManagerConstants::ShortcutTableNewColIndex);
-    shortcutTable.SetRow(newShortcutHeader, 0);
-    shortcutTable.SetColumn(targetAppHeader, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
-    shortcutTable.SetRow(targetAppHeader, 0);
-
-    shortcutTable.Children().Append(originalShortcutHeader);
-    shortcutTable.Children().Append(newShortcutHeader);
-    shortcutTable.Children().Append(targetAppHeader);
+    StackPanel tableHeader = StackPanel();
+    tableHeader.Orientation(Orientation::Horizontal);
+    tableHeader.Margin({ 10, 0, 0, 10 });
+    auto originalShortcutContainer = KeyboardManagerHelper::GetWrapped(originalShortcutHeader, KeyboardManagerConstants::ShortcutOriginColumnWidth + (double)KeyboardManagerConstants::ShortcutArrowColumnWidth);
+    tableHeader.Children().Append(originalShortcutContainer.as<FrameworkElement>());
+    auto newShortcutHeaderContainer = KeyboardManagerHelper::GetWrapped(newShortcutHeader, KeyboardManagerConstants::ShortcutTargetColumnWidth);
+    tableHeader.Children().Append(newShortcutHeaderContainer.as<FrameworkElement>());
+    tableHeader.Children().Append(targetAppHeader);
 
     // Store handle of edit shortcuts window
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
@@ -289,7 +261,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     plusSymbol.Glyph(L"\xE109");
     addShortcut.Content(plusSymbol);
-    addShortcut.Margin({ 10, 0, 0, 25 });
+    addShortcut.Margin({ 10, 10, 0, 25 });
     addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
 
@@ -315,6 +287,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Remapping table
     StackPanel mappingsPanel;
+    mappingsPanel.Children().Append(tableHeader);
     mappingsPanel.Children().Append(shortcutTable);
     mappingsPanel.Children().Append(addShortcut);
 

@@ -60,7 +60,7 @@ namespace ViewModelTests
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, generalSettingsRepository, SendMockIPCConfigMSG);
 
-            // Verifiy that the old settings persisted
+            // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ImageResizer, viewModel.IsEnabled);
             Assert.AreEqual(ImageResizerViewModel.GetEncoderIndex(originalSettings.Properties.ImageresizerFallbackEncoder.Value), viewModel.Encoder);
             Assert.AreEqual(originalSettings.Properties.ImageresizerFileName.Value, viewModel.FileName);
@@ -240,7 +240,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void UpdateWidthAndHeightShouldUpateSizeWhenCorrectValuesAreProvided()
+        public void UpdateWidthAndHeightShouldUpdateSizeWhenCorrectValuesAreProvided()
         {
             // arrange
             ImageSize imageSize = new ImageSize()
