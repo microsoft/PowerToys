@@ -636,13 +636,7 @@ void FancyZones::ToggleEditor() noexcept
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
         
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-
-    OnThreadExecutor dpiSystemThread;
-    dpiSystemThread.submit(OnThreadExecutor::task_t{ [&] {
-                        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
-                        allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-                     } })
-        .wait();
+    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
     
     bool showDpiWarning = false;
     int prevDpiX = -1, prevDpiY = -1;
