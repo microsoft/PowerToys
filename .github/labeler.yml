@@ -3,3 +3,28 @@
 
 "Issue-Docs":
   - ./**/*.md
+
+"Product-FancyZones":
+  - ./src/modules/fancyzones/**/*
+
+"Product-Color Picker":
+  - ./src/modules/colorPicker/**/*
+
+"Product-Image Resizer":
+  - ./src/modules/imageresizer/**/*
+
+"Product-Keyboard Shortcut Manager":
+  - ./src/modules/keyboardmanager/**/*
+
+"Product-Launcher":
+  - ./src/modules/launcher/**/*
+
+"Product-PowerRename":
+  - ./src/modules/powerrename/**/*
+
+"Product-File Explorer":
+  - ./src/modules/previewpane/**/*
+  
+"Product-Shortcut Guide":
+  - ./src/modules/shortcut_guide/**/* 
+ 
