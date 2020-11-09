@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -44,5 +44,15 @@ namespace FancyZonesEditor.Models
             Device = new Device(id, dpi, bounds, workArea, primary);
         }
 
+        public void ScaleWorkArea(double scaleFactor)
+        {
+            Device.ScaleWorkArea(scaleFactor);
+
+            var workArea = Device.WorkAreaRect;
+            Window.Left = workArea.X;
+            Window.Top = workArea.Y;
+            Window.Width = workArea.Width;
+            Window.Height = workArea.Height;
+        }
     }
 }

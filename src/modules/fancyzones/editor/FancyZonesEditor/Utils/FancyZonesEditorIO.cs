@@ -88,6 +88,7 @@ namespace FancyZonesEditor.Utils
             TargetMonitorId,
             MonitorsCount,
             MonitorId,
+            DPI,
             MonitorLeft,
             MonitorTop,
         }
@@ -163,8 +164,9 @@ namespace FancyZonesEditor.Utils
                 *
                 * Data for each monitor:
                 * (5) Monitor id
-                * (6) monitor left
-                * (7) monitor top
+                * (6) DPI
+                * (7) monitor left
+                * (8) monitor top
                 * ...
                 */
                 var argsParts = args[1].Split('/');
@@ -188,25 +190,48 @@ namespace FancyZonesEditor.Utils
                         ((App)Application.Current).Shutdown();
                     }
 
-                    const int monitorArgsCount = 3;
+                    // get monitor Id and Dpi
+                    const int monitorArgsCount = 4;
                     for (int i = 0; i < count; i++)
                     {
                         string id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                        int dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
                         int monitorLeft = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
                         int monitorTop = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
 
-                        foreach (Monitor m in App.Overlay.Monitors)
+                        foreach (Monitor monitor in App.Overlay.Monitors)
                         {
-                            if (m.Device.Bounds.Top == monitorTop && m.Device.Bounds.Left == monitorLeft)
+                            if (monitor.Device.Bounds.Top == monitorTop && monitor.Device.Bounds.Left == monitorLeft)
                             {
-                                m.Device.Id = id;
+                                monitor.Device.Id = id;
+                                monitor.Device.Dpi = dpi;
                                 break;
                             }
                         }
                     }
 
                     var monitors = App.Overlay.Monitors;
-                    for (int i = 0; i < App.Overlay.DesktopsCount && !App.Overlay.SpanZonesAcrossMonitors; i++)
+
+                    // get primary monitor DPI for scaling
+                    double primaryMonitorDPI = 96f;
+                    for (int i = 0; i < monitors.Count; i++)
+                    {
+                        if (monitors[i].Device.Primary)
+                        {
+                            primaryMonitorDPI = monitors[i].Device.Dpi;
+                            break;
+                        }
+                    }
+
+                    // scale work areas
+                    double scaleFactor = 96f / primaryMonitorDPI;
+                    foreach (Monitor monitor in monitors)
+                    {
+                        monitor.ScaleWorkArea(scaleFactor);
+                    }
+
+                    // set active desktop
+                    for (int i = 0; i < monitors.Count; i++)
                     {
                         if (monitors[i].Device.Id == targetMonitorName)
                         {

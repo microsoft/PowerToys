@@ -154,26 +154,9 @@ namespace FancyZonesEditor
             Monitors = new List<Monitor>();
 
             var monitors = MonitorInfoUtils.GetMonitors();
-            double primaryMonitorDPI = 96f;
-
-            for (int i = 0; i < monitors.Length; i++)
-            {
-                if (monitors[i].Primary)
-                {
-                    double monitorDPI;
-                    DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out monitorDPI, out monitorDPI);
-                    primaryMonitorDPI = monitorDPI;
-                    break;
-                }
-            }
-
             for (int i = 0; i < monitors.Length; i++)
             {
                 var monitor = monitors[i];
-
-                // get monitor dpi
-                double monitorDPI;
-                DpiAwareness.GetMonitorDpi(monitors[i].MonitorHandle, out monitorDPI, out monitorDPI);
 
                 // screen resolution
                 var monitorRect = monitor.WorkArea;
@@ -184,11 +167,6 @@ namespace FancyZonesEditor
                 Rect workArea = new Rect(workAreaRect.Left, workAreaRect.Top, workAreaRect.Width, workAreaRect.Height);
 
                 Add(bounds, workArea, monitor.Primary);
-                workArea.X *= scaleFactor;
-                workArea.Y *= scaleFactor;
-                workArea.Width *= scaleFactor;
-                workArea.Height *= scaleFactor;
-
             }
         }
 

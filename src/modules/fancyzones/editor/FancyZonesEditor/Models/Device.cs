@@ -15,7 +15,7 @@ namespace FancyZonesEditor.Utils
 
         public Rect WorkAreaRect { get; private set; }
 
-        public int Dpi { get; private set; }
+        public int Dpi { get; set; }
 
         public bool Primary { get; private set; }
 
@@ -35,5 +35,9 @@ namespace FancyZonesEditor.Utils
             Primary = primary;
         }
 
+        public void ScaleWorkArea(double scaleFactor)
+        {
+            WorkAreaRect = new Rect(WorkAreaRect.X * scaleFactor, WorkAreaRect.Y * scaleFactor, WorkAreaRect.Width * scaleFactor, WorkAreaRect.Height * scaleFactor);
+        }
     }
 }

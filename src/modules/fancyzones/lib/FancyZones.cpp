@@ -623,8 +623,9 @@ void FancyZones::ToggleEditor() noexcept
     *
     * Data for each monitor:
     * (5) Monitor id
-    * (6) monitor left
-    * (7) monitor top
+    * (6) DPI
+    * (7) monitor left
+    * (8) monitor top
     * ...
     */
     std::wstring params;
@@ -662,6 +663,7 @@ void FancyZones::ToggleEditor() noexcept
             UINT dpiY = 0;
             if (GetDpiForMonitor(monitor.first, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
             {
+                monitorsData += std::to_wstring(dpiX) + divider; /* DPI */
                 if (spanZonesAcrossMonitors && prevDpiX != -1 && (prevDpiX != dpiX || prevDpiY != dpiY))
                 {
                     showDpiWarning = true;
