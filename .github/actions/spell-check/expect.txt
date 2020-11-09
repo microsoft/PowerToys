@@ -295,6 +295,7 @@ codeofconduct
 codereview
 COINIT
 Colorbrush
+colorconv
 colorpicker
 colorpickerref
 COLORREF
@@ -1090,7 +1091,7 @@ IPrincipal
 IProgram
 IPublic
 IQuery
-IReadOnlyDictionary
+IRead
 IReflect
 IRegistered
 IRegistration
