@@ -68,11 +68,11 @@
             <ListBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
                         <TextBlock Text="(" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Text="x" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text="&#xE711;" FontSize="11" FontFamily="Segoe MDL2 Assets" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,5,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}" Margin="4,0,0,0" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text=")" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
@@ -84,7 +84,7 @@
                         <TextBlock VerticalAlignment="Center"
                                    Text="{Binding Name}"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                   FontWeight="Bold"/>
+                                   FontWeight="SemiBold"/>
                         <ComboBox Margin="8,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
                                   Style="{StaticResource DisabledWhenUnselectedComboBoxStyle}"
@@ -115,7 +115,7 @@
                                    Text="&#xE711;"
                                    FontFamily="Segoe MDL2 Assets"
                                    Width="25"
-                                   Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    Name="Times_Symbol"
                                    AutomationProperties.Name="{x:Static p:Resources.Times_Symbol}"
                                    TextAlignment="Center"
