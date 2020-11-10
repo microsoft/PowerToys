@@ -191,6 +191,7 @@
   </data>
   <data name="Custom_Layout_Create_New" xml:space="preserve">
     <value>Create new custom</value>
+    <comment>As in Create new custom layout</comment>
   </data>
   <data name="Error_Invalid_Arguments" xml:space="preserve">
     <value>FancyZones Editor arguments are invalid.</value>
