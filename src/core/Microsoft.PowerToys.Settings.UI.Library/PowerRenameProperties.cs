@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             MaxMRUSize = new IntProperty();
             ShowIcon = new BoolProperty();
             ExtendedContextMenuOnly = new BoolProperty();
+            UseBoostLib = new BoolProperty();
             Enabled = new BoolProperty();
         }
 
@@ -34,5 +35,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("bool_show_extended_menu")]
         public BoolProperty ExtendedContextMenuOnly { get; set; }
+
+        [JsonPropertyName("bool_use_boost_lib")]
+        public BoolProperty UseBoostLib { get; set; }
     }
 }

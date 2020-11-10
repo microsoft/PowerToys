@@ -39,6 +39,7 @@ protected:
 
     size_t _Find(std::wstring data, std::wstring toSearch, bool caseInsensitive, size_t pos);
 
+    bool _useBoostLib = false;
     DWORD m_flags = DEFAULT_FLAGS;
     PWSTR m_searchTerm = nullptr;
     PWSTR m_replaceTerm = nullptr;
