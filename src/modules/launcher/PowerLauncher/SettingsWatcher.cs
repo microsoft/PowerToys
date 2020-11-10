@@ -3,35 +3,59 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using System.Windows.Input;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Wox.Core.Plugin;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using PowerLauncher.Helper;
+using PowerLauncher.Plugin;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
+using JsonException = System.Text.Json.JsonException;
 
 namespace PowerLauncher
 {
     // Watch for /Local/Microsoft/PowerToys/Launcher/Settings.json changes
     public class SettingsWatcher : BaseModel
     {
+        private readonly ISettingsUtils _settingsUtils;
+
         private const int MaxRetries = 10;
         private static readonly object _watcherSyncObject = new object();
-        private readonly FileSystemWatcher _watcher;
-        private readonly Settings _settings;
+        private readonly IFileSystemWatcher _watcher;
+        private readonly PowerToysRunSettings _settings;
 
-        public SettingsWatcher(Settings settings)
+        private readonly ThemeManager _themeManager;
+
+        public SettingsWatcher(PowerToysRunSettings settings, ThemeManager themeManager)
         {
+            _settingsUtils = new SettingsUtils();
             _settings = settings;
+            _themeManager = themeManager;
 
             // Set up watcher
-            _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
+            _watcher = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();
+
+            // Apply theme at startup
+            _themeManager.ChangeTheme(_settings.Theme, _settings.Theme == Theme.System);
+        }
+
+        public void CreateSettingsIfNotExists()
+        {
+            if (!_settingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+            {
+                Log.Info("PT Run settings.json was missing, creating a new one", GetType());
+
+                var defaultSettings = new PowerLauncherSettings();
+                defaultSettings.Save(_settingsUtils);
+            }
         }
 
         public void OverloadSettings()
@@ -44,15 +68,9 @@ namespace PowerLauncher
                 try
                 {
                     retryCount++;
-                    if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
-                    {
-                        Debug.WriteLine("PT Run settings.json was missing, creating a new one");
+                    CreateSettingsIfNotExists();
 
-                        var defaultSettings = new PowerLauncherSettings();
-                        defaultSettings.Save();
-                    }
-
-                    var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
+                    var overloadSettings = _settingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
                     if (_settings.Hotkey != openPowerlauncher)
@@ -77,7 +95,8 @@ namespace PowerLauncher
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.Properties.IgnoreHotkeysInFullscreen;
                     }
 
-                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer Plugin", StringComparison.OrdinalIgnoreCase));
+                    // Using OrdinalIgnoreCase since this is internal
+                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer", StringComparison.OrdinalIgnoreCase));
                     if (indexer != null)
                     {
                         var indexerSettings = indexer.Plugin as ISettingProvider;
@@ -87,6 +106,12 @@ namespace PowerLauncher
                     if (_settings.ClearInputOnLaunch != overloadSettings.Properties.ClearInputOnLaunch)
                     {
                         _settings.ClearInputOnLaunch = overloadSettings.Properties.ClearInputOnLaunch;
+                    }
+
+                    if (_settings.Theme != overloadSettings.Properties.Theme)
+                    {
+                        _settings.Theme = overloadSettings.Properties.Theme;
+                        _themeManager.ChangeTheme(_settings.Theme, _settings.Theme == Theme.System);
                     }
 
                     retry = false;
@@ -99,10 +124,30 @@ namespace PowerLauncher
                     if (retryCount > MaxRetries)
                     {
                         retry = false;
+                        Log.Exception($"Failed to Deserialize PowerToys settings, Retrying {e.Message}", e, GetType());
                     }
+                    else
+                    {
+                        Thread.Sleep(1000);
+                    }
+                }
+                catch (JsonException e)
+                {
+                    if (retryCount > MaxRetries)
+                    {
+                        retry = false;
+                        Log.Exception($"Failed to Deserialize PowerToys settings, Creating new settings as file could be corrupted {e.Message}", e, GetType());
 
-                    Thread.Sleep(1000);
-                    Debug.WriteLine(e.Message);
+                        // Settings.json could possibly be corrupted. To mitigate this we delete the
+                        // current file and replace it with a correct json value.
+                        _settingsUtils.DeleteSettings(PowerLauncherSettings.ModuleName);
+                        CreateSettingsIfNotExists();
+                        ErrorReporting.ShowMessageBox(Properties.Resources.deseralization_error_title, Properties.Resources.deseralization_error_message);
+                    }
+                    else
+                    {
+                        Thread.Sleep(1000);
+                    }
                 }
             }
 

@@ -5,8 +5,9 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -15,6 +16,10 @@ namespace Wox.Infrastructure.Storage
     /// </summary>
     public class JsonStorage<T>
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+
         private readonly JsonSerializerSettings _serializerSettings;
         private T _data;
 
@@ -27,7 +32,7 @@ namespace Wox.Infrastructure.Storage
         public string DirectoryPath { get; set; }
 
         // This storage helper returns whether or not to delete the json storage items
-        private static readonly int _jsonStorage = 1;
+        private const int _jsonStorage = 1;
         private StoragePowerToysVersionInfo _storageHelper;
 
         internal JsonStorage()
@@ -51,7 +56,7 @@ namespace Wox.Infrastructure.Storage
                 if (File.Exists(FilePath))
                 {
                     File.Delete(FilePath);
-                    Log.Info($"|JsonStorage.TryLoad|Deleting cached data|<{FilePath}>");
+                    Log.Info($"Deleting cached data at <{FilePath}>", GetType());
                 }
             }
 
@@ -84,7 +89,7 @@ namespace Wox.Infrastructure.Storage
             catch (JsonException e)
             {
                 LoadDefault();
-                Log.Exception($"|JsonStorage.Deserialize|Deserialize error for json <{FilePath}>", e);
+                Log.Exception($"Deserialize error for json <{FilePath}>", e, GetType());
             }
 
             if (_data == null)
@@ -106,7 +111,8 @@ namespace Wox.Infrastructure.Storage
 
         private void BackupOriginFile()
         {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fffffff", CultureInfo.CurrentUICulture);
+            // Using InvariantCulture since this is internal
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fffffff", CultureInfo.InvariantCulture);
             var directory = Path.GetDirectoryName(FilePath).NonNull();
             var originName = Path.GetFileNameWithoutExtension(FilePath);
             var backupName = $"{originName}-{timestamp}{FileSuffix}";
@@ -123,11 +129,12 @@ namespace Wox.Infrastructure.Storage
                 string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
                 File.WriteAllText(FilePath, serialized);
                 _storageHelper.Close();
-                Log.Info($"|JsonStorage.Save|Saving cached data| <{FilePath}>");
+
+                Log.Info($"Saving cached data at <{FilePath}>", GetType());
             }
             catch (IOException e)
             {
-                Log.Error($"|JsonStorage.Save|Error in saving data| <{FilePath}>", e.Message);
+                Log.Exception($"Error in saving data at <{FilePath}>", e, GetType());
             }
         }
     }

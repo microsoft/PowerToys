@@ -58,7 +58,7 @@ public:
         return appZoneHistoryMap;
     }
 
-    void AddDevice(const std::wstring& deviceId);
+    bool AddDevice(const std::wstring& deviceId);
     void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
     void UpdatePrimaryDesktopData(const std::wstring& desktopId);
     void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
@@ -116,7 +116,6 @@ private:
     void ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
     void ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
-    void MigrateCustomZoneSetsFromRegistry();
     void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 
     // Maps app path to app's zone history data
@@ -137,3 +136,11 @@ private:
 };
 
 FancyZonesData& FancyZonesDataInstance();
+
+namespace DefaultValues
+{
+    const int ZoneCount = 3;
+    const bool ShowSpacing = true;
+    const int Spacing = 16;
+    const int SensitivityRadius = 20;
+}

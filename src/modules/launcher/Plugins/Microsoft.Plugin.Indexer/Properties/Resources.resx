@@ -136,9 +136,27 @@
     <value>Path</value>
   </data>
   <data name="Microsoft_plugin_indexer_drivedetectionwarning" xml:space="preserve">
-    <value>Warning: Not all drives are indexed.</value>
+    <value>Warning: Not all files are indexed.</value>
   </data>
   <data name="Microsoft_plugin_indexer_disable_warning_in_settings" xml:space="preserve">
     <value>Click to go to Windows Search settings to fix.</value>
+  </data>
+  <data name="Microsoft_plugin_indexer_clipboard_failed" xml:space="preserve">
+    <value>Fail to set text in clipboard</value>
+  </data>
+  <data name="Microsoft_plugin_indexer_file_open_failed" xml:space="preserve">
+    <value>Can't open this file</value>
+  </data>
+  <data name="Microsoft_plugin_indexer_folder_open_failed" xml:space="preserve">
+    <value>Fail to open folder at</value>
+  </data>
+  <data name="Microsoft_plugin_indexer_plugin_description" xml:space="preserve">
+    <value>Returns files and folders</value>
+  </data>
+  <data name="Microsoft_plugin_indexer_plugin_name" xml:space="preserve">
+    <value>Windows Indexer</value>
+  </data>
+  <data name="Microsoft_plugin_indexer_subtitle_header" xml:space="preserve">
+    <value>Search</value>
   </data>
 </root>

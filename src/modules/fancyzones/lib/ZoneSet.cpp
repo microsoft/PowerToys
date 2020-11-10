@@ -1,13 +1,17 @@
 #include "pch.h"
 
-#include "util.h"
-#include "lib/ZoneSet.h"
-#include "Settings.h"
+#include "ZoneSet.h"
+
 #include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
+#include "Settings.h"
+#include "Zone.h"
+#include "util.h"
 
 #include <common/dpi_aware.h>
 
+#include <limits>
+#include <map>
 #include <utility>
 
 using namespace FancyZonesUtils;
@@ -15,19 +19,7 @@ using namespace FancyZonesUtils;
 namespace
 {
     constexpr int C_MULTIPLIER = 10000;
-    constexpr int MAX_ZONE_COUNT = 50;
 
-    /*
-      struct GridLayoutInfo {
-        int rows;
-        int columns;
-        int rowsPercents[MAX_ZONE_COUNT];
-        int columnsPercents[MAX_ZONE_COUNT];
-        int cellChildMap[MAX_ZONE_COUNT][MAX_ZONE_COUNT];
-      };
-    */
-
-    auto l = FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = 1, .columns = 1 });
     // PriorityGrid layout is unique for zoneCount <= 11. For zoneCount > 11 PriorityGrid is same as Grid
     FancyZonesDataTypes::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
         /* 1 */
@@ -108,6 +100,11 @@ namespace
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 5, 6 }, { 7, 8, 9, 10 } } }),
     };
+
+    inline void StampWindow(HWND window, size_t bitmask) noexcept
+    {
+        SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, reinterpret_cast<HANDLE>(bitmask));
+    }
 }
 
 struct ZoneSet : winrt::implements<ZoneSet, IZoneSet>
@@ -118,37 +115,41 @@ public:
     {
     }
 
-    ZoneSet(ZoneSetConfig const& config, std::vector<winrt::com_ptr<IZone>> zones) :
+    ZoneSet(ZoneSetConfig const& config, ZonesMap zones) :
         m_config(config),
         m_zones(zones)
     {
     }
 
     IFACEMETHODIMP_(GUID)
-    Id() noexcept { return m_config.Id; }
+    Id() const noexcept { return m_config.Id; }
     IFACEMETHODIMP_(FancyZonesDataTypes::ZoneSetLayoutType)
-    LayoutType() noexcept { return m_config.LayoutType; }
+    LayoutType() const noexcept { return m_config.LayoutType; }
     IFACEMETHODIMP AddZone(winrt::com_ptr<IZone> zone) noexcept;
     IFACEMETHODIMP_(std::vector<size_t>)
-    ZonesFromPoint(POINT pt) noexcept;
+    ZonesFromPoint(POINT pt) const noexcept;
     IFACEMETHODIMP_(std::vector<size_t>)
-    GetZoneIndexSetFromWindow(HWND window) noexcept;
-    IFACEMETHODIMP_(std::vector<winrt::com_ptr<IZone>>)
-    GetZones() noexcept { return m_zones; }
+    GetZoneIndexSetFromWindow(HWND window) const noexcept;
+    IFACEMETHODIMP_(ZonesMap)
+    GetZones()const noexcept override { return m_zones; }
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndex(HWND window, HWND zoneWindow, size_t index) noexcept;
+    MoveWindowIntoZoneByIndex(HWND window, HWND workAreaWindow, size_t index) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<size_t>& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const std::vector<size_t>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
+    MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND workAreaWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(bool)
-    MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
+    MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWindow, DWORD vkCode, bool cycle) noexcept;
+    IFACEMETHODIMP_(bool)
+    ExtendWindowByDirectionAndPosition(HWND window, HWND workAreaWindow, DWORD vkCode) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept;
+    MoveWindowIntoZoneByPoint(HWND window, HWND workAreaWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(bool)
     CalculateZones(RECT workArea, int zoneCount, int spacing) noexcept;
     IFACEMETHODIMP_(bool)
-    IsZoneEmpty(int zoneIndex) noexcept;
+    IsZoneEmpty(int zoneIndex) const noexcept;
+    IFACEMETHODIMP_(std::vector<size_t>)
+    GetCombinedZoneRange(const std::vector<size_t>& initialZones, const std::vector<size_t>& finalZones) const noexcept;
 
 private:
     bool CalculateFocusLayout(Rect workArea, int zoneCount) noexcept;
@@ -157,46 +158,48 @@ private:
     bool CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept;
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
     bool CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing);
-    void StampWindow(HWND window, size_t bitmask) noexcept;
 
-    std::vector<winrt::com_ptr<IZone>> m_zones;
+    ZonesMap m_zones;
     std::map<HWND, std::vector<size_t>> m_windowIndexSet;
+
+    // Needed for ExtendWindowByDirectionAndPosition
+    std::map<HWND, std::vector<size_t>> m_windowInitialIndexSet;
+    std::map<HWND, size_t> m_windowFinalIndex;
+    bool m_inExtendWindow = false;
+
     ZoneSetConfig m_config;
 };
 
 IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
 {
-    m_zones.emplace_back(zone);
+    auto zoneId = zone->Id();
+    if (m_zones.contains(zoneId))
+    {
+        return S_FALSE;
+    }
+    m_zones[zoneId] = zone;
 
-    // Important not to set Id 0 since we store it in the HWND using SetProp.
-    // SetProp(0) doesn't really work.
-    zone->SetId(m_zones.size());
     return S_OK;
 }
 
 IFACEMETHODIMP_(std::vector<size_t>)
-ZoneSet::ZonesFromPoint(POINT pt) noexcept
+ZoneSet::ZonesFromPoint(POINT pt) const noexcept
 {
-    const int SENSITIVITY_RADIUS = 20;
     std::vector<size_t> capturedZones;
     std::vector<size_t> strictlyCapturedZones;
-    for (size_t i = 0; i < m_zones.size(); i++)
+    for (const auto& [zoneId, zone] : m_zones)
     {
-        auto zone = m_zones[i];
-        RECT newZoneRect = zone->GetZoneRect();
-        if (newZoneRect.left < newZoneRect.right && newZoneRect.top < newZoneRect.bottom) // proper zone
+        const RECT& zoneRect = zone->GetZoneRect();
+        if (zoneRect.left - m_config.SensitivityRadius <= pt.x && pt.x <= zoneRect.right + m_config.SensitivityRadius &&
+            zoneRect.top - m_config.SensitivityRadius <= pt.y && pt.y <= zoneRect.bottom + m_config.SensitivityRadius)
         {
-            if (newZoneRect.left - SENSITIVITY_RADIUS <= pt.x && pt.x <= newZoneRect.right + SENSITIVITY_RADIUS &&
-                newZoneRect.top - SENSITIVITY_RADIUS <= pt.y && pt.y <= newZoneRect.bottom + SENSITIVITY_RADIUS)
-            {
-                capturedZones.emplace_back(i);
-            }
+            capturedZones.emplace_back(zoneId);
+        }
             
-            if (newZoneRect.left <= pt.x && pt.x < newZoneRect.right &&
-                newZoneRect.top <= pt.y && pt.y < newZoneRect.bottom)
-            {
-                strictlyCapturedZones.emplace_back(i);
-            }
+        if (zoneRect.left <= pt.x && pt.x < zoneRect.right &&
+            zoneRect.top <= pt.y && pt.y < zoneRect.bottom)
+        {
+            strictlyCapturedZones.emplace_back(zoneId);
         }
     }
 
@@ -209,21 +212,33 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
 
     // If captured zones do not overlap, return all of them
     // Otherwise, return the smallest one
-
     bool overlap = false;
     for (size_t i = 0; i < capturedZones.size(); ++i)
     {
         for (size_t j = i + 1; j < capturedZones.size(); ++j)
         {
-            auto rectI = m_zones[capturedZones[i]]->GetZoneRect();
-            auto rectJ = m_zones[capturedZones[j]]->GetZoneRect();
-            if (max(rectI.top, rectJ.top) + SENSITIVITY_RADIUS < min(rectI.bottom, rectJ.bottom) &&
-                max(rectI.left, rectJ.left) + SENSITIVITY_RADIUS < min(rectI.right, rectJ.right))
+            RECT rectI;
+            RECT rectJ;
+            try
+            {
+                rectI = m_zones.at(capturedZones[i])->GetZoneRect();
+                rectJ = m_zones.at(capturedZones[j])->GetZoneRect();
+            }
+            catch (std::out_of_range)
+            {
+                return {};
+            }
+
+            if (max(rectI.top, rectJ.top) + m_config.SensitivityRadius < min(rectI.bottom, rectJ.bottom) &&
+                max(rectI.left, rectJ.left) + m_config.SensitivityRadius < min(rectI.right, rectJ.right))
             {
                 overlap = true;
-                i = capturedZones.size() - 1;
                 break;
             }
+        }
+        if (overlap)
+        {
+            break;
         }
     }
 
@@ -232,8 +247,17 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
         size_t smallestIdx = 0;
         for (size_t i = 1; i < capturedZones.size(); ++i)
         {
-            auto rectS = m_zones[capturedZones[smallestIdx]]->GetZoneRect();
-            auto rectI = m_zones[capturedZones[i]]->GetZoneRect();
+            RECT rectS;
+            RECT rectI;
+            try
+            {
+                rectS = m_zones.at(capturedZones[smallestIdx])->GetZoneRect();
+                rectI = m_zones.at(capturedZones[i])->GetZoneRect();
+            }
+            catch (std::out_of_range)
+            {
+                return {};
+            }
             int smallestSize = (rectS.bottom - rectS.top) * (rectS.right - rectS.left);
             int iSize = (rectI.bottom - rectI.top) * (rectI.right - rectI.left);
 
@@ -249,7 +273,7 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
     return capturedZones;
 }
 
-std::vector<size_t> ZoneSet::GetZoneIndexSetFromWindow(HWND window) noexcept
+std::vector<size_t> ZoneSet::GetZoneIndexSetFromWindow(HWND window) const noexcept
 {
     auto it = m_windowIndexSet.find(window);
     if (it == m_windowIndexSet.end())
@@ -263,31 +287,38 @@ std::vector<size_t> ZoneSet::GetZoneIndexSetFromWindow(HWND window) noexcept
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, size_t index) noexcept
+ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND workAreaWindow, size_t index) noexcept
 {
-    MoveWindowIntoZoneByIndexSet(window, windowZone, { index });
+    MoveWindowIntoZoneByIndexSet(window, workAreaWindow, { index });
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<size_t>& indexSet) noexcept
+ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND workAreaWindow, const std::vector<size_t>& zoneIds) noexcept
 {
     if (m_zones.empty())
     {
         return;
     }
 
+    // Always clear the info related to SelectManyZones if it's not being used
+    if (!m_inExtendWindow)
+    {
+        m_windowFinalIndex.erase(window);
+        m_windowInitialIndexSet.erase(window);
+    }
+
     RECT size;
     bool sizeEmpty = true;
     size_t bitmask = 0;
 
-    auto& storedIndexSet = m_windowIndexSet[window];
-    storedIndexSet = {};
+    m_windowIndexSet[window] = {};
 
-    for (size_t index : indexSet)
+    for (size_t id : zoneIds)
     {
-        if (index < m_zones.size())
+        if (m_zones.contains(id))
         {
-            RECT newSize = m_zones.at(index)->ComputeActualZoneRect(window, windowZone);
+            const auto& zone = m_zones.at(id);
+            const RECT newSize = zone->ComputeActualZoneRect(window, workAreaWindow);
             if (!sizeEmpty)
             {
                 size.left = min(size.left, newSize.left);
@@ -301,12 +332,12 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
                 sizeEmpty = false;
             }
 
-            storedIndexSet.push_back(index);
+            m_windowIndexSet[window].push_back(id);
         }
 
-        if (index < std::numeric_limits<size_t>::digits)
+        if (id < std::numeric_limits<size_t>::digits)
         {
-            bitmask |= 1ull << index;
+            bitmask |= 1ull << id;
         }
     }
 
@@ -319,7 +350,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
+ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND workAreaWindow, DWORD vkCode, bool cycle) noexcept
 {
     if (m_zones.empty())
     {
@@ -332,23 +363,23 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND windowZone, DWO
     // The window was not assigned to any zone here
     if (indexSet.size() == 0)
     {
-        MoveWindowIntoZoneByIndexSet(window, windowZone, { vkCode == VK_LEFT ? numZones - 1 : 0 });
+        MoveWindowIntoZoneByIndex(window, workAreaWindow, vkCode == VK_LEFT ? numZones - 1 : 0);
         return true;
     }
 
-    size_t oldIndex = indexSet[0];
+    size_t oldId = indexSet[0];
 
     // We reached the edge
-    if ((vkCode == VK_LEFT && oldIndex == 0) || (vkCode == VK_RIGHT && oldIndex == numZones - 1))
+    if ((vkCode == VK_LEFT && oldId == 0) || (vkCode == VK_RIGHT && oldId == numZones - 1))
     {
         if (!cycle)
         {
-            MoveWindowIntoZoneByIndexSet(window, windowZone, {});
+            MoveWindowIntoZoneByIndexSet(window, workAreaWindow, {});
             return false;
         }
         else
         {
-            MoveWindowIntoZoneByIndexSet(window, windowZone, { vkCode == VK_LEFT ? numZones - 1 : 0 });
+            MoveWindowIntoZoneByIndex(window, workAreaWindow, vkCode == VK_LEFT ? numZones - 1 : 0);
             return true;
         }
     }
@@ -356,44 +387,43 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndIndex(HWND window, HWND windowZone, DWO
     // We didn't reach the edge
     if (vkCode == VK_LEFT)
     {
-        MoveWindowIntoZoneByIndexSet(window, windowZone, { oldIndex - 1 });
+        MoveWindowIntoZoneByIndex(window, workAreaWindow, oldId - 1);
     }
     else
     {
-        MoveWindowIntoZoneByIndexSet(window, windowZone, { oldIndex + 1 });
+        MoveWindowIntoZoneByIndex(window, workAreaWindow, oldId + 1);
     }
     return true;
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
+ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND workAreaWindow, DWORD vkCode, bool cycle) noexcept
 {
     if (m_zones.empty())
     {
         return false;
     }
 
-    auto zoneObjects = GetZones();
-    std::vector<bool> usedZoneIndices(zoneObjects.size(), false);
-    for (size_t idx : GetZoneIndexSetFromWindow(window))
+    std::vector<bool> usedZoneIndices(m_zones.size(), false);
+    for (size_t id : GetZoneIndexSetFromWindow(window))
     {
-        usedZoneIndices[idx] = true;
+        usedZoneIndices[id] = true;
     }
 
     std::vector<RECT> zoneRects;
     std::vector<size_t> freeZoneIndices;
 
-    for (size_t i = 0; i < zoneObjects.size(); i++)
+    for (const auto& [zoneId, zone] : m_zones)
     {
-        if (!usedZoneIndices[i])
+        if (!usedZoneIndices[zoneId])
         {
-            zoneRects.emplace_back(zoneObjects[i]->GetZoneRect());
-            freeZoneIndices.emplace_back(i);
+            zoneRects.emplace_back(m_zones[zoneId]->GetZoneRect());
+            freeZoneIndices.emplace_back(zoneId);
         }
     }
 
     RECT windowRect, windowZoneRect;
-    if (GetWindowRect(window, &windowRect) && GetWindowRect(windowZone, &windowZoneRect))
+    if (GetWindowRect(window, &windowRect) && GetWindowRect(workAreaWindow, &windowZoneRect))
     {
         // Move to coordinates relative to windowZone
         windowRect.top -= windowZoneRect.top;
@@ -404,18 +434,21 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
         size_t result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
         if (result < zoneRects.size())
         {
-            MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+            MoveWindowIntoZoneByIndex(window, workAreaWindow, freeZoneIndices[result]);
             return true;
         }
         else if (cycle)
         {
             // Try again from the position off the screen in the opposite direction to vkCode
+            // Consider all zones as available
+            zoneRects.resize(m_zones.size());
+            std::transform(m_zones.begin(), m_zones.end(), zoneRects.begin(), [](auto zone) { return zone.second->GetZoneRect(); });
             windowRect = FancyZonesUtils::PrepareRectForCycling(windowRect, windowZoneRect, vkCode);
             result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
 
             if (result < zoneRects.size())
             {
-                MoveWindowIntoZoneByIndex(window, windowZone, freeZoneIndices[result]);
+                MoveWindowIntoZoneByIndex(window, workAreaWindow, result);
                 return true;
             }
         }
@@ -424,11 +457,97 @@ ZoneSet::MoveWindowIntoZoneByDirectionAndPosition(HWND window, HWND windowZone, 
     return false;
 }
 
-IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept
+IFACEMETHODIMP_(bool)
+ZoneSet::ExtendWindowByDirectionAndPosition(HWND window, HWND workAreaWindow, DWORD vkCode) noexcept
 {
-    auto zones = ZonesFromPoint(ptClient);
-    MoveWindowIntoZoneByIndexSet(window, zoneWindow, zones);
+    if (m_zones.empty())
+    {
+        return false;
+    }
+
+    RECT windowRect, windowZoneRect;
+    if (GetWindowRect(window, &windowRect) && GetWindowRect(workAreaWindow, &windowZoneRect))
+    {
+        auto oldZones = GetZoneIndexSetFromWindow(window);
+        std::vector<bool> usedZoneIndices(m_zones.size(), false);
+        std::vector<RECT> zoneRects;
+        std::vector<size_t> freeZoneIndices;
+
+        // If selectManyZones = true for the second time, use the last zone into which we moved
+        // instead of the window rect and enable moving to all zones except the old one
+        auto finalIndexIt = m_windowFinalIndex.find(window);
+        if (finalIndexIt != m_windowFinalIndex.end())
+        {
+            usedZoneIndices[finalIndexIt->second] = true;
+            windowRect = m_zones[finalIndexIt->second]->GetZoneRect();
+        }
+        else
+        {
+            for (size_t idx : oldZones)
+            {
+                usedZoneIndices[idx] = true;
+            }
+            // Move to coordinates relative to windowZone
+            windowRect.top -= windowZoneRect.top;
+            windowRect.bottom -= windowZoneRect.top;
+            windowRect.left -= windowZoneRect.left;
+            windowRect.right -= windowZoneRect.left;
+        }
+
+        for (size_t i = 0; i < m_zones.size(); i++)
+        {
+            if (!usedZoneIndices[i])
+            {
+                zoneRects.emplace_back(m_zones[i]->GetZoneRect());
+                freeZoneIndices.emplace_back(i);
+            }
+        }
+
+        size_t result = FancyZonesUtils::ChooseNextZoneByPosition(vkCode, windowRect, zoneRects);
+        if (result < zoneRects.size())
+        {
+            size_t targetZone = freeZoneIndices[result];
+            std::vector<size_t> resultIndexSet;
+
+            // First time with selectManyZones = true for this window?
+            if (finalIndexIt == m_windowFinalIndex.end())
+            {
+                // Already zoned?
+                if (oldZones.size())
+                {
+                    m_windowInitialIndexSet[window] = oldZones;
+                    m_windowFinalIndex[window] = targetZone;
+                    resultIndexSet = GetCombinedZoneRange(oldZones, { targetZone });
+                }
+                else
+                {
+                    m_windowInitialIndexSet[window] = { targetZone };
+                    m_windowFinalIndex[window] = targetZone;
+                    resultIndexSet = { targetZone };
+                }
+            }
+            else
+            {
+                auto deletethis = m_windowInitialIndexSet[window];
+                m_windowFinalIndex[window] = targetZone;
+                resultIndexSet = GetCombinedZoneRange(m_windowInitialIndexSet[window], { targetZone });
+            }
+
+            m_inExtendWindow = true;
+            MoveWindowIntoZoneByIndexSet(window, workAreaWindow, resultIndexSet);
+            m_inExtendWindow = false;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+IFACEMETHODIMP_(void)
+ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND workAreaWindow, POINT ptClient) noexcept
+{
+    const auto& zones = ZonesFromPoint(ptClient);
+    MoveWindowIntoZoneByIndexSet(window, workAreaWindow, zones);
 }
 
 IFACEMETHODIMP_(bool)
@@ -469,7 +588,7 @@ ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
     return success;
 }
 
-bool ZoneSet::IsZoneEmpty(int zoneIndex) noexcept
+bool ZoneSet::IsZoneEmpty(int zoneIndex) const noexcept
 {
     for (auto& [window, zones] : m_windowIndexSet)
     {
@@ -484,8 +603,6 @@ bool ZoneSet::IsZoneEmpty(int zoneIndex) noexcept
 
 bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 {
-    bool success = true;
-
     long left{ 100 };
     long top{ 100 };
     long right{ left + long(workArea.width() * 0.4) };
@@ -496,27 +613,30 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
     long focusRectXIncrement = (zoneCount <= 1) ? 0 : 50;
     long focusRectYIncrement = (zoneCount <= 1) ? 0 : 50;
 
-    if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
-    {
-        success = false;
-    }
-
     for (int i = 0; i < zoneCount; i++)
     {
-        AddZone(MakeZone(focusZoneRect));
+        auto zone = MakeZone(focusZoneRect, m_zones.size());
+        if (zone)
+        {
+            AddZone(zone);
+        }
+        else
+        {
+            // All zones within zone set should be valid in order to use its functionality.
+            m_zones.clear();
+            return false;
+        }
         focusZoneRect.left += focusRectXIncrement;
         focusZoneRect.right += focusRectXIncrement;
         focusZoneRect.bottom += focusRectYIncrement;
         focusZoneRect.top += focusRectYIncrement;
     }
 
-    return success;
+    return true;
 }
 
 bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
 {
-    bool success = true;
-
     long totalWidth;
     long totalHeight;
 
@@ -538,26 +658,31 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::
 
     // Note: The expressions below are NOT equal to total{Width|Height} / zoneCount and are done
     // like this to make the sum of all zones' sizes exactly total{Width|Height}.
-    for (int zone = 0; zone < zoneCount; zone++)
+    for (int zoneIndex = 0; zoneIndex < zoneCount; ++zoneIndex)
     {
         if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
-            right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
+            right = left + (zoneIndex + 1) * totalWidth / zoneCount - zoneIndex * totalWidth / zoneCount;
             bottom = totalHeight + spacing;
         }
         else
         { //Rows
             right = totalWidth + spacing;
-            bottom = top + (zone + 1) * totalHeight / zoneCount - zone * totalHeight / zoneCount;
-        }
-        
-        if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
-        {
-            success = false;
+            bottom = top + (zoneIndex + 1) * totalHeight / zoneCount - zoneIndex * totalHeight / zoneCount;
         }
 
-        RECT focusZoneRect{ left, top, right, bottom };
-        AddZone(MakeZone(focusZoneRect));
+
+        auto zone = MakeZone(RECT{ left, top, right, bottom }, m_zones.size());
+        if (zone)
+        {
+            AddZone(zone);
+        }
+        else
+        {
+            // All zones within zone set should be valid in order to use its functionality.
+            m_zones.clear();
+            return false;
+        }
 
         if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
@@ -569,7 +694,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::
         }
     }
 
-    return success;
+    return true;
 }
 
 bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
@@ -615,9 +740,9 @@ bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLay
     }
 
     int index = 0;
-    for (int col = columns - 1; col >= 0; col--)
+    for (int row = 0; row < rows; row++)
     {
-        for (int row = rows - 1; row >= 0; row--)
+        for (int col = 0; col < columns; col++)
         {
             gridLayoutInfo.cellChildMap()[row][col] = index++;
             if (index == zoneCount)
@@ -664,15 +789,20 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
                 int width = zone.width;
                 int height = zone.height;
 
-                if (x < 0 || y < 0 || width < 0 || height < 0)
-                {
-                    return false;
-                }
-
                 DPIAware::Convert(m_config.Monitor, x, y);
                 DPIAware::Convert(m_config.Monitor, width, height);
 
-                AddZone(MakeZone(RECT{ x, y, x + width, y + height }));
+                auto zone = MakeZone(RECT{ x, y, x + width, y + height }, m_zones.size());
+                if (zone)
+                {
+                    AddZone(zone);
+                }
+                else
+                {
+                    // All zones within zone set should be valid in order to use its functionality.
+                    m_zones.clear();
+                    return false;
+                }
             }
 
             return true;
@@ -689,8 +819,6 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 
 bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing)
 {
-    bool success = true;
-
     long totalWidth = workArea.width() - (spacing * (gridLayoutInfo.columns() + 1));
     long totalHeight = workArea.height() - (spacing * (gridLayoutInfo.rows() + 1));
     struct Info
@@ -747,22 +875,66 @@ bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutI
                 long right = columnInfo[maxCol].End;
                 long bottom = rowInfo[maxRow].End;
 
-                if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
+                auto zone = MakeZone(RECT{ left, top, right, bottom }, i);
+                if (zone)
                 {
-                    success = false;
+                    AddZone(zone);
                 }
-
-                AddZone(MakeZone(RECT{ left, top, right, bottom }));
+                else
+                {
+                    // All zones within zone set should be valid in order to use its functionality.
+                    m_zones.clear();
+                    return false;
+                }
             }
         }
     }
 
-    return success;
+    return true;
 }
 
-void ZoneSet::StampWindow(HWND window, size_t bitmask) noexcept
+std::vector<size_t> ZoneSet::GetCombinedZoneRange(const std::vector<size_t>& initialZones, const std::vector<size_t>& finalZones) const noexcept
 {
-    SetProp(window, ZonedWindowProperties::PropertyMultipleZoneID, reinterpret_cast<HANDLE>(bitmask));
+    std::vector<size_t> combinedZones, result;
+    std::set_union(begin(initialZones), end(initialZones), begin(finalZones), end(finalZones), std::back_inserter(combinedZones));
+
+    RECT boundingRect;
+    bool boundingRectEmpty = true;
+
+    for (size_t zoneId : combinedZones)
+    {
+        if (m_zones.contains(zoneId))
+        {
+            const RECT rect = m_zones.at(zoneId)->GetZoneRect();
+            if (boundingRectEmpty)
+            {
+                boundingRect = rect;
+                boundingRectEmpty = false;
+            }
+            else
+            {
+                boundingRect.left = min(boundingRect.left, rect.left);
+                boundingRect.top = min(boundingRect.top, rect.top);
+                boundingRect.right = max(boundingRect.right, rect.right);
+                boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
+            }
+        }
+    }
+
+    if (!boundingRectEmpty)
+    {
+        for (const auto& [zoneId, zone] : m_zones)
+        {
+            const RECT rect = zone->GetZoneRect();
+            if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
+                boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
+            {
+                result.push_back(zoneId);
+            }
+        }
+    }
+
+    return result;
 }
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept

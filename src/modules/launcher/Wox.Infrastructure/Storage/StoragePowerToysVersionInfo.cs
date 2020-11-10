@@ -3,14 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
 
 namespace Wox.Infrastructure.Storage
 {
     public class StoragePowerToysVersionInfo
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
+
         // This detail is accessed by the storage items and is used to decide if the cache must be deleted or not
-        public bool ClearCache { get; set; } = false;
+        public bool ClearCache { get; set; }
 
         private readonly string currentPowerToysVersion = string.Empty;
 
@@ -81,7 +84,7 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private string GetFilePath(string associatedFilePath, int type)
+        private static string GetFilePath(string associatedFilePath, int type)
         {
             string suffix = string.Empty;
             string cacheSuffix = ".cache";
@@ -102,11 +105,16 @@ namespace Wox.Infrastructure.Storage
 
         public StoragePowerToysVersionInfo(string associatedFilePath, int type)
         {
+            if (associatedFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(associatedFilePath));
+            }
+
             FilePath = GetFilePath(associatedFilePath, type);
 
             // Get the previous version of PowerToys and cache Storage details from the CacheDetails.json storage file
             string previousVersion = GetPreviousVersion();
-            currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetProductVersion();
+            currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetProductVersion();
 
             // If the previous version is below a set threshold, then we want to delete the file
             // However, we do not want to delete the cache if the same version of powerToys is being launched

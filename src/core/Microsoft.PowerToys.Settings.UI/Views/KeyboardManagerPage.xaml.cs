@@ -4,10 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
-using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using System.Globalization;
+using System.IO.Abstractions;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -23,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private const string PowerToyName = "Keyboard Manager";
 
         private readonly CoreDispatcher dispatcher;
-        private readonly FileSystemWatcher watcher;
+        private readonly IFileSystemWatcher watcher;
 
         public KeyboardManagerViewModel ViewModel { get; }
 
@@ -31,7 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             dispatcher = Window.Current.Dispatcher;
 
-            ViewModel = new KeyboardManagerViewModel(ShellPage.SendDefaultIPCMessage, FilterRemapKeysList);
+            var settingsUtils = new SettingsUtils();
+            ViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, FilterRemapKeysList);
 
             watcher = Helper.GetFileWatcher(
                 PowerToyName,
@@ -55,17 +57,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void CombineRemappings(List<KeysDataModel> remapKeysList, uint leftKey, uint rightKey, uint combinedKey)
+        private static void CombineRemappings(List<KeysDataModel> remapKeysList, uint leftKey, uint rightKey, uint combinedKey)
         {
-            KeysDataModel firstRemap = remapKeysList.Find(x => uint.Parse(x.OriginalKeys) == leftKey);
-            KeysDataModel secondRemap = remapKeysList.Find(x => uint.Parse(x.OriginalKeys) == rightKey);
+            // Using InvariantCulture for keys as they are internally represented as numerical values
+            KeysDataModel firstRemap = remapKeysList.Find(x => uint.Parse(x.OriginalKeys, CultureInfo.InvariantCulture) == leftKey);
+            KeysDataModel secondRemap = remapKeysList.Find(x => uint.Parse(x.OriginalKeys, CultureInfo.InvariantCulture) == rightKey);
             if (firstRemap != null && secondRemap != null)
             {
                 if (firstRemap.NewRemapKeys == secondRemap.NewRemapKeys)
                 {
                     KeysDataModel combinedRemap = new KeysDataModel
                     {
-                        OriginalKeys = combinedKey.ToString(),
+                        OriginalKeys = combinedKey.ToString(CultureInfo.InvariantCulture),
                         NewRemapKeys = firstRemap.NewRemapKeys,
                     };
                     remapKeysList.Insert(remapKeysList.IndexOf(firstRemap), combinedRemap);

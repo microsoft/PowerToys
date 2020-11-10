@@ -1,178 +1,313 @@
 #include "pch.h"
 #include "ZoneWindowDrawing.h"
 
+#include <algorithm>
+#include <map>
 #include <string>
+#include <vector>
 
 namespace NonLocalizable
 {
     const wchar_t SegoeUiFont[] = L"Segoe ui";
 }
 
-namespace
+float ZoneWindowDrawing::GetAnimationAlpha()
 {
-    void InitRGB(_Out_ RGBQUAD* quad, BYTE alpha, COLORREF color)
+    // Lock is being held
+    if (!m_animation)
     {
-        ZeroMemory(quad, sizeof(*quad));
-        quad->rgbReserved = alpha;
-        quad->rgbRed = GetRValue(color) * alpha / 255;
-        quad->rgbGreen = GetGValue(color) * alpha / 255;
-        quad->rgbBlue = GetBValue(color) * alpha / 255;
+        return 1.f;
     }
 
-    void FillRectARGB(wil::unique_hdc& hdc, RECT const* prcFill, BYTE alpha, COLORREF color, bool blendAlpha)
+    auto tNow = std::chrono::steady_clock().now();
+    auto alpha = (tNow - m_animation->tStart).count() / (1e6f * m_animation->duration);
+    if (alpha < 1.f)
     {
-        BITMAPINFO bi;
-        ZeroMemory(&bi, sizeof(bi));
-        bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        bi.bmiHeader.biWidth = 1;
-        bi.bmiHeader.biHeight = 1;
-        bi.bmiHeader.biPlanes = 1;
-        bi.bmiHeader.biBitCount = 32;
-        bi.bmiHeader.biCompression = BI_RGB;
-
-        RECT fillRect;
-        CopyRect(&fillRect, prcFill);
-
-        RGBQUAD bitmapBits;
-        InitRGB(&bitmapBits, alpha, color);
-        StretchDIBits(
-            hdc.get(),
-            fillRect.left,
-            fillRect.top,
-            fillRect.right - fillRect.left,
-            fillRect.bottom - fillRect.top,
-            0,
-            0,
-            1,
-            1,
-            &bitmapBits,
-            &bi,
-            DIB_RGB_COLORS,
-            SRCCOPY);
+        return alpha;
     }
-
-    BYTE OpacitySettingToAlpha(int opacity)
+    else
     {
-        return static_cast<BYTE>(opacity * 2.55);
-    }
-
-    void DrawIndex(wil::unique_hdc& hdc, FancyZonesUtils::Rect rect, size_t index)
-    {
-        Gdiplus::Graphics g(hdc.get());
-
-        Gdiplus::FontFamily fontFamily(NonLocalizable::SegoeUiFont);
-        Gdiplus::Font font(&fontFamily, 80, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
-        Gdiplus::SolidBrush solidBrush(Gdiplus::Color(255, 0, 0, 0));
-
-        std::wstring text = std::to_wstring(index);
-
-        g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
-        Gdiplus::StringFormat stringFormat = new Gdiplus::StringFormat();
-        stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
-        stringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-        Gdiplus::RectF gdiRect(static_cast<Gdiplus::REAL>(rect.left()),
-                               static_cast<Gdiplus::REAL>(rect.top()),
-                               static_cast<Gdiplus::REAL>(rect.width()),
-                               static_cast<Gdiplus::REAL>(rect.height()));
-
-        g.DrawString(text.c_str(), -1, &font, gdiRect, &stringFormat, &solidBrush);
-    }
-
-    void DrawZone(wil::unique_hdc& hdc, ZoneWindowDrawing::ColorSetting const& colorSetting, winrt::com_ptr<IZone> zone, const std::vector<winrt::com_ptr<IZone>>& zones, bool flashMode) noexcept
-    {
-        RECT zoneRect = zone->GetZoneRect();
-
-        Gdiplus::Graphics g(hdc.get());
-        Gdiplus::Color fillColor(colorSetting.fillAlpha, GetRValue(colorSetting.fill), GetGValue(colorSetting.fill), GetBValue(colorSetting.fill));
-        Gdiplus::Color borderColor(colorSetting.borderAlpha, GetRValue(colorSetting.border), GetGValue(colorSetting.border), GetBValue(colorSetting.border));
-
-        Gdiplus::Rect rectangle(zoneRect.left, zoneRect.top, zoneRect.right - zoneRect.left - 1, zoneRect.bottom - zoneRect.top - 1);
-
-        Gdiplus::Pen pen(borderColor, static_cast<Gdiplus::REAL>(colorSetting.thickness));
-        g.FillRectangle(new Gdiplus::SolidBrush(fillColor), rectangle);
-        g.DrawRectangle(&pen, rectangle);
-
-        if (!flashMode)
-        {
-            DrawIndex(hdc, zoneRect, zone->Id());
-        }
+        return 1.f;
     }
 }
 
-namespace ZoneWindowDrawing
+ID2D1Factory* ZoneWindowDrawing::GetD2DFactory()
 {
-    void DrawBackdrop(wil::unique_hdc& hdc, RECT const& clientRect) noexcept
+    static auto pD2DFactory = [] {
+        ID2D1Factory* res = nullptr;
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &res);
+        return res;
+    }();
+    return pD2DFactory;
+}
+
+IDWriteFactory* ZoneWindowDrawing::GetWriteFactory()
+{
+    static auto pDWriteFactory = [] {
+        IUnknown* res = nullptr;
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &res);
+        return reinterpret_cast<IDWriteFactory*>(res);
+    }();
+    return pDWriteFactory;
+}
+
+D2D1_COLOR_F ZoneWindowDrawing::ConvertColor(COLORREF color)
+{
+    return D2D1::ColorF(GetRValue(color) / 255.f,
+                        GetGValue(color) / 255.f,
+                        GetBValue(color) / 255.f,
+                        1.f);
+}
+
+D2D1_RECT_F ZoneWindowDrawing::ConvertRect(RECT rect)
+{
+    return D2D1::RectF((float)rect.left + 0.5f, (float)rect.top + 0.5f, (float)rect.right - 0.5f, (float)rect.bottom - 0.5f);
+}
+
+ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
+{
+    m_window = window;
+    m_renderTarget = nullptr;
+    m_shouldRender = false;
+
+    // Obtain the size of the drawing area.
+    if (!GetClientRect(window, &m_clientRect))
     {
-        FillRectARGB(hdc, &clientRect, 0, RGB(0, 0, 0), false);
+        return;
     }
 
-    void DrawActiveZoneSet(wil::unique_hdc& hdc,
-                           COLORREF zoneColor,
-                           COLORREF zoneBorderColor,
-                           COLORREF highlightColor,
-                           int zoneOpacity,
-                           const std::vector<winrt::com_ptr<IZone>>& zones,
-                           const std::vector<size_t>& highlightZones,
-                           bool flashMode,
-                           bool drawHints) noexcept
+    // Create a Direct2D render target
+    // We should always use the DPI value of 96 since we're running in DPI aware mode
+    GetD2DFactory()->CreateHwndRenderTarget(
+        D2D1::RenderTargetProperties(
+            D2D1_RENDER_TARGET_TYPE_DEFAULT,
+            D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+            96.f,
+            96.f),
+        D2D1::HwndRenderTargetProperties(
+            window,
+            D2D1::SizeU(
+                m_clientRect.right - m_clientRect.left,
+                m_clientRect.bottom - m_clientRect.top)),
+        &m_renderTarget);
+
+    m_renderThread = std::thread([this]() {
+        while (!m_abortThread)
+        {
+            // Force repeated rendering while in the animation loop.
+            // Yield if low latency locking was requested
+            if (!m_lowLatencyLock)
+            {
+                float animationAlpha;
+                {
+                    std::unique_lock lock(m_mutex);
+                    animationAlpha = GetAnimationAlpha();
+                }
+
+                if (animationAlpha < 1.f)
+                {
+                    m_shouldRender = true;
+                }
+            }
+
+            Render();
+        }
+    });
+}
+
+void ZoneWindowDrawing::Render()
+{
+    std::unique_lock lock(m_mutex);
+
+    if (!m_renderTarget)
     {
-        //                                 { fillAlpha, fill, borderAlpha, border, thickness }
-        ColorSetting const colorHints{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 255, RGB(104, 118, 138), -2 };
-        ColorSetting colorViewer{ OpacitySettingToAlpha(zoneOpacity), 0, 255, RGB(40, 50, 60), -2 };
-        ColorSetting colorHighlight{ OpacitySettingToAlpha(zoneOpacity), 0, 255, 0, -2 };
-        ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
+        return;
+    }
 
-        std::vector<bool> isHighlighted(zones.size(), false);
-        for (size_t x : highlightZones)
+    m_cv.wait(lock, [this]() { return (bool)m_shouldRender; });
+
+    m_renderTarget->BeginDraw();
+    
+    float animationAlpha = GetAnimationAlpha();
+
+    // Draw backdrop
+    m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
+
+    ID2D1SolidColorBrush* textBrush = nullptr;
+    IDWriteTextFormat* textFormat = nullptr;
+
+    m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black, animationAlpha), &textBrush);
+    auto writeFactory = GetWriteFactory();
+
+    if (writeFactory)
+    {
+        writeFactory->CreateTextFormat(NonLocalizable::SegoeUiFont, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 80.f, L"en-US", &textFormat);
+    }
+
+    for (auto drawableRect : m_sceneRects)
+    {
+        ID2D1SolidColorBrush* borderBrush = nullptr;
+        ID2D1SolidColorBrush* fillBrush = nullptr;
+
+        // Need to copy the rect from m_sceneRects
+        drawableRect.borderColor.a *= animationAlpha;
+        drawableRect.fillColor.a *= animationAlpha;
+
+        m_renderTarget->CreateSolidColorBrush(drawableRect.borderColor, &borderBrush);
+        m_renderTarget->CreateSolidColorBrush(drawableRect.fillColor, &fillBrush);
+
+        if (fillBrush)
         {
-            isHighlighted[x] = true;
+            m_renderTarget->FillRectangle(drawableRect.rect, fillBrush);
+            fillBrush->Release();
         }
 
-        // First draw the inactive zones
-        for (auto iter = zones.begin(); iter != zones.end(); iter++)
+        if (borderBrush)
         {
-            int zoneId = static_cast<int>(iter - zones.begin());
-            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
-            if (!zone)
-            {
-                continue;
-            }
-
-            if (!isHighlighted[zoneId])
-            {
-                if (flashMode)
-                {
-                    DrawZone(hdc, colorFlash, zone, zones, flashMode);
-                }
-                else if (drawHints)
-                {
-                    DrawZone(hdc, colorHints, zone, zones, flashMode);
-                }
-                {
-                    colorViewer.fill = zoneColor;
-                    colorViewer.border = zoneBorderColor;
-                    DrawZone(hdc, colorViewer, zone, zones, flashMode);
-                }
-            }
+            m_renderTarget->DrawRectangle(drawableRect.rect, borderBrush);
+            borderBrush->Release();
         }
 
-        // Draw the active zones on top of the inactive zones
-        for (auto iter = zones.begin(); iter != zones.end(); iter++)
-        {
-            int zoneId = static_cast<int>(iter - zones.begin());
-            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
-            if (!zone)
-            {
-                continue;
-            }
+        std::wstring idStr = std::to_wstring(drawableRect.id + 1);
 
-            if (isHighlighted[zoneId])
-            {
-                colorHighlight.fill = highlightColor;
-                colorHighlight.border = zoneBorderColor;
-                DrawZone(hdc, colorHighlight, zone, zones, flashMode);
-            }
+        if (textFormat && textBrush)
+        {
+            textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+            textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+            m_renderTarget->DrawTextW(idStr.c_str(), (UINT32)idStr.size(), textFormat, drawableRect.rect, textBrush);
         }
     }
+
+    if (textFormat)
+    {
+        textFormat->Release();
+    }
+
+    if (textBrush)
+    {
+        textBrush->Release();
+    }
+
+    m_renderTarget->EndDraw();
+    m_shouldRender = false;
+}
+
+void ZoneWindowDrawing::Hide()
+{
+    m_lowLatencyLock = true;
+    std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
+
+    if (m_animation)
+    {
+        m_animation.reset();
+        ShowWindow(m_window, SW_HIDE);
+    }
+}
+
+void ZoneWindowDrawing::Show(unsigned animationMillis)
+{
+    m_lowLatencyLock = true;
+    std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
+
+    if (!m_animation)
+    {
+        ShowWindow(m_window, SW_SHOWDEFAULT);
+        if (animationMillis > 0)
+        {
+            m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis });
+        }
+        m_shouldRender = true;
+        m_cv.notify_all();
+    }
+}
+
+void ZoneWindowDrawing::DrawActiveZoneSet(const IZoneSet::ZonesMap& zones,
+                       const std::vector<size_t>& highlightZones,
+                       winrt::com_ptr<IZoneWindowHost> host)
+{
+    m_lowLatencyLock = true;
+    std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
+
+    m_sceneRects = {};
+
+    auto borderColor = ConvertColor(host->GetZoneBorderColor());
+    auto inactiveColor = ConvertColor(host->GetZoneColor());
+    auto highlightColor = ConvertColor(host->GetZoneHighlightColor());
+
+    inactiveColor.a = host->GetZoneHighlightOpacity() / 100.f;
+    highlightColor.a = host->GetZoneHighlightOpacity() / 100.f;
+
+    std::vector<bool> isHighlighted(zones.size() + 1, false);
+    for (size_t x : highlightZones)
+    {
+        isHighlighted[x] = true;
+    }
+
+    // First draw the inactive zones
+    for (const auto& [zoneId, zone] : zones)
+    {
+        if (!zone)
+        {
+            continue;
+        }
+
+        if (!isHighlighted[zoneId])
+        {
+            DrawableRect drawableRect{
+                .rect = ConvertRect(zone->GetZoneRect()),
+                .borderColor = borderColor,
+                .fillColor = inactiveColor,
+                .id = zone->Id()
+            };
+
+            m_sceneRects.push_back(drawableRect);
+        }
+    }
+
+    // Draw the active zones on top of the inactive zones
+    for (const auto& [zoneId, zone] : zones)
+    {
+        if (!zone)
+        {
+            continue;
+        }
+
+        if (isHighlighted[zoneId])
+        {
+            DrawableRect drawableRect{
+                .rect = ConvertRect(zone->GetZoneRect()),
+                .borderColor = borderColor,
+                .fillColor = highlightColor,
+                .id = zone->Id()
+            };
+
+            m_sceneRects.push_back(drawableRect);
+        }
+    }
+
+    m_shouldRender = true;
+    m_cv.notify_all();
+}
+
+void ZoneWindowDrawing::ForceRender()
+{
+    m_lowLatencyLock = true;
+    std::unique_lock lock(m_mutex);
+    m_lowLatencyLock = false;
+    m_shouldRender = true;
+    m_cv.notify_all();
+}
+
+ZoneWindowDrawing::~ZoneWindowDrawing()
+{
+    {
+        std::unique_lock lock(m_mutex);
+        m_abortThread = true;
+        m_shouldRender = true;
+    }
+    m_cv.notify_all();
+    m_renderThread.join();
 }

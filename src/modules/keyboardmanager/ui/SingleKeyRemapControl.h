@@ -10,6 +10,7 @@ namespace winrt::Windows::UI::Xaml
     {
         struct StackPanel;
         struct Grid;
+        struct Button;
     }
 }
 
@@ -25,6 +26,9 @@ private:
     // Stack panel for the drop downs to display the selected shortcut for the hybrid case
     winrt::Windows::Foundation::IInspectable hybridDropDownStackPanel;
 
+    // Function to set the accessible names for all the controls in a row
+    static void UpdateAccessibleNames(StackPanel sourceColumn, StackPanel mappedToColumn, Button deleteButton, int rowIndex);
+
 public:
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
@@ -36,10 +40,10 @@ public:
     static RemapBuffer singleKeyRemapBuffer;
 
     // constructor
-    SingleKeyRemapControl(Grid table, const int colIndex);
+    SingleKeyRemapControl(StackPanel table, StackPanel row, const int colIndex);
 
     // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-    static void AddNewControlKeyRemapRow(winrt::Windows::UI::Xaml::Controls::Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey = NULL, const std::variant<DWORD, Shortcut> newKey = NULL);
+    static void AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey = NULL, const KeyShortcutUnion newKey = NULL);
 
     // Function to return the stack panel element of the SingleKeyRemapControl. This is the externally visible UI element which can be used to add it to other layouts
     winrt::Windows::UI::Xaml::Controls::StackPanel getSingleKeyRemapControl();

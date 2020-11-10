@@ -23,11 +23,12 @@ namespace ImageResizer.Views
         [InlineData("MinutesSeconds", 0, 2, 2)]
         [InlineData("Second", 0, 0, 1)]
         [InlineData("Seconds", 0, 0, 2)]
-        public void Convert_works(string resource, int hours, int minutes, int seconds)
+        public void ConvertWorks(string resource, int hours, int minutes, int seconds)
         {
             var timeRemaining = new TimeSpan(hours, minutes, seconds);
             var converter = new TimeRemainingConverter();
 
+            // Using InvariantCulture since these are internal
             var result = converter.Convert(
                 timeRemaining,
                 targetType: null,
@@ -36,7 +37,8 @@ namespace ImageResizer.Views
 
             Assert.Equal(
                 string.Format(
-                    Resources.ResourceManager.GetString("Progress_TimeRemaining_" + resource),
+                    CultureInfo.InvariantCulture,
+                    Resources.ResourceManager.GetString("Progress_TimeRemaining_" + resource, CultureInfo.InvariantCulture),
                     hours,
                     minutes,
                     seconds),

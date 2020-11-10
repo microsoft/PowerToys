@@ -110,6 +110,7 @@
     <Compile Include="cominterop\IViewObject.cs" />
     <Compile Include="cominterop\LOGFONT.cs" />
     <Compile Include="cominterop\MSG.cs" />
+    <Compile Include="cominterop\NativeMethods.cs" />
     <Compile Include="cominterop\RECT.cs" />
     <Compile Include="controls\WebBrowserDownloadControlFlags.cs" />
     <Compile Include="controls\WebBrowserExt.cs">
@@ -129,8 +130,7 @@
     <Compile Include="handlers\PreviewHandlerBase.cs" />
     <Compile Include="handlers\StreamBasedPreviewHandler.cs" />
     <Compile Include="examplehandler\TestCustomHandler.cs" />
-    <Compile Include="Utilities\StreamWrapper.cs" />
-    <Compile Include="Utilities\SvgPreviewHandlerHelper.cs" />
+    <Compile Include="Utilities\ReadonlyStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
@@ -138,10 +138,18 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>3.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.IO.Abstractions">
+      <Version>12.2.5</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

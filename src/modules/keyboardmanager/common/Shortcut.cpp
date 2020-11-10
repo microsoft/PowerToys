@@ -18,7 +18,7 @@ Shortcut::Shortcut(const std::wstring& shortcutVK) :
 }
 
 // Constructor to initialize shortcut from a list of keys
-Shortcut::Shortcut(const std::vector<DWORD>& keys)
+Shortcut::Shortcut(const std::vector<int32_t>& keys)
 {
     SetKeyCodes(keys);
 }
@@ -505,12 +505,15 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
 }
 
 // Function to set a shortcut from a vector of key codes
-void Shortcut::SetKeyCodes(const std::vector<DWORD>& keys)
+void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
 {
     Reset();
     for (int i = 0; i < keys.size(); i++)
     {
-        SetKey(keys[i]);
+        if (keys[i] != -1 && keys[i] != 0)
+        {
+            SetKey(keys[i]);
+        }
     }
 }
 
@@ -613,14 +616,66 @@ bool Shortcut::CheckModifiersKeyboardState(InputInterface& ii) const
     return true;
 }
 
+// Helper method for checking if a key is in a range for cleaner code
+bool in_range(DWORD key, DWORD a, DWORD b)
+{
+    return (key >= a && key <= b);
+}
+
+// Helper method for checking if a key is equal to a value for cleaner code
+bool equals(DWORD key, DWORD a)
+{
+    return (key == a);
+}
+
+// Function to check if the key code is to be ignored
+bool IgnoreKeyCode(DWORD key)
+{
+    // Ignore mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
+    switch (key)
+    {
+    case VK_LBUTTON:
+    case VK_RBUTTON:
+    case VK_MBUTTON:
+    case VK_XBUTTON1:
+    case VK_XBUTTON2:
+        return true;
+    }
+
+    // As per docs: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+    // Undefined keys
+    bool isUndefined = equals(key, 0x07) || in_range(key, 0x0E, 0x0F) || in_range(key, 0x3A, 0x40);
+
+    // Reserved keys
+    bool isReserved = in_range(key, 0x0A, 0x0B) || equals(key, 0x5E) || in_range(key, 0xB8, 0xB9) || in_range(key, 0xC1, 0xD7) || equals(key, 0xE0) || equals(key, VK_NONAME);
+
+    // Unassigned keys
+    bool isUnassigned = in_range(key, 0x88, 0x8F) || in_range(key, 0x97, 0x9F) || in_range(key, 0xD8, 0xDA) || equals(key, 0xE8);
+
+    // OEM Specific keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/5225
+    bool isOEMSpecific = in_range(key, 0x92, 0x96) || equals(key, 0xE1) || in_range(key, 0xE3, 0xE4) || equals(key, 0xE6) || in_range(key, 0xE9, 0xF5);
+
+    // IME keys. Ignore these key codes as some of them are used by IME keyboards. More information at https://github.com/microsoft/PowerToys/issues/6951
+    bool isIME = in_range(key, VK_KANA, 0x1A) || in_range(key, VK_CONVERT, VK_MODECHANGE) || equals(key, VK_PROCESSKEY);
+
+    if (isUndefined || isReserved || isUnassigned || isOEMSpecific || isIME)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 // Function to check if any keys are pressed down except those in the shortcut
 bool Shortcut::IsKeyboardStateClearExceptShortcut(InputInterface& ii) const
 {
     // Iterate through all the virtual key codes - 0xFF is set to key down because of the Num Lock
     for (int keyVal = 1; keyVal < 0xFF; keyVal++)
     {
-        // Skip mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
-        if (keyVal == VK_LBUTTON || keyVal == VK_RBUTTON || keyVal == VK_MBUTTON || keyVal == VK_XBUTTON1 || keyVal == VK_XBUTTON2)
+        // Ignore problematic key codes
+        if (IgnoreKeyCode(keyVal))
         {
             continue;
         }

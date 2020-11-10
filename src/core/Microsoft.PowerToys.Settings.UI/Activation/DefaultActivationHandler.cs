@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Activation
             }
 
             NavigationService.Navigate(navElement, arguments);
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         protected override bool CanHandleInternal(IActivatedEventArgs args)

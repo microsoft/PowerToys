@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using ManagedCommon;
 using Microsoft.Plugin.WindowWalker.Components;
 using Wox.Plugin;
 
@@ -19,19 +21,25 @@ namespace Microsoft.Plugin.WindowWalker
 
         static Main()
         {
-            SearchController.Instance.OnSearchResultUpdate += SearchResultUpdated;
+            SearchController.Instance.OnSearchResultUpdateEventHandler += SearchResultUpdated;
             OpenWindows.Instance.UpdateOpenWindowsList();
         }
 
         public List<Result> Query(Query query)
         {
-            SearchController.Instance.UpdateSearchText(query.RawQuery).Wait();
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             OpenWindows.Instance.UpdateOpenWindowsList();
+            SearchController.Instance.UpdateSearchText(query.Search).Wait();
+
             return _results.Select(x => new Result()
             {
                 Title = x.Result.Title,
                 IcoPath = IconPath,
-                SubTitle = "Running: " + x.Result.ProcessName,
+                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.ProcessName,
                 Action = c =>
                 {
                     x.Result.SwitchToWindow();

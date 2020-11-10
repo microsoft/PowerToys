@@ -15,21 +15,21 @@ using PowerLauncher.Helper;
 using PowerLauncher.ViewModel;
 using Wox.Infrastructure.UserSettings;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using Log = Wox.Infrastructure.Logger.Log;
+using Log = Wox.Plugin.Logger.Log;
 using Screen = System.Windows.Forms.Screen;
 
 namespace PowerLauncher
 {
     public partial class MainWindow : IDisposable
     {
-        private readonly Settings _settings;
+        private readonly PowerToysRunSettings _settings;
         private readonly MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
         private bool _deletePressed;
         private Timer _firstDeleteTimer = new Timer();
         private bool _coldStateHotkeyPressed;
 
-        public MainWindow(Settings settings, MainViewModel mainVM)
+        public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM)
             : this()
         {
             DataContext = mainVM;
@@ -110,7 +110,7 @@ namespace PowerLauncher
                 if (result is ResultViewModel resultVM)
                 {
                     _viewModel.Results.SelectedItem = resultVM;
-                    _viewModel.OpenResultCommand.Execute(null);
+                    _viewModel.OpenResultWithMouseCommand.Execute(null);
                 }
             }
         }
@@ -119,10 +119,10 @@ namespace PowerLauncher
         {
             if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
             {
-                if (Visibility == System.Windows.Visibility.Visible)
+                if (Visibility == System.Windows.Visibility.Visible && _viewModel.MainWindowVisibility != Visibility.Hidden)
                 {
                     // Not called on first launch
-                    // Additionally called when deactivated by clicking on screen
+                    // Called when window is made visible by hotkey. Not called when the window is deactivated by clicking away
                     UpdatePosition();
                     BringProcessToForeground();
 
@@ -313,7 +313,7 @@ namespace PowerLauncher
                     // Hence, there can be a situation where the element index that we want to scroll into view is out of range for it's parent control.
                     // To mitigate this we use the UpdateLayout function, which forces layout update to ensure that the parent element contains the latest properties.
                     // However, it has a performance impact and is therefore not called each time.
-                    Log.Exception("MainWindow", "The parent element layout is not updated yet", ex, "SuggestionsList_SelectionChanged");
+                    Log.Exception("The parent element layout is not updated yet", ex, GetType());
                     listview.UpdateLayout();
                     listview.ScrollIntoView(e.AddedItems[0]);
                 }
@@ -336,8 +336,9 @@ namespace PowerLauncher
         {
             var textBox = (TextBox)sender;
             var text = textBox.Text;
+            var autoCompleteText = SearchBox.AutoCompleteTextBlock.Text;
 
-            if (string.IsNullOrEmpty(text))
+            if (MainViewModel.ShouldAutoCompleteTextBeEmpty(text, autoCompleteText))
             {
                 SearchBox.AutoCompleteTextBlock.Text = string.Empty;
             }

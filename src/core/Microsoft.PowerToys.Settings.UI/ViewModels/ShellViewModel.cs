@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // More info on tracking issue https://github.com/Microsoft/microsoft-ui-xaml/issues/8
             keyboardAccelerators.Add(altLeftKeyboardAccelerator);
             keyboardAccelerators.Add(backKeyboardAccelerator);
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         private void OnItemInvoked(WinUI.NavigationViewItemInvokedEventArgs args)
@@ -114,7 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             .FirstOrDefault(menuItem => IsMenuItemForPageType(menuItem, e.SourcePageType));
         }
 
-        private bool IsMenuItemForPageType(WinUI.NavigationViewItem menuItem, Type sourcePageType)
+        private static bool IsMenuItemForPageType(WinUI.NavigationViewItem menuItem, Type sourcePageType)
         {
             var pageType = menuItem.GetValue(NavHelper.NavigateToProperty) as Type;
             return pageType == sourcePageType;

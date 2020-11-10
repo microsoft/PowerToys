@@ -41,6 +41,15 @@ restore:
 
 build:
   commands:
+      # Localize the files before the Build PowerToys step to generate translated resx files from the lcl files
+    - !!buildcommand
+      name: 'Localize Power Toys'
+      command: '.pipelines\build-localization.cmd'
+      artifacts:
+        - from: 'out\loc'
+          to: 'loc'
+          include:
+            - '**/*'
     - !!buildcommand
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
@@ -56,25 +65,7 @@ build:
             - 'action_runner.exe'
             - 'modules\ColorPicker\ColorPicker.dll'
             - 'modules\ColorPicker\ColorPicker.exe'
-            - 'modules\ImageResizer\ar\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\bg\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\ca\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\cs\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\de\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\es\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\eu-ES\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\fr\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\he\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\hu\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\it\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\nb-NO\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\nl\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\pl\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\pt-BR\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\ru\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\sk\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\tr\ImageResizer.resources.dll'
-            - 'modules\ImageResizer\zh-Hans\ImageResizer.resources.dll'
+            - '**\*.resources.dll'
             - 'modules\FancyZones\fancyzones.dll'
             - 'modules\FancyZones\FancyZonesEditor.exe'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
@@ -109,7 +100,6 @@ build:
             - 'modules\launcher\PowerLauncher.UI.exe'
             - 'modules\launcher\PowerToysInterop.dll'
             - 'modules\launcher\Telemetry.dll'
-            - 'modules\launcher\Wox.Core.dll'
             - 'modules\launcher\Wox.dll'
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'
@@ -143,21 +133,15 @@ build:
       name: 'Build Power Toys Bootstrapper'
       command: '.pipelines\build-bootstrapper.cmd'
       artifacts:
+        - to: 'Symbols'
+          include:
+            - 'installer\PowerToysBootstrapper\x64\Release\PowerToysSetup-*.pdb'
         - from: 'installer\PowerToysBootstrapper\x64\Release'
           to: 'Build_Installer_Output'
           include:
             - 'PowerToysSetup-*.exe'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-    # Localize the files after the build procedure to avoid existing localized files from getting overwritten. To be moved before the Build PowerToys step once the lcl files have been checked in. Tracked at https://github.com/microsoft/PowerToys/issues/6046
-    - !!buildcommand
-      name: 'Localize Power Toys'
-      command: '.pipelines\build-localization.cmd'
-      artifacts:
-        - from: 'out\loc'
-          to: 'loc'
-          include:
-            - '**/*'
 
 
 #package:
@@ -189,4 +173,8 @@ static_analysis_options:
           - '**/webpack.config.js'
           - '**/webpack.serve.config.js'
           - '**/dist/bundle.js' 
+  policheck_options:
+    files_to_scan:
+      - exclude:                         
+        - '**/*.lcl'
         

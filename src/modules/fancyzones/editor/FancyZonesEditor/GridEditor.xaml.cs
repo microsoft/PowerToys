@@ -400,7 +400,7 @@ namespace FancyZonesEditor
             GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta);
             if (resizeInfo.IsResizeAllowed)
             {
-                if (_dragHandles.HasSnappedNonAdjascentResizers(resizer))
+                if (_dragHandles.HasSnappedNonAdjacentResizers(resizer))
                 {
                     double spacing = 0;
                     Settings settings = ((App)Application.Current).ZoneSettings;

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\Version.props" />
@@ -123,9 +123,6 @@
     <ClInclude Include="appMutex.h" />
     <ClInclude Include="async_message_queue.h" />
     <ClInclude Include="comUtils.h" />
-    <ClInclude Include="d2d_svg.h" />
-    <ClInclude Include="d2d_text.h" />
-    <ClInclude Include="d2d_window.h" />
     <ClInclude Include="debug_control.h" />
     <ClInclude Include="dpi_aware.h" />
     <ClInclude Include="com_object_factory.h" />
@@ -140,6 +137,7 @@
     <ClInclude Include="shared_constants.h" />
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="timeutil.h" />
+    <ClInclude Include="toast_dont_show_again.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
     <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="window_helpers.h" />
@@ -164,9 +162,6 @@
   <ItemGroup>
     <ClCompile Include="animation.cpp" />
     <ClCompile Include="comUtils.cpp" />
-    <ClCompile Include="d2d_svg.cpp" />
-    <ClCompile Include="d2d_text.cpp" />
-    <ClCompile Include="d2d_window.cpp" />
     <ClCompile Include="dpi_aware.cpp" />
     <ClCompile Include="json.cpp" />
     <ClCompile Include="keyboard_layout.cpp" />
@@ -185,6 +180,7 @@
     <ClCompile Include="start_visible.cpp" />
     <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="common.cpp" />
+    <ClCompile Include="toast_dont_show_again.cpp" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="VersionHelper.cpp" />
@@ -197,15 +193,15 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
 </Project>

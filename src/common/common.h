@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+
 // Gets position of given window.
 std::optional<RECT> get_window_pos(HWND hwnd);
 
@@ -16,7 +17,7 @@ bool is_system_window(HWND hwnd, const char* class_name);
 int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_seconds = {});
 
 std::optional<std::wstring> get_last_error_message(const DWORD dw);
-void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
+void show_last_error_message(LPCWSTR lpszFunction, DWORD dw, LPCWSTR errorTitle);
 
 enum WindowState
 {

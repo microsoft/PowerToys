@@ -119,9 +119,11 @@
   </resheader>
   <data name="PowerRename" xml:space="preserve">
     <value>Po&amp;werRename</value>
+    <comment>do not loc, product name</comment>
   </data>
   <data name="PowerRename_App_Name" xml:space="preserve">
     <value>PowerRename</value>
+    <comment>do not loc, product name</comment>
   </data>
   <data name="Settings_Description" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
@@ -137,8 +139,13 @@
   </data>
   <data name="Icon_Context_Menu" xml:space="preserve">
     <value>Show icon on context menu.</value>
+    <comment>The icon for PowerRename to be inside with Windows File Explorer right click context menu</comment>
   </data>
   <data name="Extended_Menu_Info" xml:space="preserve">
     <value>Only show the PowerRename menu item on the extended context menu (Shift + Right-click).</value>
+  </data>
+  <data name="Use_Boost_Lib" xml:space="preserve">
+    <value>Use Boost library (provides extended features but may use different regex syntax).</value>
+    <comment>Boost is a product name, should not be translated</comment>
   </data>
 </root>

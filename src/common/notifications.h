@@ -9,6 +9,7 @@
 namespace notifications
 {
     constexpr inline const wchar_t TOAST_ACTIVATED_LAUNCH_ARG[] = L"-ToastActivated";
+    constexpr inline const wchar_t UPDATING_PROCESS_TOAST_TAG[] = L"PTUpdateNotifyTag";
 
     void override_application_id(const std::wstring_view appID);
     void register_background_toast_handler();
@@ -27,6 +28,7 @@ namespace notifications
     {
         std::wstring snooze_title;
         std::vector<snooze_duration> durations;
+        std::wstring snooze_button_title;
     };
 
     struct link_button
@@ -44,7 +46,7 @@ namespace notifications
 
     struct progress_bar_params
     {
-        std::wstring_view progress_title;
+        std::wstring progress_title;
         float progress = 0.f;
     };
 
@@ -59,5 +61,7 @@ namespace notifications
 
     void show_toast(std::wstring plaintext_message, std::wstring title, toast_params params = {});
     void show_toast_with_activations(std::wstring plaintext_message, std::wstring title, std::wstring_view background_handler_id, std::vector<action_t> actions, toast_params params = {});
-    void update_progress_bar_toast(std::wstring_view tag, progress_bar_params params);
+    void update_toast_progress_bar(std::wstring_view tag, progress_bar_params params);
+    void update_toast_contents(std::wstring_view tag, std::wstring plaintext_message, std::wstring title);
+    void remove_toasts(std::wstring_view tag);
 }

@@ -5,18 +5,19 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Folder
 {
     internal class ContextMenuLoader : IContextMenu
     {
+        private readonly IFileSystem _fileSystem = new FileSystem();
         private readonly PluginInitContext _context;
 
         public ContextMenuLoader(PluginInitContext context)
@@ -54,7 +55,7 @@ namespace Microsoft.Plugin.Folder
                         catch (Exception e)
                         {
                             var message = Properties.Resources.Microsoft_plugin_folder_clipboard_failed;
-                            LogException(message, e);
+                            Log.Exception(message, e, GetType());
                             _context.API.ShowMsg(message);
                             return false;
                         }
@@ -76,7 +77,7 @@ namespace Microsoft.Plugin.Folder
                         {
                             if (record.Type == ResultType.File)
                             {
-                                Helper.OpenInConsole(Path.GetDirectoryName(record.FullPath));
+                                Helper.OpenInConsole(_fileSystem.Path.GetDirectoryName(record.FullPath));
                             }
                             else
                             {
@@ -87,7 +88,8 @@ namespace Microsoft.Plugin.Folder
                         }
                         catch (Exception e)
                         {
-                            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenuLoader.LoadContextMenus| Failed to open {record.FullPath} in console, {e.Message}", e);
+                            Log.Exception($"Failed to open {record.FullPath} in console, {e.Message}", e, GetType());
+
                             return false;
                         }
                     },
@@ -116,20 +118,16 @@ namespace Microsoft.Plugin.Folder
                     }
                     catch (Exception e)
                     {
-                        var message = $"Fail to open file at {record.FullPath}";
-                        LogException(message, e);
+                        var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.FullPath}";
+                        Log.Exception(message, e, GetType());
                         _context.API.ShowMsg(message);
+
                         return false;
                     }
 
                     return true;
                 },
             };
-        }
-
-        public static void LogException(string message, Exception e)
-        {
-            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenu|{message}", e);
         }
     }
 

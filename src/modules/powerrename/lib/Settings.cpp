@@ -7,6 +7,7 @@
 #include <commctrl.h>
 #include <algorithm>
 #include <fstream>
+#include <dll\PowerRenameConstants.h>
 
 namespace
 {
@@ -30,6 +31,7 @@ namespace
     const wchar_t c_mruEnabled[] = L"MRUEnabled";
     const wchar_t c_mruList[] = L"MRUList";
     const wchar_t c_insertionIdx[] = L"InsertionIdx";
+    const wchar_t c_useBoostLib[] = L"UseBoostLib";
 
     unsigned int GetRegNumber(const std::wstring& valueName, unsigned int defaultValue)
     {
@@ -92,7 +94,7 @@ public:
         pushIdx(0),
         nextIdx(1),
         size(size),
-        jsonFilePath(PTSettingsHelper::get_module_save_folder_location(L"PowerRename") + filePath),
+        jsonFilePath(PTSettingsHelper::get_module_save_folder_location(PowerRenameConstants::ModuleKey) + filePath),
         registryFilePath(regPath)
     {
         items.resize(size);
@@ -395,7 +397,7 @@ IFACEMETHODIMP CRenameMRU::AddMRUString(_In_ PCWSTR entry)
 
 CSettings::CSettings()
 {
-    std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"PowerRename");
+    std::wstring result = PTSettingsHelper::get_module_save_folder_location(PowerRenameConstants::ModuleKey);
     jsonFilePath = result + std::wstring(c_powerRenameDataFilePath);
     UIFlagsFilePath = result + std::wstring(c_powerRenameUIFlagsFilePath);
     Load();
@@ -413,6 +415,7 @@ void CSettings::Save()
     jsonData.SetNamedValue(c_maxMRUSize,              json::value(settings.maxMRUSize));
     jsonData.SetNamedValue(c_searchText,              json::value(settings.searchText));
     jsonData.SetNamedValue(c_replaceText,             json::value(settings.replaceText));
+    jsonData.SetNamedValue(c_useBoostLib,             json::value(settings.useBoostLib));
 
     json::to_file(jsonFilePath, jsonData);
     GetSystemTimeAsFileTime(&lastLoadedTime);
@@ -456,6 +459,7 @@ void CSettings::MigrateFromRegistry()
     settings.flags                   = GetRegNumber(c_flags, 0);
     settings.searchText              = GetRegString(c_searchText, L"");
     settings.replaceText             = GetRegString(c_replaceText, L"");
+    settings.useBoostLib             = false; // Never existed in registry, disabled by default.
 }
 
 void CSettings::ParseJson()
@@ -497,6 +501,10 @@ void CSettings::ParseJson()
             if (json::has(jsonSettings, c_replaceText, json::JsonValueType::String))
             {
                 settings.replaceText = jsonSettings.GetNamedString(c_replaceText);
+            }
+            if (json::has(jsonSettings, c_useBoostLib, json::JsonValueType::Boolean))
+            {
+                settings.useBoostLib = jsonSettings.GetNamedBoolean(c_useBoostLib);
             }
         }
         catch (const winrt::hresult_error&) { }

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows.Controls;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Wox.Plugin
 {

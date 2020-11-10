@@ -62,7 +62,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -73,7 +73,7 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -81,7 +81,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -107,15 +106,21 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behaviors\GridEffectBehavior.cs" />
+    <Compile Include="Constants\WindowConstant.cs" />
+    <Compile Include="Helpers\ColorHelper.cs" />
+    <Compile Include="Helpers\ColorRepresentationHelper.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="Settings\IUserSettings.cs" />
     <Compile Include="Settings\SettingItem`1.cs" />
     <Compile Include="Settings\UserSettings.cs" />
+    <Compile Include="Shaders\Global.cs" />
+    <Compile Include="Shaders\GridShaderEffect.cs" />
     <Compile Include="Telemetry\ColorPickerCancelledEvent.cs" />
     <Compile Include="Telemetry\ColorPickerShowEvent.cs" />
     <Compile Include="Telemetry\ColorPickerZoomOpenedEvent.cs" />
-    <Compile Include="Win32Apis.cs" />
     <Compile Include="ZoomWindow.xaml.cs">
       <DependentUpon>ZoomWindow.xaml</DependentUpon>
     </Compile>
@@ -203,16 +208,26 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.*.resx" />
     <None Include="App.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Resource Include="Shaders\GridShader.cso" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>3.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.IO.Abstractions">
+      <Version>12.2.5</Version>
+    </PackageReference>
     <PackageReference Include="System.Windows.Interactivity.WPF">
       <Version>2.0.20525</Version>
     </PackageReference>
@@ -234,9 +249,9 @@
       <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
       <Name>Telemetry</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj">
+    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj">
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>
-      <Name>Microsoft.PowerToys.Settings.UI.Lib</Name>
+      <Name>Microsoft.PowerToys.Settings.UI.Library</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -253,6 +268,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Shaders\GridShader.fx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

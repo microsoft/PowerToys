@@ -55,7 +55,8 @@
                         <ComboBox Height="23"
                                   Margin="5,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
-                                  SelectedItem="{Binding Fit}">
+                                  SelectedItem="{Binding Fit}"
+                                  ItemContainerStyle="{StaticResource AccessibleComboBoxStyle}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeFit}">
                                     <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
@@ -97,7 +98,8 @@
                         <ComboBox Height="23"
                                   Margin="7,0,0,0"
                                   ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
-                                  SelectedItem="{Binding Unit}">
+                                  SelectedItem="{Binding Unit}"
+                                  ItemContainerStyle="{StaticResource AccessibleComboBoxStyle}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type m:ResizeUnit}">
                                     <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
@@ -130,12 +132,15 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                
-                <TextBlock VerticalAlignment="Center"
-                           Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}">
-                    <Hyperlink Command="{Binding ShowAdvancedCommand}">
+
+                <TextBlock x:Name="AdvancedSettingsTextBlock"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}"
+                           IsEnabled="{Binding Visibility,ElementName=AdvancedSettingsTextBlock, Converter={StaticResource VisibilityBoolConverter}}"
+                           Focusable="{Binding Visibility,ElementName=AdvancedSettingsTextBlock, Converter={StaticResource VisibilityBoolConverter}}">
+                    <local:AccessibleHyperlink ControlType="Button" Command="{Binding ShowAdvancedCommand}">
                         <Run Text="{x:Static p:Resources.Input_ShowAdvanced}"/>
-                    </Hyperlink>
+                    </local:AccessibleHyperlink>
                 </TextBlock>
                 
                 <Button Grid.Column="1"

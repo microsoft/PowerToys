@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.IO;
+using System.IO.Abstractions;
 
 namespace Microsoft.Plugin.Program
 {
@@ -16,11 +16,13 @@ namespace Microsoft.Plugin.Program
     /// </remarks>
     public class ProgramSource
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+
         private string name;
 
         public string Location { get; set; }
 
-        public string Name { get => name ?? new DirectoryInfo(Location).Name; set => name = value; }
+        public string Name { get => name ?? FileSystem.DirectoryInfo.FromDirectoryName(Location).Name; set => name = value; }
 
         public bool Enabled { get; set; } = true;
 

@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.PowerToys.Settings.UI.Lib.ViewModels;
+using System.IO.Abstractions;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -13,9 +16,38 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ColorPickerPage()
         {
-            ViewModel = new ColorPickerViewModel(ShellPage.SendDefaultIPCMessage);
+            var settingsUtils = new SettingsUtils();
+            ViewModel = new ColorPickerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+        }
+
+        /// <summary>
+        /// Event is called when the <see cref="ComboBox"/> is completely loaded, inclusive the ItemSource
+        /// </summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The arguments of this event</param>
+        private void ColorPicker_ComboBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+           /**
+            * UWP hack
+            * because UWP load the bound ItemSource of the ComboBox asynchronous,
+            * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
+            * Selection via SelectedItem and SelectedValue is still not working too
+            */
+            var index = 0;
+
+            foreach (var item in ViewModel.SelectableColorRepresentations)
+            {
+                if (item.Key == ViewModel.SelectedColorRepresentationValue)
+                {
+                    break;
+                }
+
+                index++;
+            }
+
+            ColorPicker_ComboBox.SelectedIndex = index;
         }
     }
 }

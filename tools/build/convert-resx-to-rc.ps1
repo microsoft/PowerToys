@@ -110,8 +110,8 @@ Foreach-Object {
             $content = $line -split "=", 2
 
             $culture = [System.Globalization.CultureInfo]::GetCultureInfo('en-US')
-            # Each resource is named as IDS_ResxResourceName, in uppercase
-            $lineInRCFormat = "IDS_" + $content[0].ToUpper($culture) + " L`"" + $content[1] + "`""
+            # Each resource is named as IDS_ResxResourceName, in uppercase. Escape occurrences of double quotes in the string
+            $lineInRCFormat = "IDS_" + $content[0].ToUpper($culture) + " L`"" + $content[1].Replace("`"", "`"`"") + "`""
             $newLinesForRCFile = $newLinesForRCFile + "`r`n    " + $lineInRCFormat
 
             # Resource header file needs to be updated only for one language
@@ -177,7 +177,7 @@ try {
         Set-Content -Path $generatedFilesFolder\$generatedHeaderFileName -Value $headerFileContent
     }
     else {
-        echo "Skipping write to generated header file"
+        # echo "Skipping write to generated header file"
     }
 }
 catch {
@@ -191,7 +191,7 @@ try {
         Set-Content -Path $generatedFilesFolder\$generatedRCFileName -Value $rcFileContent -Encoding unicode
     }
     else {    
-        echo "Skipping write to generated rc file"
+        # echo "Skipping write to generated rc file"
     }
 }
 catch {

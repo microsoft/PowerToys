@@ -58,8 +58,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" >
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
   
   <ItemGroup>
@@ -74,7 +78,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

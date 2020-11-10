@@ -4,7 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using Wox.Infrastructure.Logger;
+using System.Reflection;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure
 {
@@ -18,30 +19,45 @@ namespace Wox.Infrastructure
         /// </summary>
         public static long Debug(string message, Action action)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
             action();
             stopWatch.Stop();
             var milliseconds = stopWatch.ElapsedMilliseconds;
             string info = $"{message} <{milliseconds}ms>";
-            Log.Debug(info);
+            Log.Debug(info, MethodBase.GetCurrentMethod().DeclaringType);
             return milliseconds;
         }
 
         public static long Normal(string message, Action action)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
             action();
             stopWatch.Stop();
             var milliseconds = stopWatch.ElapsedMilliseconds;
             string info = $"{message} <{milliseconds}ms>";
-            Log.Info(info);
+            Log.Info(info, MethodBase.GetCurrentMethod().DeclaringType);
             return milliseconds;
         }
 
         public static void StartCount(string name, Action action)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
             action();
@@ -65,7 +81,7 @@ namespace Wox.Infrastructure
             foreach (var key in Count.Keys)
             {
                 string info = $"{key} already cost {Count[key]}ms";
-                Log.Debug(info);
+                Log.Debug(info, MethodBase.GetCurrentMethod().DeclaringType);
             }
         }
     }

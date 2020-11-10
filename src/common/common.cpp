@@ -11,12 +11,6 @@
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "shlwapi.lib")
 
-namespace localized_strings
-{
-    const wchar_t LAST_ERROR_FORMAT_STRING[] = L"%s failed with error %d: %s";
-    const wchar_t LAST_ERROR_TITLE_STRING[] = L"Error";
-}
-
 std::optional<RECT> get_window_pos(HWND hwnd)
 {
     RECT window;
@@ -91,23 +85,23 @@ std::optional<std::wstring> get_last_error_message(const DWORD dw)
     return message;
 }
 
-void show_last_error_message(LPCWSTR lpszFunction, DWORD dw)
+void show_last_error_message(LPCWSTR functionName, DWORD dw, LPCWSTR errorTitle)
 {
     const auto system_message = get_last_error_message(dw);
     if (!system_message.has_value())
     {
         return;
     }
-    LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (system_message->size() + lstrlenW(lpszFunction) + 40) * sizeof(WCHAR));
+    LPWSTR lpDisplayBuf = (LPWSTR)LocalAlloc(LMEM_ZEROINIT, (system_message->size() + lstrlenW(functionName) + 40) * sizeof(WCHAR));
     if (lpDisplayBuf != NULL)
     {
         StringCchPrintfW(lpDisplayBuf,
                          LocalSize(lpDisplayBuf) / sizeof(WCHAR),
-                         localized_strings::LAST_ERROR_FORMAT_STRING,
-                         lpszFunction,
-                         dw,
-                         system_message->c_str());
-        MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, localized_strings::LAST_ERROR_TITLE_STRING, MB_OK);
+                         L"%s: %s (%d)",
+                         functionName,
+                         system_message->c_str(),
+                         dw);
+        MessageBoxW(NULL, (LPCTSTR)lpDisplayBuf, errorTitle, MB_OK | MB_ICONERROR);
         LocalFree(lpDisplayBuf);
     }
 }
@@ -485,7 +479,7 @@ bool check_user_is_admin()
     };
 
     HANDLE hToken;
-    DWORD dwSize = 0, dwResult = 0;
+    DWORD dwSize = 0;
     PTOKEN_GROUPS pGroupInfo;
     SID_IDENTIFIER_AUTHORITY SIDAuth = SECURITY_NT_AUTHORITY;
     PSID pSID = NULL;
@@ -499,8 +493,7 @@ bool check_user_is_admin()
     // Call GetTokenInformation to get the buffer size.
     if (!GetTokenInformation(hToken, TokenGroups, NULL, dwSize, &dwSize))
     {
-        dwResult = GetLastError();
-        if (dwResult != ERROR_INSUFFICIENT_BUFFER)
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
         {
             return true;
         }

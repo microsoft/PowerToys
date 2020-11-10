@@ -4,6 +4,9 @@
 
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("UnitTest-ColorPickerUI")]
 
 namespace ColorPicker
 {
@@ -11,6 +14,7 @@ namespace ColorPicker
     {
         public static CompositionContainer Container { get; private set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is properly disposed of in MainWindow.Xaml.cs")]
         public static void InitializeContainer(object initPoint)
         {
             var catalog = new AssemblyCatalog(System.Reflection.Assembly.GetExecutingAssembly());
@@ -20,8 +24,6 @@ namespace ColorPicker
         }
 
         public static void Dispose()
-        {
-            Container.Dispose();
-        }
+            => Container.Dispose();
     }
 }

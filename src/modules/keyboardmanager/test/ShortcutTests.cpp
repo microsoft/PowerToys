@@ -79,8 +79,8 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (DoKeysOverlap_ShouldReturnNoError_OnPassingInvalidShortcutForOneOfTheArguments)
         {
             // Arrange
-            Shortcut s1(std::vector<DWORD>{ NULL });
-            Shortcut s2(std::vector<DWORD>{ VK_CONTROL, 0x41 });
+            Shortcut s1(std::vector<int32_t>{ NULL });
+            Shortcut s2(std::vector<int32_t>{ VK_CONTROL, 0x41 });
 
             // Act
             auto result = Shortcut::DoKeysOverlap(s1, s2);
@@ -93,7 +93,7 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (DoKeysOverlap_ShouldReturnSameShortcutPreviouslyMapped_OnPassingSameShortcutForBothArguments)
         {
             // Arrange
-            Shortcut s1(std::vector<DWORD>{ VK_CONTROL, 0x41 });
+            Shortcut s1(std::vector<int32_t>{ VK_CONTROL, 0x41 });
             Shortcut s2 = s1;
 
             // Act
@@ -107,8 +107,8 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (DoKeysOverlap_ShouldReturnNoError_OnPassingShortcutsWithDifferentActionKeys)
         {
             // Arrange
-            Shortcut s1(std::vector<DWORD>{ VK_CONTROL, 0x42 });
-            Shortcut s2(std::vector<DWORD>{ VK_CONTROL, 0x41 });
+            Shortcut s1(std::vector<int32_t>{ VK_CONTROL, 0x42 });
+            Shortcut s2(std::vector<int32_t>{ VK_CONTROL, 0x41 });
 
             // Act
             auto result = Shortcut::DoKeysOverlap(s1, s2);
@@ -121,8 +121,8 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (DoKeysOverlap_ShouldReturnNoError_OnPassingShortcutsWithDifferentModifiers)
         {
             // Arrange
-            Shortcut s1(std::vector<DWORD>{ VK_CONTROL, 0x42 });
-            Shortcut s2(std::vector<DWORD>{ VK_SHIFT, 0x42 });
+            Shortcut s1(std::vector<int32_t>{ VK_CONTROL, 0x42 });
+            Shortcut s2(std::vector<int32_t>{ VK_SHIFT, 0x42 });
 
             // Act
             auto result = Shortcut::DoKeysOverlap(s1, s2);
@@ -135,8 +135,8 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (DoKeysOverlap_ShouldReturnConflictingModifierShortcut_OnPassingShortcutsWithLeftModifierAndCommonModifierOfSameType)
         {
             // Arrange
-            Shortcut s1(std::vector<DWORD>{ VK_LCONTROL, 0x42 });
-            Shortcut s2(std::vector<DWORD>{ VK_CONTROL, 0x42 });
+            Shortcut s1(std::vector<int32_t>{ VK_LCONTROL, 0x42 });
+            Shortcut s2(std::vector<int32_t>{ VK_CONTROL, 0x42 });
 
             // Act
             auto result = Shortcut::DoKeysOverlap(s1, s2);
@@ -149,8 +149,8 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (DoKeysOverlap_ShouldReturnConflictingModifierShortcut_OnPassingShortcutsWithRightModifierAndCommonModifierOfSameType)
         {
             // Arrange
-            Shortcut s1(std::vector<DWORD>{ VK_RCONTROL, 0x42 });
-            Shortcut s2(std::vector<DWORD>{ VK_CONTROL, 0x42 });
+            Shortcut s1(std::vector<int32_t>{ VK_RCONTROL, 0x42 });
+            Shortcut s2(std::vector<int32_t>{ VK_CONTROL, 0x42 });
 
             // Act
             auto result = Shortcut::DoKeysOverlap(s1, s2);
@@ -163,8 +163,8 @@ namespace KeyboardManagerCommonTests
         TEST_METHOD (DoKeysOverlap_ShouldReturnConflictingModifierShortcut_OnPassingShortcutsWithLeftModifierAndRightModifierOfSameType)
         {
             // Arrange
-            Shortcut s1(std::vector<DWORD>{ VK_LCONTROL, 0x42 });
-            Shortcut s2(std::vector<DWORD>{ VK_RCONTROL, 0x42 });
+            Shortcut s1(std::vector<int32_t>{ VK_LCONTROL, 0x42 });
+            Shortcut s2(std::vector<int32_t>{ VK_RCONTROL, 0x42 });
 
             // Act
             auto result = Shortcut::DoKeysOverlap(s1, s2);

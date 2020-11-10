@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
@@ -39,6 +40,8 @@ namespace FancyZonesEditor
             Debug,
         }
 
+        private static readonly IFileSystem _fileSystem = new FileSystem();
+
         private static CanvasLayoutModel _blankCustomModel;
         private readonly CanvasLayoutModel _focusModel;
         private readonly GridLayoutModel _rowsModel;
@@ -54,19 +57,7 @@ namespace FancyZonesEditor
         public const ushort _blankCustomModelId = 0xFFFA;
         public const ushort _lastDefinedId = _blankCustomModelId;
 
-        // Localizable strings
-        private const string ErrorMessageBoxTitle = "FancyZones Editor Error";
-        private const string ErrorParsingDeviceInfo = "Error parsing device info data.";
-        private const string ErrorInvalidArgs = "FancyZones Editor arguments are invalid.";
-        private const string ErrorNonStandaloneApp = "FancyZones Editor should not be run as standalone application.";
-
-        // Displayed layout names are localizable strings, but their underlying json tags are not.
-        private const string FocusLayoutID = "Focus";
-        private const string ColumnsLayoutID = "Columns";
-        private const string RowsLayoutID = "Rows";
-        private const string GridLayoutID = "Grid";
-        private const string PriorityGridLayoutID = "Priority Grid";
-        private const string CreateNewCustomLabel = "Create new custom";
+        private const int MaxNegativeSpacing = -10;
 
         // Non-localizable strings
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
@@ -88,6 +79,7 @@ namespace FancyZonesEditor
         private const string EditorShowSpacingJsonTag = "editor-show-spacing";
         private const string EditorSpacingJsonTag = "editor-spacing";
         private const string EditorZoneCountJsonTag = "editor-zone-count";
+        private const string EditorSensitivityRadiusJsonTag = "editor-sensitivity-radius";
 
         private const string FocusJsonTag = "focus";
         private const string ColumnsJsonTag = "columns";
@@ -134,7 +126,7 @@ namespace FancyZonesEditor
 
         public Settings()
         {
-            string tmpDirPath = Path.GetTempPath();
+            string tmpDirPath = _fileSystem.Path.GetTempPath();
 
             ActiveZoneSetTmpFile = tmpDirPath + ActiveZoneSetsTmpFileName;
             AppliedZoneSetTmpFile = tmpDirPath + AppliedZoneSetsTmpFileName;
@@ -147,30 +139,30 @@ namespace FancyZonesEditor
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel(FocusLayoutID, LayoutType.Focus);
+            _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
             DefaultModels.Add(_focusModel);
 
-            _columnsModel = new GridLayoutModel(ColumnsLayoutID, LayoutType.Columns)
+            _columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
                 Rows = 1,
                 RowPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_columnsModel);
 
-            _rowsModel = new GridLayoutModel(RowsLayoutID, LayoutType.Rows)
+            _rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
             {
                 Columns = 1,
                 ColumnPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_rowsModel);
 
-            _gridModel = new GridLayoutModel(GridLayoutID, LayoutType.Grid);
+            _gridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Grid, LayoutType.Grid);
             DefaultModels.Add(_gridModel);
 
-            _priorityGridModel = new GridLayoutModel(PriorityGridLayoutID, LayoutType.PriorityGrid);
+            _priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
             DefaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel(CreateNewCustomLabel, LayoutType.Blank);
+            _blankCustomModel = new CanvasLayoutModel(Properties.Resources.Custom_Layout_Create_New, LayoutType.Blank);
 
             UpdateLayoutModels();
         }
@@ -208,7 +200,7 @@ namespace FancyZonesEditor
             {
                 if (_spacing != value)
                 {
-                    _spacing = value;
+                    _spacing = Math.Max(MaxNegativeSpacing, value);
                     FirePropertyChanged();
                 }
             }
@@ -235,6 +227,26 @@ namespace FancyZonesEditor
         }
 
         private bool _showSpacing;
+
+        // SensitivityRadius - how much space inside the zone to highlight the adjacent zone too
+        public int SensitivityRadius
+        {
+            get
+            {
+                return _sensitivityRadius;
+            }
+
+            set
+            {
+                if (_sensitivityRadius != value)
+                {
+                    _sensitivityRadius = Math.Max(0, value);
+                    FirePropertyChanged();
+                }
+            }
+        }
+
+        private int _sensitivityRadius;
 
         // IsShiftKeyPressed - is the shift key currently being held down
         public bool IsShiftKeyPressed
@@ -381,15 +393,15 @@ namespace FancyZonesEditor
                 _gridModel.ColumnPercents.Add(((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols));
             }
 
-            int index = ZoneCount - 1;
-            for (int col = cols - 1; col >= 0; col--)
+            int index = 0;
+            for (int row = 0; row < rows; row++)
             {
-                for (int row = rows - 1; row >= 0; row--)
+                for (int col = 0; col < cols; col++)
                 {
-                    _gridModel.CellChildMap[row, col] = index--;
-                    if (index < 0)
+                    _gridModel.CellChildMap[row, col] = index++;
+                    if (index == ZoneCount)
                     {
-                        index = 0;
+                        index--;
                     }
                 }
             }
@@ -418,9 +430,9 @@ namespace FancyZonesEditor
                 ActiveZoneSetUUid = NullUuidStr;
                 JsonElement jsonObject = default(JsonElement);
 
-                if (File.Exists(Settings.ActiveZoneSetTmpFile))
+                if (_fileSystem.File.Exists(Settings.ActiveZoneSetTmpFile))
                 {
-                    FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
+                    Stream inputStream = _fileSystem.File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
                     jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
                     inputStream.Close();
                     UniqueKey = jsonObject.GetProperty(DeviceIdJsonTag).GetString();
@@ -435,6 +447,7 @@ namespace FancyZonesEditor
                     _showSpacing = true;
                     _spacing = 16;
                     _zoneCount = 3;
+                    _sensitivityRadius = 20;
                 }
                 else
                 {
@@ -463,11 +476,12 @@ namespace FancyZonesEditor
                     _showSpacing = jsonObject.GetProperty(EditorShowSpacingJsonTag).GetBoolean();
                     _spacing = jsonObject.GetProperty(EditorSpacingJsonTag).GetInt32();
                     _zoneCount = jsonObject.GetProperty(EditorZoneCountJsonTag).GetInt32();
+                    _sensitivityRadius = jsonObject.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32();
                 }
             }
             catch (Exception ex)
             {
-                LayoutModel.ShowExceptionMessageBox(ErrorParsingDeviceInfo, ex);
+                LayoutModel.ShowExceptionMessageBox(Properties.Resources.Error_Parsing_Device_Info, ex);
             }
         }
 
@@ -486,7 +500,7 @@ namespace FancyZonesEditor
                 }
                 else
                 {
-                    MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                    MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                     ((App)Application.Current).Shutdown();
                 }
             }
@@ -498,7 +512,7 @@ namespace FancyZonesEditor
                     var parsedLocation = singleMonitorString.Split('_');
                     if (parsedLocation.Length != 4)
                     {
-                        MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                        MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                         ((App)Application.Current).Shutdown();
                     }
 
@@ -525,7 +539,7 @@ namespace FancyZonesEditor
             }
             else
             {
-                MessageBox.Show(ErrorNonStandaloneApp, ErrorMessageBoxTitle);
+                MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                 ((App)Application.Current).Shutdown();
             }
         }

@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.Program.Storage
 {
     /// <summary>
     /// A repository for storing packaged applications such as UWP apps or appx packaged desktop apps.
-    /// This repository will also monitor for changes to the PackageCatelog and update the repository accordingly
+    /// This repository will also monitor for changes to the PackageCatalog and update the repository accordingly
     /// </summary>
     internal class PackageRepository : ListRepository<UWPApplication>, IProgramRepository
     {
@@ -53,7 +53,7 @@ namespace Microsoft.Plugin.Program.Storage
                 // eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
                 catch (System.IO.FileNotFoundException e)
                 {
-                    ProgramLogger.LogException($"|UWP|OnPackageInstalling|{args.Package.InstalledLocation}|{e.Message}", e);
+                    ProgramLogger.Exception(e.Message, e, GetType(), args.Package.InstalledLocation.ToString());
                 }
             }
         }
@@ -66,6 +66,7 @@ namespace Microsoft.Plugin.Program.Storage
                 var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
                 var uwp = new UWP(packageWrapper);
                 var apps = Items.Where(a => a.Package.Equals(uwp)).ToArray();
+
                 foreach (var app in apps)
                 {
                     Remove(app);
@@ -79,7 +80,7 @@ namespace Microsoft.Plugin.Program.Storage
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
 
             var applications = support ? Programs.UWP.All() : Array.Empty<UWPApplication>();
-            Set(applications);
+            SetList(applications);
         }
 
         public void Save()
@@ -90,7 +91,7 @@ namespace Microsoft.Plugin.Program.Storage
         public void Load()
         {
             var items = _storage.TryLoad(Array.Empty<UWPApplication>());
-            Set(items);
+            SetList(items);
         }
     }
 }

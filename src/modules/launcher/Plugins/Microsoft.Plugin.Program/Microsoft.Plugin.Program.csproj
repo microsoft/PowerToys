@@ -57,8 +57,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" >
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
   
   <ItemGroup>
@@ -68,8 +72,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NLog" Version="4.7.2" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
   

@@ -20,11 +20,21 @@ namespace Wox.Infrastructure
 
         public static FuzzyMatcher Create(string query)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return new FuzzyMatcher(query, new MatchOption());
         }
 
         public static FuzzyMatcher Create(string query, MatchOption opt)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return new FuzzyMatcher(query, opt);
         }
 

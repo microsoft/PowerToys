@@ -4,12 +4,14 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/dll/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
+#include <common\shared_constants.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace RemappingLogicTests
 {
     TEST_CLASS (AppSpecificShortcutRemappingTests)
+    
     {
     private:
         MockedInput mockedInputHandler;
@@ -311,6 +313,34 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
+        }
+
+        // Disable app specific shortcut
+        TEST_METHOD (AppSpecificShortcutToDisable_ShouldDisable_WhenAppIsOnForeground)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+            testState.AddAppSpecificShortcut(testApp1, src, disableKey);
+
+            // Set the testApp as the foreground process
+            mockedInputHandler.SetForegroundProcess(testApp1);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+
+            // Send Ctrl+A keydown
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Check if Ctrl+A is released and disable key was not send
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), false);
         }
     };
 }

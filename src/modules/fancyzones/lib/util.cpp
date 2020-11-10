@@ -18,26 +18,6 @@ namespace NonLocalizable
 
 namespace
 {
-    bool HasNoVisibleOwner(HWND window) noexcept
-    {
-        auto owner = GetWindow(window, GW_OWNER);
-        if (owner == nullptr)
-        {
-            return true; // There is no owner at all
-        }
-        if (!IsWindowVisible(owner))
-        {
-            return true; // Owner is invisible
-        }
-        RECT rect;
-        if (!GetWindowRect(owner, &rect))
-        {
-            return false; // Could not get the rect, return true (and filter out the window) just in case
-        }
-        // It is enough that the window is zero-sized in one dimension only.
-        return rect.top == rect.bottom || rect.left == rect.right;
-    }
-
     bool IsZonableByProcessPath(const std::wstring& processPath, const std::vector<std::wstring>& excludedApps)
     {
         // Filter out user specified apps
@@ -60,6 +40,30 @@ namespace
 
 namespace FancyZonesUtils
 {
+    std::wstring ParseDeviceId(const std::wstring& deviceId)
+    {
+        // We're interested in the unique part between the first and last #'s
+        // Example input: \\?\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
+        // Example output: DELA026#5&10a58c63&0&UID16777488
+        static const std::wstring defaultDeviceId = L"FallbackDevice";
+        if (deviceId.empty())
+        {
+            return defaultDeviceId;
+        }
+
+        size_t start = deviceId.find(L'#');
+        size_t end = deviceId.rfind(L'#');
+        if (start != std::wstring::npos && end != std::wstring::npos && start != end)
+        {
+            size_t size = end - (start + 1);
+            return deviceId.substr(start + 1, size);
+        }
+        else
+        {
+            return defaultDeviceId;
+        }
+    }
+
     typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept
     {
@@ -201,12 +205,31 @@ namespace FancyZonesUtils
         ::SetWindowPlacement(window, &placement);
     }
 
-    FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window)
+    bool HasNoVisibleOwner(HWND window) noexcept
     {
-        FancyZonesWindowInfo result;
+        auto owner = GetWindow(window, GW_OWNER);
+        if (owner == nullptr)
+        {
+            return true; // There is no owner at all
+        }
+        if (!IsWindowVisible(owner))
+        {
+            return true; // Owner is invisible
+        }
+        RECT rect;
+        if (!GetWindowRect(owner, &rect))
+        {
+            return false; // Could not get the rect, return true (and filter out the window) just in case
+        }
+        // It is enough that the window is zero-sized in one dimension only.
+        return rect.top == rect.bottom || rect.left == rect.right;
+    }
+
+    bool IsStandardWindow(HWND window)
+    {
         if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window))
         {
-            return result;
+            return false;
         }
         auto style = GetWindowLong(window, GWL_STYLE);
         auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
@@ -217,56 +240,51 @@ namespace FancyZonesUtils
             (style & WS_MINIMIZEBOX) == 0 &&
             (style & WS_MAXIMIZEBOX) == 0)
         {
-            return result;
+            return false;
         }
         if ((style & WS_CHILD) == WS_CHILD ||
             (style & WS_DISABLED) == WS_DISABLED ||
             (exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW ||
             (exStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE)
         {
-            return result;
+            return false;
         }
         std::array<char, 256> class_name;
         GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
         if (is_system_window(window, class_name.data()))
         {
-            return result;
+            return false;
         }
         auto process_path = get_process_path(window);
         // Check for Cortana:
         if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
             process_path.ends_with(L"SearchUI.exe"))
         {
-            return result;
+            return false;
         }
-        result.processPath = std::move(process_path);
-        result.standardWindow = true;
-        result.noVisibleOwner = HasNoVisibleOwner(window);
-        return result;
+
+        return true;
     }
 
     bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
-        auto windowInfo = GetFancyZonesWindowInfo(window);
-        auto zonable = windowInfo.standardWindow && windowInfo.noVisibleOwner;
+        auto zonable = IsStandardWindow(window) && HasNoVisibleOwner(window);
         if (!zonable)
         {
             return false;
         }
 
-        return IsZonableByProcessPath(windowInfo.processPath, excludedApps);
+        return IsZonableByProcessPath(get_process_path(window), excludedApps);
     }
 
     bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
     {
-        auto windowInfo = GetFancyZonesWindowInfo(window);
-
-        if (!windowInfo.standardWindow)
+        if (!IsStandardWindow(window))
         {
             return false;
         }
 
-        return IsZonableByProcessPath(windowInfo.processPath, excludedApps);
+        return IsZonableByProcessPath(get_process_path(window), excludedApps);
     }
 
     bool IsWindowMaximized(HWND window) noexcept

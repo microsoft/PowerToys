@@ -7,6 +7,7 @@
 #include "Settings.h"
 #include "trace.h"
 #include <common/common.h>
+#include <imageresizer\dll\ImageResizerConstants.h>
 
 CImageResizerExtModule _AtlModule;
 HINSTANCE g_hInst_imageResizer = 0;
@@ -32,6 +33,8 @@ private:
     // Enabled by default
     bool m_enabled = true;
     std::wstring app_name;
+    //contains the non localized key of the powertoy
+    std::wstring app_key;
 
 public:
     // Constructor
@@ -39,6 +42,7 @@ public:
     {
         m_enabled = CSettingsInstance().GetEnabled();
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
+        app_key = ImageResizerConstants::ModuleKey;
     };
 
     // Destroy the powertoy and free memory
@@ -47,10 +51,16 @@ public:
         delete this;
     }
 
-    // Return the display name of the powertoy, this will be cached by the runner
+    // Return the localized display name of the powertoy
     virtual const wchar_t* get_name() override
     {
         return app_name.c_str();
+    }
+
+    // Return the non localized key of the powertoy, this will be cached by the runner
+    virtual const wchar_t* get_key() override
+    {
+        return app_key.c_str();
     }
 
     // Return JSON with the configuration options.

@@ -44,7 +44,7 @@
     <ProjectGuid>{DA425894-6E13-404F-8DCB-78584EC0557A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SvgPreviewHandler</RootNamespace>
+    <RootNamespace>Microsoft.PowerToys.PreviewHandler.Svg</RootNamespace>
     <AssemblyName>SvgPreviewHandler</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -115,6 +115,7 @@
     <Compile Include="Telemetry\Events\SvgFileHandlerLoaded.cs" />
     <Compile Include="Telemetry\Events\SvgFilePreviewed.cs" />
     <Compile Include="Telemetry\Events\SvgFilePreviewError.cs" />
+    <Compile Include="Utilities\SvgPreviewHandlerHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">
@@ -132,6 +133,11 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>3.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -142,7 +148,8 @@
     <EmbeddedResource Include="Resource.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resource.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    </EmbeddedResource>    
+    <EmbeddedResource Include="Resource.*.resx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

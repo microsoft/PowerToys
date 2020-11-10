@@ -63,7 +63,8 @@ RepositionMap g_repositionMap[] = {
     { IDC_EDIT_SEARCHFOR, Reposition_Width },
     { IDC_EDIT_REPLACEWITH, Reposition_Width },
     { IDC_LIST_PREVIEW, Reposition_Width | Reposition_Height },
-    { IDC_STATUS_MESSAGE, Reposition_Y },
+    { IDC_STATUS_MESSAGE_SELECTED, Reposition_Y },
+    { IDC_STATUS_MESSAGE_RENAMING, Reposition_Y },
     { ID_RENAME, Reposition_X | Reposition_Y },
     { ID_ABOUT, Reposition_X | Reposition_Y },
     { IDCANCEL, Reposition_X | Reposition_Y }
@@ -679,7 +680,8 @@ void CPowerRenameUI::_InitDlgText()
     UpdateDlgControl(m_hwnd, IDCANCEL, IDS_CANCEL_BUTTON);
     UpdateDlgControl(m_hwnd, IDC_SEARCH_FOR, IDS_SEARCH_FOR);
     UpdateDlgControl(m_hwnd, IDC_REPLACE_WITH, IDS_REPLACE_WITH);
-    UpdateDlgControl(m_hwnd, IDC_STATUS_MESSAGE, IDS_ITEMS_SELECTED);
+    UpdateDlgControl(m_hwnd, IDC_STATUS_MESSAGE_SELECTED, IDS_ITEMS_SELECTED);
+    UpdateDlgControl(m_hwnd, IDC_STATUS_MESSAGE_RENAMING, IDS_ITEMS_RENAMING);
     UpdateDlgControl(m_hwnd, IDC_OPTIONSGROUP, IDS_OPTIONS);
     UpdateDlgControl(m_hwnd, IDC_PREVIEWGROUP, IDS_PREVIEW);
     UpdateDlgControl(m_hwnd, IDC_SEARCHREPLACEGROUP, IDS_RENAME_CRITERIA);
@@ -868,8 +870,11 @@ void CPowerRenameUI::_MoveControl(_In_ DWORD id, _In_ DWORD repositionFlags)
         width = mainWindowWidth - static_cast<int>(m_itemsPositioning.listPreviewWidthDiff * scale);
         height = mainWindowHeight - static_cast<int>(m_itemsPositioning.listPreviewHeightDiff * scale);
         break;
-    case IDC_STATUS_MESSAGE:
-        y = mainWindowHeight - static_cast<int>(m_itemsPositioning.statusMessageYDiff * scale);
+    case IDC_STATUS_MESSAGE_SELECTED:
+        y = mainWindowHeight - static_cast<int>(m_itemsPositioning.statusMessageSelectedYDiff * scale);
+        break;
+    case IDC_STATUS_MESSAGE_RENAMING:
+        y = mainWindowHeight - static_cast<int>(m_itemsPositioning.statusMessageRenamingYDiff * scale);
         break;
     case ID_RENAME:
         x = mainWindowWidth - static_cast<int>(m_itemsPositioning.renameButtonXDiff * scale);
@@ -1000,12 +1005,17 @@ void CPowerRenameUI::_UpdateCounts()
         m_renamingCount = renamingCount;
 
         // Update selected and rename count label
-        wchar_t countsLabelFormat[100] = { 0 };
-        LoadString(g_hInst, IDS_COUNTSLABELFMT, countsLabelFormat, ARRAYSIZE(countsLabelFormat));
+        wchar_t countsLabelFormatSelected[100] = { 0 };
+        wchar_t countsLabelFormatRenaming[100] = { 0 };
+        LoadString(g_hInst, IDS_COUNTSLABELSELECTEDFMT, countsLabelFormatSelected, ARRAYSIZE(countsLabelFormatSelected));
+        LoadString(g_hInst, IDS_COUNTSLABELRENAMINGFMT, countsLabelFormatRenaming, ARRAYSIZE(countsLabelFormatRenaming));
 
-        wchar_t countsLabel[100] = { 0 };
-        StringCchPrintf(countsLabel, ARRAYSIZE(countsLabel), countsLabelFormat, selectedCount, renamingCount);
-        SetDlgItemText(m_hwnd, IDC_STATUS_MESSAGE, countsLabel);
+        wchar_t countsLabelSelected[100] = { 0 };
+        wchar_t countsLabelRenaming[100] = { 0 };
+        StringCchPrintf(countsLabelSelected, ARRAYSIZE(countsLabelSelected), countsLabelFormatSelected, selectedCount);
+        StringCchPrintf(countsLabelRenaming, ARRAYSIZE(countsLabelRenaming), countsLabelFormatRenaming, renamingCount);
+        SetDlgItemText(m_hwnd, IDC_STATUS_MESSAGE_SELECTED, countsLabelSelected);
+        SetDlgItemText(m_hwnd, IDC_STATUS_MESSAGE_RENAMING, countsLabelRenaming);
 
         // Update Rename button state
         EnableWindow(GetDlgItem(m_hwnd, ID_RENAME), (renamingCount > 0));
@@ -1039,8 +1049,11 @@ void CPowerRenameUI::_CollectItemPosition(_In_ DWORD id)
         m_itemsPositioning.listPreviewWidthDiff = m_initialWidth - itemWidth;
         m_itemsPositioning.listPreviewHeightDiff = m_initialHeight - itemHeight;
         break;
-    case IDC_STATUS_MESSAGE:
-        m_itemsPositioning.statusMessageYDiff = m_initialHeight - rcWindow.top;
+    case IDC_STATUS_MESSAGE_SELECTED:
+        m_itemsPositioning.statusMessageSelectedYDiff = m_initialHeight - rcWindow.top;
+        break;
+    case IDC_STATUS_MESSAGE_RENAMING:
+        m_itemsPositioning.statusMessageRenamingYDiff = m_initialHeight - rcWindow.top;
         break;
     case ID_RENAME:
         m_itemsPositioning.renameButtonXDiff = m_initialWidth - rcWindow.left;

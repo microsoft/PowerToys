@@ -2,12 +2,13 @@
 // Do not define WIN32_LEAN_AND_MEAN as WinUI doesn't work when it is defined
 #include <unknwn.h>
 #include <windows.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <thread>
 #include <winrt/Windows.system.h>
 #include <winrt/windows.ui.xaml.hosting.h>
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
+#include <winrt/Windows.UI.Xaml.Automation.h>
 #include <winrt/windows.ui.xaml.controls.h>
 #include <winrt/Windows.ui.xaml.media.h>
 #include <winrt/Windows.Foundation.Collections.h>

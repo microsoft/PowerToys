@@ -5,20 +5,22 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Indexer
 {
     internal class ContextMenuLoader : IContextMenu
     {
+        private readonly IPath _path = new FileSystem().Path;
+
         private readonly PluginInitContext _context;
 
         public enum ResultType
@@ -41,7 +43,7 @@ namespace Microsoft.Plugin.Indexer
             var contextMenus = new List<ContextMenuResult>();
             if (selectedResult.ContextData is SearchResult record)
             {
-                ResultType type = Path.HasExtension(record.Path) ? ResultType.File : ResultType.Folder;
+                ResultType type = _path.HasExtension(record.Path) ? ResultType.File : ResultType.Folder;
 
                 if (type == ResultType.File)
                 {
@@ -72,8 +74,9 @@ namespace Microsoft.Plugin.Indexer
                         }
                         catch (Exception e)
                         {
-                            var message = "Fail to set text in clipboard";
-                            LogException(message, e);
+                            var message = Properties.Resources.Microsoft_plugin_indexer_clipboard_failed;
+                            Log.Exception(message, e, GetType());
+
                             _context.API.ShowMsg(message);
                             return false;
                         }
@@ -94,7 +97,7 @@ namespace Microsoft.Plugin.Indexer
                         {
                             if (type == ResultType.File)
                             {
-                                Helper.OpenInConsole(Path.GetDirectoryName(record.Path));
+                                Helper.OpenInConsole(_path.GetDirectoryName(record.Path));
                             }
                             else
                             {
@@ -105,7 +108,7 @@ namespace Microsoft.Plugin.Indexer
                         }
                         catch (Exception e)
                         {
-                            Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenuLoader.LoadContextMenus| Failed to open {record.Path} in console, {e.Message}", e);
+                            Log.Exception($"Failed to open {record.Path} in console, {e.Message}", e, GetType());
                             return false;
                         }
                     },
@@ -116,7 +119,7 @@ namespace Microsoft.Plugin.Indexer
         }
 
         // Function to add the context menu item to run as admin
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log the exeption message")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log the exception message")]
         private static ContextMenuResult CreateRunAsAdminContextMenu(SearchResult record)
         {
             return new ContextMenuResult
@@ -136,7 +139,7 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenu| Failed to run {record.Path} as admin, {e.Message}", e);
+                        Log.Exception($"Failed to run {record.Path} as admin, {e.Message}", e, MethodBase.GetCurrentMethod().DeclaringType);
                         return false;
                     }
                 },
@@ -146,9 +149,10 @@ namespace Microsoft.Plugin.Indexer
         // Function to test if the file can be run as admin
         private bool CanFileBeRunAsAdmin(string path)
         {
-            string fileExtension = Path.GetExtension(path);
+            string fileExtension = _path.GetExtension(path);
             foreach (string extension in appExtensions)
             {
+                // Using OrdinalIgnoreCase since this is internal
                 if (extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
@@ -177,8 +181,9 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (Exception e)
                     {
-                        var message = $"Fail to open file at {record.Path}";
-                        LogException(message, e);
+                        var message = $"{Properties.Resources.Microsoft_plugin_indexer_folder_open_failed} {record.Path}";
+                        Log.Exception(message, e, GetType());
+
                         _context.API.ShowMsg(message);
                         return false;
                     }
@@ -186,11 +191,6 @@ namespace Microsoft.Plugin.Indexer
                     return true;
                 },
             };
-        }
-
-        public static void LogException(string message, Exception e)
-        {
-            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenu|{message}", e);
         }
     }
 }

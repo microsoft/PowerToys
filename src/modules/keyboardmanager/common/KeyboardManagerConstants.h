@@ -53,8 +53,14 @@ namespace KeyboardManagerConstants
     // Default window sizes
     inline const int DefaultEditKeyboardWindowWidth = 800;
     inline const int DefaultEditKeyboardWindowHeight = 600;
+    inline const int MinimumEditKeyboardWindowWidth = 500;
+    inline const int MinimumEditKeyboardWindowHeight = 450;
+    inline const int EditKeyboardTableMinWidth = 700;
     inline const int DefaultEditShortcutsWindowWidth = 1050;
     inline const int DefaultEditShortcutsWindowHeight = 600;
+    inline const int MinimumEditShortcutsWindowWidth = 500;
+    inline const int MinimumEditShortcutsWindowHeight = 500;
+    inline const int EditShortcutsTableMinWidth = 1000;
 
     // Key Remap table constants
     inline const long RemapTableColCount = 4;
@@ -73,15 +79,18 @@ namespace KeyboardManagerConstants
     inline const long ShortcutTableNewColIndex = 2;
     inline const long ShortcutTableTargetAppColIndex = 3;
     inline const long ShortcutTableRemoveColIndex = 4;
+    inline const long ShortcutArrowColumnWidth = 90;
     inline const DWORD64 ShortcutTableDropDownWidth = 110;
     inline const DWORD64 ShortcutTableDropDownSpacing = 10;
+    inline const long ShortcutOriginColumnWidth = 3 * ShortcutTableDropDownWidth + 2 * ShortcutTableDropDownSpacing;
+    inline const long ShortcutTargetColumnWidth = 3 * ShortcutTableDropDownWidth + 2 * ShortcutTableDropDownSpacing + 25;
 
     // Drop down height used for both Edit Keyboard and Edit Shortcuts
     inline const DWORD64 TableDropDownHeight = 200;
-    inline const DWORD64 TableArrowColWidth = 20;
+    inline const DWORD64 TableArrowColWidth = 230;
     inline const DWORD64 TableRemoveColWidth = 20;
     inline const DWORD64 TableWarningColWidth = 20;
-    inline const DWORD64 TableTargetAppColWidth = ShortcutTableDropDownWidth + 50;
+    inline const DWORD64 TableTargetAppColWidth = ShortcutTableDropDownWidth + TableRemoveColWidth * 2;
 
     // Shared style constants for both Remap Table and Shortcut Table
     inline const DWORD64 HeaderButtonWidth = 100;
@@ -93,6 +102,9 @@ namespace KeyboardManagerConstants
 
     // Dummy key event used in between key up and down events to prevent certain global events from happening
     inline const DWORD DUMMY_KEY = 0xFF;
+
+    // Number of key messages required while sending a dummy key event
+    inline const size_t DUMMY_KEY_EVENT_SIZE = 2;
 
     // String constant for the default app name in Remap shortcuts
     inline const std::wstring DefaultAppName = GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_ALLAPPS);

@@ -3,89 +3,78 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace CommonLibTest
 {
     [TestClass]
     public class SettingsUtilsTests
     {
-        public SettingsUtilsTests()
-        {
-            string file_name = "\\test";
-            if (SettingsUtils.SettingsFolderExists(file_name))
-            {
-                DeleteFolder(file_name);
-            }
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            string file_name = "\\test";
-            if (SettingsUtils.SettingsFolderExists(file_name))
-            {
-                DeleteFolder(file_name);
-            }
-        }
 
         [TestMethod]
-        public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
+        public void SaveSettingsSaveSettingsToFileWhenFilePathExists()
         {
             // Arrange
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
+
             string file_name = "\\test";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
             BasePTSettingsTest expected_json = JsonSerializer.Deserialize<BasePTSettingsTest>(file_contents_correct_json_content);
 
             // Act
-            SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
-            BasePTSettingsTest actual_json = SettingsUtils.GetSettings<BasePTSettingsTest>(file_name);
+            settingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
+            BasePTSettingsTest actual_json = settingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
             // Assert
             Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
         }
 
         [TestMethod]
-        public void SaveSettings_ShouldCreateFile_WhenFilePathIsNotFound()
+        public void SaveSettingsShouldCreateFileWhenFilePathIsNotFound()
         {
             // Arrange
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
             string file_name = "test\\Test Folder";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
             BasePTSettingsTest expected_json = JsonSerializer.Deserialize<BasePTSettingsTest>(file_contents_correct_json_content);
 
-            // Act
-            if (SettingsUtils.SettingsFolderExists(file_name))
-            {
-                DeleteFolder(file_name);
-            }
-
-            SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
-            BasePTSettingsTest actual_json = SettingsUtils.GetSettings<BasePTSettingsTest>(file_name);
+            settingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
+            BasePTSettingsTest actual_json = settingsUtils.GetSettings<BasePTSettingsTest>(file_name);
 
             // Assert
             Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
         }
 
         [TestMethod]
-        public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
+        public void SettingsFolderExistsShouldReturnFalseWhenFilePathIsNotFound()
         {
             // Arrange
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
             string file_name_random = "test\\" + RandomString();
             string file_name_exists = "test\\exists";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 
             // Act
-            bool pathNotFound = SettingsUtils.SettingsFolderExists(file_name_random);
+            bool pathNotFound = settingsUtils.SettingsExists(file_name_random);
 
-            SettingsUtils.SaveSettings(file_contents_correct_json_content, file_name_exists);
-            bool pathFound = SettingsUtils.SettingsFolderExists(file_name_exists);
+            settingsUtils.SaveSettings(file_contents_correct_json_content, file_name_exists);
+            bool pathFound = settingsUtils.SettingsExists(file_name_exists);
 
             // Assert
             Assert.IsFalse(pathNotFound);
@@ -93,21 +82,18 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void CreateSettingsFolder_ShouldCreateFolder_WhenSuccessful()
+        public void SettingsUtilsMustReturnDefaultItemWhenFileIsCorrupt()
         {
             // Arrange
-            string file_name = "test\\" + RandomString();
+            var mockFileSystem = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(mockFileSystem);
 
             // Act
-            SettingsUtils.CreateSettingsFolder(file_name);
+            TestClass settings = mockSettingsUtils.GetSettings<TestClass>(string.Empty);
 
             // Assert
-            Assert.IsTrue(SettingsUtils.SettingsFolderExists(file_name));
-        }
-
-        public void DeleteFolder(string powertoy)
-        {
-            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
+            Assert.AreEqual(settings.TestInt, 100);
+            Assert.AreEqual(settings.TestString, "test");
         }
 
         public static string RandomString()
@@ -118,6 +104,27 @@ namespace CommonLibTest
 
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        partial class TestClass : ISettingsConfig
+        {
+            public int TestInt { get; set; } = 100;
+            public string TestString { get; set; } = "test";
+
+            public string GetModuleName()
+            {
+                throw new NotImplementedException();
+            }
+
+            public string ToJsonString()
+            {
+                return JsonSerializer.Serialize(this);
+            }
+
+            public bool UpgradeSettingsConfiguration()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

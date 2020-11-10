@@ -3,10 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Threading;
 using NLog;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
+using Wox.Plugin;
 
 namespace PowerLauncher.Helper
 {
@@ -30,6 +34,14 @@ namespace PowerLauncher.Helper
                     reportWindow.Show();
                 }
             }
+        }
+
+        public static void ShowMessageBox(string title, string message)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(message, title);
+            });
         }
 
         public static void UnhandledExceptionHandle(object sender, UnhandledExceptionEventArgs e)

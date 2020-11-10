@@ -526,7 +526,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     g_main_wnd = create_main_window(hInstance);
     if (g_main_wnd == nullptr)
     {
-        MessageBox(NULL, L"Failed to create main window.\nPlease report the bug to https://aka.ms/powerToysReportBugF", L"PowerToys Settings Error", MB_OK);
+        MessageBox(NULL, L"Failed to create main window.\nPlease report the bug to https://aka.ms/powerToysReportBug", L"PowerToys Settings Error", MB_OK);
         exit(1);
     }
     initialize_webview(nShowCmd);

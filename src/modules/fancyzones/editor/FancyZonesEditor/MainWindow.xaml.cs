@@ -26,6 +26,14 @@ namespace FancyZonesEditor
 
         public int WrapPanelItemSize { get; set; } = 262;
 
+        public double SettingsTextMaxWidth
+        {
+            get
+            {
+                return (Width / 2) - 60;
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -74,6 +82,21 @@ namespace FancyZonesEditor
         private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
         {
             Select(((Border)sender).DataContext as LayoutModel);
+        }
+
+        private void LayoutItem_Focused(object sender, RoutedEventArgs e)
+        {
+            Select(((Border)sender).DataContext as LayoutModel);
+        }
+
+        private void LayoutItem_Apply(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return || e.Key == Key.Space)
+            {
+                // When certain layout item (template or custom) is focused through keyboard and user
+                // presses Enter or Space key, layout will be applied.
+                Apply();
+            }
         }
 
         private void Select(LayoutModel newSelection)
@@ -146,6 +169,11 @@ namespace FancyZonesEditor
         }
 
         private void Apply_Click(object sender, RoutedEventArgs e)
+        {
+            Apply();
+        }
+
+        private void Apply()
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
 

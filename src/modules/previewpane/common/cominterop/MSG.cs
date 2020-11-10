@@ -11,41 +11,42 @@ namespace Common.ComInterlop
     /// Contains message information from a thread's message queue.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
     public struct MSG
     {
         /// <summary>
-        /// A handle to the window whose window procedure receives the message. This member is NULL when the message is a thread message.
+        /// Gets or sets a handle to the window whose window procedure receives the message. This member is NULL when the message is a thread message.
         /// </summary>
-        public IntPtr Hwnd;
+        public IntPtr Hwnd { get; set; }
 
         /// <summary>
-        /// The message identifier. Applications can only use the low word; the high word is reserved by the system.
+        /// Gets or sets the message identifier. Applications can only use the low word; the high word is reserved by the system.
         /// </summary>
-        public int Message;
+        public int Message { get; set; }
 
         /// <summary>
-        /// Additional information about the message. The exact meaning depends on the value of the message member.
+        /// Gets or sets additional information about the message. The exact meaning depends on the value of the message member.
         /// </summary>
-        public IntPtr WParam;
+        public IntPtr WParam { get; set; }
 
         /// <summary>
-        /// Additional information about the message. The exact meaning depends on the value of the message member.
+        /// Gets or sets additional information about the message. The exact meaning depends on the value of the message member.
         /// </summary>
-        public IntPtr LParam;
+        public IntPtr LParam { get; set; }
 
         /// <summary>
-        /// The time at which the message was posted.
+        /// Gets or sets the time at which the message was posted.
         /// </summary>
-        public int Time;
+        public int Time { get; set; }
 
         /// <summary>
-        /// The x coordinate of cursor position, in screen coordinates, when the message was posted.
+        /// Gets or sets the x coordinate of cursor position, in screen coordinates, when the message was posted.
         /// </summary>
-        public int PtX;
+        public int PtX { get; set; }
 
         /// <summary>
-        /// The y coordinate of cursor position, in screen coordinates, when the message was posted.
+        /// Gets or sets the y coordinate of cursor position, in screen coordinates, when the message was posted.
         /// </summary>
-        public int PtY;
+        public int PtY { get; set; }
     }
 }

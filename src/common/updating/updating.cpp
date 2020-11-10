@@ -3,8 +3,8 @@
 #include "version.h"
 
 #include "http_client.h"
+#include "notifications.h"
 #include "updating.h"
-#include "toast_notifications_helper.h"
 
 #include <msi.h>
 #include <common/common.h>
@@ -19,7 +19,7 @@
 #include "VersionHelper.h"
 #include <PathCch.h>
 
-namespace
+namespace // Strings in this namespace should not be localized
 {
     const wchar_t POWER_TOYS_UPGRADE_CODE[] = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
     const wchar_t POWERTOYS_EXE_COMPONENT[] = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
@@ -30,12 +30,6 @@ namespace
 
     const size_t MAX_DOWNLOAD_ATTEMPTS = 3;
     const wchar_t TOAST_TITLE[] = L"PowerToys";
-}
-
-namespace localized_strings
-{
-    const wchar_t OFFER_UNINSTALL_MSI[] = L"We've detected a previous installation of PowerToys. Would you like to remove it?";
-    const wchar_t OFFER_UNINSTALL_MSI_TITLE[] = L"PowerToys: uninstall previous version?";
 }
 
 namespace updating
@@ -73,18 +67,22 @@ namespace updating
         return package_path;
     }
 
-    bool offer_msi_uninstallation()
+    bool offer_msi_uninstallation(const notifications::strings& strings)
     {
-        const auto selection = SHMessageBoxCheckW(nullptr, localized_strings::OFFER_UNINSTALL_MSI, localized_strings::OFFER_UNINSTALL_MSI_TITLE, MB_ICONQUESTION | MB_YESNO, IDNO, DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH);
+        const auto selection = SHMessageBoxCheckW(nullptr,
+                                                  strings.OFFER_UNINSTALL_MSI.c_str(),
+                                                  strings.OFFER_UNINSTALL_MSI_TITLE.c_str(),
+                                                  MB_ICONQUESTION | MB_YESNO,
+                                                  IDNO,
+                                                  DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH);
         return selection == IDYES;
     }
 
-    bool uninstall_msi_version(const std::wstring& package_path)
+    bool uninstall_msi_version(const std::wstring& package_path, const notifications::strings& strings)
     {
         const auto uninstall_result = MsiInstallProductW(package_path.c_str(), L"REMOVE=ALL");
         if (ERROR_SUCCESS == uninstall_result)
         {
-            notifications::show_uninstallation_success();
             return true;
         }
         else if (auto system_message = get_last_error_message(uninstall_result); system_message.has_value())
@@ -95,7 +93,7 @@ namespace updating
             }
             catch (...)
             {
-                updating::notifications::show_uninstallation_error();
+                updating::notifications::show_uninstallation_error(strings);
             }
         }
         return false;
@@ -103,6 +101,11 @@ namespace updating
 
     std::future<std::optional<new_version_download_info>> get_new_github_version_info_async()
     {
+        // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
+        if (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
+        {
+            co_return std::nullopt;
+        }
         try
         {
             http::HttpClient client;
@@ -198,7 +201,7 @@ namespace updating
         return installer_download_dst;
     }
 
-    std::future<void> try_autoupdate(const bool download_updates_automatically)
+    std::future<void> try_autoupdate(const bool download_updates_automatically, const notifications::strings& strings)
     {
         const auto new_version = co_await get_new_github_version_info_async();
         if (!new_version)
@@ -226,31 +229,32 @@ namespace updating
             }
             if (!download_success)
             {
-                updating::notifications::show_install_error(new_version.value());
+                updating::notifications::show_install_error(new_version.value(), strings);
                 co_return;
             }
 
-            updating::notifications::show_version_ready(new_version.value());
+            updating::notifications::show_version_ready(new_version.value(), strings);
         }
         else
         {
-            updating::notifications::show_visit_github(new_version.value());
+            updating::notifications::show_visit_github(new_version.value(), strings);
         }
     }
 
-    std::future<void> check_new_version_available()
+    std::future<std::wstring> check_new_version_available(const notifications::strings& strings)
     {
         const auto new_version = co_await get_new_github_version_info_async();
         if (!new_version)
         {
-            updating::notifications::show_unavailable();
-            co_return;
+            updating::notifications::show_unavailable(strings);
+            co_return VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
         }
 
-        updating::notifications::show_available(new_version.value());
+        updating::notifications::show_available(new_version.value(), strings);
+        co_return new_version->version_string;
     }
 
-    std::future<std::wstring> download_update()
+    std::future<std::wstring> download_update(const notifications::strings& strings)
     {
         const auto new_version = co_await get_new_github_version_info_async();
         if (!new_version)
@@ -259,12 +263,12 @@ namespace updating
         }
 
         auto installer_download_dst = create_download_path() / new_version->installer_filename;
-        updating::notifications::show_download_start(new_version.value());
+        updating::notifications::show_download_start(new_version.value(), strings);
 
         try
         {
             auto progressUpdateHandle = [&](float progress) {
-                updating::notifications::update_download_progress(new_version.value(), progress);
+                updating::notifications::update_download_progress(new_version.value(), progress, strings);
             };
 
             http::HttpClient client;
@@ -272,7 +276,7 @@ namespace updating
         }
         catch (...)
         {
-            updating::notifications::show_install_error(new_version.value());
+            updating::notifications::show_install_error(new_version.value(), strings);
             co_return L"";
         }
 

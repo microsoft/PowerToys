@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="S:\src\modules\previewpane\SvgPreviewHandler\Resource.resx" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ko-KR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@SettingsPath@\default.lss" Type="Lss" />
+  <Item ItemId=";Resource.resx" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId=";BlockedElementInfoText" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Some elements have been blocked to help prevent the sender from identifying your computer. Open this item to view all elements.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[보낸 사람이 사용자 컴퓨터를 확인하지 못하도록 일부 요소가 차단되었습니다. 이 항목을 열어 모든 요소를 표시하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";SvgNotPreviewedError" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Svg could not be preview due to an internal error in Svg Preview Handler.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SVG 미리 보기 처리기의 내부 오류로 인해 SVG를 미리 볼 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+    </Item>
+  </Item>
+</LCX>

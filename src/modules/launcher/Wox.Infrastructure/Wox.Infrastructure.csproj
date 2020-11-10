@@ -56,27 +56,16 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.4" />
-    <PackageReference Include="NLog.Schema" Version="4.7.2" />
-    <PackageReference Include="Pinyin4DotNet" Version="2016.4.23.4">
-       <NoWarn>NU1701</NoWarn>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="NLog.Schema" Version="4.7.5" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    <PackageReference Include="System.IO.Abstractions" Version="12.2.5" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="pinyindb\pinyin_gwoyeu_mapping.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="pinyindb\pinyin_mapping.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="pinyindb\unicode_to_hanyu_pinyin.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>

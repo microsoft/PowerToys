@@ -9,23 +9,11 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Header Files\Direct2D">
-      <UniqueIdentifier>{ed0f9961-6b12-408b-8dbc-fed779a557ac}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Telemetry">
       <UniqueIdentifier>{3e9f944e-5d97-4a28-8865-2eff3a3568e7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="d2d_svg.h">
-      <Filter>Header Files\Direct2D</Filter>
-    </ClInclude>
-    <ClInclude Include="d2d_text.h">
-      <Filter>Header Files\Direct2D</Filter>
-    </ClInclude>
-    <ClInclude Include="d2d_window.h">
-      <Filter>Header Files\Direct2D</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="animation.h">
       <Filter>Header Files</Filter>
@@ -141,17 +129,11 @@
     <ClInclude Include="string_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="toast_dont_show_again.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="d2d_svg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="d2d_text.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="d2d_window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="animation.cpp">
       <Filter>Source Files</Filter>
@@ -220,6 +202,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="comUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="toast_dont_show_again.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

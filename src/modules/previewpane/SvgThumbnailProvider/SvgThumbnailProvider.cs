@@ -1,24 +1,22 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Windows.Forms;
+using Common.ComInterlop;
+using Common.Utilities;
+using Microsoft.PowerToys.Telemetry;
+using PreviewHandlerCommon;
 
-namespace SvgThumbnailProvider
+namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 {
-    using System;
-    using System.Drawing;
-    using System.Drawing.Drawing2D;
-    using System.Drawing.Imaging;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Runtime.InteropServices.ComTypes;
-    using System.Windows.Forms;
-    using Common;
-    using Common.ComInterlop;
-    using Common.Utilities;
-    using Microsoft.PowerToys.Telemetry;
-    using PreviewHandlerCommon;
-
     /// <summary>
     /// SVG Thumbnail Provider.
     /// </summary>
@@ -33,14 +31,14 @@ namespace SvgThumbnailProvider
         public IStream Stream { get; private set; }
 
         /// <summary>
-        ///  The maxium dimension (width or height) thumbnail we will generate.
+        ///  The maximum dimension (width or height) thumbnail we will generate.
         /// </summary>
         private const uint MaxThumbnailSize = 10000;
 
         /// <summary>
         /// Captures an image representation of browser contents.
         /// </summary>
-        /// <param name="browser">The WebBrowser instance rendring the SVG.</param>
+        /// <param name="browser">The WebBrowser instance rendering the SVG.</param>
         /// <param name="rectangle">The client rectangle to capture from.</param>
         /// <param name="backgroundColor">The default background color to apply.</param>
         /// <returns>A Bitmap representing the browser contents.</returns>
@@ -64,7 +62,7 @@ namespace SvgThumbnailProvider
                 {
                     deviceContextHandle = graphics.GetHdc();
 
-                    IViewObject viewObject = browser.ActiveXInstance as IViewObject;
+                    IViewObject viewObject = browser?.ActiveXInstance as IViewObject;
                     viewObject.Draw(1, -1, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, deviceContextHandle, ref rect, IntPtr.Zero, IntPtr.Zero, 0);
                 }
                 finally
@@ -100,30 +98,16 @@ namespace SvgThumbnailProvider
             // Wrap the SVG content in HTML in IE Edge mode so we can ensure
             // we render properly.
             string wrappedContent = WrapSVGInHTML(content);
-            WebBrowserExt browser = new WebBrowserExt();
-            browser.Dock = DockStyle.Fill;
-            browser.IsWebBrowserContextMenuEnabled = false;
-            browser.ScriptErrorsSuppressed = true;
-            browser.ScrollBarsEnabled = false;
-            browser.AllowNavigation = false;
-            browser.Width = (int)cx;
-            browser.Height = (int)cx;
-            browser.DocumentText = wrappedContent;
-
-            // Wait for the browser to render the content.
-            while (browser.IsBusy || browser.ReadyState != WebBrowserReadyState.Complete)
+            using (WebBrowserExt browser = new WebBrowserExt())
             {
-                Application.DoEvents();
-            }
-
-            // Check size of the rendered SVG.
-            var svg = browser.Document.GetElementsByTagName("svg").Cast<HtmlElement>().FirstOrDefault();
-            if (svg != null)
-            {
-                // Update the size of the browser control to fit the SVG
-                // in the visible viewport.
-                browser.Width = svg.OffsetRectangle.Width;
-                browser.Height = svg.OffsetRectangle.Height;
+                browser.Dock = DockStyle.Fill;
+                browser.IsWebBrowserContextMenuEnabled = false;
+                browser.ScriptErrorsSuppressed = true;
+                browser.ScrollBarsEnabled = false;
+                browser.AllowNavigation = false;
+                browser.Width = (int)cx;
+                browser.Height = (int)cx;
+                browser.DocumentText = wrappedContent;
 
                 // Wait for the browser to render the content.
                 while (browser.IsBusy || browser.ReadyState != WebBrowserReadyState.Complete)
@@ -131,16 +115,32 @@ namespace SvgThumbnailProvider
                     Application.DoEvents();
                 }
 
-                // Capture the image of the SVG from the browser.
-                thumbnail = GetBrowserContentImage(browser, svg.OffsetRectangle, Color.White);
-                if (thumbnail.Width != cx && thumbnail.Height != cx)
+                // Check size of the rendered SVG.
+                var svg = browser.Document.GetElementsByTagName("svg").Cast<HtmlElement>().FirstOrDefault();
+                if (svg != null)
                 {
-                    // We are not the appropriate size for caller.  Resize now while
-                    // respecting the aspect ratio.
-                    float scale = Math.Min((float)cx / thumbnail.Width, (float)cx / thumbnail.Height);
-                    int scaleWidth = (int)(thumbnail.Width * scale);
-                    int scaleHeight = (int)(thumbnail.Height * scale);
-                    thumbnail = ResizeImage(thumbnail, scaleWidth, scaleHeight);
+                    // Update the size of the browser control to fit the SVG
+                    // in the visible viewport.
+                    browser.Width = svg.OffsetRectangle.Width;
+                    browser.Height = svg.OffsetRectangle.Height;
+
+                    // Wait for the browser to render the content.
+                    while (browser.IsBusy || browser.ReadyState != WebBrowserReadyState.Complete)
+                    {
+                        Application.DoEvents();
+                    }
+
+                    // Capture the image of the SVG from the browser.
+                    thumbnail = GetBrowserContentImage(browser, svg.OffsetRectangle, Color.White);
+                    if (thumbnail.Width != cx && thumbnail.Height != cx)
+                    {
+                        // We are not the appropriate size for caller.  Resize now while
+                        // respecting the aspect ratio.
+                        float scale = Math.Min((float)cx / thumbnail.Width, (float)cx / thumbnail.Height);
+                        int scaleWidth = (int)(thumbnail.Width * scale);
+                        int scaleHeight = (int)(thumbnail.Height * scale);
+                        thumbnail = ResizeImage(thumbnail, scaleWidth, scaleHeight);
+                    }
                 }
             }
 
@@ -166,7 +166,9 @@ namespace SvgThumbnailProvider
                     {0}
                   </body>
                 </html>";
-            return string.Format(html, svg);
+
+            // Using InvariantCulture since this should be displayed as it is
+            return string.Format(CultureInfo.InvariantCulture, html, svg);
         }
 
         /// <summary>
@@ -178,8 +180,11 @@ namespace SvgThumbnailProvider
         /// <returns>The resized image.</returns>
         public static Bitmap ResizeImage(Image image, int width, int height)
         {
-            if (width <= 0 || height <= 0 ||
-                width > MaxThumbnailSize || height > MaxThumbnailSize)
+            if (width <= 0 ||
+                height <= 0 ||
+                width > MaxThumbnailSize ||
+                height > MaxThumbnailSize ||
+                image == null)
             {
                 return null;
             }
@@ -222,7 +227,7 @@ namespace SvgThumbnailProvider
             }
 
             string svgData = null;
-            using (var stream = new StreamWrapper(this.Stream as IStream))
+            using (var stream = new ReadonlyStream(this.Stream as IStream))
             {
                 using (var reader = new StreamReader(stream))
                 {
@@ -232,11 +237,13 @@ namespace SvgThumbnailProvider
 
             if (svgData != null)
             {
-                Bitmap thumbnail = GetThumbnail(svgData, cx);
-                if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
+                using (Bitmap thumbnail = GetThumbnail(svgData, cx))
                 {
-                    phbmp = thumbnail.GetHbitmap();
-                    pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
+                    if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
+                    {
+                        phbmp = thumbnail.GetHbitmap();
+                        pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
+                    }
                 }
             }
         }

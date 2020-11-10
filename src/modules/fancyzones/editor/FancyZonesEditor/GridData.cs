@@ -12,6 +12,9 @@ namespace FancyZonesEditor
 {
     public class GridData
     {
+        // The sum of row/column percents should be equal to this number
+        private const int _multiplier = 10000;
+
         public class ResizeInfo
         {
             public ResizeInfo()
@@ -70,7 +73,7 @@ namespace FancyZonesEditor
                     total += info[i].Percent;
                 }
 
-                int diff = total - 10000;
+                int diff = total - _multiplier;
                 if (diff != 0)
                 {
                     TotalPercent -= diff;
@@ -367,24 +370,24 @@ namespace FancyZonesEditor
 
                 if (delta > 0)
                 {
-                    int sourcRow = 0;
+                    int sourceRow = 0;
                     for (int row = 0; row < rows; row++)
                     {
                         for (int col = 0; col < cols; col++)
                         {
                             if (row == draggedResizerStartRow + 1 && (col < resizer.StartCol || col >= resizer.EndCol))
                             {
-                                newCellChildMap[row, col] = cellChildMap[sourcRow + 1, col];
+                                newCellChildMap[row, col] = cellChildMap[sourceRow + 1, col];
                             }
                             else
                             {
-                                newCellChildMap[row, col] = cellChildMap[sourcRow, col];
+                                newCellChildMap[row, col] = cellChildMap[sourceRow, col];
                             }
                         }
 
                         if (row != draggedResizerStartRow)
                         {
-                            sourcRow++;
+                            sourceRow++;
                         }
                     }
 
@@ -1025,26 +1028,13 @@ namespace FancyZonesEditor
                 total += info[i].Percent;
             }
 
-            int totalDiff = total - 10000;
-            if (totalDiff != 0)
+            int prefixTotal = 0;
+            for (int i = 0; i < percents.Count; i++)
             {
-                int perLineDiff = totalDiff / percents.Count;
-                int lastLineDiff = totalDiff - (perLineDiff * (percents.Count - 1));
-
-                for (int i = 0; i < percents.Count - 1 && perLineDiff != 0; i++)
-                {
-                    int percent = percents[i] - perLineDiff;
-                    if (percent < 0)
-                    {
-                        percent = 0;
-                    }
-
-                    percents[i] = percent;
-                    info[i].Percent = percent;
-                }
-
-                info[percents.Count - 1].Percent -= lastLineDiff;
-                percents[percents.Count - 1] -= lastLineDiff;
+                int first = prefixTotal * _multiplier / total;
+                prefixTotal += info[i].Percent;
+                int last = prefixTotal * _multiplier / total;
+                percents[i] = info[i].Percent = last - first;
             }
         }
 

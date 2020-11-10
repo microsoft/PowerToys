@@ -88,11 +88,38 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Canvas layout editor.
+        /// </summary>
+        public static string Canvas_Layout_Editor {
+            get {
+                return ResourceManager.GetString("Canvas_Layout_Editor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Choose your layout for this desktop.
         /// </summary>
         public static string Choose_Layout {
             get {
                 return ResourceManager.GetString("Choose_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error logged to .
+        /// </summary>
+        public static string Crash_Report_Message_Box_Text_Part1 {
+            get {
+                return ResourceManager.GetString("Crash_Report_Message_Box_Text_Part1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please report the bug to .
+        /// </summary>
+        public static string Crash_Report_Message_Box_Text_Part2 {
+            get {
+                return ResourceManager.GetString("Crash_Report_Message_Box_Text_Part2", resourceCulture);
             }
         }
         
@@ -106,11 +133,29 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create new custom.
+        /// </summary>
+        public static string Custom_Layout_Create_New {
+            get {
+                return ResourceManager.GetString("Custom_Layout_Create_New", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom layout creator.
         /// </summary>
         public static string Custom_Layout_Creator {
             get {
                 return ResourceManager.GetString("Custom_Layout_Creator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete custom layout.
+        /// </summary>
+        public static string Custom_Layout_Delete_Button {
+            get {
+                return ResourceManager.GetString("Custom_Layout_Delete_Button", resourceCulture);
             }
         }
         
@@ -124,11 +169,83 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Distance to highlight adjacent zones.
+        /// </summary>
+        public static string Distance_adjacent_zones {
+            get {
+                return ResourceManager.GetString("Distance_adjacent_zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit selected layout.
         /// </summary>
         public static string Edit_Selected_Layout {
             get {
                 return ResourceManager.GetString("Edit_Selected_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor arguments are invalid..
+        /// </summary>
+        public static string Error_Invalid_Arguments {
+            get {
+                return ResourceManager.GetString("Error_Invalid_Arguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor Error.
+        /// </summary>
+        public static string Error_Message_Box_Title {
+            get {
+                return ResourceManager.GetString("Error_Message_Box_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor should not be run as standalone application..
+        /// </summary>
+        public static string Error_Not_Standalone_App {
+            get {
+                return ResourceManager.GetString("Error_Not_Standalone_App", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error parsing device info data..
+        /// </summary>
+        public static string Error_Parsing_Device_Info {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Device_Info", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor.
+        /// </summary>
+        public static string Fancy_Zones_Editor_App_Title {
+            get {
+                return ResourceManager.GetString("Fancy_Zones_Editor_App_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones main editor.
+        /// </summary>
+        public static string Fancy_Zones_Main_Editor {
+            get {
+                return ResourceManager.GetString("Fancy_Zones_Main_Editor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grid layout editor.
+        /// </summary>
+        public static string Grid_Layout_Editor {
+            get {
+                return ResourceManager.GetString("Grid_Layout_Editor", resourceCulture);
             }
         }
         
@@ -178,11 +295,74 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Columns.
+        /// </summary>
+        public static string Template_Layout_Columns {
+            get {
+                return ResourceManager.GetString("Template_Layout_Columns", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Focus.
+        /// </summary>
+        public static string Template_Layout_Focus {
+            get {
+                return ResourceManager.GetString("Template_Layout_Focus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grid.
+        /// </summary>
+        public static string Template_Layout_Grid {
+            get {
+                return ResourceManager.GetString("Template_Layout_Grid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Priority Grid.
+        /// </summary>
+        public static string Template_Layout_Priority_Grid {
+            get {
+                return ResourceManager.GetString("Template_Layout_Priority_Grid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rows.
+        /// </summary>
+        public static string Template_Layout_Rows {
+            get {
+                return ResourceManager.GetString("Template_Layout_Rows", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Templates.
         /// </summary>
         public static string Templates {
             get {
                 return ResourceManager.GetString("Templates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decrement number of zones in template layout.
+        /// </summary>
+        public static string Zone_Count_Decrement {
+            get {
+                return ResourceManager.GetString("Zone_Count_Decrement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Increment number of zones in template layout.
+        /// </summary>
+        public static string Zone_Count_Increment {
+            get {
+                return ResourceManager.GetString("Zone_Count_Increment", resourceCulture);
             }
         }
     }

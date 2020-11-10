@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using Newtonsoft.Json;
 
 namespace Wox.Plugin
@@ -12,7 +12,17 @@ namespace Wox.Plugin
     [JsonObject(MemberSerialization.OptOut)]
     public class PluginMetadata : BaseModel
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+
         private string _pluginDirectory;
+
+        private List<string> _actionKeywords;
+
+        public PluginMetadata(List<string> actionKeywords = null)
+        {
+            _actionKeywords = actionKeywords;
+        }
 
         public string ID { get; set; }
 
@@ -51,7 +61,15 @@ namespace Wox.Plugin
 
         public string ActionKeyword { get; set; }
 
-        public List<string> ActionKeywords { get; set; }
+        public List<string> GetActionKeywords()
+        {
+            return _actionKeywords;
+        }
+
+        public void SetActionKeywords(List<string> value)
+        {
+            _actionKeywords = value;
+        }
 
         public string IcoPath { get; set; }
 

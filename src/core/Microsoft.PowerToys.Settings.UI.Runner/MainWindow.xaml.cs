@@ -5,10 +5,11 @@
 using System;
 using System.Windows;
 using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
-using Windows.UI.Popups;
+using Windows.Data.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
@@ -30,6 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
         {
+            // If sender is null, it could lead to a NullReferenceException. This might occur on restarting as admin (check https://github.com/microsoft/PowerToys/issues/7393 for details)
+            if (sender == null)
+            {
+                return;
+            }
+
             // Hook up x:Bind source.
             WindowsXamlHost windowsXamlHost = sender as WindowsXamlHost;
             ShellPage shellPage = windowsXamlHost.GetUwpInternalObject() as ShellPage;
@@ -37,31 +44,51 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             if (shellPage != null)
             {
                 // send IPC Message
-                shellPage.SetDefaultSndMessageCallback(msg =>
+                ShellPage.SetDefaultSndMessageCallback(msg =>
                 {
                     // IPC Manager is null when launching runner directly
                     Program.GetTwoWayIPCManager()?.Send(msg);
                 });
 
                 // send IPC Message
-                shellPage.SetRestartAdminSndMessageCallback(msg =>
+                ShellPage.SetRestartAdminSndMessageCallback(msg =>
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
                     System.Windows.Application.Current.Shutdown(); // close application
                 });
 
                 // send IPC Message
-                shellPage.SetCheckForUpdatesMessageCallback(msg =>
+                ShellPage.SetCheckForUpdatesMessageCallback(msg =>
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
                 });
 
-                shellPage.SetElevationStatus(Program.IsElevated);
-                shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
+                // receive IPC Message
+                Program.IPCMessageReceivedCallback = (string msg) =>
+                {
+                    if (ShellPage.ShellHandler.IPCResponseHandleList != null)
+                    {
+                        var success = JsonObject.TryParse(msg, out JsonObject json);
+                        if (success)
+                        {
+                            foreach (Action<JsonObject> handle in ShellPage.ShellHandler.IPCResponseHandleList)
+                            {
+                                handle(json);
+                            }
+                        }
+                        else
+                        {
+                            Logger.LogError("Failed to parse JSON from IPC message.");
+                        }
+                    }
+                };
+
+                ShellPage.SetElevationStatus(Program.IsElevated);
+                ShellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();
             }
 
-            // If the window is open, explicity force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
+            // XAML Islands: If the window is open, explicitly force it to be shown to solve the blank dialog issue https://github.com/microsoft/PowerToys/issues/3384
             if (isOpen)
             {
                 Show();
@@ -71,6 +98,13 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             isOpen = false;
+
+            // XAML Islands: If the window is closed while minimized, exit the process. Required to avoid process not terminating issue - https://github.com/microsoft/PowerToys/issues/4430
+            if (WindowState == WindowState.Minimized)
+            {
+                // Run Environment.Exit on a separate task to avoid performance impact
+                System.Threading.Tasks.Task.Run(() => { Environment.Exit(0); });
+            }
         }
     }
 }

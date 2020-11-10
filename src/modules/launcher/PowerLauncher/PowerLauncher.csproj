@@ -88,7 +88,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.2.1">
+    <PackageReference Include="Fody" Version="6.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -102,13 +102,14 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NuGet.CommandLine" Version="5.6.0">
+    <PackageReference Include="NuGet.CommandLine" Version="5.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.2.8" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.113.1" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.3.1">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="SharpZipLib" Version="1.2.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />    
     <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
     <PackageReference Include="System.Data.OleDb" Version="4.7.1" />
@@ -120,9 +121,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\interop\interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj" />
+    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
     <ProjectReference Include="..\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj" />
-    <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
   </ItemGroup>

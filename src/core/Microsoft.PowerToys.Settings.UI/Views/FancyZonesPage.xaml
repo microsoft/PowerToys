@@ -12,7 +12,8 @@
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:Core="using:Microsoft.Xaml.Interactions.Core"        
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
@@ -56,117 +57,130 @@
             <ToggleSwitch x:Name="FancyZones_EnableToggleControl_HeaderText"
                             x:Uid="FancyZones_EnableToggleControl_HeaderText"
                             IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
-            <Button Margin="{StaticResource MediumTopMargin}"
+
+            <TextBlock x:Uid="FancyZones_Editor_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <Button Margin="{StaticResource SmallTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
                     Command = "{x:Bind ViewModel.LaunchEditorEventHandler}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                     AutomationProperties.LabeledBy="{Binding ElementName=FancyZones_LaunchEditorButtonControl}">
                 <StackPanel Orientation="Horizontal">
-                    <Viewbox Height="12" Width="12">
-                        <PathIcon Data="M896 0v896H0V0h896zM768 768V128H128v640h640zM0 1920v-896h1920v896H0zm128-768v640h1664v-640H128zM1024 0h896v896h-896V0zm768 768V128h-640v640h640z"/>
+                    <Viewbox Height="14" Width="14" Margin="-1,1,0,0">
+                        <PathIcon Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"/>
                     </Viewbox>
-                    <TextBlock Margin="12,0,0,0"
+                    <TextBlock Margin="8,0,0,0"
                                Name="FancyZones_LaunchEditorButtonControl"
                                x:Uid="FancyZones_LaunchEditorButtonControl"/>
                 </StackPanel>
             </Button>
-
-            <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
+            
             <CustomControls:HotkeySettingsControl 
-                Width="240"
                 x:Uid="FancyZones_HotkeyEditorControl"
-                HorizontalAlignment="Left"
                 Margin="{StaticResource SmallTopMargin}"
                 HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
                 Keys="Win, Ctrl, Alt, Shift"
                 Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                HorizontalAlignment="Left"
+                MinWidth="240"
                 />
 
-            <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      />
 
-            <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      />
-
-            <CheckBox x:Uid="FancyZones_OverrideSnapHotkeysCheckBoxControl"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
-            <CheckBox x:Uid="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
-                      Margin="24,12,0,0"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
-
-            <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}"
-                      Margin="24,12,0,0"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
-
-            <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      />
-
-            <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
-            <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
-            <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor"
-                      IsChecked="{ Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-
-            <CheckBox x:Uid="FancyZones_RestoreSize"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
+            <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShiftDrag}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                      />
+
+            <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                      />
+            
             <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}"
-                      Margin="{StaticResource SmallTopMargin}"
+                      Margin="{StaticResource XSmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.SpanZonesAcrossMonitors}"
-                      Margin="{StaticResource SmallTopMargin}"
+                      Margin="{StaticResource XSmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}"
-                      Margin="{StaticResource SmallTopMargin}"
+
+            <TextBlock x:Uid="FancyZones_WindowBehavior_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <CheckBox x:Uid="FancyZones_OverrideSnapHotkeysCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}"
+                      Margin="{StaticResource XSmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
+                      Margin="24,8,0,0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}"
+                      Margin="24,8,0,0"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.SnapHotkeysCategoryEnabled}"/>
+            
+            <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                      />
+
+            <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor"
+                      IsChecked="{ Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_RestoreSize"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
 
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
+            <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}"
+                      Margin="{StaticResource XSmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            
             <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}" Spacing="12">
                 <Slider x:Uid="FancyZones_HighlightOpacity"
                     Minimum="0"
                     Maximum="100"
-                    Width="240"
+                    MinWidth="240"
                     IsThumbToolTipEnabled="False"
                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}"
                     HorizontalAlignment="Left"
@@ -234,7 +248,6 @@
                     <Flyout>
                         <muxc:ColorPicker x:Name="FancyZones_InActiveColorPicker"
                               Margin="0,6,0,0"
-                              HorizontalAlignment="Left"
                               IsColorSliderVisible="True"
                               IsColorChannelTextInputVisible="True"
                               IsHexInputVisible="True"
@@ -285,14 +298,14 @@
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps}"
                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                     Width="380"
-                     Height="160"
-                     HorizontalAlignment="Left"
                      ScrollViewer.VerticalScrollBarVisibility ="Visible"
                      ScrollViewer.VerticalScrollMode="Enabled"
                      ScrollViewer.IsVerticalRailEnabled="True"
                      TextWrapping="Wrap"
-                     AcceptsReturn="True"/>
+                     AcceptsReturn="True"
+                     HorizontalAlignment="Left"
+                     MinWidth="240"
+                     MinHeight="160" />
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 

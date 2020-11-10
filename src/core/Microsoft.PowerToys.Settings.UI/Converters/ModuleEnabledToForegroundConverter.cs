@@ -3,7 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using System.Globalization;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
@@ -12,17 +13,23 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public sealed class ModuleEnabledToForegroundConverter : IValueConverter
     {
+        private readonly ISettingsUtils settingsUtils = new SettingsUtils();
+
+        private string selectedTheme = string.Empty;
+
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             bool isEnabled = (bool)value;
-            GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
 
             var defaultTheme = new Windows.UI.ViewManagement.UISettings();
-            var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
 
-            string selectedTheme = generalSettings.Theme.ToLower();
+            // Using InvariantCulture as this is an internal string and expected to be in hexadecimal
+            var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString(CultureInfo.InvariantCulture);
 
-            if (selectedTheme == "dark" || (selectedTheme == "system" && uiTheme == "#FF000000"))
+            // Normalize strings to uppercase according to Fxcop
+            selectedTheme = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Theme.ToUpperInvariant();
+
+            if (selectedTheme == "DARK" || (selectedTheme == "SYSTEM" && uiTheme == "#FF000000"))
             {
                 // DARK
                 if (isEnabled)

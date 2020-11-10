@@ -9,9 +9,99 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" 
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel x:Name="ColorPickerView" Orientation="Vertical">
+            <ToggleSwitch x:Uid="ColorPicker_EnableColorPicker" IsOn="{Binding IsEnabled, Mode=TwoWay}" />
+
+            <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
+                                          MinWidth="240"
+                                          Margin="{StaticResource MediumTopMargin}"
+                                          HorizontalAlignment="Left"
+                                          Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                                          HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
+                                          Keys="Win, Ctrl, Alt, Shift" />
+
+            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"
+                       Style="{StaticResource SettingsGroupTitleStyle}" />
+
+            <ComboBox x:Name="ColorPicker_ComboBox"
+                      x:Uid="ColorPicker_CopiedColorRepresentation"
+                      MinWidth="240"
+                      Margin="{StaticResource SmallTopMargin}"
+                      HorizontalAlignment="Left"
+                      DisplayMemberPath="Value"
+                      IsEnabled="{Binding IsEnabled}"
+                      ItemsSource="{Binding SelectableColorRepresentations}"
+                      Loaded="ColorPicker_ComboBox_Loaded"
+                      SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
+                      SelectedValuePath="Key" />
+
+            <!--
+            Disabling this until we have a safer way to reset cursor as
+            we can hit a state where the cursor doesn't reset
+
+            <CheckBox x:Uid="ColorPicker_ChangeCursor"
+                          IsChecked="{Binding ChangeCursor, Mode=TwoWay}"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsEnabled="{Binding IsEnabled}"/>
+            -->
+        </StackPanel>
+
+        <RelativePanel x:Name="SidePanel"
+                       Grid.Column="1"
+                       Width="{StaticResource SidePanelWidth}"
+                       HorizontalAlignment="Left">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Name="AboutTitle"
+                           x:Uid="About_ColorPicker"
+                           Grid.ColumnSpan="2"
+                           Margin="{StaticResource XSmallBottomMargin}"
+                           Style="{StaticResource SettingsGroupTitleStyle}" />
+                <TextBlock x:Uid="ColorPicker_Description"
+                           Grid.Row="1"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Border x:Name="AboutImage"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    HorizontalAlignment="Left"
+                    CornerRadius="4"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image x:Uid="ColorPicker_Image" Source="ms-appx:///Assets/Modules/ColorPicker.png" />
+            </Border>
+            <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
+                        Orientation="Vertical"
+                        RelativePanel.Below="AboutImage">
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ColorPicker">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+
+                <TextBlock x:Uid="AttributionTitle" Style="{StaticResource SettingsGroupTitleStyle}" />
+
+                <HyperlinkButton Margin="0,-3,0,0" NavigateUri="https://github.com/martinchrzan/ColorPicker/">
+                    <TextBlock Text="Martin Chrzan's Color Picker" TextWrapping="Wrap" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
@@ -25,105 +115,16 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                         <Setter Target="ColorPickerView.(Grid.Row)" Value="1" />
-                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
-                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
                         <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <StackPanel Orientation="Vertical" x:Name="ColorPickerView">
-            <ToggleSwitch x:Uid="ColorPicker_EnableColorPicker" 
-                          IsOn="{Binding IsEnabled, Mode=TwoWay}"/>
-
-            <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
-                                          Width="240"
-                                          HorizontalAlignment="Left"
-                                          Margin="{StaticResource MediumTopMargin}"
-                                          HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
-                                          Keys="Win, Ctrl, Alt, Shift"
-                                          Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                                          />
-
-            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-        
-            <ComboBox x:Uid="ColorPicker_CopiedColorRepresentation"
-                          SelectedIndex="{Binding CopiedColorRepresentationIndex, Mode=TwoWay}"
-                          Margin="{StaticResource SmallTopMargin}"
-                          Width="240"
-                          IsEnabled="{Binding IsEnabled}">
-                <ComboBoxItem Content="HEX - #FFAA00"/>
-                <ComboBoxItem Content="RGB - RGB(100, 50, 75)"/>
-            </ComboBox>
-
-               <!--
-            Disabling this until we have a safer way to reset cursor as 
-            we can hit a state where the cursor doesn't reset
-           
-            <CheckBox x:Uid="ColorPicker_ChangeCursor" 
-                          IsChecked="{Binding ChangeCursor, Mode=TwoWay}"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{Binding IsEnabled}"/>
-                          -->
-        </StackPanel>
-
-        <RelativePanel x:Name="SidePanel" 
-                    HorizontalAlignment="Left"
-                    Width="{StaticResource SidePanelWidth}"
-                    Grid.Column="1">
-            <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_ColorPicker" x:Name="AboutTitle" Grid.ColumnSpan="2"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="ColorPicker_Description"
-                           TextWrapping="Wrap"
-                           Grid.Row="1" />
-            </StackPanel>
-
-            <Border x:Name="AboutImage"
-                    CornerRadius="4"
-                    Grid.Row="2"
-                    MaxWidth="240"
-                    HorizontalAlignment="Left"
-                    Margin="{StaticResource SmallTopBottomMargin}"
-                    RelativePanel.Below="DescriptionPanel">
-                <Image x:Uid="ColorPicker_Image" Source="ms-appx:///Assets/Modules/ColorPicker.png" />
-            </Border>
-            <StackPanel x:Name="LinksPanel"
-                        Margin="0,1,0,0"
-                        RelativePanel.Below="AboutImage"
-                        Orientation="Vertical" >
-                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ColorPicker">
-                    <TextBlock x:Uid="Module_overview" />
-                </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
-                    <TextBlock x:Uid="Give_Feedback" />
-                </HyperlinkButton>
-
-                <TextBlock 
-                x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" />
-
-                <HyperlinkButton Margin="0,-3,0,0"
-                                NavigateUri="https://github.com/martinchrzan/ColorPicker/">
-                    <TextBlock Text="Martin Chrzan's Color Picker" TextWrapping="Wrap" />
-                </HyperlinkButton>
-            </StackPanel>
-        </RelativePanel>
     </Grid>
 </Page>

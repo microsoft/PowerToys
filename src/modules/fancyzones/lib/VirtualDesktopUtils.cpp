@@ -79,20 +79,34 @@ namespace VirtualDesktopUtils
 
     bool GetCurrentVirtualDesktopId(GUID* desktopId)
     {
-        if (!GetDesktopIdFromCurrentSession(desktopId))
+        // Explorer persists current virtual desktop identifier to registry on a per session basis, but only
+        // after first virtual desktop switch happens. If the user hasn't switched virtual desktops in this
+        // session, value in registry will be empty.
+        if (GetDesktopIdFromCurrentSession(desktopId))
         {
-            // Explorer persists current virtual desktop identifier to registry on a per session basis,
-            // but only after first virtual desktop switch happens. If the user hasn't switched virtual
-            // desktops (only primary desktop) in this session value in registry will be empty.
-            // If this value is empty take first element from array of virtual desktops (not kept per session).
-            std::vector<GUID> ids{};
-            if (!GetVirtualDesktopIds(ids) || ids.empty())
-            {
-                return false;
-            }
-            *desktopId = ids[0];
+            return true;
         }
-        return true;
+        // First fallback scenario is to try obtaining virtual desktop id through IVirtualDesktopManager
+        // interface. Use foreground window (the window with which the user is currently working) to determine
+        // current virtual desktop.
+        else if (GetWindowDesktopId(GetForegroundWindow(), desktopId))
+        {
+            return true;
+        }
+        // Second fallback scenario is to get array of virtual desktops stored in registry, but not kept per
+        // session. Note that we are taking first element from virtual desktop array, which is primary desktop.
+        // If user has more than one virtual desktop, one of previous functions should return correct value,
+        // as desktop switch occurred in current session.
+        else
+        {
+            std::vector<GUID> ids{};
+            if (GetVirtualDesktopIds(ids) && ids.size() > 0)
+            {
+                *desktopId = ids[0];
+                return true;
+            }
+        }
+        return false;
     }
 
     bool GetVirtualDesktopIds(HKEY hKey, std::vector<GUID>& ids)

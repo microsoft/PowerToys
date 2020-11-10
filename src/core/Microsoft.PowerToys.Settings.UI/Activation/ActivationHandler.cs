@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.PowerToys.Settings.UI.Activation
@@ -15,13 +16,13 @@ namespace Microsoft.PowerToys.Settings.UI.Activation
         public abstract Task HandleAsync(object args);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "abstract T and abstract")]
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "abstract T and abstract")]
     internal abstract class ActivationHandler<T> : ActivationHandler
         where T : class
     {
         public override async Task HandleAsync(object args)
         {
-            await HandleInternalAsync(args as T);
+            await HandleInternalAsync(args as T).ConfigureAwait(false);
         }
 
         public override bool CanHandle(object args)

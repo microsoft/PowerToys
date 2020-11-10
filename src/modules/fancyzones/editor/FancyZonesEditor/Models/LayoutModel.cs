@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -29,6 +30,8 @@ namespace FancyZonesEditor.Models
     //  Manages common properties and base persistence
     public abstract class LayoutModel : INotifyPropertyChanged
     {
+        protected static readonly IFileSystem FileSystem = new FileSystem();
+
         // Localizable strings
         private const string ErrorMessageBoxTitle = "FancyZones Editor Exception Handler";
         private const string ErrorMessageBoxMessage = "Please report the bug to ";
@@ -61,11 +64,11 @@ namespace FancyZonesEditor.Models
         private const string PriorityGridJsonTag = "priority-grid";
         private const string CustomJsonTag = "custom";
 
-        private const string PowerToysIssuesLink = "https://aka.ms/powerToysReportBug";
+        private const string PowerToysIssuesURL = "https://aka.ms/powerToysReportBug";
 
         public static void ShowExceptionMessageBox(string message, Exception exception = null)
         {
-            string fullMessage = ErrorMessageBoxMessage + PowerToysIssuesLink + " \n" + message;
+            string fullMessage = ErrorMessageBoxMessage + PowerToysIssuesURL + " \n" + message;
             if (exception != null)
             {
                 fullMessage += ": " + exception.Message;
@@ -194,7 +197,7 @@ namespace FancyZonesEditor.Models
             try
             {
                 string jsonString = JsonSerializer.Serialize(deletedLayouts, options);
-                File.WriteAllText(Settings.DeletedCustomZoneSetsTmpFile, jsonString);
+                FileSystem.File.WriteAllText(Settings.DeletedCustomZoneSetsTmpFile, jsonString);
             }
             catch (Exception ex)
             {
@@ -209,7 +212,7 @@ namespace FancyZonesEditor.Models
 
             try
             {
-                FileStream inputStream = File.Open(Settings.FancyZonesSettingsFile, FileMode.Open);
+                Stream inputStream = FileSystem.File.Open(Settings.FancyZonesSettingsFile, FileMode.Open);
                 JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
                 JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty(CustomZoneSetsJsonTag).EnumerateArray();
 
@@ -384,6 +387,8 @@ namespace FancyZonesEditor.Models
             public int EditorSpacing { get; set; }
 
             public int EditorZoneCount { get; set; }
+
+            public int EditorSensitivityRadius { get; set; }
         }
 
         public void Apply()
@@ -424,6 +429,7 @@ namespace FancyZonesEditor.Models
                 EditorShowSpacing = settings.ShowSpacing,
                 EditorSpacing = settings.Spacing,
                 EditorZoneCount = settings.ZoneCount,
+                EditorSensitivityRadius = settings.SensitivityRadius,
             };
 
             JsonSerializerOptions options = new JsonSerializerOptions
@@ -434,7 +440,7 @@ namespace FancyZonesEditor.Models
             try
             {
                 string jsonString = JsonSerializer.Serialize(zoneSet, options);
-                File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
+                FileSystem.File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
             }
             catch (Exception ex)
             {

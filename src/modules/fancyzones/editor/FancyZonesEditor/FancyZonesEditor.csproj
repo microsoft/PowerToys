@@ -83,7 +83,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -235,6 +234,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.*.resx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -248,7 +248,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MahApps.Metro">
-      <Version>2.1.1</Version>
+      <Version>2.3.2</Version>
+    </PackageReference>
+    <PackageReference Include="System.IO.Abstractions">
+      <Version>12.2.5</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
       <Version>4.7.2</Version>

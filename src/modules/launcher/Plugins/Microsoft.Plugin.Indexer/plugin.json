@@ -1,6 +1,6 @@
 {
   "ID": "2140FC9819AD43A3A616E2735815C27C",
-  "ActionKeyword": "*",
+  "ActionKeywords": [ "*", "?" ],
   "Name": "Windows Indexer",
   "Description": "Search for files and folders",
   "Author": "Microsoft",

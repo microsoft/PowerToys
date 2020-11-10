@@ -37,6 +37,8 @@ namespace RemappingLogicTests
             });
         }
 
+        // Tests for shortcut to shortcut remappings
+
         // Test if correct keyboard states are set for a 2 key shortcut remap wih different modifiers key down
         TEST_METHOD (RemappedTwoKeyShortcutWithDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
@@ -1115,6 +1117,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x58), true);
         }
 
+        // Tests for shortcut to key remappings
+
         // Test if correct keyboard states are set for a 2 key shortcut to a single key remap not containing that key on key down followed by key up
         TEST_METHOD (RemappedTwoKeyShortcutToSingleKeyNotContainingThatKey_ShouldSetCorrectKeyStates_OnKeyEvents)
         {
@@ -1287,8 +1291,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
         }
 
-        // Test if keyboard state is reverted for a shortcut to a single key remap (target key is not a part of the shortcut) on key down followed by releasing the action key
-        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsNotInShortcut_ShouldSetOriginalModifier_OnReleasingActionKey)
+        // Test if keyboard state is not reverted for a shortcut to a single key remap (target key is not a part of the shortcut) on key down followed by releasing the action key
+        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsNotInShortcut_ShouldNotSetOriginalModifier_OnReleasingActionKey)
         {
             // Remap Ctrl+A to Alt
             Shortcut src;
@@ -1309,14 +1313,16 @@ namespace RemappingLogicTests
             // Press Ctrl+A, release A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // A, Alt should be false, Ctrl should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            // Ctrl, A, Alt should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
+            // Shortcut invoked state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
 
-        // Test if keyboard state is reverted for a shortcut to a single key remap (target key is a modifier in the shortcut) on key down followed by releasing the action key
-        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsAModifierInShortcut_ShouldSetOriginalModifier_OnReleasingActionKey)
+        // Test if keyboard state is not reverted for a shortcut to a single key remap (target key is a modifier in the shortcut) on key down followed by releasing the action key
+        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsAModifierInShortcut_ShouldNotSetOriginalModifier_OnReleasingActionKey)
         {
             // Remap Ctrl+A to Ctrl
             Shortcut src;
@@ -1337,13 +1343,15 @@ namespace RemappingLogicTests
             // Press Ctrl+A, release A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // A should be false, Ctrl should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            // Both A and Ctrl should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            // Shortcut invoked state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
 
-        // Test if keyboard state is reverted for a shortcut to a single key remap (target key is the action key in the shortcut) on key down followed by releasing the action key
-        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsActionKeyInShortcut_ShouldSetOriginalModifier_OnReleasingActionKey)
+        // Test if keyboard state is not reverted for a shortcut to a single key remap (target key is the action key in the shortcut) on key down followed by releasing the action key
+        TEST_METHOD (RemappedShortcutToSingleKeyWhereKeyIsActionKeyInShortcut_ShouldNotSetOriginalModifier_OnReleasingActionKey)
         {
             // Remap Ctrl+A to A
             Shortcut src;
@@ -1364,9 +1372,11 @@ namespace RemappingLogicTests
             // Press Ctrl+A, release A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // A should be false, Ctrl should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            // Ctrl, A should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            // Shortcut invoked state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
 
         // Test if keyboard state is reverted for a shortcut to a single key remap (target key is not a part of the shortcut) on key down followed by releasing the modifier key
@@ -1395,6 +1405,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
+            // Shortcut invoked state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
 
         // Test if keyboard state is reverted for a shortcut to a single key remap (target key is a modifier in the shortcut) on key down followed by releasing the modifier key
@@ -1422,6 +1434,8 @@ namespace RemappingLogicTests
             // A, Ctrl should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            // Shortcut invoked state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
 
         // Test if keyboard state is reverted for a shortcut to a single key remap (target key is the action key in the shortcut) on key down followed by releasing the modifier key
@@ -1477,6 +1491,39 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
+        }
+
+        // Test if remap is invoked for a shortcut to a single key remap and the keyboard state is reverted back to the physical keys when the shortcut is invoked along with other keys pressed before it and the action key is released
+        TEST_METHOD (RemappedShortcutToSingleKey_ShouldRevertBackToPhysicalKeys_IfOtherKeysArePressedAlongWithItAndThenActionKeyIsReleased)
+        {
+            // Remap Ctrl+A to Alt
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddOSLevelShortcut(src, VK_MENU);
+
+            const int nInputs = 4;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x42;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_CONTROL;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 0x41;
+            input[3].type = INPUT_KEYBOARD;
+            input[3].ki.wVk = 0x41;
+            input[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Press B+Ctrl+A, release A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Alt, A should be false, Ctrl, B should be true
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_CONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_MENU));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x42));
+            // Shortcut invoked state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
 
         // Test that remap is not invoked for a shortcut to a single key remap when a larger remapped shortcut to shortcut containing those shortcut keys is invoked
@@ -1546,8 +1593,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
         }
 
-        // Test if remap is invoked for a shortcut to a single key remap when the shortcut is invoked along with other keys pressed after it and then action key is released
-        TEST_METHOD (RemappedShortcutToSingleKey_ShouldBeInvoked_IfOtherKeysArePressedAfterItAndActionKeyIsReleased)
+        // Test if remap is invoked and then reverted to physical keys for a shortcut to a single key remap when the shortcut is invoked along with other keys pressed after it and then action key is released
+        TEST_METHOD (RemappedShortcutToSingleKey_ShouldBeInvokedAndThenRevertToPhysicalKeys_IfOtherKeysArePressedAfterItAndActionKeyIsReleased)
         {
             // Remap Ctrl+A to Alt
             Shortcut src;
@@ -1572,6 +1619,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
+            // Shortcut invoked state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
 
             input[0].type = INPUT_KEYBOARD;
             input[0].ki.wVk = 0x41;
@@ -1585,10 +1634,12 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
+            // Shortcut invoked state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
 
-        // Test if remap is invoked for a shortcut to a single key remap when the shortcut is invoked along with other keys pressed after it and modifier key is released
-        TEST_METHOD (RemappedShortcutToSingleKey_ShouldBeInvoked_IfOtherKeysArePressedAfterItAndModifierKeyIsReleased)
+        // Test if remap is invoked and then reverted to physical keys for a shortcut to a single key remap when the shortcut is invoked along with other keys pressed after it and modifier key is released
+        TEST_METHOD (RemappedShortcutToSingleKey_ShouldBeInvokedAndThenRevertToPhysicalKeys_IfOtherKeysArePressedAfterItAndModifierKeyIsReleased)
         {
             // Remap Ctrl+A to Alt
             Shortcut src;
@@ -1613,6 +1664,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
+            // Shortcut invoked state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
 
             input[0].type = INPUT_KEYBOARD;
             input[0].ki.wVk = VK_CONTROL;
@@ -1626,6 +1679,53 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
+            // Shortcut invoked state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+        }
+
+        // Test if remap is invoked and then reverted to physical keys for a shortcut to a single key remap when the shortcut is invoked and action key is released and then other keys pressed after it
+        TEST_METHOD (RemappedShortcutToSingleKey_ShouldBeInvokedAndThenRevertToPhysicalKeys_IfActionKeyIsReleasedAndThenOtherKeysArePressedAfterIt)
+        {
+            // Remap Ctrl+A to Alt
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddOSLevelShortcut(src, VK_MENU);
+
+            const int nInputs = 3;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 0x41;
+            input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Press Ctrl+A, release A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // A, Ctrl, Alt should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
+            // Shortcut invoked state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x42;
+            input[0].ki.dwFlags = 0;
+
+            // Press B
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // A, Alt should be false, Ctrl, B should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
+            // Shortcut invoked state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
         }
 
         // Test if Windows left key state is set when a shortcut remap to Win both is invoked
@@ -1667,6 +1767,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
         }
+
+        // Tests for interaction between shortcut to shortcut and shortcut to key remappings
 
         // Test if invoking two remapped shortcuts that share modifiers, where the first one remaps to a key and the second one remaps to a shortcut, in succession sets the correct keyboard states
         TEST_METHOD (TwoRemappedShortcutsThatShareModifiersWhereFirstOneRemapsToAKeyAndSecondOneRemapsToAShortcut_ShouldSetRemappedKeyStates_OnPressingSecondShortcutActionKeyAfterInvokingFirstShortcutRemap)
@@ -1830,6 +1932,8 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x43), true);
         }
 
+        // Tests for IME Caps Lock workaround on shortcut remappings
+
         // Test if SendVirtualInput is sent exactly once with the suppress flag when Win+CapsLock is remapped to shortcut containing Ctrl
         TEST_METHOD (HandleShortcutRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenWinCapsLockIsMappedToShortcutContainingCtrl)
         {
@@ -1927,7 +2031,7 @@ namespace RemappingLogicTests
             input[2].type = INPUT_KEYBOARD;
             input[2].ki.wVk = VK_CONTROL;
 
-            // Send LWin+CapsLock keydown followed by Ctrl
+            // Send Ctrl+A keydown followed by Ctrl
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // SendVirtualInput should be called exactly once with the above condition
@@ -1964,12 +2068,82 @@ namespace RemappingLogicTests
             input[2].type = INPUT_KEYBOARD;
             input[2].ki.wVk = VK_SHIFT;
 
-            // Send LWin+CapsLock keydown followed by Ctrl
+            // Send Ctrl+A keydown followed by Ctrl
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
         }
+
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when shortcut containing Ctrl is remapped to CapsLock and Ctrl is pressed again while shortcut remap is invoked
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenShortcutContainingCtrlIsMappedToCapsLockAndCtrlIsPressedWhileInvoked)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Ctrl+A to CapsLock
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddOSLevelShortcut(src, VK_CAPITAL);
+
+            const int nInputs = 3;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = VK_CONTROL;
+
+            // Send Ctrl+A keydown followed by Ctrl
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when shortcut containing Ctrl is remapped to CapsLock and Shift is pressed again while shortcut remap is invoked
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenShortcutContainingCtrlIsMappedToCapsLockAndShiftIsPressedWhileInvoked)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Ctrl+A to CapsLock
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddOSLevelShortcut(src, VK_CAPITAL);
+
+            const int nInputs = 3;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = VK_SHIFT;
+
+            // Send Ctrl+A keydown followed by Ctrl
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // Tests for all types of shortcut remappings
 
         // Test that the shortcut remap state is not reset when an unrelated key up message is sent - required to handle programs sending dummy key up messages
         TEST_METHOD (ShortcutRemap_ShouldNotGetReset_OnSendingKeyUpForAKeyNotPresentInTheShortcutAfterInvokingTheShortcut)
@@ -2003,6 +2177,515 @@ namespace RemappingLogicTests
 
             // Shortcut invoked state should be true
             Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+        }
+
+        // Tests for shortcut disable remappings
+
+        // Test that shortcut is disabled if the current shortcut pressed matches the exact shortcut which was remapped to Disable
+        TEST_METHOD (ShortcutDisable_ShouldDisableShortcut_OnExactMatch)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+
+            // send Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Check that Ctrl+A was released and Disable key was not sent
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), false);
+        }
+
+        // Test that shortcut is not disabled if the shortcut which was remapped to Disable is a subset of the keys currently pressed
+        TEST_METHOD (ShortcutDisable_ShouldNotDisableShortcut_OnSubsetMatch)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 3;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_SHIFT;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = actionKey;
+
+            // send Ctrl+Shift+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Check that Ctrl+Shift+A was not released and Disable key was not sent
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_SHIFT), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), true);
+        }
+
+        // Test that shortcut is not disabled if the shortcut which was remapped to Disable is pressed followed by another key
+        TEST_METHOD (ShortcutDisable_ShouldNotDisableShortcutSuperset_AfterShortcutWasDisabled)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+
+            // send Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x42;
+            // send B
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // Check that Ctrl+A+B was pressed
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
+            // Shortcut invoked state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+        }
+
+        // Test that shortcut is not disabled if the shortcut which was remapped to Disable is pressed and the action key is released, followed by pressing another key
+        TEST_METHOD (ShortcutDisable_ShouldNotDisableShortcutSuperset_AfterActionKeyWasReleasedAndAnotherKeyWasPressedAfterIt)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 3;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = actionKey;
+            input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // send Ctrl+A, release A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Check that no keys are pressed
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), false);
+            // Shortcut invoked state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x42;
+            // send B
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // Check that Ctrl+B was pressed
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(actionKey), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), true);
+            // Shortcut invoked state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+        }
+
+        // Test that the isOriginalActionKeyPressed flag is set to true on exact match of the shortcut
+        TEST_METHOD (ShortcutDisable_ShouldSetIsOriginalActionKeyPressed_OnExactMatch)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+
+            // send Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+        }
+
+        // Test that the isOriginalActionKeyPressed flag is set to false on releasing the action key
+        TEST_METHOD (ShortcutDisable_ShouldResetIsOriginalActionKeyPressed_OnReleasingActionKey)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+
+            // send Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = actionKey;
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // release A
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+        }
+
+        // Test that the isOriginalActionKeyPressed flag is set to true on pressing the action key again after releasing the action key
+        TEST_METHOD (ShortcutDisable_ShouldSetIsOriginalActionKeyPressed_OnPressingActionKeyAfterReleasingActionKey)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 3;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = actionKey;
+            input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // send Ctrl+A, release A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = actionKey;
+            input[0].ki.dwFlags = 0;
+
+            // press A
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+        }
+
+        // Test that the isOriginalActionKeyPressed flag is set to false on releasing the modifier key
+        TEST_METHOD (ShortcutDisable_ShouldResetIsOriginalActionKeyPressed_OnReleasingModifierKey)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+
+            // send Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // release Ctrl
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+        }
+
+        // Test that the isOriginalActionKeyPressed flag is set to false on pressing another key
+        TEST_METHOD (ShortcutDisable_ShouldResetIsOriginalActionKeyPressed_OnPressingAnotherKey)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            WORD actionKey = 0x41;
+            src.SetKey(actionKey);
+            WORD disableKey = CommonSharedConstants::VK_DISABLED;
+
+            testState.AddOSLevelShortcut(src, disableKey);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = actionKey;
+
+            // send Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x42;
+            input[0].ki.dwFlags = 0;
+
+            // press B
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // IsOriginalActionKeyPressed state should be false
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isOriginalActionKeyPressed);
+        }
+
+        // Tests for dummy key events in shortcut remaps
+
+        // Test if one set of dummy key events is sent before releasing the modifier when shortcut is remapped to a shortcut not containing original shortcut modifiers on invoking the shortcut. Example: Win+A->Ctrl+V, press Win+A, since Win will be released here we need to send a dummy event before it
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendOneSetOfDummyKeyEventsBeforeReleasingTheModifier_WhenShortcutIsRemappedToAShortcutNotContainingOriginalShortcutModifiersOnInvoke)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was a dummy key and LWin is pressed
+            mockedInputHandler.SetSendVirtualInputTestHandler([this](LowlevelKeyboardEvent* data) {
+                if (data->lParam->vkCode == KeyboardManagerConstants::DUMMY_KEY && mockedInputHandler.GetVirtualKeyState(VK_LWIN))
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Win+A to Ctrl+V
+            Shortcut src;
+            src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(0x56);
+            testState.AddOSLevelShortcut(src, dest);
+
+            const int nInputs = 2;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_LWIN;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+
+            // Send LWin+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly twice with the above condition (since two dummy key events are sent in one set)
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            // LWin should be released
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+        }
+
+        // Test if one set of dummy key events is sent after setting the modifier when three key shortcut is remapped to a shortcut on releasing action key and a modifier. Example: Win+Ctrl+A->Ctrl+V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendOneSetOfDummyKeyEventsAfterSettingTheModifier_When3KeyShortcutIsRemappedToShortcutOnReleasingActionKeyAndAModifier)
+        {
+            // Remap Win+Ctrl+A to Ctrl+V
+            Shortcut src;
+            src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(0x56);
+            testState.AddOSLevelShortcut(src, dest);
+
+            const int nInputs = 3;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_LWIN;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_CONTROL;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 0x41;
+
+            // Send LWin+Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Set sendvirtualinput call count condition to return true if the key event was a dummy key and LWin is pressed
+            mockedInputHandler.SetSendVirtualInputTestHandler([this](LowlevelKeyboardEvent* data) {
+                if (data->lParam->vkCode == KeyboardManagerConstants::DUMMY_KEY && mockedInputHandler.GetVirtualKeyState(VK_LWIN))
+                    return true;
+                else
+                    return false;
+            });
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Release Ctrl
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly twice with the above condition (since two dummy key events are sent in one set)
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            // LWin should be pressed
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+        }
+
+        // Test if one set of dummy key events is sent before releasing the modifier when shortcut is remapped to a single key on invoking the shortcut. Example: Win+A->V, press Win+A, since Win will be released here we need to send a dummy event before it
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendOneSetOfDummyKeyEventsBeforeReleasingTheModifier_WhenShortcutIsRemappedToASingleKeyOnInvoke)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was a dummy key and LWin is pressed
+            mockedInputHandler.SetSendVirtualInputTestHandler([this](LowlevelKeyboardEvent* data) {
+                if (data->lParam->vkCode == KeyboardManagerConstants::DUMMY_KEY && mockedInputHandler.GetVirtualKeyState(VK_LWIN))
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Win+A toV
+            Shortcut src;
+            src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            src.SetKey(0x41);
+            testState.AddOSLevelShortcut(src, 0x56);
+
+            const int nInputs = 2;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_LWIN;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+
+            // Send LWin+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly twice with the above condition (since two dummy key events are sent in one set)
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            // LWin should be released
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+        }
+
+        // Test if one set of dummy key events is sent after setting the modifier when shortcut is remapped to a single key on releasing action key and a modifier. Example: Win+A->V, press Shift+Win+A and release A, since Win will be pressed here we need to send a dummy event after it
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendOneSetOfDummyKeyEventsAfterSettingTheModifier_WhenShortcutIsRemappedToSingleKeyOnReleasingActionKeyAndAModifier)
+        {
+            // Remap Win+Ctrl+A to V
+            Shortcut src;
+            src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddOSLevelShortcut(src, 0x56);
+
+            const int nInputs = 3;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_LWIN;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_CONTROL;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 0x41;
+
+            // Send LWin+Ctrl+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Set sendvirtualinput call count condition to return true if the key event was a dummy key and LWin is pressed
+            mockedInputHandler.SetSendVirtualInputTestHandler([this](LowlevelKeyboardEvent* data) {
+                if (data->lParam->vkCode == KeyboardManagerConstants::DUMMY_KEY && mockedInputHandler.GetVirtualKeyState(VK_LWIN))
+                    return true;
+                else
+                    return false;
+            });
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Release Ctrl
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly twice with the above condition (since two dummy key events are sent in one set)
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            // LWin should be pressed
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+        }
+
+        // Test if one set of dummy key events is sent after setting the modifier when shortcut is remapped to a single key on invoking shortcut after pressing another key and then releasing the action key. Example: Win+A->V, press Shift+Win+A and release A, since Win will be pressed here we need to send a dummy event after it
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendOneSetOfDummyKeyEventsAfterSettingTheModifier_WhenShortcutIsRemappedToSingleKeyOnInvokingTheShortcutAfterPressingAnotherKeyAndThenReleasingTheActionKey)
+        {
+            // Remap Win+A to V
+            Shortcut src;
+            src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            src.SetKey(0x41);
+            testState.AddOSLevelShortcut(src, 0x56);
+
+            const int nInputs = 3;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_SHIFT;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_LWIN;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 0x41;
+
+            // Send Shift+LWin+A
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Set sendvirtualinput call count condition to return true if the key event was a dummy key and LWin is pressed
+            mockedInputHandler.SetSendVirtualInputTestHandler([this](LowlevelKeyboardEvent* data) {
+                if (data->lParam->vkCode == KeyboardManagerConstants::DUMMY_KEY && mockedInputHandler.GetVirtualKeyState(VK_LWIN))
+                    return true;
+                else
+                    return false;
+            });
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x41;
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Release A
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly twice with the above condition (since two dummy key events are sent in one set)
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            // LWin should be pressed
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
         }
     };
 }

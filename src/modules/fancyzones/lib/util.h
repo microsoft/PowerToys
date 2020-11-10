@@ -5,17 +5,6 @@
 
 namespace FancyZonesUtils
 {
-    // Window properties relevant to FancyZones
-    struct FancyZonesWindowInfo
-    {
-        // True if from the styles the window looks like a standard window
-        bool standardWindow = false;
-        // True if the window is a top-level window that does not have a visible owner
-        bool noVisibleOwner = false;
-        // Path to the executable owning the window
-        std::wstring processPath;
-    };
-
     struct Rect
     {
         Rect() {}
@@ -104,42 +93,14 @@ namespace FancyZonesUtils
         try
         {
             const long long tmp = std::stoll(hex.data(), nullptr, 16);
-            const BYTE nR = (tmp & 0xFF0000) >> 16;
-            const BYTE nG = (tmp & 0xFF00) >> 8;
-            const BYTE nB = (tmp & 0xFF);
+            const BYTE nR = static_cast<BYTE>((tmp & 0xFF0000) >> 16);
+            const BYTE nG = static_cast<BYTE>((tmp & 0xFF00) >> 8);
+            const BYTE nB = static_cast<BYTE>((tmp & 0xFF));
             return RGB(nR, nG, nB);
         }
         catch (const std::exception&)
         {
             return fallbackColor;
-        }
-    }
-    
-    inline void ParseDeviceId(PCWSTR deviceId, PWSTR parsedId, size_t size)
-    {
-        // We're interested in the unique part between the first and last #'s
-        // Example input: \\?\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
-        // Example output: DELA026#5&10a58c63&0&UID16777488
-        const std::wstring defaultDeviceId = L"FallbackDevice";
-        if (!deviceId)
-        {
-            StringCchCopy(parsedId, size, defaultDeviceId.c_str());
-            return;
-        }
-        wchar_t buffer[256];
-        StringCchCopy(buffer, 256, deviceId);
-
-        PWSTR pszStart = wcschr(buffer, L'#');
-        PWSTR pszEnd = wcsrchr(buffer, L'#');
-        if (pszStart && pszEnd && (pszStart != pszEnd))
-        {
-            pszStart++; // skip past the first #
-            *pszEnd = '\0';
-            StringCchCopy(parsedId, size, pszStart);
-        }
-        else
-        {
-            StringCchCopy(parsedId, size, defaultDeviceId.c_str());
         }
     }
 
@@ -196,11 +157,14 @@ namespace FancyZonesUtils
         return result;
     }
 
+    std::wstring ParseDeviceId(const std::wstring& deviceId);
+
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
-    FancyZonesWindowInfo GetFancyZonesWindowInfo(HWND window);
+    bool HasNoVisibleOwner(HWND window) noexcept;
+    bool IsStandardWindow(HWND window);
     bool IsCandidateForLastKnownZone(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
     bool IsCandidateForZoning(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
 

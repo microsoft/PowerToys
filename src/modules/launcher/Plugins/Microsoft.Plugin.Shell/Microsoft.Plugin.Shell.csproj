@@ -48,8 +48,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
+    <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" >
+      <Private>false</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj">
       <Private>false</Private>
     </ProjectReference>
@@ -67,7 +71,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
   

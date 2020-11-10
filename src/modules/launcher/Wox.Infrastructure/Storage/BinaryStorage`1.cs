@@ -4,11 +4,13 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
-using Wox.Infrastructure.Logger;
+using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -18,18 +20,28 @@ namespace Wox.Infrastructure.Storage
     /// </summary>
     public class BinaryStorage<T> : IStorage<T>
     {
+        private readonly IFileSystem _fileSystem;
+
         // This storage helper returns whether or not to delete the binary storage items
-        private static readonly int _binaryStorage = 0;
+        private const int _binaryStorage = 0;
         private StoragePowerToysVersionInfo _storageHelper;
 
         public BinaryStorage(string filename)
+            : this(filename, new FileSystem())
         {
+        }
+
+        public BinaryStorage(string filename, IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+
             const string directoryName = "Cache";
-            var directoryPath = Path.Combine(Constant.DataDirectory, directoryName);
+            var path = _fileSystem.Path;
+            var directoryPath = path.Combine(Constant.DataDirectory, directoryName);
             Helper.ValidateDirectory(directoryPath);
 
             const string fileSuffix = ".cache";
-            FilePath = Path.Combine(directoryPath, $"{filename}{fileSuffix}");
+            FilePath = path.Combine(directoryPath, $"{filename}{fileSuffix}");
         }
 
         public string FilePath { get; }
@@ -41,23 +53,25 @@ namespace Wox.Infrastructure.Storage
             // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
             if (_storageHelper.ClearCache)
             {
-                if (File.Exists(FilePath))
+                if (_fileSystem.File.Exists(FilePath))
                 {
-                    File.Delete(FilePath);
-                    Log.Info($"|BinaryStorage.TryLoad|Deleting cached data| <{FilePath}>");
+                    _fileSystem.File.Delete(FilePath);
+
+                    Log.Info($"Deleting cached data at <{FilePath}>", GetType());
                 }
             }
 
-            if (File.Exists(FilePath))
+            if (_fileSystem.File.Exists(FilePath))
             {
-                if (new FileInfo(FilePath).Length == 0)
+                if (_fileSystem.FileInfo.FromFileName(FilePath).Length == 0)
                 {
-                    Log.Error($"|BinaryStorage.TryLoad|Zero length cache file <{FilePath}>");
+                    Log.Error($"Zero length cache file <{FilePath}>", GetType());
+
                     Save(defaultData);
                     return defaultData;
                 }
 
-                using (var stream = new FileStream(FilePath, FileMode.Open))
+                using (var stream = _fileSystem.FileStream.Create(FilePath, FileMode.Open))
                 {
                     var d = Deserialize(stream, defaultData);
                     return d;
@@ -65,13 +79,15 @@ namespace Wox.Infrastructure.Storage
             }
             else
             {
-                Log.Info("|BinaryStorage.TryLoad|Cache file not exist, load default data");
+                Log.Info("Cache file not exist, load default data", GetType());
+
                 Save(defaultData);
                 return defaultData;
             }
         }
 
-        private T Deserialize(FileStream stream, T defaultData)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
+        private T Deserialize(Stream stream, T defaultData)
         {
             // http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -87,7 +103,8 @@ namespace Wox.Infrastructure.Storage
             }
             catch (System.Exception e)
             {
-                Log.Exception($"|BinaryStorage.Deserialize|Deserialize error for file <{FilePath}>", e);
+                Log.Exception($"Deserialize error for file <{FilePath}>", e, GetType());
+
                 return defaultData;
             }
             finally
@@ -128,12 +145,12 @@ namespace Wox.Infrastructure.Storage
                 }
                 catch (SerializationException e)
                 {
-                    Log.Exception($"|BinaryStorage.Save|serialize error for file <{FilePath}>", e);
+                    Log.Exception($"Serialize error for file <{FilePath}>", e, GetType());
                 }
             }
 
             _storageHelper.Close();
-            Log.Info($"|BinaryStorage.Save|Saving cached data| <{FilePath}>");
+            Log.Info($"Saving cached data at <{FilePath}>", GetType());
         }
     }
 }

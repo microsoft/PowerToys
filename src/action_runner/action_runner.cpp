@@ -1,4 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
+#include "Generated Files/resource.h"
+
 #include <Windows.h>
 #include <shellapi.h>
 
@@ -16,9 +18,9 @@
 #include "../runner/tray_icon.h"
 #include "../runner/action_runner_utils.h"
 
-#include "resource.h"
-
 extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+auto Strings = updating::notifications::strings::create();
 
 int uninstall_msi_action()
 {
@@ -27,7 +29,7 @@ int uninstall_msi_action()
     {
         return 0;
     }
-    if (!updating::uninstall_msi_version(package_path))
+    if (!updating::uninstall_msi_version(package_path, Strings))
     {
         return -1;
     }
@@ -190,7 +192,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
             else
             {
-                params = args[nextArg];
+                params += args[nextArg];
+                params += L' ';
                 nextArg++;
             }
         }

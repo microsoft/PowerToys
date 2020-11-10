@@ -9,20 +9,21 @@ using System.Windows.Input;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
 using ColorPicker.Telemetry;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
-using static ColorPicker.Win32Apis;
+using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Keyboard
 {
     [Export(typeof(KeyboardMonitor))]
-    public class KeyboardMonitor
+    public class KeyboardMonitor : IDisposable
     {
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
 
         private List<string> _activationKeys = new List<string>();
         private GlobalKeyboardHook _keyboardHook;
+        private bool disposedValue;
 
         [ImportingConstructor]
         public KeyboardMonitor(AppStateHandler appStateHandler, IUserSettings userSettings)
@@ -134,6 +135,29 @@ namespace ColorPicker.Keyboard
             {
                 currentlyPressedKeys.Add("Win");
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                    _keyboardHook.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
