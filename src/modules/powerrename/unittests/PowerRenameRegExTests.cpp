@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
+#include "powerrename/lib/Settings.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameRegEx.h>
 #include "MockPowerRenameRegExEvents.h"
@@ -18,8 +19,14 @@ namespace PowerRenameRegExTests
 
     TEST_CLASS(SimpleTests){
         public:
-            TEST_METHOD(GeneralReplaceTest){
-                CComPtr<IPowerRenameRegEx> renameRegEx;
+TEST_CLASS_INITIALIZE(ClassInitialize)
+{
+    CSettingsInstance().SetUseBoostLib(false);
+}
+
+TEST_METHOD(GeneralReplaceTest)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"foo") == S_OK);
@@ -358,6 +365,30 @@ TEST_METHOD(VerifyHandleCapturingGroups)
         Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
         Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
         Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
+        CoTaskMemFree(result);
+    }
+}
+
+TEST_METHOD(VerifyLookbehindFails)
+{
+    // Standard Library Regex Engine does not support lookbehind, thus test should fail.
+    SearchReplaceExpected sreTable[] = {
+        //search, replace, test, result
+        { L"(?<=E12).*", L"Foo", L"AAAAAA", nullptr },
+        { L"(?<!E12).*", L"Foo", L"AAAAAA", nullptr },
+    };
+
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    Assert::IsTrue(renameRegEx->PutFlags(UseRegularExpressions) == S_OK);
+
+    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
+    {
+        PWSTR result = nullptr;
+        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
+        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
+        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == E_FAIL);
+        Assert::AreEqual(sreTable[i].expected, result);
         CoTaskMemFree(result);
     }
 }

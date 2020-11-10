@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             MaxMRUSize = 0;
             ShowIcon = false;
             ExtendedContextMenuOnly = false;
+            UseBoostLib = false;
         }
 
         private int _maxSize;
@@ -47,6 +48,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowIcon { get; set; }
 
         public bool ExtendedContextMenuOnly { get; set; }
+
+        public bool UseBoostLib { get; set; }
 
         public string ToJsonString()
         {

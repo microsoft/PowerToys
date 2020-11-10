@@ -154,4 +154,11 @@
   <data name="SNOOZE_BUTTON" xml:space="preserve">
     <value>Snooze</value>
   </data>
+  <data name="SETTINGS_MENU_TEXT" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="EXIT_MENU_TEXT" xml:space="preserve">
+    <value>Exit</value>
+    <comment>Exit as a verb, as in Exit the application</comment>
+  </data>  
 </root>

@@ -10,6 +10,11 @@ data:[a-zA-Z=;,/0-9+-]+
 "Lorem[^"]+?\."
 TestCase\("[^"]+"
 
+# Test line with hexadecimal colors
+\[DataRow\("[0-9A-F]{6}", \d{3}, \d{3}, \d{3}\)\]
+\[DataRow\("[0-9A-F]{6}", \d{3}.\d{1}, \d{3}.\d{1}, \d{3}.\d{1}\)\]
+\[DataRow\("[0-9A-F]{6}", "[BCGMRY]\d\d?", \d{3}, \d{3}\)\]
+
 # Windows paths
 \\native
 \\notifications

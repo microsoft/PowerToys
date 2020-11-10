@@ -133,6 +133,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create new custom.
+        /// </summary>
+        public static string Custom_Layout_Create_New {
+            get {
+                return ResourceManager.GetString("Custom_Layout_Create_New", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom layout creator.
         /// </summary>
         public static string Custom_Layout_Creator {
@@ -174,6 +183,42 @@ namespace FancyZonesEditor.Properties {
         public static string Edit_Selected_Layout {
             get {
                 return ResourceManager.GetString("Edit_Selected_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor arguments are invalid..
+        /// </summary>
+        public static string Error_Invalid_Arguments {
+            get {
+                return ResourceManager.GetString("Error_Invalid_Arguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor Error.
+        /// </summary>
+        public static string Error_Message_Box_Title {
+            get {
+                return ResourceManager.GetString("Error_Message_Box_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor should not be run as standalone application..
+        /// </summary>
+        public static string Error_Not_Standalone_App {
+            get {
+                return ResourceManager.GetString("Error_Not_Standalone_App", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error parsing device info data..
+        /// </summary>
+        public static string Error_Parsing_Device_Info {
+            get {
+                return ResourceManager.GetString("Error_Parsing_Device_Info", resourceCulture);
             }
         }
         
@@ -246,6 +291,51 @@ namespace FancyZonesEditor.Properties {
         public static string Space_Around_Zones {
             get {
                 return ResourceManager.GetString("Space_Around_Zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Columns.
+        /// </summary>
+        public static string Template_Layout_Columns {
+            get {
+                return ResourceManager.GetString("Template_Layout_Columns", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Focus.
+        /// </summary>
+        public static string Template_Layout_Focus {
+            get {
+                return ResourceManager.GetString("Template_Layout_Focus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grid.
+        /// </summary>
+        public static string Template_Layout_Grid {
+            get {
+                return ResourceManager.GetString("Template_Layout_Grid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Priority Grid.
+        /// </summary>
+        public static string Template_Layout_Priority_Grid {
+            get {
+                return ResourceManager.GetString("Template_Layout_Priority_Grid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rows.
+        /// </summary>
+        public static string Template_Layout_Rows {
+            get {
+                return ResourceManager.GetString("Template_Layout_Rows", resourceCulture);
             }
         }
         
