@@ -226,4 +226,7 @@
   <data name="Tab_Item_Templates" xml:space="preserve">
     <value>Templates tab selected, press ctrl + tab to switch to Custom</value>
   </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
 </root>

@@ -106,6 +106,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        public static string Close {
+            get {
+                return ResourceManager.GetString("Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error logged to .
         /// </summary>
         public static string Crash_Report_Message_Box_Text_Part1 {
