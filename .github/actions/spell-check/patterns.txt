@@ -32,3 +32,6 @@ TestCase\("[^"]+"
 \\testapp
 \\tests
 \\tools
+
+# plugin.json
+^  "ID": "[0-9A-F]{32}",$
