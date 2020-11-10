@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Registry
             }
             else if (!(mainKey is null))
             {
-                list = RegistryHelper.SerachForSubKey(mainKey, path);
+                list = RegistryHelper.SearchForSubKey(mainKey, path);
             }
 
             return list.Count == 0

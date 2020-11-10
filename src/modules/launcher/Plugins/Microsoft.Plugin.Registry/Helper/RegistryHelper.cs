@@ -67,12 +67,12 @@ namespace Microsoft.Plugin.Registry.Helper
             };
 
         /// <summary>
-        /// Serach for the given sub-key path in the given main registry key
+        /// Search for the given sub-key path in the given main registry key
         /// </summary>
         /// <param name="mainKey">The main <see cref="RegistryKey"/></param>
         /// <param name="subKeyPath">The path of the registry sub-key</param>
         /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
-        internal static ICollection<(string, RegistryKey?, Exception?)> SerachForSubKey(in RegistryKey mainKey, in string subKeyPath)
+        internal static ICollection<(string, RegistryKey?, Exception?)> SearchForSubKey(in RegistryKey mainKey, in string subKeyPath)
         {
             Debug.WriteLine($"Search for {mainKey.Name}\\{subKeyPath}\n");
 
@@ -133,35 +133,35 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <summary>
         /// Try to find the given registry sub-key in the given registry parent-key
         /// </summary>
-        /// <param name="parentkey">The parent-key, also the root to start teh search</param>
+        /// <param name="parentKey">The parent-key, also the root to start teh search</param>
         /// <param name="searchSubKey">The sub-key to find</param>
         /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
-        private static ICollection<(string, RegistryKey?, Exception?)> FindSubKey(in RegistryKey parentkey, in string searchSubKey)
+        private static ICollection<(string, RegistryKey?, Exception?)> FindSubKey(in RegistryKey parentKey, in string searchSubKey)
         {
             var list = new Collection<(string, RegistryKey?, Exception?)>();
 
-            Debug.WriteLine($"Search for {searchSubKey} in {parentkey.Name}");
+            Debug.WriteLine($"Search for {searchSubKey} in {parentKey.Name}");
 
             try
             {
-                foreach (var subKey in parentkey.GetSubKeyNames())
+                foreach (var subKey in parentKey.GetSubKeyNames())
                 {
                     if (subKey.StartsWith(searchSubKey, StringComparison.InvariantCultureIgnoreCase))
                     {
                         try
                         {
-                            list.Add(($"{parentkey.Name}\\{subKey}", parentkey.OpenSubKey(subKey), null));
+                            list.Add(($"{parentKey.Name}\\{subKey}", parentKey.OpenSubKey(subKey), null));
                         }
                         catch (Exception exception)
                         {
-                            list.Add(($"{parentkey.Name}\\{subKey}", null, exception));
+                            list.Add(($"{parentKey.Name}\\{subKey}", null, exception));
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                list.Add((parentkey.Name, null, ex));
+                list.Add((parentKey.Name, null, ex));
             }
 
             return list;

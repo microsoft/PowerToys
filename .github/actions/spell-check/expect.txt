@@ -847,11 +847,13 @@ hinstance
 hitinfo
 HIWORD
 hk
-HKCR
+HKCC
 HKCU
+HKCR
 hkey
 HKL
 HKLM
+HKU
 HLOCAL
 HLSL
 hmenu
@@ -1765,6 +1767,7 @@ REFCLSID
 refcount
 REFIID
 REGCLS
+regedit
 regex
 REGISTERCLASSFAILED
 registrypath
