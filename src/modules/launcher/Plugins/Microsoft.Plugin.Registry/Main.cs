@@ -5,9 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Windows;
+using System.Reflection;
+using System.Windows.Input;
 using Microsoft.Plugin.Registry.Helper;
 using Microsoft.Win32;
 using Wox.Plugin;
@@ -28,19 +27,20 @@ namespace Microsoft.Plugin.Registry
     // - auto replace "/" with "\"
     // - always case-intensitive
     // - make as PT plugin
+    // - command: open direct in regedit.exe
+    // - command: copy key to clipboard
 
     // TODO:
+    // - command: copy value to clipboard
     // - reduce used of strings, use RegisterKey instead
     // - avoid use of tuples use key value instead
     // - simple key-walker with full keys
     // - extended key-walker with only parts of the keys
-    // - command: open direct in regedit.exe
-    // - command: copy to clipboard
     // - multi-language
     // - cache results ?
     // - benchmark
     // - unittests
-    public class Main : IPlugin
+    public class Main : IPlugin, IContextMenu
     {
         public void Init(PluginInitContext context)
         {
@@ -68,6 +68,32 @@ namespace Microsoft.Plugin.Registry
                 : PrepareResults(list);
         }
 
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+            => new List<ContextMenuResult>
+            {
+                new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Open in registery Editor",
+                    Glyph = "\xE70F",                       // E70F => Edit (Pencil)
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.Enter,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ => ContextMenuHelper.OpenInRegistryEditor(selectedResult),
+                },
+
+                new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Copy KEy to Clipboard",
+                    Glyph = "\xF0E3",                       // E70F => ClipboardList
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ => ContextMenuHelper.CopyToClipBoard(selectedResult),
+                },
+            };
+
         private static List<Result> PrepareResults(ICollection<(string, RegistryKey?, Exception?)> list)
         {
             var resultList = new List<Result>();
@@ -93,30 +119,7 @@ namespace Microsoft.Plugin.Registry
                     result.Title = item.Item1;
                 }
 
-                result.Action = action =>
-                {
-                    try
-                    {
-                        RegistryHelper.OpenRegisteryKey(result.Title);
-                        return true;
-                    }
-                    catch (System.ComponentModel.Win32Exception)
-                    {
-                        MessageBox.Show(
-                            "You have not enought rights to open the Registry Editor",
-                            "Error on open Registry Editor",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
-#pragma warning disable CA1031 // Do not catch general exception types
-                    catch (Exception exception)
-                    {
-                        MessageBox.Show(exception.ToString(), "Error on open Registry Editor", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-#pragma warning restore CA1031 // Do not catch general exception types
-
-                    return false;
-                };
+                result.Action = _ => ContextMenuHelper.OpenInRegistryEditor(result);
 
                 resultList.Add(result);
             }
