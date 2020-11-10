@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using ColorPicker.Common;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace ColorPicker.Settings

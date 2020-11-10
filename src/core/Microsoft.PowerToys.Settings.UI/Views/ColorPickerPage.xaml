@@ -27,12 +27,12 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                         <Setter Target="ColorPickerView.(Grid.Row)" Value="1" />
-                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
-                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
-                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage" />
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage" />
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0" />
                         <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
@@ -73,18 +73,17 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             
-            <ComboBox x:Uid="ColorPicker_CopiedColorRepresentation"
-                      SelectedIndex="{Binding CopiedColorRepresentationIndex, Mode=TwoWay}"
+            <ComboBox x:Name="ColorPicker_ComboBox"
+                      x:Uid="ColorPicker_CopiedColorRepresentation"
+                      MinWidth="240"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{Binding IsEnabled}"
                       HorizontalAlignment="Left"
-                      MinWidth="240">
-                <ComboBoxItem Content="HEX - #FFAA00"/>
-                <ComboBoxItem Content="RGB - rgb(100, 50, 75)"/>
-                <ComboBoxItem Content="CMYK - cmyk(100%, 50%, 75%, 0%)"/>
-                <ComboBoxItem Content="HSL - hsl(100, 50%, 75%)"/>
-                <ComboBoxItem Content="HSV - hsv(100, 50%, 75%)"/>
-            </ComboBox>
+                      DisplayMemberPath="Value"
+                      IsEnabled="{Binding IsEnabled}"
+                      ItemsSource="{Binding SelectableColorRepresentations}"
+                      Loaded="ColorPicker_ComboBox_Loaded"
+                      SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
+                      SelectedValuePath="Key" />
 
             <TextBlock Margin="{StaticResource MediumTopMargin}"
                        TextWrapping="WrapWholeWords"

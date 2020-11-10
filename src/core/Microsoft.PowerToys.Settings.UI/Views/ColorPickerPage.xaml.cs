@@ -20,5 +20,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
         }
+
+        /// <summary>
+        /// Event is called when the <see cref="ComboBox"/> is completely loaded, inclusive the ItemSource
+        /// </summary>
+        /// <param name="sender">The sender of this event</param>
+        /// <param name="e">The arguments of this event</param>
+        private void ColorPicker_ComboBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+           /**
+            * UWP hack
+            * because UWP load the bound ItemSource of the ComboBox asynchronous,
+            * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
+            * Selection via SelectedItem and SelectedValue is still not working too
+            */
+            var index = 0;
+
+            foreach (var item in ViewModel.SelectableColorRepresentations)
+            {
+                if (item.Key == ViewModel.SelectedColorRepresentationValue)
+                {
+                    break;
+                }
+
+                index++;
+            }
+
+            ColorPicker_ComboBox.SelectedIndex = index;
+        }
     }
 }

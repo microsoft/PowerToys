@@ -823,4 +823,11 @@
   <data name="FancyZones_WindowBehavior_GroupSettings.Text" xml:space="preserve">
     <value>Window behavior</value>
   </data>
+  <data name="PowerRename_BehaviorHeader.Text" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="PowerRename_Toggle_UseBoostLib.Content" xml:space="preserve">
+    <value>Use Boost library (provides extended features but may use different regex syntax)</value>
+    <comment>Boost is a product name, should not be translated</comment>
+  </data>
 </root>

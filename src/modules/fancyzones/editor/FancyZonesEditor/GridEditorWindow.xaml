@@ -62,6 +62,15 @@
             <Setter Property="Width" Value="250"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
         </Style>
+        <Style x:Key="customButtonFocusVisualStyle">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="1" Stroke="White" StrokeDashArray="1 2" StrokeThickness="1" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="secondaryButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -72,6 +81,7 @@
             <Setter Property="Background" Value="#767676"/>
             <Setter Property="Width" Value="239"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -98,6 +108,7 @@
             <Setter Property="Margin" Value="16,0,0,0" />
             <Setter Property="Width" Value="239"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">

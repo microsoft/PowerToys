@@ -41,8 +41,8 @@ namespace Wox.Plugin.Logger
             var rule = new LoggingRule("*", LogLevel.Info, target);
 #endif
             configuration.LoggingRules.Add(rule);
-            LogManager.Configuration = configuration;
             target.Dispose();
+            LogManager.Configuration = configuration;
         }
 
         private static void LogInternalException(string message, System.Exception e, Type fullClassName, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)

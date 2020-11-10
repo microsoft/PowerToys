@@ -72,6 +72,15 @@
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+        <Style x:Key="customButtonFocusVisualStyle">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="1" Stroke="White" StrokeDashArray="1 2" StrokeThickness="1" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="secondaryButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -83,6 +92,7 @@
             <Setter Property="Margin" Value="16,0,0,0" />
             <Setter Property="Width" Value="378"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -109,6 +119,7 @@
             <Setter Property="Margin" Value="16,0,16,0" />
             <Setter Property="Width" Value="377"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -200,7 +211,10 @@
                                 <Border Margin="8" 
                                         BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
                                         Style="{StaticResource templateBackground}" 
-                                        MouseDown="LayoutItem_Click">
+                                        MouseDown="LayoutItem_Click"
+                                        Focusable="True"
+                                        FocusManager.GotFocus="LayoutItem_Focused"
+                                        KeyDown="LayoutItem_Apply">
                                     <DockPanel Margin="0,20,0,0" 
                                                VerticalAlignment="Stretch" 
                                                HorizontalAlignment="Stretch" 
@@ -233,7 +247,10 @@
                                 <Border Margin="8"
                                         BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}" 
                                         Style="{StaticResource templateBackground}" 
-                                        MouseDown="LayoutItem_Click">
+                                        MouseDown="LayoutItem_Click"
+                                        Focusable="True"
+                                        FocusManager.GotFocus="LayoutItem_Focused"
+                                        KeyDown="LayoutItem_Apply">
                                     <DockPanel Margin="0,20,0,0" 
                                                VerticalAlignment="Stretch" 
                                                HorizontalAlignment="Stretch" 

@@ -4,7 +4,7 @@
 
 using System.Collections.ObjectModel;
 using ColorPicker.Common;
-using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.Settings
 {

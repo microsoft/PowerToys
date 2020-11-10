@@ -15,6 +15,7 @@ using ColorPicker.Helpers;
 using ColorPicker.Models;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 
 namespace ColorPicker.ViewModels
 {
@@ -141,35 +142,35 @@ namespace ColorPicker.ViewModels
                 new ColorFormatModel()
                 {
                     FormatName = "HEX",
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.HEX); },
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, ColorRepresentationType.HEX); },
                 });
 
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = "RGB",
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.RGB); },
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, ColorRepresentationType.RGB); },
                 });
 
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = "HSL",
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.HSL); },
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, ColorRepresentationType.HSL); },
                 });
 
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = "HSV",
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.HSV); },
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, ColorRepresentationType.HSV); },
                 });
 
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
                     FormatName = "CMYK",
-                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, Microsoft.PowerToys.Settings.UI.Library.ColorRepresentationType.CMYK); },
+                    Convert = (Color color) => { return ColorRepresentationHelper.GetStringRepresentation(color, ColorRepresentationType.CMYK); },
                 });
 
             _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
