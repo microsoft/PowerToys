@@ -16,7 +16,7 @@ namespace ColorPicker.Settings
 
         SettingItem<ColorRepresentationType> CopiedColorRepresentation { get; set; }
 
-        SettingItem<bool> UseEditor { get; }
+        SettingItem<ColorPickerActivationAction> ActivationAction { get; }
 
         RangeObservableCollection<string> ColorHistory { get; }
 

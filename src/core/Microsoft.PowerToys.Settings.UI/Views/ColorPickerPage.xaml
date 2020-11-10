@@ -63,12 +63,29 @@
                                           HorizontalAlignment="Left"
                                           MinWidth="240"
                                           />
+
+            <TextBlock x:Uid="ColorPicker_ActivationAction"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             
-            <CheckBox x:Uid="ColorPicker_UseEditor" 
-                      IsChecked="{Binding UseEditor, Mode=TwoWay}" 
-                      Margin="{StaticResource SmallTopMargin}" 
-                      IsEnabled="{Binding IsEnabled}"/>
-            
+            <RadioButton x:Uid="ColorPicker_OpenEditor"
+                         IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}"
+                         Margin="{StaticResource SmallTopMargin}" 
+                         IsEnabled="{Binding IsEnabled}"
+                         GroupName="ColorPickerActivationAction"/>
+
+            <RadioButton x:Uid="ColorPicker_OpenPickerAndEditor"
+                         IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}"
+                         Margin="{StaticResource SmallTopMargin}" 
+                         IsEnabled="{Binding IsEnabled}"
+                         GroupName="ColorPickerActivationAction"/>
+
+            <RadioButton x:Uid="ColorPicker_OpenPickerOnly"
+                         IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}"
+                         Margin="{StaticResource SmallTopMargin}" 
+                         IsEnabled="{Binding IsEnabled}"
+                         GroupName="ColorPickerActivationAction"/>
+
             <TextBlock x:Uid="ColorFormats"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>

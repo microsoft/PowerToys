@@ -39,7 +39,7 @@ namespace ColorPicker.Settings
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);
-            UseEditor = new SettingItem<bool>(true);
+            ActivationAction = new SettingItem<ColorPickerActivationAction>(ColorPickerActivationAction.OpenEditor);
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
 
@@ -65,7 +65,7 @@ namespace ColorPicker.Settings
 
         public SettingItem<ColorRepresentationType> CopiedColorRepresentation { get; set; }
 
-        public SettingItem<bool> UseEditor { get; private set; }
+        public SettingItem<ColorPickerActivationAction> ActivationAction { get; private set; }
 
         public RangeObservableCollection<string> ColorHistory { get; private set; } = new RangeObservableCollection<string>();
 
@@ -101,7 +101,7 @@ namespace ColorPicker.Settings
                                 ChangeCursor.Value = settings.Properties.ChangeCursor;
                                 ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
                                 CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
-                                UseEditor.Value = settings.Properties.UseEditor;
+                                ActivationAction.Value = settings.Properties.ActivationAction;
                                 ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
 
                                 if (settings.Properties.ColorHistory == null)

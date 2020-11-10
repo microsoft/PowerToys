@@ -15,13 +15,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = new HotkeySettings(true, false, false, true, 0x43);
             ChangeCursor = false;
-            UseEditor = true;
             ColorHistory = new List<string>();
             ColorHistoryLimit = 20;
             VisibleColorFormats = new Dictionary<string, bool>();
             VisibleColorFormats.Add("HEX", true);
             VisibleColorFormats.Add("RGB", true);
             VisibleColorFormats.Add("HSL", true);
+            ActivationAction = ColorPickerActivationAction.OpenEditor;
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -33,9 +33,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("copiedcolorrepresentation")]
         public ColorRepresentationType CopiedColorRepresentation { get; set; }
 
-        [JsonPropertyName("useeditor")]
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool UseEditor { get; set; }
+        [JsonPropertyName("activationaction")]
+        public ColorPickerActivationAction ActivationAction { get; set; }
 
         [JsonPropertyName("colorhistory")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Need to change this collection")]

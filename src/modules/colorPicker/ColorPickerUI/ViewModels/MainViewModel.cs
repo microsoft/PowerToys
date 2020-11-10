@@ -15,6 +15,7 @@ using ColorPicker.Mouse;
 using ColorPicker.Settings;
 using ColorPicker.Telemetry;
 using ColorPicker.ViewModelContracts;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.ViewModels
@@ -113,7 +114,7 @@ namespace ColorPicker.ViewModels
 
             _appStateHandler.HideColorPicker();
 
-            if (_userSettings.UseEditor.Value)
+            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
             {
                 _appStateHandler.ShowColorPickerEditor();
             }

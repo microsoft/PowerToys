@@ -143,19 +143,43 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
-        public bool UseEditor
+        public bool ActivationOpensEditor
         {
-            get
-            {
-                return _colorPickerSettings.Properties.UseEditor;
-            }
-
+            get => _colorPickerSettings.Properties.ActivationAction == ColorPickerActivationAction.OpenEditor;
             set
             {
-                if (_colorPickerSettings.Properties.UseEditor != value)
+                if (value && _colorPickerSettings.Properties.ActivationAction != ColorPickerActivationAction.OpenEditor)
                 {
-                    _colorPickerSettings.Properties.UseEditor = value;
-                    OnPropertyChanged(nameof(UseEditor));
+                    _colorPickerSettings.Properties.ActivationAction = ColorPickerActivationAction.OpenEditor;
+                    OnPropertyChanged(nameof(ActivationOpensEditor));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool ActivationOpensColorPickerOnly
+        {
+            get => _colorPickerSettings.Properties.ActivationAction == ColorPickerActivationAction.OpenOnlyColorPicker;
+            set
+            {
+                if (value && _colorPickerSettings.Properties.ActivationAction != ColorPickerActivationAction.OpenOnlyColorPicker)
+                {
+                    _colorPickerSettings.Properties.ActivationAction = ColorPickerActivationAction.OpenOnlyColorPicker;
+                    OnPropertyChanged(nameof(ActivationOpensColorPickerOnly));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool ActivationOpensColorPickerAndEditor
+        {
+            get => _colorPickerSettings.Properties.ActivationAction == ColorPickerActivationAction.OpenColorPickerAndThenEditor;
+            set
+            {
+                if (value && _colorPickerSettings.Properties.ActivationAction != ColorPickerActivationAction.OpenColorPickerAndThenEditor)
+                {
+                    _colorPickerSettings.Properties.ActivationAction = ColorPickerActivationAction.OpenColorPickerAndThenEditor;
+                    OnPropertyChanged(nameof(ActivationOpensEditor));
                     NotifySettingsChanged();
                 }
             }

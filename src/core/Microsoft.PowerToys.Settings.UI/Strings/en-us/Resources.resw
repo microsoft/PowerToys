@@ -807,8 +807,17 @@
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
     <value>Copied color representation</value>
   </data>
-  <data name="ColorPicker_UseEditor.Content" xml:space="preserve">
-    <value>Open editor on activation shortcut</value>
+  <data name="ColorPicker_OpenEditor.Content" xml:space="preserve">
+    <value>Opens editor, you can browse your colors history or pick a new color</value>
+  </data>
+  <data name="ColorPicker_OpenPickerAndEditor.Content" xml:space="preserve">
+    <value>Opens color picker - picked color is copied into the clipboard and editor is opened</value>
+  </data>
+  <data name="ColorPicker_OpenPickerOnly.Content" xml:space="preserve">
+    <value>Opens color picker - picked color is copied into the clipboard</value>
+  </data>
+  <data name="ColorPicker_ActivationAction.Text" xml:space="preserve">
+    <value>Choose an action to trigger after pressing the activation shortcut</value>
   </data>
   <data name="ColorFormats.Text" xml:space="preserve">
     <value>Color formats</value>
