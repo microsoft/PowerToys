@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Registry
 
             ICollection<(string, RegistryKey?, Exception?)> list = new Collection<(string, RegistryKey?, Exception?)>();
 
-            var (mainKey, path) = RegistryHelper.GetRegisteryKey(search);
+            var (mainKey, path) = RegistryHelper.GetRegistryKey(search);
 
             if (mainKey is null && search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Registry
             }
             else if (!(mainKey is null))
             {
-                list = RegistryHelper.SerachForKey(mainKey, path);
+                list = RegistryHelper.SerachForSubKey(mainKey, path);
             }
 
             return list.Count == 0
@@ -74,7 +74,7 @@ namespace Microsoft.Plugin.Registry
                 new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Open in registery Editor",
+                    Title = "Open in registry editor",
                     Glyph = "\xE70F",                       // E70F => Edit (Pencil)
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
@@ -85,7 +85,7 @@ namespace Microsoft.Plugin.Registry
                 new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Copy KEy to Clipboard",
+                    Title = "Copy key to clipboard",
                     Glyph = "\xF0E3",                       // E70F => ClipboardList
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
@@ -106,7 +106,7 @@ namespace Microsoft.Plugin.Registry
                 {
                     // when key contains keys or fields
                     result.Title = item.Item2.Name;
-                    result.SubTitle = RegistryHelper.GetKeyResult(item.Item2);
+                    result.SubTitle = RegistryHelper.GetSummary(item.Item2);
                 }
                 else if (item.Item2 is null && !(item.Item3 is null))
                 {

@@ -17,13 +17,13 @@ namespace Microsoft.Plugin.Registry.Helper
         {
             try
             {
-                RegistryHelper.OpenRegisteryKey(result.Title);
+                RegistryHelper.OpenRegistryKey(result.Title);
                 return true;
             }
             catch (System.ComponentModel.Win32Exception)
             {
                 MessageBox.Show(
-                    "You have not enought rights to open the Registry Editor",
+                    "You do not have enough rights to open the Registry Editor",
                     "Error on open Registry Editor",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);

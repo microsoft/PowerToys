@@ -33,11 +33,11 @@ namespace Microsoft.Plugin.Registry.Helper
         };
 
         /// <summary>
-        /// Try to find a registery key based on the given serach query
+        /// Try to find a registry key based on the given query
         /// </summary>
         /// <param name="query">The query to search</param>
         /// <returns>A combination of the main <see cref="RegistryKey"/> and the sub keys</returns>
-        internal static (RegistryKey? mainKey, string subKey) GetRegisteryKey(in string query)
+        internal static (RegistryKey? mainKey, string subKey) GetRegistryKey(in string query)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -52,9 +52,9 @@ namespace Microsoft.Plugin.Registry.Helper
         }
 
         /// <summary>
-        /// Return a list of all registery main key
+        /// Return a list of all registry main key
         /// </summary>
-        /// <returns>A list with a key-value-pair of all registery main key and possible exceptions</returns>
+        /// <returns>A list with key-value-pairs of all registry main key and possible exceptions</returns>
         internal static ICollection<(string, RegistryKey?, Exception?)> GetAllMainKeys()
             => new Collection<(string, RegistryKey?, Exception?)>
             {
@@ -66,9 +66,15 @@ namespace Microsoft.Plugin.Registry.Helper
                 (Win32.Registry.Users.Name, null, null),
             };
 
-        internal static ICollection<(string, RegistryKey?, Exception?)> SerachForKey(in RegistryKey mainKey, in string subKeyPath)
+        /// <summary>
+        /// Serach for the given sub-key path in the given main registry key
+        /// </summary>
+        /// <param name="mainKey">The main <see cref="RegistryKey"/></param>
+        /// <param name="subKeyPath">The path of the registry sub-key</param>
+        /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
+        internal static ICollection<(string, RegistryKey?, Exception?)> SerachForSubKey(in RegistryKey mainKey, in string subKeyPath)
         {
-            Debug.WriteLine($"Serarch for {mainKey.Name}\\{subKeyPath}\n");
+            Debug.WriteLine($"Search for {mainKey.Name}\\{subKeyPath}\n");
 
             var subKeysNames = subKeyPath.Split('\\');
             var index = 0;
@@ -79,7 +85,7 @@ namespace Microsoft.Plugin.Registry.Helper
             do
             {
                 var subKeyName = subKeysNames.ElementAtOrDefault(index);
-                result = FindKey(subKey, subKeyName);
+                result = FindSubKey(subKey, subKeyName);
 
                 if (result.Count == 0)
                 {
@@ -103,19 +109,34 @@ namespace Microsoft.Plugin.Registry.Helper
             return result;
         }
 
-        internal static string GetKeyResult(in RegistryKey subKey)
-            => $"Sub-keys: {subKey.SubKeyCount} - Values: {subKey.ValueCount}";
+        /// <summary>
+        /// Return a human readable summary of a given <see cref="RegistryKey"/>
+        /// </summary>
+        /// <param name="key">The <see cref="RegistryKey"/> for the summary</param>
+        /// <returns>A human readable summary</returns>
+        internal static string GetSummary(in RegistryKey key)
+            => $"Sub-keys: {key.SubKeyCount} - Values: {key.ValueCount}";
 
-        internal static void OpenRegisteryKey(string fullKey)
+        /// <summary>
+        /// Open a given registry key in the registry editor (build-in in Windows)
+        /// </summary>
+        /// <param name="fullKey">The registry key to open</param>
+        internal static void OpenRegistryKey(in string fullKey)
         {
-            // it's impossible to direct open a key via command-line option, so we must override the last remembert key
+            // it's impossible to direct open a key via command-line option, so we must override the last remember key
             Win32.Registry.SetValue(@"HKEY_Current_User\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "LastKey", fullKey);
 
             // -m => allow multi-instance (hidden start option)
             Process.Start("regedit.exe", "-m");
         }
 
-        private static ICollection<(string, RegistryKey?, Exception?)> FindKey(RegistryKey parentkey, string searchSubKey)
+        /// <summary>
+        /// Try to find the given registry sub-key in the given registry parent-key
+        /// </summary>
+        /// <param name="parentkey">The parent-key, also the root to start teh search</param>
+        /// <param name="searchSubKey">The sub-key to find</param>
+        /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
+        private static ICollection<(string, RegistryKey?, Exception?)> FindSubKey(in RegistryKey parentkey, in string searchSubKey)
         {
             var list = new Collection<(string, RegistryKey?, Exception?)>();
 
@@ -146,15 +167,21 @@ namespace Microsoft.Plugin.Registry.Helper
             return list;
         }
 
-        private static ICollection<(string, RegistryKey?, Exception?)> GetAllSubKeys(in RegistryKey key, in int maxCount = 50)
+        /// <summary>
+        /// Return a list with a registry sub-keys of the given registry parent-key
+        /// </summary>
+        /// <param name="parentKey">The registry parent-key</param>
+        /// <param name="maxCount">(optional) The maximum count of the results</param>
+        /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
+        private static ICollection<(string, RegistryKey?, Exception?)> GetAllSubKeys(in RegistryKey parentKey, in int maxCount = 50)
         {
             var list = new Collection<(string, RegistryKey?, Exception?)>();
 
             try
             {
-                foreach (var subKey in key.GetSubKeyNames())
+                foreach (var subKey in parentKey.GetSubKeyNames())
                 {
-                    list.Add(($"{key.Name}\\{subKey}", key, null));
+                    list.Add(($"{parentKey.Name}\\{subKey}", parentKey, null));
 
                     if (list.Count > maxCount)
                     {
@@ -164,7 +191,7 @@ namespace Microsoft.Plugin.Registry.Helper
             }
             catch (Exception exception)
             {
-                list.Add(($"{key.Name}", null, exception));
+                list.Add(($"{parentKey.Name}", null, exception));
             }
 
             return list;
