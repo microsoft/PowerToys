@@ -211,7 +211,10 @@
                                 <Border Margin="8" 
                                         BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
                                         Style="{StaticResource templateBackground}" 
-                                        MouseDown="LayoutItem_Click">
+                                        MouseDown="LayoutItem_Click"
+                                        Focusable="True"
+                                        FocusManager.GotFocus="LayoutItem_Focused"
+                                        KeyDown="LayoutItem_Apply">
                                     <DockPanel Margin="0,20,0,0" 
                                                VerticalAlignment="Stretch" 
                                                HorizontalAlignment="Stretch" 
@@ -244,7 +247,10 @@
                                 <Border Margin="8"
                                         BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}" 
                                         Style="{StaticResource templateBackground}" 
-                                        MouseDown="LayoutItem_Click">
+                                        MouseDown="LayoutItem_Click"
+                                        Focusable="True"
+                                        FocusManager.GotFocus="LayoutItem_Focused"
+                                        KeyDown="LayoutItem_Apply">
                                     <DockPanel Margin="0,20,0,0" 
                                                VerticalAlignment="Stretch" 
                                                HorizontalAlignment="Stretch" 
