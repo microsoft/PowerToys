@@ -12,21 +12,35 @@ namespace Microsoft.Plugin.Registry.Helper
         internal static string GetValue(in RegistryKey key, in string valueName)
             => key.GetValueKind(valueName) switch
             {
-                RegistryValueKind.None => $"{key.GetValue(valueName)} (No data type)",
-                RegistryValueKind.Unknown => $"{key.GetValue(valueName)} (unsupported data type)",
-                RegistryValueKind.String => $"{key.GetValue(valueName)} (REG_SZ)",
-                RegistryValueKind.ExpandString => $"{key.GetValue(valueName)} (REG_EXPAND_SZ)",
-                RegistryValueKind.MultiString => $"{key.GetValue(valueName)} (REG_MULTI_SZ)",
+                RegistryValueKind.None => $"{key.GetValue(valueName)}",
+                RegistryValueKind.Unknown => $"{key.GetValue(valueName)}",
+                RegistryValueKind.String => $"{key.GetValue(valueName)}",
+                RegistryValueKind.ExpandString => $"{key.GetValue(valueName)}",
+                RegistryValueKind.MultiString => $"{key.GetValue(valueName)}",
 
                 // TODO: same format as editor
-                RegistryValueKind.Binary => $"{key.GetValue(valueName)} (REG_BINARY)",
+                RegistryValueKind.Binary => $"{key.GetValue(valueName)}",
 
                 // TODO: same format as editor
-                RegistryValueKind.DWord => $"{key.GetValue(valueName)} (REG_DWORD)",
+                RegistryValueKind.DWord => $"{key.GetValue(valueName)}",
 
                 // TODO: same format as editor
-                RegistryValueKind.QWord => $"{key.GetValue(valueName)} (REG_QWORD)",
+                RegistryValueKind.QWord => $"{key.GetValue(valueName)}",
 
+                _ => throw new ArgumentOutOfRangeException(nameof(valueName)),
+            };
+
+        internal static object GetType(RegistryKey key, string valueName)
+            => key.GetValueKind(valueName) switch
+            {
+                RegistryValueKind.None => "No data type",
+                RegistryValueKind.Unknown => "unsupported data type",
+                RegistryValueKind.String => "REG_SZ",
+                RegistryValueKind.ExpandString => "REG_EXPAND_SZ",
+                RegistryValueKind.MultiString => "REG_MULTI_SZ",
+                RegistryValueKind.Binary => "REG_BINARY",
+                RegistryValueKind.DWord => "REG_DWORD",
+                RegistryValueKind.QWord => "REG_QWORD",
                 _ => throw new ArgumentOutOfRangeException(nameof(valueName)),
             };
     }

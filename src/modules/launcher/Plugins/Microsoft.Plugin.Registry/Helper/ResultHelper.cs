@@ -39,6 +39,8 @@ namespace Microsoft.Plugin.Registry.Helper
                     result.Title = item.Item1;
                 }
 
+                result.ToolTipData = new ToolTipData("Registry key", result.Title);
+
                 resultList.Add(result);
             }
 
@@ -61,8 +63,9 @@ namespace Microsoft.Plugin.Registry.Helper
                     var result = new Result
                     {
                         Title = name,
-                        SubTitle = ValueHelper.GetValue(key, name),
+                        SubTitle = $"{ValueHelper.GetValue(key, name)} {ValueHelper.GetType(key, name)}",
                         ContextData = key,
+                        ToolTipData = new ToolTipData("Registry key", $"Key: {key.Name}\nName: {name}\nValue: {ValueHelper.GetValue(key, name)}\nType: {ValueHelper.GetType(key, name)}"),
                     };
 
                     resultList.Add(result);
