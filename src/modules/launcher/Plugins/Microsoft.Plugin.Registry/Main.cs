@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using Microsoft.Plugin.Registry.Helper;
@@ -29,8 +30,10 @@ namespace Microsoft.Plugin.Registry
     // - make as PT plugin
     // - command: open direct in regedit.exe
     // - command: copy key to clipboard
+    // - show key values via ':'
 
     // TODO:
+    // - allow search by value name (serach after ':')
     // - command: copy value to clipboard
     // - reduce used of strings, use RegisterKey instead
     // - avoid use of tuples use key value instead
@@ -52,7 +55,7 @@ namespace Microsoft.Plugin.Registry
 
             ICollection<(string, RegistryKey?, Exception?)> list = new Collection<(string, RegistryKey?, Exception?)>();
 
-            var (mainKey, path) = RegistryHelper.GetRegistryKey(search);
+            var (mainKey, path) = RegistryHelper.GetRegistryKey(search.TrimEnd(':'));
 
             if (mainKey is null && search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -63,68 +66,71 @@ namespace Microsoft.Plugin.Registry
                 list = RegistryHelper.SearchForSubKey(mainKey, path);
             }
 
-            return list.Count == 0
-                ? new List<Result> { new Result { Title = $"{query?.Search} Key not found" } }
-                : PrepareResults(list);
+            return list.Count switch
+            {
+                0 => new List<Result> { new Result { Title = $"{query?.Search} Key not found" } },
+                1 when search.EndsWith(':') => ResultHelper.GetValuesFromKey(list.FirstOrDefault().Item2),
+                _ => ResultHelper.GetResultList(list),
+            };
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
-            => new List<ContextMenuResult>
-            {
-                new ContextMenuResult
-                {
-                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Open in registry editor",
-                    Glyph = "\xE70F",                       // E70F => Edit (Pencil)
-                    FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = Key.Enter,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.OpenInRegistryEditor(selectedResult),
-                },
-
-                new ContextMenuResult
-                {
-                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Copy key to clipboard",
-                    Glyph = "\xF0E3",                       // E70F => ClipboardList
-                    FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = Key.C,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.CopyToClipBoard(selectedResult),
-                },
-            };
-
-        private static List<Result> PrepareResults(ICollection<(string, RegistryKey?, Exception?)> list)
         {
-            var resultList = new List<Result>();
-
-            foreach (var item in list)
+            if (!(selectedResult?.ContextData is RegistryKey key))
             {
-                var result = new Result();
-
-                if (item.Item3 is null && !(item.Item2 is null))
-                {
-                    // when key contains keys or fields
-                    result.Title = item.Item2.Name;
-                    result.SubTitle = RegistryHelper.GetSummary(item.Item2);
-                }
-                else if (item.Item2 is null && !(item.Item3 is null))
-                {
-                    // on error (e.g access denied)
-                    result.Title = item.Item1;
-                    result.SubTitle = item.Item3.Message;
-                }
-                else
-                {
-                    result.Title = item.Item1;
-                }
-
-                result.Action = _ => ContextMenuHelper.OpenInRegistryEditor(result);
-
-                resultList.Add(result);
+                return new List<ContextMenuResult>(0);
             }
 
-            return resultList;
+            var list = new List<ContextMenuResult>();
+
+            if (key.Name != selectedResult.Title)
+            {
+                list.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Copy value name to clipboard",
+                    Glyph = "\xF0E3",                       // E70F => ClipboardList
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.N,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ => ContextMenuHelper.CopyToClipBoard(selectedResult.Title),
+                });
+
+                list.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Copy value to clipboard",
+                    Glyph = "\xF0E3",                       // E70F => ClipboardList
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.V,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ => ContextMenuHelper.CopyToClipBoard(key.GetValue(selectedResult.Title) as string ?? string.Empty),
+                });
+            }
+
+            list.Add(new ContextMenuResult
+            {
+                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                Title = "Copy key to clipboard",
+                Glyph = "\xF0E3",                       // E70F => ClipboardList
+                FontFamily = "Segoe MDL2 Assets",
+                AcceleratorKey = Key.C,
+                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                Action = _ => ContextMenuHelper.CopyToClipBoard(key.Name),
+            });
+
+            list.Add(new ContextMenuResult
+            {
+                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                Title = "Open in registry editor",
+                Glyph = "\xE70F",                       // E70F => Edit (Pencil)
+                FontFamily = "Segoe MDL2 Assets",
+                AcceleratorKey = Key.Enter,
+                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                Action = _ => ContextMenuHelper.OpenInRegistryEditor(key.Name),
+            });
+
+            return list;
         }
     }
 }

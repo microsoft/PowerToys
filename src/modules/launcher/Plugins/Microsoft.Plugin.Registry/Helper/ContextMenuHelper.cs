@@ -13,11 +13,11 @@ namespace Microsoft.Plugin.Registry.Helper
     {
         #pragma warning disable CA1031 // Do not catch general exception types
 
-        internal static bool OpenInRegistryEditor(in Result result)
+        internal static bool OpenInRegistryEditor(in string key)
         {
             try
             {
-                RegistryHelper.OpenRegistryKey(result.Title);
+                RegistryHelper.OpenRegistryKey(key);
                 return true;
             }
             catch (System.ComponentModel.Win32Exception)
@@ -36,12 +36,12 @@ namespace Microsoft.Plugin.Registry.Helper
             }
         }
 
-        internal static bool CopyToClipBoard(in Result result)
+        internal static bool CopyToClipBoard(in string text)
         {
             try
             {
                 Clipboard.Clear();
-                Clipboard.SetText(result.Title);
+                Clipboard.SetText(text);
                 return true;
             }
             catch (Exception exception)
