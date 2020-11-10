@@ -91,6 +91,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Custom_Layout_Delete_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Delete custom layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Usuń układ niestandardowy]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Custom_Table_Layout" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Custom table layout creator]]></Val>
@@ -122,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones Editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Edytor Fantazyjnych stref]]></Val>
+            <Val><![CDATA[Edytor FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +140,16 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones main editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Główny edytor Fantazyjnych stref]]></Val>
+            <Val><![CDATA[Główny edytor FancyZones]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Grid_Layout_Editor" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Grid layout editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Edytor układu siatki]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -186,6 +204,24 @@
           <Val><![CDATA[Templates]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Szablony]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Zone_Count_Decrement" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Decrement number of zones in template layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zmniejsz liczbę stref w układzie szablonu]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Zone_Count_Increment" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Increment number of zones in template layout]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zwiększ liczbę stref w układzie szablonu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

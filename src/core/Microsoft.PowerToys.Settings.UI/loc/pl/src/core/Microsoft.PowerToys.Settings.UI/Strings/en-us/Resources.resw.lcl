@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fantazyjne strefy — informacje]]></Val>
+            <Val><![CDATA[FancyZones — informacje]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -118,7 +118,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";AttributionTitle.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";AttributionTitle.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Attribution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -136,7 +136,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPicker_ActivationShortcut.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ColorPicker_ActivationShortcut.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -172,7 +172,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPicker_EnableColorPicker.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ColorPicker_EnableColorPicker.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -219,14 +219,17 @@
       </Item>
       <Item ItemId=";FancyZones_BorderColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Zone border color (Default: #FFFFFF)]]></Val>
+          <Val><![CDATA[Zone border color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kolor obramowania strefy (domyślnie: #FFFFFF)]]></Val>
+            <Val><![CDATA[Kolor obramowania strefy]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Zone border color (Default: #FFFFFF)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create window layouts to help make multi-tasking easy.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -235,7 +238,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keep windows in their zones when the screen resolution changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -244,11 +247,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_EnableToggleControl_HeaderText.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_Editor_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Edytor]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FancyZones_EnableToggleControl_HeaderText.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Włącz narzędzie Fantazyjne strefy]]></Val>
+            <Val><![CDATA[Włącz narzędzie FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -289,30 +301,39 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_HotkeyEditorControl.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_HotkeyEditorControl.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open zones editor]]></Val>
+          <Val><![CDATA[Open layout editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Otwórz edytor stref]]></Val>
+            <Val><![CDATA[Otwórz edytor układu]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Open zones editor]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FancyZones_InActiveColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Zone inactive color (Default: #F5FCFF)]]></Val>
+          <Val><![CDATA[Zone inactive color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kolor nieaktywny strefy (domyślnie: #F5FCFF)]]></Val>
+            <Val><![CDATA[Kolor nieaktywny strefy]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Zone inactive color (Default: #F5FCFF)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_LaunchEditorButtonControl.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_LaunchEditorButtonControl.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Launch zones editor]]></Val>
+          <Val><![CDATA[Launch layout editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uruchom edytor stref]]></Val>
+            <Val><![CDATA[Uruchom edytor układu]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Launch zones editor]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -343,7 +364,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Move windows based on their position]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -415,6 +436,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";FancyZones_WindowBehavior_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Window behavior]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zachowanie okna]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";FancyZones_ZoneBehavior_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone behavior]]></Val>
@@ -426,10 +456,13 @@
       </Item>
       <Item ItemId=";FancyZones_ZoneHighlightColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Zone highlight color (Default: #0078D7)]]></Val>
+          <Val><![CDATA[Zone highlight color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kolor wyróżnienia strefy (domyślnie: #0078D7)]]></Val>
+            <Val><![CDATA[Kolor wyróżnienia strefy]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Zone highlight color (Default: #0078D7)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -442,16 +475,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Fancyzones_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Fancyzones_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[FancyZones windows]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Okna narzędzia Fantazyjne strefy]]></Val>
+            <Val><![CDATA[Okna narzędzia FancyZones ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";File.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";File.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[File]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -523,7 +556,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FileExplorerPreview_ToggleSwitch_Preview_MD.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FileExplorerPreview_ToggleSwitch_Preview_MD.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Markdown (.md) preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -532,7 +565,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable SVG (.svg) preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -541,7 +574,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable SVG (.svg) thumbnails]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -577,7 +610,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";GeneralPage_ReportAbug.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";GeneralPage_ReportAbug.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Report a bug]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -586,7 +619,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";GeneralPage_RequestAFeature_URL.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";GeneralPage_RequestAFeature_URL.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Request a feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -595,7 +628,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";GeneralPage_RestartAsAdmin_Button.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";GeneralPage_RestartAsAdmin_Button.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restart as administrator]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -678,10 +711,13 @@
       </Item>
       <Item ItemId=";GeneralSettings_VersionIsLatest" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You have the latest available version.]]></Val>
+          <Val><![CDATA[PowerToys is up-to-date.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Masz najnowszą dostępną wersję.]]></Val>
+            <Val><![CDATA[Program PowerToys jest aktualny.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You have the latest available version.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -838,7 +874,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_EnableToggle.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_EnableToggle.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1063,7 +1099,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_Sizes_Fit_Fill.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_Sizes_Fit_Fill.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Fill]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1072,7 +1108,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_Sizes_Fit_Fit.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_Sizes_Fit_Fit.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Fit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1081,7 +1117,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_Sizes_Fit_Stretch.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_Sizes_Fit_Stretch.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Stretch]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1171,6 +1207,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";KBM_KeysCannotBeRemapped.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more about remapping limitations]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dowiedz się więcej o ograniczeniach dotyczących ponownego mapowania]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";KeyboardManager_ConfigHeader.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Current configuration]]></Val>
@@ -1198,7 +1243,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";KeyboardManager_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";KeyboardManager_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1279,7 +1324,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1315,7 +1360,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";KeyboardManager_TargetApp.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";KeyboardManager_TargetApp.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[For Target Application]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1324,12 +1369,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Module_overview.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Module_overview.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Module overview]]></Val>
+          <Val><![CDATA[Learn more]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Przegląd modułu]]></Val>
+            <Val><![CDATA[Dowiedz się więcej]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Module overview]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1389,14 +1437,17 @@
       </Item>
       <Item ItemId=";PowerLauncher_DisableDriveDetectionWarning.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Disable drive detection warning for the indexer plugin]]></Val>
+          <Val><![CDATA[Disable drive detection warning for the file search plugin]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wyłącz ostrzeżenie o wykrywaniu dysku dla wtyczki indeksatora]]></Val>
+            <Val><![CDATA[Wyłącz ostrzeżenie o wykrywaniu dysku dla wtyczki do wyszukiwania plików]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Disable drive detection warning for the indexer plugin]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerLauncher_EnablePowerLauncher.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerLauncher_EnablePowerLauncher.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1423,7 +1474,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerLauncher_OpenConsole.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerLauncher_OpenConsole.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open console]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1567,6 +1618,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";PowerRename_BehaviorHeader.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Behavior]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zachowanie]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";PowerRename_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
@@ -1585,7 +1645,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerRename_ShellIntegration.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerRename_ShellIntegration.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Shell integration]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1603,7 +1663,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerRename_Toggle_Enable.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerRename_Toggle_Enable.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1648,6 +1708,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";PowerRename_Toggle_UseBoostLib.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax)]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";PowerToys_Icon.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Icon]]></Val>
@@ -1675,7 +1741,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Radio_Theme_Dark.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Radio_Theme_Dark.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Dark]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1720,7 +1786,16 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";RemoveButton.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";RemoveButton.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Remove]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Usuń]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";RemoveTooltip.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Remove]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1763,7 +1838,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fantazyjne strefy]]></Val>
+            <Val><![CDATA[OK, it was localized according to instructions, but can be unlocalized. Global term change should be initiated.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1849,7 +1924,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ShortcutGuide_Enable.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ShortcutGuide_Enable.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enable Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1894,7 +1969,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Windows_Color_Settings.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+      <Item ItemId=";Windows_Color_Settings.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows color settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

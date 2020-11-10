@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hold Shift key to activate zones while dragging]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[&lt;Shift&gt; 키를 누른 채로 끌어와서 영역 활성화]]></Val>
+            <Val><![CDATA[Shift 키를 누른 채로 끌어와서 영역 활성화]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -260,7 +260,7 @@
         <Str Cat="Text">
           <Val><![CDATA[During zone layout changes, windows assigned to a zone will match new size/positions]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[영역 레이아웃을 변경하는 동안 영역에 할당된 창은 새 크기/위치와 일치하게 변경됩니다.]]></Val>
+            <Val><![CDATA[영역 레이아웃 변경 시, 영역에 할당되어 있던 창을 새 크기/위치에 맞게 변경]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
