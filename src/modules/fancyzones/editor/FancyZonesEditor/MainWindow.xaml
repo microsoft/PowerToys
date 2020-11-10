@@ -325,6 +325,7 @@
                             <DataTemplate>
                                 <Border Margin="8" 
                                         BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
+                                        Background="{Binding Path=IsApplied, Converter={StaticResource BooleanToBrushConverter}}"
                                         Style="{StaticResource templateBackground}" 
                                         MouseDown="LayoutItem_Click"
                                         Focusable="True"
@@ -334,7 +335,8 @@
                                                VerticalAlignment="Stretch" 
                                                HorizontalAlignment="Stretch" 
                                                LastChildFill="True">
-                                        <TextBlock Padding="8,0,8,0" 
+                                        <TextBlock Name="layoutName"
+                                                   Padding="8,0,8,0" 
                                                    TextTrimming="CharacterEllipsis" 
                                                    DockPanel.Dock="Top" 
                                                    Text="{Binding Name}" 
@@ -342,6 +344,11 @@
                                         <local:LayoutPreview Margin="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
                                     </DockPanel>
                                 </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsApplied}" Value="true">
+                                        <Setter TargetName="layoutName" Property="Foreground" Value="#F2F2F2" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -360,7 +367,8 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="8"
-                                        BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}" 
+                                        BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
+                                        Background="{Binding Path=IsApplied, Converter={StaticResource BooleanToBrushConverter}}"
                                         Style="{StaticResource templateBackground}" 
                                         MouseDown="LayoutItem_Click"
                                         Focusable="True"
@@ -382,7 +390,8 @@
                                                     Background="#f2f2f2">
                                                 <Image Source="images/Delete.png" />
                                             </Button>
-                                            <TextBlock DockPanel.Dock="Top" 
+                                            <TextBlock Name="layoutName"
+                                                       DockPanel.Dock="Top" 
                                                        TextTrimming="CharacterEllipsis" Padding="8,0,8,0"
                                                        Text="{Binding Name}" 
                                                        Style="{StaticResource templateTitleText}" />
@@ -390,6 +399,11 @@
                                         <local:LayoutPreview Margin="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
                                     </DockPanel>
                                 </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsApplied}" Value="true">
+                                        <Setter TargetName="layoutName" Property="Foreground" Value="#F2F2F2" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
