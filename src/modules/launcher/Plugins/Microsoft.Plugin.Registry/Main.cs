@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.Plugin.Registry.Helper;
 using Microsoft.Win32;
 using Wox.Plugin;
@@ -43,10 +44,20 @@ namespace Microsoft.Plugin.Registry
     // - benchmark
     // - unittests
     // - dark/light theme switch
-    public class Main : IPlugin, IContextMenu
+    public class Main : IPlugin, IContextMenu, IDisposable
     {
+        private PluginInitContext? _context;
+        private string _defaultIconPath;
+        private bool _disposed;
+
+        public Main()
+            => _defaultIconPath = "Images/reg.light.png";
+
         public void Init(PluginInitContext context)
         {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(_context.API.GetCurrentTheme());
         }
 
         public List<Result> Query(Query query)
@@ -69,8 +80,8 @@ namespace Microsoft.Plugin.Registry
             return list.Count switch
             {
                 0 => new List<Result> { new Result { Title = $"{query?.Search} Key not found" } },
-                1 when search.EndsWith(':') => ResultHelper.GetValuesFromKey(list.FirstOrDefault().Item2),
-                _ => ResultHelper.GetResultList(list),
+                1 when search.EndsWith(':') => ResultHelper.GetValuesFromKey(list.FirstOrDefault().Item2, _defaultIconPath),
+                _ => ResultHelper.GetResultList(list, _defaultIconPath),
             };
         }
 
@@ -131,6 +142,33 @@ namespace Microsoft.Plugin.Registry
             });
 
             return list;
+        }
+
+        private void OnThemeChanged(Theme oldtheme, Theme newTheme)
+            => UpdateIconPath(newTheme);
+
+        private void UpdateIconPath(Theme theme)
+            => _defaultIconPath = theme == Theme.Light || theme == Theme.HighContrastWhite ? "Images/reg.light.png" : "Images/reg.dark.png";
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed || !disposing)
+            {
+                return;
+            }
+
+            if (!(_context is null))
+            {
+                _context.API.ThemeChanged -= OnThemeChanged;
+            }
+
+            _disposed = true;
         }
     }
 }

@@ -13,13 +13,16 @@ namespace Microsoft.Plugin.Registry.Helper
     {
         #pragma warning disable CA1031 // Do not catch general exception types
 
-        internal static List<Result> GetResultList(ICollection<(string, RegistryKey?, Exception?)> list)
+        internal static List<Result> GetResultList(ICollection<(string, RegistryKey?, Exception?)> list, string iconPath)
         {
             var resultList = new List<Result>();
 
             foreach (var item in list)
             {
-                var result = new Result();
+                var result = new Result
+                {
+                    IcoPath = iconPath,
+                };
 
                 if (item.Item3 is null && !(item.Item2 is null))
                 {
@@ -47,24 +50,25 @@ namespace Microsoft.Plugin.Registry.Helper
             return resultList;
         }
 
-        internal static List<Result> GetValuesFromKey(RegistryKey? key)
+        internal static List<Result> GetValuesFromKey(RegistryKey? key, string iconPath)
         {
             if (key is null)
             {
                 return new List<Result>(0);
             }
 
-            var resultList = new List<Result>();
-
             try
             {
+                var resultList = new List<Result>();
+
                 foreach (var name in key.GetValueNames())
                 {
                     var result = new Result
                     {
-                        Title = name,
-                        SubTitle = $"{ValueHelper.GetValue(key, name)} ({ValueHelper.GetType(key, name)})",
                         ContextData = key,
+                        IcoPath = iconPath,
+                        SubTitle = $"{ValueHelper.GetValue(key, name)} ({ValueHelper.GetType(key, name)})",
+                        Title = name,
                         ToolTipData = new ToolTipData("Registry key", $"Key:\t{key.Name}\nName:\t{name}\nValue:\t{ValueHelper.GetValue(key, name)}\nType:\t{ValueHelper.GetType(key, name)}"),
                     };
 
@@ -75,7 +79,15 @@ namespace Microsoft.Plugin.Registry.Helper
             }
             catch (Exception exception)
             {
-                return new List<Result> { new Result { Title = exception.ToString(), ContextData = key } };
+                return new List<Result>
+                {
+                    new Result
+                    {
+                        ContextData = key,
+                        IcoPath = iconPath,
+                        Title = exception.ToString(),
+                    },
+                };
             }
         }
 
