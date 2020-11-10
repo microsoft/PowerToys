@@ -59,20 +59,6 @@ namespace FancyZonesEditor
 
         private const int MaxNegativeSpacing = -10;
 
-        // Localizable strings
-        private const string ErrorMessageBoxTitle = "FancyZones Editor Error";
-        private const string ErrorParsingDeviceInfo = "Error parsing device info data.";
-        private const string ErrorInvalidArgs = "FancyZones Editor arguments are invalid.";
-        private const string ErrorNonStandaloneApp = "FancyZones Editor should not be run as standalone application.";
-
-        // Displayed layout names are localizable strings, but their underlying json tags are not.
-        private const string FocusLayoutID = "Focus";
-        private const string ColumnsLayoutID = "Columns";
-        private const string RowsLayoutID = "Rows";
-        private const string GridLayoutID = "Grid";
-        private const string PriorityGridLayoutID = "Priority Grid";
-        private const string CreateNewCustomLabel = "Create new custom";
-
         // Non-localizable strings
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
         public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
@@ -153,30 +139,30 @@ namespace FancyZonesEditor
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel(FocusLayoutID, LayoutType.Focus);
+            _focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
             DefaultModels.Add(_focusModel);
 
-            _columnsModel = new GridLayoutModel(ColumnsLayoutID, LayoutType.Columns)
+            _columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
                 Rows = 1,
                 RowPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_columnsModel);
 
-            _rowsModel = new GridLayoutModel(RowsLayoutID, LayoutType.Rows)
+            _rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
             {
                 Columns = 1,
                 ColumnPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_rowsModel);
 
-            _gridModel = new GridLayoutModel(GridLayoutID, LayoutType.Grid);
+            _gridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Grid, LayoutType.Grid);
             DefaultModels.Add(_gridModel);
 
-            _priorityGridModel = new GridLayoutModel(PriorityGridLayoutID, LayoutType.PriorityGrid);
+            _priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
             DefaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel(CreateNewCustomLabel, LayoutType.Blank);
+            _blankCustomModel = new CanvasLayoutModel(Properties.Resources.Custom_Layout_Create_New, LayoutType.Blank);
 
             UpdateLayoutModels();
         }
@@ -495,7 +481,7 @@ namespace FancyZonesEditor
             }
             catch (Exception ex)
             {
-                LayoutModel.ShowExceptionMessageBox(ErrorParsingDeviceInfo, ex);
+                LayoutModel.ShowExceptionMessageBox(Properties.Resources.Error_Parsing_Device_Info, ex);
             }
         }
 
@@ -514,7 +500,7 @@ namespace FancyZonesEditor
                 }
                 else
                 {
-                    MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                    MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                     ((App)Application.Current).Shutdown();
                 }
             }
@@ -526,7 +512,7 @@ namespace FancyZonesEditor
                     var parsedLocation = singleMonitorString.Split('_');
                     if (parsedLocation.Length != 4)
                     {
-                        MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                        MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                         ((App)Application.Current).Shutdown();
                     }
 
@@ -553,7 +539,7 @@ namespace FancyZonesEditor
             }
             else
             {
-                MessageBox.Show(ErrorNonStandaloneApp, ErrorMessageBoxTitle);
+                MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                 ((App)Application.Current).Shutdown();
             }
         }
