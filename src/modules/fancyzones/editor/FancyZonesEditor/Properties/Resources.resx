@@ -189,4 +189,34 @@
   <data name="Custom_Layout_Delete_Button" xml:space="preserve">
     <value>Delete custom layout</value>
   </data>
+  <data name="Custom_Layout_Create_New" xml:space="preserve">
+    <value>Create new custom</value>
+  </data>
+  <data name="Error_Invalid_Arguments" xml:space="preserve">
+    <value>FancyZones Editor arguments are invalid.</value>
+  </data>
+  <data name="Error_Message_Box_Title" xml:space="preserve">
+    <value>FancyZones Editor Error</value>
+  </data>
+  <data name="Error_Not_Standalone_App" xml:space="preserve">
+    <value>FancyZones Editor should not be run as standalone application.</value>
+  </data>
+  <data name="Error_Parsing_Device_Info" xml:space="preserve">
+    <value>Error parsing device info data.</value>
+  </data>
+  <data name="Template_Layout_Columns" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+  <data name="Template_Layout_Focus" xml:space="preserve">
+    <value>Focus</value>
+  </data>
+  <data name="Template_Layout_Grid" xml:space="preserve">
+    <value>Grid</value>
+  </data>
+  <data name="Template_Layout_Priority_Grid" xml:space="preserve">
+    <value>Priority Grid</value>
+  </data>
+  <data name="Template_Layout_Rows" xml:space="preserve">
+    <value>Rows</value>
+  </data>
 </root>
