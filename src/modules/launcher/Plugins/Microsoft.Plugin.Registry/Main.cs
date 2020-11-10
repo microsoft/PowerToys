@@ -29,12 +29,11 @@ namespace Microsoft.Plugin.Registry
     // - always case-intensitive
     // - make as PT plugin
     // - command: open direct in regedit.exe
-    // - command: copy key to clipboard
+    // - command: copy key/name/value to clipboard
     // - show key values via ':'
 
     // TODO:
     // - allow search by value name (serach after ':')
-    // - command: copy value to clipboard
     // - reduce used of strings, use RegisterKey instead
     // - avoid use of tuples use key value instead
     // - simple key-walker with full keys
@@ -43,6 +42,7 @@ namespace Microsoft.Plugin.Registry
     // - cache results ?
     // - benchmark
     // - unittests
+    // - dark/light theme switch
     public class Main : IPlugin, IContextMenu
     {
         public void Init(PluginInitContext context)
