@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
-using Microsoft.VisualStudio.Utilities;
 
 namespace FancyZonesEditor
 {
@@ -108,6 +107,7 @@ namespace FancyZonesEditor
                     MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                     if (settings != null)
                     {
+                        settings.ResetAppliedModel();
                         settings.UpdateDesktopDependantProperties(prevSettings);
                     }
 
@@ -341,6 +341,7 @@ namespace FancyZonesEditor
             }
 
             foundModel.IsSelected = true;
+            foundModel.IsApplied = true;
             CurrentDataContext = foundModel;
         }
 

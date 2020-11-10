@@ -103,6 +103,25 @@ namespace FancyZonesEditor.Models
 
         private bool _isSelected;
 
+        public bool IsApplied
+        {
+            get
+            {
+                return _isApplied;
+            }
+
+            set
+            {
+                if (_isApplied != value)
+                {
+                    _isApplied = value;
+                    FirePropertyChanged();
+                }
+            }
+        }
+
+        private bool _isApplied;
+
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -183,6 +202,10 @@ namespace FancyZonesEditor.Models
 
         public void Apply()
         {
+            MainWindowSettingsModel settings = ((App)App.Current).MainWindowSettings;
+            settings.ResetAppliedModel();
+            IsApplied = true;
+
             // update settings
             App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;
             App.Overlay.CurrentLayoutSettings.Type = Type;

@@ -424,7 +424,29 @@ namespace FancyZonesEditor
             }
 
             foundModel.IsSelected = true;
+            foundModel.IsApplied = true;
             App.Overlay.CurrentDataContext = foundModel;
+        }
+
+        public void ResetAppliedModel()
+        {
+            foreach (LayoutModel model in CustomModels)
+            {
+                if (model.IsApplied)
+                {
+                    model.IsApplied = false;
+                    break;
+                }
+            }
+
+            foreach (LayoutModel model in DefaultModels)
+            {
+                if (model.IsApplied)
+                {
+                    model.IsApplied = false;
+                    break;
+                }
+            }
         }
 
         public void UpdateDesktopDependantProperties(LayoutSettings prevSettings)

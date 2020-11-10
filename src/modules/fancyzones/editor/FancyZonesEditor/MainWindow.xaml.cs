@@ -175,7 +175,13 @@ namespace FancyZonesEditor
 
         private void Apply()
         {
+            ((App)Application.Current).MainWindowSettings.ResetAppliedModel();
+
             var mainEditor = App.Overlay;
+            if (mainEditor.CurrentDataContext is LayoutModel currentSelection)
+            {
+                currentSelection.IsApplied = false;
+            }
 
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
