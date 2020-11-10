@@ -7,8 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
-using FancyZonesEditor.ViewModels;
 using MahApps.Metro.Controls;
 
 namespace FancyZonesEditor
@@ -51,7 +49,7 @@ namespace FancyZonesEditor
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
 
-            if (workArea.Height < MinimalForDefaultWrapPanelsHeight || MonitorViewModel.IsDesktopsPanelVisible)
+            if (workArea.Height < MinimalForDefaultWrapPanelsHeight || App.Overlay.MultiMonitorMode)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = SmallWrapPanelItemSize;
@@ -182,6 +180,11 @@ namespace FancyZonesEditor
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
                 model.Apply();
+            }
+
+            if (!App.Overlay.MultiMonitorMode)
+            {
+                Close();
             }
         }
 

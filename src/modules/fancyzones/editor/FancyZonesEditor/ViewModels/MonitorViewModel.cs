@@ -20,21 +20,13 @@ namespace FancyZonesEditor.ViewModels
 
         public ObservableCollection<MonitorInfoModel> Monitors { get; set; }
 
-        public static bool IsDesktopsPanelVisible
-        {
-            get
-            {
-                return App.Overlay.DesktopsCount > 1 && !App.Overlay.SpanZonesAcrossMonitors;
-            }
-        }
-
         public static double DesktopPreviewMultiplier { get; private set; }
 
         public Visibility DesktopsPanelVisibility
         {
             get
             {
-                return IsDesktopsPanelVisible ? Visibility.Visible : Visibility.Collapsed;
+                return App.Overlay.MultiMonitorMode ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 

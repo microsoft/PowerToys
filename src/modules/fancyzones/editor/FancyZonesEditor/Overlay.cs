@@ -148,6 +148,14 @@ namespace FancyZonesEditor
 
         private bool _spanZonesAcrossMonitors;
 
+        public bool MultiMonitorMode
+        {
+            get
+            {
+                return DesktopsCount > 1 && !SpanZonesAcrossMonitors;
+            }
+        }
+
         public Overlay()
         {
             UsedWorkAreas = new List<Rect>();
