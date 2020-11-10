@@ -33,7 +33,7 @@ namespace Microsoft.Plugin.Registry
     // - show key values via ':'
 
     // TODO:
-    // - allow search by value name (serach after ':')
+    // - allow search by value name (search after ':')
     // - reduce used of strings, use RegisterKey instead
     // - avoid use of tuples use key value instead
     // - simple key-walker with full keys

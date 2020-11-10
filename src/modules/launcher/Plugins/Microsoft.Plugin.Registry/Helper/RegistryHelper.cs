@@ -133,7 +133,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <summary>
         /// Try to find the given registry sub-key in the given registry parent-key
         /// </summary>
-        /// <param name="parentKey">The parent-key, also the root to start teh search</param>
+        /// <param name="parentKey">The parent-key, also the root to start the search</param>
         /// <param name="searchSubKey">The sub-key to find</param>
         /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
         private static ICollection<(string, RegistryKey?, Exception?)> FindSubKey(in RegistryKey parentKey, in string searchSubKey)
