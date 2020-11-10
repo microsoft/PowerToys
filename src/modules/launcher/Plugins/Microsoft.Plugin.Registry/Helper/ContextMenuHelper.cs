@@ -4,7 +4,6 @@
 
 using System;
 using System.Windows;
-using Wox.Plugin;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Registry.Helper
