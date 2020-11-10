@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gör fönstret genomskinligt det dras]]></Val>
+            <Val><![CDATA[Gör fönster genomskinliga när de dras]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
