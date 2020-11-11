@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[How long to press the Windows key before showing the Shortcut Guide (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zeit (in Millisekunden), für die die Windows-Taste gedrückt werden muss, bevor die Tastenkombinationsübersicht angezeigt wird.]]></Val>
+            <Val><![CDATA[Gibt an (in Millisekunden), wie lange die WINDOWS-Taste gedrückt werden muss, damit die Tastenkombinationsübersicht angezeigt wird]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
