@@ -190,6 +190,11 @@ namespace FancyZonesEditor
             window.Content = _layoutPreview;
             window.DataContext = CurrentDataContext;
 
+            if (_layoutPreview != null)
+            {
+                _layoutPreview.UpdatePreview();
+            }
+
             for (int i = 0; i < DesktopsCount; i++)
             {
                 Monitors[i].Window.Show();

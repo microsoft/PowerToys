@@ -42,6 +42,11 @@ namespace FancyZonesEditor
             ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
+        public void UpdatePreview()
+        {
+            RenderPreview();
+        }
+
         private void LayoutPreview_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             _model = (LayoutModel)DataContext;
