@@ -6,7 +6,7 @@ GitHub Discussions is a feature that currently is in the closed beta status. It 
 
 It's a new tab in the GitHub repo page where people can start new threads like in a forum.
 
-The threads must be added to a category. The answer feature can be enabled or disabled for categorys. If enabled a person with triage perm or the creator of the thread can mark a reply as answer.
+The threads must be added to a category. The answer feature can be enabled or disabled for categorys. If enabled a person with triage permission or the creator of the thread can mark a reply as answer.
 
 You can sort threads in the overview for categories and for (un-)answered.
 
@@ -45,5 +45,13 @@ Other threads:
 -	
 
 
+## What when it don't work
 
+If the community denies the feature, it gets too much work, it gets used very low or if it gets spammed we can simply deactivate the feature.
+
+## Definition of success
+
+* In a week more than 12 new threads
+* It don't get too much work for the PT team
+* People discuss with each others about things
 
