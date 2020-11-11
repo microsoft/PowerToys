@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones Editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editor vybraných zón]]></Val>
+            <Val><![CDATA[Editor nástroje FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones main editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hlavní editor vybraných zón]]></Val>
+            <Val><![CDATA[Hlavní editor nástoje FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

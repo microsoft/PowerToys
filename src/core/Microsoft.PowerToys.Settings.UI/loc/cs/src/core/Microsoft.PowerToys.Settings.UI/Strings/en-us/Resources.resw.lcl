@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O nástroji Vybrané zóny]]></Val>
+            <Val><![CDATA[O nástroji FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -260,7 +260,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Povolit nástroj Vybrané zóny]]></Val>
+            <Val><![CDATA[Povolit FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -479,7 +479,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones windows]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Okna nástroje Vybrané zóny]]></Val>
+            <Val><![CDATA[Okna nástroje FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1841,7 +1841,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vybrané zóny]]></Val>
+            <Val><![CDATA[FancyZones]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
