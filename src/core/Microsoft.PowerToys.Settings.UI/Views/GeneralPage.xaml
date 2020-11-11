@@ -146,12 +146,13 @@
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
             <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="GeneralPage_AboutPowerToysHeader" x:Name="AboutTitle" Grid.ColumnSpan="2"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
-                <TextBlock x:Uid="About_PowerToys"
-                           TextWrapping="Wrap"
-                           Grid.Row="1" />
+                <TextBlock x:Uid="GeneralPage_AboutPowerToysHeader" 
+                           x:Name="AboutTitle" 
+                           Grid.ColumnSpan="2"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="About_PowerToys" TextWrapping="Wrap" />
+                <TextBlock x:Uid="MadeWithOssLove" TextWrapping="Wrap" Margin="0, 10, 0, 0" />
             </StackPanel>
 
             <Border x:Name="AboutImage"
