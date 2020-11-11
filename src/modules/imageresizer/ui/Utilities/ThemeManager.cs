@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+
 using System;
 using System.Linq;
 using System.Windows;
 using ControlzEx.Theming;
-using MahApps.Metro.Theming;
 using Microsoft.Win32;
 
 namespace ImageResizer.Utilities
@@ -39,27 +39,27 @@ namespace ImageResizer.Utilities
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new LibraryTheme(
                     highContrastOneThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new LibraryTheme(
                     highContrastTwoThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new LibraryTheme(
                     highContrastBlackThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new LibraryTheme(
                     highContrastWhiteThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new LibraryTheme(
                     lightThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
             ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
                 new LibraryTheme(
                     darkThemeUri,
-                    MahAppsLibraryThemeProvider.DefaultInstance));
+                    CustomLibraryThemeProvider.DefaultInstance));
 
             ResetTheme();
             ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
