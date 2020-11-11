@@ -57,38 +57,34 @@ namespace Microsoft.Plugin.Registry.Helper
                 return new List<Result>(0);
             }
 
-            try
-            {
-                var resultList = new List<Result>();
+            var resultList = new List<Result>();
 
-                foreach (var name in key.GetValueNames())
+            foreach (var name in key.GetValueNames())
+            {
+                try
                 {
-                    var result = new Result
+                    resultList.Add(new Result
                     {
                         ContextData = key,
                         IcoPath = iconPath,
-                        SubTitle = $"{ValueHelper.GetValue(key, name)} ({ValueHelper.GetType(key, name)})",
+                        SubTitle = $"Type: {ValueHelper.GetType(key, name)} * Value: {ValueHelper.GetValue(key, name, 50)}",
                         Title = name,
-                        ToolTipData = new ToolTipData("Registry key", $"Key:\t{key.Name}\nName:\t{name}\nValue:\t{ValueHelper.GetValue(key, name)}\nType:\t{ValueHelper.GetType(key, name)}"),
-                    };
-
-                    resultList.Add(result);
+                        ToolTipData = new ToolTipData("Registry value", $"Key:\t{key.Name}\nName:\t{name}\nType:\t{ValueHelper.GetType(key, name)}\nValue:\t{ValueHelper.GetValue(key, name)}"),
+                    });
                 }
-
-                return resultList;
-            }
-            catch (Exception exception)
-            {
-                return new List<Result>
+                catch (Exception exception)
                 {
-                    new Result
+                    resultList.Add(new Result
                     {
                         ContextData = key,
                         IcoPath = iconPath,
-                        Title = exception.ToString(),
-                    },
-                };
+                        Title = exception.Message,
+                        ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
+                    });
+                }
             }
+
+            return resultList;
         }
 
         #pragma warning restore CA1031 // Do not catch general exception types
