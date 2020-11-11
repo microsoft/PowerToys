@@ -14,7 +14,7 @@ One thread can be pinned on the main page of the discussion section. (One with r
 
 Threads uses the same numeration like PR and issues. So they can be linked by the others. A conversation can also be locked like in issues and PR.
 
-## Why do we need this at PowerToys
+## Why do we need this for PowerToys
 
 1. Sometimes people just want to say thank you to the PT team (like in https://github.com/microsoft/PowerToys/issues/7873) and a thread in GitHub Discussions where every one can comment if he just want to say thank you, is much better for the users and the team than open every time a new issue for that.
 
