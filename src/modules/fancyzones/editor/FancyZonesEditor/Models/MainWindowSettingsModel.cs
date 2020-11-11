@@ -369,6 +369,7 @@ namespace FancyZonesEditor
         public void UpdateSelectedLayoutModel()
         {
             UpdateLayoutModels();
+            ResetAppliedModel();
 
             LayoutModel foundModel = null;
             LayoutSettings currentApplied = App.Overlay.CurrentLayoutSettings;

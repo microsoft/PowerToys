@@ -290,6 +290,8 @@ namespace FancyZonesEditor
 
             MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
 
+            settings.ResetAppliedModel();
+
             // reset previous selected layout
             foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
             {
