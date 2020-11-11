@@ -112,7 +112,7 @@ namespace FancyZonesEditor
 
             _blankCustomModel = new CanvasLayoutModel(Properties.Resources.Custom_Layout_Create_New, LayoutType.Blank);
 
-            UpdateLayoutModels();
+            UpdateTemplateLayoutModels();
         }
 
         // ZoneCount - number of zones selected in the picker window
@@ -128,7 +128,7 @@ namespace FancyZonesEditor
                 if (App.Overlay.CurrentLayoutSettings.ZoneCount != value)
                 {
                     App.Overlay.CurrentLayoutSettings.ZoneCount = value;
-                    UpdateLayoutModels();
+                    UpdateTemplateLayoutModels();
                     FirePropertyChanged(nameof(ZoneCount));
                 }
             }
@@ -148,7 +148,7 @@ namespace FancyZonesEditor
                 if (App.Overlay.CurrentLayoutSettings.Spacing != value)
                 {
                     App.Overlay.CurrentLayoutSettings.Spacing = value;
-                    UpdateLayoutModels();
+                    UpdateTemplateLayoutModels();
                     FirePropertyChanged(nameof(Spacing));
                 }
             }
@@ -167,7 +167,7 @@ namespace FancyZonesEditor
                 if (App.Overlay.CurrentLayoutSettings.ShowSpacing != value)
                 {
                     App.Overlay.CurrentLayoutSettings.ShowSpacing = value;
-                    UpdateLayoutModels();
+                    UpdateTemplateLayoutModels();
                     FirePropertyChanged(nameof(ShowSpacing));
                 }
             }
@@ -187,7 +187,7 @@ namespace FancyZonesEditor
                 if (App.Overlay.CurrentLayoutSettings.SensitivityRadius != value)
                 {
                     App.Overlay.CurrentLayoutSettings.SensitivityRadius = value;
-                    UpdateLayoutModels();
+                    UpdateTemplateLayoutModels();
                     FirePropertyChanged(nameof(SensitivityRadius));
                 }
             }
@@ -235,7 +235,7 @@ namespace FancyZonesEditor
 
         // UpdateLayoutModels
         // Update the five default layouts based on the new ZoneCount
-        private void UpdateLayoutModels()
+        private void UpdateTemplateLayoutModels()
         {
             // Update the "Focus" Default Layout
             _focusModel.Zones.Clear();
@@ -366,32 +366,14 @@ namespace FancyZonesEditor
             return model.Type != LayoutType.Custom;
         }
 
-        public void UpdateSelectedLayoutModel()
+        public LayoutModel UpdateSelectedLayoutModel()
         {
-            UpdateLayoutModels();
+            UpdateTemplateLayoutModels();
             ResetAppliedModel();
+            ResetSelectedModel();
 
             LayoutModel foundModel = null;
             LayoutSettings currentApplied = App.Overlay.CurrentLayoutSettings;
-
-            // reset previous selected layout
-            foreach (LayoutModel model in CustomModels)
-            {
-                if (model.IsSelected)
-                {
-                    model.IsSelected = false;
-                    break;
-                }
-            }
-
-            foreach (LayoutModel model in DefaultModels)
-            {
-                if (model.IsSelected)
-                {
-                    model.IsSelected = false;
-                    break;
-                }
-            }
 
             // set new layout
             if (currentApplied.Type == LayoutType.Custom)
@@ -426,7 +408,28 @@ namespace FancyZonesEditor
 
             foundModel.IsSelected = true;
             foundModel.IsApplied = true;
-            App.Overlay.CurrentDataContext = foundModel;
+            return foundModel;
+        }
+
+        public void ResetSelectedModel()
+        {
+            foreach (LayoutModel model in CustomModels)
+            {
+                if (model.IsSelected)
+                {
+                    model.IsSelected = false;
+                    break;
+                }
+            }
+
+            foreach (LayoutModel model in DefaultModels)
+            {
+                if (model.IsSelected)
+                {
+                    model.IsSelected = false;
+                    break;
+                }
+            }
         }
 
         public void ResetAppliedModel()
@@ -452,7 +455,7 @@ namespace FancyZonesEditor
 
         public void UpdateDesktopDependantProperties(LayoutSettings prevSettings)
         {
-            UpdateLayoutModels();
+            UpdateTemplateLayoutModels();
 
             if (prevSettings.ZoneCount != ZoneCount)
             {

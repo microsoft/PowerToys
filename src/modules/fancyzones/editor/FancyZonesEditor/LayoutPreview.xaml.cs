@@ -29,6 +29,12 @@ namespace FancyZonesEditor
         private LayoutModel _model;
         private List<Int32Rect> _zones = new List<Int32Rect>();
 
+        public bool IsActualSize
+        {
+            get { return (bool)GetValue(IsActualSizeProperty); }
+            set { SetValue(IsActualSizeProperty, value); }
+        }
+
         public LayoutPreview()
         {
             InitializeComponent();
@@ -40,12 +46,6 @@ namespace FancyZonesEditor
         {
             _model = (LayoutModel)DataContext;
             RenderPreview();
-        }
-
-        public bool IsActualSize
-        {
-            get { return (bool)GetValue(IsActualSizeProperty); }
-            set { SetValue(IsActualSizeProperty, value); }
         }
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

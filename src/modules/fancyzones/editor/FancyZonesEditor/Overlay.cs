@@ -183,7 +183,8 @@ namespace FancyZonesEditor
 
         public void ShowLayout()
         {
-            UpdateSelectedLayoutModel();
+            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
+            CurrentDataContext = settings.UpdateSelectedLayoutModel();
 
             var window = CurrentLayoutWindow;
             window.Content = _layoutPreview;
@@ -281,70 +282,6 @@ namespace FancyZonesEditor
             // window is set to topmost to make sure it shows on top of PowerToys settings page
             // we can reset topmost flag now
             _mainWindow.Topmost = false;
-        }
-
-        private void UpdateSelectedLayoutModel()
-        {
-            LayoutModel foundModel = null;
-            LayoutSettings currentApplied = CurrentLayoutSettings;
-
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-
-            settings.ResetAppliedModel();
-
-            // reset previous selected layout
-            foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
-            {
-                if (model.IsSelected)
-                {
-                    model.IsSelected = false;
-                    break;
-                }
-            }
-
-            foreach (LayoutModel model in settings.DefaultModels)
-            {
-                if (model.IsSelected)
-                {
-                    model.IsSelected = false;
-                    break;
-                }
-            }
-
-            // set new layout
-            if (currentApplied.Type == LayoutType.Custom)
-            {
-                foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
-                {
-                    if ("{" + model.Guid.ToString().ToUpper() + "}" == currentApplied.ZonesetUuid.ToUpper())
-                    {
-                        // found match
-                        foundModel = model;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                foreach (LayoutModel model in settings.DefaultModels)
-                {
-                    if (model.Type == currentApplied.Type)
-                    {
-                        // found match
-                        foundModel = model;
-                        break;
-                    }
-                }
-            }
-
-            if (foundModel == null)
-            {
-                foundModel = settings.DefaultModels[0];
-            }
-
-            foundModel.IsSelected = true;
-            foundModel.IsApplied = true;
-            CurrentDataContext = foundModel;
         }
 
         private void Add(Rect bounds, Rect workArea, bool primary)
