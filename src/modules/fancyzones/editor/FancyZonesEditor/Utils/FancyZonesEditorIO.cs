@@ -16,17 +16,6 @@ namespace FancyZonesEditor.Utils
 {
     public class FancyZonesEditorIO
     {
-        // Localizable strings
-        private const string ErrorMessageBoxTitle = "FancyZones Editor Error";
-        private const string ErrorParsingDeviceInfo = "Error parsing device info data.";
-        private const string ErrorInvalidArgs = "FancyZones Editor arguments are invalid.";
-        private const string ErrorNonStandaloneApp = "FancyZones Editor should not be run as standalone application.";
-        private const string ErrorLayoutMalformedData = "Layout '{0}' has malformed data";
-        private const string ErrorSerializingDeletedLayouts = "Error serializing deleted layouts";
-        private const string ErrorLoadingCustomLayouts = "Error loading custom layouts";
-        private const string ErrorApplyingLayout = "Error applying layout";
-        private const string ErrorPersistingCustomLayout = "Error persisting custom layout";
-
         // JSON tags
         private const string AppliedZonesetsJsonTag = "applied-zonesets";
         private const string DeviceIdJsonTag = "device-id";
@@ -159,7 +148,7 @@ namespace FancyZonesEditor.Utils
 
             if (args.Length < 2 && !App.DebugMode)
             {
-                MessageBox.Show(ErrorNonStandaloneApp, ErrorMessageBoxTitle);
+                MessageBox.Show(Properties.Resources.Error_Not_Standalone_App, Properties.Resources.Error_Message_Box_Title);
                 ((App)Application.Current).Shutdown();
             }
 
@@ -197,7 +186,7 @@ namespace FancyZonesEditor.Utils
                     int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount]);
                     if (count != App.Overlay.DesktopsCount)
                     {
-                        MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                        MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                         ((App)Application.Current).Shutdown();
                     }
 
@@ -255,7 +244,7 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception)
             {
-                MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                 ((App)Application.Current).Shutdown();
             }
         }
@@ -331,7 +320,7 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception ex)
             {
-                App.ShowExceptionMessageBox(ErrorParsingDeviceInfo, ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Parsing_Device_Info, ex);
             }
         }
 
@@ -422,7 +411,7 @@ namespace FancyZonesEditor.Utils
 
                         if (error)
                         {
-                            App.ShowExceptionMessageBox(string.Format(ErrorLayoutMalformedData, name));
+                            App.ShowExceptionMessageBox(string.Format(Properties.Resources.Error_Layout_Malformed_Data, name));
                             deleted.Add(Guid.Parse(uuid).ToString().ToUpper());
                             continue;
                         }
@@ -462,7 +451,7 @@ namespace FancyZonesEditor.Utils
 
                         if (error)
                         {
-                            App.ShowExceptionMessageBox(string.Format(ErrorLayoutMalformedData, name));
+                            App.ShowExceptionMessageBox(string.Format(Properties.Resources.Error_Layout_Malformed_Data, name));
                             deleted.Add(Guid.Parse(uuid).ToString().ToUpper());
                             continue;
                         }
@@ -475,7 +464,7 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception ex)
             {
-                App.ShowExceptionMessageBox(ErrorLoadingCustomLayouts, ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Loading_Custom_Layouts, ex);
             }
         }
 
@@ -517,7 +506,7 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception ex)
             {
-                App.ShowExceptionMessageBox(ErrorApplyingLayout, ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
             }
         }
 
@@ -535,7 +524,7 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception ex)
             {
-                App.ShowExceptionMessageBox(ErrorSerializingDeletedLayouts, ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Serializing_Deleted_Layouts, ex);
             }
         }
 
@@ -553,7 +542,7 @@ namespace FancyZonesEditor.Utils
             }
             catch (Exception ex)
             {
-                App.ShowExceptionMessageBox(ErrorPersistingCustomLayout, ex);
+                App.ShowExceptionMessageBox(Properties.Resources.Error_Persisting_Custom_Layout, ex);
             }
         }
 
