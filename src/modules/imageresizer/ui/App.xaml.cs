@@ -13,11 +13,10 @@ using ImageResizer.Views;
 
 namespace ImageResizer
 {
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable
-    public partial class App : Application
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable
+    public partial class App : Application, IDisposable
     {
         private ThemeManager _themeManager;
+        private bool _isDisposed;
 
         static App()
         {
@@ -44,6 +43,28 @@ namespace ImageResizer
             NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { input };
             _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
             NativeMethods.SetForegroundWindow(hWnd);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _themeManager.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                _isDisposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
