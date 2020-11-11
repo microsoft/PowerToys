@@ -116,7 +116,7 @@
             <Setter Property="Padding" Value="0,5,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="#0078D7"/>
-            <Setter Property="Margin" Value="16,0,16,0" />
+            <Setter Property="Margin" Value="16,0,0,0" />
             <Setter Property="Width" Value="245"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
@@ -445,10 +445,10 @@
         </Grid>
 
 		<StackPanel Orientation="Horizontal" Margin="0,10,0,16">
-            <Button x:Name="CloseButton" Content="{x:Static props:Resources.Close}" Padding="8" Style="{StaticResource secondaryButton}" Click="CloseButton_Click" />
             <Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
-			<Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
-		</StackPanel>
+            <Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
+            <Button x:Name="CloseButton" Content="{x:Static props:Resources.Close}" Padding="8" Style="{StaticResource secondaryButton}" Click="CloseButton_Click" />
+        </StackPanel>
 
 	</StackPanel>
 </Controls:MetroWindow>
