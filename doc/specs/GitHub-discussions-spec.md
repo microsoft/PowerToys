@@ -47,7 +47,7 @@ Other threads:
 
 ## What when it don't work
 
-If the community denies the feature, it gets too much work, it gets used very low or if it gets spammed we can simply deactivate the feature.
+If the community denies the feature, it gets too much work, it gets used very low or if it gets filled with spam we can simply deactivate the feature.
 
 ## Definition of success
 
