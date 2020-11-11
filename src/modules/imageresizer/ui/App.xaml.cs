@@ -51,7 +51,7 @@ namespace ImageResizer
             {
                 if (disposing)
                 {
-                    _themeManager.Dispose();
+                    _themeManager?.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
