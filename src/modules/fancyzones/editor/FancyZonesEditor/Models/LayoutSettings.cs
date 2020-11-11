@@ -20,7 +20,7 @@ namespace FancyZonesEditor
 
         public string ZonesetUuid { get; set; } = string.Empty;
 
-        public LayoutType Type { get; set; } = LayoutType.Focus;
+        public LayoutType Type { get; set; } = LayoutType.PriorityGrid;
 
         public bool ShowSpacing { get; set; } = DefaultShowSpacing;
 
