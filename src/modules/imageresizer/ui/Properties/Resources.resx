@@ -125,9 +125,11 @@
   </data>
   <data name="Advanced_DeleteSize" xml:space="preserve">
     <value>Delete</value>
+    <comment>remove a file</comment>
   </data>
   <data name="Advanced_Encoding" xml:space="preserve">
     <value>Encoding</value>
+    <comment>encoding a file to a different format</comment>
   </data>
   <data name="Advanced_FallbackEncoder" xml:space="preserve">
     <value>_Fallback encoder:</value>
@@ -137,6 +139,7 @@
   </data>
   <data name="Advanced_File" xml:space="preserve">
     <value>File</value>
+    <comment>as in file name</comment>
   </data>
   <data name="Advanced_FileName" xml:space="preserve">
     <value>_Filename:</value>
@@ -206,6 +209,7 @@
   </data>
   <data name="ImageResizer" xml:space="preserve">
     <value>Image Resizer</value>
+    <comment>Product name, do not loc</comment>
   </data>
   <data name="Input_Auto" xml:space="preserve">
     <value>(auto)</value>

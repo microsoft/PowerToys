@@ -16,8 +16,7 @@
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
         ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
-        AutomationProperties.Name="Image Resizer"
-        >
+        AutomationProperties.Name="{x:Static p:Resources.ImageResizer}">
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:InputViewModel}">
