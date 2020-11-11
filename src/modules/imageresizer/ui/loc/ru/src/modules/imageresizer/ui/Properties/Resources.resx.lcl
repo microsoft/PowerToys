@@ -509,7 +509,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Подобрать размер]]></Val>
+            <Val><![CDATA[Подогнать]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

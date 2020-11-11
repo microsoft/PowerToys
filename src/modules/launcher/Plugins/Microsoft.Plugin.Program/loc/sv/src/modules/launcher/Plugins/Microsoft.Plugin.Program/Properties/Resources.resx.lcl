@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Search programs in PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sök efter program i PowerToys Run]]></Val>
+            <Val><![CDATA[Sök efter program i PowerToys-startprogrammet]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

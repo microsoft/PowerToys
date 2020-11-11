@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Window Walker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Window Walker]]></Val>
+            <Val><![CDATA[Fönsternavigering]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allows you to do mathematical calculations. (Try 5*3-2 in PowerToys Run)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gör att du kan utföra matematiska beräkningar. (Försök med 5*3-2 i PowerToys Run)]]></Val>
+            <Val><![CDATA[Gör att du kan utföra matematiska beräkningar. (Försök med 5*3-2 i PowerToys-startprogrammet)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

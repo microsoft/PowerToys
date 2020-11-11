@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Простое и удобное средство для выбора цвета на уровне системы.]]></Val>
+            <Val><![CDATA[Простой и удобный Цветоподборщик для выбора цвета на уровне системы.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1112,7 +1112,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Подобрать размер]]></Val>
+            <Val><![CDATA[Подогнать]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
