@@ -233,7 +233,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Create window layouts to help make multi-tasking easy.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Skapa fönsterlayouter som underlättar vid multikörning.]]></Val>
+            <Val><![CDATA[Skapa fönsterlayouter som underlättar vid multitasking.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -395,7 +395,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Återställ den ursprungliga storleken för Windows vid avfästning]]></Val>
+            <Val><![CDATA[Återställ den ursprungliga storleken för fönster när de frigörs]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1919,7 +1919,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Visar ett hjälpöverlägg med Windows-genvägar när Windows-tangenten trycks ned.]]></Val>
+            <Val><![CDATA[Visar ett överlägg med Windows-genvägar när Windows-tangenten trycks ned.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

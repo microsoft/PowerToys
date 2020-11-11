@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Visar ett hjälpöverlägg med Windows-genvägar när Windows-tangenten trycks ned.]]></Val>
+            <Val><![CDATA[Visar ett överlägg med Windows-genvägar när Windows-tangenten trycks ned.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
