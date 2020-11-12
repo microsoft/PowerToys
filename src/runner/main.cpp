@@ -33,6 +33,8 @@
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
+#include <common\settings_helpers.h>
+#include <common/logger/logger.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 extern updating::notifications::strings Strings;
@@ -73,6 +75,9 @@ void open_menu_from_another_instance()
 
 int runner(bool isProcessElevated)
 {
+    std::filesystem::path dir(PTSettingsHelper::get_root_save_folder_location());
+    auto logger = std::make_shared<Logger>(dir, "runner", "info");
+    logger -> LogInfo("Runnner is starting");
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64

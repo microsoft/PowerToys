@@ -7,6 +7,8 @@
 #include "Generated Files/resource.h"
 #include <common/os-detect.h>
 #include <launcher\Microsoft.Launcher\LauncherConstants.h>
+#include <common/logger/logger.h>
+#include <common\settings_helpers.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -75,12 +77,17 @@ private:
     // Handle to event used to invoke the Runner
     HANDLE m_hEvent;
 
+    std::shared_ptr<Logger> logger;
+
 public:
     // Constructor
     Microsoft_Launcher()
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
         app_key = LauncherConstants::ModuleKey;
+        std::filesystem::path dir(PTSettingsHelper::get_module_save_folder_location(this->app_key));
+        logger = std::make_shared<Logger>(dir, "launcher", "info");
+        logger -> LogInfo("Launcher started");
         init_settings();
 
         SECURITY_ATTRIBUTES sa;
