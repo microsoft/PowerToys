@@ -409,6 +409,8 @@ namespace FancyZonesEditor
 
             foundModel.IsSelected = true;
             foundModel.IsApplied = true;
+
+            FirePropertyChanged(nameof(IsCustomLayoutActive));
             return foundModel;
         }
 
