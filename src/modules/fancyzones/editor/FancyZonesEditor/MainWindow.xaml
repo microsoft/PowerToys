@@ -447,7 +447,17 @@
 		<StackPanel Orientation="Horizontal" Margin="0,10,0,16">
             <Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
             <Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
-            <Button x:Name="CloseButton" Content="{x:Static props:Resources.Close}" Padding="8" Style="{StaticResource secondaryButton}" Click="CloseButton_Click" />
+
+            <Button x:Name="CloseButton" 
+                    Content="{x:Static props:Resources.Close}" 
+                    Visibility="{Binding DesktopsPanelVisibility}"
+                    Padding="8" 
+                    Style="{StaticResource secondaryButton}" 
+                    Click="CloseButton_Click" >
+                <Button.DataContext>
+                    <local1:MonitorViewModel></local1:MonitorViewModel>
+                </Button.DataContext>
+            </Button>
         </StackPanel>
 
 	</StackPanel>
