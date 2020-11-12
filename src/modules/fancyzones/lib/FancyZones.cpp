@@ -724,7 +724,7 @@ void FancyZones::ToggleEditor() noexcept
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
     sei.lpFile = NonLocalizable::FZEditorExecutablePath;
     sei.lpParameters = params.c_str();
-    sei.nShow = SW_SHOWNORMAL;
+    sei.nShow = SW_SHOWDEFAULT;
     ShellExecuteEx(&sei);
     Trace::FancyZones::EditorLaunched(1);
 

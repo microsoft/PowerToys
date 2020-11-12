@@ -154,9 +154,11 @@ namespace FancyZonesEditor
             mainEditor.Edit();
 
             EditorWindow window;
+            bool isGrid = false;
             if (model is GridLayoutModel)
             {
                 window = new GridEditorWindow();
+                isGrid = true;
             }
             else
             {
@@ -166,6 +168,10 @@ namespace FancyZonesEditor
             window.Owner = EditorOverlay.Current;
             window.DataContext = model;
             window.Show();
+            if (isGrid)
+            {
+                (window as GridEditorWindow).NameTextBox().Focus();
+            }
         }
 
         private void Apply_Click(object sender, RoutedEventArgs e)

@@ -38,5 +38,15 @@ namespace FancyZonesEditor
         }
 
         private GridLayoutModel _stashedModel;
+
+        private void NameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            customLayoutNameTextBox.CaretIndex = customLayoutNameTextBox.Text.Length;
+        }
+
+        public System.Windows.Controls.TextBox NameTextBox()
+        {
+            return customLayoutNameTextBox;
+        }
     }
 }
