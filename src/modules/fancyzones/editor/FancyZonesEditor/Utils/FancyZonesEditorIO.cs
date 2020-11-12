@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Windows;
 using FancyZonesEditor.Models;
@@ -91,6 +92,23 @@ namespace FancyZonesEditor.Utils
             public int X { get; set; }
 
             public int Y { get; set; }
+
+            public override string ToString()
+            {
+                var sb = new StringBuilder();
+
+                sb.Append("ID: ");
+                sb.AppendLine(Id);
+                sb.Append("DPI: ");
+                sb.AppendLine(Dpi.ToString());
+
+                sb.Append("X: ");
+                sb.AppendLine(X.ToString());
+                sb.Append("Y: ");
+                sb.AppendLine(Y.ToString());
+
+                return sb.ToString();
+            }
         }
 
         private struct ActiveZoneSetWrapper
@@ -224,9 +242,19 @@ namespace FancyZonesEditor.Utils
                             {
                                 monitor.Device.Id = data.Id;
                                 monitor.Device.Dpi = data.Dpi;
-                                monitorData.Remove(data);
                                 break;
                             }
+                        }
+                    }
+
+                    // check if all monitors were mapped
+                    foreach (Monitor monitor in monitors)
+                    {
+                        if (monitor.Device.Id == string.Empty || monitor.Device.Id == null)
+                        {
+                            App.ShowExceptionReportMessageBox(ParsingCmdArgsErrorReport(args[1], count, targetMonitorName, monitorData, monitors));
+                            ((App)Application.Current).Shutdown();
+                            return;
                         }
                     }
 
@@ -593,6 +621,49 @@ namespace FancyZonesEditor.Utils
             }
 
             return string.Empty;
+        }
+
+        private static string ParsingCmdArgsErrorReport(string args, int count, string targetMonitorName, List<MonitorData> monitorData, List<Monitor> monitors)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine();
+            sb.AppendLine("```");
+            sb.AppendLine(" ## Command-line arguments:");
+            sb.AppendLine();
+            sb.AppendLine(args);
+
+            sb.AppendLine();
+            sb.AppendLine("```");
+            sb.AppendLine(" ## Parsed command-line arguments:");
+            sb.AppendLine();
+
+            sb.Append("Span zones across monitors: ");
+            sb.AppendLine(App.Overlay.SpanZonesAcrossMonitors.ToString());
+            sb.Append("Monitors count: ");
+            sb.AppendLine(count.ToString());
+            sb.Append("Target monitor: ");
+            sb.AppendLine(targetMonitorName);
+
+            sb.AppendLine();
+            sb.AppendLine(" # Per monitor data:");
+            sb.AppendLine();
+            foreach (MonitorData data in monitorData)
+            {
+                sb.AppendLine(data.ToString());
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("```");
+            sb.AppendLine(" ## Monitors discovered:");
+            sb.AppendLine();
+
+            foreach (Monitor m in monitors)
+            {
+                sb.AppendLine(m.Device.ToString());
+            }
+
+            return sb.ToString();
         }
     }
 }

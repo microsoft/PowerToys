@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text;
 using System.Windows;
 
 namespace FancyZonesEditor.Utils
@@ -43,6 +44,31 @@ namespace FancyZonesEditor.Utils
         {
             WorkAreaRect = new Rect(Math.Round(WorkAreaRect.X * scaleFactor), Math.Round(WorkAreaRect.Y * scaleFactor), Math.Round(WorkAreaRect.Width * scaleFactor), Math.Round(WorkAreaRect.Height * scaleFactor));
             ScaledBounds = new Rect(Math.Round(ScaledBounds.X * scaleFactor), Math.Round(ScaledBounds.Y * scaleFactor), Math.Round(ScaledBounds.Width * scaleFactor), Math.Round(ScaledBounds.Height * scaleFactor));
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append("ID: ");
+            sb.AppendLine(Id);
+            sb.Append("DPI: ");
+            sb.AppendLine(Dpi.ToString());
+            sb.Append("Is primary: ");
+            sb.AppendLine(Primary.ToString());
+
+            string workArea = string.Format("({0}, {1}, {2}, {3})", WorkAreaRect.X, WorkAreaRect.Y, WorkAreaRect.Width, WorkAreaRect.Height);
+            string bounds = string.Format("({0}, {1}, {2}, {3})", UnscaledBounds.X, UnscaledBounds.Y, UnscaledBounds.Width, UnscaledBounds.Height);
+            string scaledBounds = string.Format("({0}, {1}, {2}, {3})", ScaledBounds.X, ScaledBounds.Y, ScaledBounds.Width, ScaledBounds.Height);
+
+            sb.Append("Work area: ");
+            sb.AppendLine(workArea);
+            sb.Append("Unscaled bounds: ");
+            sb.AppendLine(bounds);
+            sb.Append("Scaled bounds: ");
+            sb.AppendLine(scaledBounds);
+
+            return sb.ToString();
         }
     }
 }

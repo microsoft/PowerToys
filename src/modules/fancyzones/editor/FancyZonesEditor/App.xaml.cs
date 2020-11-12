@@ -23,6 +23,7 @@ namespace FancyZonesEditor
     {
         // Non-localizable strings
         private const string CrashReportLogFile = "FZEditorCrashLog.txt";
+        private const string ErrorReportLogFile = "FZEditorErrorLog.txt";
         private const string PowerToysIssuesURL = "https://aka.ms/powerToysReportBug";
 
         private const string CrashReportExceptionTag = "Exception";
@@ -108,22 +109,39 @@ namespace FancyZonesEditor
             MessageBox.Show(fullMessage, ErrorMessageBoxTitle);
         }
 
+        public static void ShowExceptionReportMessageBox(string reportData)
+        {
+            var fileStream = File.OpenWrite(ErrorReportLogFile);
+            var sw = new StreamWriter(fileStream);
+            sw.Write(reportData);
+            sw.Flush();
+            fileStream.Close();
+
+            ShowReportMessageBox(fileStream.Name);
+        }
+
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
             var fileStream = File.OpenWrite(CrashReportLogFile);
             var sw = new StreamWriter(fileStream);
             sw.Write(FormatException((Exception)args.ExceptionObject));
             fileStream.Close();
+
+            ShowReportMessageBox(fileStream.Name);
+        }
+
+        private static void ShowReportMessageBox(string fileName)
+        {
             MessageBox.Show(
                 FancyZonesEditor.Properties.Resources.Crash_Report_Message_Box_Text_Part1 +
-                Path.GetFullPath(fileStream.Name) +
+                Path.GetFullPath(fileName) +
                 "\n" +
                 FancyZonesEditor.Properties.Resources.Crash_Report_Message_Box_Text_Part2 +
                 PowerToysIssuesURL,
                 FancyZonesEditor.Properties.Resources.Fancy_Zones_Editor_App_Title);
         }
 
-        private string FormatException(Exception ex)
+        private static string FormatException(Exception ex)
         {
             var sb = new StringBuilder();
             sb.AppendLine();
