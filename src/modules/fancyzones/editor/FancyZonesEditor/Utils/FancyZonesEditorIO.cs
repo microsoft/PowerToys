@@ -247,16 +247,6 @@ namespace FancyZonesEditor.Utils
                         }
                     }
 
-                    // check if all monitors were mapped
-                    foreach (Monitor monitor in monitors)
-                    {
-                        if (monitor.Device.Id == string.Empty || monitor.Device.Id == null)
-                        {
-                            App.ShowExceptionReportMessageBox(ParsingCmdArgsErrorReport(args[1], count, targetMonitorName, monitorData, monitors));
-                            ((App)Application.Current).Shutdown();
-                            return;
-                        }
-                    }
 
                     // set active desktop
                     for (int i = 0; i < monitors.Count; i++)
