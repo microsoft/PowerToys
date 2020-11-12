@@ -88,10 +88,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     auto renderTargetSize = D2D1::SizeU(m_clientRect.right - m_clientRect.left, m_clientRect.bottom - m_clientRect.top);
     auto hwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(window, renderTargetSize);
 
-    hr = GetD2DFactory()->CreateHwndRenderTarget(
-        renderTargetProperties,
-        hwndRenderTargetProperties,
-        &m_renderTarget);
+    hr = GetD2DFactory()->CreateHwndRenderTarget(renderTargetProperties, hwndRenderTargetProperties, &m_renderTarget);
 
     if (!SUCCEEDED(hr))
     {
