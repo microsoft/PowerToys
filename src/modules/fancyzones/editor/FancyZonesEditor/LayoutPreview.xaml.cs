@@ -310,7 +310,7 @@ namespace FancyZonesEditor
             if (App.DebugMode)
             {
                 TextBlock text = new TextBlock();
-                text.Text = "(" + workArea.X + "," + workArea.Y + ")";
+                text.Text = "(" + App.Overlay.WorkArea.X + "," + App.Overlay.WorkArea.Y + ")";
                 text.FontSize = 42;
                 frame.Children.Add(text);
             }
