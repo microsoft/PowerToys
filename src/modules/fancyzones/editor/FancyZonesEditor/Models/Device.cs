@@ -41,8 +41,8 @@ namespace FancyZonesEditor.Utils
 
         public void Scale(double scaleFactor)
         {
-            WorkAreaRect = new Rect(WorkAreaRect.X * scaleFactor, WorkAreaRect.Y * scaleFactor, WorkAreaRect.Width * scaleFactor, WorkAreaRect.Height * scaleFactor);
-            ScaledBounds = new Rect(ScaledBounds.X * scaleFactor, ScaledBounds.Y * scaleFactor, ScaledBounds.Width * scaleFactor, ScaledBounds.Height * scaleFactor);
+            WorkAreaRect = new Rect(Math.Round(WorkAreaRect.X * scaleFactor), Math.Round(WorkAreaRect.Y * scaleFactor), Math.Round(WorkAreaRect.Width * scaleFactor), Math.Round(WorkAreaRect.Height * scaleFactor));
+            ScaledBounds = new Rect(Math.Round(ScaledBounds.X * scaleFactor), Math.Round(ScaledBounds.Y * scaleFactor), Math.Round(ScaledBounds.Width * scaleFactor), Math.Round(ScaledBounds.Height * scaleFactor));
         }
     }
 }
