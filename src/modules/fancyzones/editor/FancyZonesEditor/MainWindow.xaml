@@ -278,7 +278,7 @@
                     <local1:MonitorViewModel></local1:MonitorViewModel>
                 </ScrollViewer.DataContext>
                 <ItemsControl x:Name="MainWindowItemControl" 
-                              ItemsSource="{Binding Monitors}">
+                              ItemsSource="{Binding MonitorInfoForViewModel}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Background="Transparent" 

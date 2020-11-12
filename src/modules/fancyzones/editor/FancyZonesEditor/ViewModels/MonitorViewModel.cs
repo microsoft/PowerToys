@@ -18,7 +18,7 @@ namespace FancyZonesEditor.ViewModels
 
         public delegate void MonitorChangedEventHandler(MonitorChangedEventArgs args);
 
-        public ObservableCollection<MonitorInfoModel> Monitors { get; set; }
+        public ObservableCollection<MonitorInfoModel> MonitorInfoForViewModel { get; set; }
 
         public static double DesktopPreviewMultiplier { get; private set; }
 
@@ -40,18 +40,18 @@ namespace FancyZonesEditor.ViewModels
         {
             SelectCommand = new RelayCommand<MonitorInfoModel>(SelectCommandExecute, SelectCommandCanExecute);
 
-            Monitors = new ObservableCollection<MonitorInfoModel>();
+            MonitorInfoForViewModel = new ObservableCollection<MonitorInfoModel>();
             double maxDimension = 0, minDimension = double.MaxValue;
 
             int i = 1;
             foreach (var monitor in App.Overlay.Monitors)
             {
                 Device device = monitor.Device;
-                var bounds = device.UnscaledBounds;
+                var bounds = device.ScaledBounds;
                 maxDimension = System.Math.Max(System.Math.Max(maxDimension, bounds.Height), bounds.Width);
                 minDimension = System.Math.Min(System.Math.Min(minDimension, bounds.Height), bounds.Width);
 
-                Monitors.Add(new MonitorInfoModel(i, (int)bounds.Height, (int)bounds.Width, device.Dpi, App.Overlay.CurrentDesktop == i - 1));
+                MonitorInfoForViewModel.Add(new MonitorInfoModel(i, (int)bounds.Height, (int)bounds.Width, device.Dpi, App.Overlay.CurrentDesktop == i - 1));
                 i++;
             }
 
@@ -72,8 +72,8 @@ namespace FancyZonesEditor.ViewModels
 
         private void SelectCommandExecute(MonitorInfoModel monitorInfo)
         {
-            Monitors[App.Overlay.CurrentDesktop].Selected = false;
-            Monitors[monitorInfo.Index - 1].Selected = true;
+            MonitorInfoForViewModel[App.Overlay.CurrentDesktop].Selected = false;
+            MonitorInfoForViewModel[monitorInfo.Index - 1].Selected = true;
 
             App.Overlay.CurrentDesktop = monitorInfo.Index - 1;
         }

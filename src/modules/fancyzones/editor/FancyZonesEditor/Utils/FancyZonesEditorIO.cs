@@ -247,7 +247,6 @@ namespace FancyZonesEditor.Utils
                         }
                     }
 
-
                     // set active desktop
                     for (int i = 0; i < monitors.Count; i++)
                     {
