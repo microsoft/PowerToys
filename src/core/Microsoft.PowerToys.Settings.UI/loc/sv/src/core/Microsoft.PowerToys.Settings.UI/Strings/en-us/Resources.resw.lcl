@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Om bildstorleksändraren]]></Val>
+            <Val><![CDATA[Om Bildstorleksverktyget]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Om PowerToys Run]]></Val>
+            <Val><![CDATA[Om PowerToys-startprogrammet]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -86,7 +86,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Om genvägsguide]]></Val>
+            <Val><![CDATA[Om Kortkommandoguiden]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -233,7 +233,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Create window layouts to help make multi-tasking easy.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Skapa fönsterlayouter som underlättar vid multikörning.]]></Val>
+            <Val><![CDATA[Skapa fönsterlayouter som underlättar vid multitasking.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -341,7 +341,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gör fönstret genomskinligt det dras]]></Val>
+            <Val><![CDATA[Gör fönster genomskinliga när de dras]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -395,7 +395,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Återställ den ursprungliga storleken för Windows vid avfästning]]></Val>
+            <Val><![CDATA[Återställ den ursprungliga storleken för fönster när de frigörs]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -878,7 +878,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aktivera bildstorleksändraren]]></Val>
+            <Val><![CDATA[Aktivera Bildstorleksverktyget]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -986,7 +986,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fit Property]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Passa in egenskapen]]></Val>
+            <Val><![CDATA[Anpassa egenskapen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1058,7 +1058,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bildstorleksändring]]></Val>
+            <Val><![CDATA[Bildstorleksverktyget]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1121,7 +1121,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Stretch]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sträck]]></Val>
+            <Val><![CDATA[Stretcha]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1328,7 +1328,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Key Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ommappning av tangent]]></Val>
+            <Val><![CDATA[Mappa om tangent]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1337,7 +1337,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ommappning av genvägar]]></Val>
+            <Val><![CDATA[Mappa om genvägar]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1346,7 +1346,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remapped to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ommappad till]]></Val>
+            <Val><![CDATA[Mappad om till]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1355,7 +1355,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remapped to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ommappad till]]></Val>
+            <Val><![CDATA[Mappad om till]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1451,7 +1451,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aktivera PowerToys Run]]></Val>
+            <Val><![CDATA[Aktivera PowerToys-startprogrammet]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1496,7 +1496,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Öppna PowerToys Run]]></Val>
+            <Val><![CDATA[Öppna PowerToys-startprogrammet]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1727,7 +1727,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Run]]></Val>
+            <Val><![CDATA[PowerToys-startprogram]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1856,7 +1856,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bildstorleksändring]]></Val>
+            <Val><![CDATA[Bildstorleksverktyget]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1874,7 +1874,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Run]]></Val>
+            <Val><![CDATA[PowerToys-startprogram]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1901,7 +1901,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Genvägsguide]]></Val>
+            <Val><![CDATA[Kortkommandoguiden]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1919,7 +1919,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Visar ett hjälpöverlägg med Windows-genvägar när Windows-tangenten trycks ned.]]></Val>
+            <Val><![CDATA[Visar ett överlägg med Windows-genvägar när Windows-tangenten trycks ned.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1928,7 +1928,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aktivera genvägsguide]]></Val>
+            <Val><![CDATA[Aktivera Kortkommandoguiden]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1964,7 +1964,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Genvägsguide]]></Val>
+            <Val><![CDATA[Kortkommandoguiden]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -220,8 +220,8 @@
       <Item ItemId=";FancyZones_BorderColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone border color]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bölge kenarlık rengi (Varsayılan: #FFFFFF)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bölge kenarlık rengi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zone border color (Default: #FFFFFF)]]></Val>
@@ -304,8 +304,8 @@
       <Item ItemId=";FancyZones_HotkeyEditorControl.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open layout editor]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bölge düzenleyicisini açma]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Düzen düzenleyicisini aç]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open zones editor]]></Val>
@@ -316,8 +316,8 @@
       <Item ItemId=";FancyZones_InActiveColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone inactive color]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Etkin olmayan bölge rengi (Varsayılan: #F5FCFF)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Etkin olmayan bölge rengi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zone inactive color (Default: #F5FCFF)]]></Val>
@@ -328,8 +328,8 @@
       <Item ItemId=";FancyZones_LaunchEditorButtonControl.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Launch layout editor]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bölge düzenleyicisini başlat]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yerleşim düzenleyicisini başlat]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Launch zones editor]]></Val>
@@ -439,6 +439,9 @@
       <Item ItemId=";FancyZones_WindowBehavior_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Window behavior]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pencere davranışı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -454,8 +457,8 @@
       <Item ItemId=";FancyZones_ZoneHighlightColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone highlight color]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bölge vurgulama rengi (Varsayılan: #0078D7)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bölge vurgulama rengi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zone highlight color (Default: #0078D7)]]></Val>
@@ -709,8 +712,8 @@
       <Item ItemId=";GeneralSettings_VersionIsLatest" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[PowerToys is up-to-date.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Kullanılabilir en son sürüme sahipsiniz.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PowerToys güncel.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You have the latest available version.]]></Val>
@@ -1207,6 +1210,9 @@
       <Item ItemId=";KBM_KeysCannotBeRemapped.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more about remapping limitations]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yeniden eşleme sınırlamaları hakkında daha fazla bilgi edinin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1432,8 +1438,8 @@
       <Item ItemId=";PowerLauncher_DisableDriveDetectionWarning.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Disable drive detection warning for the file search plugin]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Dizin oluşturucu eklentisi için sürücü algılama uyarısını devre dışı bırak]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dosya arama eklentisi için sürücü algılama uyarısını devre dışı bırak]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Disable drive detection warning for the indexer plugin]]></Val>
@@ -1705,6 +1711,9 @@
       <Item ItemId=";PowerRename_Toggle_UseBoostLib.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Boost kitaplığını (genişletilmiş özellikler sağlar, ancak farklı normal ifade söz dizimi kullanabilir) kullan]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

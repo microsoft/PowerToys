@@ -176,7 +176,7 @@
         </Style>
 
     </Window.Resources>
-    <StackPanel>
+    <StackPanel FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
         <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Layout_Creator}" Style="{StaticResource titleText}"  />
         <Button x:Name="newZoneButton" AutomationProperties.LabeledBy="{Binding ElementName=newZoneName}" Width="496" Height="136" Style="{StaticResource newZoneButton}" Click="OnAddZone">
             <StackPanel>

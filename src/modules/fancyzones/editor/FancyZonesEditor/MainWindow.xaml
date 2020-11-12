@@ -187,8 +187,8 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
     </Window.Resources>
-    
-    <StackPanel>
+
+    <StackPanel FocusManager.FocusedElement="{Binding ElementName=decrementZones}">
 
         <TextBlock Name="DialogTitle" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource titleText}" />
 

@@ -333,7 +333,7 @@
     <value>Zone highlight opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
-    <value>Open layout editor</value>  
+    <value>Open layout editor</value>
     <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
@@ -481,6 +481,7 @@
   </data>
   <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
     <value>Press duration before showing (ms)</value>
+    <comment>pressing a key in milliseconds</comment>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
@@ -561,24 +562,29 @@
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT3.Content" xml:space="preserve">
     <value>CCITT3</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT4.Content" xml:space="preserve">
     <value>CCITT4</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Default.Content" xml:space="preserve">
     <value>Default</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_LZW.Content" xml:space="preserve">
     <value>LZW</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_None.Content" xml:space="preserve">
     <value>None</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_RLE.Content" xml:space="preserve">
     <value>RLE</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Zip.Content" xml:space="preserve">
     <value>Zip</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
     <value>BMP encoder</value>
@@ -705,6 +711,7 @@
   </data>
   <data name="ShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts with the following hotkeys are valid:</value>
+    <comment>keyboard shortcuts and</comment>
   </data>
   <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
@@ -838,5 +845,8 @@
   <data name="PowerRename_Toggle_UseBoostLib.Content" xml:space="preserve">
     <value>Use Boost library (provides extended features but may use different regex syntax)</value>
     <comment>Boost is a product name, should not be translated</comment>
+  </data>
+  <data name="MadeWithOssLove.Text" xml:space="preserve">
+    <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
 </root>

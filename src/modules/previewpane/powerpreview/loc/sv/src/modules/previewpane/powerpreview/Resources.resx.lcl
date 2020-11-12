@@ -83,7 +83,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys add-ons for Windows File Explorer.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToy-tillägg för Windows Utforskaren.]]></Val>
+            <Val><![CDATA[PowerToys-tillägg för Windows Utforskaren.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
