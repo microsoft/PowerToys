@@ -86,7 +86,9 @@ public:
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
         app_key = LauncherConstants::ModuleKey;
         std::filesystem::path dir(PTSettingsHelper::get_module_save_folder_location(this->app_key));
-        logger = std::make_shared<Logger>(dir, "launcher", "info");
+        std::filesystem::path logFile(PTSettingsHelper::get_root_save_folder_location());
+        logFile = logFile.append(L"log-settings.json");
+        logger = std::make_shared<Logger>(dir, "launcher", logFile.wstring());
         logger -> LogInfo("Launcher started");
         init_settings();
 

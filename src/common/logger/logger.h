@@ -16,7 +16,7 @@ private:
 
 public:
     Logger();
-    Logger(std::filesystem::path dir, std::string loggerName, std::string severity);
+    Logger(std::filesystem::path dir, std::string loggerName, std::wstring_view logSettingsPath);
     void LogInfo(std::string str);
 
     ~Logger();
