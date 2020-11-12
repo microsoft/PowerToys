@@ -142,6 +142,9 @@
       <Item ItemId=";GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[At next launch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[No próximo início]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -172,6 +175,9 @@
       <Item ItemId=";MSI_VERSION_IS_ALREADY_RUNNING" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[An older version of PowerToys is already running.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Já está em execução uma versão mais antiga do PowerToys.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -187,6 +193,9 @@
       <Item ItemId=";OFFER_UNINSTALL_MSI_TITLE" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[PowerToys: uninstall previous version?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PowerToys: desinstalar a versão anterior?]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

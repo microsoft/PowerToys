@@ -139,8 +139,8 @@
       <Item ItemId=";Items_Selected" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Items Selected: 0]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Itens Selecionados: 0 | Mudar o nome: 0]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Itens Selecionados: 0]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Items Selected: 0 | Renaming: 0]]></Val>

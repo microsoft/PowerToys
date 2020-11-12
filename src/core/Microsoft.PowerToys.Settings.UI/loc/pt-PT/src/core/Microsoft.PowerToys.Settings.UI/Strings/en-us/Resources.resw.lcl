@@ -439,6 +439,9 @@
       <Item ItemId=";FancyZones_WindowBehavior_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Window behavior]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Comportamento da janela]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1708,6 +1711,9 @@
       <Item ItemId=";PowerRename_Toggle_UseBoostLib.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utilizar biblioteca Boost (fornece funcionalidades expandidas, mas pode utilizar uma sintaxe de regex diferente)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

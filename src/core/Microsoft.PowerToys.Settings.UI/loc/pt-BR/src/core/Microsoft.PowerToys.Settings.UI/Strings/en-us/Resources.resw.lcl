@@ -220,8 +220,8 @@
       <Item ItemId=";FancyZones_BorderColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone border color]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Cor da borda da zona (Padrão: #FFFFFF)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Cor da borda da zona]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zone border color (Default: #FFFFFF)]]></Val>
@@ -304,8 +304,8 @@
       <Item ItemId=";FancyZones_HotkeyEditorControl.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open layout editor]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Abrir o editor de zonas]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Abrir editor de layout]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open zones editor]]></Val>
@@ -316,8 +316,8 @@
       <Item ItemId=";FancyZones_InActiveColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone inactive color]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Cor inativa da zona (Padrão: #F5FCFF)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Cor inativa da zona]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zone inactive color (Default: #F5FCFF)]]></Val>
@@ -328,8 +328,8 @@
       <Item ItemId=";FancyZones_LaunchEditorButtonControl.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Launch layout editor]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Iniciar o editor de zonas]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Iniciar editor de layout]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Launch zones editor]]></Val>
@@ -439,6 +439,9 @@
       <Item ItemId=";FancyZones_WindowBehavior_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Window behavior]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Comportamento da janela]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -454,8 +457,8 @@
       <Item ItemId=";FancyZones_ZoneHighlightColor.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zone highlight color]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Cor de realce da zona (Padrão: #0078D7)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Cor de realce da zona]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zone highlight color (Default: #0078D7)]]></Val>
@@ -709,8 +712,8 @@
       <Item ItemId=";GeneralSettings_VersionIsLatest" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[PowerToys is up-to-date.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Você tem a versão mais recente disponível.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Os PowerToys estão atualizados.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You have the latest available version.]]></Val>
@@ -1207,6 +1210,9 @@
       <Item ItemId=";KBM_KeysCannotBeRemapped.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more about remapping limitations]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Saiba mais sobre as limitações de remapeamento]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1432,8 +1438,8 @@
       <Item ItemId=";PowerLauncher_DisableDriveDetectionWarning.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Disable drive detection warning for the file search plugin]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Desabilitar o aviso de detecção de unidade para o plug-in do indexador]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Desabilitar o aviso de detecção de unidade para o plug-in de pesquisa de arquivo]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Disable drive detection warning for the indexer plugin]]></Val>
@@ -1705,6 +1711,9 @@
       <Item ItemId=";PowerRename_Toggle_UseBoostLib.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Usar a Biblioteca de aumento (fornece recursos estendidos, mas pode usar uma sintaxe regex diferente)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -1711,6 +1711,9 @@
       <Item ItemId=";PowerRename_Toggle_UseBoostLib.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Usar la biblioteca de Boost (proporciona características ampliadas, pero puede usar otra sintaxis de regex).]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
