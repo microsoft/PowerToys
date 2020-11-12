@@ -479,11 +479,6 @@ void FancyZonesData::SetActiveZoneSet(const std::wstring& deviceId, const FancyZ
     }
 }
 
-void FancyZonesData::SerializeDeviceInfoToTmpFile(const GUID& currentVirtualDesktop) const
-{
-    JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, currentVirtualDesktop, activeZoneSetTmpFileName);
-}
-
 void FancyZonesData::ParseDataFromTmpFiles()
 {
     ParseDeviceInfoFromTmpFile(activeZoneSetTmpFileName);

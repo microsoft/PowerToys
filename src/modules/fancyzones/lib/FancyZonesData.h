@@ -72,7 +72,6 @@ public:
 
     void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
-    void SerializeDeviceInfoToTmpFile(const GUID& currentVirtualDesktop) const;
     void ParseDataFromTmpFiles();
 
     json::JsonObject GetPersistFancyZonesJSON();
