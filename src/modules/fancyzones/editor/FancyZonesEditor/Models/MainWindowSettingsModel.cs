@@ -249,9 +249,10 @@ namespace FancyZonesEditor
             // If changing focus layout zones size and/or increment,
             // same change should be applied in ZoneSet.cpp (ZoneSet::CalculateFocusLayout)
             var workingArea = App.Overlay.WorkArea;
-            Int32Rect focusZoneRect = new Int32Rect(100, 100, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4));
-            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : 50;
-            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : 50;
+            int topLeftCoordinate = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(100); // TODO: replace magic numbers
+            Int32Rect focusZoneRect = new Int32Rect(topLeftCoordinate, topLeftCoordinate, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4));
+            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50);
+            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50);
 
             for (int i = 0; i < ZoneCount; i++)
             {

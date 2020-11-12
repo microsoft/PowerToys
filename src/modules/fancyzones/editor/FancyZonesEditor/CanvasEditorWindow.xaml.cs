@@ -5,7 +5,6 @@
 using System.Windows;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -27,18 +26,21 @@ namespace FancyZonesEditor
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
             Rect workingArea = App.Overlay.WorkArea;
-            if (_offset + (int)(workingArea.Width * 0.4) < (int)workingArea.Width
-                && _offset + (int)(workingArea.Height * 0.4) < (int)workingArea.Height)
+            int offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
+
+            if (offset + (int)(workingArea.Width * 0.4) < (int)workingArea.Width
+                && offset + (int)(workingArea.Height * 0.4) < (int)workingArea.Height)
             {
-                _model.AddZone(new Int32Rect(_offset, _offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
+                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
             }
             else
             {
                 _offset = 100;
-                _model.AddZone(new Int32Rect(_offset, _offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
+                offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
+                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
             }
 
-            _offset += 50;
+            _offset += 50; // TODO: replace hardcoded numbers
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)

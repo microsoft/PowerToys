@@ -46,6 +46,13 @@ namespace FancyZonesEditor.Utils
             ScaledBounds = new Rect(Math.Round(ScaledBounds.X * scaleFactor), Math.Round(ScaledBounds.Y * scaleFactor), Math.Round(ScaledBounds.Width * scaleFactor), Math.Round(ScaledBounds.Height * scaleFactor));
         }
 
+        public double ScaleCoordinate(double coordinate)
+        {
+            float dpi = Dpi != 0 ? Dpi : 96f;
+            double scaleFactor = 96f / dpi;
+            return Math.Round(coordinate * scaleFactor);
+        }
+
         public override string ToString()
         {
             var sb = new StringBuilder();
