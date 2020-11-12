@@ -113,7 +113,7 @@ Install the [pre-release experimental version of PowerToys][github-prerelease-li
 
 ### Other install methods
 
-There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
+There are [community driven install methods](doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
 
 ### Known issues
 
@@ -192,7 +192,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ## Developer Guidance
 
-Please read the [developer docs](/doc/devdocs) for a detailed breakdown.
+Please read the [developer docs](doc/devdocs) for a detailed breakdown.
 
 ## Contributing
 
