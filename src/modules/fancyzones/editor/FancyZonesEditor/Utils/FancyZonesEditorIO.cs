@@ -238,7 +238,7 @@ namespace FancyZonesEditor.Utils
 
                         foreach (MonitorData data in monitorData)
                         {
-                            if (monitor.Device.ScaledBounds.Left == data.X && monitor.Device.ScaledBounds.Top == data.Y)
+                            if (monitor.Device.UnscaledBounds.X == data.X && monitor.Device.UnscaledBounds.Y == data.Y)
                             {
                                 monitor.Device.Id = data.Id;
                                 monitor.Device.Dpi = data.Dpi;
