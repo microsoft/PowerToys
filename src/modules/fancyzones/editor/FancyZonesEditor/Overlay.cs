@@ -252,9 +252,9 @@ namespace FancyZonesEditor
             }
         }
 
-        public double ScaleCoordinateWithCurrentMonitorDpi(double coord)
+        public double ScaleCoordinateWithCurrentMonitorDpi(double coordinate)
         {
-            return Monitors[CurrentDesktop].Device.ScaleCoordinate(coord);
+            return Monitors[CurrentDesktop].Device.ScaleCoordinate(coordinate);
         }
 
         private void Update()
