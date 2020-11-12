@@ -817,7 +817,7 @@
     <value>Opens color picker - picked color is copied into the clipboard</value>
   </data>
   <data name="ColorPicker_ActivationAction.Text" xml:space="preserve">
-    <value>Choose an action to trigger after pressing the activation shortcut</value>
+    <value>Action after pressing the activation shortcut</value>
   </data>
   <data name="ColorFormats.Text" xml:space="preserve">
     <value>Color formats</value>
