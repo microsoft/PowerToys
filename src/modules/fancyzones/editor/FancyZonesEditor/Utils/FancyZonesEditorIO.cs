@@ -19,6 +19,7 @@ namespace FancyZonesEditor.Utils
     {
         // Non-localizable strings: JSON tags
         private const string AppliedZonesetsJsonTag = "applied-zonesets";
+        private const string DevicesJsonTag = "devices";
         private const string DeviceIdJsonTag = "device-id";
         private const string ActiveZoneSetJsonTag = "active-zoneset";
         private const string UuidJsonTag = "uuid";
@@ -325,32 +326,30 @@ namespace FancyZonesEditor.Utils
             {
                 JsonElement jsonObject = default(JsonElement);
 
-                if (_fileSystem.File.Exists(ActiveZoneSetTmpFile))
+                if (_fileSystem.File.Exists(FancyZonesSettingsFile))
                 {
-                    Stream inputStream = _fileSystem.File.Open(ActiveZoneSetTmpFile, FileMode.Open);
+                    Stream inputStream = _fileSystem.File.Open(FancyZonesSettingsFile, FileMode.Open);
                     jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
                     inputStream.Close();
 
-                    JsonElement json = jsonObject.GetProperty(AppliedZonesetsJsonTag);
+                    JsonElement json = jsonObject.GetProperty(DevicesJsonTag);
+                    var monitors = App.Overlay.Monitors;
 
-                    int layoutId = 0;
-                    for (int i = 0; i < json.GetArrayLength() && layoutId < App.Overlay.DesktopsCount; i++)
+                    for (int i = 0; i < json.GetArrayLength(); i++)
                     {
                         var zonesetData = json[i];
 
                         string deviceId = zonesetData.GetProperty(DeviceIdJsonTag).GetString();
-
                         string currentLayoutType = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(TypeJsonTag).GetString();
                         LayoutType type = JsonTagToLayoutType(currentLayoutType);
 
                         if (!App.Overlay.SpanZonesAcrossMonitors)
                         {
-                            var monitors = App.Overlay.Monitors;
-                            for (int monitorIndex = 0; monitorIndex < monitors.Count; monitorIndex++)
+                            foreach (Monitor monitor in monitors)
                             {
-                                if (monitors[monitorIndex].Device.Id == deviceId)
+                                if (monitor.Device.Id == deviceId)
                                 {
-                                    monitors[monitorIndex].Settings = new LayoutSettings
+                                    monitor.Settings = new LayoutSettings
                                     {
                                         ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
                                         ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
