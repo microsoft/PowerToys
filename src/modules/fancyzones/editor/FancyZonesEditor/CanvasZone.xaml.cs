@@ -85,7 +85,7 @@ namespace FancyZonesEditor
                     }
                 }
 
-                foreach (Rect singleMonitor in App.Overlay.UsedWorkAreas)
+                foreach (Rect singleMonitor in App.Overlay.WorkAreas)
                 {
                     int monitorPositionLow = (int)(isX ? singleMonitor.Left : singleMonitor.Top);
                     int monitorPositionHigh = (int)(isX ? singleMonitor.Right : singleMonitor.Bottom);

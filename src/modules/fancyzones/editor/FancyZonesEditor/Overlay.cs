@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -59,7 +58,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public List<Rect> UsedWorkAreas { get; private set; }
+        public List<Rect> WorkAreas { get; private set; }
 
         public object CurrentDataContext
         {
@@ -158,7 +157,7 @@ namespace FancyZonesEditor
 
         public Overlay()
         {
-            UsedWorkAreas = new List<Rect>();
+            WorkAreas = new List<Rect>();
             Monitors = new List<Monitor>();
 
             var monitors = MonitorInfoUtils.GetMonitors();
