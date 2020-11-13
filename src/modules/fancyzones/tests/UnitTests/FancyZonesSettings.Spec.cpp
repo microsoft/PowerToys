@@ -560,8 +560,8 @@ namespace FancyZonesUnitTests
                     m_settings->SetCallback(callback.get());
 
                     int bufSize = 1;
-                    wchar_t bufer{};
-                    m_settings->GetConfig(&bufer, &bufSize);
+                    wchar_t buffer{};
+                    m_settings->GetConfig(&buffer, &bufSize);
 
                     Assert::IsFalse(flag);
                 }
