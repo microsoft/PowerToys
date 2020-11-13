@@ -10,6 +10,8 @@ assignees: ''
 <!--
 **Important: When reporting BSODs or security issues, DO NOT attach memory dumps, logs, or traces to Github issues**.
 Instead, send dumps/traces to secure@microsoft.com, referencing this GitHub issue.
+
+**Note: Please make sure that you are subscribed to this issue thread and please respond when required**
 -->
 
 ## ℹ Computer information
