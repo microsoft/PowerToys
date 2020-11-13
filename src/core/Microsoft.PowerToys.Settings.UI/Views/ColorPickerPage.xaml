@@ -128,11 +128,13 @@
                       SelectedValuePath="Key" />
 
             <TextBlock Margin="{StaticResource MediumTopMargin}"
+                       x:Name="ColorFormatsListViewLabel"
                        TextWrapping="WrapWholeWords"
-                       Text="Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging."/>
+                       x:Uid="ColorPicker_ColorFormatsDescription"/>
             <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
                       AllowDrop="True"
                       MaxWidth="466"
+                      AutomationProperties.LabeledBy="{Binding ElementName=ColorFormatsListViewLabel}"
                       CanReorderItems="True"
                       HorizontalAlignment="Left"
                       Margin="-12,6,0,0">

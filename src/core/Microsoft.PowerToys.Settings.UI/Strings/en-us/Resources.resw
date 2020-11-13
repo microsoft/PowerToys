@@ -853,9 +853,12 @@
     <value>Color picker only</value>
   </data>
   <data name="ColorPickerOnly_Description.Text" xml:space="preserve">
-    <value>Allows you to pick a color and will copy your prefered format to your clipboard</value>
+    <value>Allows you to pick a color and will copy your preferred format to your clipboard</value>
   </data>
   <data name="EditorFirst_Description.Text" xml:space="preserve">
     <value>Opens the editor first, allows you to browser your previously picked colors and pick a new color</value>
+  </data>
+  <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
+    <value>Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging.</value>
   </data>
 </root>
