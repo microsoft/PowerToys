@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+<!--**Note: Please make sure that you are subscribed to this issue thread and please respond when required**-->
+
 ## ℹ Computer information
 
 - PowerToys version: 
