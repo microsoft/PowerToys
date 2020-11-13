@@ -7,7 +7,9 @@ assignees: ''
 
 ---
 
-<!-- Briefly describe which document needs to be corrected and why. -->
+<!-- Briefly describe which document needs to be corrected and why.
+**Note: Please make sure that you are subscribed to this issue thread and please respond when required**
+-->
 
 ## 📝 Provide a description of requested docs changes
 
