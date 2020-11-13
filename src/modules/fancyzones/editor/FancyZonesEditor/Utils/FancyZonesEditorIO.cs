@@ -236,8 +236,6 @@ namespace FancyZonesEditor.Utils
 
                     var monitors = App.Overlay.Monitors;
                     double identifyScaleFactor = minimalUsedMonitorDPI / primaryMonitorDPI;
-
-                    // update monitors data
                     double scaleFactor = 96f / primaryMonitorDPI;
 
                     // update monitors data
@@ -246,16 +244,14 @@ namespace FancyZonesEditor.Utils
                         bool matchFound = false;
                         monitor.Scale(scaleFactor);
 
+                        double scaledBoundX = (int)(monitor.Device.UnscaledBounds.X * identifyScaleFactor);
+                        double scaledBoundY = (int)(monitor.Device.UnscaledBounds.Y * identifyScaleFactor);
+
                         foreach (NativeMonitorData nativeData in nativeMonitorData)
                         {
-                            // these coordinates will be scaled depending on the relation between
-                            // minimal used monitor DPI and the DPI of the primary monitor
-                            double x = monitor.Device.UnscaledBounds.X * identifyScaleFactor;
-                            double y = monitor.Device.UnscaledBounds.Y * identifyScaleFactor;
-
                             // can't do an exact match since the rounding algorithm used by the framework is different from ours
-                            if (x >= (nativeData.X - 1) && x <= (nativeData.X + 1) &&
-                                y >= (nativeData.Y - 1) && y <= (nativeData.Y + 1))
+                            if (scaledBoundX >= (nativeData.X - 1) && scaledBoundX <= (nativeData.X + 1) &&
+                                scaledBoundY >= (nativeData.Y - 1) && scaledBoundY <= (nativeData.Y + 1))
                             {
                                 monitor.Device.Id = nativeData.Id;
                                 monitor.Device.Dpi = nativeData.Dpi;
