@@ -160,11 +160,12 @@ namespace FancyZonesEditor
             WorkAreas = new List<Rect>();
             Monitors = new List<Monitor>();
 
-            var monitors = MonitorInfoUtils.GetMonitors();
-            for (int i = 0; i < monitors.Length; i++)
+            var screens = System.Windows.Forms.Screen.AllScreens;
+            foreach (System.Windows.Forms.Screen screen in screens)
             {
-                var monitor = monitors[i];
-                Add(monitor.Bounds, monitor.WorkArea, monitor.Primary);
+                Rect bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
+                Rect workArea = new Rect(screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height);
+                Add(bounds, workArea, screen.Primary);
             }
         }
 
