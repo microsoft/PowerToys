@@ -6,6 +6,7 @@
         xmlns:p="clr-namespace:ImageResizer.Properties"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:ui="http://schemas.modernwpf.com/2019"
+        ContentRendered="WindowContentRendered"
         MinWidth="560"
         MinHeight="340"
         ui:WindowHelper.UseModernWindowStyle="True"

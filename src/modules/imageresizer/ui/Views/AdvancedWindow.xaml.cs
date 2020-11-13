@@ -25,5 +25,11 @@ namespace ImageResizer.Views
             Process.Start(e.Uri.ToString());
             e.Handled = true;
         }
+
+        // Fix for black outline WPF bug when a window uses custom chrome. More info here https://stackoverflow.com/questions/29207331/wpf-window-with-custom-chrome-has-unwanted-outline-on-right-and-bottom
+        private void WindowContentRendered(object sender, System.EventArgs e)
+        {
+            InvalidateVisual();
+        }
     }
 }
