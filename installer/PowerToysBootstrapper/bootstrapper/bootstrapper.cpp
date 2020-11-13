@@ -14,7 +14,7 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-auto Strings = updating::notifications::strings::create();
+auto Strings = create_notifications_strings();
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
