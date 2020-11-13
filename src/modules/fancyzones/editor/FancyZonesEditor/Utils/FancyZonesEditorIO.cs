@@ -211,7 +211,7 @@ namespace FancyZonesEditor.Utils
                     double primaryMonitorDPI = 96f;
                     double minimalUsedMonitorDPI = double.MaxValue;
 
-                    // parse the native monitor data
+                    // Parse the native monitor data
                     List<NativeMonitorData> nativeMonitorData = new List<NativeMonitorData>();
                     const int monitorArgsCount = 4;
                     for (int i = 0; i < count; i++)
@@ -238,7 +238,7 @@ namespace FancyZonesEditor.Utils
                     double identifyScaleFactor = minimalUsedMonitorDPI / primaryMonitorDPI;
                     double scaleFactor = 96f / primaryMonitorDPI;
 
-                    // update monitors data
+                    // Update monitors data
                     foreach (Monitor monitor in monitors)
                     {
                         bool matchFound = false;
@@ -249,7 +249,7 @@ namespace FancyZonesEditor.Utils
 
                         foreach (NativeMonitorData nativeData in nativeMonitorData)
                         {
-                            // can't do an exact match since the rounding algorithm used by the framework is different from ours
+                            // Can't do an exact match since the rounding algorithm used by the framework is different from ours
                             if (scaledBoundX >= (nativeData.X - 1) && scaledBoundX <= (nativeData.X + 1) &&
                                 scaledBoundY >= (nativeData.Y - 1) && scaledBoundY <= (nativeData.Y + 1))
                             {
@@ -267,7 +267,7 @@ namespace FancyZonesEditor.Utils
                         }
                     }
 
-                    // set active desktop
+                    // Set active desktop
                     for (int i = 0; i < monitors.Count; i++)
                     {
                         var monitor = monitors[i];
