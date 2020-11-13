@@ -79,7 +79,7 @@ namespace
         if (json.HasKey(NonLocalizable::ZoneIndexSetStr))
         {
             data.zoneIndexSet = {};
-            for (auto& value : json.GetNamedArray(NonLocalizable::ZoneIndexSetStr))
+            for (const auto& value : json.GetNamedArray(NonLocalizable::ZoneIndexSetStr))
             {
                 data.zoneIndexSet.push_back(static_cast<size_t>(value.GetNumber()));
             }
