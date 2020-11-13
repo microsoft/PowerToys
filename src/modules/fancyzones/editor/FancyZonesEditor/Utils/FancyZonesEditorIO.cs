@@ -209,6 +209,7 @@ namespace FancyZonesEditor.Utils
                     }
 
                     double primaryMonitorDPI = 96f;
+                    double minimalUsedMonitorDPI = double.MaxValue;
 
                     // parse per monitor data
                     List<MonitorData> monitorData = new List<MonitorData>();
@@ -226,19 +227,28 @@ namespace FancyZonesEditor.Utils
                         {
                             primaryMonitorDPI = data.Dpi;
                         }
+
+                        if (minimalUsedMonitorDPI > data.Dpi)
+                        {
+                            minimalUsedMonitorDPI = data.Dpi;
+                        }
                     }
 
                     var monitors = App.Overlay.Monitors;
 
                     // update monitors data
+                    double identifyScaleFactor = minimalUsedMonitorDPI / primaryMonitorDPI;
                     double scaleFactor = 96f / primaryMonitorDPI;
                     foreach (Monitor monitor in monitors)
                     {
                         monitor.Scale(scaleFactor);
 
+                        double x = monitor.Device.UnscaledBounds.X * identifyScaleFactor;
+                        double y = monitor.Device.UnscaledBounds.Y * identifyScaleFactor;
+
                         foreach (MonitorData data in monitorData)
                         {
-                            if (monitor.Device.UnscaledBounds.X == data.X && monitor.Device.UnscaledBounds.Y == data.Y)
+                            if (x == data.X && y == data.Y)
                             {
                                 monitor.Device.Id = data.Id;
                                 monitor.Device.Dpi = data.Dpi;
