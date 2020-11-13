@@ -220,4 +220,10 @@
   <data name="Template_Layout_Rows" xml:space="preserve">
     <value>Rows</value>
   </data>
+  <data name="Tab_Item_Custom" xml:space="preserve">
+    <value>Custom tab selected, press ctrl + tab to switch to Templates</value>
+  </data>
+  <data name="Tab_Item_Templates" xml:space="preserve">
+    <value>Templates tab selected, press ctrl + tab to switch to Custom</value>
+  </data>
 </root>

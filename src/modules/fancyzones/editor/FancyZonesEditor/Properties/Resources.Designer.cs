@@ -295,6 +295,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Custom tab selected, press ctrl + tab to switch to Templates.
+        /// </summary>
+        public static string Tab_Item_Custom {
+            get {
+                return ResourceManager.GetString("Tab_Item_Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Templates tab selected, press ctrl + tab to switch to Custom.
+        /// </summary>
+        public static string Tab_Item_Templates {
+            get {
+                return ResourceManager.GetString("Tab_Item_Templates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Columns.
         /// </summary>
         public static string Template_Layout_Columns {

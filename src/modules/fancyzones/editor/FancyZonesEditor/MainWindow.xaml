@@ -193,7 +193,7 @@
         <TextBlock Name="DialogTitle" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource titleText}" />
 
         <TabControl BorderThickness="0" x:Name="TemplateTab" AutomationProperties.LabeledBy="{Binding ElementName=DialogTitle}" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
-            <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}">
+            <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}" AutomationProperties.Name="{x:Static props:Resources.Tab_Item_Templates}">
                 <StackPanel>
                     <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button x:Name="decrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
@@ -234,7 +234,7 @@
             </TabItem>
             
             
-            <TabItem Header="{x:Static props:Resources.Custom}" Template="{StaticResource myTabs}">
+            <TabItem Header="{x:Static props:Resources.Custom}" Template="{StaticResource myTabs}" AutomationProperties.Name="{x:Static props:Resources.Tab_Item_Custom}">
                 <StackPanel>
                     <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
                         <ItemsControl.ItemsPanel>
