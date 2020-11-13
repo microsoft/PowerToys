@@ -127,6 +127,7 @@
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\ColorRepresentationHelper.cs" />
+    <Compile Include="Helpers\CustomLibraryThemeProvider.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
     <Compile Include="Models\ColorFormatModel.cs" />
@@ -284,8 +285,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MahApps.Metro">
-      <Version>2.2.0</Version>
+    <PackageReference Include="ControlzEx">
+      <Version>4.4.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
       <Version>3.3.0</Version>
