@@ -228,17 +228,19 @@ namespace FancyZonesEditor.Utils
                             primaryMonitorDPI = nativeData.Dpi;
                         }
 
-                        if (minimalUsedMonitorDPI > data.Dpi)
+                        if (minimalUsedMonitorDPI > nativeData.Dpi)
                         {
-                            minimalUsedMonitorDPI = data.Dpi;
+                            minimalUsedMonitorDPI = nativeData.Dpi;
                         }
                     }
 
                     var monitors = App.Overlay.Monitors;
+                    double identifyScaleFactor = minimalUsedMonitorDPI / primaryMonitorDPI;
 
                     // update monitors data
-                    double identifyScaleFactor = minimalUsedMonitorDPI / primaryMonitorDPI;
                     double scaleFactor = 96f / primaryMonitorDPI;
+
+                    // update monitors data
                     foreach (Monitor monitor in monitors)
                     {
                         bool matchFound = false;
@@ -246,21 +248,14 @@ namespace FancyZonesEditor.Utils
 
                         foreach (NativeMonitorData nativeData in nativeMonitorData)
                         {
-                            // these relative coordinates will be scaled or unscaled depending on the relation between
-                            // the current monitor DPI and the DPI of the primary monitor
-                            var relativeX = nativeData.X;
-                            var relativeY = nativeData.Y;
-
-                            // only scale the coordinates when the monitor's DPI is lower than the primary-monitor's DPI
-                            if (nativeData.Dpi < primaryMonitorDPI)
-                            {
-                                relativeX = (int)(nativeData.X * primaryMonitorDPI / nativeData.Dpi);
-                                relativeY = (int)(nativeData.Y * primaryMonitorDPI / nativeData.Dpi);
-                            }
+                            // these coordinates will be scaled depending on the relation between
+                            // minimal used monitor DPI and the DPI of the primary monitor
+                            double x = monitor.Device.UnscaledBounds.X * identifyScaleFactor;
+                            double y = monitor.Device.UnscaledBounds.Y * identifyScaleFactor;
 
                             // can't do an exact match since the rounding algorithm used by the framework is different from ours
-                            if (monitor.Device.UnscaledBounds.X >= (relativeX - 1) && monitor.Device.UnscaledBounds.X <= (relativeX + 1) &&
-                                monitor.Device.UnscaledBounds.Y >= (relativeY - 1) && monitor.Device.UnscaledBounds.Y <= (relativeY + 1))
+                            if (x >= (nativeData.X - 1) && x <= (nativeData.X + 1) &&
+                                y >= (nativeData.Y - 1) && y <= (nativeData.Y + 1))
                             {
                                 monitor.Device.Id = nativeData.Id;
                                 monitor.Device.Dpi = nativeData.Dpi;
