@@ -8,6 +8,7 @@ namespace NonLocalizable
     const wchar_t RegCurrentVirtualDesktop[] = L"CurrentVirtualDesktop";
     const wchar_t RegVirtualDesktopIds[] = L"VirtualDesktopIDs";
     const wchar_t RegKeyVirtualDesktops[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops";
+    const wchar_t RegKeyVirtualDesktopsFromSession[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\%d\\VirtualDesktops";
 }
 
 namespace VirtualDesktopUtils
@@ -53,20 +54,21 @@ namespace VirtualDesktopUtils
     bool GetDesktopIdFromCurrentSession(GUID* desktopId)
     {
         DWORD sessionId;
-        ProcessIdToSessionId(GetCurrentProcessId(), &sessionId);
+        if (!ProcessIdToSessionId(GetCurrentProcessId(), &sessionId))
+        {
+            return false;
+        }
 
         wchar_t sessionKeyPath[256]{};
-        RETURN_IF_FAILED(
-            StringCchPrintfW(
-                sessionKeyPath,
-                ARRAYSIZE(sessionKeyPath),
-                L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\%d\\VirtualDesktops",
-                sessionId));
+        if (FAILED(StringCchPrintfW(sessionKeyPath, ARRAYSIZE(sessionKeyPath), NonLocalizable::RegKeyVirtualDesktopsFromSession, sessionId)))
+        {
+            return false;
+        }
 
         wil::unique_hkey key{};
-        GUID value{};
         if (RegOpenKeyExW(HKEY_CURRENT_USER, sessionKeyPath, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
         {
+            GUID value{};
             DWORD size = sizeof(GUID);
             if (RegQueryValueExW(key.get(), NonLocalizable::RegCurrentVirtualDesktop, 0, nullptr, reinterpret_cast<BYTE*>(&value), &size) == ERROR_SUCCESS)
             {
