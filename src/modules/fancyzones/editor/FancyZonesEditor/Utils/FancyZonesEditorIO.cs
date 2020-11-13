@@ -83,7 +83,7 @@ namespace FancyZonesEditor.Utils
             MonitorTop,
         }
 
-        private struct MonitorData
+        private struct NativeMonitorData
         {
             public string Id { get; set; }
 
@@ -211,21 +211,21 @@ namespace FancyZonesEditor.Utils
                     double primaryMonitorDPI = 96f;
                     double minimalUsedMonitorDPI = double.MaxValue;
 
-                    // parse per monitor data
-                    List<MonitorData> monitorData = new List<MonitorData>();
+                    // parse the native monitor data
+                    List<NativeMonitorData> nativeMonitorData = new List<NativeMonitorData>();
                     const int monitorArgsCount = 4;
                     for (int i = 0; i < count; i++)
                     {
-                        var data = default(MonitorData);
-                        data.Id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
-                        data.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
-                        data.X = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
-                        data.Y = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
-                        monitorData.Add(data);
+                        var nativeData = default(NativeMonitorData);
+                        nativeData.Id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                        nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
+                        nativeData.X = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
+                        nativeData.Y = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
+                        nativeMonitorData.Add(nativeData);
 
-                        if (data.X == 0 && data.Y == 0)
+                        if (nativeData.X == 0 && nativeData.Y == 0)
                         {
-                            primaryMonitorDPI = data.Dpi;
+                            primaryMonitorDPI = nativeData.Dpi;
                         }
 
                         if (minimalUsedMonitorDPI > data.Dpi)
@@ -241,19 +241,38 @@ namespace FancyZonesEditor.Utils
                     double scaleFactor = 96f / primaryMonitorDPI;
                     foreach (Monitor monitor in monitors)
                     {
+                        bool matchFound = false;
                         monitor.Scale(scaleFactor);
 
-                        double x = monitor.Device.UnscaledBounds.X * identifyScaleFactor;
-                        double y = monitor.Device.UnscaledBounds.Y * identifyScaleFactor;
-
-                        foreach (MonitorData data in monitorData)
+                        foreach (NativeMonitorData nativeData in nativeMonitorData)
                         {
-                            if (x == data.X && y == data.Y)
+                            // these relative coordinates will be scaled or unscaled depending on the relation between
+                            // the current monitor DPI and the DPI of the primary monitor
+                            var relativeX = nativeData.X;
+                            var relativeY = nativeData.Y;
+
+                            // only scale the coordinates when the monitor's DPI is lower than the primary-monitor's DPI
+                            if (nativeData.Dpi < primaryMonitorDPI)
                             {
-                                monitor.Device.Id = data.Id;
-                                monitor.Device.Dpi = data.Dpi;
+                                relativeX = (int)(nativeData.X * primaryMonitorDPI / nativeData.Dpi);
+                                relativeY = (int)(nativeData.Y * primaryMonitorDPI / nativeData.Dpi);
+                            }
+
+                            // can't do an exact match since the rounding algorithm used by the framework is different from ours
+                            if (monitor.Device.UnscaledBounds.X >= (relativeX - 1) && monitor.Device.UnscaledBounds.X <= (relativeX + 1) &&
+                                monitor.Device.UnscaledBounds.Y >= (relativeY - 1) && monitor.Device.UnscaledBounds.Y <= (relativeY + 1))
+                            {
+                                monitor.Device.Id = nativeData.Id;
+                                monitor.Device.Dpi = nativeData.Dpi;
+                                matchFound = true;
                                 break;
                             }
+                        }
+
+                        if (matchFound == false)
+                        {
+                            // TODO: move the string to the resx file
+                            MessageBox.Show("Match not found (" + monitor.Device.UnscaledBounds.ToString() + ")");
                         }
                     }
 
@@ -622,7 +641,7 @@ namespace FancyZonesEditor.Utils
             return string.Empty;
         }
 
-        private static string ParsingCmdArgsErrorReport(string args, int count, string targetMonitorName, List<MonitorData> monitorData, List<Monitor> monitors)
+        private static string ParsingCmdArgsErrorReport(string args, int count, string targetMonitorName, List<NativeMonitorData> monitorData, List<Monitor> monitors)
         {
             var sb = new StringBuilder();
 
@@ -647,7 +666,7 @@ namespace FancyZonesEditor.Utils
             sb.AppendLine();
             sb.AppendLine(" # Per monitor data:");
             sb.AppendLine();
-            foreach (MonitorData data in monitorData)
+            foreach (NativeMonitorData data in monitorData)
             {
                 sb.AppendLine(data.ToString());
             }
