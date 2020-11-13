@@ -65,27 +65,52 @@
                                           />
 
             <TextBlock x:Uid="ColorPicker_ActivationAction"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource MediumTopMargin}"
+                       x:Name="ColorPicker_ActivationAction" 
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-            
-            <RadioButton x:Uid="ColorPicker_OpenEditor"
-                         IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}"
+            <StackPanel AutomationProperties.LabeledBy="{Binding ElementName=ColorPicker_ActivationAction}" Margin="0,-4,0,0">
+            <RadioButton IsChecked="{Binding ActivationOpensEditor, Mode=TwoWay}"
                          Margin="{StaticResource SmallTopMargin}" 
                          IsEnabled="{Binding IsEnabled}"
-                         GroupName="ColorPickerActivationAction"/>
+                         GroupName="ColorPickerActivationAction">
+                <RadioButton.Content>
+                    <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="EditorFirst"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}" x:Uid="EditorFirst_Description"/>
+                    </TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
 
-            <RadioButton x:Uid="ColorPicker_OpenPickerAndEditor"
+            <RadioButton
                          IsChecked="{Binding ActivationOpensColorPickerAndEditor, Mode=TwoWay}"
                          Margin="{StaticResource SmallTopMargin}" 
                          IsEnabled="{Binding IsEnabled}"
-                         GroupName="ColorPickerActivationAction"/>
+                         GroupName="ColorPickerActivationAction">
+                <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="ColorPickerFirst"/>
+                        <LineBreak/>
+                        <Run Foreground="{ThemeResource SystemBaseMediumColor}"
+                             x:Uid="ColorPickerFirst_Description"/>
+                    </TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
 
-            <RadioButton x:Uid="ColorPicker_OpenPickerOnly"
-                         IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}"
+            <RadioButton IsChecked="{Binding ActivationOpensColorPickerOnly, Mode=TwoWay}"
                          Margin="{StaticResource SmallTopMargin}" 
                          IsEnabled="{Binding IsEnabled}"
-                         GroupName="ColorPickerActivationAction"/>
-
+                         GroupName="ColorPickerActivationAction">
+                <RadioButton.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
+                        <Run x:Uid="ColorPickerOnly"/>
+                        <LineBreak/>
+                        <Run x:Uid="ColorPickerOnly_Description" Foreground="{ThemeResource SystemBaseMediumColor}"/>
+                    </TextBlock>
+                </RadioButton.Content>
+            </RadioButton>
+            </StackPanel>
+            
             <TextBlock x:Uid="ColorFormats"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>

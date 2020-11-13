@@ -812,19 +812,19 @@
     <comment>Windows refers to the Operating system</comment>
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
-    <value>Copied color representation</value>
+    <value>Color format to copy to clipboard</value>
   </data>
-  <data name="ColorPicker_OpenEditor.Content" xml:space="preserve">
-    <value>Opens editor, you can browse your colors history or pick a new color</value>
+  <data name="ColorPickerFirst.Text" xml:space="preserve">
+    <value>Color picker first</value>
   </data>
-  <data name="ColorPicker_OpenPickerAndEditor.Content" xml:space="preserve">
-    <value>Opens color picker - picked color is copied into the clipboard and editor is opened</value>
+  <data name="ColorPickerFirst_Description.Text" xml:space="preserve">
+    <value>Allows you to pick a color and copies your prefered format to your clipboard, then opens the editor</value>
   </data>
-  <data name="ColorPicker_OpenPickerOnly.Content" xml:space="preserve">
-    <value>Opens color picker - picked color is copied into the clipboard</value>
+  <data name="EditorFirst.Text" xml:space="preserve">
+    <value>Editor first</value>
   </data>
   <data name="ColorPicker_ActivationAction.Text" xml:space="preserve">
-    <value>Action after pressing the activation shortcut</value>
+    <value>Shortcut behavior</value>
   </data>
   <data name="ColorFormats.Text" xml:space="preserve">
     <value>Color formats</value>
@@ -848,5 +848,14 @@
   </data>
   <data name="MadeWithOssLove.Text" xml:space="preserve">
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
+  </data>
+  <data name="ColorPickerOnly.Text" xml:space="preserve">
+    <value>Color picker only</value>
+  </data>
+  <data name="ColorPickerOnly_Description.Text" xml:space="preserve">
+    <value>Allows you to pick a color and will copy your prefered format to your clipboard</value>
+  </data>
+  <data name="EditorFirst_Description.Text" xml:space="preserve">
+    <value>Opens the editor first, allows you to browser your previously picked colors and pick a new color</value>
   </data>
 </root>
