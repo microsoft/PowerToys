@@ -1364,6 +1364,7 @@ MMI
 mockapi
 MODECHANGE
 moderncop
+modernwpf
 modulekey
 MONITORINFO
 MONITORINFOEX
