@@ -205,6 +205,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor Exception Handler.
+        /// </summary>
+        public static string Error_Exception_Message_Box_Title {
+            get {
+                return ResourceManager.GetString("Error_Exception_Message_Box_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to FancyZones Editor arguments are invalid..
         /// </summary>
         public static string Error_Invalid_Arguments {
@@ -241,6 +250,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Match not found ({0}).
+        /// </summary>
+        public static string Error_Monitor_Match_Not_Found {
+            get {
+                return ResourceManager.GetString("Error_Monitor_Match_Not_Found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to FancyZones Editor should not be run as standalone application..
         /// </summary>
         public static string Error_Not_Standalone_App {
@@ -264,6 +282,15 @@ namespace FancyZonesEditor.Properties {
         public static string Error_Persisting_Custom_Layout {
             get {
                 return ResourceManager.GetString("Error_Persisting_Custom_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please report the bug to .
+        /// </summary>
+        public static string Error_Report {
+            get {
+                return ResourceManager.GetString("Error_Report", resourceCulture);
             }
         }
         

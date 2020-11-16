@@ -42,10 +42,6 @@ namespace FancyZonesEditor
         private const string CrashReportDynamicAssemblyTag = "dynamic assembly doesn't have location";
         private const string CrashReportLocationNullTag = "location is null or empty";
 
-        // Localizable strings
-        private const string ErrorMessageBoxTitle = "FancyZones Editor Exception Handler";
-        private const string ErrorMessageBoxMessage = "Please report the bug to ";
-
         private readonly IFileSystem _fileSystem = new FileSystem();
 
         public MainWindowSettingsModel MainWindowSettings { get; }
@@ -100,13 +96,13 @@ namespace FancyZonesEditor
 
         public static void ShowExceptionMessageBox(string message, Exception exception = null)
         {
-            string fullMessage = ErrorMessageBoxMessage + PowerToysIssuesURL + " \n" + message;
+            string fullMessage = FancyZonesEditor.Properties.Resources.Error_Report + PowerToysIssuesURL + " \n" + message;
             if (exception != null)
             {
                 fullMessage += ": " + exception.Message;
             }
 
-            MessageBox.Show(fullMessage, ErrorMessageBoxTitle);
+            MessageBox.Show(fullMessage, FancyZonesEditor.Properties.Resources.Error_Exception_Message_Box_Title);
         }
 
         public static void ShowExceptionReportMessageBox(string reportData)

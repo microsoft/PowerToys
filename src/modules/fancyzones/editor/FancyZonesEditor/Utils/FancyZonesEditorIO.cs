@@ -262,8 +262,7 @@ namespace FancyZonesEditor.Utils
 
                         if (matchFound == false)
                         {
-                            // TODO: move the string to the resx file
-                            MessageBox.Show("Match not found (" + monitor.Device.UnscaledBounds.ToString() + ")");
+                            MessageBox.Show(string.Format(Properties.Resources.Error_Monitor_Match_Not_Found, monitor.Device.UnscaledBounds.ToString()));
                         }
                     }
 
