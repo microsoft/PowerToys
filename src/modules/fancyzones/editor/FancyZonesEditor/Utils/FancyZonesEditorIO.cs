@@ -17,7 +17,7 @@ namespace FancyZonesEditor.Utils
 {
     public class FancyZonesEditorIO
     {
-        // JSON tags
+        // Non-localizable strings: JSON tags
         private const string AppliedZonesetsJsonTag = "applied-zonesets";
         private const string DeviceIdJsonTag = "device-id";
         private const string ActiveZoneSetJsonTag = "active-zoneset";
@@ -35,7 +35,7 @@ namespace FancyZonesEditor.Utils
         private const string PriorityGridJsonTag = "priority-grid";
         private const string CustomJsonTag = "custom";
 
-        private const string NameStr = "name";
+        private const string NameJsonTag = "name";
         private const string CustomZoneSetsJsonTag = "custom-zone-sets";
         private const string InfoJsonTag = "info";
         private const string RowsPercentageJsonTag = "rows-percentage";
@@ -50,7 +50,7 @@ namespace FancyZonesEditor.Utils
         private const string WidthJsonTag = "width";
         private const string HeightJsonTag = "height";
 
-        // Files
+        // Non-localizable strings: Files
         private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
         private const string ActiveZoneSetsTmpFileName = "FancyZonesActiveZoneSets.json";
         private const string AppliedZoneSetsTmpFileName = "FancyZonesAppliedZoneSets.json";
@@ -160,6 +160,7 @@ namespace FancyZonesEditor.Utils
             FancyZonesSettingsFile = localAppDataDir + ZonesSettingsFile;
         }
 
+        // All strings in this function shouldn't be localized.
         public static void ParseCommandLineArguments()
         {
             string[] args = Environment.GetCommandLineArgs();
@@ -371,7 +372,7 @@ namespace FancyZonesEditor.Utils
                 while (customZoneSetsEnumerator.MoveNext())
                 {
                     var current = customZoneSetsEnumerator.Current;
-                    string name = current.GetProperty(NameStr).GetString();
+                    string name = current.GetProperty(NameJsonTag).GetString();
                     string type = current.GetProperty(TypeJsonTag).GetString();
                     string uuid = current.GetProperty(UuidJsonTag).GetString();
                     var info = current.GetProperty(InfoJsonTag);
