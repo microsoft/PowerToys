@@ -51,6 +51,7 @@ namespace ViewModelTests
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
             BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ColorPickerSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
+            viewModel.Dispose();
         }
 
         [TestMethod]
@@ -60,6 +61,7 @@ namespace ViewModelTests
             var viewModel = new ColorPickerViewModel(ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object), ColorPickerIsEnabledByDefaultIPC);
 
             Assert.IsTrue(viewModel.IsEnabled);
+            viewModel.Dispose();
         }
 
         private static int ColorPickerIsEnabledByDefaultIPC(string msg)
