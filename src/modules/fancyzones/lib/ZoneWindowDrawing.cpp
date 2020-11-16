@@ -74,6 +74,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     // Obtain the size of the drawing area.
     if (!GetClientRect(window, &m_clientRect))
     {
+        // TODO: Log failures and errors using spdlog
         return;
     }
 
