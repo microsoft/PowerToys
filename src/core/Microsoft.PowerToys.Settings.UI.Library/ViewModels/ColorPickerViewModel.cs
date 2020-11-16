@@ -8,15 +8,17 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
-using System.Windows.Threading;
+using System.Timers;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 {
-    public class ColorPickerViewModel : Observable
+    public class ColorPickerViewModel : Observable, IDisposable
     {
+        private bool disposedValue;
+
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
 
@@ -26,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private readonly object _delayedActionLock = new object();
 
         private readonly ColorPickerSettings _colorPickerSettings;
-        private DispatcherTimer _delayedTimer;
+        private Timer _delayedTimer;
 
         private bool _isEnabled;
 
@@ -70,9 +72,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _delayedTimer = new DispatcherTimer();
-            _delayedTimer.Interval = new TimeSpan(0, 0, 0, 0, SaveSettingsDelayInMs);
-            _delayedTimer.Tick += DelayedTimer_Tick;
+            _delayedTimer = new Timer();
+            _delayedTimer.Interval = SaveSettingsDelayInMs;
+            _delayedTimer.Elapsed += DelayedTimer_Tick;
+            _delayedTimer.AutoReset = false;
 
             InitializeColorFormats();
         }
@@ -249,7 +252,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         {
             lock (_delayedActionLock)
             {
-                if (_delayedTimer.IsEnabled)
+                if (_delayedTimer.Enabled)
                 {
                     _delayedTimer.Stop();
                 }
@@ -285,6 +288,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ColorPickerSettings.ModuleName,
                        JsonSerializer.Serialize(_colorPickerSettings)));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _delayedTimer.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
