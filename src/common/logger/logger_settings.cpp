@@ -1,10 +1,7 @@
 #include "pch.h"
 #include "logger_settings.h"
 #include <fstream>
-//#include <winrt/base.h>
-//#include <winrt/Windows.Foundation.Collections.h>
 #include <Windows.h>
-//#include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Data.Json.h>
 
 using namespace winrt::Windows::Data::Json;
@@ -42,7 +39,7 @@ void to_file(std::wstring_view file_name, const JsonObject& obj)
 JsonObject to_json(LogSettings settings)
 {
     JsonObject result;
-    result.SetNamedValue(L"logLevel", JsonValue::CreateStringValue(settings.logLevel));
+    result.SetNamedValue(LogSettings::logLevelOption, JsonValue::CreateStringValue(settings.logLevel));
 
     return result;
 }
@@ -50,10 +47,11 @@ JsonObject to_json(LogSettings settings)
 LogSettings to_settings(JsonObject jobject)
 {
     LogSettings result;
-    result.logLevel = jobject.GetNamedString(L"logLevel");
+    result.logLevel = jobject.GetNamedString(LogSettings::logLevelOption);
     return result;
 }
 
+// Get log settings from file. File with default options is created if it does not exist
 LogSettings getLogSettings(std::wstring_view file_name)
 {
     auto jobject = from_file(file_name);
