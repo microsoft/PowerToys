@@ -1,5 +1,4 @@
 #pragma once
-#define SPDLOG_WCHAR_FILENAMES
 #include <spdlog/spdlog.h>
 
 class Logger

@@ -1,5 +1,3 @@
-#define SPDLOG_WCHAR_FILENAMES
-
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
