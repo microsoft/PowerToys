@@ -64,8 +64,8 @@
       <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogRepairCancel">Installed AND NOT (_REMOVE_ALL="Yes")</Publish>
       <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogRepairFail">Installed AND NOT (_REMOVE_ALL="Yes")</Publish>
     </UI>
-    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Bitmaps\banner.bmp" />
-    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Bitmaps\dialog.bmp" />
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Images\banner.png" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Images\dialog.png" />
     <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
