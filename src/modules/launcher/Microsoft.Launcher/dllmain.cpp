@@ -326,7 +326,7 @@ public:
         DWORD processID = GetProcessId(m_hProcess);
         if (TerminateProcess(m_hProcess, 1) == 0)
         {
-            this->logger->error("Launcher porcess was not terminated. ErrorCode={}", GetLastError());
+            this->logger->error("Launcher process was not terminated. ErrorCode={}", GetLastError());
         }
 
         // Temporarily disable sending a message to close
