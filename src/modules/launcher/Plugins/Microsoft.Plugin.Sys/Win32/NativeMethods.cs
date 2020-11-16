@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.Sys.Win32
 		internal static extern uint SHEmptyRecycleBin(IntPtr hWnd, uint dwFlags);
 
 		[DllImport("Powrprof.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-		internal static extern bool SetSuspendState(bool hiberate, bool forceCritical, bool disableWakeEvent);
+		internal static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
 
 		// http://www.pinvoke.net/default.aspx/Enums/HRESULT.html
 		public enum HRESULT : uint
