@@ -28,15 +28,11 @@ namespace FancyZonesEditor.Models
         public CanvasLayoutModel(string name, LayoutType type)
         : base(name, type)
         {
-            var workArea = App.Overlay.WorkArea;
-            CanvasRect = new Rect(new Size(workArea.Width, workArea.Height));
         }
 
         public CanvasLayoutModel(string name)
         : base(name)
         {
-            var workArea = App.Overlay.WorkArea;
-            CanvasRect = new Rect(new Size(workArea.Width, workArea.Height));
         }
 
         // Zones - the list of all zones in this layout, described as independent rectangles

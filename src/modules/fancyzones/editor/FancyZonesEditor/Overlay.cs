@@ -261,7 +261,27 @@ namespace FancyZonesEditor
 
         public double ScaleCoordinateWithCurrentMonitorDpi(double coordinate)
         {
-            return Monitors[CurrentDesktop].Device.ScaleCoordinate(coordinate);
+            if (Monitors.Count == 0)
+            {
+                return coordinate;
+            }
+
+            double minimalDpi = Monitors[0].Device.Dpi;
+            foreach (Monitor monitor in Monitors)
+            {
+                if (minimalDpi > monitor.Device.Dpi)
+                {
+                    minimalDpi = monitor.Device.Dpi;
+                }
+            }
+
+            if (minimalDpi == 0 || Monitors[CurrentDesktop].Device.Dpi == 0)
+            {
+                return coordinate;
+            }
+
+            double scaleFactor = minimalDpi / Monitors[CurrentDesktop].Device.Dpi;
+            return Math.Round(coordinate * scaleFactor);
         }
 
         private void Update()
