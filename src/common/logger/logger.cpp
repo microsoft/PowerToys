@@ -42,8 +42,12 @@ Logger::Logger(std::string loggerName, std::wstring logFilePath, std::wstring_vi
     auto logLevel = getLogLevel(logSettingsPath);
     this->logger = make_shared<spdlog::logger>(loggerName, sink);
     this->logger->set_level(logLevel);
+    this->logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
     spdlog::register_logger(this->logger);
     spdlog::flush_every(std::chrono::seconds(3));
 }
 
-Logger::~Logger() = default;
+Logger::~Logger()
+{
+    this->logger.reset();
+}

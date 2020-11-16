@@ -91,7 +91,7 @@ public:
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
         logFilePath.append("logging.txt");
         logger = std::make_shared<Logger>("launcher", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
-        logger -> info("Launcher started");
+        logger -> info("Launcher object is constructing");
         init_settings();
 
         SECURITY_ATTRIBUTES sa;
@@ -103,6 +103,8 @@ public:
 
     ~Microsoft_Launcher()
     {
+        logger->info("Launcher object is destroying");
+        logger.reset();
         if (m_enabled)
         {
             terminateProcess();
@@ -183,6 +185,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        this->logger-> info("Launcher is enabling");
         ResetEvent(m_hEvent);
         // Start PowerLauncher.exe only if the OS is 19H1 or higher
         if (UseNewSettings())
@@ -254,6 +257,7 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
+        this->logger->info("Launcher is disabling");
         if (m_enabled)
         {
             ResetEvent(m_hEvent);
@@ -322,7 +326,11 @@ public:
     void terminateProcess()
     {
         DWORD processID = GetProcessId(m_hProcess);
-        TerminateProcess(m_hProcess, 1);
+        if (TerminateProcess(m_hProcess, 1) == 0)
+        {
+            this->logger->error("Launcher porcess was not terminated. ErrorCode={}", GetLastError());
+        }
+
         // Temporarily disable sending a message to close
         /*
         EnumWindows(&requestMainWindowClose, processID);

@@ -45,6 +45,7 @@ namespace
     const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
 }
 
+std::shared_ptr<Logger> logger;
 void chdir_current_executable()
 {
     // Change current directory to the path of the executable.
@@ -75,10 +76,7 @@ void open_menu_from_another_instance()
 
 int runner(bool isProcessElevated)
 {
-    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
-    logFilePath = logFilePath.append(L"runner-logging.txt");
-    auto logger = std::make_shared<Logger>("runner", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
-    logger -> info("Runnner is starting");
+    logger -> info("Runner is starting. Elevated={}", isProcessElevated);
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64
@@ -296,6 +294,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
         return 0;
     }
+
+    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
+    logFilePath = logFilePath.append(L"runner-logging.txt");
+    logger = std::make_shared<Logger>("runner", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+    
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
     switch (should_run_in_special_mode(n_cmd_args, cmd_arg_list))
