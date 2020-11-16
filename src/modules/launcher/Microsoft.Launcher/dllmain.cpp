@@ -1,3 +1,5 @@
+#define SPDLOG_WCHAR_FILENAMES
+
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
 #include <common/settings_objects.h>
@@ -9,6 +11,7 @@
 #include <launcher\Microsoft.Launcher\LauncherConstants.h>
 #include <common/logger/logger.h>
 #include <common\settings_helpers.h>
+#include <filesystem>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -85,11 +88,10 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
         app_key = LauncherConstants::ModuleKey;
-        std::filesystem::path dir(PTSettingsHelper::get_module_save_folder_location(this->app_key));
-        std::filesystem::path logFile(PTSettingsHelper::get_root_save_folder_location());
-        logFile = logFile.append(L"log-settings.json");
-        logger = std::make_shared<Logger>(dir, "launcher", logFile.wstring());
-        logger -> LogInfo("Launcher started");
+        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
+        logFilePath.append("logging.txt");
+        logger = std::make_shared<Logger>("launcher", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        logger -> info("Launcher started");
         init_settings();
 
         SECURITY_ATTRIBUTES sa;

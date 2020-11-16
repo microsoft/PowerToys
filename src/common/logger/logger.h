@@ -1,23 +1,51 @@
 #pragma once
-#include <string>
-#include <memory>
-#include <filesystem>
+#define SPDLOG_WCHAR_FILENAMES
+#include <spdlog/spdlog.h>
 
 class Logger
 {
 private:
-    class impl;
-    std::unique_ptr<impl, std::default_delete<impl>> _impl;
-    //static std::filesystem::path logFilePath;
-
-    // static Sink sink;
-    // std::shared_ptr<spdlog::sinks::daily_file_sink_mt> sink;
-    //std::shared_ptr<spdlog::logger> logger;
+    std::shared_ptr<spdlog::logger> logger;
 
 public:
     Logger();
-    Logger(std::filesystem::path dir, std::string loggerName, std::wstring_view logSettingsPath);
-    void LogInfo(std::string str);
+    Logger(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath);
+    
+    template<typename FormatString, typename... Args>
+    void trace(const FormatString& fmt, const Args&... args)
+    {
+        this->logger->trace(fmt, args...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void debug(const FormatString& fmt, const Args&... args)
+    {
+        this->logger->debug(fmt, args...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void info(const FormatString& fmt, const Args&... args)
+    {
+        this->logger->info(fmt, args...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void warn(const FormatString& fmt, const Args&... args)
+    {
+        this->logger->warn(fmt, args...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void error(const FormatString& fmt, const Args&... args)
+    {
+        this->logger->error(fmt, args...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void critical(const FormatString& fmt, const Args&... args)
+    {
+        this->logger->critical(fmt, args...);
+    }
 
     ~Logger();
 };

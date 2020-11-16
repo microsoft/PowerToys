@@ -75,11 +75,10 @@ void open_menu_from_another_instance()
 
 int runner(bool isProcessElevated)
 {
-    //std::filesystem::path dir(PTSettingsHelper::get_root_save_folder_location());
-    //std::filesystem::path logFile(PTSettingsHelper::get_root_save_folder_location());
-    //logFile = logFile.append(L"log-settings.json");
-    //auto logger = std::make_shared<Logger>(dir, "runner", logFile.wstring());
-    //logger -> LogInfo("Runnner is starting");
+    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
+    logFilePath = logFilePath.append(L"runner-logging.txt");
+    auto logger = std::make_shared<Logger>("runner", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+    logger -> info("Runnner is starting");
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64
