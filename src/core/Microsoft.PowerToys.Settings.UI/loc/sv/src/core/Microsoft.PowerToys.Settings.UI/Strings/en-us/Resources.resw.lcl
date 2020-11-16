@@ -811,7 +811,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_ENCODER_TIFF_CCITT3.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_ENCODER_TIFF_CCITT3.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[CCITT3]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -820,7 +820,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_ENCODER_TIFF_CCITT4.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_ENCODER_TIFF_CCITT4.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[CCITT4]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -838,7 +838,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_ENCODER_TIFF_LZW.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_ENCODER_TIFF_LZW.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[LZW]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -856,7 +856,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_ENCODER_TIFF_RLE.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_ENCODER_TIFF_RLE.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[RLE]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -865,7 +865,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ImageResizer_ENCODER_TIFF_Zip.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ImageResizer_ENCODER_TIFF_Zip.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zip]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1369,6 +1369,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";MadeWithOssLove.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Made with ]D83D;]DC97; by Microsoft and the PowerToys community.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Module_overview.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more]]></Val>
@@ -1622,7 +1628,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Funktionssätt]]></Val>
+            <Val><![CDATA[Beteende]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1711,6 +1717,9 @@
       <Item ItemId=";PowerRename_Toggle_UseBoostLib.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Använd förstärkningsbibliotek (tillhandahåller utökade funktioner, men kan använda annan regex-syntax)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1942,7 +1951,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ShortcutGuide_PressTime.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1951,7 +1960,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ShortcutWarningLabel.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ShortcutWarningLabel.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Only shortcuts with the following hotkeys are valid:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
