@@ -273,7 +273,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logging", "src\logging\logg
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Sys", "src\modules\launcher\Plugins\Microsoft.Plugin.Sys\Microsoft.Plugin.Sys.csproj", "{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Plugin.Sys.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Sys.UnitTests\Microsoft.Plugin.Sys.UnitTests.csproj", "{DA5A6FE9-0040-40CC-83CC-764AE5306590}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Sys.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Sys.UnitTests\Microsoft.Plugin.Sys.UnitTests.csproj", "{DA5A6FE9-0040-40CC-83CC-764AE5306590}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -705,8 +705,8 @@ Global
 		{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}.Release|x64.Build.0 = Release|Any CPU
 		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Debug|x64.Build.0 = Debug|Any CPU
+		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Debug|x64.ActiveCfg = Debug|x64
+		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Debug|x64.Build.0 = Debug|x64
 		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Release|x64.ActiveCfg = Release|Any CPU
