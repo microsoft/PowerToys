@@ -52,7 +52,7 @@ LogSettings to_settings(JsonObject jobject)
 }
 
 // Get log settings from file. File with default options is created if it does not exist
-LogSettings getLogSettings(std::wstring_view file_name)
+LogSettings get_log_settings(std::wstring_view file_name)
 {
     auto jobject = from_file(file_name);
     if (!jobject.has_value())

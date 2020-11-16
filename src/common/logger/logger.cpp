@@ -22,7 +22,7 @@ map<wstring, spdlog::level::level_enum> logLevelMapping = {
 
 level::level_enum getLogLevel(std::wstring_view logSettingsPath)
 {
-    auto logLevel = getLogSettings(logSettingsPath).logLevel;
+    auto logLevel = get_log_settings(logSettingsPath).logLevel;
     level::level_enum result = logLevelMapping[LogSettings::defaultLogLevel];
     if (logLevelMapping.find(logLevel) != logLevelMapping.end())
     {
