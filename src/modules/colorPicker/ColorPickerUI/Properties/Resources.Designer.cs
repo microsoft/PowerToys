@@ -133,7 +133,7 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Press the color pick button to start picking your favorite colors..
+        ///   Looks up a localized string similar to Press the color pick button to capture a color from your screen..
         /// </summary>
         public static string No_colors_yet {
             get {
@@ -160,7 +160,7 @@ namespace ColorPicker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pick color.
+        ///   Looks up a localized string similar to Pick color from screen.
         /// </summary>
         public static string Pick_color {
             get {

@@ -672,6 +672,7 @@
   </data>
   <data name="ColorPicker_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Color Picker</value>
+    <comment>do not loc the Product name.</comment>
   </data>
   <data name="About_PowerLauncher.Text" xml:space="preserve">
     <value>About PowerToys Run</value>
@@ -815,13 +816,13 @@
     <value>Color format to copy to clipboard</value>
   </data>
   <data name="ColorPickerFirst.Text" xml:space="preserve">
-    <value>Color picker first</value>
+    <value>Open color picker with editor mode enabled</value>
   </data>
   <data name="ColorPickerFirst_Description.Text" xml:space="preserve">
-    <value>Pick a color and copy the prefered format to clipboard, then opens the editor</value>
+    <value>Opens color picker, copy formatted value to clipboard, then transition into the editor.</value>
   </data>
   <data name="EditorFirst.Text" xml:space="preserve">
-    <value>Editor first</value>
+    <value>Open editor</value>
   </data>
   <data name="ColorPicker_ActivationAction.Text" xml:space="preserve">
     <value>Shortcut behavior</value>
@@ -850,13 +851,13 @@
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ColorPickerOnly.Text" xml:space="preserve">
-    <value>Color picker only</value>
+    <value>Open color picker only</value>
   </data>
   <data name="ColorPickerOnly_Description.Text" xml:space="preserve">
-    <value>Pick a color and copy the preferred format to clipboard</value>
+    <value>Pick a color from the screen and copy formatted value to clipboard</value>
   </data>
   <data name="EditorFirst_Description.Text" xml:space="preserve">
-    <value>Open the editor to view previously picked color and to pick new colors</value>
+    <value>Launch directly into the editor mode.</value>
   </data>
   <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
     <value>Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging.</value>
