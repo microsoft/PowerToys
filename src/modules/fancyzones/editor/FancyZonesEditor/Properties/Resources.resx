@@ -220,4 +220,37 @@
   <data name="Template_Layout_Rows" xml:space="preserve">
     <value>Rows</value>
   </data>
+  <data name="Tab_Item_Custom" xml:space="preserve">
+    <value>Custom tab selected, press ctrl + tab to switch to Templates</value>
+  </data>
+  <data name="Tab_Item_Templates" xml:space="preserve">
+    <value>Templates tab selected, press ctrl + tab to switch to Custom</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Error_Applying_Layout" xml:space="preserve">
+    <value>Error applying layout</value>
+  </data>
+  <data name="Error_Layout_Malformed_Data" xml:space="preserve">
+    <value>Layout '{0}' has malformed data</value>
+  </data>
+  <data name="Error_Loading_Custom_Layouts" xml:space="preserve">
+    <value>Error loading custom layouts</value>
+  </data>
+  <data name="Error_Persisting_Custom_Layout" xml:space="preserve">
+    <value>Error persisting custom layout</value>
+  </data>
+  <data name="Error_Serializing_Deleted_Layouts" xml:space="preserve">
+    <value>Error serializing deleted layouts</value>
+  </data>
+  <data name="Error_Exception_Message_Box_Title" xml:space="preserve">
+    <value>FancyZones Editor Exception Handler</value>
+  </data>
+  <data name="Error_Report" xml:space="preserve">
+    <value>Please report the bug to </value>
+  </data>
+  <data name="Error_Monitor_Match_Not_Found" xml:space="preserve">
+    <value>Match not found ({0})</value>
+  </data>
 </root>

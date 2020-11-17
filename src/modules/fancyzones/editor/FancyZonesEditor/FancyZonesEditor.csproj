@@ -89,6 +89,9 @@
   <PropertyGroup>
     <ApplicationIcon>images\FancyZonesEditor.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -118,9 +121,16 @@
     <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>
     </Compile>
+    <Compile Include="Models\LayoutSettings.cs" />
     <Compile Include="DashCaseNamingPolicy.cs" />
     <Compile Include="GridData.cs" />
     <Compile Include="GridDragHandles.cs" />
+    <Compile Include="LayoutOverlayWindow.xaml.cs">
+      <DependentUpon>LayoutOverlayWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Models\LayoutType.cs" />
+    <Compile Include="Models\Monitor.cs" />
+    <Compile Include="Overlay.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />
@@ -140,10 +150,7 @@
     <Compile Include="Models\CanvasLayoutModel.cs" />
     <Compile Include="Models\GridLayoutModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
-    <Compile Include="Models\Settings.cs" />
-    <Compile Include="EditorOverlay.xaml.cs">
-      <DependentUpon>EditorOverlay.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Models\MainWindowSettingsModel.cs" />
     <Compile Include="Converters\ModelToVisibilityConverter.xaml.cs" />
     <Compile Include="Native.cs" />
     <Compile Include="RowColInfo.cs" />
@@ -151,6 +158,15 @@
       <DependentUpon>GridEditorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SplitEventArgs.cs" />
+    <Compile Include="Utils\FancyZonesEditorIO.cs" />
+    <Compile Include="Utils\EventArgs`1.cs" />
+    <Compile Include="Utils\EventRaiser.cs" />
+    <Compile Include="Utils\MonitorChangedEventArgs.cs" />
+    <Compile Include="Models\MonitorInfoModel.cs" />
+    <Compile Include="Utils\RelayCommand.cs" />
+    <Compile Include="Utils\RelayCommand`1.cs" />
+    <Compile Include="Models\Device.cs" />
+    <Compile Include="ViewModels\MonitorViewModel.cs" />
     <Compile Include="WindowLayout.xaml.cs">
       <DependentUpon>WindowLayout.xaml</DependentUpon>
     </Compile>
@@ -175,6 +191,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="LayoutOverlayWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="LayoutPreview.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -191,10 +211,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="EditorOverlay.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="GridEditorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -235,6 +251,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.*.resx" />
+    <None Include="app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -252,6 +269,9 @@
     </PackageReference>
     <PackageReference Include="System.IO.Abstractions">
       <Version>12.2.5</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.DpiAwareness">
+      <Version>6.6.30107</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
       <Version>4.7.2</Version>

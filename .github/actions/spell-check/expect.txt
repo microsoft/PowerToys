@@ -1364,6 +1364,7 @@ MMI
 mockapi
 MODECHANGE
 moderncop
+modernwpf
 modulekey
 MONITORINFO
 MONITORINFOEX
@@ -1455,6 +1456,7 @@ NDEBUG
 ndp
 neq
 NESW
+netcore
 netcoreapp
 netframework
 netfx

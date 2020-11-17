@@ -32,15 +32,21 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
 
     std::wstring wstrTaskName;
 
-    ITaskService* pService = NULL;
-    ITaskFolder* pTaskFolder = NULL;
-    ITaskDefinition* pTask = NULL;
-    IRegistrationInfo* pRegInfo = NULL;
-    ITaskSettings* pSettings = NULL;
-    ITriggerCollection* pTriggerCollection = NULL;
-    IRegisteredTask* pRegisteredTask = NULL;
+    ITaskService* pService = nullptr;
+    ITaskFolder* pTaskFolder = nullptr;
+    ITaskDefinition* pTask = nullptr;
+    IRegistrationInfo* pRegInfo = nullptr;
+    ITaskSettings* pSettings = nullptr;
+    ITriggerCollection* pTriggerCollection = nullptr;
+    IRegisteredTask* pRegisteredTask = nullptr;
+    IPrincipal * pPrincipal = nullptr;
+    ITrigger * pTrigger = nullptr;
+    ILogonTrigger * pLogonTrigger = nullptr;
+    IAction * pAction = nullptr;
+    IActionCollection * pActionCollection = nullptr;
+    IExecAction * pExecAction = nullptr;
 
-    LPWSTR wszExecutablePath = NULL;
+    LPWSTR wszExecutablePath = nullptr;
 
     hr = WcaInitialize(hInstall, "CreateScheduledTaskCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -79,7 +85,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     // ------------------------------------------------------
     // Create an instance of the Task Service.
     hr = CoCreateInstance(CLSID_TaskScheduler,
-                          NULL,
+                          nullptr,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
                           (void**)&pService);
@@ -95,7 +101,7 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     if (FAILED(hr))
     {
         // Folder doesn't exist. Get the Root folder and create the PowerToys subfolder.
-        ITaskFolder* pRootFolder = NULL;
+        ITaskFolder* pRootFolder = nullptr;
         hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
         ExitOnFailure(hr, "Cannot get Root Folder pointer: %x", hr);
         hr = pRootFolder->CreateFolder(_bstr_t(L"\\PowerToys"), _variant_t(L""), &pTaskFolder);
@@ -141,11 +147,9 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Cannot get trigger collection: %x", hr);
 
     // Add the logon trigger to the task.
-    ITrigger* pTrigger = NULL;
     hr = pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger);
     ExitOnFailure(hr, "Cannot create the trigger: %x", hr);
 
-    ILogonTrigger* pLogonTrigger = NULL;
     hr = pTrigger->QueryInterface(
         IID_ILogonTrigger, (void**)&pLogonTrigger);
     pTrigger->Release();
@@ -173,19 +177,17 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
 
     // ------------------------------------------------------
     // Add an Action to the task. This task will execute the path passed to this custom action.
-    IActionCollection* pActionCollection = NULL;
 
     // Get the task action collection pointer.
     hr = pTask->get_Actions(&pActionCollection);
     ExitOnFailure(hr, "Cannot get Task collection pointer: %x", hr);
 
     // Create the action, specifying that it is an executable action.
-    IAction* pAction = NULL;
     hr = pActionCollection->Create(TASK_ACTION_EXEC, &pAction);
     pActionCollection->Release();
     ExitOnFailure(hr, "Cannot create the action: %x", hr);
 
-    IExecAction* pExecAction = NULL;
+
     // QI for the executable task pointer.
     hr = pAction->QueryInterface(
         IID_IExecAction, (void**)&pExecAction);
@@ -199,7 +201,6 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
 
     // ------------------------------------------------------
     // Create the principal for the task
-    IPrincipal* pPrincipal = NULL;
     hr = pTask->get_Principal(&pPrincipal);
     ExitOnFailure(hr, "Cannot get principal pointer: %x", hr);
 
@@ -295,9 +296,11 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
 
-    ITaskService* pService = NULL;
-    ITaskFolder* pTaskFolder = NULL;
-    IRegisteredTaskCollection* pTaskCollection = NULL;
+    ITaskService* pService = nullptr;
+    ITaskFolder* pTaskFolder = nullptr;
+    IRegisteredTaskCollection* pTaskCollection = nullptr;
+    ITaskFolder * pRootFolder = nullptr;
+    LONG numTasks = 0;
 
     hr = WcaInitialize(hInstall, "RemoveScheduledTasksCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -309,7 +312,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     // ------------------------------------------------------
     // Create an instance of the Task Service.
     hr = CoCreateInstance(CLSID_TaskScheduler,
-                          NULL,
+                          nullptr,
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
                           (void**)&pService);
@@ -335,21 +338,20 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     hr = pTaskFolder->GetTasks(TASK_ENUM_HIDDEN, &pTaskCollection);
     ExitOnFailure(hr, "Cannot get the registered tasks: %x", hr);
 
-    LONG numTasks = 0;
     hr = pTaskCollection->get_Count(&numTasks);
     for (LONG i = 0; i < numTasks; i++)
     {
         // Delete all the tasks found.
         // If some tasks can't be deleted, the folder won't be deleted later and the user will still be notified.
-        IRegisteredTask* pRegisteredTask = NULL;
+        IRegisteredTask* pRegisteredTask = nullptr;
         hr = pTaskCollection->get_Item(_variant_t(i + 1), &pRegisteredTask);
         if (SUCCEEDED(hr))
         {
-            BSTR taskName = NULL;
+            BSTR taskName = nullptr;
             hr = pRegisteredTask->get_Name(&taskName);
             if (SUCCEEDED(hr))
             {
-                hr = pTaskFolder->DeleteTask(taskName, NULL);
+                hr = pTaskFolder->DeleteTask(taskName, 0);
                 if (FAILED(hr))
                 {
                     WcaLogError(hr, "Cannot delete the '%S' task: %x", taskName, hr);
@@ -370,10 +372,9 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
 
     // ------------------------------------------------------
     // Get the pointer to the root task folder and delete the PowerToys subfolder.
-    ITaskFolder* pRootFolder = NULL;
     hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
     ExitOnFailure(hr, "Cannot get Root Folder pointer: %x", hr);
-    hr = pRootFolder->DeleteFolder(_bstr_t(L"PowerToys"), NULL);
+    hr = pRootFolder->DeleteFolder(_bstr_t(L"PowerToys"), 0);
     pRootFolder->Release();
     ExitOnFailure(hr, "Cannot delete the PowerToys folder: %x", hr);
 

@@ -1,6 +1,7 @@
 ﻿<Window x:Class="ImageResizer.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:ImageResizer.Views"
         xmlns:p="clr-namespace:ImageResizer.Properties"
@@ -11,7 +12,11 @@
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
         Title="{x:Static p:Resources.ImageResizer}"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        ui:TitleBar.IsIconVisible="True"
+        ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
+        AutomationProperties.Name="{x:Static p:Resources.ImageResizer}">
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:InputViewModel}">

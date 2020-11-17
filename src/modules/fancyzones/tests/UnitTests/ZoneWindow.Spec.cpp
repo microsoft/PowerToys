@@ -69,7 +69,8 @@ namespace FancyZonesUnitTests
 
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
-        MONITORINFO m_monitorInfo{};
+        MONITORINFOEX m_monitorInfo{};
+        GUID m_virtualDesktopGuid{};
 
         FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
 
@@ -102,6 +103,10 @@ namespace FancyZonesUnitTests
 
             m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
+
+            auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
+            Assert::IsTrue(guid.has_value());
+            m_virtualDesktopGuid = *guid;
         }
 
         TEST_METHOD_CLEANUP(Cleanup)
@@ -154,7 +159,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD(CreateZoneWindowNoDeviceId)
         {
             // Generate unique id without device id
-            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, {}, m_virtualDesktopId);
+            std::wstring uniqueId = FancyZonesUtils::GenerateUniqueId(m_monitor, {}, m_virtualDesktopId);
             auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {});
 
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
@@ -172,7 +177,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD(CreateZoneWindowNoDesktopId)
         {
             // Generate unique id without virtual desktop id
-            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, m_deviceId, {});
+            std::wstring uniqueId = FancyZonesUtils::GenerateUniqueId(m_monitor, m_deviceId, {});
             auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, uniqueId, {});
 
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
@@ -219,9 +224,9 @@ namespace FancyZonesUnitTests
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto expectedZoneSet = ZoneSetData{ Helpers::CreateGuidString(), type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
-            json::to_file(activeZoneSetTempPath, json);
+            JSONHelpers::TDeviceInfoMap deviceInfoMap;
+            deviceInfoMap.insert(std::make_pair(m_uniqueId.str(), data));
+            JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, m_virtualDesktopGuid, activeZoneSetTempPath);
 
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
 
@@ -248,18 +253,20 @@ namespace FancyZonesUnitTests
             const auto customSetGuid = Helpers::CreateGuidString();
             const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
-            json::to_file(activeZoneSetTempPath, json);
-
+            JSONHelpers::TDeviceInfoMap deviceInfoMap;
+            deviceInfoMap.insert(std::make_pair(m_uniqueId.str(), data));
+            JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, m_virtualDesktopGuid, activeZoneSetTempPath);
+            
             const auto info = CanvasLayoutInfo{
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
             };
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
             auto customZoneJson = JSONHelpers::CustomZoneSetJSON::ToJson(JSONHelpers::CustomZoneSetJSON{ customSetGuid, customZoneData });
-            json::to_file(appliedZoneSetTempPath, customZoneJson);
+            JSONHelpers::TCustomZoneSetsMap customZoneSets;
+            customZoneSets.insert(std::make_pair(customSetGuid, customZoneData));
+            JSONHelpers::SerializeCustomZoneSetsToTmpFile(customZoneSets, appliedZoneSetTempPath);
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
-            m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
+            m_fancyZonesData.ParseCustomZoneSetsFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
@@ -285,9 +292,9 @@ namespace FancyZonesUnitTests
             const auto customSetGuid = Helpers::CreateGuidString();
             const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
-            json::to_file(activeZoneSetTempPath, json);
+            JSONHelpers::TDeviceInfoMap deviceInfoMap;
+            deviceInfoMap.insert(std::make_pair(m_uniqueId.str(), data));
+            JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, m_virtualDesktopGuid, activeZoneSetTempPath);
 
             const auto info = CanvasLayoutInfo{
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
@@ -295,7 +302,9 @@ namespace FancyZonesUnitTests
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
             const auto customZoneSet = JSONHelpers::CustomZoneSetJSON{ customSetGuid, customZoneData };
             auto customZoneJson = JSONHelpers::CustomZoneSetJSON::ToJson(customZoneSet);
-            json::to_file(appliedZoneSetTempPath, customZoneJson);
+            JSONHelpers::TCustomZoneSetsMap customZoneSets;
+            customZoneSets.insert(std::make_pair(customSetGuid, customZoneData));
+            JSONHelpers::SerializeCustomZoneSetsToTmpFile(customZoneSets, appliedZoneSetTempPath);
 
             //save same zone as deleted
             json::JsonObject deletedCustomZoneSets = {};
@@ -306,7 +315,7 @@ namespace FancyZonesUnitTests
 
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
             m_fancyZonesData.ParseDeletedCustomZoneSetsFromTmpFile(deletedZonesTempPath);
-            m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
+            m_fancyZonesData.ParseCustomZoneSetsFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
@@ -331,9 +340,9 @@ namespace FancyZonesUnitTests
             const auto customSetGuid = Helpers::CreateGuidString();
             const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
-            json::to_file(activeZoneSetTempPath, json);
+            JSONHelpers::TDeviceInfoMap deviceInfoMap;
+            deviceInfoMap.insert(std::make_pair(m_uniqueId.str(), data));
+            JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, m_virtualDesktopGuid, activeZoneSetTempPath);
 
             const auto info = CanvasLayoutInfo{
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
@@ -341,7 +350,9 @@ namespace FancyZonesUnitTests
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
             const auto customZoneSet = JSONHelpers::CustomZoneSetJSON{ customSetGuid, customZoneData };
             auto customZoneJson = JSONHelpers::CustomZoneSetJSON::ToJson(customZoneSet);
-            json::to_file(appliedZoneSetTempPath, customZoneJson);
+            JSONHelpers::TCustomZoneSetsMap customZoneSets;
+            customZoneSets.insert(std::make_pair(customSetGuid, customZoneData));
+            JSONHelpers::SerializeCustomZoneSetsToTmpFile(customZoneSets, appliedZoneSetTempPath);
 
             //save different zone as deleted
             json::JsonObject deletedCustomZoneSets = {};
@@ -353,7 +364,7 @@ namespace FancyZonesUnitTests
 
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
             m_fancyZonesData.ParseDeletedCustomZoneSetsFromTmpFile(deletedZonesTempPath);
-            m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
+            m_fancyZonesData.ParseCustomZoneSetsFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
             auto actual = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
