@@ -9,7 +9,7 @@ private:
 public:
     Logger();
     Logger(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath);
-    
+
     template<typename FormatString, typename... Args>
     void trace(const FormatString& fmt, const Args&... args)
     {

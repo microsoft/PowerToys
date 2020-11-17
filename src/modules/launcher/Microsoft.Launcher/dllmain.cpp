@@ -89,7 +89,7 @@ public:
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
         logFilePath.append("logging.txt");
         logger = std::make_shared<Logger>("launcher", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
-        logger -> info("Launcher object is constructing");
+        logger->info("Launcher object is constructing");
         init_settings();
 
         SECURITY_ATTRIBUTES sa;
@@ -183,7 +183,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        this->logger-> info("Launcher is enabling");
+        this->logger->info("Launcher is enabling");
         ResetEvent(m_hEvent);
         // Start PowerLauncher.exe only if the OS is 19H1 or higher
         if (UseNewSettings())

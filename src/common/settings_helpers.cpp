@@ -60,7 +60,6 @@ namespace PTSettingsHelper
         return saved_settings.has_value() ? std::move(*saved_settings) : json::JsonObject{};
     }
 
-
     void save_general_settings(const json::JsonObject& settings)
     {
         const std::wstring save_file_location = get_powertoys_general_save_file_location();
