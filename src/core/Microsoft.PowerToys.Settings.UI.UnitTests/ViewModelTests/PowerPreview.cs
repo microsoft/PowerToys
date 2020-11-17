@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO.Abstractions;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -17,7 +16,6 @@ namespace ViewModelTests
     [TestClass]
     public class PowerPreview
     {
-
         private Mock<ISettingsUtils> mockPowerPreviewSettingsUtils;
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
@@ -53,8 +51,8 @@ namespace ViewModelTests
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
             // Initialise View Model with test Config files
-            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(repository, generalSettingsRepository, SendMockIPCConfigMSG);
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(repository, generalSettingsRepository, sendMockIPCConfigMSG);
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.IsElevated, viewModel.IsElevated);
@@ -62,17 +60,16 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.EnableSvgPreview, viewModel.SVGRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgThumbnail, viewModel.SVGThumbnailIsEnabled);
 
-            //Verify that the stub file was used
-            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            // Verify that the stub file was used
+            var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
             BackCompatTestProperties.VerifyModuleIOProviderWasRead(fileMock, PowerPreviewSettings.ModuleName, expectedCallCount);
         }
-
 
         [TestMethod]
         public void SVGRenderIsEnabledShouldPrevHandlerWhenSuccessful()
         {
             // Assert
-            Func<string, int> SendMockIPCConfigMSG = msg =>
+            Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
                 Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableSvgPreview);
@@ -80,7 +77,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
 
             // act
             viewModel.SVGRenderIsEnabled = true;
@@ -90,7 +87,7 @@ namespace ViewModelTests
         public void SVGThumbnailIsEnabledShouldPrevHandlerWhenSuccessful()
         {
             // Assert
-            Func<string, int> SendMockIPCConfigMSG = msg =>
+            Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
                 Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableSvgThumbnail);
@@ -98,7 +95,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
 
             // act
             viewModel.SVGThumbnailIsEnabled = true;
@@ -108,7 +105,7 @@ namespace ViewModelTests
         public void MDRenderIsEnabledShouldPrevHandlerWhenSuccessful()
         {
             // Assert
-            Func<string, int> SendMockIPCConfigMSG = msg =>
+            Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
                 Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableMdPreview);
@@ -116,7 +113,7 @@ namespace ViewModelTests
             };
 
             // arrange
-            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SendMockIPCConfigMSG, PowerPreviewSettings.ModuleName); ;
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
 
             // act
             viewModel.MDRenderIsEnabled = true;
