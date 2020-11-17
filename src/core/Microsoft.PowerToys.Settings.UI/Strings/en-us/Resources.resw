@@ -687,7 +687,7 @@
     <comment>do not loc the product name</comment>
   </data>
   <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
-    <value>Power Rename</value>
+    <value>PowerRename</value>
   </data>
   <data name="About_ShortcutGuide.Text" xml:space="preserve">
     <value>About Shortcut Guide</value>
