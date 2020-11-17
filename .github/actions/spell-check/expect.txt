@@ -1456,6 +1456,7 @@ NDEBUG
 ndp
 neq
 NESW
+netcore
 netcoreapp
 netframework
 netfx
