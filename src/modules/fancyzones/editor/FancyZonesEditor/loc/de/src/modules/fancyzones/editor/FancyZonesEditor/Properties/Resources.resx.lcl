@@ -244,6 +244,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Tab_Item_Custom" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Custom tab selected, press ctrl + tab to switch to Templates]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wenn die Registerkarte "Benutzerdefiniert" ausgewählt ist, drücken Sie STRG+TAB, um zu "Vorlagen" zu wechseln.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Tab_Item_Templates" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Templates tab selected, press ctrl + tab to switch to Custom]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wenn die Registerkarte "Vorlagen" ausgewählt ist, drücken Sie STRG+TAB, um zu "Benutzerdefiniert" zu wechseln.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Template_Layout_Columns" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Columns]]></Val>

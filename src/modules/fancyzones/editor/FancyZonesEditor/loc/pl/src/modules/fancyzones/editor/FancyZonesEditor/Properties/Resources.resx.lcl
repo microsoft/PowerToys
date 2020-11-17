@@ -244,6 +244,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Tab_Item_Custom" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Custom tab selected, press ctrl + tab to switch to Templates]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wybrano kartę Niestandardowe, naciśnij klawisze Ctrl + Tab, aby przełączyć się do karty Szablony]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Tab_Item_Templates" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Templates tab selected, press ctrl + tab to switch to Custom]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wybrano kartę Szablony, naciśnij klawisze Ctrl + Tab, aby przełączyć się do karty Niestandardowe]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Template_Layout_Columns" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Columns]]></Val>
