@@ -1276,8 +1276,9 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
 
     m_workAreaHandler.RegisterUpdates(ids);
     std::vector<std::wstring> active{};
-    if (VirtualDesktopUtils::GetVirtualDesktopIds(active))
+    if (VirtualDesktopUtils::GetVirtualDesktopIds(active) && !active.empty())
     {
+        FancyZonesDataInstance().UpdatePrimaryDesktopData(active[0]);
         FancyZonesDataInstance().RemoveDeletedDesktops(active);
     }
 }
