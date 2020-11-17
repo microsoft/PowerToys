@@ -818,15 +818,15 @@
     <value>Color format to copy to clipboard</value>
   </data>
   <data name="ColorPickerFirst.Text" xml:space="preserve">
-    <value>Open Color Picker with editor mode enabled</value>
+    <value>Color Picker with editor mode enabled</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="ColorPickerFirst_Description.Text" xml:space="preserve">
-    <value>Opens Color Picker, copy formatted value to clipboard, then transition into the editor.</value>
+    <value>Opens Color Picker, copy formatted value to clipboard, then transition into the editor</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="EditorFirst.Text" xml:space="preserve">
-    <value>Open editor</value>
+    <value>Editor</value>
   </data>
   <data name="ColorPicker_ActivationAction.Text" xml:space="preserve">
     <value>Shortcut behavior</value>
@@ -856,14 +856,14 @@
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ColorPickerOnly.Text" xml:space="preserve">
-    <value>Open Color Picker only</value>
+    <value>Color Picker only</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="ColorPickerOnly_Description.Text" xml:space="preserve">
     <value>Pick a color from the screen and copy formatted value to clipboard</value>
   </data>
   <data name="EditorFirst_Description.Text" xml:space="preserve">
-    <value>Launch directly into the editor mode.</value>
+    <value>Open directly into the editor mode</value>
   </data>
   <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
     <value>Additional color formats (Change the order by dragging)</value>
