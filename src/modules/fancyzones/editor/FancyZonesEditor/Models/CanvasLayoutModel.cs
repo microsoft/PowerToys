@@ -1,10 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 using System.Windows;
 
@@ -14,33 +13,21 @@ namespace FancyZonesEditor.Models
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
-        // Localizable strings
-        private const string ErrorPersistingCanvasLayout = "Error persisting canvas layout";
-
         // Non-localizable strings
         private const string ModelTypeID = "canvas";
 
-        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight)
+        public Rect CanvasRect { get; private set; }
+
+        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int width, int height)
             : base(uuid, name, type)
         {
-            lastWorkAreaWidth = workAreaWidth;
-            lastWorkAreaHeight = workAreaHeight;
-            IsScaled = false;
-
-            if (ShouldScaleLayout())
-            {
-                ScaleLayout(zones);
-            }
-            else
-            {
-                Zones = zones;
-            }
+            Zones = zones;
+            CanvasRect = new Rect(new Size(width, height));
         }
 
         public CanvasLayoutModel(string name, LayoutType type)
         : base(name, type)
         {
-            IsScaled = false;
         }
 
         public CanvasLayoutModel(string name)
@@ -50,12 +37,6 @@ namespace FancyZonesEditor.Models
 
         // Zones - the list of all zones in this layout, described as independent rectangles
         public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
-
-        private int lastWorkAreaWidth = (int)Settings.WorkArea.Width;
-
-        private int lastWorkAreaHeight = (int)Settings.WorkArea.Height;
-
-        public bool IsScaled { get; private set; }
 
         // RemoveZoneAt
         //  Removes the specified index from the Zones list, and fires a property changed notification for the Zones property
@@ -102,34 +83,6 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private bool ShouldScaleLayout()
-        {
-            // Scale if:
-            // - at least one dimension changed
-            // - orientation remained the same
-            return (lastWorkAreaHeight != Settings.WorkArea.Height || lastWorkAreaWidth != Settings.WorkArea.Width) &&
-                ((lastWorkAreaHeight > lastWorkAreaWidth && Settings.WorkArea.Height > Settings.WorkArea.Width) ||
-                  (lastWorkAreaWidth > lastWorkAreaHeight && Settings.WorkArea.Width > Settings.WorkArea.Height));
-        }
-
-        private void ScaleLayout(IList<Int32Rect> zones)
-        {
-            foreach (Int32Rect zone in zones)
-            {
-                double widthFactor = (double)Settings.WorkArea.Width / lastWorkAreaWidth;
-                double heightFactor = (double)Settings.WorkArea.Height / lastWorkAreaHeight;
-                int scaledX = (int)(zone.X * widthFactor);
-                int scaledY = (int)(zone.Y * heightFactor);
-                int scaledWidth = (int)(zone.Width * widthFactor);
-                int scaledHeight = (int)(zone.Height * heightFactor);
-                Zones.Add(new Int32Rect(scaledX, scaledY, scaledWidth, scaledHeight));
-            }
-
-            lastWorkAreaHeight = (int)Settings.WorkArea.Height;
-            lastWorkAreaWidth = (int)Settings.WorkArea.Width;
-            IsScaled = true;
-        }
-
         private struct Zone
         {
             public int X { get; set; }
@@ -165,13 +118,15 @@ namespace FancyZonesEditor.Models
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
+            AddCustomLayout(this);
+
             CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
             {
-                RefWidth = lastWorkAreaWidth,
-                RefHeight = lastWorkAreaHeight,
-
+                RefWidth = (int)CanvasRect.Width,
+                RefHeight = (int)CanvasRect.Height,
                 Zones = new Zone[Zones.Count],
             };
+
             for (int i = 0; i < Zones.Count; ++i)
             {
                 Zone zone = new Zone
@@ -187,26 +142,19 @@ namespace FancyZonesEditor.Models
 
             CanvasLayoutJson jsonObj = new CanvasLayoutJson
             {
-                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Uuid = Uuid,
                 Name = Name,
                 Type = ModelTypeID,
                 Info = layoutInfo,
             };
-
             JsonSerializerOptions options = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = new DashCaseNamingPolicy(),
             };
 
-            try
-            {
-                string jsonString = JsonSerializer.Serialize(jsonObj, options);
-                File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
-            }
-            catch (Exception ex)
-            {
-                ShowExceptionMessageBox(ErrorPersistingCanvasLayout, ex);
-            }
+            string jsonString = JsonSerializer.Serialize(jsonObj, options);
+            AddCustomLayoutJson(JsonSerializer.Deserialize<JsonElement>(jsonString));
+            SerializeCreatedCustomZonesets();
         }
     }
 }

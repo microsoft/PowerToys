@@ -16,8 +16,8 @@ using interop;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
+using PowerLauncher.Plugin;
 using PowerLauncher.Storage;
-using Wox.Core.Plugin;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
@@ -36,7 +36,7 @@ namespace PowerLauncher.ViewModel
         private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
         private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
         private readonly WoxJsonStorage<TopMostRecord> _topMostRecordStorage;
-        private readonly Settings _settings;
+        private readonly PowerToysRunSettings _settings;
         private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
@@ -53,7 +53,7 @@ namespace PowerLauncher.ViewModel
 
         internal HotkeyManager HotkeyManager { get; set; }
 
-        public MainViewModel(Settings settings)
+        public MainViewModel(PowerToysRunSettings settings)
         {
             _saved = false;
             _queryTextBeforeLeaveResults = string.Empty;
@@ -87,7 +87,7 @@ namespace PowerLauncher.ViewModel
                 HotkeyManager = new HotkeyManager();
                 _settings.PropertyChanged += (s, e) =>
                 {
-                    if (e.PropertyName == nameof(Settings.Hotkey))
+                    if (e.PropertyName == nameof(PowerToysRunSettings.Hotkey))
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
@@ -132,6 +132,7 @@ namespace PowerLauncher.ViewModel
 
             if (index != null)
             {
+                // Using InvariantCulture since this is internal
                 results.SelectedIndex = int.Parse(index.ToString(), CultureInfo.InvariantCulture);
             }
 
@@ -438,8 +439,9 @@ namespace PowerLauncher.ViewModel
 
         private void QueryHistory()
         {
+            // Using CurrentCulture since query is received from user and used in downstream comparisons using CurrentCulture
 #pragma warning disable CA1308 // Normalize strings to uppercase
-            var query = QueryText.ToLower(CultureInfo.InvariantCulture).Trim();
+            var query = QueryText.ToLower(CultureInfo.CurrentCulture).Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
             History.Clear();
 
@@ -528,6 +530,7 @@ namespace PowerLauncher.ViewModel
 
                             lock (_addResultsLock)
                             {
+                                // Using CurrentCultureIgnoreCase since this is user facing
                                 if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                 {
                                     Results.Clear();
@@ -565,6 +568,7 @@ namespace PowerLauncher.ViewModel
                                             {
                                                 lock (_addResultsLock)
                                                 {
+                                                    // Using CurrentCultureIgnoreCase since this is user facing
                                                     if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                                     {
                                                         currentCancellationToken.ThrowIfCancellationRequested();
@@ -630,6 +634,7 @@ namespace PowerLauncher.ViewModel
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
+                // Using CurrentCultureIgnoreCase since this is user facing
                 if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                 {
                     Results.Results.NotifyChanges();
@@ -818,6 +823,7 @@ namespace PowerLauncher.ViewModel
                 }
             }
 
+            // Using CurrentCultureIgnoreCase since this is user facing
             if (originQuery.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
             {
                 ct.ThrowIfCancellationRequested();
@@ -879,6 +885,7 @@ namespace PowerLauncher.ViewModel
             }
             else
             {
+                // Using Ordinal this is internal
                 return string.IsNullOrEmpty(queryText) || autoCompleteText.IndexOf(queryText, StringComparison.Ordinal) != 0;
             }
         }
@@ -889,6 +896,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0)
                 {
+                    // Using OrdinalIgnoreCase because we want the characters to be exact in autocomplete text and the query
                     if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // Use the same case as the input query for the matched portion of the string
@@ -906,6 +914,7 @@ namespace PowerLauncher.ViewModel
             {
                 if (index == 0 && !string.IsNullOrEmpty(query))
                 {
+                    // Using OrdinalIgnoreCase since this is internal
                     if (input.IndexOf(query, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         return query + input.Substring(query.Length);

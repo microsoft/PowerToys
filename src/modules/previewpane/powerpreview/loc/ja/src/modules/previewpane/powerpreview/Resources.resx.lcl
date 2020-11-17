@@ -39,19 +39,43 @@
       </Item>
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          <Val><![CDATA[Some of the File Explorer modules could not be turned off/on as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[いくつかの File Explorer モジュールを設定どおりに登録または登録解除することができませんでした。この変更を有効にするには、管理者として PowerToys を再起動してください。]]></Val>
+            <Val><![CDATA[いくつかのエクスプローラー モジュールを設定どおりにオフまたはオンにすることができませんでした。この変更を有効にするには、管理者として PowerToys を再起動してください。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorer_Admin_Restart_Warning_Dont_Show_Again" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Don't show again]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[今後は表示しない]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorer_Admin_Restart_Warning_Open_Settings" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[設定を開く]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
+          <Val><![CDATA[Couldn't modify File Explorer modules]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[File Explorer モジュールを変更できませんでした]]></Val>
+            <Val><![CDATA[エクスプローラー モジュールの変更失敗]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

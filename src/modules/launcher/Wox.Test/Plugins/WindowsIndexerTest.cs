@@ -348,17 +348,21 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console, contextMenuItems[1].Title);
         }
 
-        [TestCase(0, false, ExpectedResult = true)]
-        [TestCase(0, true, ExpectedResult = false)]
-        [TestCase(1, false, ExpectedResult = false)]
-        [TestCase(1, true, ExpectedResult = false)]
-        public bool DriveDetectionMustDisplayWarningWhenEnhancedModeIsOffAndWhenWarningIsNotDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus)
+        [TestCase(0, 2, false, ExpectedResult = true)]
+        [TestCase(0, 3, true, ExpectedResult = false)]
+        [TestCase(1, 2, false, ExpectedResult = false)]
+        [TestCase(1, 4, true, ExpectedResult = false)]
+        [TestCase(0, 1, false, ExpectedResult = false)]
+        public bool DriveDetectionMustDisplayWarningWhenEnhancedModeIsOffAndWhenWarningIsNotDisabled(int enhancedModeStatus, int driveCount, bool disableWarningCheckBoxStatus)
         {
             // Arrange
             var mockRegistry = new Mock<IRegistryWrapper>();
             mockRegistry.Setup(r => r.GetHKLMRegistryValue(It.IsAny<string>(), It.IsAny<string>())).Returns(enhancedModeStatus); // Enhanced mode is disabled
 
-            IndexerDriveDetection driveDetection = new IndexerDriveDetection(mockRegistry.Object);
+            var mockDriveInfo = new Mock<IDriveInfoWrapper>();
+            mockDriveInfo.Setup(d => d.GetDriveCount()).Returns(driveCount);
+
+            IndexerDriveDetection driveDetection = new IndexerDriveDetection(mockRegistry.Object, mockDriveInfo.Object);
             driveDetection.IsDriveDetectionWarningCheckBoxSelected = disableWarningCheckBoxStatus;
 
             // Act & Assert
@@ -376,6 +380,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"abcd.*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Using InvariantCultureIgnoreCase since this relates to sql code in string form
             Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
             Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -390,6 +396,7 @@ namespace Wox.Test.Plugins
             var simplifiedSqlQuery = WindowsSearchAPI.SimplifyQuery(sqlQuery);
 
             // Assert
+            // Using InvariantCultureIgnoreCase since this relates to sql code in string form
             Assert.IsTrue(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
         }
 
@@ -404,6 +411,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\", \"System.FileExtension\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"ab.*\"',1033)) AND (CONTAINS(System.FileName,'\".cd*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Using InvariantCultureIgnoreCase since this relates to sql code in string form
             Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
             Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -419,6 +428,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             string expectedSqlQuery = "SELECT TOP 30 \"System.ItemUrl\", \"System.FileName\", \"System.FileAttributes\" FROM \"SystemIndex\" WHERE (CONTAINS(System.FileName,'\"'ab.cd'*\"',1033)) AND scope='file:' ORDER BY System.DateModified DESC";
+
+            // Using InvariantCultureIgnoreCase since this relates to sql code in string form
             Assert.IsFalse(simplifiedSqlQuery.Equals(sqlQuery, StringComparison.InvariantCultureIgnoreCase));
             Assert.IsTrue(simplifiedSqlQuery.Equals(expectedSqlQuery, StringComparison.InvariantCultureIgnoreCase));
         }

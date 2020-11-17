@@ -86,6 +86,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _keepDateModified;
         private int _encoderGuidId;
 
+        public bool IsListViewFocusRequested { get; set; }
+
         public bool IsEnabled
         {
             get
@@ -257,6 +259,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             imageSizes.Add(newSize);
             _advancedSizes = imageSizes;
             SavesImageSizes(imageSizes);
+
+            // Set the focus requested flag to indicate that an add operation has occurred during the ContainerContentChanging event
+            IsListViewFocusRequested = true;
         }
 
         public void DeleteImageSize(int id)

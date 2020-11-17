@@ -2,12 +2,6 @@
 #include "FancyZones.h"
 #include "lib/ZoneSet.h"
 
-namespace ZoneWindowUtils
-{
-    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
-    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
-}
-
 /**
  * Class representing single work area, which is defined by monitor and virtual desktop.
  */
@@ -127,4 +121,4 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
 };
 
 winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,
-    const std::wstring& uniqueId, const std::wstring& parentUniqueId, bool flashZones) noexcept;
+    const std::wstring& uniqueId, const std::wstring& parentUniqueId) noexcept;

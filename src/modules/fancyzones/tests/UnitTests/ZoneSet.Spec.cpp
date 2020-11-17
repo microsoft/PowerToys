@@ -2,6 +2,7 @@
 #include "lib\FancyZonesData.h"
 #include "lib\FancyZonesDataTypes.h"
 #include "lib\JsonHelpers.h"
+#include "lib\VirtualDesktopUtils.h"
 #include "lib\ZoneSet.h"
 
 #include <filesystem>
@@ -85,28 +86,28 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (AddOne)
             {
-                constexpr size_t zoneId = 1;
+                constexpr size_t zoneId = 0;
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, zoneId);
                 Assert::IsNotNull(zone.get());
                 m_set->AddZone(zone);
                 auto zones = m_set->GetZones();
                 Assert::AreEqual((size_t)1, zones.size());
-                compareZones(zone, zones[0]);
-                Assert::AreEqual(zoneId, zones[0]->Id());
+                compareZones(zone, zones[zoneId]);
+                Assert::AreEqual(zoneId, zones[zoneId]->Id());
             }
 
             TEST_METHOD (AddManyEqual)
             {
                 for (size_t i = 0; i < 1024; i++)
                 {
-                    size_t zoneId = i + 1;
+                    size_t zoneId = i;
                     winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 }, zoneId);
                     Assert::IsNotNull(zone.get());
                     m_set->AddZone(zone);
                     auto zones = m_set->GetZones();
                     Assert::AreEqual(i + 1, zones.size());
-                    compareZones(zone, zones[i]);
-                    Assert::AreEqual(zoneId, zones[i]->Id());
+                    compareZones(zone, zones[zoneId]);
+                    Assert::AreEqual(zoneId, zones[zoneId]->Id());
                 }
             }
 
@@ -114,7 +115,7 @@ namespace FancyZonesUnitTests
             {
                 for (size_t i = 0; i < 1024; i++)
                 {
-                    size_t zoneId = i + 1;
+                    size_t zoneId = i;
                     int left = rand() % 10;
                     int top = rand() % 10;
                     int right = left + 1 + rand() % 100;
@@ -124,8 +125,8 @@ namespace FancyZonesUnitTests
                     m_set->AddZone(zone);
                     auto zones = m_set->GetZones();
                     Assert::AreEqual(i + 1, zones.size());
-                    compareZones(zone, zones[i]);
-                    Assert::AreEqual(zoneId, zones[i]->Id());
+                    compareZones(zone, zones[zoneId]);
+                    Assert::AreEqual(zoneId, zones[zoneId]->Id());
                 }
             }
 
@@ -133,13 +134,6 @@ namespace FancyZonesUnitTests
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 }, 1);
                 Assert::IsNotNull(zone.get());
-            }
-
-            TEST_METHOD (MakeZoneWithInvalidId)
-            {
-                constexpr size_t invalidZoneId = 0;
-                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 }, invalidZoneId);
-                Assert::IsNull(zone.get());
             }
 
             TEST_METHOD (MakeZoneFromInvalidRectWidth)
@@ -361,9 +355,9 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameWindow)
             {
                 // Add a couple of zones.
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 3);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 1);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 2);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
@@ -382,9 +376,9 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameIndex)
             {
                 // Add a couple of zones.
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 3);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 }, 1);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 }, 2);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
                 m_set->AddZone(zone3);
@@ -414,7 +408,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByPointInnerPoint)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
                 m_set->AddZone(zone1);
 
                 auto window = Mocks::Window();
@@ -425,8 +419,8 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (MoveWindowIntoZoneByPointInnerPointOverlappingZones)
             {
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
 
@@ -441,8 +435,8 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
 
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
@@ -459,8 +453,8 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
 
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
 
@@ -477,9 +471,9 @@ namespace FancyZonesUnitTests
                 const auto window = Mocks::Window();
                 const auto zoneWindow = Mocks::Window();
 
-                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 2);
-                winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 }, 3);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 }, 1);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 }, 2);
 
                 m_set->AddZone(zone1);
                 m_set->AddZone(zone2);
@@ -507,9 +501,9 @@ namespace FancyZonesUnitTests
                 m_set = MakeZoneSet(config);
 
                 // Add a couple of zones.
-                m_zone1 = MakeZone({ 0, 0, 100, 100 }, 1);
-                m_zone2 = MakeZone({ 0, 0, 100, 100 }, 2);
-                m_zone3 = MakeZone({ 0, 0, 100, 100 }, 3);
+                m_zone1 = MakeZone({ 0, 0, 100, 100 }, 0);
+                m_zone2 = MakeZone({ 0, 0, 100, 100 }, 1);
+                m_zone3 = MakeZone({ 0, 0, 100, 100 }, 2);
                 m_set->AddZone(m_zone1);
                 m_set->AddZone(m_zone2);
                 m_set->AddZone(m_zone3);
@@ -776,7 +770,7 @@ namespace FancyZonesUnitTests
                     {
                         Assert::IsTrue(set->IsZoneEmpty(zoneId));
 
-                        const auto& zoneRect = zone->GetZoneRect();
+                        const auto& zoneRect = zone.second->GetZoneRect();
                         Assert::IsTrue(zoneRect.left >= 0, L"left border is less than zero");
                         Assert::IsTrue(zoneRect.top >= 0, L"top border is less than zero");
 
@@ -1055,9 +1049,14 @@ namespace FancyZonesUnitTests
                     //prepare device data
                     {
                         const std::wstring zoneUuid = L"default_device_id";
-                        JSONHelpers::DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+
+                        JSONHelpers::TDeviceInfoMap deviceInfoMap;
+                        deviceInfoMap.insert(std::make_pair(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 }));
+                        
+                        GUID virtualDesktopId{};
+                        Assert::IsTrue(VirtualDesktopUtils::GetCurrentVirtualDesktopId(&virtualDesktopId), L"Cannot create virtual desktop id");
                         const std::wstring deviceInfoPath = FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
-                        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+                        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, virtualDesktopId, deviceInfoPath);
 
                         FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
                         std::filesystem::remove(deviceInfoPath);
@@ -1067,10 +1066,14 @@ namespace FancyZonesUnitTests
                     wil::unique_cotaskmem_string uuid;
                     Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
                     const CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 0, 0, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
-                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
+                    CustomZoneSetData zoneSetData{ L"name", CustomLayoutType::Canvas, info };
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), zoneSetData };
+                    JSONHelpers::TCustomZoneSetsMap customZoneSets;
+                    customZoneSets.insert(std::make_pair(uuid.get(), zoneSetData));
+                    JSONHelpers::SerializeCustomZoneSetsToTmpFile(customZoneSets, m_path);
+
                     Assert::IsTrue(std::filesystem::exists(m_path));
-                    FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
+                    FancyZonesDataInstance().ParseCustomZoneSetsFromTmpFile(m_path);
 
                     //test
                     const int spacing = 10;
@@ -1090,9 +1093,14 @@ namespace FancyZonesUnitTests
                     //prepare device data
                     {
                         const std::wstring zoneUuid = L"default_device_id";
-                        JSONHelpers::DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+
+                        JSONHelpers::TDeviceInfoMap deviceInfoMap;
+                        deviceInfoMap.insert(std::make_pair(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 }));
+
+                        GUID virtualDesktopId{};
+                        Assert::IsTrue(VirtualDesktopUtils::GetCurrentVirtualDesktopId(&virtualDesktopId), L"Cannot create virtual desktop id");
                         const std::wstring deviceInfoPath = FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
-                        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+                        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, virtualDesktopId, deviceInfoPath);
 
                         FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
                         std::filesystem::remove(deviceInfoPath);
@@ -1107,10 +1115,14 @@ namespace FancyZonesUnitTests
                         .rowsPercents = { 10000 },
                         .columnsPercents = { 2500, 5000, 2500 },
                         .cellChildMap = { { 0, 1, 2 } } }));
-                    JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
+                    CustomZoneSetData zoneSetData{ L"name", CustomLayoutType::Grid, grid };
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), zoneSetData };
+                    JSONHelpers::TCustomZoneSetsMap customZoneSets;
+                    customZoneSets.insert(std::make_pair(uuid.get(), zoneSetData));
+                    JSONHelpers::SerializeCustomZoneSetsToTmpFile(customZoneSets, m_path);
+
                     Assert::IsTrue(std::filesystem::exists(m_path));
-                    FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
+                    FancyZonesDataInstance().ParseCustomZoneSetsFromTmpFile(m_path);
 
                     const int spacing = 10;
                     const int zoneCount = grid.rows() * grid.columns();

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Plugin.Program.ProgramArgumentParser;
+using Mono.Collections.Generic;
 using NUnit.Framework;
 using Wox.Plugin;
 
@@ -27,14 +28,14 @@ namespace Microsoft.Plugin.Program.UnitTests.ProgramArgumentParser
             var argumentParsers = new IProgramArgumentParser[]
            {
                 new DoubleDashProgramArgumentParser(),
-                new InferedProgramArgumentParser(),
+                new InferredProgramArgumentParser(),
                 new NoArgumentsArgumentParser(),
            };
 
             // basic version of the Quey parser which can be found at Wox.Core.Plugin.QueryBuilder but did not want to create a project reference
             var splittedSearchString = inputQuery?.Split(Query.TermSeparator, System.StringSplitOptions.RemoveEmptyEntries);
             var cleanQuery = string.Join(Query.TermSeparator, splittedSearchString);
-            var query = new Query(cleanQuery, cleanQuery, splittedSearchString, string.Empty);
+            var query = new Query(cleanQuery, cleanQuery, new ReadOnlyCollection<string>(splittedSearchString), string.Empty);
 
             // Act
             string program = null, programArguments = null;

@@ -82,7 +82,8 @@ namespace Wox.Infrastructure.Hotkey
                 return;
             }
 
-            List<string> keys = hotkeyString.Replace(" ", string.Empty).Split('+').ToList();
+            // Using InvariantCulture since this is internal and involves key codes
+            List<string> keys = hotkeyString.Replace(" ", string.Empty, StringComparison.InvariantCulture).Split('+').ToList();
             if (keys.Contains("Alt"))
             {
                 Alt = true;

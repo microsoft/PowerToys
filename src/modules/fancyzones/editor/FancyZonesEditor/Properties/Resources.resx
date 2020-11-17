@@ -129,6 +129,9 @@
   <data name="Canvas_Layout_Editor" xml:space="preserve">
     <value>Canvas layout editor</value>
   </data>
+  <data name="Grid_Layout_Editor" xml:space="preserve">
+    <value>Grid layout editor</value>
+  </data>
   <data name="Choose_Layout" xml:space="preserve">
     <value>Choose your layout for this desktop</value>
   </data>
@@ -176,5 +179,78 @@
   </data>
   <data name="Templates" xml:space="preserve">
     <value>Templates</value>
+  </data>
+  <data name="Zone_Count_Decrement" xml:space="preserve">
+    <value>Decrement number of zones in template layout</value>
+  </data>
+  <data name="Zone_Count_Increment" xml:space="preserve">
+    <value>Increment number of zones in template layout</value>
+  </data>
+  <data name="Custom_Layout_Delete_Button" xml:space="preserve">
+    <value>Delete custom layout</value>
+  </data>
+  <data name="Custom_Layout_Create_New" xml:space="preserve">
+    <value>Create new custom</value>
+    <comment>As in Create new custom layout</comment>
+  </data>
+  <data name="Error_Invalid_Arguments" xml:space="preserve">
+    <value>FancyZones Editor arguments are invalid.</value>
+  </data>
+  <data name="Error_Message_Box_Title" xml:space="preserve">
+    <value>FancyZones Editor Error</value>
+  </data>
+  <data name="Error_Not_Standalone_App" xml:space="preserve">
+    <value>FancyZones Editor should not be run as standalone application.</value>
+  </data>
+  <data name="Error_Parsing_Device_Info" xml:space="preserve">
+    <value>Error parsing device info data.</value>
+  </data>
+  <data name="Template_Layout_Columns" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+  <data name="Template_Layout_Focus" xml:space="preserve">
+    <value>Focus</value>
+  </data>
+  <data name="Template_Layout_Grid" xml:space="preserve">
+    <value>Grid</value>
+  </data>
+  <data name="Template_Layout_Priority_Grid" xml:space="preserve">
+    <value>Priority Grid</value>
+  </data>
+  <data name="Template_Layout_Rows" xml:space="preserve">
+    <value>Rows</value>
+  </data>
+  <data name="Tab_Item_Custom" xml:space="preserve">
+    <value>Custom tab selected, press ctrl + tab to switch to Templates</value>
+  </data>
+  <data name="Tab_Item_Templates" xml:space="preserve">
+    <value>Templates tab selected, press ctrl + tab to switch to Custom</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Error_Applying_Layout" xml:space="preserve">
+    <value>Error applying layout</value>
+  </data>
+  <data name="Error_Layout_Malformed_Data" xml:space="preserve">
+    <value>Layout '{0}' has malformed data</value>
+  </data>
+  <data name="Error_Loading_Custom_Layouts" xml:space="preserve">
+    <value>Error loading custom layouts</value>
+  </data>
+  <data name="Error_Persisting_Custom_Layout" xml:space="preserve">
+    <value>Error persisting custom layout</value>
+  </data>
+  <data name="Error_Serializing_Deleted_Layouts" xml:space="preserve">
+    <value>Error serializing deleted layouts</value>
+  </data>
+  <data name="Error_Exception_Message_Box_Title" xml:space="preserve">
+    <value>FancyZones Editor Exception Handler</value>
+  </data>
+  <data name="Error_Report" xml:space="preserve">
+    <value>Please report the bug to </value>
+  </data>
+  <data name="Error_Monitor_Match_Not_Found" xml:space="preserve">
+    <value>Match not found ({0})</value>
   </data>
 </root>

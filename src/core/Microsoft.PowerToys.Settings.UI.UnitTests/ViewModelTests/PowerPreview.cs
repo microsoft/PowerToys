@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.IO.Abstractions;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -40,13 +40,15 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, PowerPreviewSettings.ModuleName, fileName);
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var settingPathMock = new Mock<ISettingsPath>();
+            var fileMock = BackCompatTestProperties.GetModuleIOProvider(version, PowerPreviewSettings.ModuleName, fileName);
+
+            var mockSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);
             PowerPreviewSettings originalSettings = mockSettingsUtils.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName);
             var repository = new BackCompatTestProperties.MockSettingsRepository<PowerPreviewSettings>(mockSettingsUtils);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
-            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object, settingPathMock.Object);
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
@@ -54,7 +56,7 @@ namespace ViewModelTests
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             PowerPreviewViewModel viewModel = new PowerPreviewViewModel(repository, generalSettingsRepository, SendMockIPCConfigMSG);
 
-            // Verifiy that the old settings persisted
+            // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.IsElevated, viewModel.IsElevated);
             Assert.AreEqual(originalSettings.Properties.EnableMdPreview, viewModel.MDRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgPreview, viewModel.SVGRenderIsEnabled);
@@ -62,7 +64,7 @@ namespace ViewModelTests
 
             //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, PowerPreviewSettings.ModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(fileMock, PowerPreviewSettings.ModuleName, expectedCallCount);
         }
 
 

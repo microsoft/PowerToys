@@ -13,7 +13,7 @@
         SizeToContent="Height"            
         Background="White"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterOwner"
         Closed="OnClosed">
 
 
@@ -63,17 +63,27 @@
             <Setter Property="Width" Value="250"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
         </Style>
+        <Style x:Key="customButtonFocusVisualStyle">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="1" Stroke="White" StrokeDashArray="1 2" StrokeThickness="1" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="secondaryButton" TargetType="Button">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="0,5,0,5"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="Background" Value="#767676"/>
             <Setter Property="Margin" Value="16,10,0,0" />
             <Setter Property="Width" Value="239"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -85,7 +95,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#BCBCBD"/>
+                    <Setter Property="Background" Value="#5D5D5D"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -100,6 +110,7 @@
             <Setter Property="Margin" Value="16,10,0,0" />
             <Setter Property="Width" Value="239"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -154,7 +165,7 @@
             <Setter Property="Margin" Value="16,12,0,0"/>
         </Style>
         <Style x:Key="textBox" TargetType="TextBox">
-            <Setter Property="BorderBrush" Value="#cccccc"/>
+            <Setter Property="BorderBrush" Value="#949494"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontFamily" Value="SegoeUI"/>
             <Setter Property="FontWeight" Value="Regular"/>
@@ -165,7 +176,7 @@
         </Style>
 
     </Window.Resources>
-    <StackPanel>
+    <StackPanel FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
         <TextBlock Name="windowEditorDialogTitle" Text="{x:Static props:Resources.Custom_Layout_Creator}" Style="{StaticResource titleText}"  />
         <Button x:Name="newZoneButton" AutomationProperties.LabeledBy="{Binding ElementName=newZoneName}" Width="496" Height="136" Style="{StaticResource newZoneButton}" Click="OnAddZone">
             <StackPanel>

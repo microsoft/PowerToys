@@ -117,53 +117,41 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Microsoft.PowerToys.Settings.UI</value>
-    <comment>Application display name</comment>
-  </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Microsoft.PowerToys.Settings.UI</value>
-    <comment>Application description</comment>
-  </data>
-  <data name="Shell_Main.Content" xml:space="preserve">
-    <value>Main</value>
-    <comment>Navigation view item name for Main</comment>
-  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
-    <comment>Navigation view item name for PowerToys Run</comment>
+    <comment>Product name: Navigation view item name for PowerToys Run</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
     <value>PowerRename</value>
-    <comment>Navigation view item name for PowerRename</comment>
+    <comment>Product name: Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
     <value>Shortcut Guide</value>
-    <comment>Navigation view item name for Shortcut Guide</comment>
+    <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer</value>
-    <comment>Navigation view item name for File Explorer Preview</comment>
+    <comment>Product name: Navigation view item name for File Explorer Preview</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
-    <comment>Navigation view item name for FancyZones</comment>
+    <comment>Product name: Navigation view item name for FancyZones</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
     <value>Image Resizer</value>
-    <comment>Navigation view item name for Image Resizer</comment>
+    <comment>Product name: Navigation view item name for Image Resizer</comment>
   </data>
   <data name="Shell_ColorPicker.Content" xml:space="preserve">
     <value>Color Picker</value>
-    <comment>Navigation view item name for Color Picker</comment>
+    <comment>Product name: Navigation view item name for Color Picker</comment>
   </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
-    <comment>Navigation view item name for Keyboard Manager</comment>
+    <comment>Product name: Navigation view item name for Keyboard Manager</comment>
   </data>
   <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
     <value>Current configuration</value>
@@ -175,7 +163,10 @@
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
     <value>Enable Keyboard Manager</value>
-    <comment>Keyboard Manager enable toggle header</comment>
+    <comment>
+      Keyboard Manager enable toggle header
+      do not loc the Product name.  Do you want this feature on / off
+    </comment>
   </data>
   <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
     <value>Select the profile to display the active key remap and shortcuts</value>
@@ -205,6 +196,7 @@
   </data>
   <data name="KeyboardManager_RemappedKeysListItem.AutomationProperties.Name" xml:space="preserve">
     <value>Key Remapping</value>
+    <comment>key as in keyboard key</comment>
   </data>
   <data name="KeyboardManager_RemappedShortcutsListItem.AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Remapping</value>
@@ -217,15 +209,18 @@
   </data>
   <data name="KeyboardManager_TargetApp.AutomationProperties.Name" xml:space="preserve">
     <value>For Target Application</value>
+    <comment>What computer application would this be for</comment>
   </data>
   <data name="KeyboardManager_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Keyboard Manager</value>
+    <comment>do not loc, product name</comment>
   </data>
   <data name="ColorPicker_Description.Text" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
   </data>
   <data name="ColorPicker_EnableColorPicker.Header" xml:space="preserve">
     <value>Enable Color Picker</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
     <value>Change cursor when picking a color</value>
@@ -235,12 +230,14 @@
   </data>
   <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
     <value>Open Color Picker</value>
+    <comment>do not loc product name</comment>
   </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
   <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
     <value>Enable PowerToys Run</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="PowerLauncher_SearchResults.Text" xml:space="preserve">
     <value>Search &amp; results</value>
@@ -286,6 +283,7 @@
   </data>
   <data name="PowerLauncher_OpenConsole.Header" xml:space="preserve">
     <value>Open console</value>
+    <comment>console refers to Windows command prompt</comment>
   </data>
   <data name="PowerLauncher_OverrideWinRKey.Content" xml:space="preserve">
     <value>Override Win+R shortcut</value>
@@ -297,13 +295,10 @@
     <value>Ignore shortcuts in fullscreen mode</value>
   </data>
   <data name="PowerLauncher_DisableDriveDetectionWarning.Content" xml:space="preserve">
-    <value>Disable drive detection warning for the indexer plugin</value>
+    <value>Disable drive detection warning for the file search plugin</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
-  </data>
-  <data name="PowerLauncher_Theme.Text" xml:space="preserve">
-    <value>Choose color</value>
   </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
@@ -317,15 +312,19 @@
   </data>
   <data name="Fancyzones_Image.AutomationProperties.Name" xml:space="preserve">
     <value>FancyZones windows</value>
+    <comment>do not loc the Product name</comment>
   </data>
   <data name="FancyZones_Description.Text" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
+    <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
     <value>Keep windows in their zones when the screen resolution changes</value>
+    <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Enable FancyZones</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="FancyZones_ExcludeApps.Text" xml:space="preserve">
     <value>Excluded apps</value>
@@ -337,16 +336,18 @@
     <value>Zone highlight opacity</value>
   </data>
   <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
-    <value>Open zones editor</value>
+    <value>Open layout editor</value>
+    <comment>Shortcut to launch the FancyZones layout editor application</comment>
   </data>
   <data name="SettingsPage_SetShortcut.AutomationProperties.Name" xml:space="preserve">
-    <value>Set Shortcut</value>
+    <value>Shortcut setting</value>
   </data>
   <data name="SettingsPage_SetShortcut_Glyph.AutomationProperties.Name" xml:space="preserve">
     <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
-    <value>Launch zones editor</value>
+    <value>Launch layout editor</value>
+    <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
     <value>Make dragged window transparent</value>
@@ -379,7 +380,7 @@
     <value>Zone behavior</value>
   </data>
   <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
-    <value>Zone highlight color (Default: #0078D7)</value>
+    <value>Zone highlight color</value>
   </data>
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
     <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
@@ -388,10 +389,12 @@
     <value>Give feedback</value>
   </data>
   <data name="Module_overview.Text" xml:space="preserve">
-    <value>Module overview</value>
+    <value>Learn more</value>
+    <comment>This label is there to point people to additional overview for how to use the product</comment>
   </data>
   <data name="AttributionTitle.Text" xml:space="preserve">
     <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="GeneralPage_AboutPowerToysHeader.Text" xml:space="preserve">
     <value>About PowerToys</value>
@@ -405,23 +408,17 @@
   <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
   </data>
-  <data name="GeneralPage_Radio_Theme_Dark.Content" xml:space="preserve">
-    <value>Dark</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Default.Content" xml:space="preserve">
-    <value>System default</value>
-  </data>
-  <data name="GeneralPage_Radio_Theme_Light.Content" xml:space="preserve">
-    <value>Light</value>
-  </data>
   <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
+    <comment>Report an issue inside powertoys</comment>
   </data>
   <data name="GeneralPage_RequestAFeature_URL.Text" xml:space="preserve">
     <value>Request a feature</value>
+    <comment>Tell our team what we should build</comment>
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
     <value>Restart as administrator</value>
+    <comment>running PowerToys as a higher level user, account is typically referred to as an admin / administrator</comment>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
@@ -431,9 +428,11 @@
   </data>
   <data name="PowerRename_ShellIntegration.Text" xml:space="preserve">
     <value>Shell integration</value>
+    <comment>This refers to directly integrating in with Windows</comment>
   </data>
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
     <value>Enable PowerRename</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
     <value>Settings theme</value>
@@ -452,12 +451,15 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Enable Markdown (.md) preview</value>
+    <comment>Do not loc "Markdown".  Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Enable SVG (.svg) preview</value>
+    <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Header" xml:space="preserve">
     <value>Enable SVG (.svg) thumbnails</value>
+    <comment>Do you want this feature on / off</comment>
   </data>
   <data name="FileExplorerPreview_Description.Text" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
@@ -472,28 +474,27 @@
     <value>Enable autocomplete for the search and replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
-    <value>Zone border color (Default: #FFFFFF)</value>
+    <value>Zone border color</value>
   </data>
   <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
-    <value>Zone inactive color (Default: #F5FCFF)</value>
+    <value>Zone inactive color</value>
   </data>
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
   </data>
   <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
     <value>Press duration before showing (ms)</value>
+    <comment>pressing a key in milliseconds</comment>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
-  </data>
-  <data name="ShortcutGuide_Theme.Text" xml:space="preserve">
-    <value>Choose Shortcut Guide overlay color</value>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image sizes</value>
@@ -503,6 +504,7 @@
   </data>
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
     <value>Enable Image Resizer</value>
+    <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ImagesSizesListView.AutomationProperties.Name" xml:space="preserve">
     <value>Image Size</value>
@@ -530,6 +532,11 @@
   </data>
   <data name="RemoveButton.AutomationProperties.Name" xml:space="preserve">
     <value>Remove</value>
+    <comment>Removes a user defined setting group for Image Resizer</comment>
+  </data>
+  <data name="RemoveTooltip.Text" xml:space="preserve">
+    <value>Remove</value>
+    <comment>Removes a user defined setting group for Image Resizer</comment>
   </data>
   <data name="ImageResizer_Image.AutomationProperties.Name" xml:space="preserve">
     <value>Image Resizer</value>
@@ -551,30 +558,36 @@
   </data>
   <data name="File.Text" xml:space="preserve">
     <value>File</value>
+    <comment>as in a computer file</comment>
   </data>
   <data name="Default.Content" xml:space="preserve">
     <value>Default</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT3.Content" xml:space="preserve">
     <value>CCITT3</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_CCITT4.Content" xml:space="preserve">
     <value>CCITT4</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Default.Content" xml:space="preserve">
     <value>Default</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_LZW.Content" xml:space="preserve">
     <value>LZW</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_None.Content" xml:space="preserve">
     <value>None</value>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_RLE.Content" xml:space="preserve">
     <value>RLE</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_ENCODER_TIFF_Zip.Content" xml:space="preserve">
     <value>Zip</value>
+    <comment>do not loc</comment>
   </data>
   <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
     <value>BMP encoder</value>
@@ -596,12 +609,15 @@
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
     <value>Fill</value>
+    <comment>Refers to filling an image into a certain size. It could overflow</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fit.Content" xml:space="preserve">
     <value>Fit</value>
+    <comment>Refers to fitting an image into a certain size. It won't overflow</comment>
   </data>
   <data name="ImageResizer_Sizes_Fit_Stretch.Content" xml:space="preserve">
     <value>Stretch</value>
+    <comment>Refers to stretching an image into a certain size. Won't overflow but could distort.</comment>
   </data>
   <data name="ImageResizer_Sizes_Units_CM.Content" xml:space="preserve">
     <value>Centimeters</value>
@@ -667,10 +683,12 @@
     <value>PowerToys Run</value>
   </data>
   <data name="About_PowerRename.Text" xml:space="preserve">
-    <value>About Power Rename</value>
+    <value>About PowerRename</value>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
-    <value>Power Rename</value>
+    <value>PowerRename</value>
+    <comment>do not loc</comment>
   </data>
   <data name="About_ShortcutGuide.Text" xml:space="preserve">
     <value>About Shortcut Guide</value>
@@ -687,8 +705,8 @@
   <data name="General_Version.Text" xml:space="preserve">
     <value>Version:</value>
   </data>
-  <data name="Shortcut_Overlay_Theme.Header" xml:space="preserve">
-    <value>Background theme</value>
+  <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
+    <value>Version</value>
   </data>
   <data name="Admin_mode.Text" xml:space="preserve">
     <value>Administrator mode</value>
@@ -698,6 +716,7 @@
   </data>
   <data name="ShortcutWarningLabel.Text" xml:space="preserve">
     <value>Only shortcuts with the following hotkeys are valid:</value>
+    <comment>keyboard shortcuts and</comment>
   </data>
   <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
@@ -749,12 +768,13 @@
   </data>
   <data name="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows based on their position</value>
+    <comment>Windows refers to application windows</comment>
   </data>
   <data name="GeneralSettings_NewVersionIsAvailable" xml:space="preserve">
     <value>New update available</value>
   </data>
   <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
-    <value>You have the latest available version.</value>
+    <value>PowerToys is up-to-date.</value>
   </data>
   <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Text" xml:space="preserve">
     <value>Icon Preview</value>
@@ -777,13 +797,43 @@
   <data name="ImageResizer_FilenameFormatPlaceholder.PlaceholderText" xml:space="preserve">
     <value>Example: %1 (%2)</value>
   </data>
-  <data name="PowerLauncher_Radio_Theme_Dark.Content" xml:space="preserve">
+  <data name="ColorModeHeader.Text" xml:space="preserve">
+    <value>Choose a mode</value>
+  </data>
+  <data name="Radio_Theme_Dark.Content" xml:space="preserve">
     <value>Dark</value>
+    <comment>Dark refers to color, not weight</comment>
   </data>
-  <data name="PowerLauncher_Radio_Theme_Default.Content" xml:space="preserve">
-    <value>System default</value>
-  </data>
-  <data name="PowerLauncher_Radio_Theme_Light.Content" xml:space="preserve">
+  <data name="Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
+    <comment>Light refers to color, not weight</comment>
+  </data>
+  <data name="Radio_Theme_Default.Content" xml:space="preserve">
+    <value>Windows default</value>
+    <comment>Windows refers to the Operating system</comment>
+  </data>
+  <data name="Windows_Color_Settings.Text" xml:space="preserve">
+    <value>Windows color settings</value>
+    <comment>Windows refers to the Operating system</comment>
+  </data>
+  <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
+    <value>Learn more about remapping limitations</value>
+    <comment>This is a link that will discuss what is and is not possible for Keyboard manager to remap</comment>
+  </data>
+  <data name="FancyZones_Editor_GroupSettings.Text" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="FancyZones_WindowBehavior_GroupSettings.Text" xml:space="preserve">
+    <value>Window behavior</value>
+  </data>
+  <data name="PowerRename_BehaviorHeader.Text" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="PowerRename_Toggle_UseBoostLib.Content" xml:space="preserve">
+    <value>Use Boost library (provides extended features but may use different regex syntax)</value>
+    <comment>Boost is a product name, should not be translated</comment>
+  </data>
+  <data name="MadeWithOssLove.Text" xml:space="preserve">
+    <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
 </root>

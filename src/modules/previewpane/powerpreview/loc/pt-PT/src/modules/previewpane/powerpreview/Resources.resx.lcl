@@ -39,19 +39,43 @@
       </Item>
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Description" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          <Val><![CDATA[Some of the File Explorer modules could not be turned off/on as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O registo ou a anulação de registo de alguns dos módulos do Explorador de Ficheiros não foi possível de acordo com as suas definições. Reinicie o PowerToys como administrador para as alterações produzirem efeito.]]></Val>
+            <Val><![CDATA[Não foi possível desativar/ativar os módulos do Explorador de Ficheiros de acordo com as suas definições. Reinicie o PowerToys como administrador para as alterações entrarem em vigor.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Some of the File Explorer modules could not be registered/unregistered as per your settings. Please restart PowerToys as admin for the changes to take place.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorer_Admin_Restart_Warning_Dont_Show_Again" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Don't show again]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Não voltar mostrar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FileExplorer_Admin_Restart_Warning_Open_Settings" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open Settings]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Abrir Definições]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";FileExplorer_Admin_Restart_Warning_Title" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
+          <Val><![CDATA[Couldn't modify File Explorer modules]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha ao modificar os módulos do Explorador de Ficheiros]]></Val>
+            <Val><![CDATA[Não foi possível modificar os módulos do Explorador de Ficheiros]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to modify File Explorer modules]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -104,7 +128,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Svg Previewer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pré-visualizador SVG]]></Val>
+            <Val><![CDATA[Pré-visualizador de SVG]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +137,7 @@
         <Str Cat="Text">
           <Val><![CDATA[SVG Previewer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pré-visualizador SVG]]></Val>
+            <Val><![CDATA[Pré-visualizador de SVG]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

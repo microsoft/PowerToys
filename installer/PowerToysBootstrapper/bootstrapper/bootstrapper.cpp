@@ -14,11 +14,14 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+auto Strings = create_notifications_strings();
+
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
-namespace
+namespace // Strings in this namespace should not be localized
 {
     const wchar_t APPLICATION_ID[] = L"PowerToysInstaller";
+    const wchar_t INSTALLATION_TOAST_TITLE[] = L"PowerToys Installation";
     const wchar_t TOAST_TAG[] = L"PowerToysInstallerProgress";
     const char LOG_FILENAME[] = "powertoys-bootstrapper-" STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_REVISION) ".log";
     const char MSI_LOG_FILENAME[] = "powertoys-bootstrapper-msi-" STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_REVISION) ".log";
@@ -26,20 +29,6 @@ namespace
 }
 #undef STR
 #undef STR_HELPER
-
-namespace localized_strings
-{
-    const wchar_t INSTALLER_EXTRACT_ERROR[] = L"Couldn't extract MSI installer!";
-    const wchar_t TOAST_TITLE[] = L"PowerToys Installation";
-    const wchar_t EXTRACTING_INSTALLER[] = L"Extracting PowerToys MSI...";
-    const wchar_t UNINSTALLING_PREVIOUS_VERSION[] = L"Uninstalling previous PowerToys version...";
-    const wchar_t UNINSTALL_PREVIOUS_VERSION_ERROR[] = L"Couldn't uninstall previous PowerToys version!";
-    const wchar_t INSTALLING_DOTNET[] = L"Installing dotnet...";
-    const wchar_t DOTNET_INSTALL_ERROR[] = L"Couldn't install dotnet!";
-    const wchar_t INSTALLING_NEW_VERSION[] = L"Installing new PowerToys version...";
-    const wchar_t NEW_VERSION_INSTALLATION_DONE[] = L"PowerToys installation complete!";
-    const wchar_t NEW_VERSION_INSTALLATION_ERROR[] = L"Couldn't install new PowerToys version.";
-}
 
 namespace fs = std::filesystem;
 
@@ -96,7 +85,6 @@ void setup_log(fs::path directory, const spdlog::level::level_enum severity)
 
 int bootstrapper()
 {
-    using namespace localized_strings;
     winrt::init_apartment();
     cxxopts::Options options{ "PowerToysBootstrapper" };
     // clang-format off
@@ -252,7 +240,7 @@ int bootstrapper()
         iconPath = std::move(*extractedIcon);
     }
     spdlog::debug("Registering app id for toast notifications");
-    notifications::register_application_id(TOAST_TITLE, iconPath.c_str());
+    notifications::register_application_id(INSTALLATION_TOAST_TITLE, iconPath.c_str());
 
     auto removeShortcut = wil::scope_exit([&] {
         notifications::unregister_application_id();
@@ -274,12 +262,12 @@ int bootstrapper()
     std::mutex progressLock;
     notifications::progress_bar_params progressParams;
     progressParams.progress = 0.0f;
-    progressParams.progress_title = EXTRACTING_INSTALLER;
+    progressParams.progress_title = GET_RESOURCE_STRING(IDS_EXTRACTING_INSTALLER);
     notifications::toast_params params{ TOAST_TAG, false, std::move(progressParams) };
     if (!silent)
     {
         spdlog::debug("Launching progress toast notification");
-        notifications::show_toast_with_activations({}, TOAST_TITLE, {}, {}, std::move(params));
+        notifications::show_toast_with_activations({}, INSTALLATION_TOAST_TITLE, {}, {}, std::move(params));
     }
 
     auto processToasts = wil::scope_exit([&] {
@@ -322,7 +310,7 @@ int bootstrapper()
     {
         if (!silent)
         {
-            notifications::show_toast(INSTALLER_EXTRACT_ERROR, TOAST_TITLE);
+            notifications::show_toast(GET_RESOURCE_STRING(IDS_INSTALLER_EXTRACT_ERROR), INSTALLATION_TOAST_TITLE);
         }
         spdlog::error("Couldn't install the MSI installer ({})", GetLastError());
         return 1;
@@ -332,7 +320,7 @@ int bootstrapper()
         fs::remove(*installerPath, _);
     });
 
-    updateProgressBar(.25f, UNINSTALLING_PREVIOUS_VERSION);
+    updateProgressBar(.25f, GET_RESOURCE_STRING(IDS_UNINSTALLING_PREVIOUS_VERSION).c_str());
     spdlog::debug("Acquiring existing MSI package path");
     const auto package_path = updating::get_msi_package_path();
     if (!package_path.empty())
@@ -343,15 +331,15 @@ int bootstrapper()
     {
         spdlog::debug("Existing MSI package path not found");
     }
-    if (!package_path.empty() && !updating::uninstall_msi_version(package_path) && !silent)
+    if (!package_path.empty() && !updating::uninstall_msi_version(package_path, Strings) && !silent)
     {
         spdlog::error("Couldn't install the existing MSI package ({})", GetLastError());
-        notifications::show_toast(UNINSTALL_PREVIOUS_VERSION_ERROR, TOAST_TITLE);
+        notifications::show_toast(GET_RESOURCE_STRING(IDS_UNINSTALL_PREVIOUS_VERSION_ERROR), INSTALLATION_TOAST_TITLE);
     }
     const bool installDotnet = !skipDotnetInstall;
     if (installDotnet)
     {
-        updateProgressBar(.5f, INSTALLING_DOTNET);
+        updateProgressBar(.5f, GET_RESOURCE_STRING(IDS_INSTALLING_DOTNET).c_str());
     }
 
     try
@@ -365,7 +353,7 @@ int bootstrapper()
                 !updating::install_dotnet(silent) &&
                 !silent)
             {
-                notifications::show_toast(DOTNET_INSTALL_ERROR, TOAST_TITLE);
+                notifications::show_toast(GET_RESOURCE_STRING(IDS_DOTNET_INSTALL_ERROR), INSTALLATION_TOAST_TITLE);
             }
         }
     }
@@ -375,13 +363,14 @@ int bootstrapper()
         MessageBoxW(nullptr, L".NET Core installation", L"Unknown exception encountered!", MB_OK | MB_ICONERROR);
     }
 
-    updateProgressBar(.75f, INSTALLING_NEW_VERSION);
+    updateProgressBar(.75f, GET_RESOURCE_STRING(IDS_INSTALLING_NEW_VERSION).c_str());
 
     // Always skip dotnet install, because we should've installed it from here earlier
     std::wstring msiProps = L"SKIPDOTNETINSTALL=1 ";
     spdlog::debug("Launching MSI installation for new package {}", installerPath->string());
     const bool installationDone = MsiInstallProductW(installerPath->c_str(), msiProps.c_str()) == ERROR_SUCCESS;
-    updateProgressBar(1.f, installationDone ? NEW_VERSION_INSTALLATION_DONE : NEW_VERSION_INSTALLATION_ERROR);
+    updateProgressBar(1.f,
+                      installationDone ? GET_RESOURCE_STRING(IDS_NEW_VERSION_INSTALLATION_DONE).c_str() : GET_RESOURCE_STRING(IDS_NEW_VERSION_INSTALLATION_ERROR).c_str());
     if (!installationDone)
     {
         spdlog::error("Couldn't install new MSI package ({})", GetLastError());

@@ -31,14 +31,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         public IStream Stream { get; private set; }
 
         /// <summary>
-        ///  The maxium dimension (width or height) thumbnail we will generate.
+        ///  The maximum dimension (width or height) thumbnail we will generate.
         /// </summary>
         private const uint MaxThumbnailSize = 10000;
 
         /// <summary>
         /// Captures an image representation of browser contents.
         /// </summary>
-        /// <param name="browser">The WebBrowser instance rendring the SVG.</param>
+        /// <param name="browser">The WebBrowser instance rendering the SVG.</param>
         /// <param name="rectangle">The client rectangle to capture from.</param>
         /// <param name="backgroundColor">The default background color to apply.</param>
         /// <returns>A Bitmap representing the browser contents.</returns>
@@ -166,7 +166,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     {0}
                   </body>
                 </html>";
-            return string.Format(CultureInfo.CurrentCulture, html, svg);
+
+            // Using InvariantCulture since this should be displayed as it is
+            return string.Format(CultureInfo.InvariantCulture, html, svg);
         }
 
         /// <summary>

@@ -96,7 +96,7 @@ namespace KeyboardManagerHelper
     // Function to return the executable name of the application in focus
     std::wstring GetCurrentApplication(bool keepPath);
 
-    // Function to set key events for modifier keys: When shortcutToCompare is passed (non-empty shortcut), then the key event is sent only if both shortcut's don't have the same modifier key. When keyToBeReleased is passed (non-NULL), then the key event is sent if either the shortcuts don't have the same modfifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
+    // Function to set key events for modifier keys: When shortcutToCompare is passed (non-empty shortcut), then the key event is sent only if both shortcut's don't have the same modifier key. When keyToBeReleased is passed (non-NULL), then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
     void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, LPINPUT keyEventArray, int& index, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);
 
     // Function to filter the key codes for artificial key codes
@@ -107,4 +107,6 @@ namespace KeyboardManagerHelper
 
     // Function to check if a modifier has been repeated in the previous drop downs
     bool CheckRepeatedModifier(const std::vector<int32_t>& currentKeys, int selectedKeyCodes);
+
+    winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width);
 }

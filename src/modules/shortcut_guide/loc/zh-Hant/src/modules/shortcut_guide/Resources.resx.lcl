@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opacity of the Shortcut Guide's overlay background (%)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快速鍵指南重疊背景的不透明度 (%)]]></Val>
+            <Val><![CDATA[快捷鍵指南重疊背景的不透明度 (%)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[How long to press the Windows key before showing the Shortcut Guide (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[顯示快速鍵指南之前須按住 Windows 按鍵的時間長度 (毫秒)]]></Val>
+            <Val><![CDATA[顯示快捷鍵指南之前須按住 Windows 按鍵的時間長度 (毫秒)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Choose Shortcut Guide overlay color]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[選擇快速鍵指南重疊的色彩]]></Val>
+            <Val><![CDATA[選擇快捷鍵指南重疊的色彩]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快速鍵指南]]></Val>
+            <Val><![CDATA[快捷鍵指南]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

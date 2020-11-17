@@ -133,8 +133,11 @@ Please select from the options above to show items.</value>
   <data name="Entireitemname" xml:space="preserve">
     <value>Item Name and Extension</value>
   </data>
-  <data name="Countslabelfmt" xml:space="preserve">
-    <value>Items Selected: %u | Renaming: %u</value>
+  <data name="Countslabelselectedfmt" xml:space="preserve">
+    <value>Items Selected: %u</value>
+  </data>
+  <data name="Countslabelrenamingfmt" xml:space="preserve">
+    <value>Items Renaming: %u</value>
   </data>
   <data name="Use_Regex" xml:space="preserve">
     <value>Use Regular Expressions</value>
@@ -188,7 +191,10 @@ Please select from the options above to show items.</value>
     <value>Replace with:</value>
   </data>
   <data name="Items_Selected" xml:space="preserve">
-    <value>Items Selected: 0 | Renaming: 0</value>
+    <value>Items Selected: 0</value>
+  </data>
+  <data name="Items_Renaming" xml:space="preserve">
+    <value>Items Renaming: 0</value>
   </data>
   <data name="Options" xml:space="preserve">
     <value>Options</value>

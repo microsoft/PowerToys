@@ -4,13 +4,13 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerLauncher.Helper;
-using Wox.Core.Plugin;
+using PowerLauncher.Plugin;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
@@ -26,13 +26,14 @@ namespace PowerLauncher
 
         private const int MaxRetries = 10;
         private static readonly object _watcherSyncObject = new object();
-        private readonly FileSystemWatcher _watcher;
-        private readonly Settings _settings;
+        private readonly IFileSystemWatcher _watcher;
+        private readonly PowerToysRunSettings _settings;
+
         private readonly ThemeManager _themeManager;
 
-        public SettingsWatcher(Settings settings, ThemeManager themeManager)
+        public SettingsWatcher(PowerToysRunSettings settings, ThemeManager themeManager)
         {
-            _settingsUtils = new SettingsUtils(new SystemIOProvider());
+            _settingsUtils = new SettingsUtils();
             _settings = settings;
             _themeManager = themeManager;
 
@@ -41,6 +42,9 @@ namespace PowerLauncher
 
             // Load initial settings file
             OverloadSettings();
+
+            // Apply theme at startup
+            _themeManager.ChangeTheme(_settings.Theme, _settings.Theme == Theme.System);
         }
 
         public void CreateSettingsIfNotExists()
@@ -91,6 +95,7 @@ namespace PowerLauncher
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.Properties.IgnoreHotkeysInFullscreen;
                     }
 
+                    // Using OrdinalIgnoreCase since this is internal
                     var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer", StringComparison.OrdinalIgnoreCase));
                     if (indexer != null)
                     {

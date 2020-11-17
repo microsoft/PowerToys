@@ -1,5 +1,6 @@
 using System;
-using System.IO;
+using System.IO.Abstractions;
+//using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
@@ -10,6 +11,9 @@ namespace PowerToysTests
     [TestClass]
     public class FancyZonesEditorSettingsTests : FancyZonesEditor
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IFile File = FileSystem.File;
+
         private const string editorZoneCount = "editor-zone-count";
         private const string editorShowSpacing = "editor-show-spacing";
         private const string editorSpacing = "editor-spacing";

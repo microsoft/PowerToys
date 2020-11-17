@@ -4,9 +4,9 @@
             "LanguageSet": "Azure_Languages",
             "LocItems": [
                 {
-                    "SourceFile": "src\\runner\\Resources.resx",
+                    "SourceFile": "src\\action_runner\\Resources.resx",
                     "CopyOption": "LangIDOnName",
-                    "OutputPath": "src\\runner"
+                    "OutputPath": "src\\action_runner"
                 }
             ]
         }

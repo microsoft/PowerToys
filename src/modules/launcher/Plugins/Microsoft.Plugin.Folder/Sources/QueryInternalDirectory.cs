@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources.Result;
@@ -18,6 +19,7 @@ namespace Microsoft.Plugin.Folder.Sources
     {
         private readonly FolderSettings _settings;
         private readonly IQueryFileSystemInfo _queryFileSystemInfo;
+        private readonly IDirectory _directory;
 
         private static readonly HashSet<char> SpecialSearchChars = new HashSet<char>
         {
@@ -26,10 +28,11 @@ namespace Microsoft.Plugin.Folder.Sources
 
         private static string _warningIconPath;
 
-        public QueryInternalDirectory(FolderSettings folderSettings, IQueryFileSystemInfo queryFileSystemInfo)
+        public QueryInternalDirectory(FolderSettings folderSettings, IQueryFileSystemInfo queryFileSystemInfo, IDirectory directory)
         {
             _settings = folderSettings;
             _queryFileSystemInfo = queryFileSystemInfo;
+            _directory = directory;
         }
 
         private static bool HasSpecialChars(string search)
@@ -47,7 +50,7 @@ namespace Microsoft.Plugin.Folder.Sources
         private (string search, string incompleteName) Process(string search)
         {
             string incompleteName = string.Empty;
-            if (HasSpecialChars(search) || !_queryFileSystemInfo.Exists($@"{search}\"))
+            if (HasSpecialChars(search) || !_directory.Exists($@"{search}\"))
             {
                 // if folder doesn't exist, we want to take the last part and use it afterwards to help the user
                 // find the right folder.
@@ -60,10 +63,11 @@ namespace Microsoft.Plugin.Folder.Sources
                 }
 
                 // Remove everything after the last \ and add *
+                // Using InvariantCulture since this is internal
                 incompleteName = search.Substring(index + 1)
                     .ToLower(CultureInfo.InvariantCulture) + "*";
                 search = search.Substring(0, index + 1);
-                if (!_queryFileSystemInfo.Exists(search))
+                if (!_directory.Exists(search))
                 {
                     return default;
                 }
@@ -71,7 +75,8 @@ namespace Microsoft.Plugin.Folder.Sources
             else
             {
                 // folder exist, add \ at the end of doesn't exist
-                if (!search.EndsWith(@"\", StringComparison.InvariantCulture))
+                // Using Ordinal since this is internal and is used for a symbol
+                if (!search.EndsWith(@"\", StringComparison.Ordinal))
                 {
                     search += @"\";
                 }

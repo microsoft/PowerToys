@@ -35,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Properties.MaxMRUSize.Value = localProperties.MaxMRUSize;
             Properties.ShowIcon.Value = localProperties.ShowIcon;
             Properties.ExtendedContextMenuOnly.Value = localProperties.ExtendedContextMenuOnly;
+            Properties.UseBoostLib.Value = localProperties.UseBoostLib;
 
             Version = "1";
             Name = ModuleName;

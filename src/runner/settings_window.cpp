@@ -327,7 +327,7 @@ void run_settings_window()
         settings_isUserAnAdmin = L"false";
     }
 
-    // create general settings file to initialze the settings file with installation configurations like :
+    // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
@@ -390,7 +390,7 @@ void run_settings_window()
     WaitForSingleObject(process_info.hProcess, INFINITE);
     if (WaitForSingleObject(process_info.hProcess, INFINITE) != WAIT_OBJECT_0)
     {
-        show_last_error_message(L"Couldn't wait on the Settings Window to close.", GetLastError());
+        show_last_error_message(L"Couldn't wait on the Settings Window to close.", GetLastError(), L"PowerToys - runner");
     }
 
 LExit:

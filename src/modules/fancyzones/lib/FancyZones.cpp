@@ -592,137 +592,105 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-    HMONITOR monitor{};
-    HWND foregroundWindow{};
+    std::shared_lock readLock(m_lock);
+
+    HMONITOR targetMonitor{};
 
     const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
-    POINT currentCursorPos{};
     if (use_cursorpos_editor_startupscreen)
     {
+        POINT currentCursorPos{};
         GetCursorPos(&currentCursorPos);
-        monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
+        targetMonitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
     }
     else
     {
-        foregroundWindow = GetForegroundWindow();
-        monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
+        targetMonitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTOPRIMARY);
     }
 
-    if (!monitor)
+    if (!targetMonitor)
     {
         return;
     }
 
-    winrt::com_ptr<IZoneWindow> zoneWindow;
+    /*
+    * Divider: /
+    * Parts:
+    * (1) Process id
+    * (2) Span zones across monitors
+    * (3) Monitor id where the Editor should be opened
+    * (4) Monitors count
+    *
+    * Data for each monitor:
+    * (5) Monitor id
+    * (6) DPI
+    * (7) monitor left
+    * (8) monitor top
+    * ...
+    */
+    std::wstring params;
+    const std::wstring divider = L"/";
+    params += std::to_wstring(GetCurrentProcessId()) + divider; /* Process id */
 
-    std::shared_lock readLock(m_lock);
+    const bool spanZonesAcrossMonitors = m_settings->GetSettings()->spanZonesAcrossMonitors;
+    params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
+        
+    std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
+    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
     
-    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
+    bool showDpiWarning = false;
+    int prevDpiX = -1, prevDpiY = -1;
+    std::wstring monitorsData;
+    for (auto& monitor : allMonitors)
     {
-        zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, NULL);
-    }
-    else
-    {
-        zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-    }
-    
-    if (!zoneWindow)
-    {
-        return;
-    }
-
-    std::wstring editorLocation;
-
-    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
-    {
-        std::vector<std::pair<HMONITOR, RECT>> allMonitors;
-
-        m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-                              allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
-            } }).wait();
-
-        UINT currentDpi = 0;
-        for (const auto& monitor : allMonitors)
+        auto monitorId = FancyZonesUtils::GenerateMonitorId(monitor.second, monitor.first, m_currentDesktopId);
+        if (monitor.first == targetMonitor)
         {
+            params += *monitorId + divider; /* Monitor id where the Editor should be opened */
+        }
+
+        if (monitorId.has_value())
+        {
+            monitorsData += std::move(*monitorId) + divider; /* Monitor id */
+
             UINT dpiX = 0;
             UINT dpiY = 0;
             if (GetDpiForMonitor(monitor.first, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
             {
-                if (currentDpi == 0)
+                monitorsData += std::to_wstring(dpiX) + divider; /* DPI */
+                if (spanZonesAcrossMonitors && prevDpiX != -1 && (prevDpiX != dpiX || prevDpiY != dpiY))
                 {
-                  currentDpi = dpiX;
-                  continue;
+                    showDpiWarning = true;
                 }
-                if (currentDpi != dpiX)
-                {
-                    MessageBoxW(NULL,
+
+                prevDpiX = dpiX;
+                prevDpiY = dpiY;
+            }
+
+            monitorsData += std::to_wstring(monitor.second.rcMonitor.left) + divider;
+            monitorsData += std::to_wstring(monitor.second.rcMonitor.top) + divider;
+        }
+    }
+
+    params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
+    params += monitorsData;
+
+    if (showDpiWarning)
+    {
+        MessageBoxW(NULL,
                     GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
                     GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
                     MB_OK | MB_ICONWARNING);
-                    break;
-                }
-            }
-        }
-
-        for (auto& [monitor, workArea] : allMonitors)
-        {
-            const auto x = workArea.left;
-            const auto y = workArea.top;
-            const auto width = workArea.right - workArea.left;
-            const auto height = workArea.bottom - workArea.top;
-            std::wstring editorLocationPart =
-                std::to_wstring(x) + L"_" +
-                std::to_wstring(y) + L"_" +
-                std::to_wstring(width) + L"_" +
-                std::to_wstring(height);
-
-            if (editorLocation.empty())
-            {
-                editorLocation = std::move(editorLocationPart);
-            }
-            else
-            {
-                editorLocation += L'/';
-                editorLocation += editorLocationPart;
-            }
-        }
-    }
-    else
-    {
-        MONITORINFOEX mi;
-        mi.cbSize = sizeof(mi);
-
-        m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-            GetMonitorInfo(monitor, &mi);
-            } }).wait();
-
-        const auto x = mi.rcWork.left;
-        const auto y = mi.rcWork.top;
-        const auto width = mi.rcWork.right - mi.rcWork.left;
-        const auto height = mi.rcWork.bottom - mi.rcWork.top;
-        editorLocation =
-            std::to_wstring(x) + L"_" +
-            std::to_wstring(y) + L"_" +
-            std::to_wstring(width) + L"_" +
-            std::to_wstring(height);
     }
 
     const auto& fancyZonesData = FancyZonesDataInstance();
-
-    if (!fancyZonesData.SerializeDeviceInfoToTmpFile(zoneWindow->UniqueId()))
-    {
-        return;
-    }
-
-    const std::wstring params =
-        /*1*/ editorLocation + L" " +
-        /*2*/ L"\"" + std::to_wstring(GetCurrentProcessId()) + L"\"";
+    fancyZonesData.SerializeDeviceInfoToTmpFile(m_currentDesktopId);
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
     sei.lpFile = NonLocalizable::FZEditorExecutablePath;
     sei.lpParameters = params.c_str();
-    sei.nShow = SW_SHOWNORMAL;
+    sei.nShow = SW_SHOWDEFAULT;
     ShellExecuteEx(&sei);
     Trace::FancyZones::EditorLaunched(1);
 
@@ -928,16 +896,12 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
 
             if (monitor)
             {
-                uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
+                uniqueId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
             }
             else
             {
-                uniqueId = ZoneWindowUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get());
+                uniqueId = FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get());
             }
-
-            // "Turning FLASHING_ZONE option off"
-            //const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones;
-            const bool flash = false;
 
             std::wstring parentId{};
             auto parentArea = m_workAreaHandler.GetWorkArea(m_previousDesktopId, monitor);
@@ -945,7 +909,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
             {
                 parentId = parentArea->UniqueId();
             }
-            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId, flash);
+            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId);
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
@@ -981,7 +945,7 @@ void FancyZones::UpdateZoneWindows() noexcept
 
     auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
         capture* params = reinterpret_cast<capture*>(data);
-        MONITORINFOEX mi{ { .cbSize = sizeof(mi)} };
+        MONITORINFOEX mi{ { .cbSize = sizeof(mi) } };
         if (GetMonitorInfoW(monitor, &mi))
         {
             auto& displayDeviceIdxMap = *(params->displayDeviceIdx);
@@ -1006,8 +970,8 @@ void FancyZones::UpdateZoneWindows() noexcept
             if (deviceId.empty())
             {
                 deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
-                                L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
-                                L"\\\\?\\DISPLAY#LOCALDISPLAY#";
+                               L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
+                               L"\\\\?\\DISPLAY#LOCALDISPLAY#";
 
                 fancyZones->AddZoneWindow(monitor, deviceId);
             }
@@ -1180,22 +1144,24 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
             else
             {
                 auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-                auto zoneSet = workArea->ActiveZoneSet();
-                if (zoneSet)
+                if (workArea)
                 {
-                    auto zones = zoneSet->GetZones();
-                    for (size_t i = 0; i < zones.size(); i++)
+                    auto zoneSet = workArea->ActiveZoneSet();
+                    if (zoneSet)
                     {
-                        const auto& zone = zones[i];
-                        RECT zoneRect = zone->GetZoneRect();
+                        const auto zones = zoneSet->GetZones();
+                        for (const auto& [zoneId, zone] : zones)
+                        {
+                            RECT zoneRect = zone->GetZoneRect();
 
-                        zoneRect.left += monitorRect.left;
-                        zoneRect.right += monitorRect.left;
-                        zoneRect.top += monitorRect.top;
-                        zoneRect.bottom += monitorRect.top;
+                            zoneRect.left += monitorRect.left;
+                            zoneRect.right += monitorRect.left;
+                            zoneRect.top += monitorRect.top;
+                            zoneRect.bottom += monitorRect.top;
 
-                        zoneRects.emplace_back(zoneRect);
-                        zoneRectsInfo.emplace_back(i, workArea);
+                            zoneRects.emplace_back(zoneRect);
+                            zoneRectsInfo.emplace_back(zoneId, workArea);
+                        }
                     }
                 }
             }
@@ -1225,22 +1191,24 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         if (currentMonitorRect.top <= currentMonitorRect.bottom)
         {
             auto workArea = m_workAreaHandler.GetWorkArea(m_currentDesktopId, current);
-            auto zoneSet = workArea->ActiveZoneSet();
-            if (zoneSet)
+            if (workArea)
             {
-                auto zones = zoneSet->GetZones();
-                for (size_t i = 0; i < zones.size(); i++)
+                auto zoneSet = workArea->ActiveZoneSet();
+                if (zoneSet)
                 {
-                    const auto& zone = zones[i];
-                    RECT zoneRect = zone->GetZoneRect();
+                    const auto zones = zoneSet->GetZones();
+                    for (const auto& [zoneId, zone] : zones)
+                    {
+                        RECT zoneRect = zone->GetZoneRect();
 
-                    zoneRect.left += currentMonitorRect.left;
-                    zoneRect.right += currentMonitorRect.left;
-                    zoneRect.top += currentMonitorRect.top;
-                    zoneRect.bottom += currentMonitorRect.top;
+                        zoneRect.left += currentMonitorRect.left;
+                        zoneRect.right += currentMonitorRect.left;
+                        zoneRect.top += currentMonitorRect.top;
+                        zoneRect.bottom += currentMonitorRect.top;
 
-                    zoneRects.emplace_back(zoneRect);
-                    zoneRectsInfo.emplace_back(i, workArea);
+                        zoneRects.emplace_back(zoneRect);
+                        zoneRectsInfo.emplace_back(zoneId, workArea);
+                    }
                 }
             }
         }
@@ -1308,8 +1276,9 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
 
     m_workAreaHandler.RegisterUpdates(ids);
     std::vector<std::wstring> active{};
-    if (VirtualDesktopUtils::GetVirtualDesktopIds(active))
+    if (VirtualDesktopUtils::GetVirtualDesktopIds(active) && !active.empty())
     {
+        FancyZonesDataInstance().UpdatePrimaryDesktopData(active[0]);
         FancyZonesDataInstance().RemoveDeletedDesktops(active);
     }
 }
@@ -1353,9 +1322,9 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         {
             monitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTONULL);
         }
-        
+
         auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-        if (zoneWindow->ActiveZoneSet() != nullptr)
+        if (zoneWindow && zoneWindow->ActiveZoneSet() != nullptr)
         {
             if (vkCode == VK_UP || vkCode == VK_DOWN)
             {

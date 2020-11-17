@@ -3,9 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing;
-using System.Globalization;
-using System.IO;
 using System.Text.Json;
 using CommonLibTest;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -33,20 +30,23 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, FancyZonesSettings.ModuleName, fileName);
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var settingPathMock = new Mock<ISettingsPath>();
+
+            var fileMock = BackCompatTestProperties.GetModuleIOProvider(version, FancyZonesSettings.ModuleName, fileName);
+            var mockSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);
             FancyZonesSettings originalSettings = mockSettingsUtils.GetSettings<FancyZonesSettings>(FancyZonesSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
-            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object, settingPathMock.Object);
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
             var fancyZonesRepository = new BackCompatTestProperties.MockSettingsRepository<FancyZonesSettings>(mockSettingsUtils);
 
             // Initialise View Model with test Config files
             FancyZonesViewModel viewModel = new FancyZonesViewModel(generalSettingsRepository, fancyZonesRepository, ColorPickerIsEnabledByDefault_IPC);
 
-            // Verifiy that the old settings persisted
+            // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.FancyZones, viewModel.IsEnabled);
             Assert.AreEqual(originalSettings.Properties.FancyzonesAppLastZoneMoveWindows.Value, viewModel.AppLastZoneMoveWindows);
             Assert.AreEqual(originalSettings.Properties.FancyzonesBorderColor.Value, viewModel.ZoneBorderColor);
@@ -71,7 +71,7 @@ namespace ViewModelTests
 
            //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, FancyZonesSettings.ModuleName, expectedCallCount);
+            BackCompatTestProperties.VerifyModuleIOProviderWasRead(fileMock, FancyZonesSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 

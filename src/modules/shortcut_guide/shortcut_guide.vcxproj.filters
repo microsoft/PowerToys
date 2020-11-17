@@ -18,6 +18,15 @@
     <ClCompile Include="trace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="d2d_svg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="d2d_text.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="d2d_window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -38,6 +47,16 @@
     </ClInclude>
     <ClInclude Include="Generated Files/resource.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShortcutGuideConstants.h" />
+    <ClInclude Include="d2d_svg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="d2d_text.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="d2d_window.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -49,6 +49,14 @@ bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID
     return true;
 }
 
+void change_menu_item_text(const UINT item_id, wchar_t* new_text)
+{
+    MENUITEMINFOW menuitem = { .cbSize = sizeof(MENUITEMINFOW), .fMask = MIIM_TYPE | MIIM_DATA };
+    GetMenuItemInfoW(h_menu, item_id, false, &menuitem);
+    menuitem.dwTypeData = new_text;
+    SetMenuItemInfoW(h_menu, item_id, false, &menuitem);
+}
+
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     switch (message)
@@ -125,6 +133,13 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 {
                     h_menu = LoadMenu(reinterpret_cast<HINSTANCE>(&__ImageBase), MAKEINTRESOURCE(ID_TRAY_MENU));
                 }
+                if (h_menu)
+                {
+                    static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
+                    static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
+                    change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
+                    change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
+                }
                 if (!h_sub_menu)
                 {
                     h_sub_menu = GetSubMenu(h_menu, 0);
@@ -193,7 +208,7 @@ void start_tray_icon()
         tray_icon_data.uID = id_tray_icon;
         tray_icon_data.uCallbackMessage = wm_icon_notify;
         std::wstring about_msg_pt_version = L"PowerToys\n" + get_product_version();
-        wcscpy_s(tray_icon_data.szTip, sizeof(tray_icon_data.szTip) / sizeof(WCHAR), about_msg_pt_version.c_str());        
+        wcscpy_s(tray_icon_data.szTip, sizeof(tray_icon_data.szTip) / sizeof(WCHAR), about_msg_pt_version.c_str());
         tray_icon_data.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;

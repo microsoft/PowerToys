@@ -10,6 +10,7 @@ using Moq;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using System.Globalization;
+using System.IO.Abstractions;
 
 namespace ViewModelTests
 {
@@ -52,20 +53,23 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
+            var settingPathMock = new Mock<ISettingsPath>();
+
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, PowerLauncherSettings.ModuleName, fileName);
-            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object);
+            var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object, settingPathMock.Object);
             PowerLauncherSettings originalSettings = mockSettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
-            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object, settingPathMock.Object);
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
             // Initialise View Model with test Config files
             Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
             PowerLauncherViewModel viewModel = new PowerLauncherViewModel(mockSettingsUtils, generalSettingsRepository, SendMockIPCConfigMSG, 32);
 
-            // Verifiy that the old settings persisted
+            // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.PowerLauncher, viewModel.EnablePowerLauncher);
             Assert.AreEqual(originalSettings.Properties.ClearInputOnLaunch, viewModel.ClearInputOnLaunch);
             Assert.AreEqual(originalSettings.Properties.CopyPathLocation.ToString(), viewModel.CopyPathLocation.ToString());

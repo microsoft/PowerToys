@@ -20,7 +20,7 @@ namespace PowerLauncher.ViewModel
     {
         private readonly object _collectionLock = new object();
 
-        private readonly Settings _settings;
+        private readonly PowerToysRunSettings _settings;
 
         public ResultsViewModel()
         {
@@ -28,7 +28,7 @@ namespace PowerLauncher.ViewModel
             BindingOperations.EnableCollectionSynchronization(Results, _collectionLock);
         }
 
-        public ResultsViewModel(Settings settings)
+        public ResultsViewModel(PowerToysRunSettings settings)
             : this()
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));

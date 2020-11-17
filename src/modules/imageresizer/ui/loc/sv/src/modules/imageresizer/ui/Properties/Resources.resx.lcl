@@ -221,7 +221,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bildstorleksändring]]></Val>
+            <Val><![CDATA[Bildstorleksverktyget]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -527,7 +527,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Stretch]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sträck]]></Val>
+            <Val><![CDATA[Stretcha]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -536,7 +536,7 @@
         <Str Cat="Text">
           <Val><![CDATA[stretches to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[sträcks ut till]]></Val>
+            <Val><![CDATA[stretchas till]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

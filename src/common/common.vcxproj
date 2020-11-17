@@ -123,9 +123,6 @@
     <ClInclude Include="appMutex.h" />
     <ClInclude Include="async_message_queue.h" />
     <ClInclude Include="comUtils.h" />
-    <ClInclude Include="d2d_svg.h" />
-    <ClInclude Include="d2d_text.h" />
-    <ClInclude Include="d2d_window.h" />
     <ClInclude Include="debug_control.h" />
     <ClInclude Include="dpi_aware.h" />
     <ClInclude Include="com_object_factory.h" />
@@ -165,9 +162,6 @@
   <ItemGroup>
     <ClCompile Include="animation.cpp" />
     <ClCompile Include="comUtils.cpp" />
-    <ClCompile Include="d2d_svg.cpp" />
-    <ClCompile Include="d2d_text.cpp" />
-    <ClCompile Include="d2d_window.cpp" />
     <ClCompile Include="dpi_aware.cpp" />
     <ClCompile Include="json.cpp" />
     <ClCompile Include="keyboard_layout.cpp" />

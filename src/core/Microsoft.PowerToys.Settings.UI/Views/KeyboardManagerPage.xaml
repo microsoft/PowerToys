@@ -10,7 +10,8 @@
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AutomationProperties.LandmarkType="Main">
 
     <Page.Resources>
         <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
@@ -226,6 +227,10 @@
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
                           IsOn="{x:Bind Path=ViewModel.Enabled, Mode=TwoWay}"/>
 
+            <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys" Margin="{StaticResource XSmallTopMargin}">
+                <TextBlock x:Uid="KBM_KeysCannotBeRemapped" />
+            </HyperlinkButton>
+            
             <!--<TextBlock x:Uid="KeyboardManager_ConfigHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 

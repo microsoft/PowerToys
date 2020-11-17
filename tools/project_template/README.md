@@ -51,7 +51,7 @@ Here's an example of what the settings look like in the Settings screen:
 
 ### How to add your module's settings page
 
-The PowerToy can set its settings information and controls by overriding the [PowerToy's Interface `get_config` method](/src/modules/interface/README.md#get_config) and returning a serialized [`PowerToysSettings::Settings`](/src/common/settings_object.h) object that's been filled with the required informations and controls.
+The PowerToy can set its settings information and controls by overriding the [PowerToy's Interface `get_config` method](/src/modules/interface/README.md#get_config) and returning a serialized [`PowerToysSettings::Settings`](/src/common/settings_object.h) object that's been filled with the required information and controls.
 
 The PowerToy can receive the new values by overriding the [PowerToy's Interface `set_config` method](/src/modules/interface/README.md#set_config), parsing the serialized [`PowerToysSettings::PowerToyValues`](/src/common/settings_object.h) object and applying the new settings.
 

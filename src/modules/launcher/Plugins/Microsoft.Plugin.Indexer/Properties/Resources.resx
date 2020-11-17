@@ -136,7 +136,7 @@
     <value>Path</value>
   </data>
   <data name="Microsoft_plugin_indexer_drivedetectionwarning" xml:space="preserve">
-    <value>Warning: Not all drives are indexed.</value>
+    <value>Warning: Not all files are indexed.</value>
   </data>
   <data name="Microsoft_plugin_indexer_disable_warning_in_settings" xml:space="preserve">
     <value>Click to go to Windows Search settings to fix.</value>

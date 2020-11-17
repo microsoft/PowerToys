@@ -13,7 +13,7 @@ using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
-    public class Program
+    public static class Program
     {
         // Quantity of arguments
         private const int ArgumentsQty = 5;
@@ -37,9 +37,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 App app = new App();
                 app.InitializeComponent();
 
-                if (args.Length >= ArgumentsQty)
+                if (args != null && args.Length >= ArgumentsQty)
                 {
-                    int.TryParse(args[2], out int powerToysPID);
+                    _ = int.TryParse(args[2], out int powerToysPID);
                     PowerToysPID = powerToysPID;
 
                     if (args[4] == "true")

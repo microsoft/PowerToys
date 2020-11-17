@@ -567,6 +567,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var result = _cmderRunCommand.Result("cmder", string.Empty, mock.Object);
 
             // Assert
+            // Using Ordinal since this is used internally
             Assert.IsTrue(result.Title.Equals(_cmderRunCommand.Name, StringComparison.Ordinal));
             Assert.IsFalse(result.Title.Equals(_cmderRunCommand.Description, StringComparison.Ordinal));
         }

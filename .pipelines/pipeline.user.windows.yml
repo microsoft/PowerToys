@@ -41,7 +41,7 @@ restore:
 
 build:
   commands:
-      # Localize the files after the build procedure to avoid existing localized files from getting overwritten. To be moved before the Build PowerToys step once the lcl files have been checked in. Tracked at https://github.com/microsoft/PowerToys/issues/6046
+      # Localize the files before the Build PowerToys step to generate translated resx files from the lcl files
     - !!buildcommand
       name: 'Localize Power Toys'
       command: '.pipelines\build-localization.cmd'
@@ -100,7 +100,6 @@ build:
             - 'modules\launcher\PowerLauncher.UI.exe'
             - 'modules\launcher\PowerToysInterop.dll'
             - 'modules\launcher\Telemetry.dll'
-            - 'modules\launcher\Wox.Core.dll'
             - 'modules\launcher\Wox.dll'
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'

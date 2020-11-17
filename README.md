@@ -10,17 +10,15 @@ For a video overview of PowerToys, including install steps and a walkthrough of 
 
 ## Build status
 
-| Branch | Status x64 |
-|---|---|
-| Master | [![Build Status for Master](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=master) |
-| Stable | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) |
-| Installer | [![Build Status for Installer](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/powertoys/powertoys-Windows-Official-master-Test?branchName=master)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=61&branchName=master) | 
+| Architecture | Master | Stable | Installer |
+|--------------|--------|--------|-----------|
+| x64 | [![Build Status for Master](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=master) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status for Installer](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/powertoys/powertoys-Windows-Official-master-Test?branchName=master)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=61&branchName=master) | 
 
 ## Current PowerToy Utilities
 
 ### Color Picker
 
-[<img align="left" src="https://aka.ms/powerToysColorPickerImageSmall" />](https://aka.ms/PowerToysOverview_ColorPicker) [ColorPicker](https://aka.ms/PowerToysOverview_ColorPicker) is a simple and quick system-wide color picker with <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
+[<img align="left" src="https://aka.ms/powerToysColorPickerImageSmall" />](https://aka.ms/PowerToysOverview_ColorPicker) [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) is a simple and quick system-wide color picker with <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
 <br/>
 <br/>
 <br/>
@@ -36,7 +34,7 @@ For a video overview of PowerToys, including install steps and a walkthrough of 
 
 ### File Explorer Add-ons
 
-[<img align="left" src="https://aka.ms/powerToysPowerPreviewImageSmall" />](https://aka.ms/PowerToysOverview_FileExplorerAddOns) [File Explorer](https://aka.ms/PowerToysOverview_FileExplorerAddOns) add-ons will enable SVG icon rendering and Preview Pane additions for File Explorer. 
+[<img align="left" src="https://aka.ms/powerToysPowerPreviewImageSmall" />](https://aka.ms/PowerToysOverview_FileExplorerAddOns) [File Explorer add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) will enable SVG icon rendering and Preview Pane additions for File Explorer. 
 
 Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane". PowerToys will now enable two types of files to be previewed: Markdown (.md) & SVG (.svg)
 <br/>
@@ -90,16 +88,13 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 ## Installing and running Microsoft PowerToys
 
 #### Requirements
+
 - Windows 10 1803 (build 17134) or later.
 - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
-#### 0.18 users for updating via notifications
-
-- We adjusted how upgrading works in 0.20.  In 0.19 we accounted for this upcoming change but if you are going from 0.18 to 0.21, please directly use the installer file.
-
 ### Via GitHub with EXE [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.23.2-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.25.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -110,13 +105,15 @@ Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/release
 WinGet install powertoys
 ```
 
-### Experiential PowerToys utility with Video conference muting
+### Experimental PowerToys utility with Video conference muting
 
 Install the [pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from 0.23 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
+**Note:** We'll have 0.26 Experimental out in the first week of November 2020.
+
 ### Other install methods
 
-There are [community driven install methods](./doc/unofficalInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
+There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
 
 ### Known issues
 
@@ -132,86 +129,66 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### September 2020 Update
+### October 2020 Update
 
-Our goals for 0.23 release cycle was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. We have a full accessibility pass being done starting end of September to audit all of PowerToys. Our localization efforts now had data flowing both directions as well.
+Our goals for [0.25 release cycle][github-release-link] was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. Our first end to end localization pass has been done.  We know it isn't perfect but we are in 17 languages now. If you find an issue, please file a [localization bug][loc-bug].
 
-Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on.
+Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-#### Highlights from September
-
-- We shipped [v0.23][github-release-link]! (0.24 Experimental build coming shortly)
+#### Highlights from October 2020
 
 **General**
+- First pass on localization complete.  17 different languages.  We know there will be some rough areas, please [make us aware so we can correct them][loc-bug].
+- Logging added into the installer
+- Large sums of accessibility issues fixed.
+- Less notifications for installing
+- FxCop work is almost fully wrapped up
+- Wrapped up the [Video GIF capture spec](https://github.com/microsoft/PowerToys/wiki/Video-GIF-Capture).  This is laying out our plan for the future work.
 
-- Localization pipeline is flowing from our Github to the loc system and back.  0.25 should be localized now.
-- The EXE installer should be at parity now with the MSI.  Please go to the wiki for [installer args](https://github.com/microsoft/PowerToys/wiki/Installer-arguments-for-exe)
+**Color Picker**
+- Additional color style selections such as CYMK and HSL
 
 **FancyZones**
-
-- Fixed bug on not seeing a newly attached screen
-- Fixed spanning across monitors bug
-- Added in default layout for new users, a Priority Grid
-- Added keyboard support to grow / shrink to multiple zones
-- General bug fixes
-
-**PT Run**
-
-- Multiple crash bugs fixed.  Prioritized any users reported along with top hits from Watson reporting
-- Stopped PT Run from interfering with an install
-- Fixed folder bug if it had a # in it (Thanks @jjw24 for the PR!)
-- Fixed a screen flicker for 
-- General bug fixes
-- Allow Command Line args in PowerToys Run (Thanks @@royvou)
+- Multiple bugs fixed
+- Better zone drawing improvements
 
 **Keyboard manager**
+- Fixed terminal input map failure
+- Better app compat
+- Multiple bug fixes
+- Ability to directly disable keys/shortcuts
 
-- Multiple crash bugs fixed.  Prioritized any users reported along with top hits from Watson reporting
-- Fixed multiple accessibility issues.
-- General bug fixes
+**PowerToys Run**
+- expanded environment var searching such as %windr%
+- multiple crash bug fixes
+- Improvements on calculator plugin
+- Directly able to override theming
+- Windows will open to what shell you want
+- Better action key support
+  - `=` for direct calculator
+  - `?` for direct file searching
+  - `.` for direct for applications
+  - `//` for direct URL
+  - `<` for running processes
+  - `>` for shell processes
 
-**Preview Pane**
+**Dev docs**
+- Added multiple developer related docs.
 
-- Added in Frontmatter and better (but still basic) latex support. 
+I'd like to directly call out [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@davidegiacometti](https://github.com/davidegiacometti), [@royvou](https://github.com/royvou), [@gordonwatts](https://github.com/gordonwatts), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@niels9001](https://github.com/niels9001) for their continued community support and helping directly make PowerToys a better piece of software.
 
-**Settings**
+### What is being planned for 0.27 - November 2020
 
-- Fixed scaling issue for responsive design on Image Resizer
-- Fixed crash on empty color value.
-- Fixed crash for toggling FancyZones on/off
-- Fixed 0x00 NFTS crash for settings
-- Fixed multiple accessibility issues.
-- Layout adjustments (Thanks @niels9001)
-- General bug fixes
-
-**Dev related**
-
-- FxCop is being rolled out across all PowerToys. This should catch a lot of possible leaks.
-- Unified PT Run's log system
-- PT Run's calc plugin now has unit tests (Thanks @P-Storm)
-- Dev setup install script now supports VS preview (Thanks @TobiasSekan)
-- @CaelestisZ, @kameshkotwani, @adriancampos, @RahulDas782 for doc tweaks
-- Thanks @Aaron-Junker, @jay-o-way and @htcfreek for helping triage!
-- Thanks for everyone that filled an issue.  It really does help us prioritize
-
-#### Video / GIF capture functional spec for public review
-
-Deondre Davis created our [functional spec for creating a light weight, video / GIF recording tool](https://github.com/microsoft/PowerToys/pull/6900). We encourage everyone to review it and please leave comments in the pull request so we can adjust as needed. We'll be closing it for feedback on October 12th, 2020.
-
-This is for work [post-stabilization of current roadmap work](https://github.com/microsoft/PowerToys/wiki/Roadmap#post-stabilization) and is only the spec for what we are thinking about support.  Just want to set expectations here.
-
-### What is being planned for 0.25
-
-For [0.25](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F13), we are proactively working on:
+For [0.27](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F14), we are proactively working on:
 
 - Stability
-- Localization
-- Improve interactions with elevated windows and keeping most of the PT utilities non-elevated so we still have a 'shell' like experience
+- Accessibility
+- Video conference mute
 - OOBE work
 
 ### PowerToys roadmap
 
-Our [prioritized roadmap][roadmap] of features and utilites that the core team is focusing on.
+Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
 ## Developer Guidance
 
@@ -242,7 +219,8 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.24.0-Experimental
+[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.24.0
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
+[loc-bug]: https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=translation_issue.md&title=

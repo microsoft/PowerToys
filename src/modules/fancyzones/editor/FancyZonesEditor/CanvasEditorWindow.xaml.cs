@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
+using System.Windows.Input;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -15,30 +16,45 @@ namespace FancyZonesEditor
         public CanvasEditorWindow()
         {
             InitializeComponent();
-            _model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
+
+            KeyUp += CanvasEditorWindow_KeyUp;
+
+            _model = App.Overlay.CurrentDataContext as CanvasLayoutModel;
             _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            if (_offset + (int)(Settings.WorkArea.Width * 0.4) < (int)Settings.WorkArea.Width
-                && _offset + (int)(Settings.WorkArea.Height * 0.4) < (int)Settings.WorkArea.Height)
+            Rect workingArea = App.Overlay.WorkArea;
+            int offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
+
+            if (offset + (int)(workingArea.Width * 0.4) < (int)workingArea.Width
+                && offset + (int)(workingArea.Height * 0.4) < (int)workingArea.Height)
             {
-                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
+                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
             }
             else
             {
                 _offset = 100;
-                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
+                offset = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_offset);
+                _model.AddZone(new Int32Rect(offset, offset, (int)(workingArea.Width * 0.4), (int)(workingArea.Height * 0.4)));
             }
 
-            _offset += 50;
+            _offset += 50; // TODO: replace hardcoded numbers
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
         {
             base.OnCancel(sender, e);
             _stashedModel.RestoreTo(_model);
+        }
+
+        private void CanvasEditorWindow_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                OnCancel(sender, null);
+            }
         }
 
         private int _offset = 100;

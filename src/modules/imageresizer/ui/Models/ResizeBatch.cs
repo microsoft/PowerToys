@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageResizer.Properties;
@@ -14,6 +15,8 @@ namespace ImageResizer.Models
 {
     public class ResizeBatch
     {
+        private readonly IFileSystem _fileSystem = new FileSystem();
+
         public string DestinationDirectory { get; set; }
 
         public ICollection<string> Files { get; } = new List<string>();
@@ -71,7 +74,7 @@ namespace ImageResizer.Models
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        errors.Add(new ResizeError { File = Path.GetFileName(file), Error = ex.Message });
+                        errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
                     }
 
                     Interlocked.Increment(ref completed);

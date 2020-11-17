@@ -6,13 +6,15 @@ namespace FancyZonesDataTypes
 {
     enum class ZoneSetLayoutType;
 }
-
 /**
  * Class representing single zone layout. ZoneSet is responsible for actual calculation of rectangle coordinates
  * (whether is grid or canvas layout) and moving windows through them.
  */
 interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : public IUnknown
 {
+    // Mapping zone id to zone
+    using ZonesMap = std::map<size_t, winrt::com_ptr<IZone>>;
+
     /**
      * @returns Unique identifier of zone layout.
      */
@@ -45,7 +47,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
     /**
      * @returns Array of zone objects (defining coordinates of the zone) inside this zone layout.
      */
-    IFACEMETHOD_(std::vector<winrt::com_ptr<IZone>>, GetZones)() const = 0;
+    IFACEMETHOD_(ZonesMap, GetZones) () const = 0;
     /**
      * Assign window to the zone based on zone index inside zone layout.
      *

@@ -4,7 +4,6 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
@@ -12,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using NuGet.Frameworks;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace ViewModelTests
 {
@@ -40,16 +39,20 @@ namespace ViewModelTests
         [DataRow("v0.22.0")]
         public void OriginalFilesModificationTest(string version)
         {
-            var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
-            var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object);
+            var settingPathMock = new Mock<ISettingsPath>();
+            var fileMock = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
+
+            var mockGeneralSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
+
 
             // Initialise View Model with test Config files
             // Arrange
-            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
+            Func<string, int> SendMockIPCConfigMSG = msg => 0;
+            Func<string, int> SendRestartAdminIPCMessage = msg => 0;
+            Func<string, int> SendCheckForUpdatesIPCMessage = msg => 0;
             var viewModel = new GeneralViewModel(
                 settingsRepository: generalSettingsRepository,
                 runAsAdminText: "GeneralSettings_RunningAsAdminText",
@@ -62,7 +65,7 @@ namespace ViewModelTests
                 ipcMSGCheckForUpdatesCallBackFunc: SendCheckForUpdatesIPCMessage,
                 configFileSubfolder: string.Empty);
 
-            // Verifiy that the old settings persisted
+            // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.AutoDownloadUpdates, viewModel.AutoDownloadUpdates);
             Assert.AreEqual(originalGeneralSettings.Packaged, viewModel.Packaged);
             Assert.AreEqual(originalGeneralSettings.PowertoysVersion, viewModel.PowerToysVersion);
@@ -71,7 +74,7 @@ namespace ViewModelTests
 
             //Verify that the stub file was used
             var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
+            BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(fileMock, expectedCallCount);
         }
 
         [TestMethod]
@@ -82,7 +85,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -119,7 +122,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -151,7 +154,7 @@ namespace ViewModelTests
 
             // Arrange
             GeneralViewModel viewModel = new GeneralViewModel(
-                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -184,7 +187,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             viewModel = new GeneralViewModel(
-                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -215,7 +218,7 @@ namespace ViewModelTests
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
             GeneralViewModel viewModel = new GeneralViewModel(
-                SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,

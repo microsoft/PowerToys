@@ -80,7 +80,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Appium.Net, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Appium.WebDriver.4.2.0\lib\net45\Appium.Net.dll</HintPath>
+      <HintPath>..\..\..\packages\Appium.WebDriver.4.2.1\lib\net45\Appium.Net.dll</HintPath>
     </Reference>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Castle.Core.4.4.1\lib\net45\Castle.Core.dll</HintPath>
@@ -109,6 +109,9 @@
       <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Core\v4.0_4.0.0.0__b77a5c561934e089\System.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Abstractions, Version=12.0.0.0, Culture=neutral, PublicKeyToken=96bf224d23c43e59, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.IO.Abstractions.12.2.5\lib\net461\System.IO.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="WebDriver, Version=3.141.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Selenium.WebDriver.3.141.0\lib\net45\WebDriver.dll</HintPath>

@@ -1,5 +1,5 @@
 # URI Plugin
-The URI Plugin, as the name suggests is used to dierctly run the URI that has been entered by the user as a query. This is done by parsing the entry and validating the URI, followed by executing it.
+The URI Plugin, as the name suggests is used to directly run the URI that has been entered by the user as a query. This is done by parsing the entry and validating the URI, followed by executing it.
 
 ![Image of URI plugin](/doc/images/launcher/plugins/uri.png)
 

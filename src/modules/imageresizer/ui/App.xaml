@@ -3,33 +3,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:m="clr-namespace:ImageResizer.Models"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-             xmlns:v="clr-namespace:ImageResizer.Views">
+             xmlns:v="clr-namespace:ImageResizer.Views"
+             xmlns:ui="http://schemas.modernwpf.com/2019">
 
     <Application.Resources>
-        <ObjectDataProvider x:Key="ResizeFitValues"
-                            MethodName="GetValues"
-                            ObjectType="sys:Enum">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type Type="{x:Type m:ResizeFit}"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-        <ObjectDataProvider x:Key="ResizeUnitValues"
-                            MethodName="GetValues"
-                            ObjectType="sys:Enum">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type Type="{x:Type m:ResizeUnit}"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-        <v:EnumValueConverter x:Key="EnumValueConverter"/>
-        <v:AutoDoubleConverter x:Key="AutoDoubleConverter"/>
-        <v:BoolValueConverter x:Key="BoolValueConverter"/>
-        <Style x:Key="MainInstructionTextBlockStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12pt"/>
-            <Setter Property="Foreground" Value="#039"/>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-    </Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemeResources />
+                <ui:XamlControlsResources />
+            </ResourceDictionary.MergedDictionaries>
 
+            <ObjectDataProvider x:Key="ResizeFitValues"
+                            MethodName="GetValues"
+                            ObjectType="sys:Enum">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type Type="{x:Type m:ResizeFit}"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+            
+            <ObjectDataProvider x:Key="ResizeUnitValues"
+                            MethodName="GetValues"
+                            ObjectType="sys:Enum">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type Type="{x:Type m:ResizeUnit}"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+            
+            <v:EnumValueConverter x:Key="EnumValueConverter"/>
+            <v:AutoDoubleConverter x:Key="AutoDoubleConverter"/>
+            <v:BoolValueConverter x:Key="BoolValueConverter"/>
+            <v:VisibilityBoolConverter x:Key="VisibilityBoolConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

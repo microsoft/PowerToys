@@ -67,6 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             _powerRenameRestoreFlagsOnLaunch = Settings.Properties.PersistState.Value;
             _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
             _autoComplete = Settings.Properties.MRUEnabled.Value;
+            _powerRenameUseBoostLib = Settings.Properties.UseBoostLib.Value;
             _powerRenameEnabled = GeneralSettingsConfig.Enabled.PowerRename;
         }
 
@@ -76,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _powerRenameRestoreFlagsOnLaunch;
         private int _powerRenameMaxDispListNumValue;
         private bool _autoComplete;
+        private bool _powerRenameUseBoostLib;
 
         public bool IsEnabled
         {
@@ -194,6 +196,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                 {
                     _powerRenameMaxDispListNumValue = value;
                     Settings.Properties.MaxMRUSize.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool UseBoostLib
+        {
+            get
+            {
+                return _powerRenameUseBoostLib;
+            }
+
+            set
+            {
+                if (value != _powerRenameUseBoostLib)
+                {
+                    _powerRenameUseBoostLib = value;
+                    Settings.Properties.UseBoostLib.Value = value;
                     RaisePropertyChanged();
                 }
             }

@@ -21,7 +21,7 @@ transfer received json message from the [Settings window](/doc/devdocs/settings.
 Contains code for starting the PowerToys settings window and communicating with it. Settings window is a separate process, so we're using [Windows pipes](https://docs.microsoft.com/en-us/windows/win32/ipc/pipes) as a transport for json messages.
 
 #### [`general_settings.cpp`](/src/runner/general_settings.cpp)
-Contains code for loading, saving and applying the general setings.
+Contains code for loading, saving and applying the general settings.
 
 #### [`auto_start_helper.cpp`](/src/runner/auto_start_helper.cpp)
 Contains helper code for registering and unregistering PowerToys to run when the user logs in.

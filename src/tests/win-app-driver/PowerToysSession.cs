@@ -1,6 +1,5 @@
 using System;
-using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -13,6 +12,11 @@ namespace PowerToysTests
 {
     public class PowerToysSession
     {
+        private static readonly IFileSystem FileSystem = new FileSystem();
+        private static readonly IPath Path = FileSystem.Path;
+        private static readonly IFile File = FileSystem.File;
+        private static readonly IDirectory Directory = FileSystem.Directory;
+
         protected const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
         protected const string AppPath = "C:\\Program Files\\PowerToys\\PowerToys.exe";
 
