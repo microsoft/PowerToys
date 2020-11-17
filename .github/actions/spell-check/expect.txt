@@ -656,6 +656,7 @@ Elems
 ELogo
 elseif
 Emoji
+emptyrecyclebin
 ENABLEDPOPUP
 endforeach
 endif
@@ -692,6 +693,7 @@ eventdatemissed
 eventlog
 everytime
 evt
+EWXf
 examplehandler
 examplepowertoy
 EXCLUDEFILES
@@ -767,6 +769,7 @@ FOFX
 FOLDERID
 folderpath
 fonttbl
+FORCEIFHUNG
 FORCEOFFLINE
 foreach
 formatetc
@@ -1677,6 +1680,7 @@ Portugu
 posix
 powerappscds
 powerlauncher
+POWEROFF
 powerpreview
 powerrename
 POWERRENAMETEST
@@ -1685,6 +1689,7 @@ powertoy
 POWERTOYNAME
 powertoysinterop
 powertoyssetup
+Powrprof
 ppenum
 ppidl
 pprm
