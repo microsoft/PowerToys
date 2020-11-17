@@ -5,7 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <boost/regex.hpp>
-
+#include <helpers.cpp>
 
 using namespace std;
 using std::regex_error;
@@ -189,7 +189,7 @@ CPowerRenameRegEx::~CPowerRenameRegEx()
     CoTaskMemFree(m_replaceTerm);
 }
 
-HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
+HRESULT CPowerRenameRegEx::Replace(_In_ SYSTEMTIME LocalTime, _In_ PCWSTR source, _Outptr_ PWSTR* result)
 {
     *result = nullptr;
 
@@ -201,9 +201,17 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
         try
         {
             // TODO: creating the regex could be costly.  May want to cache this.
+            bool isFileAttributesUsedValue = isFileAttributesUsed(m_replaceTerm ? m_replaceTerm : L"");
+            wchar_t newReplaceTerm[MAX_PATH] = { 0 };
+            if (isFileAttributesUsedValue)
+            {
+                if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, LocalTime)))
+                    isFileAttributesUsedValue = false;
+            }
+
             std::wstring sourceToUse(source);
             std::wstring searchTerm(m_searchTerm);
-            std::wstring replaceTerm(m_replaceTerm ? wstring(m_replaceTerm) : wstring(L""));
+            std::wstring replaceTerm(m_replaceTerm ? (isFileAttributesUsedValue ? wstring(newReplaceTerm) : wstring(m_replaceTerm)) : wstring(L""));
 
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$[0]"), L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$([1-9])"), L"$1$0$4");

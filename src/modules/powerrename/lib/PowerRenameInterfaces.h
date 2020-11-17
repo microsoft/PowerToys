@@ -44,7 +44,7 @@ public:
     IFACEMETHOD(PutReplaceTerm)(_In_ PCWSTR replaceTerm) = 0;
     IFACEMETHOD(GetFlags)(_Out_ DWORD* flags) = 0;
     IFACEMETHOD(PutFlags)(_In_ DWORD flags) = 0;
-    IFACEMETHOD(Replace)(_In_ PCWSTR source, _Outptr_ PWSTR* result) = 0;
+    IFACEMETHOD(Replace)(_In_ SYSTEMTIME LocalTime, _In_ PCWSTR source, _Outptr_ PWSTR* result) = 0;
 };
 
 interface __declspec(uuid("C7F59201-4DE1-4855-A3A2-26FC3279C8A5")) IPowerRenameItem : public IUnknown

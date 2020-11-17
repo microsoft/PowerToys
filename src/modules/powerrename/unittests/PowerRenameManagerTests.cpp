@@ -65,6 +65,7 @@ namespace PowerRenameManagerTests
                                                      renamePairs[i].originalName.c_str(),
                                                      renamePairs[i].depth,
                                                      !renamePairs[i].isFile,
+                                                     LocalTime,
                                                      &item);
 
                 int itemId = 0;
@@ -84,22 +85,28 @@ namespace PowerRenameManagerTests
             Assert::IsTrue(mgr->GetRenameRegEx(&renRegEx) == S_OK);
             renRegEx->PutFlags(flags);
             renRegEx->PutSearchTerm(searchTerm.c_str());
-            if (isFileAttributesUsed(replaceTerm.c_str()) && SUCCEEDED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTerm.c_str(), LocalTime)))
-            {
-                renRegEx->PutReplaceTerm(newReplaceTerm);
-            }
-            else
-            {
-                renRegEx->PutReplaceTerm(replaceTerm.c_str());
-            }
-            Sleep(1000);
+            renRegEx->PutReplaceTerm(replaceTerm.c_str());
+
+            //Sleep(200);
 
             // Perform the rename
-            Assert::IsTrue(mgr->Rename(0) == S_OK);
+            bool replaceSuccess = false;
+            for (int step = 0; step < 20; step++)
+            {
+                replaceSuccess = mgr->Rename(0) == S_OK;
+                if (replaceSuccess)
+                {
+                    break;
+                }
+                Sleep(20);
+            }
 
-            Sleep(1000);
+            Assert::IsTrue(replaceSuccess);
+
+            //Sleep(200);
 
             // Verify the rename occurred
+
             for (int i = 0; i < numPairs; i++)
             {
                 Assert::IsTrue(testFileHelper.PathExists(renamePairs[i].originalName) == !renamePairs[i].shouldRename);
@@ -128,7 +135,7 @@ namespace PowerRenameManagerTests
             CComPtr<IPowerRenameManager> mgr;
             Assert::IsTrue(CPowerRenameManager::s_CreateInstance(&mgr) == S_OK);
             CComPtr<IPowerRenameItem> item;
-            CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, &item);
+            CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, SYSTEMTIME{0}, &item);
             mgr->AddItem(item);
             Assert::IsTrue(mgr->Shutdown() == S_OK);
         }
@@ -143,7 +150,7 @@ namespace PowerRenameManagerTests
             DWORD cookie = 0;
             Assert::IsTrue(mgr->Advise(mgrEvents, &cookie) == S_OK);
             CComPtr<IPowerRenameItem> item;
-            CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, &item);
+            CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, SYSTEMTIME{0}, &item);
             int itemId = 0;
             Assert::IsTrue(item->GetId(&itemId) == S_OK);
             mgr->AddItem(item);
@@ -288,57 +295,6 @@ namespace PowerRenameManagerTests
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Lowercase | ExtensionOnly);
-        }
-
-        TEST_METHOD (VerifyFileAttributesNoPadding)
-        {
-            rename_pairs renamePairs[] = {
-                { L"foo", L"bar20-7-22-15-6-42-4", true, true, 0 },
-            };
-
-            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$YY-$M-$D-$h-$m-$s-$f", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
-        }
-
-        TEST_METHOD (VerifyFileAttributesPadding)
-        {
-            rename_pairs renamePairs[] = {
-                { L"foo", L"bar2020-07-22-15-06-42-453", true, true, 0 },
-            };
-
-            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$YYYY-$MM-$DD-$hh-$mm-$ss-$fff", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
-        }
-
-        TEST_METHOD (VerifyFileAttributesMonthandDayNames)
-        {
-            std::locale::global(std::locale(""));
-            SYSTEMTIME LocalTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };
-            wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
-            wchar_t result[MAX_PATH] = L"bar";
-            wchar_t formattedDate[MAX_PATH];
-            if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
-                StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
-
-            GetDateFormatEx(localeName, NULL, &LocalTime, L"MMM", formattedDate, MAX_PATH, NULL);
-            formattedDate[0] = towupper(formattedDate[0]);
-            StringCchPrintf(result, MAX_PATH, TEXT("%s%s"), result, formattedDate);
-            
-            GetDateFormatEx(localeName, NULL, &LocalTime, L"MMMM", formattedDate, MAX_PATH, NULL);
-            formattedDate[0] = towupper(formattedDate[0]);
-            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
-
-            GetDateFormatEx(localeName, NULL, &LocalTime, L"ddd", formattedDate, MAX_PATH, NULL);
-            formattedDate[0] = towupper(formattedDate[0]);
-            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
-
-            GetDateFormatEx(localeName, NULL, &LocalTime, L"dddd", formattedDate, MAX_PATH, NULL);
-            formattedDate[0] = towupper(formattedDate[0]);
-            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
-
-            rename_pairs renamePairs[] = {
-                { L"foo", result, true, true, 0 },
-            };
-
-            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$MMM-$MMMM-$DDD-$DDDD", SYSTEMTIME{ 2020, 1, 3, 1, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
     };
 }

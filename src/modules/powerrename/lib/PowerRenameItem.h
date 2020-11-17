@@ -59,7 +59,7 @@ protected:
     PWSTR       m_path = nullptr;
     PWSTR       m_originalName = nullptr;
     PWSTR       m_newName = nullptr;
-    SYSTEMTIME  m_date;
+    SYSTEMTIME  m_date = {0};
     CSRWLock    m_lock;
     long        m_refCount = 0;
 };
