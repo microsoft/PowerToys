@@ -366,6 +366,7 @@
   </data>
   <data name="FancyZones_AppLastZoneMoveWindows.Content" xml:space="preserve">
     <value>Move newly created windows to their last known zone</value>
+    <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_OpenWindowOnActiveMonitor.Content" xml:space="preserve">
     <value>Move newly created windows to the current active monitor (EXPERIMENTAL)</value>
@@ -740,6 +741,7 @@
   </data>
   <data name="About_PowerToys.Text" xml:space="preserve">
     <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.</value>
+    <comment>Windows refers to the OS</comment>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Allow zones to span across monitors (all monitors must have the same DPI scaling)</value>
@@ -816,10 +818,12 @@
     <value>Color format to copy to clipboard</value>
   </data>
   <data name="ColorPickerFirst.Text" xml:space="preserve">
-    <value>Open color picker with editor mode enabled</value>
+    <value>Open Color Picker with editor mode enabled</value>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="ColorPickerFirst_Description.Text" xml:space="preserve">
-    <value>Opens color picker, copy formatted value to clipboard, then transition into the editor.</value>
+    <value>Opens Color Picker, copy formatted value to clipboard, then transition into the editor.</value>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="EditorFirst.Text" xml:space="preserve">
     <value>Open editor</value>
@@ -836,6 +840,7 @@
   </data>
   <data name="FancyZones_Editor_GroupSettings.Text" xml:space="preserve">
     <value>Editor</value>
+    <comment>refers to the FancyZone editor</comment>
   </data>
   <data name="FancyZones_WindowBehavior_GroupSettings.Text" xml:space="preserve">
     <value>Window behavior</value>
@@ -851,7 +856,8 @@
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ColorPickerOnly.Text" xml:space="preserve">
-    <value>Open color picker only</value>
+    <value>Open Color Picker only</value>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="ColorPickerOnly_Description.Text" xml:space="preserve">
     <value>Pick a color from the screen and copy formatted value to clipboard</value>
@@ -860,6 +866,6 @@
     <value>Launch directly into the editor mode.</value>
   </data>
   <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
-    <value>Individual color formats can be shown or hidden in the list below. Change the order of appearance by dragging.</value>
+    <value>Additional color formats (Change the order by dragging)</value>
   </data>
 </root>

@@ -150,7 +150,7 @@
     <comment>Tool tip that appears when hovering over a slider that represents the color hue (from HSV)</comment>
   </data>
   <data name="No_colors_yet" xml:space="preserve">
-    <value>Press the color pick button to capture a color from your screen.</value>
+    <value>Press the Color Picker icon to capture a color from your screen.</value>
     <comment>Message that shows when the user launches the window for the first time or when no colors have been selected</comment>
   </data>
   <data name="OK" xml:space="preserve">
