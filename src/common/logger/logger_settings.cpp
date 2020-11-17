@@ -55,7 +55,16 @@ JsonObject to_json(LogSettings settings)
 LogSettings to_settings(JsonObject jobject)
 {
     LogSettings result;
-    result.logLevel = jobject.GetNamedString(LogSettings::logLevelOption);
+    try
+    {
+        result.logLevel = jobject.GetNamedString(LogSettings::logLevelOption);
+    }
+    catch (...)
+    {
+        std::cerr << "Can not read log level from config file" << std::endl;
+        result.logLevel = LogSettings::defaultLogLevel;
+    }
+    
     return result;
 }
 
