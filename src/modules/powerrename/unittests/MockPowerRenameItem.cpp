@@ -31,4 +31,5 @@ void CMockPowerRenameItem::Init(_In_opt_ PCWSTR path, _In_opt_ PCWSTR originalNa
     m_depth = depth;
     m_isFolder = isFolder;
     m_date = LocalTime;
+    m_isDateParsed = true;
 }

@@ -59,9 +59,7 @@ namespace PowerRenameManagerTests
             for (int i = 0; i < numPairs; i++)
             {
                 CComPtr<IPowerRenameItem> item;
-                CMockPowerRenameItem::CreateInstance(testFileHelper.GetFullPath(
-                                                                       renamePairs[i].originalName)
-                                                         .c_str(),
+                CMockPowerRenameItem::CreateInstance(testFileHelper.GetFullPath(renamePairs[i].originalName).c_str(),
                                                      renamePairs[i].originalName.c_str(),
                                                      renamePairs[i].depth,
                                                      !renamePairs[i].isFile,
@@ -87,8 +85,6 @@ namespace PowerRenameManagerTests
             renRegEx->PutSearchTerm(searchTerm.c_str());
             renRegEx->PutReplaceTerm(replaceTerm.c_str());
 
-            //Sleep(200);
-
             // Perform the rename
             bool replaceSuccess = false;
             for (int step = 0; step < 20; step++)
@@ -98,15 +94,12 @@ namespace PowerRenameManagerTests
                 {
                     break;
                 }
-                Sleep(20);
+                Sleep(10);
             }
 
             Assert::IsTrue(replaceSuccess);
 
-            //Sleep(200);
-
             // Verify the rename occurred
-
             for (int i = 0; i < numPairs; i++)
             {
                 Assert::IsTrue(testFileHelper.PathExists(renamePairs[i].originalName) == !renamePairs[i].shouldRename);
@@ -295,6 +288,58 @@ namespace PowerRenameManagerTests
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Lowercase | ExtensionOnly);
+        }
+
+
+        TEST_METHOD (VerifyFileAttributesNoPadding)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo", L"bar20-7-22-15-6-42-4", true, true, 0 },
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$YY-$M-$D-$h-$m-$s-$f", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
+        }
+
+        TEST_METHOD (VerifyFileAttributesPadding)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo", L"bar2020-07-22-15-06-42-453", true, true, 0 },
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$YYYY-$MM-$DD-$hh-$mm-$ss-$fff", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
+        }
+
+        TEST_METHOD (VerifyFileAttributesMonthandDayNames)
+        {
+            std::locale::global(std::locale(""));
+            SYSTEMTIME LocalTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };
+            wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+            wchar_t result[MAX_PATH] = L"bar";
+            wchar_t formattedDate[MAX_PATH];
+            if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+                StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
+
+            GetDateFormatEx(localeName, NULL, &LocalTime, L"MMM", formattedDate, MAX_PATH, NULL);
+            formattedDate[0] = towupper(formattedDate[0]);
+            StringCchPrintf(result, MAX_PATH, TEXT("%s%s"), result, formattedDate);
+
+            GetDateFormatEx(localeName, NULL, &LocalTime, L"MMMM", formattedDate, MAX_PATH, NULL);
+            formattedDate[0] = towupper(formattedDate[0]);
+            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+
+            GetDateFormatEx(localeName, NULL, &LocalTime, L"ddd", formattedDate, MAX_PATH, NULL);
+            formattedDate[0] = towupper(formattedDate[0]);
+            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+
+            GetDateFormatEx(localeName, NULL, &LocalTime, L"dddd", formattedDate, MAX_PATH, NULL);
+            formattedDate[0] = towupper(formattedDate[0]);
+            StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
+
+            rename_pairs renamePairs[] = {
+                { L"foo", result, true, true, 0 },
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$MMM-$MMMM-$DDD-$DDDD", SYSTEMTIME{ 2020, 1, 3, 1, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
     };
 }
