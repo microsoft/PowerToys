@@ -226,7 +226,7 @@
     <value>Change cursor when picking a color</value>
   </data>
   <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
-    <value>Open Color Picker</value>
+    <value>Activate Color Picker</value>
     <comment>do not loc product name</comment>
   </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
@@ -815,21 +815,21 @@
     <comment>Windows refers to the Operating system</comment>
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
-    <value>Color format to copy to clipboard</value>
+    <value>Color format for clipboard</value>
   </data>
   <data name="ColorPickerFirst.Text" xml:space="preserve">
     <value>Color Picker with editor mode enabled</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="ColorPickerFirst_Description.Text" xml:space="preserve">
-    <value>Opens Color Picker, copy formatted value to clipboard, then transition into the editor</value>
+    <value>Pick a color from the screen, copy formatted value to clipboard, then to the editor</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="EditorFirst.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
   <data name="ColorPicker_ActivationAction.Text" xml:space="preserve">
-    <value>Shortcut behavior</value>
+    <value>Activation behavior</value>
   </data>
   <data name="ColorFormats.Text" xml:space="preserve">
     <value>Color formats</value>
@@ -866,6 +866,6 @@
     <value>Open directly into the editor mode</value>
   </data>
   <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
-    <value>Additional color formats (Change the order by dragging)</value>
+    <value>Editor color formats (Change the order by dragging)</value>
   </data>
 </root>
