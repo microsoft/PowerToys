@@ -6,6 +6,8 @@
 #include "logger_settings.h"
 #include <map>
 #include <spdlog/sinks/daily_file_sink.h>
+#include <spdlog\sinks\stdout_color_sinks-inl.h>
+#include <iostream>
 
 using namespace std;
 using namespace spdlog;
@@ -38,9 +40,18 @@ Logger::Logger()
 
 Logger::Logger(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath)
 {
-    auto sink = make_shared<sinks::daily_file_sink_mt>(logFilePath, 0, 0, false, 5);
     auto logLevel = getLogLevel(logSettingsPath);
-    this->logger = make_shared<spdlog::logger>(loggerName, sink);
+    try
+    {
+        auto sink = make_shared<sinks::daily_file_sink_mt>(logFilePath, 0, 0, false, 5);
+        this->logger = make_shared<spdlog::logger>(loggerName, sink);
+    }
+    catch (...)
+    {
+        cerr << "Can not create file logger. Create stdout logger instead" << endl;
+        this->logger = spdlog::stdout_color_mt("some_unique_name");
+    }
+
     this->logger->set_level(logLevel);
     this->logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
     spdlog::register_logger(this->logger);

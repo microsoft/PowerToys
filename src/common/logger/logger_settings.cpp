@@ -3,6 +3,7 @@
 #include <fstream>
 #include <Windows.h>
 #include <winrt/Windows.Data.Json.h>
+#include <iostream>
 
 using namespace winrt::Windows::Data::Json;
 
@@ -33,7 +34,14 @@ std::optional<JsonObject> from_file(std::wstring_view file_name)
 void to_file(std::wstring_view file_name, const JsonObject& obj)
 {
     std::wstring obj_str{ obj.Stringify().c_str() };
-    std::ofstream{ file_name.data(), std::ios::binary } << winrt::to_string(obj_str);
+    try
+    {
+        std::ofstream{ file_name.data(), std::ios::binary } << winrt::to_string(obj_str);
+    }
+    catch (...)
+    {
+        std::cerr << "Can not create log config file" << std::endl;
+    }
 }
 
 JsonObject to_json(LogSettings settings)
