@@ -64,8 +64,8 @@
       <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogRepairCancel">Installed AND NOT (_REMOVE_ALL="Yes")</Publish>
       <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogRepairFail">Installed AND NOT (_REMOVE_ALL="Yes")</Publish>
     </UI>
-    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Bitmaps\banner.bmp" />
-    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Bitmaps\dialog.bmp" />
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Images\banner.png" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Images\dialog.png" />
     <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
@@ -485,12 +485,16 @@
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe">
           <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
         </File>
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />	
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Newtonsoft.Json.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.deps.json" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.runtimeconfig.json" />
+        <File Id="Module_ImageResizer_ControlzEX" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ControlzEx.dll" />
+        <File Id="Module_ImageResizer_ModernWpf_Controls" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ModernWpf.Controls.dll" />
+        <File Id="Module_ImageResizer_ModernWpf" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ModernWpf.dll" />
+        <File Id="Module_ImageResizer_System_Text_Json" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\System.Text.Json.dll" />
         <File Id="Module_ImageResizer_Microsoft_Xaml_Behaviors" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.Xaml.Behaviors.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />		  
         <File Id="ImageResizer_interop" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToysInterop.dll" />
         <File Id="ImageResizer_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\System.IO.Abstractions.dll" />
 

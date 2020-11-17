@@ -25,44 +25,6 @@ namespace NonLocalizable
 
 using namespace FancyZonesUtils;
 
-namespace ZoneWindowUtils
-{
-    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& deviceId, const std::wstring& virtualDesktopId)
-    {
-        MONITORINFOEXW mi;
-        mi.cbSize = sizeof(mi);
-        if (!virtualDesktopId.empty() && GetMonitorInfo(monitor, &mi))
-        {
-            Rect const monitorRect(mi.rcMonitor);
-            // Unique identifier format: <parsed-device-id>_<width>_<height>_<virtual-desktop-id>
-            return ParseDeviceId(deviceId) +
-                   L'_' +
-                   std::to_wstring(monitorRect.width()) +
-                   L'_' +
-                   std::to_wstring(monitorRect.height()) +
-                   L'_' +
-                   virtualDesktopId;
-        }
-        return {};
-    }
-
-    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId)
-    {
-        std::wstring result{ ZonedWindowProperties::MultiMonitorDeviceID };
-
-        RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
-
-        result += L'_';
-        result += std::to_wstring(combinedResolution.right - combinedResolution.left);
-        result += L'_';
-        result += std::to_wstring(combinedResolution.bottom - combinedResolution.top);
-        result += L'_';
-        result += virtualDesktopId;
-
-        return result;
-    }
-}
-
 struct ZoneWindow : public winrt::implements<ZoneWindow, IZoneWindow>
 {
 public:

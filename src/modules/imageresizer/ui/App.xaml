@@ -3,74 +3,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:m="clr-namespace:ImageResizer.Models"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-             xmlns:v="clr-namespace:ImageResizer.Views">
+             xmlns:v="clr-namespace:ImageResizer.Views"
+             xmlns:ui="http://schemas.modernwpf.com/2019">
 
     <Application.Resources>
-        <ObjectDataProvider x:Key="ResizeFitValues"
-                            MethodName="GetValues"
-                            ObjectType="sys:Enum">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type Type="{x:Type m:ResizeFit}"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-        <ObjectDataProvider x:Key="ResizeUnitValues"
-                            MethodName="GetValues"
-                            ObjectType="sys:Enum">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type Type="{x:Type m:ResizeUnit}"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-        <v:EnumValueConverter x:Key="EnumValueConverter"/>
-        <v:AutoDoubleConverter x:Key="AutoDoubleConverter"/>
-        <v:BoolValueConverter x:Key="BoolValueConverter"/>
-        <v:VisibilityBoolConverter x:Key="VisibilityBoolConverter"/>
-        <Style x:Key="MainInstructionTextBlockStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12pt"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HotTrackColor}}"/>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-        <Style x:Key="AccessibleComboBoxStyle" TargetType="ComboBoxItem">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                        <Border Name="SelectedItemBorder"
-                                Padding="2"
-                                SnapsToDevicePixels="true">
-                            <ContentPresenter />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="true">
-                                <Setter TargetName="SelectedItemBorder"
-                                        Property="Background"
-                                        Value="#FF91b9d8"/>
-                                <Setter Property="Foreground"
-                                        Value="Black" />
-                            </Trigger>
-                            <Trigger Property="IsHighlighted" Value="true">
-                                <Setter TargetName="SelectedItemBorder"
-                                        Property="Background"
-                                        Value="#FFdadada" />
-                                <Setter Property="Foreground"
-                                        Value="Black" />
-                            </Trigger>
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsSelected" Value="true" />
-                                    <Condition Property="IsHighlighted" Value="true" />
-                                </MultiTrigger.Conditions>
-                                <Setter TargetName="SelectedItemBorder"
-                                        Property="Background"
-                                        Value="#FF619ccb"/>
-                                <Setter Property="Foreground"
-                                        Value="Black" />
-                            </MultiTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemeResources />
+                <ui:XamlControlsResources />
+            </ResourceDictionary.MergedDictionaries>
 
+            <ObjectDataProvider x:Key="ResizeFitValues"
+                            MethodName="GetValues"
+                            ObjectType="sys:Enum">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type Type="{x:Type m:ResizeFit}"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+            
+            <ObjectDataProvider x:Key="ResizeUnitValues"
+                            MethodName="GetValues"
+                            ObjectType="sys:Enum">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type Type="{x:Type m:ResizeUnit}"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+            
+            <v:EnumValueConverter x:Key="EnumValueConverter"/>
+            <v:AutoDoubleConverter x:Key="AutoDoubleConverter"/>
+            <v:BoolValueConverter x:Key="BoolValueConverter"/>
+            <v:VisibilityBoolConverter x:Key="VisibilityBoolConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

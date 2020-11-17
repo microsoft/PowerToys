@@ -478,47 +478,41 @@ void FancyZonesData::SetActiveZoneSet(const std::wstring& deviceId, const FancyZ
     }
 }
 
-bool FancyZonesData::SerializeDeviceInfoToTmpFile(const std::wstring& uniqueId) const
+void FancyZonesData::SerializeDeviceInfoToTmpFile(const GUID& currentVirtualDesktop) const
 {
-    const auto deviceInfo = FindDeviceInfo(uniqueId);
-    if (!deviceInfo.has_value())
-    {
-        return false;
-    }
-
-    JSONHelpers::DeviceInfoJSON deviceInfoJson{ uniqueId, *deviceInfo };
-    JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoJson, activeZoneSetTmpFileName);
-
-    return true;
+    JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoMap, currentVirtualDesktop, activeZoneSetTmpFileName);
 }
 
 void FancyZonesData::ParseDataFromTmpFiles()
 {
     ParseDeviceInfoFromTmpFile(activeZoneSetTmpFileName);
     ParseDeletedCustomZoneSetsFromTmpFile(deletedCustomZoneSetsTmpFileName);
-    ParseCustomZoneSetFromTmpFile(appliedZoneSetTmpFileName);
+    ParseCustomZoneSetsFromTmpFile(appliedZoneSetTmpFileName);
     SaveFancyZonesData();
 }
 
 void FancyZonesData::ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath)
 {
     std::scoped_lock lock{ dataLock };
-    const auto& deviceInfo = JSONHelpers::ParseDeviceInfoFromTmpFile(tmpFilePath);
+    const auto& appliedZonesets = JSONHelpers::ParseDeviceInfoFromTmpFile(tmpFilePath);
 
-    if (deviceInfo)
+    if (appliedZonesets)
     {
-        deviceInfoMap[deviceInfo->deviceId] = std::move(deviceInfo->data);
+        for (const auto& zoneset : *appliedZonesets)
+        {
+            deviceInfoMap[zoneset.first] = std::move(zoneset.second);
+        }
     }
 }
 
-void FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath)
+void FancyZonesData::ParseCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
 {
     std::scoped_lock lock{ dataLock };
-    const auto& customZoneSet = JSONHelpers::ParseCustomZoneSetFromTmpFile(tmpFilePath);
+    const auto& customZoneSets = JSONHelpers::ParseCustomZoneSetsFromTmpFile(tmpFilePath);
 
-    if (customZoneSet)
+    for (const auto& zoneSet : customZoneSets)
     {
-        customZoneSetsMap[customZoneSet->uuid] = std::move(customZoneSet->data);
+        customZoneSetsMap[zoneSet.uuid] = zoneSet.data;
     }
 }
 

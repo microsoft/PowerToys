@@ -680,10 +680,12 @@
     <value>PowerToys Run</value>
   </data>
   <data name="About_PowerRename.Text" xml:space="preserve">
-    <value>About Power Rename</value>
+    <value>About PowerRename</value>
+    <comment>do not loc the product name</comment>
   </data>
   <data name="PowerRename_Image.AutomationProperties.Name" xml:space="preserve">
-    <value>Power Rename</value>
+    <value>PowerRename</value>
+    <comment>do not loc</comment>
   </data>
   <data name="About_ShortcutGuide.Text" xml:space="preserve">
     <value>About Shortcut Guide</value>

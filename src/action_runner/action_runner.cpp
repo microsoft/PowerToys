@@ -20,7 +20,7 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-auto Strings = updating::notifications::strings::create();
+auto Strings = create_notifications_strings();
 
 int uninstall_msi_action()
 {
