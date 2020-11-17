@@ -201,17 +201,17 @@ HRESULT CPowerRenameRegEx::Replace(_In_ SYSTEMTIME LocalTime, _In_ PCWSTR source
         try
         {
             // TODO: creating the regex could be costly.  May want to cache this.
-            bool isFileAttributesUsedValue = isFileAttributesUsed(m_replaceTerm ? m_replaceTerm : L"");
+            bool useFileAttributes = isFileAttributesUsed(m_replaceTerm ? m_replaceTerm : L"");
             wchar_t newReplaceTerm[MAX_PATH] = { 0 };
-            if (isFileAttributesUsedValue)
+            if (useFileAttributes)
             {
                 if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, LocalTime)))
-                    isFileAttributesUsedValue = false;
+                    useFileAttributes = false;
             }
 
             std::wstring sourceToUse(source);
             std::wstring searchTerm(m_searchTerm);
-            std::wstring replaceTerm(m_replaceTerm ? (isFileAttributesUsedValue ? wstring(newReplaceTerm) : wstring(m_replaceTerm)) : wstring(L""));
+            std::wstring replaceTerm(m_replaceTerm ? (useFileAttributes ? wstring(newReplaceTerm) : wstring(m_replaceTerm)) : wstring(L""));
 
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$[0]"), L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$([1-9])"), L"$1$0$4");
