@@ -189,7 +189,7 @@ CPowerRenameRegEx::~CPowerRenameRegEx()
     CoTaskMemFree(m_replaceTerm);
 }
 
-HRESULT CPowerRenameRegEx::Replace(_In_ SYSTEMTIME LocalTime, _In_ PCWSTR source, _Outptr_ PWSTR* result)
+HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, _In_ SYSTEMTIME LocalTime)
 {
     *result = nullptr;
 

@@ -907,7 +907,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 PWSTR newName = nullptr;
                                 // Failure here means we didn't match anything or had nothing to match
                                 // Call put_newName with null in that case to reset it
-                                spRenameRegEx->Replace(LocalTime, sourceName, &newName);
+                                spRenameRegEx->Replace(sourceName, &newName, LocalTime);
 
                                 wchar_t resultName[MAX_PATH] = { 0 };
 
