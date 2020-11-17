@@ -118,15 +118,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Microsoft_plugin_sys_emptyrecyclebin" xml:space="preserve">
-    <value>Empty recycle bin</value>
+    <value>Empty Recycle Bin</value>
+  </data>
+  <data name="Microsoft_plugin_sys_emptyrecyclebin_description" xml:space="preserve">
+    <value>Empty Recycle Bin</value>
   </data>
   <data name="Microsoft_plugin_sys_hibernate" xml:space="preserve">
-    <value>Hibernate computer</value>
+    <value>Hibernate</value>
+  </data>
+  <data name="Microsoft_plugin_sys_hibernate_description" xml:space="preserve">
+    <value>Hibernate</value>
   </data>
   <data name="Microsoft_plugin_sys_lock" xml:space="preserve">
-    <value>Lock this Computer</value>
+    <value>Lock</value>
+  </data>
+  <data name="Microsoft_plugin_sys_lock_description" xml:space="preserve">
+    <value>Lock Computer</value>
   </data>
   <data name="Microsoft_plugin_sys_log_off" xml:space="preserve">
+    <value>Logoff</value>
+  </data>
+  <data name="Microsoft_plugin_sys_log_off_description" xml:space="preserve">
     <value>Logoff</value>
   </data>
   <data name="Microsoft_plugin_sys_plugin_description" xml:space="preserve">
@@ -136,12 +148,21 @@
     <value>System Commands</value>
   </data>
   <data name="Microsoft_plugin_sys_restart_computer" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Microsoft_plugin_sys_restart_computer_description" xml:space="preserve">
     <value>Restart Computer</value>
   </data>
   <data name="Microsoft_plugin_sys_shutdown_computer" xml:space="preserve">
+    <value>Shutdown</value>
+  </data>
+  <data name="Microsoft_plugin_sys_shutdown_computer_description" xml:space="preserve">
     <value>Shutdown Computer</value>
   </data>
   <data name="Microsoft_plugin_sys_sleep" xml:space="preserve">
+    <value>Sleep</value>
+  </data>
+  <data name="Microsoft_plugin_sys_sleep_description" xml:space="preserve">
     <value>Put computer to sleep</value>
   </data>
 </root>

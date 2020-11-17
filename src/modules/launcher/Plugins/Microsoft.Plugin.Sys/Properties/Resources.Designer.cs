@@ -61,7 +61,7 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Empty recycle bin.
+        ///   Looks up a localized string similar to Empty Recycle Bin.
         /// </summary>
         internal static string Microsoft_plugin_sys_emptyrecyclebin {
             get {
@@ -70,7 +70,16 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hibernate computer.
+        ///   Looks up a localized string similar to Empty Recycle Bin.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_emptyrecyclebin_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_emptyrecyclebin_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hibernate.
         /// </summary>
         internal static string Microsoft_plugin_sys_hibernate {
             get {
@@ -79,11 +88,29 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lock this Computer.
+        ///   Looks up a localized string similar to Hibernate.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_hibernate_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_hibernate_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lock.
         /// </summary>
         internal static string Microsoft_plugin_sys_lock {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_lock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lock Computer.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_lock_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_lock_description", resourceCulture);
             }
         }
         
@@ -93,6 +120,15 @@ namespace Microsoft.Plugin.Sys.Properties {
         internal static string Microsoft_plugin_sys_log_off {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_log_off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logoff.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_log_off_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_log_off_description", resourceCulture);
             }
         }
         
@@ -115,7 +151,7 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restart Computer.
+        ///   Looks up a localized string similar to Restart.
         /// </summary>
         internal static string Microsoft_plugin_sys_restart_computer {
             get {
@@ -124,7 +160,16 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shutdown Computer.
+        ///   Looks up a localized string similar to Restart Computer.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_restart_computer_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_restart_computer_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shutdown.
         /// </summary>
         internal static string Microsoft_plugin_sys_shutdown_computer {
             get {
@@ -133,11 +178,29 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Put computer to sleep.
+        ///   Looks up a localized string similar to Shutdown Computer.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_shutdown_computer_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_shutdown_computer_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sleep.
         /// </summary>
         internal static string Microsoft_plugin_sys_sleep {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_sleep", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Put computer to sleep.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_sleep_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_sleep_description", resourceCulture);
             }
         }
     }

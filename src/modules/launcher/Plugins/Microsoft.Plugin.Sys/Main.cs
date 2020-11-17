@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interop;
+using ManagedCommon;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Plugin.Sys
 {
 	public class Main : IPlugin, IPluginI18n
 	{
-		private PluginInitContext context;
+		private PluginInitContext _context;
 
 		#region DllImport
 
@@ -26,12 +27,16 @@ namespace Microsoft.Plugin.Sys
 		internal const int EWX_POWEROFF = 0x00000008;
 		internal const int EWX_FORCEIFHUNG = 0x00000010;
 
+		public string IconTheme { get; set; }
+
 		#endregion
 
 		public void Init(PluginInitContext context)
 		{
-			this.context = context;
-		}
+			this._context = context;
+			_context.API.ThemeChanged += OnThemeChanged;
+			UpdateIconTheme(_context.API.GetCurrentTheme());
+        }
 
 		public List<Result> Query(Query query)
 		{
@@ -63,9 +68,9 @@ namespace Microsoft.Plugin.Sys
             {
                 new Result
                 {
-                    Title = "Shutdown",
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_shutdown_computer,
-                    IcoPath = "Images\\shutdown.png",
+                    Title = Properties.Resources.Microsoft_plugin_sys_shutdown_computer,
+                    SubTitle = Properties.Resources.Microsoft_plugin_sys_shutdown_computer_description,
+                    IcoPath = $"Images\\shutdown.{IconTheme}.png",
                     Action = c =>
                     {
                         Process.Start("shutdown", "/s /t 0");
@@ -74,9 +79,9 @@ namespace Microsoft.Plugin.Sys
                 },
                 new Result
                 {
-                    Title = "Restart",
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_restart_computer,
-                    IcoPath = "Images\\restart.png",
+                    Title = Properties.Resources.Microsoft_plugin_sys_restart_computer,
+                    SubTitle = Properties.Resources.Microsoft_plugin_sys_restart_computer_description,
+                    IcoPath = $"Images\\restart.{IconTheme}.png",
                     Action = c =>
                     {
                         Process.Start("shutdown", "/r /t 0");
@@ -85,16 +90,16 @@ namespace Microsoft.Plugin.Sys
                 },
                 new Result
                 {
-                    Title = "Log Off",
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_log_off,
-                    IcoPath = "Images\\logoff.png",
+                    Title = Properties.Resources.Microsoft_plugin_sys_log_off,
+                    SubTitle = Properties.Resources.Microsoft_plugin_sys_log_off_description,
+                    IcoPath = $"Images\\logoff.{IconTheme}.png",
                     Action = c => NativeMethods.ExitWindowsEx(EWX_LOGOFF, 0)
                 },
                 new Result
                 {
-                    Title = "Lock",
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_lock,
-                    IcoPath = "Images\\lock.png",
+                    Title = Properties.Resources.Microsoft_plugin_sys_lock,
+                    SubTitle = Properties.Resources.Microsoft_plugin_sys_lock_description,
+                    IcoPath = $"Images\\lock.{IconTheme}.png",
                     Action = c =>
                     {
                         NativeMethods.LockWorkStation();
@@ -103,23 +108,23 @@ namespace Microsoft.Plugin.Sys
                 },
                 new Result
                 {
-                    Title = "Sleep",
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_sleep,
-                    IcoPath = "Images\\sleep.png",
+                    Title = Properties.Resources.Microsoft_plugin_sys_sleep,
+                    SubTitle = Properties.Resources.Microsoft_plugin_sys_sleep_description,
+                    IcoPath = $"Images\\sleep.{IconTheme}.png",
                     Action = c => NativeMethods.SetSuspendState(false, true, true),
         },
                 new Result
                 {
-                    Title = "Hibernate",
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_hibernate,
-                    IcoPath = "Images\\sleep.png", // Icon change needed
+                    Title = Properties.Resources.Microsoft_plugin_sys_hibernate,
+                    SubTitle = Properties.Resources.Microsoft_plugin_sys_hibernate_description,
+                    IcoPath = $"Images\\sleep.{IconTheme}.png", // Icon change needed
                     Action = c => NativeMethods.SetSuspendState(true, true, true),
                 },
                 new Result
                 {
-                    Title = "Empty Recycle Bin",
-                    SubTitle = Properties.Resources.Microsoft_plugin_sys_emptyrecyclebin,
-                    IcoPath = "Images\\recyclebin.png",
+                    Title = Properties.Resources.Microsoft_plugin_sys_emptyrecyclebin,
+                    SubTitle = Properties.Resources.Microsoft_plugin_sys_emptyrecyclebin_description,
+                    IcoPath = $"Images\\recyclebin.{IconTheme}.png",
                     Action = c =>
                     {
                         // http://www.pinvoke.net/default.aspx/shell32/SHEmptyRecycleBin.html
@@ -131,7 +136,7 @@ namespace Microsoft.Plugin.Sys
                             var name = "Plugin: " + Properties.Resources.Microsoft_plugin_sys_plugin_name;
                             var message = $"Error emptying recycle bin, error code: {result}\n" +
                                             "please refer to https://msdn.microsoft.com/en-us/library/windows/desktop/aa378137";
-                            context.API.ShowMsg(name, message);
+                            _context.API.ShowMsg(name, message);
                         }
                         return true;
                     }
@@ -140,7 +145,24 @@ namespace Microsoft.Plugin.Sys
             return results;
         }
 
-		public string GetTranslatedPluginDescription()
+		private void UpdateIconTheme(Theme theme)
+		{
+			if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+			{
+				IconTheme = "light";
+			}
+			else
+			{
+				IconTheme = "dark";
+			}
+		}
+
+		private void OnThemeChanged(Theme currentTheme, Theme newTheme)
+		{
+			UpdateIconTheme(newTheme);
+		}
+
+        public string GetTranslatedPluginDescription()
 		{
             return Properties.Resources.Microsoft_plugin_sys_plugin_description;
 		}
