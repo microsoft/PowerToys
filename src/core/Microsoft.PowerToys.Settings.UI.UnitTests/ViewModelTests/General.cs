@@ -16,7 +16,7 @@ namespace ViewModelTests
     [TestClass]
     public class General
     {
-        public const string GeneralSettingsFileName = "Test\\GenealSettings";
+        public const string GeneralSettingsFileName = "Test\\GeneralSettings";
 
         private Mock<ISettingsUtils> mockGeneralSettingsUtils;
 
