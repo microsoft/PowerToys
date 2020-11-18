@@ -87,8 +87,8 @@ public:
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
         app_key = LauncherConstants::ModuleKey;
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
-        logFilePath.append("logging.txt");
-        logger = std::make_shared<Logger>("launcher", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        logFilePath.append(LogSettings::launcherLogPath);
+        logger = std::make_shared<Logger>(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
         logger->info("Launcher object is constructing");
         init_settings();
 

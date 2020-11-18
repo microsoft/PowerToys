@@ -296,8 +296,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
-    logFilePath = logFilePath.append(L"runner-logging.txt");
-    logger = std::make_shared<Logger>("runner", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+    logFilePath = logFilePath.append(LogSettings::runnerLogPath);
+    logger = std::make_shared<Logger>(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
