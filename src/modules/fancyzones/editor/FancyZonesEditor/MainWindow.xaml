@@ -285,7 +285,7 @@
                             <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" Style="{StaticResource zoneCount}" />
                             <Button x:Name="incrementZones" Width="40" Height="40" AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click" />
                         </StackPanel>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+                        <ScrollViewer Grid.Row="1">
                             <ItemsControl ItemsSource="{Binding DefaultModels}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -313,7 +313,7 @@
                 </TabItem>
 
                 <TabItem Header="{x:Static props:Resources.Custom}" Template="{StaticResource myTabs}" AutomationProperties.Name="{x:Static props:Resources.Tab_Item_Custom}">
-                    <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <ScrollViewer>
                         <ItemsControl ItemsSource="{Binding CustomModels}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
