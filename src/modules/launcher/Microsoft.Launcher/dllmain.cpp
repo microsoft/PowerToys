@@ -7,6 +7,9 @@
 #include "Generated Files/resource.h"
 #include <common/os-detect.h>
 #include <launcher\Microsoft.Launcher\LauncherConstants.h>
+#include <common/logger/logger.h>
+#include <common\settings_helpers.h>
+#include <filesystem>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -75,12 +78,18 @@ private:
     // Handle to event used to invoke the Runner
     HANDLE m_hEvent;
 
+    std::shared_ptr<Logger> logger;
+
 public:
     // Constructor
     Microsoft_Launcher()
     {
         app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
         app_key = LauncherConstants::ModuleKey;
+        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
+        logFilePath.append("logging.txt");
+        logger = std::make_shared<Logger>("launcher", logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        logger->info("Launcher object is constructing");
         init_settings();
 
         SECURITY_ATTRIBUTES sa;
@@ -92,6 +101,8 @@ public:
 
     ~Microsoft_Launcher()
     {
+        logger->info("Launcher object is destroying");
+        logger.reset();
         if (m_enabled)
         {
             terminateProcess();
@@ -172,6 +183,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
+        this->logger->info("Launcher is enabling");
         ResetEvent(m_hEvent);
         // Start PowerLauncher.exe only if the OS is 19H1 or higher
         if (UseNewSettings())
@@ -243,6 +255,7 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
+        this->logger->info("Launcher is disabling");
         if (m_enabled)
         {
             ResetEvent(m_hEvent);
@@ -311,7 +324,12 @@ public:
     void terminateProcess()
     {
         DWORD processID = GetProcessId(m_hProcess);
-        TerminateProcess(m_hProcess, 1);
+        if (TerminateProcess(m_hProcess, 1) == 0)
+        {
+            auto err = get_last_error_message(GetLastError());
+            this->logger->error(L"Launcher process was not terminated. {}", err.has_value() ? err.value() : L"");
+        }
+
         // Temporarily disable sending a message to close
         /*
         EnumWindows(&requestMainWindowClose, processID);
