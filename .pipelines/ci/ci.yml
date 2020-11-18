@@ -5,6 +5,7 @@ trigger:
       - master
       - dev/build-features
       - dev/PowerLauncher
+      - stable
   paths:
     exclude:
       - doc/*
