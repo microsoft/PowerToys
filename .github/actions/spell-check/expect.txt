@@ -694,6 +694,12 @@ eventlog
 everytime
 evt
 EWX
+EWXFORCE
+EWXFORCEIFHUNG
+EWXLOGOFF
+EWXPOWEROFF
+EWXREBOOT
+EWXSHUTDOWN
 examplehandler
 examplepowertoy
 EXCLUDEFILES
