@@ -7,25 +7,25 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Plugin.Sys.Win32
 {
-	internal class NativeMethods
-	{
-		[DllImport("user32")]
-		internal static extern bool ExitWindowsEx(uint uFlags, uint dwReason);
+    internal class NativeMethods
+    {
+        [DllImport("user32")]
+        internal static extern bool ExitWindowsEx(uint uFlags, uint dwReason);
 
-		[DllImport("user32")]
-		internal static extern void LockWorkStation();
+        [DllImport("user32")]
+        internal static extern void LockWorkStation();
 
-		[DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
-		internal static extern uint SHEmptyRecycleBin(IntPtr hWnd, uint dwFlags);
+        [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
+        internal static extern uint SHEmptyRecycleBin(IntPtr hWnd, uint dwFlags);
 
-		[DllImport("Powrprof.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-		internal static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
+        [DllImport("Powrprof.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        internal static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
 
-		// http://www.pinvoke.net/default.aspx/Enums/HRESULT.html
-		public enum HRESULT : uint
-		{
-			S_FALSE = 0x0001,
-			S_OK = 0x0000
-		}
-	}
+        // http://www.pinvoke.net/default.aspx/Enums/HRESULT.html
+        public enum HRESULT : uint
+        {
+            S_FALSE = 0x0001,
+            S_OK = 0x0000,
+        }
+    }
 }
