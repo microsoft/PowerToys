@@ -60,7 +60,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private static bool _debugMode = false;
+        private static bool _debugMode;
 
         [Conditional("DEBUG")]
         private void DebugModeCheck()
