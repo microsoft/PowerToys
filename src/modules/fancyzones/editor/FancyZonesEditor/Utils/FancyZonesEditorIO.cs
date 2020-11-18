@@ -319,7 +319,6 @@ namespace FancyZonesEditor.Utils
                                 {
                                     monitors[monitorIndex].Settings = new LayoutSettings
                                     {
-                                        DeviceId = deviceId,
                                         ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
                                         ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
                                         Spacing = zonesetData.GetProperty(EditorSpacingJsonTag).GetInt32(),
@@ -340,7 +339,6 @@ namespace FancyZonesEditor.Utils
                                 // one zoneset for all desktops
                                 App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings = new LayoutSettings
                                 {
-                                    DeviceId = deviceId,
                                     ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
                                     ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
                                     Spacing = zonesetData.GetProperty(EditorSpacingJsonTag).GetInt32(),
@@ -527,7 +525,7 @@ namespace FancyZonesEditor.Utils
 
                 applied.AppliedZonesets.Add(new AppliedZoneSet
                 {
-                    DeviceId = zoneset.DeviceId,
+                    DeviceId = monitor.Device.Id,
                     ActiveZoneset = activeZoneSet,
                     EditorShowSpacing = zoneset.ShowSpacing,
                     EditorSpacing = zoneset.Spacing,
