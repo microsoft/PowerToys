@@ -28,6 +28,7 @@ namespace FancyZonesEditor.Utils
         private const string EditorZoneCountJsonTag = "editor-zone-count";
         private const string EditorSensitivityRadiusJsonTag = "editor-sensitivity-radius";
 
+        private const string BlankJsonTag = "blank";
         private const string FocusJsonTag = "focus";
         private const string ColumnsJsonTag = "columns";
         private const string RowsJsonTag = "rows";
@@ -613,6 +614,8 @@ namespace FancyZonesEditor.Utils
         {
             switch (type)
             {
+                case LayoutType.Blank:
+                    return BlankJsonTag;
                 case LayoutType.Focus:
                     return FocusJsonTag;
                 case LayoutType.Rows:
