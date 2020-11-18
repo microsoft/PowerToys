@@ -376,16 +376,8 @@
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Bcl.AsyncInterfaces.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Buffers.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Memory.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Numerics.Vectors.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Runtime.CompilerServices.Unsafe.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Encodings.Web.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Json.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Threading.Tasks.Extensions.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.ValueTuple.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedCommon.dll" />	  
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedCommon.dll" />
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Telemetry.dll" />
         <File Id="FancyZone_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.IO.Abstractions.dll" />
       </Component>
