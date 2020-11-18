@@ -1320,6 +1320,7 @@ MAPTOSAMESHORTCUT
 MAPVK
 Markdig
 martinchrzan
+martinmoene
 MATCHALLOCCURENCES
 MATCHMODE
 MAXIMIZEBOX
@@ -1497,6 +1498,7 @@ nonclient
 NONCONVERT
 NONELEVATED
 NONINFRINGEMENT
+nonstd
 nonwin
 NOOWNERZORDER
 NOPARENTNOTIFY
@@ -1566,6 +1568,7 @@ Onboarding
 onebranch
 onedrive
 onedrivelogo
+onstd
 ONITEM
 OOBE
 opencode
@@ -2140,6 +2143,7 @@ subfolder
 Subheader
 subkey
 SUBLANG
+sublicensable
 subquery
 subsetted
 subsetter

@@ -15,5 +15,6 @@
 #include <ShlObj_core.h>
 #include <shellapi.h>
 #include <filesystem>
+#include <expected.hpp>
 
 #endif //PCH_H
