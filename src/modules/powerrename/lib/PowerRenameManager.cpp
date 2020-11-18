@@ -828,6 +828,13 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     DWORD flags = 0;
                     spRenameRegEx->GetFlags(&flags);
 
+                    PWSTR replaceTerm = nullptr;
+                    bool useFileAttributes = false;
+                    if (SUCCEEDED(spRenameRegEx->GetReplaceTerm(&replaceTerm)) && isFileAttributesUsed(replaceTerm))
+                    {
+                            useFileAttributes = true;
+                    }
+
                     UINT itemCount = 0;
                     unsigned long itemEnumIndex = 1;
                     pwtd->spsrm->GetItemCount(&itemCount);
@@ -893,106 +900,98 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 PWSTR replaceTerm = nullptr;
                                 SYSTEMTIME LocalTime = {0};
 
-                                if (SUCCEEDED(spRenameRegEx->GetReplaceTerm(&replaceTerm)) && isFileAttributesUsed(replaceTerm))
+                                if (!useFileAttributes || SUCCEEDED(spItem->GetDate(&LocalTime)))
                                 {
-                                    if (SUCCEEDED(spItem->GetDate(&LocalTime)))
+                                    PWSTR newName = nullptr;
+                                    // Failure here means we didn't match anything or had nothing to match
+                                    // Call put_newName with null in that case to reset it
+                                    spRenameRegEx->Replace(sourceName, &newName, LocalTime, useFileAttributes);
+
+                                    wchar_t resultName[MAX_PATH] = { 0 };
+
+                                    PWSTR newNameToUse = nullptr;
+
+                                    // newName == nullptr likely means we have an empty search string.  We should leave newNameToUse
+                                    // as nullptr so we clear the renamed column
+                                    // Except string transformation is selected.
+
+                                    if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
                                     {
-                                        //if (SUCCEEDED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTerm, LocalTime)))
-                                        //{
-                                            // OK
-                                        //}
+                                        SHStrDup(sourceName, &newName);
                                     }
-                                }
 
-                                PWSTR newName = nullptr;
-                                // Failure here means we didn't match anything or had nothing to match
-                                // Call put_newName with null in that case to reset it
-                                spRenameRegEx->Replace(sourceName, &newName, LocalTime);
-
-                                wchar_t resultName[MAX_PATH] = { 0 };
-
-                                PWSTR newNameToUse = nullptr;
-
-                                // newName == nullptr likely means we have an empty search string.  We should leave newNameToUse
-                                // as nullptr so we clear the renamed column
-                                // Except string transformation is selected.
-                                
-                                if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
-                                {
-                                    SHStrDup(sourceName, &newName);
-                                }
-
-                                if (newName != nullptr)
-                                {
-                                    newNameToUse = resultName;
-                                    if (flags & NameOnly)
+                                    if (newName != nullptr)
                                     {
-                                        StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s%s", newName, fs::path(originalName).extension().c_str());
-                                    }
-                                    else if (flags & ExtensionOnly)
-                                    {
-                                        std::wstring extension = fs::path(originalName).extension().wstring();
-                                        if (!extension.empty())
+                                        newNameToUse = resultName;
+                                        if (flags & NameOnly)
                                         {
-                                            StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s.%s", fs::path(originalName).stem().c_str(), newName);
+                                            StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s%s", newName, fs::path(originalName).extension().c_str());
+                                        }
+                                        else if (flags & ExtensionOnly)
+                                        {
+                                            std::wstring extension = fs::path(originalName).extension().wstring();
+                                            if (!extension.empty())
+                                            {
+                                                StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s.%s", fs::path(originalName).stem().c_str(), newName);
+                                            }
+                                            else
+                                            {
+                                                StringCchCopy(resultName, ARRAYSIZE(resultName), originalName);
+                                            }
                                         }
                                         else
                                         {
-                                            StringCchCopy(resultName, ARRAYSIZE(resultName), originalName);
+                                            StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
                                         }
                                     }
-                                    else
+
+                                    wchar_t trimmedName[MAX_PATH] = { 0 };
+                                    if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(trimmedName, ARRAYSIZE(trimmedName), newNameToUse)))
                                     {
-                                        StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
+                                        newNameToUse = trimmedName;
                                     }
-                                }
-                                
-                                wchar_t trimmedName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(trimmedName, ARRAYSIZE(trimmedName), newNameToUse)))
-                                {
-                                    newNameToUse = trimmedName;
-                                }
-                                                                
-                                wchar_t transformedName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
-                                {
-                                    if (SUCCEEDED(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags)))
+
+                                    wchar_t transformedName[MAX_PATH] = { 0 };
+                                    if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
                                     {
-                                        newNameToUse = transformedName;
+                                        if (SUCCEEDED(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags)))
+                                        {
+                                            newNameToUse = transformedName;
+                                        }
                                     }
-                                }
 
-                                // No change from originalName so set newName to
-                                // null so we clear it from our UI as well.
-                                if (lstrcmp(originalName, newNameToUse) == 0)
-                                {
-                                    newNameToUse = nullptr;
-                                }
-
-                                wchar_t uniqueName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr && (flags & EnumerateItems))
-                                {
-                                    unsigned long countUsed = 0;
-                                    if (GetEnumeratedFileName(uniqueName, ARRAYSIZE(uniqueName), newNameToUse, nullptr, itemEnumIndex, &countUsed))
+                                    // No change from originalName so set newName to
+                                    // null so we clear it from our UI as well.
+                                    if (lstrcmp(originalName, newNameToUse) == 0)
                                     {
-                                        newNameToUse = uniqueName;
+                                        newNameToUse = nullptr;
                                     }
-                                    itemEnumIndex++;
+
+                                    wchar_t uniqueName[MAX_PATH] = { 0 };
+                                    if (newNameToUse != nullptr && (flags & EnumerateItems))
+                                    {
+                                        unsigned long countUsed = 0;
+                                        if (GetEnumeratedFileName(uniqueName, ARRAYSIZE(uniqueName), newNameToUse, nullptr, itemEnumIndex, &countUsed))
+                                        {
+                                            newNameToUse = uniqueName;
+                                        }
+                                        itemEnumIndex++;
+                                    }
+
+                                    spItem->PutNewName(newNameToUse);
+
+                                    // Was there a change?
+                                    if (lstrcmp(currentNewName, newNameToUse) != 0)
+                                    {
+                                        // Send the manager thread the item processed message
+                                        PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
+                                    }
+
+                                    CoTaskMemFree(newName);
+                                    CoTaskMemFree(replaceTerm);
+                                    CoTaskMemFree(currentNewName);
+                                    CoTaskMemFree(originalName);   
                                 }
-
-                                spItem->PutNewName(newNameToUse);
-
-                                // Was there a change?
-                                if (lstrcmp(currentNewName, newNameToUse) != 0)
-                                {
-                                    // Send the manager thread the item processed message
-                                    PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
-                                }
-
-                                CoTaskMemFree(newName);
-                                CoTaskMemFree(replaceTerm);
-                                CoTaskMemFree(currentNewName);
-                                CoTaskMemFree(originalName);
                             }
                         }
                     }

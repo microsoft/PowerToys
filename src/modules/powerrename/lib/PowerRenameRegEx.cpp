@@ -189,7 +189,7 @@ CPowerRenameRegEx::~CPowerRenameRegEx()
     CoTaskMemFree(m_replaceTerm);
 }
 
-HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, _In_ SYSTEMTIME LocalTime)
+HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, _In_ SYSTEMTIME LocalTime, _In_ bool useFileAttributes)
 {
     *result = nullptr;
 
@@ -201,7 +201,6 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, _
         try
         {
             // TODO: creating the regex could be costly.  May want to cache this.
-            bool useFileAttributes = isFileAttributesUsed(m_replaceTerm ? m_replaceTerm : L"");
             wchar_t newReplaceTerm[MAX_PATH] = { 0 };
             if (useFileAttributes)
             {
