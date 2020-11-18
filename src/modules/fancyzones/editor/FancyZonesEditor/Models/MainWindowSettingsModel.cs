@@ -417,7 +417,7 @@ namespace FancyZonesEditor
 
             if (foundModel == null)
             {
-                foundModel = DefaultModels[0];
+                foundModel = DefaultModels[4]; // PriorityGrid
             }
 
             foundModel.IsSelected = true;
