@@ -22,13 +22,12 @@ namespace updating
             return current_version_to_next_version;
         }
 
-        void show_unavailable(const notifications::strings& strings)
+        void show_unavailable(const notifications::strings& strings, std::wstring reason)
         {
             remove_toasts(UPDATING_PROCESS_TOAST_TAG);
 
             toast_params toast_params{ UPDATING_PROCESS_TOAST_TAG, false };
-            std::wstring contents = strings.GITHUB_NEW_VERSION_UNAVAILABLE;
-            show_toast(std::move(contents), strings.TOAST_TITLE, std::move(toast_params));
+            show_toast(std::move(reason), strings.TOAST_TITLE, std::move(toast_params));
         }
 
         void show_available(const updating::new_version_download_info& info, const notifications::strings& strings)
@@ -120,8 +119,7 @@ namespace updating
                                               strings.GITHUB_NEW_VERSION_SNOOZE_TITLE,
                                               { { strings.GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 },
                                                 { strings.GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } },
-                                              strings.SNOOZE_BUTTON
-                                          } },
+                                              strings.SNOOZE_BUTTON } },
                                         std::move(toast_params));
         }
 

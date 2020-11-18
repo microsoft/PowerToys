@@ -28,12 +28,12 @@ namespace // Strings in this namespace should not be localized
 
 namespace updating
 {
-    std::future<std::optional<new_version_download_info>> get_new_github_version_info_async()
+    std::future<nonstd::expected<new_version_download_info, std::wstring>> get_new_github_version_info_async(const notifications::strings& strings)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
-            co_return std::nullopt;
+            co_return nonstd::make_unexpected(strings.GITHUB_NEW_VERSION_USING_LOCAL_BUILD_ERROR);
         }
         try
         {
@@ -46,39 +46,37 @@ namespace updating
             VersionHelper github_version(winrt::to_string(new_version));
             VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
 
-            if (github_version > current_version)
+            if (github_version <= current_version)
             {
-                const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
-                constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
-                // Desc-sorted by its priority
-                const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
-                for (const auto asset_extension : asset_extensions)
-                {
-                    for (auto asset_elem : json_body.GetNamedArray(L"assets"))
-                    {
-                        auto asset{ asset_elem.GetObjectW() };
-                        std::wstring filename_lower = asset.GetNamedString(L"name", {}).c_str();
-                        std::transform(begin(filename_lower), end(filename_lower), begin(filename_lower), ::towlower);
+                co_return nonstd::make_unexpected(strings.GITHUB_NEW_VERSION_UP_TO_DATE);
+            }
 
-                        const bool extension_matched = filename_lower.ends_with(asset_extension);
-                        const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
-                        const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
-                        if (extension_matched && architecture_matched && filename_matched)
-                        {
-                            winrt::Windows::Foundation::Uri msi_download_url{ asset.GetNamedString(L"browser_download_url") };
-                            co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str(), std::move(msi_download_url), std::move(filename_lower) };
-                        }
+            const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
+            constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
+            // Desc-sorted by its priority
+            const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
+            for (const auto asset_extension : asset_extensions)
+            {
+                for (auto asset_elem : json_body.GetNamedArray(L"assets"))
+                {
+                    auto asset{ asset_elem.GetObjectW() };
+                    std::wstring filename_lower = asset.GetNamedString(L"name", {}).c_str();
+                    std::transform(begin(filename_lower), end(filename_lower), begin(filename_lower), ::towlower);
+
+                    const bool extension_matched = filename_lower.ends_with(asset_extension);
+                    const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
+                    const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
+                    if (extension_matched && architecture_matched && filename_matched)
+                    {
+                        winrt::Windows::Foundation::Uri msi_download_url{ asset.GetNamedString(L"browser_download_url") };
+                        co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str(), std::move(msi_download_url), std::move(filename_lower) };
                     }
                 }
-            }
-            else
-            {
-                co_return std::nullopt;
             }
         }
         catch (...)
         {
-            co_return std::nullopt;
+            co_return nonstd::make_unexpected(strings.GITHUB_NEW_VERSION_CHECK_ERROR);
         }
     }
 
@@ -106,7 +104,7 @@ namespace updating
 
     std::future<void> try_autoupdate(const bool download_updates_automatically, const notifications::strings& strings)
     {
-        const auto new_version = co_await get_new_github_version_info_async();
+        const auto new_version = co_await get_new_github_version_info_async(strings);
         if (!new_version)
         {
             co_return;
@@ -146,10 +144,10 @@ namespace updating
 
     std::future<std::wstring> check_new_version_available(const notifications::strings& strings)
     {
-        const auto new_version = co_await get_new_github_version_info_async();
+        auto new_version = co_await get_new_github_version_info_async(strings);
         if (!new_version)
         {
-            updating::notifications::show_unavailable(strings);
+            updating::notifications::show_unavailable(strings, std::move(new_version.error()));
             co_return VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
         }
 
@@ -159,7 +157,7 @@ namespace updating
 
     std::future<std::wstring> download_update(const notifications::strings& strings)
     {
-        const auto new_version = co_await get_new_github_version_info_async();
+        const auto new_version = co_await get_new_github_version_info_async(strings);
         if (!new_version)
         {
             co_return L"";
