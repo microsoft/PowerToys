@@ -3,7 +3,6 @@
 #include "pch.h"
 #include "framework.h"
 #include "logger.h"
-#include "logger_settings.h"
 #include <map>
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog\sinks\stdout_color_sinks-inl.h>
@@ -43,7 +42,7 @@ Logger::Logger(std::string loggerName, std::wstring logFilePath, std::wstring_vi
     auto logLevel = getLogLevel(logSettingsPath);
     try
     {
-        auto sink = make_shared<sinks::daily_file_sink_mt>(logFilePath, 0, 0, false, 5);
+        auto sink = make_shared<sinks::daily_file_sink_mt>(logFilePath, 0, 0, false, LogSettings::retention);
         this->logger = make_shared<spdlog::logger>(loggerName, sink);
     }
     catch (...)
