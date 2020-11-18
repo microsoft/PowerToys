@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hibernate.
+        ///   Looks up a localized string similar to Hibernate computer.
         /// </summary>
         internal static string Microsoft_plugin_sys_hibernate_description {
             get {
@@ -106,7 +106,7 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lock Computer.
+        ///   Looks up a localized string similar to Lock computer.
         /// </summary>
         internal static string Microsoft_plugin_sys_lock_description {
             get {
@@ -115,25 +115,7 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Logoff.
-        /// </summary>
-        internal static string Microsoft_plugin_sys_log_off {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_log_off", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Logoff.
-        /// </summary>
-        internal static string Microsoft_plugin_sys_log_off_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_log_off_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Provides System related commands. e.g. shutdown, lock, sleep etc..
+        ///   Looks up a localized string similar to Provides Windows related commands, shutdown, lock, sleep .....
         /// </summary>
         internal static string Microsoft_plugin_sys_plugin_description {
             get {
@@ -142,7 +124,7 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to System Commands.
+        ///   Looks up a localized string similar to Windows System Commands.
         /// </summary>
         internal static string Microsoft_plugin_sys_plugin_name {
             get {
@@ -160,7 +142,7 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restart Computer.
+        ///   Looks up a localized string similar to Restart computer.
         /// </summary>
         internal static string Microsoft_plugin_sys_restart_computer_description {
             get {
@@ -178,11 +160,29 @@ namespace Microsoft.Plugin.Sys.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shutdown Computer.
+        ///   Looks up a localized string similar to Shutdown computer.
         /// </summary>
         internal static string Microsoft_plugin_sys_shutdown_computer_description {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_shutdown_computer_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign out.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_sign_out {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_sign_out", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign out of computer.
+        /// </summary>
+        internal static string Microsoft_plugin_sys_sign_out_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_sign_out_description", resourceCulture);
             }
         }
         

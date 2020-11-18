@@ -119,50 +119,66 @@
   </resheader>
   <data name="Microsoft_plugin_sys_emptyrecyclebin" xml:space="preserve">
     <value>Empty Recycle Bin</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_emptyrecyclebin_description" xml:space="preserve">
     <value>Empty Recycle Bin</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_hibernate" xml:space="preserve">
     <value>Hibernate</value>
+    <comment>This should align to the action in Windows of a hibernating your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_hibernate_description" xml:space="preserve">
-    <value>Hibernate</value>
+    <value>Hibernate computer</value>
+    <comment>This should align to the action in Windows of a hibernating your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_lock" xml:space="preserve">
     <value>Lock</value>
+    <comment>This should align to the action in Windows of a locking your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_lock_description" xml:space="preserve">
-    <value>Lock Computer</value>
-  </data>
-  <data name="Microsoft_plugin_sys_log_off" xml:space="preserve">
-    <value>Logoff</value>
-  </data>
-  <data name="Microsoft_plugin_sys_log_off_description" xml:space="preserve">
-    <value>Logoff</value>
+    <value>Lock computer</value>
+    <comment>This should align to the action in Windows of a locking your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_plugin_description" xml:space="preserve">
-    <value>Provides System related commands. e.g. shutdown, lock, sleep etc.</value>
+    <value>Provides Windows related commands, shutdown, lock, sleep ....</value>
+    <comment>This should align to the actions in Windows relating to shutting down, signing out, locking, sleeping, restarting, emptying the recycle bin, and hibernating your computer. </comment>
   </data>
   <data name="Microsoft_plugin_sys_plugin_name" xml:space="preserve">
-    <value>System Commands</value>
+    <value>Windows System Commands</value>
+    <comment>Windows operating system commands.</comment>
   </data>
   <data name="Microsoft_plugin_sys_restart_computer" xml:space="preserve">
     <value>Restart</value>
+    <comment>This should align to the action in Windows of a restarting your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_restart_computer_description" xml:space="preserve">
-    <value>Restart Computer</value>
+    <value>Restart computer</value>
+    <comment>This should align to the action in Windows of a restarting your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_shutdown_computer" xml:space="preserve">
     <value>Shutdown</value>
+    <comment>This should align to the action in Windows of a shutting down your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_shutdown_computer_description" xml:space="preserve">
-    <value>Shutdown Computer</value>
+    <value>Shutdown computer</value>
+    <comment>This should align to the action in Windows of a shutting down your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_sign_out" xml:space="preserve">
+    <value>Sign out</value>
+    <comment>This should align to the action in windows of a signing out back to the lock screen.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_sign_out_description" xml:space="preserve">
+    <value>Sign out of computer</value>
+    <comment>This should align to the action in windows of a signing out back to the lock screen.</comment>
   </data>
   <data name="Microsoft_plugin_sys_sleep" xml:space="preserve">
     <value>Sleep</value>
+    <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
   </data>
   <data name="Microsoft_plugin_sys_sleep_description" xml:space="preserve">
     <value>Put computer to sleep</value>
+    <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
   </data>
 </root>
