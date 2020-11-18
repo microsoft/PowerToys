@@ -193,6 +193,7 @@ namespace FancyZonesEditor
         {
             LayoutModel.SerializeDeletedCustomZoneSets();
             App.Overlay.CloseLayoutWindow();
+            App.Current.Shutdown();
         }
 
         private void OnInitialized(object sender, EventArgs e)
