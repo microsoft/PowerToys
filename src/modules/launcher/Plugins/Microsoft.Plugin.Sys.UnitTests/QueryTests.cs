@@ -19,12 +19,12 @@ namespace Microsoft.Plugin.Sys.UnitTests
             StringMatcher.Instance = new StringMatcher();
         }
 
-        [TestCase("shutdown", "Shutdown Computer")]
-        [TestCase("restart", "Restart Computer")]
-        [TestCase("logoff", "Logoff")]
-        [TestCase("lock", "Lock Computer")]
+        [TestCase("shutdown", "Shutdown computer")]
+        [TestCase("restart", "Restart computer")]
+        [TestCase("sign out", "Sign out of computer")]
+        [TestCase("lock", "Lock computer")]
         [TestCase("sleep", "Put computer to sleep")]
-        [TestCase("hibernate", "Hibernate")]
+        [TestCase("hibernate", "Hibernate computer")]
         [TestCase("empty recycle", "Empty Recycle Bin")]
         public void QueryResults(string typedString, string expectedResult)
         {

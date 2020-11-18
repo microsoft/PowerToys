@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.Sys.UnitTests
 
         [TestCase("shutdown", "Images\\shutdown.dark.png")]
         [TestCase("restart", "Images\\restart.dark.png")]
-        [TestCase("logoff", "Images\\logoff.dark.png")]
+        [TestCase("sign out", "Images\\logoff.dark.png")]
         [TestCase("lock", "Images\\lock.dark.png")]
         [TestCase("sleep", "Images\\sleep.dark.png")]
         [TestCase("hibernate", "Images\\sleep.dark.png")]
@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Sys.UnitTests
 
         [TestCase("shutdown", "Images\\shutdown.light.png")]
         [TestCase("restart", "Images\\restart.light.png")]
-        [TestCase("logoff", "Images\\logoff.light.png")]
+        [TestCase("sign out", "Images\\logoff.light.png")]
         [TestCase("lock", "Images\\lock.light.png")]
         [TestCase("sleep", "Images\\sleep.light.png")]
         [TestCase("hibernate", "Images\\sleep.light.png")]
