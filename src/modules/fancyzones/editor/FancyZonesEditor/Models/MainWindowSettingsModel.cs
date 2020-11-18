@@ -378,7 +378,7 @@ namespace FancyZonesEditor
             {
                 foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
                 {
-                    if ("{" + model.Guid.ToString().ToUpper() + "}" == currentApplied.ZonesetUuid.ToUpper())
+                    if ("{" + model.Guid.ToString().ToUpperInvariant() + "}" == currentApplied.ZonesetUuid.ToUpperInvariant())
                     {
                         // found match
                         foundModel = model;

@@ -78,7 +78,7 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return "{" + Guid.ToString().ToUpper() + "}";
+                return "{" + Guid.ToString().ToUpperInvariant() + "}";
             }
         }
 
