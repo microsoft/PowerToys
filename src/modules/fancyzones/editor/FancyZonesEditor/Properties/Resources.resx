@@ -255,5 +255,6 @@
   </data>
   <data name="Reset_Layout" xml:space="preserve">
     <value>Reset</value>
+    <comment>as in Reset to a blank value</comment.
   </data>
 </root>
