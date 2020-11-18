@@ -57,6 +57,9 @@ namespace FancyZonesEditor.Utils
         private const string AppliedZoneSetsTmpFileName = "FancyZonesAppliedZoneSets.json";
         private const string DeletedCustomZoneSetsTmpFileName = "FancyZonesDeletedCustomZoneSets.json";
 
+        // Non-localizable string: Multi-monitor id
+        private const string MultiMonitorId = "FancyZones#MultiMonitorDevice";
+
         private readonly IFileSystem _fileSystem = new FileSystem();
 
         private JsonSerializerOptions _options = new JsonSerializerOptions
@@ -334,7 +337,7 @@ namespace FancyZonesEditor.Utils
                         }
                         else
                         {
-                            bool isLayoutMultiMonitor = deviceId.StartsWith("FancyZones#MultiMonitorDevice");
+                            bool isLayoutMultiMonitor = deviceId.StartsWith(MultiMonitorId);
                             if (isLayoutMultiMonitor)
                             {
                                 // one zoneset for all desktops
@@ -347,6 +350,8 @@ namespace FancyZonesEditor.Utils
                                     ZoneCount = zonesetData.GetProperty(EditorZoneCountJsonTag).GetInt32(),
                                     SensitivityRadius = zonesetData.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32(),
                                 };
+
+                                App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = deviceId;
 
                                 break;
                             }
