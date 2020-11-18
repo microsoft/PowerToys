@@ -349,7 +349,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reset.
+        ///   Looks up a localized string similar to Reset layout.
         /// </summary>
         public static string Reset_Layout {
             get {

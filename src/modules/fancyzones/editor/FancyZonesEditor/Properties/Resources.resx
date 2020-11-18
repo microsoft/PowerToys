@@ -254,7 +254,7 @@
     <value>Match not found ({0})</value>
   </data>
   <data name="Reset_Layout" xml:space="preserve">
-    <value>Reset</value>
+    <value>Reset layout</value>
     <comment>as in Reset to a blank value</comment>
   </data>
 </root>
