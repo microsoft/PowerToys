@@ -242,5 +242,28 @@ namespace FancyZonesEditor
         {
             this.Close();
         }
+
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            var overlay = App.Overlay;
+            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
+
+            if (overlay.CurrentDataContext is LayoutModel model)
+            {
+                model.IsSelected = false;
+                model.IsApplied = false;
+            }
+
+            overlay.CurrentLayoutSettings.ZonesetUuid = settings.BlankModel.Uuid;
+            overlay.CurrentLayoutSettings.Type = LayoutType.Blank;
+            overlay.CurrentDataContext = settings.BlankModel;
+
+            App.FancyZonesEditorIO.SerializeAppliedLayouts();
+
+            if (!overlay.MultiMonitorMode)
+            {
+                Close();
+            }
+        }
     }
 }

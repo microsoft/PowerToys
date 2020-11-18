@@ -349,6 +349,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reset.
+        /// </summary>
+        public static string Reset_Layout {
+            get {
+                return ResourceManager.GetString("Reset_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save and apply.
         /// </summary>
         public static string Save_Apply {

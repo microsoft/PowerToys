@@ -253,4 +253,7 @@
   <data name="Error_Monitor_Match_Not_Found" xml:space="preserve">
     <value>Match not found ({0})</value>
   </data>
+  <data name="Reset_Layout" xml:space="preserve">
+    <value>Reset</value>
+  </data>
 </root>
