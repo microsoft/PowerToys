@@ -244,7 +244,7 @@ namespace FancyZonesEditor
             this.Close();
         }
 
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        private void Reset_Click(object sender, RoutedEventArgs e)
         {
             var overlay = App.Overlay;
             MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;

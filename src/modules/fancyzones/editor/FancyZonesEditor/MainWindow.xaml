@@ -445,7 +445,7 @@
         </Grid>
 
 		<StackPanel Orientation="Horizontal" Margin="0,10,0,16">
-            <Button x:Name="ResetButton" Content="{x:Static props:Resources.Reset_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="ResetButton_Click"/>
+            <Button x:Name="ResetButton" Content="{x:Static props:Resources.Reset_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="Reset_Click"/>
             <Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
             <Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
 
