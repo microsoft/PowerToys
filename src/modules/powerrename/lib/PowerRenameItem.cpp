@@ -42,11 +42,11 @@ IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
+IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_isDateParsed ? S_OK : E_FAIL ;
-    if (!m_isDateParsed)
+    HRESULT hr = m_isTimeParsed ? S_OK : E_FAIL ;
+    if (!m_isTimeParsed)
     {
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
@@ -59,8 +59,8 @@ IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
                 {
                     if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
                     {
-                        m_date = LocalTime;
-                        m_isDateParsed = true;
+                        m_time = LocalTime;
+                        m_isTimeParsed = true;
                         hr = S_OK;
                     }
                 }
@@ -68,7 +68,7 @@ IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
         }
         CloseHandle(hFile);
     }
-    *date = m_date;
+    *time = m_time;
     return hr;
 }
 

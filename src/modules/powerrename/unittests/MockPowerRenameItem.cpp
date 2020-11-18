@@ -1,14 +1,14 @@
 #include "pch.h"
 #include "MockPowerRenameItem.h"
 
-HRESULT CMockPowerRenameItem::CreateInstance(_In_opt_ PCWSTR path, _In_opt_ PCWSTR originalName, _In_ UINT depth, _In_ bool isFolder, _In_ SYSTEMTIME LocalTime, _Outptr_ IPowerRenameItem** ppItem)
+HRESULT CMockPowerRenameItem::CreateInstance(_In_opt_ PCWSTR path, _In_opt_ PCWSTR originalName, _In_ UINT depth, _In_ bool isFolder, _In_ SYSTEMTIME time, _Outptr_ IPowerRenameItem** ppItem)
 {
     *ppItem = nullptr;
     CMockPowerRenameItem* newItem = new CMockPowerRenameItem();
     HRESULT hr = newItem ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr))
     {
-        newItem->Init(path, originalName, depth, isFolder, LocalTime);
+        newItem->Init(path, originalName, depth, isFolder, time);
         hr = newItem->QueryInterface(IID_PPV_ARGS(ppItem));
         newItem->Release();
     }
@@ -16,7 +16,7 @@ HRESULT CMockPowerRenameItem::CreateInstance(_In_opt_ PCWSTR path, _In_opt_ PCWS
     return hr;
 }
 
-void CMockPowerRenameItem::Init(_In_opt_ PCWSTR path, _In_opt_ PCWSTR originalName, _In_ UINT depth, _In_ bool isFolder, _In_ SYSTEMTIME LocalTime)
+void CMockPowerRenameItem::Init(_In_opt_ PCWSTR path, _In_opt_ PCWSTR originalName, _In_ UINT depth, _In_ bool isFolder, _In_ SYSTEMTIME time)
 {
     if (path != nullptr)
     {
@@ -30,6 +30,6 @@ void CMockPowerRenameItem::Init(_In_opt_ PCWSTR path, _In_opt_ PCWSTR originalNa
 
     m_depth = depth;
     m_isFolder = isFolder;
-    m_date = LocalTime;
-    m_isDateParsed = true;
+    m_time = time;
+    m_isTimeParsed = true;
 }

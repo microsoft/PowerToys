@@ -32,7 +32,7 @@ namespace PowerRenameManagerTests
             int depth;
         };
 
-        void RenameHelper(_In_ rename_pairs * renamePairs, _In_ int numPairs, _In_ std::wstring searchTerm, _In_ std::wstring replaceTerm, SYSTEMTIME LocalTime, _In_ DWORD flags)
+        void RenameHelper(_In_ rename_pairs * renamePairs, _In_ int numPairs, _In_ std::wstring searchTerm, _In_ std::wstring replaceTerm, SYSTEMTIME fileTime, _In_ DWORD flags)
         {
             // Create a single item (in a temp directory) and verify rename works as expected
             CTestFileHelper testFileHelper;
@@ -63,7 +63,7 @@ namespace PowerRenameManagerTests
                                                      renamePairs[i].originalName.c_str(),
                                                      renamePairs[i].depth,
                                                      !renamePairs[i].isFile,
-                                                     LocalTime,
+                                                     fileTime,
                                                      &item);
 
                 int itemId = 0;
@@ -312,26 +312,26 @@ namespace PowerRenameManagerTests
         TEST_METHOD (VerifyFileAttributesMonthandDayNames)
         {
             std::locale::global(std::locale(""));
-            SYSTEMTIME LocalTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };
+            SYSTEMTIME fileTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };
             wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
             wchar_t result[MAX_PATH] = L"bar";
             wchar_t formattedDate[MAX_PATH];
             if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
                 StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
 
-            GetDateFormatEx(localeName, NULL, &LocalTime, L"MMM", formattedDate, MAX_PATH, NULL);
+            GetDateFormatEx(localeName, NULL, &fileTime, L"MMM", formattedDate, MAX_PATH, NULL);
             formattedDate[0] = towupper(formattedDate[0]);
             StringCchPrintf(result, MAX_PATH, TEXT("%s%s"), result, formattedDate);
 
-            GetDateFormatEx(localeName, NULL, &LocalTime, L"MMMM", formattedDate, MAX_PATH, NULL);
+            GetDateFormatEx(localeName, NULL, &fileTime, L"MMMM", formattedDate, MAX_PATH, NULL);
             formattedDate[0] = towupper(formattedDate[0]);
             StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
 
-            GetDateFormatEx(localeName, NULL, &LocalTime, L"ddd", formattedDate, MAX_PATH, NULL);
+            GetDateFormatEx(localeName, NULL, &fileTime, L"ddd", formattedDate, MAX_PATH, NULL);
             formattedDate[0] = towupper(formattedDate[0]);
             StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
 
-            GetDateFormatEx(localeName, NULL, &LocalTime, L"dddd", formattedDate, MAX_PATH, NULL);
+            GetDateFormatEx(localeName, NULL, &fileTime, L"dddd", formattedDate, MAX_PATH, NULL);
             formattedDate[0] = towupper(formattedDate[0]);
             StringCchPrintf(result, MAX_PATH, TEXT("%s-%s"), result, formattedDate);
 

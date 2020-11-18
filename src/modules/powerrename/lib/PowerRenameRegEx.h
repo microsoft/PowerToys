@@ -25,7 +25,7 @@ public:
     IFACEMETHODIMP PutReplaceTerm(_In_ PCWSTR replaceTerm);
     IFACEMETHODIMP GetFlags(_Out_ DWORD* flags);
     IFACEMETHODIMP PutFlags(_In_ DWORD flags);
-    IFACEMETHODIMP Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, _In_ SYSTEMTIME LocalTime, _In_ bool useFileAttributes);
+    IFACEMETHODIMP Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, _In_ SYSTEMTIME fileTime, _In_ bool useFileAttributes);
 
     static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegEx **renameRegEx);
 

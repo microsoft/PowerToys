@@ -898,14 +898,14 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 }
 
                                 PWSTR replaceTerm = nullptr;
-                                SYSTEMTIME LocalTime = {0};
+                                SYSTEMTIME fileTime = {0};
 
-                                if (!useFileAttributes || SUCCEEDED(spItem->GetDate(&LocalTime)))
+                                if (!useFileAttributes || SUCCEEDED(spItem->GetTime(&fileTime)))
                                 {
                                     PWSTR newName = nullptr;
                                     // Failure here means we didn't match anything or had nothing to match
                                     // Call put_newName with null in that case to reset it
-                                    spRenameRegEx->Replace(sourceName, &newName, LocalTime, useFileAttributes);
+                                    spRenameRegEx->Replace(sourceName, &newName, fileTime, useFileAttributes);
 
                                     wchar_t resultName[MAX_PATH] = { 0 };
 
