@@ -693,7 +693,7 @@ eventdatemissed
 eventlog
 everytime
 evt
-EWXf
+EWX
 examplehandler
 examplepowertoy
 EXCLUDEFILES
