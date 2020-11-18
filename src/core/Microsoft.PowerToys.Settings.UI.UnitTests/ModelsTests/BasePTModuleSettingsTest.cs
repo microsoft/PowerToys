@@ -3,10 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using System.IO.Abstractions.TestingHelpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -24,7 +22,7 @@ namespace CommonLibTest
         [ObsoleteAttribute("This test method is obsolete.", true)]
         public void ToJsonStringShouldReturnValidJSONOfModelWhenSuccessful()
         {
-            //Mock Disk access
+            // Mock Disk access
             var mockFileSystem = new MockFileSystem();
             var settingsUtils = new SettingsUtils(mockFileSystem);
 

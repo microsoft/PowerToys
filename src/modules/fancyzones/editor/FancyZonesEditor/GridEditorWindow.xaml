@@ -13,7 +13,7 @@
         SizeToContent="Height"            
         Background="White"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterOwner"
         Closed="OnClosed">
 
     <Window.Resources>

@@ -233,6 +233,7 @@ cdpx
 cdpxwin
 cend
 CENTERALIGN
+cerr
 cfg
 Cfg
 changecursor
@@ -1373,6 +1374,7 @@ MMI
 mockapi
 MODECHANGE
 moderncop
+modernwpf
 modulekey
 MONITORINFO
 MONITORINFOEX
@@ -1464,6 +1466,7 @@ NDEBUG
 ndp
 neq
 NESW
+netcore
 netcoreapp
 netframework
 netfx

@@ -26,6 +26,7 @@ namespace ImageResizer.Properties
             {
                 if (disposing)
                 {
+                    _imageResizerApp.Dispose();
                     _imageResizerApp = null;
                 }
 

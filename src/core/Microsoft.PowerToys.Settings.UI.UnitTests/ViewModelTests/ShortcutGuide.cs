@@ -41,16 +41,16 @@ namespace ViewModelTests
             var shortcutSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<ShortcutGuideSettings>(mockSettingsUtils);
 
             // Initialise View Model with test Config files
-            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(generalSettingsRepository, shortcutSettingsRepository, SendMockIPCConfigMSG);
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(generalSettingsRepository, shortcutSettingsRepository, sendMockIPCConfigMSG);
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ShortcutGuide, viewModel.IsEnabled);
             Assert.AreEqual(originalSettings.Properties.OverlayOpacity.Value, viewModel.OverlayOpacity);
             Assert.AreEqual(originalSettings.Properties.PressTime.Value, viewModel.PressTime);
 
-            //Verify that the stub file was used
-            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            // Verify that the stub file was used
+            var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
             BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ShortcutGuideSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
@@ -71,7 +71,7 @@ namespace ViewModelTests
         {
             // Assert
             // Initialize mock function of sending IPC message.
-            Func<string, int> SendMockIPCConfigMSG = msg =>
+            Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
                 Assert.IsTrue(snd.GeneralSettings.Enabled.ShortcutGuide);
@@ -79,7 +79,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), sendMockIPCConfigMSG, ShortCutGuideTestFolderName);
 
             // Act
             viewModel.IsEnabled = true;
@@ -90,7 +90,7 @@ namespace ViewModelTests
         {
             // Assert
             // Initialize mock function of sending IPC message.
-            Func<string, int> SendMockIPCConfigMSG = msg =>
+            Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
                 Assert.AreEqual("dark", snd.Powertoys.ShortcutGuide.Properties.Theme.Value);
@@ -98,7 +98,8 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), sendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+
             // Initialize shortcut guide settings theme to 'system' to be in sync with shortcut_guide.h.
             Assert.AreEqual(2, viewModel.ThemeIndex);
 
@@ -111,7 +112,7 @@ namespace ViewModelTests
         {
             // Assert
             // Initialize mock function of sending IPC message.
-            Func<string, int> SendMockIPCConfigMSG = msg =>
+            Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
                 Assert.AreEqual(100, snd.Powertoys.ShortcutGuide.Properties.PressTime.Value);
@@ -119,7 +120,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), sendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(900, viewModel.PressTime);
 
             // Act
@@ -131,7 +132,7 @@ namespace ViewModelTests
         {
             // Assert
             // Initialize mock function of sending IPC message.
-            Func<string, int> SendMockIPCConfigMSG = msg =>
+            Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
 
@@ -141,7 +142,7 @@ namespace ViewModelTests
             };
 
             // Arrange
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), SendMockIPCConfigMSG, ShortCutGuideTestFolderName);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), sendMockIPCConfigMSG, ShortCutGuideTestFolderName);
             Assert.AreEqual(90, viewModel.OverlayOpacity);
 
             // Act
