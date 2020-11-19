@@ -233,6 +233,7 @@ cdpx
 cdpxwin
 cend
 CENTERALIGN
+cerr
 cfg
 Cfg
 changecursor
@@ -1456,6 +1457,7 @@ NDEBUG
 ndp
 neq
 NESW
+netcore
 netcoreapp
 netframework
 netfx

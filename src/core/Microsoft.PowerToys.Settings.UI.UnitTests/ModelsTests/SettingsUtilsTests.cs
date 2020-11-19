@@ -3,25 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
-using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace CommonLibTest
 {
     [TestClass]
     public class SettingsUtilsTests
     {
-
         [TestMethod]
         public void SaveSettingsSaveSettingsToFileWhenFilePathExists()
         {
@@ -106,9 +100,10 @@ namespace CommonLibTest
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        partial class TestClass : ISettingsConfig
+        private partial class TestClass : ISettingsConfig
         {
             public int TestInt { get; set; } = 100;
+
             public string TestString { get; set; } = "test";
 
             public string GetModuleName()
