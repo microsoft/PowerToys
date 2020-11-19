@@ -14,6 +14,7 @@ pr:
   branches:
     include:
       - master
+      - stable
 
 #     0.0.yyMM.dd##
 #     0.0.1904.0900
