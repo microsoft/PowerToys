@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PNG interlacing]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Чередование строк PNG]]></Val>
+            <Val><![CDATA[Чередование в PNG]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -256,8 +256,8 @@
       <Item ItemId=";Copyright" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[© 2020 Brice Lambson. All rights reserved.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[© Brice Lambson, 2019. Все права защищены.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[© Brice Lambson, 2020. Все права защищены.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[© 2019 Brice Lambson. All rights reserved.]]></Val>
@@ -295,7 +295,7 @@
       <Item ItemId=";Input_Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[_Select a size]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[_Выберите размер.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -389,7 +389,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Apply settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Применить параметры]]></Val>
+            <Val><![CDATA[Применение параметров]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -641,7 +641,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resize pictures]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Изменить размер изображений]]></Val>
+            <Val><![CDATA[Изменение размера изображений]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -649,6 +649,9 @@
       <Item ItemId=";Resize_Type" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resize type]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Тип изменения размера]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
