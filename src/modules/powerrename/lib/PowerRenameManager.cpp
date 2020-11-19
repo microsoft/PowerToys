@@ -836,7 +836,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
 
                     PWSTR replaceTerm = nullptr;
                     bool useFileTime = false;
-                    if (SUCCEEDED(spRenameRegEx->GetReplaceTerm(&replaceTerm)) && isFileAttributesUsed(replaceTerm))
+                    if (SUCCEEDED(spRenameRegEx->GetReplaceTerm(&replaceTerm)) && isFileTimeUsed(replaceTerm))
                     {
                             useFileTime = true;
                     }
@@ -913,8 +913,12 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     // Call put_newName with null in that case to reset it
                                     spRenameRegEx->Replace(sourceName, &newName);
 
-                                    spRenameRegEx->ResetFileTime();
-
+                                    // fileTime is a file specific value, to be removed after Replace operation
+                                    if (useFileTime)
+                                    {
+                                        spRenameRegEx->ResetFileTime();
+                                    }
+                                    
                                     wchar_t resultName[MAX_PATH] = { 0 };
 
                                     PWSTR newNameToUse = nullptr;

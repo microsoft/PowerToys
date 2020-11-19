@@ -169,7 +169,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
     return hr;
 }
 
-bool isFileAttributesUsed(_In_ PCWSTR source) 
+bool isFileTimeUsed(_In_ PCWSTR source) 
 {
     bool used = false;
     std::wstring patterns[] = { L"(([^\\$]|^)(\\$\\$)*)\\$Y", L"(([^\\$]|^)(\\$\\$)*)\\$M", L"(([^\\$]|^)(\\$\\$)*)\\$D", 
