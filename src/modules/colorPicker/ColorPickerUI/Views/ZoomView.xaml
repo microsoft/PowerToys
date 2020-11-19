@@ -16,9 +16,10 @@
             BorderThickness="1"
             Background="{DynamicResource PrimaryBackgroundBrush}"
             CornerRadius="4">
-        <Border.Effect>
+        <!-- Disabled due to the poor performance of drawing shadows in WPF -->
+        <!--<Border.Effect>
             <DropShadowEffect BlurRadius="16" Opacity="0.28" ShadowDepth="1" />
-        </Border.Effect>
+        </Border.Effect>-->
         <Grid>
             <Image Margin="3" Source="{Binding ZoomArea}"
                    RenderOptions.BitmapScalingMode="NearestNeighbor"
