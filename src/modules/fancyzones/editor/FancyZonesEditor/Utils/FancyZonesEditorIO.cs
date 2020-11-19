@@ -28,6 +28,7 @@ namespace FancyZonesEditor.Utils
         private const string EditorZoneCountJsonTag = "editor-zone-count";
         private const string EditorSensitivityRadiusJsonTag = "editor-sensitivity-radius";
 
+        private const string BlankJsonTag = "blank";
         private const string FocusJsonTag = "focus";
         private const string ColumnsJsonTag = "columns";
         private const string RowsJsonTag = "rows";
@@ -55,6 +56,9 @@ namespace FancyZonesEditor.Utils
         private const string ActiveZoneSetsTmpFileName = "FancyZonesActiveZoneSets.json";
         private const string AppliedZoneSetsTmpFileName = "FancyZonesAppliedZoneSets.json";
         private const string DeletedCustomZoneSetsTmpFileName = "FancyZonesDeletedCustomZoneSets.json";
+
+        // Non-localizable string: Multi-monitor id
+        private const string MultiMonitorId = "FancyZones#MultiMonitorDevice";
 
         private readonly IFileSystem _fileSystem = new FileSystem();
 
@@ -319,7 +323,6 @@ namespace FancyZonesEditor.Utils
                                 {
                                     monitors[monitorIndex].Settings = new LayoutSettings
                                     {
-                                        DeviceId = deviceId,
                                         ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
                                         ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
                                         Spacing = zonesetData.GetProperty(EditorSpacingJsonTag).GetInt32(),
@@ -334,13 +337,12 @@ namespace FancyZonesEditor.Utils
                         }
                         else
                         {
-                            bool isLayoutMultiMonitor = deviceId.StartsWith("FancyZones#MultiMonitorDevice");
+                            bool isLayoutMultiMonitor = deviceId.StartsWith(MultiMonitorId);
                             if (isLayoutMultiMonitor)
                             {
                                 // one zoneset for all desktops
                                 App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings = new LayoutSettings
                                 {
-                                    DeviceId = deviceId,
                                     ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
                                     ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
                                     Spacing = zonesetData.GetProperty(EditorSpacingJsonTag).GetInt32(),
@@ -348,6 +350,8 @@ namespace FancyZonesEditor.Utils
                                     ZoneCount = zonesetData.GetProperty(EditorZoneCountJsonTag).GetInt32(),
                                     SensitivityRadius = zonesetData.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32(),
                                 };
+
+                                App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = deviceId;
 
                                 break;
                             }
@@ -527,7 +531,7 @@ namespace FancyZonesEditor.Utils
 
                 applied.AppliedZonesets.Add(new AppliedZoneSet
                 {
-                    DeviceId = zoneset.DeviceId,
+                    DeviceId = monitor.Device.Id,
                     ActiveZoneset = activeZoneSet,
                     EditorShowSpacing = zoneset.ShowSpacing,
                     EditorSpacing = zoneset.Spacing,
@@ -615,6 +619,8 @@ namespace FancyZonesEditor.Utils
         {
             switch (type)
             {
+                case LayoutType.Blank:
+                    return BlankJsonTag;
                 case LayoutType.Focus:
                     return FocusJsonTag;
                 case LayoutType.Rows:

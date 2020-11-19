@@ -13,5 +13,5 @@ namespace PTSettingsHelper
     json::JsonObject load_module_settings(std::wstring_view powertoy_name);
     void save_general_settings(const json::JsonObject& settings);
     json::JsonObject load_general_settings();
-
+    std::wstring get_log_settings_file_location();
 }

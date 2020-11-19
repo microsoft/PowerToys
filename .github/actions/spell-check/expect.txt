@@ -235,6 +235,7 @@ cdpx
 cdpxwin
 cend
 CENTERALIGN
+cerr
 cfg
 Cfg
 changecursor

@@ -120,10 +120,16 @@ namespace FancyZonesEditor.Models
         {
             AddCustomLayout(this);
 
+            var canvasRect = CanvasRect;
+            if (canvasRect.Width == 0 || canvasRect.Height == 0)
+            {
+                canvasRect = App.Overlay.WorkArea;
+            }
+
             CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
             {
-                RefWidth = (int)CanvasRect.Width,
-                RefHeight = (int)CanvasRect.Height,
+                RefWidth = (int)canvasRect.Width,
+                RefHeight = (int)canvasRect.Height,
                 Zones = new Zone[Zones.Count],
             };
 

@@ -19,12 +19,12 @@ namespace ViewModelTests
         /// Test if the original settings files were modified.
         /// </summary>
         [TestMethod]
-        [DataRow("v0.20.1", "settings.json")]  //Color picker was introduced in .20
+        [DataRow("v0.20.1", "settings.json")] // Color picker was introduced in .20
         [DataRow("v0.21.1", "settings.json")]
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            //Arrange
+            // Arrange
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ColorPickerSettings.ModuleName, fileName);
             var settingPathMock = new Mock<ISettingsPath>();
 
@@ -37,19 +37,19 @@ namespace ViewModelTests
             GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
-            //Act
+            // Act
             // Initialise View Model with test Config files
             using (var viewModel = new ColorPickerViewModel(mockSettingsUtils, generalSettingsRepository, ColorPickerIsEnabledByDefaultIPC))
             {
 
-                //Assert
+                // Assert
                 // Verify that the old settings persisted
                 Assert.AreEqual(originalGeneralSettings.Enabled.ColorPicker, viewModel.IsEnabled);
                 Assert.AreEqual(originalSettings.Properties.ActivationShortcut.ToString(), viewModel.ActivationShortcut.ToString());
                 Assert.AreEqual(originalSettings.Properties.ChangeCursor, viewModel.ChangeCursor);
 
                 //Verify that the stub file was used
-                var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+                var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
                 BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ColorPickerSettings.ModuleName, expectedCallCount);
                 BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
             }
@@ -71,6 +71,5 @@ namespace ViewModelTests
             Assert.IsTrue(snd.GeneralSettings.Enabled.ColorPicker);
             return 0;
         }
-
     }
 }
