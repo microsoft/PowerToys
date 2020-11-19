@@ -84,7 +84,6 @@ namespace PowerRenameManagerTests
             renRegEx->PutFlags(flags);
             renRegEx->PutSearchTerm(searchTerm.c_str());
             renRegEx->PutReplaceTerm(replaceTerm.c_str());
-            renRegEx->PutFileTime(fileTime);
 
             // Perform the rename
             bool replaceSuccess = false;

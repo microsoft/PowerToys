@@ -154,7 +154,7 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     if (m_flags != flags)
     {
         m_flags = flags;
-        _OnFileTimeChanged();
+        _OnFlagsChanged();
     }
     return S_OK;
 }
@@ -177,7 +177,7 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFileTime(_In_ SYSTEMTIME fileTime)
     {
         m_fileTime = fileTime;
         m_useFileTime = true;
-        _OnFlagsChanged();
+        _OnFileTimeChanged();
     }
     return S_OK;
 }

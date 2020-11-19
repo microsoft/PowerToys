@@ -374,6 +374,7 @@ TEST_METHOD (VerifyFileAttributesNoPadding)
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences | UseRegularExpressions ;
+    SYSTEMTIME fileTime = SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 };
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
@@ -386,7 +387,7 @@ TEST_METHOD (VerifyFileAttributesNoPadding)
         PWSTR result = nullptr;
         Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
         Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->PutFileTime(SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }) == S_OK);
+        Assert::IsTrue(renameRegEx->PutFileTime(fileTime) == S_OK);
         Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
         Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
         CoTaskMemFree(result);
@@ -399,7 +400,7 @@ TEST_METHOD (VerifyFileAttributesPadding)
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     DWORD flags = MatchAllOccurences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
+    SYSTEMTIME fileTime = SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 };
     SearchReplaceExpected sreTable[] = {
         //search, replace, test, result
         { L"foo", L"bar$YYYY-$MM-$DD-$hh-$mm-$ss-$fff", L"foo", L"bar2020-07-22-15-06-42-453" },
@@ -410,7 +411,7 @@ TEST_METHOD (VerifyFileAttributesPadding)
         PWSTR result = nullptr;
         Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
         Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->PutFileTime(SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }) == S_OK);
+        Assert::IsTrue(renameRegEx->PutFileTime(fileTime) == S_OK);
         Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
         Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
         CoTaskMemFree(result);
