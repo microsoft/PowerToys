@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fallback encoder]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[后备编码器]]></Val>
+            <Val><![CDATA[回退编码器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -256,8 +256,8 @@
       <Item ItemId=";Copyright" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[© 2020 Brice Lambson. All rights reserved.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[© 2019 Brice Lambson。保留所有权利。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[© 2020 Brice Lambson。保留所有权利。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[© 2019 Brice Lambson. All rights reserved.]]></Val>
@@ -295,8 +295,8 @@
       <Item ItemId=";Input_Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[_Select a size]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[选择大小(&S)。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[选择大小(&S)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[_Select a size.]]></Val>
@@ -649,6 +649,9 @@
       <Item ItemId=";Resize_Type" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resize type]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[调整类型大小]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
