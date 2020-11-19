@@ -7,14 +7,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
-using MahApps.Metro.Controls;
 
 namespace FancyZonesEditor
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : MetroWindow
+    public partial class MainWindow : Window
     {
         // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const int MaxZones = 40;
