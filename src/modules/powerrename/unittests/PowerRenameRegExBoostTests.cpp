@@ -414,7 +414,7 @@ TEST_METHOD(VerifyLookbehind)
     }
 }
 
-TEST_METHOD (VerifyEventsFire)
+TEST_METHOD(VerifyEventsFire)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);

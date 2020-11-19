@@ -2267,6 +2267,7 @@ tif
 TILEDWINDOW
 timeinfo
 Timeline
+timeunion
 timeutil
 titlecase
 tlb
@@ -2342,6 +2343,7 @@ UIPI
 UIs
 uk
 ul
+ULARGE
 ULLONG
 ulong
 unchecks
