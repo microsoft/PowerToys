@@ -903,22 +903,34 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
                                 }
 
-                                PWSTR replaceTerm = nullptr;
                                 SYSTEMTIME fileTime = {0};
 
-                                if (!useFileTime || ( SUCCEEDED(spItem->GetTime(&fileTime)) && SUCCEEDED(spRenameRegEx->PutFileTime(fileTime))))
+                                HRESULT hr = S_OK;
+                                if (useFileTime)
                                 {
-                                    PWSTR newName = nullptr;
+                                    hr = spItem->GetTime(&fileTime);
+                                    if (SUCCEEDED(hr))
+                                    {
+                                        hr = spRenameRegEx->PutFileTime(fileTime);
+                                    }
+                                }
+
+                                PWSTR newName = nullptr;
+
+                                if (SUCCEEDED(hr))
+                                {
                                     // Failure here means we didn't match anything or had nothing to match
                                     // Call put_newName with null in that case to reset it
-                                    spRenameRegEx->Replace(sourceName, &newName);
+                                    hr = spRenameRegEx->Replace(sourceName, &newName);    
+                                }
 
-                                    // fileTime is a file specific value, to be removed after Replace operation
-                                    if (useFileTime)
-                                    {
-                                        spRenameRegEx->ResetFileTime();
-                                    }
-                                    
+                                if (SUCCEEDED(hr) && useFileTime)
+                                {
+                                    hr = spRenameRegEx->ResetFileTime();
+                                }
+
+                                if (SUCCEEDED(hr))
+                                {
                                     wchar_t resultName[MAX_PATH] = { 0 };
 
                                     PWSTR newNameToUse = nullptr;
@@ -998,15 +1010,14 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         // Send the manager thread the item processed message
                                         PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
                                     }
-
-                                    CoTaskMemFree(newName);
-                                    CoTaskMemFree(replaceTerm);
-                                    CoTaskMemFree(currentNewName);
-                                    CoTaskMemFree(originalName);   
                                 }
+                                CoTaskMemFree(newName);
+                                CoTaskMemFree(currentNewName);
                             }
+                            CoTaskMemFree(originalName);
                         }
                     }
+                    CoTaskMemFree(replaceTerm);
                 }
             }
 

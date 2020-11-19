@@ -243,7 +243,15 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
 
             std::wstring sourceToUse(source);
             std::wstring searchTerm(m_searchTerm);
-            std::wstring replaceTerm((m_useFileTime && !fileTimeErrorOccurred) ? wstring(newReplaceTerm) : (m_replaceTerm ? wstring(m_replaceTerm) : wstring(L"")));
+            std::wstring replaceTerm(L"");
+            if (m_useFileTime && !fileTimeErrorOccurred)
+            {
+                replaceTerm = wstring(newReplaceTerm);
+            }
+            else if (m_replaceTerm)
+            {
+                replaceTerm = wstring(m_replaceTerm);
+            }
 
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$[0]"), L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$([1-9])"), L"$1$0$4");
