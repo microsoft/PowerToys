@@ -39,29 +39,30 @@ namespace ViewModelTests
 
             //Act
             // Initialise View Model with test Config files
-            ColorPickerViewModel viewModel = new ColorPickerViewModel(mockSettingsUtils, generalSettingsRepository, ColorPickerIsEnabledByDefaultIPC);
+            using (var viewModel = new ColorPickerViewModel(mockSettingsUtils, generalSettingsRepository, ColorPickerIsEnabledByDefaultIPC))
+            {
 
-            //Assert
-            // Verify that the old settings persisted
-            Assert.AreEqual(originalGeneralSettings.Enabled.ColorPicker, viewModel.IsEnabled);
-            Assert.AreEqual(originalSettings.Properties.ActivationShortcut.ToString(), viewModel.ActivationShortcut.ToString());
-            Assert.AreEqual(originalSettings.Properties.ChangeCursor, viewModel.ChangeCursor);
+                //Assert
+                // Verify that the old settings persisted
+                Assert.AreEqual(originalGeneralSettings.Enabled.ColorPicker, viewModel.IsEnabled);
+                Assert.AreEqual(originalSettings.Properties.ActivationShortcut.ToString(), viewModel.ActivationShortcut.ToString());
+                Assert.AreEqual(originalSettings.Properties.ChangeCursor, viewModel.ChangeCursor);
 
-            //Verify that the stub file was used
-            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
-            BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ColorPickerSettings.ModuleName, expectedCallCount);
-            BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
-            viewModel.Dispose();
+                //Verify that the stub file was used
+                var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+                BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ColorPickerSettings.ModuleName, expectedCallCount);
+                BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
+            }
         }
 
         [TestMethod]
         public void ColorPickerIsEnabledByDefault()
         {
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>();
-            var viewModel = new ColorPickerViewModel(ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object), ColorPickerIsEnabledByDefaultIPC);
-
-            Assert.IsTrue(viewModel.IsEnabled);
-            viewModel.Dispose();
+            using (var viewModel = new ColorPickerViewModel(ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object, SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object), ColorPickerIsEnabledByDefaultIPC))
+            {
+                Assert.IsTrue(viewModel.IsEnabled);
+            }
         }
 
         private static int ColorPickerIsEnabledByDefaultIPC(string msg)
