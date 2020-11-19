@@ -68,6 +68,7 @@ build:
             - '**\*.resources.dll'
             - 'modules\FancyZones\fancyzones.dll'
             - 'modules\FancyZones\FancyZonesEditor.exe'
+            - 'modules\FancyZones\FancyZonesEditor.dll'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
