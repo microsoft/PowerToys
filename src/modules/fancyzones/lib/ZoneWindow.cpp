@@ -390,7 +390,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
 
     const auto& activeZoneSet = deviceInfoData->activeZoneSet;
 
-    if (activeZoneSet.uuid.empty() || activeZoneSet.type == FancyZonesDataTypes::ZoneSetLayoutType::Blank)
+    if (activeZoneSet.uuid.empty())
     {
         return;
     }
