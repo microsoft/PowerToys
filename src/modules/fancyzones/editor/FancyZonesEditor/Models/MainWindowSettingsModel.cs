@@ -40,8 +40,6 @@ namespace FancyZonesEditor
         public const ushort _blankCustomModelId = 0xFFFA;
         public const ushort _lastDefinedId = _blankCustomModelId;
 
-        private const int MaxNegativeSpacing = -10;
-
         // Non-localizable strings
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
         public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
@@ -394,7 +392,7 @@ namespace FancyZonesEditor
             {
                 foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
                 {
-                    if ("{" + model.Guid.ToString().ToUpper() + "}" == currentApplied.ZonesetUuid.ToUpper())
+                    if ("{" + model.Guid.ToString().ToUpperInvariant() + "}" == currentApplied.ZonesetUuid.ToUpperInvariant())
                     {
                         // found match
                         foundModel = model;

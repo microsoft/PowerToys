@@ -78,7 +78,7 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return "{" + Guid.ToString().ToUpper() + "}";
+                return "{" + Guid.ToString().ToUpperInvariant() + "}";
             }
         }
 
@@ -185,7 +185,7 @@ namespace FancyZonesEditor.Models
             return _customModels;
         }
 
-        private static ObservableCollection<LayoutModel> _customModels = null;
+        private static ObservableCollection<LayoutModel> _customModels;
         private static List<string> _deletedCustomModels = new List<string>();
         private static List<JsonElement> _createdCustomLayouts = new List<JsonElement>();
 

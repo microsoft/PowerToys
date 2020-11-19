@@ -381,7 +381,7 @@ namespace FancyZonesEditor.Utils
                     string uuid = current.GetProperty(UuidJsonTag).GetString();
                     var info = current.GetProperty(InfoJsonTag);
 
-                    if (type.Equals(GridJsonTag))
+                    if (type.Equals(GridJsonTag, StringComparison.OrdinalIgnoreCase))
                     {
                         bool error = false;
 
@@ -453,13 +453,13 @@ namespace FancyZonesEditor.Utils
                         if (error)
                         {
                             App.ShowExceptionMessageBox(string.Format(Properties.Resources.Error_Layout_Malformed_Data, name));
-                            deleted.Add(Guid.Parse(uuid).ToString().ToUpper());
+                            deleted.Add(Guid.Parse(uuid).ToString().ToUpperInvariant());
                             continue;
                         }
 
                         custom.Add(new GridLayoutModel(uuid, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
                     }
-                    else if (type.Equals(CanvasJsonTag))
+                    else if (type.Equals(CanvasJsonTag, StringComparison.OrdinalIgnoreCase))
                     {
                         int workAreaWidth = info.GetProperty(RefWidthJsonTag).GetInt32();
                         int workAreaHeight = info.GetProperty(RefHeightJsonTag).GetInt32();
@@ -493,7 +493,7 @@ namespace FancyZonesEditor.Utils
                         if (error)
                         {
                             App.ShowExceptionMessageBox(string.Format(Properties.Resources.Error_Layout_Malformed_Data, name));
-                            deleted.Add(Guid.Parse(uuid).ToString().ToUpper());
+                            deleted.Add(Guid.Parse(uuid).ToString().ToUpperInvariant());
                             continue;
                         }
 
