@@ -154,8 +154,40 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     if (m_flags != flags)
     {
         m_flags = flags;
+        _OnFileTimeChanged();
+    }
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::PutFileTime(_In_ SYSTEMTIME fileTime)
+{
+    union timeunion
+    {
+        FILETIME fileTime;
+        ULARGE_INTEGER ul;
+    };
+
+    timeunion ft1;
+    timeunion ft2;
+
+    SystemTimeToFileTime(&m_fileTime, &ft1.fileTime);
+    SystemTimeToFileTime(&fileTime, &ft2.fileTime);
+
+    if(ft2.ul.QuadPart != ft1.ul.QuadPart)
+    {
+        m_fileTime = fileTime;
+        m_useFileTime = true;
         _OnFlagsChanged();
     }
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::ResetFileTime()
+{
+    SYSTEMTIME ZERO = { 0 };
+    m_fileTime = ZERO;
+    m_useFileTime = false;
+    _OnFileTimeChanged();
     return S_OK;
 }
 
@@ -189,7 +221,7 @@ CPowerRenameRegEx::~CPowerRenameRegEx()
     CoTaskMemFree(m_replaceTerm);
 }
 
-HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, _In_ SYSTEMTIME fileTime, _In_ bool useFileAttributes)
+HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
 {
     *result = nullptr;
 
@@ -202,15 +234,16 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, _
         {
             // TODO: creating the regex could be costly.  May want to cache this.
             wchar_t newReplaceTerm[MAX_PATH] = { 0 };
-            if (useFileAttributes)
+            bool fileTimeErrorOccurred = false;
+            if (m_useFileTime)
             {
-                if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, fileTime)))
-                    useFileAttributes = false;
+                if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, m_fileTime)))
+                    fileTimeErrorOccurred = true;
             }
 
             std::wstring sourceToUse(source);
             std::wstring searchTerm(m_searchTerm);
-            std::wstring replaceTerm(useFileAttributes ? wstring(newReplaceTerm) : (m_replaceTerm ? wstring(m_replaceTerm) : wstring(L"")));
+            std::wstring replaceTerm((m_useFileTime && !fileTimeErrorOccurred) ? wstring(newReplaceTerm) : (m_replaceTerm ? wstring(m_replaceTerm) : wstring(L"")));
 
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$[0]"), L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$([1-9])"), L"$1$0$4");
@@ -320,6 +353,19 @@ void CPowerRenameRegEx::_OnFlagsChanged()
         if (it.pEvents)
         {
             it.pEvents->OnFlagsChanged(m_flags);
+        }
+    }
+}
+
+void CPowerRenameRegEx::_OnFileTimeChanged()
+{
+    CSRWSharedAutoLock lock(&m_lockEvents);
+
+    for (auto it : m_renameRegExEvents)
+    {
+        if (it.pEvents)
+        {
+            it.pEvents->OnFileTimeChanged(m_fileTime);
         }
     }
 }

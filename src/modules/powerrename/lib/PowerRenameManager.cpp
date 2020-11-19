@@ -415,6 +415,12 @@ IFACEMETHODIMP CPowerRenameManager::OnFlagsChanged(_In_ DWORD flags)
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameManager::OnFileTimeChanged(_In_ SYSTEMTIME /*fileTime*/)
+{
+    _PerformRegExRename();
+    return S_OK;
+}
+
 HRESULT CPowerRenameManager::s_CreateInstance(_Outptr_ IPowerRenameManager** ppsrm)
 {
     *ppsrm = nullptr;
@@ -829,10 +835,10 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     spRenameRegEx->GetFlags(&flags);
 
                     PWSTR replaceTerm = nullptr;
-                    bool useFileAttributes = false;
+                    bool useFileTime = false;
                     if (SUCCEEDED(spRenameRegEx->GetReplaceTerm(&replaceTerm)) && isFileAttributesUsed(replaceTerm))
                     {
-                            useFileAttributes = true;
+                            useFileTime = true;
                     }
 
                     UINT itemCount = 0;
@@ -900,12 +906,14 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 PWSTR replaceTerm = nullptr;
                                 SYSTEMTIME fileTime = {0};
 
-                                if (!useFileAttributes || SUCCEEDED(spItem->GetTime(&fileTime)))
+                                if (!useFileTime || ( SUCCEEDED(spItem->GetTime(&fileTime)) && SUCCEEDED(spRenameRegEx->PutFileTime(fileTime))))
                                 {
                                     PWSTR newName = nullptr;
                                     // Failure here means we didn't match anything or had nothing to match
                                     // Call put_newName with null in that case to reset it
-                                    spRenameRegEx->Replace(sourceName, &newName, fileTime, useFileAttributes);
+                                    spRenameRegEx->Replace(sourceName, &newName);
+
+                                    spRenameRegEx->ResetFileTime();
 
                                     wchar_t resultName[MAX_PATH] = { 0 };
 

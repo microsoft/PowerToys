@@ -56,6 +56,12 @@ IFACEMETHODIMP CMockPowerRenameRegExEvents::OnFlagsChanged(_In_ DWORD flags)
     return S_OK;
 }
 
+IFACEMETHODIMP CMockPowerRenameRegExEvents::OnFileTimeChanged(_In_ SYSTEMTIME fileTime)
+{
+    m_fileTime = fileTime;
+    return S_OK;
+}
+
 HRESULT CMockPowerRenameRegExEvents::s_CreateInstance(_Outptr_ IPowerRenameRegExEvents** ppsrree)
 {
     *ppsrree = nullptr;
