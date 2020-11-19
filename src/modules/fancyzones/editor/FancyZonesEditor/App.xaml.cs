@@ -52,6 +52,8 @@ namespace FancyZonesEditor
 
         public static int PowerToysPID { get; set; }
 
+        private ThemeManager _themeManager;
+
         public static bool DebugMode
         {
             get
@@ -84,6 +86,8 @@ namespace FancyZonesEditor
             {
                 Environment.Exit(0);
             });
+
+            _themeManager = new ThemeManager(this);
 
             FancyZonesEditorIO.ParseCommandLineArguments();
             FancyZonesEditorIO.ParseDeviceInfoData();
