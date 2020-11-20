@@ -8,11 +8,19 @@ using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Registry.Helper
 {
+    /// <summary>
+    /// Helper class to easier work with context menu entries
+    /// </summary>
     internal static class ContextMenuHelper
     {
         #pragma warning disable CA1031 // Do not catch general exception types
 
-        internal static bool OpenInRegistryEditor(in string key)
+        /// <summary>
+        /// Open the Windows registry editor and jump to the given key
+        /// </summary>
+        /// <param name="key">The key to jump in</param>
+        /// <returns><see langword="true"/> if the registry editor was successful open, otherwise <see langword="false"/></returns>
+        internal static bool TryToOpenInRegistryEditor(in string key)
         {
             try
             {
@@ -22,7 +30,7 @@ namespace Microsoft.Plugin.Registry.Helper
             catch (System.ComponentModel.Win32Exception)
             {
                 MessageBox.Show(
-                    "You do not have enough rights to open the Registry Editor",
+                    "You do not have enough rights to open the Windows registry editor",
                     "Error on open Registry Editor",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -30,12 +38,17 @@ namespace Microsoft.Plugin.Registry.Helper
             }
             catch (Exception exception)
             {
-                Log.Exception("Error on open Registry Editor", exception, typeof(Main));
+                Log.Exception("Error on open Windows registry editor", exception, typeof(Main));
                 return false;
             }
         }
 
-        internal static bool CopyToClipBoard(in string text)
+        /// <summary>
+        /// Copy the given text to the clipboard
+        /// </summary>
+        /// <param name="text">The text to copy to the clipboard</param>
+        /// <returns><see langword="true"/>The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
+        internal static bool TryToCopyToClipBoard(in string text)
         {
             try
             {

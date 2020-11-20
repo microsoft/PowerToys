@@ -14,8 +14,14 @@ namespace Microsoft.Plugin.Registry.Helper
 {
     #pragma warning disable CA1031 // Do not catch general exception types
 
+    /// <summary>
+    /// Helper class to easier work with the registry
+    /// </summary>
     internal static class RegistryHelper
     {
+        /// <summary>
+        /// A list that contain all registry main keys in a long/full version and in a short version (e.g HKLM = HKEY_LOCAL_MACHINE)
+        /// </summary>
         private static readonly IReadOnlyDictionary<string, RegistryKey?> _mainKeys = new Dictionary<string, RegistryKey?>(13)
         {
             { "HKEY_", null },
@@ -119,7 +125,7 @@ namespace Microsoft.Plugin.Registry.Helper
             => $"Sub-keys: {key.SubKeyCount} - Values: {key.ValueCount}";
 
         /// <summary>
-        /// Open a given registry key in the registry editor (build-in in Windows)
+        /// Open a given registry key in the registry editor
         /// </summary>
         /// <param name="fullKey">The registry key to open</param>
         internal static void OpenRegistryKey(in string fullKey)
@@ -131,8 +137,8 @@ namespace Microsoft.Plugin.Registry.Helper
             {
                 Arguments = "-m",           // -m => allow multi-instance (hidden start option)
                 FileName = "regedit.exe",
-                Verb = "runas",             // Start as Administraor
-                UseShellExecute = true,     // Start as administraor will not work without this
+                Verb = "runas",             // Start as administrator
+                UseShellExecute = true,     // Start as administrator will not work without this
             });
         }
 

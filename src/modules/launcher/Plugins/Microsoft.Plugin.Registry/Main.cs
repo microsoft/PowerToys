@@ -11,7 +11,6 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Helper;
-using Microsoft.Win32;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Registry
@@ -28,8 +27,8 @@ namespace Microsoft.Plugin.Registry
     // - list of found keys
     // - result of found keys
     // - auto replace "/" with "\"
-    // - always case-intensitive
-    // - make as PT plugin
+    // - always case-insensitive
+    // - make as PT plug-in
     // - command: open direct in regedit.exe
     // - command: copy key/name/value to clipboard
     // - show key values via ':'
@@ -43,7 +42,7 @@ namespace Microsoft.Plugin.Registry
     // - multi-language
     // - cache results ?
     // - benchmark
-    // - unittests
+    // - unit-tests
     // - dark/light theme switch
     public class Main : IPlugin, IContextMenu, IDisposable
     {
@@ -105,7 +104,7 @@ namespace Microsoft.Plugin.Registry
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.CopyToClipBoard(entry.Key.Name),
+                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.Key.Name),
                 });
             }
             else
@@ -118,7 +117,7 @@ namespace Microsoft.Plugin.Registry
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.N,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.CopyToClipBoard(selectedResult.Title),
+                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(selectedResult.Title),
                 });
             }
 
@@ -130,7 +129,7 @@ namespace Microsoft.Plugin.Registry
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                Action = _ => ContextMenuHelper.OpenInRegistryEditor(entry.Key?.Name ?? entry.KeyPath),
+                Action = _ => ContextMenuHelper.TryToOpenInRegistryEditor(entry.Key?.Name ?? entry.KeyPath),
             });
 
             return list;

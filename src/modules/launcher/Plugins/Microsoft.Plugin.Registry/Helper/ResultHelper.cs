@@ -10,10 +10,19 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Registry.Helper
 {
+    /// <summary>
+    /// Helper class to easier work with results
+    /// </summary>
     internal static class ResultHelper
     {
         #pragma warning disable CA1031 // Do not catch general exception types
 
+        /// <summary>
+        /// Return a list with <see cref="Result"/>s, based on the given list
+        /// </summary>
+        /// <param name="list">The original result list to convert</param>
+        /// <param name="iconPath">The path to the icon of each entry</param>
+        /// <returns>A list with <see cref="Result"/></returns>
         internal static List<Result> GetResultList(ICollection<RegistryEntry> list, string iconPath)
         {
             var resultList = new List<Result>();
@@ -51,6 +60,12 @@ namespace Microsoft.Plugin.Registry.Helper
             return resultList;
         }
 
+        /// <summary>
+        /// Return a list with <see cref="Result"/>s, based on the given <see cref="RegistryKey"/>
+        /// </summary>
+        /// <param name="key">The <see cref="RegistryKey"/> that should contain entries for the list</param>
+        /// <param name="iconPath">The path to the icon of each entry</param>
+        /// <returns>A list with <see cref="Result"/></returns>
         internal static List<Result> GetValuesFromKey(RegistryKey? key, string iconPath)
         {
             if (key is null)
