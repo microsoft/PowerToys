@@ -94,7 +94,20 @@ namespace Microsoft.Plugin.Registry
 
             var list = new List<ContextMenuResult>();
 
-            if (key.Name != selectedResult.Title)
+            if (key.Name == selectedResult.Title)
+            {
+                list.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Copy key to clipboard",
+                    Glyph = "\xF0E3",                       // E70F => ClipboardList
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ => ContextMenuHelper.CopyToClipBoard(key.Name),
+                });
+            }
+            else
             {
                 list.Add(new ContextMenuResult
                 {
@@ -106,34 +119,12 @@ namespace Microsoft.Plugin.Registry
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ => ContextMenuHelper.CopyToClipBoard(selectedResult.Title),
                 });
-
-                list.Add(new ContextMenuResult
-                {
-                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Copy value to clipboard",
-                    Glyph = "\xF0E3",                       // E70F => ClipboardList
-                    FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = Key.V,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.CopyToClipBoard(key.GetValue(selectedResult.Title) as string ?? string.Empty),
-                });
             }
 
             list.Add(new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = "Copy key to clipboard",
-                Glyph = "\xF0E3",                       // E70F => ClipboardList
-                FontFamily = "Segoe MDL2 Assets",
-                AcceleratorKey = Key.C,
-                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                Action = _ => ContextMenuHelper.CopyToClipBoard(key.Name),
-            });
-
-            list.Add(new ContextMenuResult
-            {
-                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = "Open in registry editor",
+                Title = "Open key in registry editor",
                 Glyph = "\xE70F",                       // E70F => Edit (Pencil)
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
