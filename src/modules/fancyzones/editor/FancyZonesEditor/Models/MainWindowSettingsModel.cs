@@ -40,14 +40,9 @@ namespace FancyZonesEditor
         public const ushort _blankCustomModelId = 0xFFFA;
         public const ushort _lastDefinedId = _blankCustomModelId;
 
-        private const int MaxNegativeSpacing = -10;
-
         // Non-localizable strings
         public static readonly string RegistryPath = "SOFTWARE\\SuperFancyZones";
         public static readonly string FullRegistryPath = "HKEY_CURRENT_USER\\" + RegistryPath;
-
-        private const string LayoutTypeBlankStr = "blank";
-        private const string NullUuidStr = "null";
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -364,6 +359,16 @@ namespace FancyZonesEditor
 
         private static ObservableCollection<LayoutModel> _customModels;
 
+        public CanvasLayoutModel BlankModel
+        {
+            get
+            {
+                return _blankModel;
+            }
+        }
+
+        private CanvasLayoutModel _blankModel = new CanvasLayoutModel(string.Empty, LayoutType.Blank);
+
         public static bool IsPredefinedLayout(LayoutModel model)
         {
             return model.Type != LayoutType.Custom;
@@ -379,11 +384,15 @@ namespace FancyZonesEditor
             LayoutSettings currentApplied = App.Overlay.CurrentLayoutSettings;
 
             // set new layout
-            if (currentApplied.Type == LayoutType.Custom)
+            if (currentApplied.Type == LayoutType.Blank)
+            {
+                foundModel = BlankModel;
+            }
+            else if (currentApplied.Type == LayoutType.Custom)
             {
                 foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
                 {
-                    if ("{" + model.Guid.ToString().ToUpper() + "}" == currentApplied.ZonesetUuid.ToUpper())
+                    if ("{" + model.Guid.ToString().ToUpperInvariant() + "}" == currentApplied.ZonesetUuid.ToUpperInvariant())
                     {
                         // found match
                         foundModel = model;
@@ -406,7 +415,7 @@ namespace FancyZonesEditor
 
             if (foundModel == null)
             {
-                foundModel = DefaultModels[0];
+                foundModel = DefaultModels[4]; // PriorityGrid
             }
 
             foundModel.IsSelected = true;

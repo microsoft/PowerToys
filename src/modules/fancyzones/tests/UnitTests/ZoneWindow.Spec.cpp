@@ -93,28 +93,12 @@ namespace FancyZonesUnitTests
             m_parentUniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{61FA9FC0-26A6-4B37-A834-491C148DFC57}";
             m_uniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
 
-            Assert::IsFalse(m_fancyZonesData.activeZoneSetTmpFileName.empty());
-            Assert::IsFalse(m_fancyZonesData.appliedZoneSetTmpFileName.empty());
-            Assert::IsFalse(m_fancyZonesData.deletedCustomZoneSetsTmpFileName.empty());
-
-            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.activeZoneSetTmpFileName));
-            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.appliedZoneSetTmpFileName));
-            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.deletedCustomZoneSetsTmpFileName));
-
             m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
 
             auto guid = Helpers::StringToGuid(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
             Assert::IsTrue(guid.has_value());
             m_virtualDesktopGuid = *guid;
-        }
-
-        TEST_METHOD_CLEANUP(Cleanup)
-        {
-            //cleanup temp files if were created
-            std::filesystem::remove(m_fancyZonesData.activeZoneSetTmpFileName);
-            std::filesystem::remove(m_fancyZonesData.appliedZoneSetTmpFileName);
-            std::filesystem::remove(m_fancyZonesData.deletedCustomZoneSetsTmpFileName);
         }
 
         TEST_METHOD(CreateZoneWindow)
@@ -457,24 +441,8 @@ namespace FancyZonesUnitTests
 
             m_uniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
 
-            Assert::IsFalse(m_fancyZonesData.activeZoneSetTmpFileName.empty());
-            Assert::IsFalse(m_fancyZonesData.appliedZoneSetTmpFileName.empty());
-            Assert::IsFalse(m_fancyZonesData.deletedCustomZoneSetsTmpFileName.empty());
-
-            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.activeZoneSetTmpFileName));
-            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.appliedZoneSetTmpFileName));
-            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.deletedCustomZoneSetsTmpFileName));
-
             m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
-        }
-
-        TEST_METHOD_CLEANUP(Cleanup)
-        {
-            //cleanup temp files if were created
-            std::filesystem::remove(m_fancyZonesData.activeZoneSetTmpFileName);
-            std::filesystem::remove(m_fancyZonesData.appliedZoneSetTmpFileName);
-            std::filesystem::remove(m_fancyZonesData.deletedCustomZoneSetsTmpFileName);
         }
 
     public:

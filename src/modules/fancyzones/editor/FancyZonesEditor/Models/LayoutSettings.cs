@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -15,8 +16,6 @@ namespace FancyZonesEditor
         public static int DefaultZoneCount => 3;
 
         public static int DefaultSensitivityRadius => 20;
-
-        public string DeviceId { get; set; } = string.Empty;
 
         public string ZonesetUuid { get; set; } = string.Empty;
 

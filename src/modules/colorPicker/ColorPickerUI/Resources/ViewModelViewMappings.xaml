@@ -9,4 +9,8 @@
     <DataTemplate DataType="{x:Type viewModels:ZoomViewModel}">
         <views:ZoomView/>
     </DataTemplate>
+
+    <DataTemplate DataType="{x:Type viewModels:ColorEditorViewModel}">
+        <views:ColorEditorView/>
+    </DataTemplate>
 </ResourceDictionary>

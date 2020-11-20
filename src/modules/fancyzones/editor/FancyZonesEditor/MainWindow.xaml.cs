@@ -193,6 +193,7 @@ namespace FancyZonesEditor
         {
             LayoutModel.SerializeDeletedCustomZoneSets();
             App.Overlay.CloseLayoutWindow();
+            App.Current.Shutdown();
         }
 
         private void OnInitialized(object sender, EventArgs e)
@@ -241,6 +242,29 @@ namespace FancyZonesEditor
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void Reset_Click(object sender, RoutedEventArgs e)
+        {
+            var overlay = App.Overlay;
+            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
+
+            if (overlay.CurrentDataContext is LayoutModel model)
+            {
+                model.IsSelected = false;
+                model.IsApplied = false;
+            }
+
+            overlay.CurrentLayoutSettings.ZonesetUuid = settings.BlankModel.Uuid;
+            overlay.CurrentLayoutSettings.Type = LayoutType.Blank;
+            overlay.CurrentDataContext = settings.BlankModel;
+
+            App.FancyZonesEditorIO.SerializeAppliedLayouts();
+
+            if (!overlay.MultiMonitorMode)
+            {
+                Close();
+            }
         }
     }
 }

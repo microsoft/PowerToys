@@ -90,7 +90,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="#767676"/>
             <Setter Property="Margin" Value="16,0,0,0" />
-            <Setter Property="Width" Value="245"/>
+            <Setter Property="Width" Value="200"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
@@ -117,7 +117,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="#0078D7"/>
             <Setter Property="Margin" Value="16,0,0,0" />
-            <Setter Property="Width" Value="245"/>
+            <Setter Property="Width" Value="220"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="FocusVisualStyle" Value="{DynamicResource customButtonFocusVisualStyle}" />
             <Setter Property="Template">
@@ -445,6 +445,7 @@
         </Grid>
 
 		<StackPanel Orientation="Horizontal" Margin="0,10,0,16">
+            <Button x:Name="ResetButton" Content="{x:Static props:Resources.Reset_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="Reset_Click"/>
             <Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
             <Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
 

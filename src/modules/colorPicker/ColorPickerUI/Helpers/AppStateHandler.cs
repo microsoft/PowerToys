@@ -5,16 +5,21 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Windows;
+using ColorPicker.ViewModelContracts;
 
 namespace ColorPicker.Helpers
 {
     [Export(typeof(AppStateHandler))]
     public class AppStateHandler
     {
+        private readonly IColorEditorViewModel _colorEditorViewModel;
+        private ColorEditorWindow _colorEditorWindow;
+
         [ImportingConstructor]
-        public AppStateHandler()
+        public AppStateHandler(IColorEditorViewModel colorEditorViewModel)
         {
             Application.Current.MainWindow.Closed += MainWindow_Closed;
+            _colorEditorViewModel = colorEditorViewModel;
         }
 
         public event EventHandler AppShown;
@@ -37,6 +42,19 @@ namespace ColorPicker.Helpers
             AppHidden?.Invoke(this, EventArgs.Empty);
         }
 
+        public void ShowColorPickerEditor()
+        {
+            if (_colorEditorWindow == null)
+            {
+                _colorEditorWindow = new ColorEditorWindow();
+                _colorEditorWindow.Content = _colorEditorViewModel;
+                _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
+            }
+
+            _colorEditorViewModel.Initialize();
+            _colorEditorWindow.Show();
+        }
+
         public static void SetTopMost()
         {
             Application.Current.MainWindow.Topmost = false;
@@ -46,6 +64,12 @@ namespace ColorPicker.Helpers
         private void MainWindow_Closed(object sender, EventArgs e)
         {
             AppClosed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ColorEditorViewModel_OpenColorPickerRequested(object sender, EventArgs e)
+        {
+            ShowColorPicker();
+            _colorEditorWindow.Hide();
         }
     }
 }

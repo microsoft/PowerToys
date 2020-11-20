@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace FancyZonesEditor
 {
     // PInvokes to handshake with fancyzones backend
-    internal static class Native
+    internal static class NativeMethods
     {
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
         public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
