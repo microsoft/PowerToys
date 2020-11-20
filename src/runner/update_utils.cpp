@@ -8,6 +8,7 @@
 #include "update_utils.h"
 
 #include <common/timeutil.h>
+#include <common/updating/installer.h>
 #include <common/updating/updating.h>
 #include <runner/general_settings.h>
 

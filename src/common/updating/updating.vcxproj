@@ -175,6 +175,7 @@
   <ItemGroup>
     <ClInclude Include="dotnet_installation.h" />
     <ClInclude Include="http_client.h" />
+    <ClInclude Include="installer.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="updating.h" />
     <ClInclude Include="pch.h" />
@@ -182,6 +183,7 @@
   <ItemGroup>
     <ClCompile Include="dotnet_installation.cpp" />
     <ClCompile Include="http_client.cpp" />
+    <ClCompile Include="installer.cpp" />
     <ClCompile Include="notifications.cpp" />
     <ClCompile Include="updating.cpp" />
     <ClCompile Include="pch.cpp">

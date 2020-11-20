@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace updating
 {
     struct new_version_download_info;
