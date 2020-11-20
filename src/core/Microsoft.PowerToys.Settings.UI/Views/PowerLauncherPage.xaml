@@ -50,7 +50,7 @@
             <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-            <TextBlock x:Uid="PowerLauncher_Shortcuts"
+            <TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 

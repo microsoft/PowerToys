@@ -27,6 +27,7 @@ Actionkeyword
 actionrunner
 activatable
 ACTIVATEAPP
+activationaction
 Addavirtualdesktop
 Addins
 ADDUNDORECORD
@@ -196,6 +197,7 @@ bsd
 bsearch
 BSODs
 bstr
+BText
 bti
 Btn
 btn
@@ -297,6 +299,8 @@ codereview
 COINIT
 Colorbrush
 colorconv
+colorhistory
+colorhistorylimit
 colorpicker
 colorpickerref
 COLORREF
@@ -510,6 +514,7 @@ DPopup
 DPSAPI
 Draggen
 DRAWFRAME
+drawingcolor
 dreamsofameaningfullife
 drivedetectionwarning
 DRM
@@ -827,6 +832,7 @@ gui
 guiddef
 GUITHREADINFO
 GValue
+GText
 GWL
 gwl
 GWLP
@@ -857,6 +863,7 @@ HDN
 hdrop
 HDS
 HEB
+helptext
 hglobal
 HGLOBAL
 hh
@@ -1889,6 +1896,7 @@ RStroked
 Rstrtmgr
 RTB
 Rtc
+RText
 rtf
 Rtl
 RTLREADING
@@ -2404,6 +2412,7 @@ VIRTUALDESKTOPCHANGE
 virtualization
 virtualized
 Virtualizing
+visiblecolorformats
 Visibletrue
 Visio
 visualbrush
