@@ -55,5 +55,4 @@
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj" />
   </ItemGroup>
-
 </Project>

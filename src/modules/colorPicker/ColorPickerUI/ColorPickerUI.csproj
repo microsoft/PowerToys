@@ -106,12 +106,31 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behaviors\DragAndDropReorderBehavior.cs" />
+    <Compile Include="Behaviors\DragWindowBehavior.cs" />
+    <Compile Include="ColorEditorWindow.xaml.cs">
+      <DependentUpon>ColorEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Common\RangeObservableCollection.cs" />
+    <Compile Include="Controls\ColorFormatControl.xaml.cs">
+      <DependentUpon>ColorFormatControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ColorPickerControl.xaml.cs">
+      <DependentUpon>ColorPickerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\HSVColor.cs" />
+    <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\ColorToStringConverter.cs" />
+    <Compile Include="Converters\NumberToInvertedVisibilityConverter.cs" />
+    <Compile Include="Converters\NumberToVisibilityConverter.cs" />
+    <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Behaviors\GridEffectBehavior.cs" />
-    <Compile Include="Constants\WindowConstant.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\ColorRepresentationHelper.cs" />
+    <Compile Include="Helpers\CustomLibraryThemeProvider.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
+    <Compile Include="Models\ColorFormatModel.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="Settings\IUserSettings.cs" />
     <Compile Include="Settings\SettingItem`1.cs" />
@@ -121,6 +140,12 @@
     <Compile Include="Telemetry\ColorPickerCancelledEvent.cs" />
     <Compile Include="Telemetry\ColorPickerShowEvent.cs" />
     <Compile Include="Telemetry\ColorPickerZoomOpenedEvent.cs" />
+    <Compile Include="ThemeManager.cs" />
+    <Compile Include="ViewModelContracts\IColorEditorViewModel.cs" />
+    <Compile Include="ViewModels\ColorEditorViewModel.cs" />
+    <Compile Include="Views\ColorEditorView.xaml.cs">
+      <DependentUpon>ColorEditorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ZoomWindow.xaml.cs">
       <DependentUpon>ZoomWindow.xaml</DependentUpon>
     </Compile>
@@ -139,6 +164,18 @@
     <Compile Include="Views\ZoomView.xaml.cs">
       <DependentUpon>ZoomView.xaml</DependentUpon>
     </Compile>
+    <Page Include="ColorEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ColorFormatControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ColorPickerControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -170,6 +207,34 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\ViewModelViewMappings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\HighContrast1.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\HighContrast2.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\HighContrastBlack.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\HighContrastWhite.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ColorEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -205,7 +270,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.*.resx" />
@@ -220,10 +285,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="ControlzEx">
+      <Version>4.4.0</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
       <Version>3.3.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="ModernWpfUI">
+      <Version>0.9.2</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Abstractions">
       <Version>12.2.5</Version>

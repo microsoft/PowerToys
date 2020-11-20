@@ -17,7 +17,7 @@ namespace ColorPicker.Behaviors
         {
             var sender = ((MoveWindowBehavior)d).AssociatedObject;
             var move = new DoubleAnimation(sender.Left, (double)e.NewValue, new Duration(TimeSpan.FromMilliseconds(150)), FillBehavior.Stop);
-            move.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut };
+            move.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
             sender.BeginAnimation(Window.LeftProperty, move, HandoffBehavior.Compose);
         }
 
@@ -27,7 +27,7 @@ namespace ColorPicker.Behaviors
         {
             var sender = ((MoveWindowBehavior)d).AssociatedObject;
             var move = new DoubleAnimation(sender.Top, (double)e.NewValue, new Duration(TimeSpan.FromMilliseconds(150)), FillBehavior.Stop);
-            move.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut };
+            move.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut };
             sender.BeginAnimation(Window.TopProperty, move, HandoffBehavior.Compose);
         }
 

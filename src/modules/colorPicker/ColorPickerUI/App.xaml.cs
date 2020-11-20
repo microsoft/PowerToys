@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Windows;
+using ColorPicker;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
 using ManagedCommon;
@@ -20,6 +21,7 @@ namespace ColorPickerUI
         private static string[] _args;
         private int _powerToysPid;
         private bool disposedValue;
+        private ThemeManager _themeManager;
 
         [STAThread]
         public static void Main(string[] args)
@@ -64,6 +66,7 @@ namespace ColorPickerUI
                 Environment.Exit(0);
             });
 
+            _themeManager = new ThemeManager(this);
             base.OnStartup(e);
         }
 
@@ -92,6 +95,8 @@ namespace ColorPickerUI
                 {
                     _instanceMutex?.Dispose();
                 }
+
+                _themeManager?.Dispose();
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
