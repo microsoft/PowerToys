@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Registry.Classes
@@ -24,7 +23,7 @@ namespace Microsoft.Plugin.Registry.Classes
         internal RegistryKey? Key { get; }
 
         /// <summary>
-        /// Gets a possible exception that was occured when try to open this registry key (e.g. <see cref="UnauthorizedAccessException"/>)
+        /// Gets a possible exception that was occurred when try to open this registry key (e.g. <see cref="UnauthorizedAccessException"/>)
         /// </summary>
         internal Exception? Exception { get; }
 
@@ -33,7 +32,7 @@ namespace Microsoft.Plugin.Registry.Classes
         /// </summary>
         /// <param name="keyPath">The full path to the registry key for this entry</param>
         /// <param name="key">The <see cref="RegistryKey"/> for this entry</param>
-        /// <param name="exception">(optional) A possible exception that was occured when try to access this registry key</param>
+        /// <param name="exception">(optional) A possible exception that was occurred when try to access this registry key</param>
         public RegistryEntry(string keyPath, RegistryKey? key, Exception? exception = null)
         {
             KeyPath = keyPath;

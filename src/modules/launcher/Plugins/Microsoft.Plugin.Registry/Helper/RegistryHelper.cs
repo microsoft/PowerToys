@@ -61,16 +61,16 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <summary>
         /// Return a list of all registry main key
         /// </summary>
-        /// <returns>A list with key-value-pairs of all registry main key and possible exceptions</returns>
+        /// <returns>A list with all registry main keys</returns>
         internal static ICollection<RegistryEntry> GetAllMainKeys()
             => new Collection<RegistryEntry>
             {
-                new RegistryEntry(Win32.Registry.ClassesRoot.Name, null),
-                new RegistryEntry(Win32.Registry.CurrentConfig.Name, null),
-                new RegistryEntry(Win32.Registry.CurrentUser.Name, null),
-                new RegistryEntry(Win32.Registry.LocalMachine.Name, null),
-                new RegistryEntry(Win32.Registry.PerformanceData.Name, null),
-                new RegistryEntry(Win32.Registry.Users.Name, null),
+                new RegistryEntry(Win32.Registry.ClassesRoot.Name, Win32.Registry.ClassesRoot),
+                new RegistryEntry(Win32.Registry.CurrentConfig.Name, Win32.Registry.CurrentConfig),
+                new RegistryEntry(Win32.Registry.CurrentUser.Name, Win32.Registry.CurrentUser),
+                new RegistryEntry(Win32.Registry.LocalMachine.Name, Win32.Registry.LocalMachine),
+                new RegistryEntry(Win32.Registry.PerformanceData.Name, Win32.Registry.PerformanceData),
+                new RegistryEntry(Win32.Registry.Users.Name, Win32.Registry.Users),
             };
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="mainKey">The main <see cref="RegistryKey"/></param>
         /// <param name="subKeyPath">The path of the registry sub-key</param>
-        /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
+        /// <returns>A list with all found registry keys</returns>
         internal static ICollection<RegistryEntry> SearchForSubKey(in RegistryKey mainKey, in string subKeyPath)
         {
             Debug.WriteLine($"Search for {mainKey.Name}\\{subKeyPath}\n");
@@ -147,7 +147,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="parentKey">The parent-key, also the root to start the search</param>
         /// <param name="searchSubKey">The sub-key to find</param>
-        /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
+        /// <returns>A list with all found registry sub-keys</returns>
         private static ICollection<RegistryEntry> FindSubKey(in RegistryKey parentKey, in string searchSubKey)
         {
             var list = new Collection<RegistryEntry>();
@@ -184,7 +184,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="parentKey">The registry parent-key</param>
         /// <param name="maxCount">(optional) The maximum count of the results</param>
-        /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
+        /// <returns>A list with all found registry sub-keys</returns>
         private static ICollection<RegistryEntry> GetAllSubKeys(in RegistryKey parentKey, in int maxCount = 50)
         {
             var list = new Collection<RegistryEntry>();
