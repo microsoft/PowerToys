@@ -307,12 +307,18 @@
       <Item ItemId=";Tab_Item_Custom" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Custom tab selected, press ctrl + tab to switch to Templates]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fliken Anpassat har valts. Växla till Mallar genom att trycka på Ctrl + Tabb]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";Tab_Item_Templates" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Templates tab selected, press ctrl + tab to switch to Custom]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fliken Mallar har valts. Växla till Anpassat genom att trycka på Ctrl + Tabb]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
