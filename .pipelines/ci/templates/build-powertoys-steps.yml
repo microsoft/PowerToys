@@ -1,5 +1,5 @@
 parameters:
-  additionalBuildArguments: '/restore'
+  additionalBuildArguments: '-restore'
 
 steps:
 - checkout: self
