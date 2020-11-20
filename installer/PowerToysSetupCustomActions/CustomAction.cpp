@@ -2,7 +2,7 @@
 
 #include <ProjectTelemetry.h>
 
-#include "../../src/common/updating/updating.h"
+#include "../../src/common/updating/installer.h"
 
 using namespace std;
 
