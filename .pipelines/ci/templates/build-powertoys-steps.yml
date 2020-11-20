@@ -1,5 +1,5 @@
 parameters:
-  additionalBuildArguments: ''
+  additionalBuildArguments: '/restore'
 
 steps:
 - checkout: self
@@ -7,22 +7,8 @@ steps:
   submodules: true
   clean: true
 
-- task: NuGetToolInstaller@0
-  displayName: Ensure NuGet 5.8.0
-  inputs:
-    versionSpec: 5.8.0
-
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToys.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: PowerToys.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\packages'
 
 - task: VSBuild@1
   displayName: 'Build PowerToys.sln'
@@ -34,15 +20,6 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToysSetup.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: installer\PowerToysSetup.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
-
 - task: VSBuild@1
   displayName: 'Build PowerToysSetup.sln'
   inputs:
@@ -52,15 +29,6 @@ steps:
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
-
-- task: NuGetCommand@2
-  displayName: Restore NuGet packages for PowerToysBootstrapper.sln
-  inputs:
-    command: restore
-    feedsToUse: config
-    configPath: NuGet.config
-    restoreSolution: installer\PowerToysBootstrapper\PowerToysBootstrapper.sln
-    restoreDirectory: '$(Build.SourcesDirectory)\installer\PowerToysBootstrapper\packages'
 
 - task: VSBuild@1
   displayName: 'Build PowerToysBootstrapper.sln'
