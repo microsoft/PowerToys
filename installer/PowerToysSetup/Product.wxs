@@ -372,7 +372,6 @@
           <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
         </File>
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe.config" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Bcl.AsyncInterfaces.dll" />
