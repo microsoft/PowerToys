@@ -1375,6 +1375,9 @@
       <Item ItemId=";MadeWithOssLove.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Made with ]D83D;]DC97; by Microsoft and the PowerToys community.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Skapades med ]D83D;]DC97; av Microsoft och PowerToys-communityn.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
