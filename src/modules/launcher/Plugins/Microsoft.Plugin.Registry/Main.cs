@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Registry
 
             return list.Count switch
             {
-                0 => new List<Result> { new Result { Title = $"{query?.Search} Key not found" } },
+                0 => new List<Result>(0),
                 1 when search.EndsWith(':') => ResultHelper.GetValuesFromKey(list.FirstOrDefault().Item2, _defaultIconPath),
                 _ => ResultHelper.GetResultList(list, _defaultIconPath),
             };
