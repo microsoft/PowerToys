@@ -37,10 +37,10 @@ namespace FancyZonesEditor
         public double[] HorizontalSnapPoints { get; set; }
 
         private readonly Rectangle _splitter;
-        private bool _switchOrientation = false;
+        private bool _switchOrientation;
         private Point _lastPos = new Point(-1, -1);
         private Point _mouseDownPos = new Point(-1, -1);
-        private bool _inMergeDrag = false;
+        private bool _inMergeDrag;
         private Orientation _splitOrientation;
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

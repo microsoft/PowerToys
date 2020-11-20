@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Text;
 using System.Windows;
 
@@ -50,6 +51,7 @@ namespace FancyZonesEditor.Utils
         {
             float dpi = Dpi != 0 ? Dpi : 96f;
             double scaleFactor = 96f / dpi;
+
             return Math.Round(coordinate * scaleFactor);
         }
 
@@ -57,23 +59,17 @@ namespace FancyZonesEditor.Utils
         {
             var sb = new StringBuilder();
 
-            sb.Append("ID: ");
-            sb.AppendLine(Id);
-            sb.Append("DPI: ");
-            sb.AppendLine(Dpi.ToString());
-            sb.Append("Is primary: ");
-            sb.AppendLine(Primary.ToString());
+            sb.AppendFormat(CultureInfo.InvariantCulture, "ID: {0}{1}", Id, Environment.NewLine);
+            sb.AppendFormat(CultureInfo.InvariantCulture, "DPI: {0}{1}", Dpi, Environment.NewLine);
+            sb.AppendFormat(CultureInfo.InvariantCulture, "Is primary: {0}{1}", Primary, Environment.NewLine);
 
-            string workArea = string.Format("({0}, {1}, {2}, {3})", WorkAreaRect.X, WorkAreaRect.Y, WorkAreaRect.Width, WorkAreaRect.Height);
-            string bounds = string.Format("({0}, {1}, {2}, {3})", UnscaledBounds.X, UnscaledBounds.Y, UnscaledBounds.Width, UnscaledBounds.Height);
-            string scaledBounds = string.Format("({0}, {1}, {2}, {3})", ScaledBounds.X, ScaledBounds.Y, ScaledBounds.Width, ScaledBounds.Height);
+            string workArea = string.Format(CultureInfo.InvariantCulture, "({0}, {1}, {2}, {3})", WorkAreaRect.X, WorkAreaRect.Y, WorkAreaRect.Width, WorkAreaRect.Height);
+            string bounds = string.Format(CultureInfo.InvariantCulture, "({0}, {1}, {2}, {3})", UnscaledBounds.X, UnscaledBounds.Y, UnscaledBounds.Width, UnscaledBounds.Height);
+            string scaledBounds = string.Format(CultureInfo.InvariantCulture, "({0}, {1}, {2}, {3})", ScaledBounds.X, ScaledBounds.Y, ScaledBounds.Width, ScaledBounds.Height);
 
-            sb.Append("Work area: ");
-            sb.AppendLine(workArea);
-            sb.Append("Unscaled bounds: ");
-            sb.AppendLine(bounds);
-            sb.Append("Scaled bounds: ");
-            sb.AppendLine(scaledBounds);
+            sb.AppendFormat(CultureInfo.InvariantCulture, "Work area: {0}{1}", workArea, Environment.NewLine);
+            sb.AppendFormat(CultureInfo.InvariantCulture, "Unscaled bounds: {0}{1}", bounds, Environment.NewLine);
+            sb.AppendFormat(CultureInfo.InvariantCulture, "Scaled bounds: {0}{1}", scaledBounds, Environment.NewLine);
 
             return sb.ToString();
         }

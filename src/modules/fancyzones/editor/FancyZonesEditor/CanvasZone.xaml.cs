@@ -271,7 +271,7 @@ namespace FancyZonesEditor
             Model.Zones[ZoneIndex] = rect;
         }
 
-        private static int zIndex = 0;
+        private static int zIndex;
         private const int MinZoneWidth = 64;
         private const int MinZoneHeight = 72;
 

@@ -4,8 +4,8 @@
 #include <common/common.h>
 #include <common/notifications.h>
 #include <common/RcResource.h>
-#include <common/updating/updating.h>
 #include <common/updating/dotnet_installation.h>
+#include <common/updating/installer.h>
 #include <common/version.h>
 #include <common/appMutex.h>
 #include <common/processApi.h>
