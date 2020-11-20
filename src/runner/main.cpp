@@ -17,6 +17,7 @@
 #include <common/processApi.h>
 #include <common/RestartManagement.h>
 #include <common/toast_dont_show_again.h>
+#include <common/updating/installer.h>
 #include <common/updating/updating.h>
 #include <common/winstore.h>
 
@@ -33,7 +34,7 @@
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
-#include <common\settings_helpers.h>
+#include <common/settings_helpers.h>
 #include <common/logger/logger.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;

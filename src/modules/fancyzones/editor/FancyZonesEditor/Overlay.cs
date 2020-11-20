@@ -115,7 +115,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private int _currentDesktop = 0;
+        private int _currentDesktop;
 
         public bool SpanZonesAcrossMonitors
         {

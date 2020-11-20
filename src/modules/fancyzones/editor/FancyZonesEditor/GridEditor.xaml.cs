@@ -24,7 +24,7 @@ namespace FancyZonesEditor
 
         public static readonly DependencyProperty ModelProperty = DependencyProperty.Register(ObjectDependencyID, typeof(GridLayoutModel), typeof(GridEditor), new PropertyMetadata(null, OnGridDimensionsChanged));
 
-        private static int gridEditorUniqueIdCounter = 0;
+        private static int gridEditorUniqueIdCounter;
 
         private int gridEditorUniqueId;
 

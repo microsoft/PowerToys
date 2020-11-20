@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -42,8 +41,6 @@ namespace FancyZonesEditor
         private const string CrashReportDynamicAssemblyTag = "dynamic assembly doesn't have location";
         private const string CrashReportLocationNullTag = "location is null or empty";
 
-        private readonly IFileSystem _fileSystem = new FileSystem();
-
         public MainWindowSettingsModel MainWindowSettings { get; }
 
         public static FancyZonesEditorIO FancyZonesEditorIO { get; private set; }
@@ -62,7 +59,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private static bool _debugMode = false;
+        private static bool _debugMode;
 
         [Conditional("DEBUG")]
         private void DebugModeCheck()
