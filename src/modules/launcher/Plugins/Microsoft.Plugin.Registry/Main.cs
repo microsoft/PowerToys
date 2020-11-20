@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using ManagedCommon;
+using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Helper;
 using Microsoft.Win32;
 using Wox.Plugin;
@@ -64,7 +65,7 @@ namespace Microsoft.Plugin.Registry
         {
             var search = query?.Search.Replace('/', '\\') ?? string.Empty;
 
-            ICollection<(string, RegistryKey?, Exception?)> list = new Collection<(string, RegistryKey?, Exception?)>();
+            ICollection<RegistryEntry> list = new Collection<RegistryEntry>();
 
             var (mainKey, path) = RegistryHelper.GetRegistryKey(search.TrimEnd(':'));
 
@@ -80,21 +81,21 @@ namespace Microsoft.Plugin.Registry
             return list.Count switch
             {
                 0 => new List<Result>(0),
-                1 when search.EndsWith(':') => ResultHelper.GetValuesFromKey(list.FirstOrDefault().Item2, _defaultIconPath),
+                1 when search.EndsWith(':') => ResultHelper.GetValuesFromKey(list.FirstOrDefault().Key, _defaultIconPath),
                 _ => ResultHelper.GetResultList(list, _defaultIconPath),
             };
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            if (!(selectedResult?.ContextData is RegistryKey key))
+            if (!(selectedResult?.ContextData is RegistryEntry entry))
             {
                 return new List<ContextMenuResult>(0);
             }
 
             var list = new List<ContextMenuResult>();
 
-            if (key.Name == selectedResult.Title)
+            if (entry.Key?.Name == selectedResult.Title)
             {
                 list.Add(new ContextMenuResult
                 {
@@ -104,7 +105,7 @@ namespace Microsoft.Plugin.Registry
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.CopyToClipBoard(key.Name),
+                    Action = _ => ContextMenuHelper.CopyToClipBoard(entry.Key.Name),
                 });
             }
             else
@@ -129,7 +130,7 @@ namespace Microsoft.Plugin.Registry
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                Action = _ => ContextMenuHelper.OpenInRegistryEditor(key.Name),
+                Action = _ => ContextMenuHelper.OpenInRegistryEditor(entry.Key?.Name ?? entry.KeyPath),
             });
 
             return list;

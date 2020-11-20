@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Registry.Helper
@@ -55,15 +56,15 @@ namespace Microsoft.Plugin.Registry.Helper
         /// Return a list of all registry main key
         /// </summary>
         /// <returns>A list with key-value-pairs of all registry main key and possible exceptions</returns>
-        internal static ICollection<(string, RegistryKey?, Exception?)> GetAllMainKeys()
-            => new Collection<(string, RegistryKey?, Exception?)>
+        internal static ICollection<RegistryEntry> GetAllMainKeys()
+            => new Collection<RegistryEntry>
             {
-                (Win32.Registry.ClassesRoot.Name, null, null),
-                (Win32.Registry.CurrentConfig.Name, null, null),
-                (Win32.Registry.CurrentUser.Name, null, null),
-                (Win32.Registry.LocalMachine.Name, null, null),
-                (Win32.Registry.PerformanceData.Name, null, null),
-                (Win32.Registry.Users.Name, null, null),
+                new RegistryEntry(Win32.Registry.ClassesRoot.Name, null),
+                new RegistryEntry(Win32.Registry.CurrentConfig.Name, null),
+                new RegistryEntry(Win32.Registry.CurrentUser.Name, null),
+                new RegistryEntry(Win32.Registry.LocalMachine.Name, null),
+                new RegistryEntry(Win32.Registry.PerformanceData.Name, null),
+                new RegistryEntry(Win32.Registry.Users.Name, null),
             };
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="mainKey">The main <see cref="RegistryKey"/></param>
         /// <param name="subKeyPath">The path of the registry sub-key</param>
         /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
-        internal static ICollection<(string, RegistryKey?, Exception?)> SearchForSubKey(in RegistryKey mainKey, in string subKeyPath)
+        internal static ICollection<RegistryEntry> SearchForSubKey(in RegistryKey mainKey, in string subKeyPath)
         {
             Debug.WriteLine($"Search for {mainKey.Name}\\{subKeyPath}\n");
 
@@ -80,7 +81,7 @@ namespace Microsoft.Plugin.Registry.Helper
             var index = 0;
             var subKey = mainKey;
 
-            ICollection<(string, RegistryKey?, Exception?)> result;
+            ICollection<RegistryEntry> result;
 
             do
             {
@@ -94,7 +95,7 @@ namespace Microsoft.Plugin.Registry.Helper
 
                 if (result.Count == 1 && index < subKeysNames.Length)
                 {
-                    subKey = result.First().Item2;
+                    subKey = result.First().Key;
                 }
 
                 if (subKey == null)
@@ -141,9 +142,9 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="parentKey">The parent-key, also the root to start the search</param>
         /// <param name="searchSubKey">The sub-key to find</param>
         /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
-        private static ICollection<(string, RegistryKey?, Exception?)> FindSubKey(in RegistryKey parentKey, in string searchSubKey)
+        private static ICollection<RegistryEntry> FindSubKey(in RegistryKey parentKey, in string searchSubKey)
         {
-            var list = new Collection<(string, RegistryKey?, Exception?)>();
+            var list = new Collection<RegistryEntry>();
 
             Debug.WriteLine($"Search for {searchSubKey} in {parentKey.Name}");
 
@@ -155,18 +156,18 @@ namespace Microsoft.Plugin.Registry.Helper
                     {
                         try
                         {
-                            list.Add(($"{parentKey.Name}\\{subKey}", parentKey.OpenSubKey(subKey), null));
+                            list.Add(new RegistryEntry($"{parentKey.Name}\\{subKey}", parentKey.OpenSubKey(subKey)));
                         }
                         catch (Exception exception)
                         {
-                            list.Add(($"{parentKey.Name}\\{subKey}", null, exception));
+                            list.Add(new RegistryEntry($"{parentKey.Name}\\{subKey}", null, exception));
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                list.Add((parentKey.Name, null, ex));
+                list.Add(new RegistryEntry(parentKey.Name, null, ex));
             }
 
             return list;
@@ -178,15 +179,15 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="parentKey">The registry parent-key</param>
         /// <param name="maxCount">(optional) The maximum count of the results</param>
         /// <returns>A list with key-value-pairs that contain the sub-key and possible exceptions</returns>
-        private static ICollection<(string, RegistryKey?, Exception?)> GetAllSubKeys(in RegistryKey parentKey, in int maxCount = 50)
+        private static ICollection<RegistryEntry> GetAllSubKeys(in RegistryKey parentKey, in int maxCount = 50)
         {
-            var list = new Collection<(string, RegistryKey?, Exception?)>();
+            var list = new Collection<RegistryEntry>();
 
             try
             {
                 foreach (var subKey in parentKey.GetSubKeyNames())
                 {
-                    list.Add(($"{parentKey.Name}\\{subKey}", parentKey, null));
+                    list.Add(new RegistryEntry($"{parentKey.Name}\\{subKey}", parentKey));
 
                     if (list.Count > maxCount)
                     {
@@ -196,7 +197,7 @@ namespace Microsoft.Plugin.Registry.Helper
             }
             catch (Exception exception)
             {
-                list.Add(($"{parentKey.Name}", null, exception));
+                list.Add(new RegistryEntry($"{parentKey.Name}", null, exception));
             }
 
             return list;
