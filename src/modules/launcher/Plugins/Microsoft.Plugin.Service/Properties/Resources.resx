@@ -136,7 +136,7 @@
     <value>Restart</value>
   </data>
   <data name="wox_plugin_service_restarted_notification" xml:space="preserve">
-    <value>{0} has benen restarted</value>
+    <value>{0} has been restarted</value>
   </data>
   <data name="wox_plugin_service_running" xml:space="preserve">
     <value>Running</value>
@@ -148,7 +148,7 @@
     <value>Started</value>
   </data>
   <data name="wox_plugin_service_started_notification" xml:space="preserve">
-    <value>{0} has benen started</value>
+    <value>{0} has been started</value>
   </data>
   <data name="wox_plugin_service_start_pending" xml:space="preserve">
     <value>Starting</value>

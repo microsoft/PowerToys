@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Plugin.Service.Properties {
-    using System;
-    
-    
+namespace Microsoft.Plugin.Service.Properties
+{
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} has benen restarted.
+        ///   Looks up a localized string similar to {0} has been restarted.
         /// </summary>
         internal static string wox_plugin_service_restarted_notification {
             get {
@@ -160,7 +160,7 @@ namespace Microsoft.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} has benen started.
+        ///   Looks up a localized string similar to {0} has been started.
         /// </summary>
         internal static string wox_plugin_service_started_notification {
             get {
