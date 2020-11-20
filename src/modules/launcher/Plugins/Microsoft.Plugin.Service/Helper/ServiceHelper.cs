@@ -6,15 +6,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.ServiceProcess;
+using Microsoft.Plugin.Service.Properties;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Service.Helper
 {
     public static class ServiceHelper
     {
-        public static IEnumerable<Result> Search(string search)
+        public static IEnumerable<Result> Search(string search, string icoPath)
         {
             var services = ServiceController.GetServices();
 
@@ -23,12 +25,13 @@ namespace Microsoft.Plugin.Service.Helper
                 .Select(s => new Result
                 {
                     Title = s.DisplayName,
-                    SubTitle = s.Status.ToString(),
+                    SubTitle = GetLocalizedStatus(s.Status),
+                    IcoPath = icoPath,
                     ContextData = new ServiceResult(s.ServiceName, s.DisplayName, s.Status != ServiceControllerStatus.Stopped && s.Status != ServiceControllerStatus.StopPending),
                 });
         }
 
-        public static void Stop(ServiceResult serviceResult, IPublicAPI contextAPI)
+        public static void ChangeStatus(ServiceResult serviceResult, Action action, IPublicAPI contextAPI)
         {
             if (serviceResult == null)
             {
@@ -42,13 +45,39 @@ namespace Microsoft.Plugin.Service.Helper
 
             try
             {
-                if (ChangeStatus(serviceResult.ServiceName, Action.Stop))
+                var info = new ProcessStartInfo
                 {
-                    contextAPI.ShowMsg(string.Empty, $"{serviceResult.DisplayName} has been stopped");
+                    FileName = "net",
+                    Verb = "runas",
+                    UseShellExecute = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
+
+                if (action == Action.Start)
+                {
+                    info.Arguments = string.Join(' ', "start", serviceResult.ServiceName);
+                }
+                else if (action == Action.Stop)
+                {
+                    info.Arguments = string.Join(' ', "stop", serviceResult.ServiceName);
+                }
+                else if (action == Action.Restart)
+                {
+                    info.FileName = "cmd";
+                    info.Arguments = string.Join(' ', "/c net stop", serviceResult.ServiceName, "&&", "net start", serviceResult.ServiceName);
+                }
+
+                var process = Process.Start(info);
+                process.WaitForExit();
+                var success = process.ExitCode == 0;
+
+                if (success)
+                {
+                    contextAPI.ShowMsg(string.Empty, GetLocalizedMessage(serviceResult, action));
                 }
                 else
                 {
-                    contextAPI.ShowMsg(string.Empty, $"An error occured");
+                    contextAPI.ShowMsg(string.Empty, $"An error occurred");
                 }
             }
             catch (Win32Exception ex)
@@ -57,90 +86,52 @@ namespace Microsoft.Plugin.Service.Helper
             }
         }
 
-        public static void Start(ServiceResult serviceResult, IPublicAPI contextAPI)
+        private static string GetLocalizedStatus(ServiceControllerStatus status)
         {
-            if (serviceResult == null)
+            if (status == ServiceControllerStatus.Stopped)
             {
-                throw new ArgumentNullException(nameof(serviceResult));
+                return Resources.wox_plugin_service_stopped;
             }
-
-            if (contextAPI == null)
+            else if (status == ServiceControllerStatus.StartPending)
             {
-                throw new ArgumentNullException(nameof(contextAPI));
+                return Resources.wox_plugin_service_start_pending;
             }
-
-            try
+            else if (status == ServiceControllerStatus.StopPending)
             {
-                if (ChangeStatus(serviceResult.ServiceName, Action.Start))
-                {
-                    contextAPI.ShowMsg(string.Empty, $"{serviceResult.DisplayName} has been started");
-                }
-                else
-                {
-                    contextAPI.ShowMsg(string.Empty, $"An error occured");
-                }
+                return Resources.wox_plugin_service_stop_pending;
             }
-            catch (Win32Exception ex)
+            else if (status == ServiceControllerStatus.Running)
             {
-                contextAPI.ShowMsg(string.Empty, ex.Message);
+                return Resources.wox_plugin_service_running;
+            }
+            else if (status == ServiceControllerStatus.ContinuePending)
+            {
+                return Resources.wox_plugin_service_continue_pending;
+            }
+            else if (status == ServiceControllerStatus.PausePending)
+            {
+                return Resources.wox_plugin_service_pause_pending;
+            }
+            else
+            {
+                return Resources.wox_plugin_service_paused;
             }
         }
 
-        public static void Restart(ServiceResult serviceResult, IPublicAPI contextAPI)
+        private static string GetLocalizedMessage(ServiceResult serviceResult, Action action)
         {
-            if (serviceResult == null)
-            {
-                throw new ArgumentNullException(nameof(serviceResult));
-            }
-
-            if (contextAPI == null)
-            {
-                throw new ArgumentNullException(nameof(contextAPI));
-            }
-
-            try
-            {
-                if (ChangeStatus(serviceResult.ServiceName, Action.Restart))
-                {
-                    contextAPI.ShowMsg(string.Empty, $"{serviceResult.DisplayName} has been restarted");
-                }
-                else
-                {
-                    contextAPI.ShowMsg(string.Empty, $"An error occured");
-                }
-            }
-            catch (Win32Exception ex)
-            {
-                contextAPI.ShowMsg(string.Empty, ex.Message);
-            }
-}
-
-        private static bool ChangeStatus(string serviceName, Action action)
-        {
-            var info = new ProcessStartInfo
-            {
-                FileName = "cmd",
-                Verb = "runas",
-                UseShellExecute = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-            };
-
             if (action == Action.Start)
             {
-                info.Arguments = string.Join(' ', "/c net start", serviceName);
+                return string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_service_started_notification, serviceResult.DisplayName);
             }
             else if (action == Action.Stop)
             {
-                info.Arguments = string.Join(' ', "/c net stop", serviceName);
+                return string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_service_stopped_notification, serviceResult.DisplayName);
             }
-            else if (action == Action.Restart)
+            else
             {
-                info.Arguments = string.Join(' ', "/c net stop", serviceName, "&&", "net start", serviceName);
+                return string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_service_restarted_notification, serviceResult.DisplayName);
             }
-
-            var process = Process.Start(info);
-            process.WaitForExit();
-            return process.ExitCode == 0;
         }
     }
 }
