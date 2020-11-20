@@ -126,8 +126,13 @@ namespace Microsoft.Plugin.Registry.Helper
             // it's impossible to direct open a key via command-line option, so we must override the last remember key
             Win32.Registry.SetValue(@"HKEY_Current_User\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "LastKey", fullKey);
 
-            // -m => allow multi-instance (hidden start option)
-            Process.Start("regedit.exe", "-m");
+            Process.Start(new ProcessStartInfo
+            {
+                Arguments = "-m",           // -m => allow multi-instance (hidden start option)
+                FileName = "regedit.exe",
+                Verb = "runas",             // Start as Administraor
+                UseShellExecute = true,     // Start as administraor will not work without this
+            });
         }
 
         /// <summary>
