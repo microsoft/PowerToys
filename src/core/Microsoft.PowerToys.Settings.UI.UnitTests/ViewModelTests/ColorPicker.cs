@@ -41,14 +41,13 @@ namespace ViewModelTests
             // Initialise View Model with test Config files
             using (var viewModel = new ColorPickerViewModel(mockSettingsUtils, generalSettingsRepository, ColorPickerIsEnabledByDefaultIPC))
             {
-
                 // Assert
                 // Verify that the old settings persisted
                 Assert.AreEqual(originalGeneralSettings.Enabled.ColorPicker, viewModel.IsEnabled);
                 Assert.AreEqual(originalSettings.Properties.ActivationShortcut.ToString(), viewModel.ActivationShortcut.ToString());
                 Assert.AreEqual(originalSettings.Properties.ChangeCursor, viewModel.ChangeCursor);
 
-                //Verify that the stub file was used
+                // Verify that the stub file was used
                 var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
                 BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, ColorPickerSettings.ModuleName, expectedCallCount);
                 BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
