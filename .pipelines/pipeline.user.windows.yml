@@ -65,10 +65,10 @@ build:
             - 'action_runner.exe'
             - 'modules\ColorPicker\ColorPicker.dll'
             - 'modules\ColorPicker\ColorPicker.exe'
-            - 'modules\ColorPicker\ManagedCommon.dll
-            - 'modules\ColorPicker\Microsoft.PowerToys.Settings.UI.Lib.dll
-            - 'modules\ColorPicker\PowerToysInterop.dll
-            - 'modules\ColorPicker\Telemetry.dll
+            - 'modules\ColorPicker\ManagedCommon.dll'
+            - 'modules\ColorPicker\Microsoft.PowerToys.Settings.UI.Lib.dll'
+            - 'modules\ColorPicker\PowerToysInterop.dll'
+            - 'modules\ColorPicker\Telemetry.dll'
             - '**\*.resources.dll'
             - 'modules\FancyZones\fancyzones.dll'
             - 'modules\FancyZones\FancyZonesEditor.exe'
