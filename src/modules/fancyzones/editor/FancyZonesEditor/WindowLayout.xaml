@@ -17,7 +17,7 @@
 
 
     <Grid x:Name="Body">
-        <Rectangle Fill="Green" Opacity="1"/>
+        <Rectangle Fill="White" Opacity="0.5"/>
         
         <Grid x:Name="Window1" >
             <Border BorderThickness="2" BorderBrush="Black">
