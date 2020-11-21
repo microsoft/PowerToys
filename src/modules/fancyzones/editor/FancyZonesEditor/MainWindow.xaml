@@ -41,7 +41,7 @@
             <Setter Property="FontSize" Value="10" />
             <Setter Property="Foreground" Value="#303030" />
         </Style>
-        
+
         <Style x:Key="desktopButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#DADADA" />
             <Setter Property="Width" Value="{Binding DisplayWidth}" />
@@ -80,7 +80,7 @@
         </Style>
 
 
-        
+
         <ControlTemplate x:Key="desktopButton">
             <Button Style="{StaticResource desktopButtonStyle}"
                     Command="{Binding DataContext.SelectCommand, ElementName= MainWindowItemControl}" 
@@ -97,7 +97,7 @@
                     </Grid>
                 </Button.Content>
             </Button>
-            
+
             <ControlTemplate.Triggers>
                 <DataTrigger Binding="{Binding Selected}" Value="true">
                     <Setter TargetName="desktopId" Property="Foreground" Value="#F2F2F2" />
@@ -105,6 +105,7 @@
                 </DataTrigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
+       
     </Window.Resources>
 
     <Grid>
@@ -120,13 +121,13 @@
             FontSize="12"
             Foreground="{DynamicResource PrimaryForegroundBrush}"
             Margin="16,-24,0,0" />
-        
+
         <TextBlock x:Name="DialogTitle"
                        Text="{x:Static props:Resources.Choose_Layout}"
                        Style="{StaticResource BaseTextBlockStyle}"
                         HorizontalAlignment="Center"
                        Margin="16,8,16,8"  />
-        
+
         <Grid Background="{DynamicResource SecondaryBackgroundBrush}" Grid.Row="1">
             <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Disabled"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -135,8 +136,8 @@
                           Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UIElement}}"
                           PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
                 <ScrollViewer.DataContext>
-                        <local1:MonitorViewModel/>
-                    </ScrollViewer.DataContext>
+                    <local1:MonitorViewModel/>
+                </ScrollViewer.DataContext>
                 <ItemsControl x:Name="MainWindowItemControl" 
                               ItemsSource="{Binding MonitorInfoForViewModel}">
                     <ItemsControl.ItemsPanel>
@@ -162,7 +163,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="286"/>
             </Grid.ColumnDefinitions>
-          
+
             <TabControl BorderThickness="0"
                         x:Name="TemplateTab"
                         Background="Transparent"
@@ -260,47 +261,55 @@
                 <TabItem Header="{x:Static props:Resources.Custom}"
                          Style="{StaticResource TabItemPivotStyle}"
                          AutomationProperties.Name="{x:Static props:Resources.Tab_Item_Custom}">
-                    <ScrollViewer Height="512" ScrollViewer.VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"
+                    <StackPanel Orientation="Vertical">
+                        <Button x:Name="NewLayoutButton" Click="NewLayoutButton_Click" Background="Transparent" Margin="12,8,0,0">
+                            <StackPanel Orientation="Horizontal" Margin="8">
+                                <TextBlock Text="&#xE109;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                                <TextBlock Text="Create new layout" Margin="6,-2,0,0" Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+
+                        <ScrollViewer Height="512" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding CustomModels}" Margin="8,8,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"
                                                ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}"
                                                ItemHeight="{Binding ElementName=WrapPanel2, Path=ItemWidth}"
                                                x:Name="WrapPanel2" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="8"                                           
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="8"                                           
                                         BorderBrush="{Binding Path=IsSelected, Converter={StaticResource BooleanToBrushConverter}}"
                                         Background="{Binding Path=IsApplied, Converter={StaticResource BooleanToBrushConverter}}"
                                         MouseDown="LayoutItem_Click"
                                         Focusable="True"
                                         FocusManager.GotFocus="LayoutItem_Focused"
                                         KeyDown="LayoutItem_Apply">
-                                        <Border.ContextMenu >
-                                            <ContextMenu >
-                                                <MenuItem Click="OnDelete" Header="Delete">
-                                                    <MenuItem.Icon>
-                                                        <ui:FontIcon Glyph="&#xE107;" />
-                                                    </MenuItem.Icon>
-                                                </MenuItem>
-                                            </ContextMenu>
-                                        </Border.ContextMenu>
-                                        <Border.Effect>
-                                            <DropShadowEffect BlurRadius="4" Opacity="0.18" ShadowDepth="1" />
-                                        </Border.Effect>
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="*"/>
-                                                <RowDefinition Height="32"/>
-                                            </Grid.RowDefinitions>
-                                            <local:LayoutPreview Margin="16"
+                                            <Border.ContextMenu >
+                                                <ContextMenu >
+                                                    <MenuItem Click="OnDelete" Header="Delete">
+                                                        <MenuItem.Icon>
+                                                            <ui:FontIcon Glyph="&#xE107;" />
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </ContextMenu>
+                                            </Border.ContextMenu>
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="4" Opacity="0.18" ShadowDepth="1" />
+                                            </Border.Effect>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="32"/>
+                                                </Grid.RowDefinitions>
+                                                <local:LayoutPreview Margin="16"
                                                                  VerticalAlignment="Stretch"
                                                                  HorizontalAlignment="Stretch"/>
 
-                                            <TextBlock Name="layoutName"
+                                                <TextBlock Name="layoutName"
                                                        TextTrimming="CharacterEllipsis"
                                                        Padding="8,0,8,0"
                                                        FontSize="12"
@@ -310,7 +319,7 @@
                                                        VerticalAlignment="Top"
                                                        Text="{Binding Name}" 
                                                        Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                                            <Button x:Name="DeleteButton"
+                                                <Button x:Name="DeleteButton"
                                                 FontFamily="Segoe MDL2 Assets"
                                                 Content="&#xE107;"
                                                 Style="{StaticResource DefaultButtonStyle}"
@@ -321,17 +330,18 @@
                                                 Margin="8"
                                                 BorderThickness="0"
                                                 Background="Transparent"/>
-                                        </Grid>
-                                    </Border>
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding IsApplied}" Value="true">
-                                            <Setter TargetName="layoutName" Property="Foreground" Value="#F2F2F2" />
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                                            </Grid>
+                                        </Border>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding IsApplied}" Value="true">
+                                                <Setter TargetName="layoutName" Property="Foreground" Value="#F2F2F2" />
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
                 </TabItem>
             </TabControl>
 
@@ -390,14 +400,14 @@
                                 HorizontalAlignment="Stretch"
                                 Style="{StaticResource DefaultButtonStyle}"
                                 Click="Reset_Click"/>
-                        
+
                         <Button x:Name="EditCustomButton"
                                 Content="{x:Static props:Resources.Edit_Selected_Layout}"
                                 Margin="0,8,0,0"
                                 Style="{StaticResource DefaultButtonStyle}"
                                 HorizontalAlignment="Stretch"
                                 Click="EditLayout_Click"/>
-                        
+
                         <Button x:Name="ApplyCustomButton"
                                 Content="{x:Static props:Resources.Apply}"
                                 HorizontalAlignment="Stretch"
@@ -417,10 +427,47 @@
                             </Button.DataContext>
                         </Button>
 
-                
+
                     </StackPanel>
                 </Grid>
             </Border>
         </Grid>
+        <ui:ContentDialog x:Name="NewLayoutDialog" HorizontalAlignment="Center" VerticalAlignment="Center" PrimaryButtonStyle="{StaticResource AccentButtonStyle}" SecondaryButtonText="Cancel" PrimaryButtonText="Create" PrimaryButtonClick="NewLayoutDialog_PrimaryButtonClick">
+            <StackPanel>
+                <TextBlock Text="Choose your layout type" FontSize="24" HorizontalAlignment="Center" FontWeight="Bold" />
+                <RadioButton x:Name="GridLayoutRadioButton" GroupName="LayoutTypeGroup" IsChecked="True" Margin="0,24,0,0" Style="{StaticResource LayoutTypeRadioButtonStyle}">
+                    <RadioButton.Content>
+                        <Grid Width="420" Margin="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="&#xE138;" FontSize="16" Foreground="{DynamicResource SystemControlBackgroundAccentBrush}" Margin="0,4,0,0" HorizontalAlignment="Left" FontFamily="Segoe MDL2 Assets" />
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <TextBlock TextWrapping="Wrap" FontWeight="Bold" Margin="0,3,0,0" Text="Grid"/>
+                                <TextBlock TextWrapping="Wrap" Margin="0,4,0,0" Text="Create layouts that are horizontally or vertically stacked" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            </StackPanel>
+                            
+                        </Grid>
+                    </RadioButton.Content>
+                </RadioButton>
+
+                <RadioButton x:Name="CanvasLayoutRadioButton" GroupName="LayoutTypeGroup" IsChecked="True" Style="{StaticResource LayoutTypeRadioButtonStyle}" Margin="0,0,0,64">
+                    <RadioButton.Content>
+                        <Grid Width="420" Margin="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="&#xF5ED;" FontSize="16" Foreground="{DynamicResource SystemControlBackgroundAccentBrush}" Margin="0,4,0,0" HorizontalAlignment="Left" FontFamily="Segoe MDL2 Assets" />
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <TextBlock TextWrapping="Wrap" FontWeight="Bold" Margin="0,3,0,0" Text="Canvas"/>
+                                <TextBlock TextWrapping="Wrap" Margin="0,4,0,0" Text="Create layouts that have overlapping zones" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </RadioButton.Content>
+                </RadioButton>
+            </StackPanel>
+        </ui:ContentDialog>
     </Grid>
 </Window>
