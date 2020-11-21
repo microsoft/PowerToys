@@ -7,8 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    Background="{StaticResource GridZoneBackgroundBrush}"
-    BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"
+    Background="{DynamicResource GridZoneBackgroundBrush}"
+    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
     BorderThickness="1"
     Opacity="0.8"
     mc:Ignorable="d">
@@ -25,7 +25,7 @@
             Content="ID"
             FontFamily="Segoe UI Light"
             FontSize="64"
-            Foreground="White" />
+            Foreground="{DynamicResource PrimaryForegroundBrush}" />
         <!--<TextBlock Margin="2" Text="Shift Key switches direction&#13;Ctrl  Key repeats"/>-->
     </Grid>
 </UserControl>
