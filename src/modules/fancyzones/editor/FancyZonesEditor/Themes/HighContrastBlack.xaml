@@ -22,4 +22,7 @@
 
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFffffff" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF1aebff" />
+
+    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
+    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>
 </ResourceDictionary>
