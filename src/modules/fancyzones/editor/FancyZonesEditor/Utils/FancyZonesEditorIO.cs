@@ -205,9 +205,16 @@ namespace FancyZonesEditor.Utils
                     // Target monitor id
                     string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
 
+                    // Test launch with custom monitors configuration
+                    bool isCustomMonitorConfigurationMode = targetMonitorName.StartsWith("Monitor#");
+                    if (isCustomMonitorConfigurationMode)
+                    {
+                        App.Overlay.Monitors.Clear();
+                    }
+
                     // Monitors count
                     int count = int.Parse(argsParts[(int)CmdArgs.MonitorsCount]);
-                    if (count != App.Overlay.DesktopsCount)
+                    if (count != App.Overlay.DesktopsCount && !isCustomMonitorConfigurationMode)
                     {
                         MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
                         ((App)Application.Current).Shutdown();
@@ -226,6 +233,7 @@ namespace FancyZonesEditor.Utils
                         nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
                         nativeData.X = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
                         nativeData.Y = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
+
                         nativeMonitorData.Add(nativeData);
 
                         if (nativeData.X == 0 && nativeData.Y == 0)
@@ -244,30 +252,51 @@ namespace FancyZonesEditor.Utils
                     double scaleFactor = 96f / primaryMonitorDPI;
 
                     // Update monitors data
-                    foreach (Monitor monitor in monitors)
+                    if (isCustomMonitorConfigurationMode)
                     {
-                        bool matchFound = false;
-                        monitor.Scale(scaleFactor);
-
-                        double scaledBoundX = (int)(monitor.Device.UnscaledBounds.X * identifyScaleFactor);
-                        double scaledBoundY = (int)(monitor.Device.UnscaledBounds.Y * identifyScaleFactor);
-
                         foreach (NativeMonitorData nativeData in nativeMonitorData)
                         {
-                            // Can't do an exact match since the rounding algorithm used by the framework is different from ours
-                            if (scaledBoundX >= (nativeData.X - 1) && scaledBoundX <= (nativeData.X + 1) &&
-                                scaledBoundY >= (nativeData.Y - 1) && scaledBoundY <= (nativeData.Y + 1))
-                            {
-                                monitor.Device.Id = nativeData.Id;
-                                monitor.Device.Dpi = nativeData.Dpi;
-                                matchFound = true;
-                                break;
-                            }
-                        }
+                            var splittedId = nativeData.Id.Split('_');
+                            int width = int.Parse(splittedId[1]);
+                            int height = int.Parse(splittedId[2]);
 
-                        if (matchFound == false)
+                            Rect bounds = new Rect(nativeData.X, nativeData.Y, width, height);
+                            bool isPrimary = nativeData.X == 0 && nativeData.Y == 0;
+
+                            Monitor monitor = new Monitor(bounds, bounds, isPrimary);
+                            monitor.Device.Id = nativeData.Id;
+                            monitor.Device.Dpi = nativeData.Dpi;
+
+                            monitors.Add(monitor);
+                        }
+                    }
+                    else
+                    {
+                        foreach (Monitor monitor in monitors)
                         {
-                            MessageBox.Show(string.Format(Properties.Resources.Error_Monitor_Match_Not_Found, monitor.Device.UnscaledBounds.ToString()));
+                            bool matchFound = false;
+                            monitor.Scale(scaleFactor);
+
+                            double scaledBoundX = (int)(monitor.Device.UnscaledBounds.X * identifyScaleFactor);
+                            double scaledBoundY = (int)(monitor.Device.UnscaledBounds.Y * identifyScaleFactor);
+
+                            foreach (NativeMonitorData nativeData in nativeMonitorData)
+                            {
+                                // Can't do an exact match since the rounding algorithm used by the framework is different from ours
+                                if (scaledBoundX >= (nativeData.X - 1) && scaledBoundX <= (nativeData.X + 1) &&
+                                    scaledBoundY >= (nativeData.Y - 1) && scaledBoundY <= (nativeData.Y + 1))
+                                {
+                                    monitor.Device.Id = nativeData.Id;
+                                    monitor.Device.Dpi = nativeData.Dpi;
+                                    matchFound = true;
+                                    break;
+                                }
+                            }
+
+                            if (matchFound == false)
+                            {
+                                MessageBox.Show(string.Format(Properties.Resources.Error_Monitor_Match_Not_Found, monitor.Device.UnscaledBounds.ToString()));
+                            }
                         }
                     }
 

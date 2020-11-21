@@ -15,7 +15,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Border x:Name="ThumbBorder" Opacity="0" BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                        <Border x:Name="ThumbBorder" Opacity="0" BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates" >
                                     <VisualStateGroup.Transitions>
@@ -47,12 +47,22 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
-                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        <Border x:Name="border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}"
+                                SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter"
+                                              Focusable="False"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"
+                                              RecognizesAccessKey="True"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsDefaulted" Value="true">
-                                <Setter Property="BorderBrush" TargetName="border" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource SystemControlBackgroundAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter Property="Opacity" TargetName="contentPresenter" Value="0.6"/>
@@ -67,7 +77,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" Background="{StaticResource CanvasZoneBackgroundBrush}" BorderThickness="1">
+    <Border BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" Background="{StaticResource CanvasZoneBackgroundBrush}" BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
                 <RowDefinition Height="8"/>
@@ -90,7 +100,7 @@
                Canvas.Bottom="10"
                FontSize="64"
                FontFamily="Segoe UI Light"
-               Foreground="White"
+               Foreground="{DynamicResource PrimaryForegroundBrush}"
                Grid.Column="2"
                Grid.Row="2"
                VerticalContentAlignment="Center"
