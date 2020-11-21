@@ -25,7 +25,6 @@ namespace FancyZonesEditor
             VirtualDesktopId,
         }
 
-        private static CanvasLayoutModel _blankCustomModel;
         private readonly CanvasLayoutModel _focusModel;
         private readonly GridLayoutModel _rowsModel;
         private readonly GridLayoutModel _columnsModel;
@@ -104,8 +103,6 @@ namespace FancyZonesEditor
 
             _priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
             DefaultModels.Add(_priorityGridModel);
-
-            _blankCustomModel = new CanvasLayoutModel(Properties.Resources.Custom_Layout_Create_New, LayoutType.Blank);
 
             UpdateTemplateLayoutModels();
         }
@@ -350,7 +347,6 @@ namespace FancyZonesEditor
                 if (_customModels == null)
                 {
                     _customModels = LayoutModel.LoadCustomModels();
-                    _customModels.Insert(0, _blankCustomModel);
                 }
 
                 return _customModels;

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -121,6 +122,12 @@ namespace FancyZonesEditor
 
             newSelection.IsSelected = true;
             App.Overlay.CurrentDataContext = newSelection;
+        }
+
+        private async void NewLayoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            GridLayoutRadioButton.IsChecked = true;
+            await NewLayoutDialog.ShowAsync();
         }
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
@@ -264,6 +271,45 @@ namespace FancyZonesEditor
             {
                 Close();
             }
+        }
+
+        private void NewLayoutDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
+        {
+            LayoutModel selectedLayoutModel;
+
+            if (GridLayoutRadioButton.IsChecked == true)
+            {
+                // 1:1 Copy from MainWindowSettingsModel
+                int multiplier = 10000;
+                int zoneCount = 3;
+
+                GridLayoutModel columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
+                {
+                    Rows = 1,
+                    RowPercents = new List<int>(1) { multiplier },
+                };
+
+                columnsModel.CellChildMap = new int[1, zoneCount];
+                columnsModel.Columns = zoneCount;
+                columnsModel.ColumnPercents = new List<int>(zoneCount);
+
+                for (int i = 0; i < 3; i++)
+                {
+                    columnsModel.CellChildMap[0, i] = i;
+                    columnsModel.ColumnPercents.Add(((multiplier * (i + 1)) / zoneCount) - ((multiplier * i) / zoneCount));
+                }
+
+                selectedLayoutModel = columnsModel;
+            }
+            else
+            {
+                selectedLayoutModel = new CanvasLayoutModel(Properties.Resources.Custom_Layout_Create_New, LayoutType.Blank);
+            }
+
+            App.Overlay.CurrentDataContext = selectedLayoutModel;
+            var mainEditor = App.Overlay;
+            Hide();
+            mainEditor.OpenEditor(selectedLayoutModel);
         }
     }
 }
