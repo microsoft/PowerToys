@@ -8,10 +8,11 @@ using System.Linq;
 using System.Net;
 using System.Windows;
 using ManagedCommon;
+using Microsoft.Toolkit.Uwp.Notifications;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
-using Wox.Infrastructure;
+using Windows.UI.Notifications;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 
@@ -33,6 +34,9 @@ namespace Wox
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
+
+            DesktopNotificationManagerCompat.RegisterActivator<LauncherNotificationActivator>();
+            DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("Microsoft.PowerToysWin32");
         }
 
         public void ChangeQuery(string query, bool requery = false)
@@ -76,6 +80,18 @@ namespace Wox
             Application.Current.Dispatcher.Invoke(() =>
             {
                 MessageBox.Show(subTitle, title);
+            });
+        }
+
+        public void ShowNotification(string text)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ToastContent toastContent = new ToastContentBuilder()
+                    .AddText(text)
+                    .GetToastContent();
+                var toast = new ToastNotification(toastContent.GetXml());
+                DesktopNotificationManagerCompat.CreateToastNotifier().Show(toast);
             });
         }
 

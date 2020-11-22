@@ -8,9 +8,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.ServiceProcess;
 using Microsoft.Plugin.Service.Properties;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Service.Helper
 {
@@ -69,20 +71,21 @@ namespace Microsoft.Plugin.Service.Helper
 
                 var process = Process.Start(info);
                 process.WaitForExit();
-                var success = process.ExitCode == 0;
+                var exitCode = process.ExitCode;
 
-                if (success)
+                if (exitCode == 0)
                 {
-                    contextAPI.ShowMsg(string.Empty, GetLocalizedMessage(serviceResult, action));
+                    contextAPI.ShowNotification(GetLocalizedMessage(serviceResult, action));
                 }
                 else
                 {
-                    contextAPI.ShowMsg(string.Empty, $"An error occurred");
+                    contextAPI.ShowNotification("An error occurred");
+                    Log.Error($"The command returned {exitCode}", MethodBase.GetCurrentMethod().DeclaringType);
                 }
             }
             catch (Win32Exception ex)
             {
-                contextAPI.ShowMsg(string.Empty, ex.Message);
+                Log.Error(ex.Message, MethodBase.GetCurrentMethod().DeclaringType);
             }
         }
 

@@ -23,6 +23,7 @@ namespace Microsoft.Plugin.Service
         {
             _context = context;
             _context.API.ThemeChanged += OnThemeChanged;
+
             UpdateIconPath(_context.API.GetCurrentTheme());
         }
 
