@@ -4,10 +4,12 @@
 #include <Windows.h>
 #include <shellapi.h>
 
+#include <filesystem>
 #include <string_view>
 
 #include <common/common.h>
 #include <common/updating/updating.h>
+#include <common/updating/installer.h>
 #include <common/updating/http_client.h>
 #include <common/updating/dotnet_installation.h>
 
@@ -20,7 +22,7 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-auto Strings = updating::notifications::strings::create();
+auto Strings = create_notifications_strings();
 
 int uninstall_msi_action()
 {

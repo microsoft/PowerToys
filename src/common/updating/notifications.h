@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace updating
 {
     struct new_version_download_info;
@@ -29,33 +31,6 @@ namespace updating
             std::wstring TOAST_TITLE;
             std::wstring OFFER_UNINSTALL_MSI;
             std::wstring OFFER_UNINSTALL_MSI_TITLE;
-            template<typename = void>
-            static strings create()
-            {
-                return strings{
-                    .GITHUB_NEW_VERSION_AVAILABLE = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE),
-                    .GITHUB_NEW_VERSION_DOWNLOAD_STARTED = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_DOWNLOAD_STARTED),
-                    .GITHUB_NEW_VERSION_READY_TO_INSTALL = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_READY_TO_INSTALL),
-                    .GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR),
-                    .GITHUB_NEW_VERSION_UPDATE_NOW = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_NOW),
-                    .GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART),
-                    .UNINSTALLATION_UNKNOWN_ERROR = GET_RESOURCE_STRING(IDS_UNINSTALLATION_UNKNOWN_ERROR),
-                    .GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT),
-                    .GITHUB_NEW_VERSION_UNAVAILABLE = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UNAVAILABLE),
-                    .GITHUB_NEW_VERSION_VISIT = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_VISIT),
-                    .GITHUB_NEW_VERSION_MORE_INFO = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),
-                    .GITHUB_NEW_VERSION_ABORT = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_ABORT),
-                    .GITHUB_NEW_VERSION_SNOOZE_TITLE = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_SNOOZE_TITLE),
-                    .SNOOZE_BUTTON = GET_RESOURCE_STRING(IDS_SNOOZE_BUTTON),
-                    .GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D),
-                    .GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D),
-                    .DOWNLOAD_IN_PROGRESS = GET_RESOURCE_STRING(IDS_DOWNLOAD_IN_PROGRESS),
-                    .DOWNLOAD_COMPLETE = GET_RESOURCE_STRING(IDS_DOWNLOAD_COMPLETE),
-                    .TOAST_TITLE = GET_RESOURCE_STRING(IDS_TOAST_TITLE),
-                    .OFFER_UNINSTALL_MSI = GET_RESOURCE_STRING(IDS_OFFER_UNINSTALL_MSI),
-                    .OFFER_UNINSTALL_MSI_TITLE = GET_RESOURCE_STRING(IDS_OFFER_UNINSTALL_MSI_TITLE)
-                };
-            }
         };
 
         void show_unavailable(const notifications::strings& strings);
@@ -69,3 +44,29 @@ namespace updating
         void update_download_progress(const updating::new_version_download_info& info, float progress, const notifications::strings& strings);
     }
 }
+
+#define create_notifications_strings()                                                                                   \
+    ::updating::notifications::strings                                                                                   \
+    {                                                                                                                    \
+        .GITHUB_NEW_VERSION_AVAILABLE = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE),                           \
+        .GITHUB_NEW_VERSION_DOWNLOAD_STARTED = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_DOWNLOAD_STARTED),             \
+        .GITHUB_NEW_VERSION_READY_TO_INSTALL = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_READY_TO_INSTALL),             \
+        .GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR), \
+        .GITHUB_NEW_VERSION_UPDATE_NOW = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_NOW),                         \
+        .GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART),     \
+        .UNINSTALLATION_UNKNOWN_ERROR = GET_RESOURCE_STRING(IDS_UNINSTALLATION_UNKNOWN_ERROR),                           \
+        .GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT),   \
+        .GITHUB_NEW_VERSION_UNAVAILABLE = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UNAVAILABLE),                       \
+        .GITHUB_NEW_VERSION_VISIT = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_VISIT),                                   \
+        .GITHUB_NEW_VERSION_MORE_INFO = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),                           \
+        .GITHUB_NEW_VERSION_ABORT = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_ABORT),                                   \
+        .GITHUB_NEW_VERSION_SNOOZE_TITLE = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_SNOOZE_TITLE),                     \
+        .SNOOZE_BUTTON = GET_RESOURCE_STRING(IDS_SNOOZE_BUTTON),                                                         \
+        .GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D),             \
+        .GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D),             \
+        .DOWNLOAD_IN_PROGRESS = GET_RESOURCE_STRING(IDS_DOWNLOAD_IN_PROGRESS),                                           \
+        .DOWNLOAD_COMPLETE = GET_RESOURCE_STRING(IDS_DOWNLOAD_COMPLETE),                                                 \
+        .TOAST_TITLE = GET_RESOURCE_STRING(IDS_TOAST_TITLE),                                                             \
+        .OFFER_UNINSTALL_MSI = GET_RESOURCE_STRING(IDS_OFFER_UNINSTALL_MSI),                                             \
+        .OFFER_UNINSTALL_MSI_TITLE = GET_RESOURCE_STRING(IDS_OFFER_UNINSTALL_MSI_TITLE)                                  \
+    }

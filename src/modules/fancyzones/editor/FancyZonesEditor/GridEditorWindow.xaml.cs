@@ -5,6 +5,7 @@
 using System.Windows;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -19,13 +20,13 @@ namespace FancyZonesEditor
 
             KeyUp += GridEditorWindow_KeyUp;
 
-            _stashedModel = (GridLayoutModel)(EditorOverlay.Current.DataContext as GridLayoutModel).Clone();
+            _stashedModel = (GridLayoutModel)(App.Overlay.CurrentDataContext as GridLayoutModel).Clone();
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
         {
             base.OnCancel(sender, e);
-            GridLayoutModel model = EditorOverlay.Current.DataContext as GridLayoutModel;
+            GridLayoutModel model = App.Overlay.CurrentDataContext as GridLayoutModel;
             _stashedModel.RestoreTo(model);
         }
 
@@ -38,5 +39,15 @@ namespace FancyZonesEditor
         }
 
         private GridLayoutModel _stashedModel;
+
+        private void NameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            customLayoutNameTextBox.CaretIndex = customLayoutNameTextBox.Text.Length;
+        }
+
+        public System.Windows.Controls.TextBox NameTextBox()
+        {
+            return customLayoutNameTextBox;
+        }
     }
 }

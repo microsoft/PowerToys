@@ -8,12 +8,13 @@
 #include "update_utils.h"
 
 #include <common/timeutil.h>
+#include <common/updating/installer.h>
 #include <common/updating/updating.h>
 #include <runner/general_settings.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-auto Strings = updating::notifications::strings::create();
+auto Strings = create_notifications_strings();
 
 bool start_msi_uninstallation_sequence()
 {

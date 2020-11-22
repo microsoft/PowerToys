@@ -1,7 +1,11 @@
-﻿using ColorPicker.Helpers;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Drawing;
+using ColorPicker.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Drawing;
 
 namespace UnitTest_ColorPickerUI.Helpers
 {

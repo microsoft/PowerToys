@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -47,6 +48,16 @@ namespace FancyZonesEditor
 
             public void CalcAdjacentZones(int index, int size, List<RowColInfo> info, Func<int, bool> indexCmpr)
             {
+                if (info == null)
+                {
+                    throw new ArgumentNullException(nameof(info));
+                }
+
+                if (indexCmpr == null)
+                {
+                    throw new ArgumentNullException(nameof(indexCmpr));
+                }
+
                 int ind = index;
                 while (ind > 0 && indexCmpr(ind))
                 {

@@ -172,3 +172,14 @@ std::wstring Helpers::CreateGuidString()
 
     return L"";
 }
+
+std::optional<GUID> Helpers::StringToGuid(const std::wstring& str)
+{
+    GUID guid;
+    if (CLSIDFromString(str.c_str(), &guid) == S_OK)
+    {
+        return guid;
+    }
+
+    return std::nullopt;
+}

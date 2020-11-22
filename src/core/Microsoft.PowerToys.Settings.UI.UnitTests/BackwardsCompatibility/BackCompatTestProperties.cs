@@ -1,11 +1,15 @@
-﻿using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
-using Moq;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq.Expressions;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
+using Moq;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 {
@@ -16,14 +20,17 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
         // Using Ordinal since this is used internally for a path
         private static readonly Expression<Func<string, bool>> SettingsFilterExpression = s => s == null || s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
 
-        internal class MockSettingsRepository<T> : ISettingsRepository<T> where T : ISettingsConfig, new()
+        internal class MockSettingsRepository<T> : ISettingsRepository<T>
+            where T : ISettingsConfig, new()
         {
-            T _settingsConfig;
-            readonly ISettingsUtils _settingsUtils;
-            public MockSettingsRepository( ISettingsUtils settingsUtils)
+            private readonly ISettingsUtils _settingsUtils;
+            private T _settingsConfig;
+
+            public MockSettingsRepository(ISettingsUtils settingsUtils)
             {
                 _settingsUtils = settingsUtils;
             }
+
             public T SettingsConfig
             {
                 get
@@ -43,10 +50,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
             }
         }
 
-
-        public static Mock<IFile>GetModuleIOProvider(string version, string module, string fileName)
+        public static Mock<IFile> GetModuleIOProvider(string version, string module, string fileName)
         {
-            
             var stubSettingsPath = StubSettingsPath(version, module, fileName);
             Expression<Func<string, bool>> filterExpression = ModuleFilterExpression(module);
             return IIOProviderMocks.GetMockIOReadWithStubFile(stubSettingsPath, filterExpression);
@@ -62,9 +67,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
             return string.Format(CultureInfo.InvariantCulture, BackCompatTestProperties.RootPathStubFiles, version, module, fileName);
         }
 
-        public static void VerifyModuleIOProviderWasRead(Mock<IFile> provider, string module,  int expectedCallCount)
+        public static void VerifyModuleIOProviderWasRead(Mock<IFile> provider, string module, int expectedCallCount)
         {
-            if(provider == null)
+            if (provider == null)
             {
                 throw new ArgumentNullException(nameof(provider));
             }
@@ -95,6 +100,5 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 
             IIOProviderMocks.VerifyIOReadWithStubFile(provider, SettingsFilterExpression, expectedCallCount);
         }
-
     }
 }

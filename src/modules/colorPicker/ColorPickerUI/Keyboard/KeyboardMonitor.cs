@@ -9,6 +9,7 @@ using System.Windows.Input;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
 using ColorPicker.Telemetry;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
 using static ColorPicker.NativeMethods;
@@ -92,7 +93,14 @@ namespace ColorPicker.Keyboard
 
             if (ArraysAreSame(currentlyPressedKeys, _activationKeys))
             {
-                _appStateHandler.ShowColorPicker();
+                if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+                {
+                    _appStateHandler.ShowColorPickerEditor();
+                }
+                else
+                {
+                    _appStateHandler.ShowColorPicker();
+                }
             }
         }
 

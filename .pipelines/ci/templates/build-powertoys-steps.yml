@@ -8,9 +8,9 @@ steps:
   clean: true
 
 - task: NuGetToolInstaller@0
-  displayName: Ensure NuGet 5.5.0
+  displayName: Ensure NuGet 5.8.0
   inputs:
-    versionSpec: 5.5.0
+    versionSpec: 5.8.0
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform

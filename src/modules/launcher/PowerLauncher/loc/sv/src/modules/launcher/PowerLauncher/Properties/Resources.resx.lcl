@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run deserialization error]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Deserialiseringsfel för PowerToys-startprogram]]></Val>
+            <Val><![CDATA[Deserialiseringsfel för PowerToys-startprogrammet]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Powertoys Run deserialization error]]></Val>
@@ -206,7 +206,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerToys Run ran into an issue]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Run har stött på ett problem]]></Val>
+            <Val><![CDATA[PowerToys-startprogrammet har stött på ett problem]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

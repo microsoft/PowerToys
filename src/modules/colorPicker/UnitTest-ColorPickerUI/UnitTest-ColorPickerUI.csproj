@@ -2,16 +2,20 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>UnitTest_ColorPickerUI</RootNamespace>
     <IsPackable>false</IsPackable>
-    <Platforms>x64</Platforms>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <LangVersion>8.0</LangVersion>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
     <OutputPath>..\..\..\..\x64\Debug\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
     <OutputPath>..\..\..\..\x64\Release\modules\ColorPicker\UnitTest-ColorPickerUI\</OutputPath>
   </PropertyGroup>
 

@@ -1,0 +1,290 @@
+﻿<UserControl x:Class="ColorPicker.Controls.ColorPickerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ColorPicker.Controls"
+             xmlns:p="clr-namespace:ColorPicker.Properties"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             mc:Ignorable="d"
+             Height="350"
+             Width="333">
+    <StackPanel x:Name="PickerPanel"
+                Orientation="Vertical"
+                Background="{x:Null}" >
+        <!--Top panel-->
+        <Grid HorizontalAlignment="Stretch" Margin="12,0,12,0">
+            <Grid.Effect>
+                <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+            </Grid.Effect>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="165"/>
+                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="36"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="colorVariation1Button"
+                    Grid.Column="0"
+                    TabIndex="4"
+                    ui:ControlHelper.CornerRadius="2,0,0,2"
+                    Background="LightPink"
+                    Click="ColorVariationButton_Click"
+                    AutomationProperties.Name="Color shade 1"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+            <Button x:Name="colorVariation2Button"
+                    Grid.Column="1"
+                    ui:ControlHelper.CornerRadius="0"
+                    TabIndex="5"
+                    Background="LightPink"
+                    Click="ColorVariationButton_Click"
+                    AutomationProperties.Name="Color shade 2"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+            <Button x:Name="colorVariation3Button"
+                    Grid.Column="3"
+                    TabIndex="7"
+                    ui:ControlHelper.CornerRadius="0"
+                    Background="LightPink"
+                    Click="ColorVariationButton_Click"
+                    AutomationProperties.Name="Color shade 3"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+            <Button x:Name="colorVariation4Button"
+                    Grid.Column="4"
+                    TabIndex="8"
+                    ui:ControlHelper.CornerRadius="0,2,2,0"
+                    Background="LightPink"
+                    Click="ColorVariationButton_Click"
+                    AutomationProperties.Name="Color shade 5"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+            <Button x:Name="CurrentColorButton"
+                    HorizontalAlignment="Left"
+                    Grid.Column="0"
+                    TabIndex="6"
+                    Grid.ColumnSpan="5"
+                    Opacity="1"
+                    ui:ControlHelper.CornerRadius="0"
+                    Background="Red"
+                    Width="165"
+                    Height="48"
+                    Margin="72,0,0,0"
+                    AutomationProperties.Name="{x:Static p:Resources.Selected_color}"
+                    AutomationProperties.HelpText="{x:Static p:Resources.Selected_color_helptext}"
+                    ToolTipService.ToolTip="{x:Static p:Resources.Selected_color_tooltip}"
+                    Click="CurrentColorButton_Click"
+                    Style="{DynamicResource ColorShadeButtonStyle}"/>
+        </Grid>
+
+        <!--Details panel-->
+        <Grid Margin="0,4,0,12"
+              Height="0"
+              Visibility="Collapsed"
+              x:Name="detailsGrid">
+            <Border Background="{DynamicResource PrimaryBackgroundBrush}"/>
+            <StackPanel x:Name="detailsStackPanel" 
+                        Opacity="0">
+
+                <Grid Margin="12,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="36"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="H"
+                               FontWeight="SemiBold"
+                               Margin="0,10,0,0"
+                               VerticalAlignment="Center"/>
+
+                    <Border Grid.Column="1" 
+                      Margin="0,12,12,0"  
+                      x:Name="HueGradientGrid"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Center"
+                      Height="24"
+                      AutomationProperties.Name="{x:Static p:Resources.Hue_slider}"
+                      Width="289"
+                      CornerRadius="2"
+                      MouseLeftButtonDown="HueGradientGrid_MouseLeftButtonDown"
+                      MouseMove="HueGradientGrid_MouseMove">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                        </Border.Effect>
+                        <Border VerticalAlignment="Stretch"
+                            Width="6"
+                            x:Name="hueGradientPointer"
+                            Margin="154,0,0,0"
+                            Background="#88FFFFFF"
+                            BorderBrush="Black"
+                            CornerRadius="2"
+                            BorderThickness="1"
+                            HorizontalAlignment="Left"/>
+                    </Border>
+
+                    <TextBlock Text="S"
+                               Grid.Row="1"
+                               Margin="0,10,0,0"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+
+                    <Border HorizontalAlignment="Left"
+                      Grid.Column="1"
+                      Grid.Row="1"
+                      Margin="0,12,12,0"
+                      VerticalAlignment="Center"
+                      Height="24"
+                      AutomationProperties.Name="{x:Static p:Resources.Saturation_slider}"
+                      x:Name="SaturationGradientGrid"
+                      Width="289"
+                      CornerRadius="2"
+                      MouseLeftButtonDown="SaturationGradientGrid_MouseLeftButtonDown"
+                      MouseMove="SaturationGradientGrid_MouseMove">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                        </Border.Effect>
+                        <Border.Background>
+                            <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
+                                <GradientStop x:Name="SaturationStartColor" Color="Black"/>
+                                <GradientStop x:Name="SaturationStopColor" Color="Red" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border HorizontalAlignment="Left"
+                            x:Name="saturationGradientPointer"
+                            BorderBrush="Black"
+                            BorderThickness="1"
+                            Margin="154,0,0,0"
+                            CornerRadius="2"
+                            Width="6"
+                            VerticalAlignment="Stretch"
+                            Background="#88FFFFFF"/>
+                    </Border>
+
+                    <TextBlock Text="V"
+                               Grid.Row="2"
+                               Margin="0,10,0,0"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+
+                    <Border HorizontalAlignment="Left"
+                      Grid.Column="1"
+                      Grid.Row="2"
+                      Margin="0,12,12,0"
+                      Height="24"
+                      VerticalAlignment="Center"
+                      CornerRadius="2"
+                      x:Name="ValueGradientGrid"
+                      Width="289"
+                      AutomationProperties.Name="{x:Static p:Resources.Value_slider}"
+                      MouseLeftButtonDown="ValueGradientGrid_MouseLeftButtonDown"
+                      MouseMove="ValueGradientGrid_MouseMove">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" Opacity="0.32" ShadowDepth="2" />
+                        </Border.Effect>
+                        <Border.Background>
+                            <LinearGradientBrush EndPoint="1,0.5" StartPoint="0, 0.5">
+                                <GradientStop x:Name="ValueStartColor" Color="Red"/>
+                                <GradientStop x:Name="ValueStopColor" Color="White" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border HorizontalAlignment="Left"
+                            x:Name="valueGradientPointer"
+                            BorderBrush="Black"
+                            BorderThickness="1"
+                            Margin="154,0,0,0"
+                            Width="6"
+                            CornerRadius="2"
+                            VerticalAlignment="Stretch"
+                            Background="#88FFFFFF"/>
+                    </Border>
+                </Grid>
+
+                <Grid HorizontalAlignment="Stretch" Margin="12,16,12,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="68"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="36"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="R"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                    <TextBox x:Name="RTextBox"
+                             Margin="0,0,0,0"
+                             Grid.Column="1"
+                             Height="32"
+                             AutomationProperties.Name="{x:Static p:Resources.Red_value}"
+                             TextChanged="RGBTextBoxes_TextChanged"
+                             TextWrapping="Wrap"/>
+
+                    <TextBlock Text="G"
+                               FontWeight="SemiBold"
+                               Grid.Row="1"
+                               VerticalAlignment="Center"/>
+
+                    <TextBox x:Name="GTextBox"
+                             Width="68"
+                             Height="32"
+                             Grid.Row="1"
+                             Grid.Column="1"
+                             AutomationProperties.Name="{x:Static p:Resources.Green_value}"
+                             TextChanged="RGBTextBoxes_TextChanged"
+                             TextWrapping="Wrap"/>
+
+                    <TextBlock Text="B"
+                               FontWeight="SemiBold"
+                               Grid.Row="2"
+                               VerticalAlignment="Center"/>
+
+                    <TextBox x:Name="BTextBox"
+                             Width="68"
+                             Height="32"
+                             Grid.Column="1"
+                             Grid.Row="2"
+                             AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
+                             TextChanged="RGBTextBoxes_TextChanged"
+                             TextWrapping="Wrap"/>
+
+                    <TextBlock Text="HEX"
+                               Grid.Column="2"
+                               HorizontalAlignment="Right"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                    <TextBox x:Name="HexCode"
+                             HorizontalAlignment="Stretch"
+                             Margin="8,0,0,0"
+                             Height="32"
+                             Grid.Column="3"
+                             AutomationProperties.Name="{x:Static p:Resources.Hex_value}"
+                             TextChanged="HexCode_TextChanged"
+                             TextWrapping="Wrap"/>
+                </Grid>
+                <WrapPanel HorizontalAlignment="Right"
+                           Margin="0,0,0,0"
+                           VerticalAlignment="Top">
+                    <Button x:Name="CancelButton"
+                            Click="CancelButton_Click"
+                            AutomationProperties.Name="{x:Static p:Resources.Cancel}"
+                            Content="Cancel"
+                            Width="80"/>
+                    <Button Margin="12,0,12,0"
+                            x:Name="OKButton"
+                            Click="OKButton_Click"
+                            Style="{StaticResource AccentButtonStyle}"
+                            AutomationProperties.Name="{x:Static p:Resources.OK}"
+                            Content="OK"
+                            Width="80"/>
+                </WrapPanel>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>

@@ -37,11 +37,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Countslabelfmt" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Countslabelrenamingfmt" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Items Selected: %u | Renaming: %u]]></Val>
+          <Val><![CDATA[Items Renaming: %u]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[已选择的项: %u 个 | 正在重命名: %u 个]]></Val>
+            <Val><![CDATA[正在重命名的项: %u 个]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Countslabelselectedfmt" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Items Selected: %u]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已选择的项: %u 个]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -118,12 +127,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";Items_Renaming" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Items Renaming: 0]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在重命名的项: 0 个]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Items_Selected" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Items Selected: 0 | Renaming: 0]]></Val>
+          <Val><![CDATA[Items Selected: 0]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[已选择的项: 0 个 | 正在重命名: 0 个]]></Val>
+            <Val><![CDATA[已选择的项: 0 个]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Items Selected: 0 | Renaming: 0]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
