@@ -18,8 +18,8 @@ namespace FancyZonesEditor
     {
         // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const int MaxZones = 40;
-        private const int DefaultWrapPanelItemSize = 262;
-        private const int SmallWrapPanelItemSize = 180;
+        private const int DefaultWrapPanelItemSize = 164;
+        private const int SmallWrapPanelItemSize = 164;
         private const int MinimalForDefaultWrapPanelsHeight = 900;
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
@@ -91,6 +91,11 @@ namespace FancyZonesEditor
             WindowLayout window = new WindowLayout();
             window.Show();
             Hide();
+        }
+
+        private void Border_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Select(((Border)sender).DataContext as LayoutModel);
         }
 
         private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
@@ -213,7 +218,7 @@ namespace FancyZonesEditor
             {
                 if (model.IsSelected)
                 {
-                    TemplateTab.SelectedItem = model;
+                    // TemplateTab.SelectedItem = model;
                     return;
                 }
             }
@@ -228,6 +233,50 @@ namespace FancyZonesEditor
             }
 
             model.Delete();
+        }
+
+        private void OnEdit(object sender, RoutedEventArgs e)
+        {
+            var mainEditor = App.Overlay;
+            if (!(mainEditor.CurrentDataContext is LayoutModel model))
+            {
+                return;
+            }
+
+            model.IsSelected = false;
+            Hide();
+
+            bool isPredefinedLayout = MainWindowSettingsModel.IsPredefinedLayout(model);
+
+            if (!MainWindowSettingsModel.CustomModels.Contains(model) || isPredefinedLayout)
+            {
+                if (isPredefinedLayout)
+                {
+                    // make a copy
+                    model = model.Clone();
+                    mainEditor.CurrentDataContext = model;
+                }
+
+                int maxCustomIndex = 0;
+                foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
+                {
+                    string name = customModel.Name;
+                    if (name.StartsWith(_defaultNamePrefix))
+                    {
+                        if (int.TryParse(name.Substring(_defaultNamePrefix.Length), out int i))
+                        {
+                            if (maxCustomIndex < i)
+                            {
+                                maxCustomIndex = i;
+                            }
+                        }
+                    }
+                }
+
+                model.Name = _defaultNamePrefix + (++maxCustomIndex);
+            }
+
+            mainEditor.OpenEditor(model);
         }
 
         private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -310,6 +359,16 @@ namespace FancyZonesEditor
             var mainEditor = App.Overlay;
             Hide();
             mainEditor.OpenEditor(selectedLayoutModel);
+        }
+
+        private void MainWindow1_ContentRendered(object sender, EventArgs e)
+        {
+            InvalidateVisual();
+        }
+
+        private void LayoutApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            Apply();
         }
     }
 }

@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using FancyZonesEditor.Models;
+using Windows.UI.Xaml.Media;
 
 namespace FancyZonesEditor
 {
@@ -173,8 +175,10 @@ namespace FancyZonesEditor
         {
             _layoutPreview = new LayoutPreview
             {
+                ZoneBorder = new System.Windows.Media.SolidColorBrush(Colors.White),
+                ZoneBackground = new System.Windows.Media.SolidColorBrush(Colors.Black),
                 IsActualSize = true,
-                Opacity = 0.5,
+                Opacity = 1,
             };
 
             ShowLayout();
