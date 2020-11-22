@@ -18,9 +18,13 @@
     <SolidColorBrush x:Key="ListViewPointerOverBrush" Color="#FF242424"/>
     <SolidColorBrush x:Key="ListViewPressedBrush" Color="#FF333333"/>
 
-    <SolidColorBrush x:Key="ColorControlBackgroundBrush" Color="#FF454545"/>
+    <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FF454545"/>
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF6b6b6b" />
+
+    <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#f5f5f5"/>
+    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#9c9c9c"/>
+
 
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>
