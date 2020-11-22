@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -10,8 +11,8 @@ namespace FancyZonesEditor.Converters
 {
     public class BooleanToBrushConverter : IValueConverter
     {
-        private static readonly Brush _selectedBrush = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD7));
-        private static readonly Brush _normalBrush = new SolidColorBrush(Color.FromRgb(0xF2, 0xF2, 0xF2));
+        private static readonly Brush _selectedBrush = Application.Current.FindResource("SystemControlBackgroundAccentBrush") as SolidColorBrush;
+        private static readonly Brush _normalBrush = Application.Current.FindResource("LayoutItemBackgroundBrush") as SolidColorBrush;
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
