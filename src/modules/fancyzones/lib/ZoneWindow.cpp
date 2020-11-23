@@ -31,7 +31,7 @@ public:
     ZoneWindow(HINSTANCE hinstance);
     ~ZoneWindow();
 
-    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId);
+    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
@@ -48,7 +48,7 @@ public:
     ExtendWindowByDirectionAndPosition(HWND window, DWORD vkCode) noexcept;
     IFACEMETHODIMP_(void)
     CycleActiveZoneSet(DWORD vkCode) noexcept;
-    IFACEMETHODIMP_(std::wstring)
+    IFACEMETHODIMP_(FancyZonesDataTypes::DeviceIdData)
     UniqueId() noexcept { return { m_uniqueId }; }
     IFACEMETHODIMP_(void)
     SaveWindowProcessToZoneIndex(HWND window) noexcept;
@@ -67,7 +67,7 @@ protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    void InitializeZoneSets(const std::wstring& parentUniqueId) noexcept;
+    void InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept;
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -77,7 +77,7 @@ private:
 
     winrt::com_ptr<IZoneWindowHost> m_host;
     HMONITOR m_monitor{};
-    std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
+    FancyZonesDataTypes::DeviceIdData m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
     wil::unique_hwnd m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
@@ -106,7 +106,7 @@ ZoneWindow::~ZoneWindow()
 {
 }
 
-bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId)
+bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId)
 {
     m_host.copy_from(host);
 
@@ -367,7 +367,7 @@ ZoneWindow::ClearSelectedZones() noexcept
 
 #pragma region private
 
-void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
+void ZoneWindow::InitializeZoneSets(const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
 {
     bool deviceAdded = FancyZonesDataInstance().AddDevice(m_uniqueId);
     // If the device has been added, check if it should inherit the parent's layout
@@ -565,7 +565,7 @@ LRESULT CALLBACK ZoneWindow::s_WndProc(HWND window, UINT message, WPARAM wparam,
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId) noexcept
+winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept
 {
     auto self = winrt::make_self<ZoneWindow>(hinstance);
     if (self->Init(host, hinstance, monitor, uniqueId, parentUniqueId))

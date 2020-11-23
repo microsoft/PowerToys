@@ -1,19 +1,8 @@
 #pragma once
 
-interface IZoneWindow;
+#include "HashHelpers.h"
 
-namespace std
-{
-    template<>
-    struct hash<GUID>
-    {
-        size_t operator()(const GUID& Value) const
-        {
-            RPC_STATUS status = RPC_S_OK;
-            return ::UuidHash(&const_cast<GUID&>(Value), &status);
-        }
-    };
-}
+interface IZoneWindow;
 
 class MonitorWorkAreaHandler
 {

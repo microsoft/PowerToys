@@ -6,6 +6,7 @@
 #include <vector>
 #include <optional>
 #include <variant>
+#include <tuple>
 #include <unordered_map>
 
 #include <windef.h>
@@ -30,6 +31,25 @@ namespace FancyZonesDataTypes
     {
         Grid = 0,
         Canvas
+    };
+
+    struct DeviceIdData
+    {
+        std::wstring deviceName;
+        int width;
+        int height;
+        GUID virtualDesktopId;
+        std::wstring monitorId;
+
+        bool empty() const;
+        std::wstring Serialize() const;
+        static DeviceIdData Parse(const std::wstring& deviceId);
+
+        bool operator==(const DeviceIdData& deviceId) const
+        {
+            return std::tie(this->deviceName, this->width, this->height, this->virtualDesktopId, this->monitorId) ==
+                   std::tie(deviceId.deviceName, deviceId.width, deviceId.height, deviceId.virtualDesktopId, deviceId.monitorId);
+        }
     };
 
     struct CanvasLayoutInfo
@@ -104,17 +124,8 @@ namespace FancyZonesDataTypes
         std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
         std::wstring zoneSetUuid;
-        std::wstring deviceId;
+        DeviceIdData deviceId;
         std::vector<size_t> zoneIndexSet;
-    };
-
-    struct DeviceIdData
-    {
-        std::wstring deviceName;
-        int width;
-        int height;
-        GUID virtualDesktopId;
-        std::wstring monitorId;
     };
 
     struct DeviceInfoData

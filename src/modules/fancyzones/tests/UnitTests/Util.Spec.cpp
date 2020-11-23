@@ -71,16 +71,16 @@ namespace FancyZonesUnitTests
             CLSIDFromString(expectedGuidStr, &guid);
             const FancyZonesDataTypes::DeviceIdData expected{ L"AOC0001#5&37ac4db&0&UID160002", 1536, 960, guid };
             
-            const auto actual = ParseDeviceId(input);
-            Assert::IsTrue(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsFalse(actual.empty());
 
-            Assert::AreEqual(expected.deviceName, actual->deviceName);
-            Assert::AreEqual(expected.height, actual->height);
-            Assert::AreEqual(expected.width, actual->width);
-            Assert::AreEqual(expected.monitorId, actual->monitorId);
+            Assert::AreEqual(expected.deviceName, actual.deviceName);
+            Assert::AreEqual(expected.height, actual.height);
+            Assert::AreEqual(expected.width, actual.width);
+            Assert::AreEqual(expected.monitorId, actual.monitorId);
             
             wil::unique_cotaskmem_string actualGuidStr;
-            StringFromCLSID(actual->virtualDesktopId, &actualGuidStr);
+            StringFromCLSID(actual.virtualDesktopId, &actualGuidStr);
             Assert::AreEqual(expectedGuidStr, actualGuidStr.get());
         }
 
@@ -93,16 +93,16 @@ namespace FancyZonesUnitTests
             CLSIDFromString(expectedGuidStr, &guid);
             const FancyZonesDataTypes::DeviceIdData expected{ L"AOC0001#5&37ac4db&0&UID160002", 1536, 960, guid, L"monitorId" };
 
-            const auto actual = ParseDeviceId(input);
-            Assert::IsTrue(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsFalse(actual.empty());
 
-            Assert::AreEqual(expected.deviceName, actual->deviceName);
-            Assert::AreEqual(expected.height, actual->height);
-            Assert::AreEqual(expected.width, actual->width);
-            Assert::AreEqual(expected.monitorId, actual->monitorId);
+            Assert::AreEqual(expected.deviceName, actual.deviceName);
+            Assert::AreEqual(expected.height, actual.height);
+            Assert::AreEqual(expected.width, actual.width);
+            Assert::AreEqual(expected.monitorId, actual.monitorId);
 
             wil::unique_cotaskmem_string actualGuidStr;
-            StringFromCLSID(actual->virtualDesktopId, &actualGuidStr);
+            StringFromCLSID(actual.virtualDesktopId, &actualGuidStr);
             Assert::AreEqual(expectedGuidStr, actualGuidStr.get());
         }
 
@@ -116,16 +116,16 @@ namespace FancyZonesUnitTests
             CLSIDFromString(expectedGuidStr, &guid);
             const FancyZonesDataTypes::DeviceIdData expected{ L"AOC00015&37ac4db&0&UID160002", 1536, 960, guid };
 
-            const auto actual = ParseDeviceId(input);
-            Assert::IsTrue(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsFalse(actual.empty());
 
-            Assert::AreEqual(expected.deviceName, actual->deviceName);
-            Assert::AreEqual(expected.height, actual->height);
-            Assert::AreEqual(expected.width, actual->width);
-            Assert::AreEqual(expected.monitorId, actual->monitorId);
+            Assert::AreEqual(expected.deviceName, actual.deviceName);
+            Assert::AreEqual(expected.height, actual.height);
+            Assert::AreEqual(expected.width, actual.width);
+            Assert::AreEqual(expected.monitorId, actual.monitorId);
 
             wil::unique_cotaskmem_string actualGuidStr;
-            StringFromCLSID(actual->virtualDesktopId, &actualGuidStr);
+            StringFromCLSID(actual.virtualDesktopId, &actualGuidStr);
             Assert::AreEqual(expectedGuidStr, actualGuidStr.get());
         }
 
@@ -133,48 +133,48 @@ namespace FancyZonesUnitTests
         {
             // no width or height
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_1536960_{E0A2904E-889C-4532-95B1-28FE15C16F66}";
-            const auto actual = ParseDeviceId(input);
-            Assert::IsFalse(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsTrue(actual.empty());
         }
 
         TEST_METHOD (TestParseDeviceIdInvalid02)
         {
             // no width and height
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_{E0A2904E-889C-4532-95B1-28FE15C16F66}_monitorId";
-            const auto actual = ParseDeviceId(input);
-            Assert::IsFalse(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsTrue(actual.empty());
         }
 
         TEST_METHOD (TestParseDeviceIdInvalid03)
         {
             // no guid
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_1536960_";
-            const auto actual = ParseDeviceId(input);
-            Assert::IsFalse(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsTrue(actual.empty());
         }
 
         TEST_METHOD (TestParseDeviceIdInvalid04)
         {
             // invalid guid
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_1536960_{asdf}";
-            const auto actual = ParseDeviceId(input);
-            Assert::IsFalse(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsTrue(actual.empty());
         }
 
         TEST_METHOD (TestParseDeviceIdInvalid05)
         {
             // invalid width/height
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_15a6_960_{E0A2904E-889C-4532-95B1-28FE15C16F66}";
-            const auto actual = ParseDeviceId(input);
-            Assert::IsFalse(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsTrue(actual.empty());
         }
 
         TEST_METHOD (TestParseDeviceIdInvalid06)
         {
             // changed order
             const std::wstring input = L"AOC00015&37ac4db&0&UID160002_15a6_960_monitorId_{E0A2904E-889C-4532-95B1-28FE15C16F66}";
-            const auto actual = ParseDeviceId(input);
-            Assert::IsFalse(actual.has_value());
+            const auto actual = FancyZonesDataTypes::DeviceIdData::Parse(input);
+            Assert::IsTrue(actual.empty());
         }
 
         TEST_METHOD(TestMonitorOrdering01)

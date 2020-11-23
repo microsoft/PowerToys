@@ -75,3 +75,12 @@ std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString(const std::
     str += L"}";
     return str;
 }
+
+namespace Microsoft::VisualStudio::CppUnitTestFramework
+{
+    template<>
+    inline std::wstring ToString<FancyZonesDataTypes::DeviceIdData>(const FancyZonesDataTypes::DeviceIdData& v)
+    {
+        return v.Serialize();
+    }
+}

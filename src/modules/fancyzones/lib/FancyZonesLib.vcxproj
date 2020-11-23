@@ -109,6 +109,7 @@
     <ClInclude Include="FancyZonesWinHookEventIDs.h" />
     <ClInclude Include="GenericKeyHook.h" />
     <ClInclude Include="FancyZonesData.h" />
+    <ClInclude Include="HashHelpers.h" />
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="KeyState.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />

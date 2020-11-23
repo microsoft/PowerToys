@@ -43,14 +43,6 @@ namespace VirtualDesktopUtils
                SUCCEEDED(virtualDesktopManager->GetWindowDesktopId(topLevelWindow, desktopId));
     }
 
-    bool GetZoneWindowDesktopId(IZoneWindow* zoneWindow, GUID* desktopId)
-    {
-        // Format: <device-id>_<resolution>_<virtual-desktop-id>
-        std::wstring uniqueId = zoneWindow->UniqueId();
-        std::wstring virtualDesktopId = uniqueId.substr(uniqueId.rfind('_') + 1);
-        return SUCCEEDED(CLSIDFromString(virtualDesktopId.c_str(), desktopId));
-    }
-
     bool GetDesktopIdFromCurrentSession(GUID* desktopId)
     {
         DWORD sessionId;
@@ -137,24 +129,6 @@ namespace VirtualDesktopUtils
     bool GetVirtualDesktopIds(std::vector<GUID>& ids)
     {
         return GetVirtualDesktopIds(GetVirtualDesktopsRegKey(), ids);
-    }
-
-    bool GetVirtualDesktopIds(std::vector<std::wstring>& ids)
-    {
-        std::vector<GUID> guids{};
-        if (GetVirtualDesktopIds(guids))
-        {
-            for (auto& guid : guids)
-            {
-                wil::unique_cotaskmem_string guidString;
-                if (SUCCEEDED(StringFromCLSID(guid, &guidString)))
-                {
-                    ids.push_back(guidString.get());
-                }
-            }
-            return true;
-        }
-        return false;
     }
 
     HKEY OpenVirtualDesktopsRegKey()

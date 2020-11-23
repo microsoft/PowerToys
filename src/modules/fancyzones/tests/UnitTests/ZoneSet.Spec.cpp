@@ -1048,10 +1048,13 @@ namespace FancyZonesUnitTests
                 {
                     //prepare device data
                     {
-                        const std::wstring zoneUuid = L"default_device_id";
+                        DeviceIdData deviceId{ L"AOC2460#4&fe3a015&0&UID65793",
+                                                 1920,
+                                                 1200,
+                                               { 0X39B25DD2, (short)0X130D, (short)0X4B5D, { 0X88, 0X51, 0X47, 0X91, 0XD6, 0X6B, 0X15, 0X38 } } };
 
                         JSONHelpers::TDeviceInfoMap deviceInfoMap;
-                        deviceInfoMap.insert(std::make_pair(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 }));
+                        deviceInfoMap.insert(std::make_pair(deviceId, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 }));
                         
                         GUID virtualDesktopId{};
                         Assert::IsTrue(VirtualDesktopUtils::GetCurrentVirtualDesktopId(&virtualDesktopId), L"Cannot create virtual desktop id");
@@ -1092,10 +1095,13 @@ namespace FancyZonesUnitTests
                 {
                     //prepare device data
                     {
-                        const std::wstring zoneUuid = L"default_device_id";
+                        DeviceIdData deviceId{ L"AOC2460#4&fe3a015&0&UID65793",
+                                               1920,
+                                               1200,
+                                               { 0X39B25DD2, (short)0X130D, (short)0X4B5D, { 0X88, 0X51, 0X47, 0X91, 0XD6, 0X6B, 0X15, 0X38 } } };
 
                         JSONHelpers::TDeviceInfoMap deviceInfoMap;
-                        deviceInfoMap.insert(std::make_pair(zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 }));
+                        deviceInfoMap.insert(std::make_pair(deviceId, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 }));
 
                         GUID virtualDesktopId{};
                         Assert::IsTrue(VirtualDesktopUtils::GetCurrentVirtualDesktopId(&virtualDesktopId), L"Cannot create virtual desktop id");

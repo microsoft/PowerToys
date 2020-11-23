@@ -1,7 +1,10 @@
 #pragma once
 
-#include "gdiplus.h"
+#include <gdiplus.h>
+
 #include <common/string_utils.h>
+
+#include "FancyZonesDataTypes.h"
 
 namespace FancyZonesDataTypes
 {
@@ -200,13 +203,11 @@ namespace FancyZonesUtils
 
     bool IsValidGuid(const std::wstring& str);
 
-    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
-    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
-    std::optional<std::wstring> GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId);
+    FancyZonesDataTypes::DeviceIdData GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const GUID& virtualDesktopId);
+    FancyZonesDataTypes::DeviceIdData GenerateUniqueIdAllMonitorsArea(const GUID& virtualDesktopId);
+    FancyZonesDataTypes::DeviceIdData GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId);
 
     std::wstring TrimDeviceId(const std::wstring& deviceId);
-    std::optional<FancyZonesDataTypes::DeviceIdData> ParseDeviceId(const std::wstring& deviceId);
-    bool IsValidDeviceId(const std::wstring& str);
 
     RECT PrepareRectForCycling(RECT windowRect, RECT zoneWindowRect, DWORD vkCode) noexcept;
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;

@@ -9,7 +9,7 @@
 #include <sstream>
 #include <complex>
 
-#include <fancyzones/lib/FancyZonesDataTypes.h>
+#include "FancyZonesDataTypes.h"
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -64,94 +64,6 @@ namespace FancyZonesUtils
         {
             return defaultDeviceId;
         }
-    }
-    
-    std::optional<FancyZonesDataTypes::DeviceIdData> ParseDeviceId(const std::wstring& str)
-    {
-        FancyZonesDataTypes::DeviceIdData data;
-
-        std::wstring temp;
-        std::wstringstream wss(str);
-
-        /*
-        Important fix for device info that contains a '_' in the name:
-        1. first search for '#'
-        2. Then split the remaining string by '_'
-        */
-
-        // Step 1: parse the name until the #, then to the '_'
-        if (str.find(L'#') != std::string::npos)
-        {
-            std::getline(wss, temp, L'#');
-
-            data.deviceName = temp;
-
-            if (!std::getline(wss, temp, L'_'))
-            {
-                return std::nullopt;
-            }
-
-            data.deviceName += L"#" + temp;
-        }
-        else if(std::getline(wss, temp, L'_') && !temp.empty())
-        {
-            data.deviceName = temp;
-        }
-        else
-        {
-            return std::nullopt;
-        }
-
-        // Step 2: parse the rest of the id
-        std::vector<std::wstring> parts;
-        while (std::getline(wss, temp, L'_'))
-        {
-            parts.push_back(temp);
-        }
-
-        if (parts.size() != 3 && parts.size() != 4)
-        {
-            return std::nullopt;
-        }
-
-        /*
-        Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
-        1. monitor id [string]
-        2. width of device [int]
-        3. height of device [int]
-        4. virtual desktop id (GUID) [string]
-        */
-        try
-        {
-            for (const auto& c : parts[0])
-            {
-                std::stoi(std::wstring(&c));
-            }
-
-            for (const auto& c : parts[1])
-            {
-                std::stoi(std::wstring(&c));
-            }
-
-            data.width = std::stoi(parts[0]);
-            data.height = std::stoi(parts[1]);
-        }
-        catch (const std::exception&)
-        {
-            return std::nullopt;
-        }
-
-        if (!SUCCEEDED(CLSIDFromString(parts[2].c_str(), &data.virtualDesktopId)))
-        {
-            return std::nullopt;
-        }
-
-        if (parts.size() == 4)
-        {
-            data.monitorId = parts[3]; //could be empty
-        }
-
-        return data;
     }
     
     typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
@@ -475,114 +387,29 @@ namespace FancyZonesUtils
         return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
     }
 
-    bool IsValidDeviceId(const std::wstring& str)
-    {
-        std::wstring monitorName;
-        std::wstring temp;
-        std::vector<std::wstring> parts;
-        std::wstringstream wss(str);
-
-        /*
-        Important fix for device info that contains a '_' in the name:
-        1. first search for '#'
-        2. Then split the remaining string by '_'
-        */
-
-        // Step 1: parse the name until the #, then to the '_'
-        if (str.find(L'#') != std::string::npos)
-        {
-            std::getline(wss, temp, L'#');
-
-            monitorName = temp;
-
-            if (!std::getline(wss, temp, L'_'))
-            {
-                return false;
-            }
-
-            monitorName += L"#" + temp;
-            parts.push_back(monitorName);
-        }
-
-        // Step 2: parse the rest of the id
-        while (std::getline(wss, temp, L'_'))
-        {
-            parts.push_back(temp);
-        }
-
-        if (parts.size() != 4)
-        {
-            return false;
-        }
-
-        /*
-        Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
-        1. monitor id [string]
-        2. width of device [int]
-        3. height of device [int]
-        4. virtual desktop id (GUID) [string]
-    */
-        try
-        {
-            //check if resolution contain only digits
-            for (const auto& c : parts[1])
-            {
-                std::stoi(std::wstring(&c));
-            }
-            for (const auto& c : parts[2])
-            {
-                std::stoi(std::wstring(&c));
-            }
-        }
-        catch (const std::exception&)
-        {
-            return false;
-        }
-
-        if (!IsValidGuid(parts[3]) || parts[0].empty())
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& deviceId, const std::wstring& virtualDesktopId)
+    FancyZonesDataTypes::DeviceIdData GenerateUniqueId(HMONITOR monitor, const std::wstring& deviceId, const GUID& virtualDesktopId)
     {
         MONITORINFOEXW mi;
         mi.cbSize = sizeof(mi);
-        if (!virtualDesktopId.empty() && GetMonitorInfo(monitor, &mi))
+        if (GetMonitorInfo(monitor, &mi))
         {
             Rect const monitorRect(mi.rcMonitor);
             // Unique identifier format: <parsed-device-id>_<width>_<height>_<virtual-desktop-id>
-            return TrimDeviceId(deviceId) +
-                   L'_' +
-                   std::to_wstring(monitorRect.width()) +
-                   L'_' +
-                   std::to_wstring(monitorRect.height()) +
-                   L'_' +
-                   virtualDesktopId;
+            return { TrimDeviceId(deviceId), monitorRect.width(), monitorRect.height(), virtualDesktopId };
         }
         return {};
     }
 
-    std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId)
+    FancyZonesDataTypes::DeviceIdData GenerateUniqueIdAllMonitorsArea(const GUID& virtualDesktopId)
     {
-        std::wstring result{ ZonedWindowProperties::MultiMonitorDeviceID };
-
         RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
+        int combinedResolutionWidth = static_cast<int>(combinedResolution.right - combinedResolution.left);
+        int combinedResolutionHeight = static_cast<int>(combinedResolution.bottom - combinedResolution.top);
 
-        result += L'_';
-        result += std::to_wstring(combinedResolution.right - combinedResolution.left);
-        result += L'_';
-        result += std::to_wstring(combinedResolution.bottom - combinedResolution.top);
-        result += L'_';
-        result += virtualDesktopId;
-
-        return result;
+        return { ZonedWindowProperties::MultiMonitorDeviceID, combinedResolutionWidth, combinedResolutionHeight, virtualDesktopId };
     }
 
-    std::optional<std::wstring> GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId)
+    FancyZonesDataTypes::DeviceIdData GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId)
     {
         DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
         PCWSTR deviceId = nullptr;
@@ -603,13 +430,7 @@ namespace FancyZonesUtils
                            L"\\\\?\\DISPLAY#LOCALDISPLAY#";
         }
 
-        wil::unique_cotaskmem_string vdId;
-        if (SUCCEEDED(StringFromCLSID(virtualDesktopId, &vdId)))
-        {
-            return GenerateUniqueId(monitor, deviceId, vdId.get());
-        }
-
-        return std::nullopt;
+        return GenerateUniqueId(monitor, deviceId, virtualDesktopId);
     }
 
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept

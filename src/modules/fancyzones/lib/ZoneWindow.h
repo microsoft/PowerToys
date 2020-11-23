@@ -2,6 +2,11 @@
 #include "FancyZones.h"
 #include "lib/ZoneSet.h"
 
+namespace FancyZonesDataTypes
+{
+    struct DeviceIdData;
+}
+
 /**
  * Class representing single work area, which is defined by monitor and virtual desktop.
  */
@@ -103,7 +108,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
     /**
      * @returns Unique work area identifier. Format: <device-id>_<resolution>_<virtual-desktop-id>
      */
-    IFACEMETHOD_(std::wstring, UniqueId)() = 0;
+    IFACEMETHOD_(FancyZonesDataTypes::DeviceIdData, UniqueId)() = 0;
     /**
      * @returns Active zone layout for this work area.
      */
@@ -121,4 +126,4 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
 };
 
 winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,
-    const std::wstring& uniqueId, const std::wstring& parentUniqueId) noexcept;
+    const FancyZonesDataTypes::DeviceIdData& uniqueId, const FancyZonesDataTypes::DeviceIdData& parentUniqueId) noexcept;
