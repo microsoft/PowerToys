@@ -161,7 +161,7 @@ namespace Microsoft.Plugin.Registry.Helper
 
                     try
                     {
-                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey)));
+                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree)));
                     }
                     catch (Exception exception)
                     {
