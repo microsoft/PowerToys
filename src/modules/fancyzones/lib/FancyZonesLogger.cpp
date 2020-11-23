@@ -17,7 +17,7 @@ std::shared_ptr<Logger> FancyZonesLogger::GetLogger()
 {
     if (!logger)
     {
-        throw "Fancy zones logger is not constructed";
+        throw "FancyZones logger is not initialized";
     }
 
     return logger;
