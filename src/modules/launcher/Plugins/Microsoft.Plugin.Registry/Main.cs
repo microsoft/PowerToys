@@ -68,11 +68,9 @@ namespace Microsoft.Plugin.Registry
                 return new List<Result>(0);
             }
 
-            var rawSearch = query.Search.Replace('/', '\\');
-
-            var search = rawSearch.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase)
-                ? rawSearch.TrimEnd('\\')
-                : rawSearch;
+            var search = query.Search.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase)
+                ? query.Search.TrimEnd('\\')
+                : query.Search;
 
             var (mainKey, path) = RegistryHelper.GetRegistryMainKey(search);
             if (mainKey is null)
@@ -84,7 +82,7 @@ namespace Microsoft.Plugin.Registry
 
             var list = RegistryHelper.SearchForSubKey(mainKey, path);
 
-            if (rawSearch.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase))
+            if (query.Search.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase))
             {
                 var firstEntry = list.FirstOrDefault(found => found.Key != null
                                                             && found.Key.Name.StartsWith(search, StringComparison.InvariantCultureIgnoreCase));
