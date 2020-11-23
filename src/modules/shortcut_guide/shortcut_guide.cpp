@@ -200,7 +200,8 @@ constexpr UINT alternative_switch_vk_code = VK_OEM_2;
 
 void OverlayWindow::enable()
 {
-    ShortcutGuideLogger::GetLogger()->info("Shortcut guide is enabling");
+    ShortcutGuideLogger::GetLogger()->info("Shortcut Guide is enabling");
+
     auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
         if (msg == WM_KEYDOWN && wparam == VK_ESCAPE && instance->target_state->active())
         {
