@@ -10,7 +10,7 @@ void FancyZonesLogger::Init(std::wstring moduleSaveLocation)
     std::filesystem::path logFilePath(moduleSaveLocation);
     logFilePath.append(LogSettings::fancyZonesLogPath);
     logger = std::make_shared<Logger>(LogSettings::fancyZonesLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
-    logger->info("Fancy Zones logger constructed");
+    logger->info("FancyZones logger initialized");
 }
 
 std::shared_ptr<Logger> FancyZonesLogger::GetLogger()
