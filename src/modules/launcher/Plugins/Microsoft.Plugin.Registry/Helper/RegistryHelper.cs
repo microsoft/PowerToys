@@ -22,9 +22,8 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <summary>
         /// A list that contain all registry main keys in a long/full version and in a short version (e.g HKLM = HKEY_LOCAL_MACHINE)
         /// </summary>
-        private static readonly IReadOnlyDictionary<string, RegistryKey?> _mainKeys = new Dictionary<string, RegistryKey?>(13)
+        private static readonly IReadOnlyDictionary<string, RegistryKey?> _mainKeys = new Dictionary<string, RegistryKey?>(12)
         {
-            { "HKEY_", null },
             { "HKCR", Win32.Registry.ClassesRoot },
             { Win32.Registry.ClassesRoot.Name, Win32.Registry.ClassesRoot },
             { "HKCC", Win32.Registry.CurrentConfig },

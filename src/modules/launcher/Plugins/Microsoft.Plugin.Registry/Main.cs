@@ -69,7 +69,7 @@ namespace Microsoft.Plugin.Registry
             var (mainKey, path) = RegistryHelper.GetRegistryMainKey(search.TrimEnd(':'));
             if (mainKey is null)
             {
-                return search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase)
+                return search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase) == true
                     ? ResultHelper.GetResultList(RegistryHelper.GetAllMainKeys(), _defaultIconPath)
                     : new List<Result>(0);
             }
