@@ -40,15 +40,15 @@ namespace Microsoft.Plugin.Registry.Helper
         };
 
         /// <summary>
-        /// Try to find a registry key based on the given query
+        /// Try to find a registry main key based on the given query
         /// </summary>
         /// <param name="query">The query to search</param>
         /// <returns>A combination of the main <see cref="RegistryKey"/> and the sub keys</returns>
-        internal static (RegistryKey? mainKey, string subKey) GetRegistryKey(in string query)
+        internal static (RegistryKey? mainKey, string subKey) GetRegistryMainKey(in string query)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                return (null, "Search is empty");
+                return (null, string.Empty);
             }
 
             var mainKey = query.Split('\\').FirstOrDefault();
@@ -65,12 +65,12 @@ namespace Microsoft.Plugin.Registry.Helper
         internal static ICollection<RegistryEntry> GetAllMainKeys()
             => new Collection<RegistryEntry>
             {
-                new RegistryEntry(Win32.Registry.ClassesRoot.Name, Win32.Registry.ClassesRoot),
-                new RegistryEntry(Win32.Registry.CurrentConfig.Name, Win32.Registry.CurrentConfig),
-                new RegistryEntry(Win32.Registry.CurrentUser.Name, Win32.Registry.CurrentUser),
-                new RegistryEntry(Win32.Registry.LocalMachine.Name, Win32.Registry.LocalMachine),
-                new RegistryEntry(Win32.Registry.PerformanceData.Name, Win32.Registry.PerformanceData),
-                new RegistryEntry(Win32.Registry.Users.Name, Win32.Registry.Users),
+                new RegistryEntry(Win32.Registry.ClassesRoot),
+                new RegistryEntry(Win32.Registry.CurrentConfig),
+                new RegistryEntry(Win32.Registry.CurrentUser),
+                new RegistryEntry(Win32.Registry.LocalMachine),
+                new RegistryEntry(Win32.Registry.PerformanceData),
+                new RegistryEntry(Win32.Registry.Users),
             };
 
         /// <summary>
@@ -81,8 +81,6 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <returns>A list with all found registry keys</returns>
         internal static ICollection<RegistryEntry> SearchForSubKey(in RegistryKey mainKey, in string subKeyPath)
         {
-            Debug.WriteLine($"Search for {mainKey.Name}\\{subKeyPath}\n");
-
             var subKeysNames = subKeyPath.Split('\\');
             var index = 0;
             var subKey = mainKey;
@@ -91,8 +89,7 @@ namespace Microsoft.Plugin.Registry.Helper
 
             do
             {
-                var subKeyName = subKeysNames.ElementAtOrDefault(index);
-                result = FindSubKey(subKey, subKeyName);
+                result = FindSubKey(subKey, subKeysNames.ElementAtOrDefault(index));
 
                 if (result.Count == 0)
                 {
@@ -152,28 +149,28 @@ namespace Microsoft.Plugin.Registry.Helper
         {
             var list = new Collection<RegistryEntry>();
 
-            Debug.WriteLine($"Search for {searchSubKey} in {parentKey.Name}");
-
             try
             {
                 foreach (var subKey in parentKey.GetSubKeyNames())
                 {
-                    if (subKey.StartsWith(searchSubKey, StringComparison.InvariantCultureIgnoreCase))
+                    if (!subKey.StartsWith(searchSubKey, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        try
-                        {
-                            list.Add(new RegistryEntry($"{parentKey.Name}\\{subKey}", parentKey.OpenSubKey(subKey)));
-                        }
-                        catch (Exception exception)
-                        {
-                            list.Add(new RegistryEntry($"{parentKey.Name}\\{subKey}", null, exception));
-                        }
+                        continue;
+                    }
+
+                    try
+                    {
+                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey)));
+                    }
+                    catch (Exception exception)
+                    {
+                        list.Add(new RegistryEntry($"{parentKey.Name}\\{subKey}", exception));
                     }
                 }
             }
             catch (Exception ex)
             {
-                list.Add(new RegistryEntry(parentKey.Name, null, ex));
+                list.Add(new RegistryEntry(parentKey.Name, ex));
             }
 
             return list;
@@ -193,17 +190,17 @@ namespace Microsoft.Plugin.Registry.Helper
             {
                 foreach (var subKey in parentKey.GetSubKeyNames())
                 {
-                    list.Add(new RegistryEntry($"{parentKey.Name}\\{subKey}", parentKey));
-
-                    if (list.Count > maxCount)
+                    if (list.Count >= maxCount)
                     {
                         break;
                     }
+
+                    list.Add(new RegistryEntry(parentKey));
                 }
             }
             catch (Exception exception)
             {
-                list.Add(new RegistryEntry($"{parentKey.Name}", null, exception));
+                list.Add(new RegistryEntry(parentKey.Name, exception));
             }
 
             return list;

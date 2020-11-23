@@ -81,7 +81,7 @@ namespace Microsoft.Plugin.Registry.Helper
                 {
                     resultList.Add(new Result
                     {
-                        ContextData = new RegistryEntry(key.Name, key),
+                        ContextData = new RegistryEntry(key),
                         IcoPath = iconPath,
                         SubTitle = $"Type: {ValueHelper.GetType(key, name)} * Value: {ValueHelper.GetValue(key, name, 50)}",
                         Title = name,
@@ -92,7 +92,7 @@ namespace Microsoft.Plugin.Registry.Helper
                 {
                     resultList.Add(new Result
                     {
-                        ContextData = new RegistryEntry(key.Name, key, exception),
+                        ContextData = new RegistryEntry(key.Name, exception),
                         IcoPath = iconPath,
                         Title = exception.Message,
                         ToolTipData = new ToolTipData(exception.Message, exception.ToString()),

@@ -28,22 +28,15 @@ namespace Microsoft.Plugin.Registry
     // - result of found keys
     // - auto replace "/" with "\"
     // - always case-insensitive
-    // - make as PT plug-in
     // - command: open direct in regedit.exe
-    // - command: copy key/name/value to clipboard
-    // - show key values via ':'
+    // - command: copy key or value name to clipboard
 
     // TODO:
+    // - step into key values via ???
     // - allow search by value name (search after ':')
-    // - reduce used of strings, use RegisterKey instead
-    // - avoid use of tuples use key value instead
-    // - simple key-walker with full keys
-    // - extended key-walker with only parts of the keys
     // - multi-language
-    // - cache results ?
     // - benchmark
     // - unit-tests
-    // - dark/light theme switch
     public class Main : IPlugin, IContextMenu, IDisposable
     {
         private PluginInitContext? _context;
@@ -62,17 +55,28 @@ namespace Microsoft.Plugin.Registry
 
         public List<Result> Query(Query query)
         {
+            if (query?.Search.Length == 0)
+            {
+                return new List<Result>(0);
+            }
+
             var search = query?.Search.Replace('/', '\\') ?? string.Empty;
+            if (search.Length == 0)
+            {
+                return new List<Result>(0);
+            }
+
+            var (mainKey, path) = RegistryHelper.GetRegistryMainKey(search.TrimEnd(':'));
+            if (mainKey is null)
+            {
+                return search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase)
+                    ? ResultHelper.GetResultList(RegistryHelper.GetAllMainKeys(), _defaultIconPath)
+                    : new List<Result>(0);
+            }
 
             ICollection<RegistryEntry> list = new Collection<RegistryEntry>();
 
-            var (mainKey, path) = RegistryHelper.GetRegistryKey(search.TrimEnd(':'));
-
-            if (mainKey is null && search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase))
-            {
-                list = RegistryHelper.GetAllMainKeys();
-            }
-            else if (!(mainKey is null))
+            if (!(mainKey is null))
             {
                 list = RegistryHelper.SearchForSubKey(mainKey, path);
             }
@@ -104,7 +108,7 @@ namespace Microsoft.Plugin.Registry
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.Key.Name),
+                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.Key?.Name ?? entry.KeyPath),
                 });
             }
             else
@@ -129,7 +133,7 @@ namespace Microsoft.Plugin.Registry
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                Action = _ => ContextMenuHelper.TryToOpenInRegistryEditor(entry.Key?.Name ?? entry.KeyPath),
+                Action = _ => ContextMenuHelper.TryToOpenInRegistryEditor(entry),
             });
 
             return list;

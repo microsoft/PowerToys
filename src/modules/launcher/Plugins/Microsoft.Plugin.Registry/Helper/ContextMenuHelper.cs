@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+using Microsoft.Plugin.Registry.Classes;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Registry.Helper
@@ -16,15 +17,15 @@ namespace Microsoft.Plugin.Registry.Helper
         #pragma warning disable CA1031 // Do not catch general exception types
 
         /// <summary>
-        /// Open the Windows registry editor and jump to the given key
+        /// Open the Windows registry editor and jump to registry key inside the given key (inside the <see cref="RegistryEntry"/>
         /// </summary>
-        /// <param name="key">The key to jump in</param>
+        /// <param name="entry">The <see cref="RegistryEntry"/> to jump in</param>
         /// <returns><see langword="true"/> if the registry editor was successful open, otherwise <see langword="false"/></returns>
-        internal static bool TryToOpenInRegistryEditor(in string key)
+        internal static bool TryToOpenInRegistryEditor(in RegistryEntry entry)
         {
             try
             {
-                RegistryHelper.OpenRegistryKey(key);
+                RegistryHelper.OpenRegistryKey(entry.Key?.Name ?? entry.KeyPath);
                 return true;
             }
             catch (System.ComponentModel.Win32Exception)

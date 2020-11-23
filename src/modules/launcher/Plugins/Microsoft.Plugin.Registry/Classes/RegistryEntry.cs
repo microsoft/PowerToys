@@ -8,7 +8,7 @@ using Microsoft.Win32;
 namespace Microsoft.Plugin.Registry.Classes
 {
     /// <summary>
-    /// A entry of the registry (can be a key or a value inside a key)
+    /// A entry of the registry
     /// </summary>
     internal class RegistryEntry
     {
@@ -31,13 +31,21 @@ namespace Microsoft.Plugin.Registry.Classes
         /// Initializes a new instance of the <see cref="RegistryEntry"/> class.
         /// </summary>
         /// <param name="keyPath">The full path to the registry key for this entry</param>
-        /// <param name="key">The <see cref="RegistryKey"/> for this entry</param>
-        /// <param name="exception">(optional) A possible exception that was occurred when try to access this registry key</param>
-        public RegistryEntry(string keyPath, RegistryKey? key, Exception? exception = null)
+        /// <param name="exception">A exception that was occurred when try to access this registry key</param>
+        public RegistryEntry(string keyPath, Exception exception)
         {
             KeyPath = keyPath;
-            Key = key;
             Exception = exception;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistryEntry"/> class.
+        /// </summary>
+        /// <param name="key">The <see cref="RegistryKey"/> for this entry</param>
+        public RegistryEntry(RegistryKey key)
+        {
+            KeyPath = key.Name;
+            Key = key;
         }
     }
 }
