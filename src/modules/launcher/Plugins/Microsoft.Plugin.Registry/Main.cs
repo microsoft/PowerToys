@@ -55,21 +55,17 @@ namespace Microsoft.Plugin.Registry
 
         public List<Result> Query(Query query)
         {
-            if (query?.Search.Length == 0)
+            if (query is null || query.Search.Length == 0)
             {
                 return new List<Result>(0);
             }
 
-            var search = query?.Search.Replace('/', '\\') ?? string.Empty;
-            if (search.Length == 0)
-            {
-                return new List<Result>(0);
-            }
+            var search = query.Search.Replace('/', '\\');
 
             var (mainKey, path) = RegistryHelper.GetRegistryMainKey(search.TrimEnd(':'));
             if (mainKey is null)
             {
-                return search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase) == true
+                return search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase)
                     ? ResultHelper.GetResultList(RegistryHelper.GetAllMainKeys(), _defaultIconPath)
                     : new List<Result>(0);
             }
