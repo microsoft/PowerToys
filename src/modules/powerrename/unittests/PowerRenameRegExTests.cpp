@@ -53,7 +53,7 @@ TEST_METHOD(ReplaceNoSearchOrReplaceTerm)
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
-    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) != S_OK);
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) == S_OK);
     Assert::IsTrue(result == nullptr);
     CoTaskMemFree(result);
 }
