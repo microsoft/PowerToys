@@ -28,6 +28,8 @@ Threads uses the same numeration like PR and issues. So they can be linked by th
 
 3. Off-topic. Sometimes issue discussions get very and sometimes a little off-topic (like https://github.com/microsoft/PowerToys/issues/7916#issuecomment-724813783) And it would be better if you can open a thread and write "As seen in #XXXX I think the real reason for ... is ..."
 
+4. Tell informations to the community: 
+
 4. More community interaction: More information in the underneath section
 
 ### Community interaction
@@ -78,3 +80,7 @@ If the community denies the feature, it gets too much work, it gets used very lo
 * People discuss with each others about things
 
 ## **Summary**
+
+PowerToys should enable GitHub discussions because:
+* It don't take much time away from the developers: The project don't suffer under that.
+* It will help building a stronger community and a better interaction with the community
