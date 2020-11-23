@@ -1,6 +1,6 @@
 # GitHub discussions spec
 
-<img align="right" width="200" src="doc/images/Logo/Vintage/Logo.jpg" />
+<img align="right" width="200" src="/doc/images/Logo/Vintage/Logo.jpg" />
 
 - **What is it:** Creating better interaction with the community.
 - **Authors:** Aaron Junker ([@aaron-junker](https://github.com/aaron-junker))
@@ -38,9 +38,9 @@ Yes because PowerToys is a community project. And PowerToys is a project for pow
 
 #### But PowerToys has already community interaction. PowerToys has around 200 new issues in a week.
 
-That's right but these are normally bug reports and feature suggestions and PowerToys needs more things for a strong community.
+That's right but these are normally bug reports and feature suggestions and PowerToys needs more things for a strong community. Things like jokes, memes and grand discussion about PowerToys related things.
 
-
+## Does this hinder the PowerToys team from working on PowerToys?
 
 ## Settings
 
