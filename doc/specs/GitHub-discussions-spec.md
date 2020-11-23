@@ -8,7 +8,7 @@
 
 ## What is GitHub Discussions
 
-GitHub Discussions is a feature that currently is in closed beta status. It will be released until the end of the year. 
+GitHub Discussions is a feature that currently is in beta. It will be released until the end of the year. 
 
 It's a new tab in the GitHub repo page where people can start new threads like in a forum.
 
