@@ -19,33 +19,35 @@
             <Setter Property="Width" Value="150" />
         </Style>
     </UserControl.Resources>
-    <Grid>
-        <Canvas x:Name="Preview" />
-        <Canvas x:Name="AdornerLayer" />
-        <Canvas
-            x:Name="MergePanel"
-            MouseUp="MergePanelMouseUp"
-            Visibility="Collapsed">
+    <Viewbox Stretch="Uniform">
+        <Grid>
+            <Canvas x:Name="Preview" />
+            <Canvas x:Name="AdornerLayer" />
+            <Canvas
+                x:Name="MergePanel"
+                MouseUp="MergePanelMouseUp"
+                Visibility="Collapsed">
 
-            <StackPanel
-                x:Name="MergeButtons"
-                Background="Gray"
-                Orientation="Horizontal">
-                <Button
-                    Width="134"
-                    Height="36"
-                    Margin="0"
-                    Click="MergeClick">
-                    <StackPanel Orientation="Horizontal">
-                        <Image
-                            Height="16"
-                            Margin="0,0,12,0"
-                            HorizontalAlignment="Left"
-                            Source="images/Merge.png" />
-                        <TextBlock Text="Merge zones" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </Canvas>
-    </Grid>
+                <StackPanel
+                    x:Name="MergeButtons"
+                    Background="Gray"
+                    Orientation="Horizontal">
+                    <Button
+                        Width="134"
+                        Height="36"
+                        Margin="0"
+                        Click="MergeClick">
+                        <StackPanel Orientation="Horizontal">
+                            <Image
+                                Height="16"
+                                Margin="0,0,12,0"
+                                HorizontalAlignment="Left"
+                                Source="images/Merge.png" />
+                            <TextBlock Text="Merge zones" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Canvas>
+        </Grid>
+    </Viewbox>
 </UserControl>

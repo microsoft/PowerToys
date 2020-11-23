@@ -4,7 +4,6 @@
 
 using System.IO.Abstractions;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
 using Windows.UI.Xaml.Controls;
 

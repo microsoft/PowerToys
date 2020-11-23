@@ -13,7 +13,7 @@
         SizeToContent="Height"            
         Background="White"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterOwner"
         Closed="OnClosed">
 
     <Window.Resources>
@@ -179,7 +179,7 @@
 
         <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}" Style="{StaticResource textLabel}" TextWrapping="Wrap" />
         <TextBlock x:Name="customLayoutName" Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
-        <TextBox Text="{Binding Name}" AutomationProperties.LabeledBy="{Binding ElementName=customLayoutName}" Style="{StaticResource textBox}" />
+        <TextBox Name="customLayoutNameTextBox" Text="{Binding Name}" GotFocus="NameTextBox_GotFocus" AutomationProperties.LabeledBy="{Binding ElementName=customLayoutName}" Style="{StaticResource textBox}" />
 <!--        
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
             <CheckBox x:Name="showGridSetting" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" Margin="21,4,0,0"/>

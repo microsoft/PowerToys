@@ -13,8 +13,8 @@ namespace FancyZonesEditor
     {
         protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
         {
-            EditorOverlay mainEditor = EditorOverlay.Current;
-            if (mainEditor.DataContext is LayoutModel model)
+            var mainEditor = App.Overlay;
+            if (mainEditor.CurrentDataContext is LayoutModel model)
             {
                 // If new custom Canvas layout is created (i.e. edited Blank layout),
                 // it's type needs to be updated
@@ -30,14 +30,14 @@ namespace FancyZonesEditor
 
             _backToLayoutPicker = false;
             Close();
-            EditorOverlay.Current.Close();
+            mainEditor.CloseEditor();
         }
 
         protected void OnClosed(object sender, EventArgs e)
         {
             if (_backToLayoutPicker)
             {
-                EditorOverlay.Current.ShowLayoutPicker();
+                App.Overlay.CloseEditor();
             }
         }
 

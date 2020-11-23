@@ -28,7 +28,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Icon_Context_Menu" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Icon_Context_Menu" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Show icon on context menu.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -46,7 +46,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerRename" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerRename" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Po&werRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -55,7 +55,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerRename_App_Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";PowerRename_App_Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -78,6 +78,15 @@
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Estensione della shell di Windows per la ridenominazione in blocco più avanzata tramite trova e sostituisci o espressioni regolari.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Use_Boost_Lib" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Usare libreria Boost (fornisce funzionalità estese ma può usare una sintassi regex diversa).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

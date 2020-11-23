@@ -2,15 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using Moq;
-using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
-using System.Globalization;
-using System.IO.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ViewModelTests
 {
@@ -23,6 +20,7 @@ namespace ViewModelTests
 
             // PowerLauncherSettings is unused, but required according to SendCallback's signature.
             // Naming parameter with discard symbol to suppress FxCop warnings.
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1313:Parameter names should begin with lower-case letter", Justification = "We actually don't validate setting, just calculate it was sent")]
             public void OnSend(PowerLauncherSettings _)
             {
                 TimesSent++;
@@ -32,6 +30,7 @@ namespace ViewModelTests
         private PowerLauncherViewModel viewModel;
         private PowerLauncherSettings mockSettings;
         private SendCallbackMock sendCallbackMock;
+
         [TestInitialize]
         public void Initialize()
         {
@@ -66,8 +65,8 @@ namespace ViewModelTests
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
             // Initialise View Model with test Config files
-            Func<string, int> SendMockIPCConfigMSG = msg => { return 0; };
-            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(mockSettingsUtils, generalSettingsRepository, SendMockIPCConfigMSG, 32);
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            PowerLauncherViewModel viewModel = new PowerLauncherViewModel(mockSettingsUtils, generalSettingsRepository, sendMockIPCConfigMSG, 32);
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.PowerLauncher, viewModel.EnablePowerLauncher);
@@ -82,8 +81,8 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.SearchResultPreference, viewModel.SearchResultPreference);
             Assert.AreEqual(originalSettings.Properties.SearchTypePreference, viewModel.SearchTypePreference);
 
-            //Verify that the stub file was used
-            var expectedCallCount = 2;  //once via the view model, and once by the test (GetSettings<T>)
+            // Verify that the stub file was used
+            var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
             BackCompatTestProperties.VerifyModuleIOProviderWasRead(mockIOProvider, PowerLauncherSettings.ModuleName, expectedCallCount);
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
@@ -108,7 +107,8 @@ namespace ViewModelTests
                 Assert.AreEqual(alt, setting.Alt);
                 Assert.AreEqual(shift, setting.Shift);
                 Assert.AreEqual(code, setting.Code);
-            } else
+            }
+            else
             {
                 Assert.Fail("setting parameter is null");
             }

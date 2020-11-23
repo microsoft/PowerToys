@@ -106,6 +106,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        public static string Close {
+            get {
+                return ResourceManager.GetString("Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error logged to .
         /// </summary>
         public static string Crash_Report_Message_Box_Text_Part1 {
@@ -187,6 +196,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error applying layout.
+        /// </summary>
+        public static string Error_Applying_Layout {
+            get {
+                return ResourceManager.GetString("Error_Applying_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FancyZones Editor Exception Handler.
+        /// </summary>
+        public static string Error_Exception_Message_Box_Title {
+            get {
+                return ResourceManager.GetString("Error_Exception_Message_Box_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to FancyZones Editor arguments are invalid..
         /// </summary>
         public static string Error_Invalid_Arguments {
@@ -196,11 +223,38 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Layout &apos;{0}&apos; has malformed data.
+        /// </summary>
+        public static string Error_Layout_Malformed_Data {
+            get {
+                return ResourceManager.GetString("Error_Layout_Malformed_Data", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error loading custom layouts.
+        /// </summary>
+        public static string Error_Loading_Custom_Layouts {
+            get {
+                return ResourceManager.GetString("Error_Loading_Custom_Layouts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to FancyZones Editor Error.
         /// </summary>
         public static string Error_Message_Box_Title {
             get {
                 return ResourceManager.GetString("Error_Message_Box_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Match not found ({0}).
+        /// </summary>
+        public static string Error_Monitor_Match_Not_Found {
+            get {
+                return ResourceManager.GetString("Error_Monitor_Match_Not_Found", resourceCulture);
             }
         }
         
@@ -219,6 +273,33 @@ namespace FancyZonesEditor.Properties {
         public static string Error_Parsing_Device_Info {
             get {
                 return ResourceManager.GetString("Error_Parsing_Device_Info", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error persisting custom layout.
+        /// </summary>
+        public static string Error_Persisting_Custom_Layout {
+            get {
+                return ResourceManager.GetString("Error_Persisting_Custom_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please report the bug to .
+        /// </summary>
+        public static string Error_Report {
+            get {
+                return ResourceManager.GetString("Error_Report", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error serializing deleted layouts.
+        /// </summary>
+        public static string Error_Serializing_Deleted_Layouts {
+            get {
+                return ResourceManager.GetString("Error_Serializing_Deleted_Layouts", resourceCulture);
             }
         }
         
@@ -268,6 +349,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reset layout.
+        /// </summary>
+        public static string Reset_Layout {
+            get {
+                return ResourceManager.GetString("Reset_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save and apply.
         /// </summary>
         public static string Save_Apply {
@@ -291,6 +381,24 @@ namespace FancyZonesEditor.Properties {
         public static string Space_Around_Zones {
             get {
                 return ResourceManager.GetString("Space_Around_Zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom tab selected, press ctrl + tab to switch to Templates.
+        /// </summary>
+        public static string Tab_Item_Custom {
+            get {
+                return ResourceManager.GetString("Tab_Item_Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Templates tab selected, press ctrl + tab to switch to Custom.
+        /// </summary>
+        public static string Tab_Item_Templates {
+            get {
+                return ResourceManager.GetString("Tab_Item_Templates", resourceCulture);
             }
         }
         

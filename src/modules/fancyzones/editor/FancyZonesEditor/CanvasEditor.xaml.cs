@@ -1,10 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
@@ -46,6 +47,10 @@ namespace FancyZonesEditor
 
         private void UpdateZoneRects()
         {
+            var workArea = App.Overlay.WorkArea;
+            Preview.Width = workArea.Width;
+            Preview.Height = workArea.Height;
+
             UIElementCollection previewChildren = Preview.Children;
             int previewChildrenCount = previewChildren.Count;
             while (previewChildrenCount < _model.Zones.Count)
@@ -54,6 +59,7 @@ namespace FancyZonesEditor
                 {
                     Model = _model,
                 };
+
                 Preview.Children.Add(zone);
                 previewChildrenCount++;
             }

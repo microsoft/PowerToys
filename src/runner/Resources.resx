@@ -115,7 +115,7 @@
   <data name="GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT" xml:space="preserve">
     <value>An update to PowerToys is available. Visit our GitHub page to update.</value>
   </data>
-  <data name="GITHUB_NEW_VERSION_UNAVAILABLE" xml:space="preserve">
+  <data name="GITHUB_NEW_VERSION_UP_TO_DATE" xml:space="preserve">
     <value>PowerToys is up to date.</value>
   </data>
   <data name="GITHUB_NEW_VERSION_VISIT" xml:space="preserve">
@@ -160,5 +160,12 @@
   <data name="EXIT_MENU_TEXT" xml:space="preserve">
     <value>Exit</value>
     <comment>Exit as a verb, as in Exit the application</comment>
-  </data>  
+  </data>
+  <data name="GITHUB_NEW_VERSION_USING_LOCAL_BUILD_ERROR" xml:space="preserve">
+    <value>Updating from a local build is not supported.</value>
+    <comment>User cannot autoupdate from a locally-built PowerToys version</comment>
+  </data>
+  <data name="GITHUB_NEW_VERSION_CHECK_ERROR" xml:space="preserve">
+    <value>Failed to connect to the server. Check your network connection or retry later.</value>
+  </data>
 </root>

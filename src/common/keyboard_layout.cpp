@@ -47,11 +47,20 @@ std::wstring LayoutMap::LayoutMapImpl::GetKeyName(DWORD key)
     return result;
 }
 
+bool mapKeycodeToUnicode(const int vCode, HKL layout, const BYTE* keyState, std::array<wchar_t, 3>& outBuffer)
+{
+    // Get the scan code from the virtual key code
+    const UINT scanCode = MapVirtualKeyExW(vCode, MAPVK_VK_TO_VSC, layout);
+    // Get the unicode representation from the virtual key code and scan code pair
+    const int result = ToUnicodeEx(vCode, scanCode, keyState, outBuffer.data(), (int)outBuffer.size(), 0, layout);
+    return result != 0;
+}
+
 // Update Keyboard layout according to input locale identifier
 void LayoutMap::LayoutMapImpl::UpdateLayout()
 {
     // Get keyboard layout for current thread
-    HKL layout = GetKeyboardLayout(0);
+    const HKL layout = GetKeyboardLayout(0);
     if (layout == previousLayout)
     {
         return;
@@ -63,41 +72,33 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
         unknownKeys.clear();
     }
 
-    BYTE* btKeys = new BYTE[256]{ 0 };
+    std::array<BYTE, 256> btKeys = { 0 };
     // Only set the Caps Lock key to on for the key names in uppercase
     btKeys[VK_CAPITAL] = 1;
 
     // Iterate over all the virtual key codes. virtual key 0 is not used
     for (int i = 1; i < 256; i++)
     {
-        // Get the scan code from the virtual key code
-        UINT scanCode = MapVirtualKeyExW(i, MAPVK_VK_TO_VSC, layout);
-        // Get the unicode representation from the virtual key code and scan code pair to
-        wchar_t szBuffer[3] = { 0 };
-        int result = ToUnicodeEx(i, scanCode, btKeys, szBuffer, 3, 0, layout);
-        // If a representation is returned
-        if (result > 0)
+        std::array<wchar_t, 3> szBuffer = { 0 };
+        if (mapKeycodeToUnicode(i, layout, btKeys.data(), szBuffer))
         {
-            keyboardLayoutMap[i] = szBuffer;
+            keyboardLayoutMap[i] = szBuffer.data();
             if (!isKeyCodeListGenerated)
             {
-                unicodeKeys[i] = szBuffer;
+                unicodeKeys[i] = szBuffer.data();
             }
+            continue;
         }
-        else
+
+        // Store the virtual key code as string
+        std::wstring vk = L"VK ";
+        vk += std::to_wstring(i);
+        keyboardLayoutMap[i] = vk;
+        if (!isKeyCodeListGenerated)
         {
-            // Store the virtual key code as string
-            std::wstring vk = L"VK ";
-            vk += std::to_wstring(i);
-            keyboardLayoutMap[i] = vk;
-            if (!isKeyCodeListGenerated)
-            {
-                unknownKeys[i] = vk;
-            }
+            unknownKeys[i] = vk;
         }
     }
-
-    delete[] btKeys;
 
     // Override special key names like Shift, Ctrl etc because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
     // To do: localization

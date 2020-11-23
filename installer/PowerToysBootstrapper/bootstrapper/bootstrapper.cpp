@@ -4,8 +4,8 @@
 #include <common/common.h>
 #include <common/notifications.h>
 #include <common/RcResource.h>
-#include <common/updating/updating.h>
 #include <common/updating/dotnet_installation.h>
+#include <common/updating/installer.h>
 #include <common/version.h>
 #include <common/appMutex.h>
 #include <common/processApi.h>
@@ -14,10 +14,11 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-auto Strings = updating::notifications::strings::create();
+auto Strings = create_notifications_strings();
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
+
 namespace // Strings in this namespace should not be localized
 {
     const wchar_t APPLICATION_ID[] = L"PowerToysInstaller";
@@ -61,7 +62,7 @@ void setup_log(fs::path directory, const spdlog::level::level_enum severity)
         std::shared_ptr<spdlog::logger> logger;
         if (severity != spdlog::level::off)
         {
-            logger = spdlog::basic_logger_mt("file", (directory / LOG_FILENAME).string());
+            logger = spdlog::basic_logger_mt("file", (directory / LOG_FILENAME).wstring());
 
             std::error_code _;
             const DWORD msiSev = severity == spdlog::level::debug ? INSTALLLOGMODE_VERBOSE : INSTALLLOGMODE_ERROR;

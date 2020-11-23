@@ -6,6 +6,7 @@
 namespace PTSettingsHelper
 {
     constexpr inline const wchar_t* settings_filename = L"\\settings.json";
+    constexpr inline const wchar_t* log_settings_filename = L"log_settings.json";
 
     std::wstring get_root_save_folder_location()
     {
@@ -70,5 +71,12 @@ namespace PTSettingsHelper
         const std::wstring save_file_location = get_powertoys_general_save_file_location();
         auto saved_settings = json::from_file(save_file_location);
         return saved_settings.has_value() ? std::move(*saved_settings) : json::JsonObject{};
+    }
+
+    std::wstring get_log_settings_file_location()
+    {
+        std::filesystem::path result(PTSettingsHelper::get_root_save_folder_location());
+        result = result.append(log_settings_filename);
+        return result.wstring();
     }
 }

@@ -1,18 +1,16 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 using ManagedCommon;
 
 namespace FancyZonesEditor
@@ -24,6 +22,7 @@ namespace FancyZonesEditor
     {
         // Non-localizable strings
         private const string CrashReportLogFile = "FZEditorCrashLog.txt";
+        private const string ErrorReportLogFile = "FZEditorErrorLog.txt";
         private const string PowerToysIssuesURL = "https://aka.ms/powerToysReportBug";
 
         private const string CrashReportExceptionTag = "Exception";
@@ -42,59 +41,76 @@ namespace FancyZonesEditor
         private const string CrashReportDynamicAssemblyTag = "dynamic assembly doesn't have location";
         private const string CrashReportLocationNullTag = "location is null or empty";
 
-        private readonly IFileSystem _fileSystem = new FileSystem();
+        public MainWindowSettingsModel MainWindowSettings { get; }
 
-        public Settings ZoneSettings { get; }
+        public static FancyZonesEditorIO FancyZonesEditorIO { get; private set; }
+
+        public static Overlay Overlay { get; private set; }
+
+        public static int PowerToysPID { get; set; }
+
+        public static bool DebugMode
+        {
+            get
+            {
+                return _debugMode;
+            }
+        }
+
+        private static bool _debugMode;
+
+        [Conditional("DEBUG")]
+        private void DebugModeCheck()
+        {
+            _debugMode = true;
+        }
 
         public App()
         {
-            ZoneSettings = new Settings();
+            DebugModeCheck();
+            FancyZonesEditorIO = new FancyZonesEditorIO();
+            Overlay = new Overlay();
+            MainWindowSettings = new MainWindowSettingsModel();
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            RunnerHelper.WaitForPowerToysRunner(Settings.PowerToysPID, () =>
+            RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
             {
                 Environment.Exit(0);
             });
 
-            LayoutModel foundModel = null;
+            FancyZonesEditorIO.ParseCommandLineArguments();
+            FancyZonesEditorIO.ParseDeviceInfoData();
 
-            foreach (LayoutModel model in ZoneSettings.DefaultModels)
+            MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;
+            settings.UpdateSelectedLayoutModel();
+
+            Overlay.Show();
+        }
+
+        public static void ShowExceptionMessageBox(string message, Exception exception = null)
+        {
+            string fullMessage = FancyZonesEditor.Properties.Resources.Error_Report + PowerToysIssuesURL + " \n" + message;
+            if (exception != null)
             {
-                if (model.Type == Settings.ActiveZoneSetLayoutType)
-                {
-                    // found match
-                    foundModel = model;
-                    break;
-                }
+                fullMessage += ": " + exception.Message;
             }
 
-            if (foundModel == null)
-            {
-                foreach (LayoutModel model in Settings.CustomModels)
-                {
-                    if ("{" + model.Guid.ToString().ToUpper() + "}" == Settings.ActiveZoneSetUUid.ToUpper())
-                    {
-                        // found match
-                        foundModel = model;
-                        break;
-                    }
-                }
-            }
+            MessageBox.Show(fullMessage, FancyZonesEditor.Properties.Resources.Error_Exception_Message_Box_Title);
+        }
 
-            if (foundModel == null)
-            {
-                foundModel = ZoneSettings.DefaultModels[0];
-            }
+        public static void ShowExceptionReportMessageBox(string reportData)
+        {
+            var fileStream = File.OpenWrite(ErrorReportLogFile);
+            var sw = new StreamWriter(fileStream);
+            sw.Write(reportData);
+            sw.Flush();
+            fileStream.Close();
 
-            foundModel.IsSelected = true;
-
-            EditorOverlay overlay = new EditorOverlay();
-            overlay.Show();
-            overlay.DataContext = foundModel;
+            ShowReportMessageBox(fileStream.Name);
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
@@ -103,16 +119,22 @@ namespace FancyZonesEditor
             var sw = new StreamWriter(fileStream);
             sw.Write(FormatException((Exception)args.ExceptionObject));
             fileStream.Close();
+
+            ShowReportMessageBox(fileStream.Name);
+        }
+
+        private static void ShowReportMessageBox(string fileName)
+        {
             MessageBox.Show(
                 FancyZonesEditor.Properties.Resources.Crash_Report_Message_Box_Text_Part1 +
-                Path.GetFullPath(fileStream.Name) +
+                Path.GetFullPath(fileName) +
                 "\n" +
                 FancyZonesEditor.Properties.Resources.Crash_Report_Message_Box_Text_Part2 +
                 PowerToysIssuesURL,
                 FancyZonesEditor.Properties.Resources.Fancy_Zones_Editor_App_Title);
         }
 
-        private string FormatException(Exception ex)
+        private static string FormatException(Exception ex)
         {
             var sb = new StringBuilder();
             sb.AppendLine();

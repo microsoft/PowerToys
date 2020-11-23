@@ -22,7 +22,7 @@ namespace ColorPicker.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace ColorPicker.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ColorPicker.Properties.Resources", typeof(Resources).Assembly);
@@ -51,12 +51,183 @@ namespace ColorPicker.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Blue value.
+        /// </summary>
+        public static string Blue_value {
+            get {
+                return ResourceManager.GetString("Blue_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copied to clipboard.
+        /// </summary>
+        public static string Copied_to_clipboard {
+            get {
+                return ResourceManager.GetString("Copied_to_clipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy to clipboard.
+        /// </summary>
+        public static string Copy_to_clipboard {
+            get {
+                return ResourceManager.GetString("Copy_to_clipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color Picker editor.
+        /// </summary>
+        public static string cp_editor {
+            get {
+                return ResourceManager.GetString("cp_editor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Green value.
+        /// </summary>
+        public static string Green_value {
+            get {
+                return ResourceManager.GetString("Green_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hex value.
+        /// </summary>
+        public static string Hex_value {
+            get {
+                return ResourceManager.GetString("Hex_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hue slider.
+        /// </summary>
+        public static string Hue_slider {
+            get {
+                return ResourceManager.GetString("Hue_slider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press the Color Picker icon to capture a color from your screen..
+        /// </summary>
+        public static string No_colors_yet {
+            get {
+                return ResourceManager.GetString("No_colors_yet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string OK {
+            get {
+                return ResourceManager.GetString("OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open settings.
+        /// </summary>
+        public static string Open_settings {
+            get {
+                return ResourceManager.GetString("Open_settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pick color from screen.
+        /// </summary>
+        public static string Pick_color {
+            get {
+                return ResourceManager.GetString("Pick_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Red value.
+        /// </summary>
+        public static string Red_value {
+            get {
+                return ResourceManager.GetString("Red_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove.
+        /// </summary>
+        public static string Remove {
+            get {
+                return ResourceManager.GetString("Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saturation slider.
+        /// </summary>
+        public static string Saturation_slider {
+            get {
+                return ResourceManager.GetString("Saturation_slider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected color.
+        /// </summary>
+        public static string Selected_color {
+            get {
+                return ResourceManager.GetString("Selected_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This color can be adjusted.
+        /// </summary>
+        public static string Selected_color_helptext {
+            get {
+                return ResourceManager.GetString("Selected_color_helptext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adjust color.
+        /// </summary>
+        public static string Selected_color_tooltip {
+            get {
+                return ResourceManager.GetString("Selected_color_tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value slider.
+        /// </summary>
+        public static string Value_slider {
+            get {
+                return ResourceManager.GetString("Value_slider", resourceCulture);
             }
         }
     }
