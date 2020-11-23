@@ -253,7 +253,8 @@ void OverlayWindow::enable()
 
 void OverlayWindow::disable(bool trace_event)
 {
-    ShortcutGuideLogger::GetLogger()->info("Shortcut guide is disabling");
+    ShortcutGuideLogger::GetLogger()->info("Shortcut Guide is disabling");
+
     if (_enabled)
     {
         _enabled = false;
