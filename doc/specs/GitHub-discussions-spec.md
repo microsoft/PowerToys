@@ -36,7 +36,7 @@ Threads uses the same numeration like PR and issues. So they can be linked by th
 
 #### Do PowerToys needs this?
 
-Yes because PowerToys is a community project. And PowerToys is a project for power users. And not all power users are programmers (like desingers, etc.). And in the moment the community interaction is mostly based on programming.
+Yes because PowerToys is a community project. And PowerToys is a project for power users. And not all power users are programers (like designers, etc.). And in the moment the community interaction is mostly based on programing.
 
 #### But PowerToys has already community interaction. PowerToys has around 200 new issues in a week.
 
@@ -44,7 +44,7 @@ That's right but these are normally bug reports and feature suggestions and Powe
 
 ## Does this hinder the PowerToys team from working on PowerToys?
 
-Not really. One of the core team members needs to set the settings first. But after that the triage team can take care of this section. Most of them don't programm for PowerToys so they don't lose time for programming. The programmers of PowerToys don't need to take care of GitHub discussion, because it's only anout community stuff where the triage team don't need the help of them.
+Not really. One of the core team members needs to set the settings first. But after that the triage team can take care of this section. Most of them don't program for PowerToys so they don't lose time for programing. The programers of PowerToys don't need to take care of GitHub discussion, because it's only about community stuff where the triage team don't need the help of them.
 
 ## Settings
 
