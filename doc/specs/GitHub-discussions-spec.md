@@ -4,7 +4,7 @@
 
 - **What is it:** Creating better interaction with the community.
 - **Authors:** Aaron Junker ([@aaron-junker](https://github.com/aaron-junker))
-- **Spec Status:** Draft
+- **Spec Status:** Waiting for approve
 
 ## What is GitHub Discussions
 
@@ -84,3 +84,4 @@ If the community denies the feature, it gets too much work, it gets used very lo
 PowerToys should enable GitHub discussions because:
 * It don't take much time away from the developers: The project don't suffer under that.
 * It will help building a stronger community and a better interaction with the community
+* => In the end it will help making PowerToys a better project
