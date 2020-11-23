@@ -128,7 +128,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="fullKey">The registry key to open</param>
         internal static void OpenRegistryKey(in string fullKey)
         {
-            // it's impossible to direct open a key via command-line option, so we must override the last remember key
+            // it's impossible to directly open a key via command-line option, so we must override the last remember key
             Win32.Registry.SetValue(@"HKEY_Current_User\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "LastKey", fullKey);
 
             Process.Start(new ProcessStartInfo

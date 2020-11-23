@@ -1163,6 +1163,7 @@ Kybd
 LAlt
 lambson
 lamotile
+langword
 Lastdevice
 LASTEXITCODE
 laute

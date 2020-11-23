@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.Registry.Helper
             }
             catch (Exception exception)
             {
-                Log.Exception("Error on open Windows registry editor", exception, typeof(Main));
+                Log.Exception("Error on opening Windows registry editor", exception, typeof(Main));
                 return false;
             }
         }
