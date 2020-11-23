@@ -133,7 +133,8 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
-        FancyZonesLogger::GetLogger()->info("Fancy zone editor disabling");
+        FancyZonesLogger::GetLogger()->info("FancyZones disabling");
+
         Disable(true);
     }
 
