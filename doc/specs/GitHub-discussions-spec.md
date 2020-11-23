@@ -1,4 +1,4 @@
-# GitHub discussions spec
+# **GitHub discussions spec**
 
 <img align="right" width="200" src="/doc/images/Logo/Vintage/Logo.jpg" />
 
@@ -42,6 +42,8 @@ That's right but these are normally bug reports and feature suggestions and Powe
 
 ## Does this hinder the PowerToys team from working on PowerToys?
 
+Not really. One of the core team members needs to set the settings first. But after that the triage team can take care of this section. Most of them don't programm for PowerToys so they don't lose time for programming. The programmers of PowerToys don't need to take care of GitHub discussion, because it's only anout community stuff where the triage team don't need the help of them.
+
 ## Settings
 
 📝General (answers not enabled)
@@ -75,3 +77,4 @@ If the community denies the feature, it gets too much work, it gets used very lo
 * It don't get too much work for the PT team
 * People discuss with each others about things
 
+## **Summary**
