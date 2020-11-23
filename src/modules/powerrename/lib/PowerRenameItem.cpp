@@ -104,8 +104,8 @@ IFACEMETHODIMP CPowerRenameItem::PutNewName(_In_opt_ PCWSTR newName)
 IFACEMETHODIMP CPowerRenameItem::GetNewName(_Outptr_ PWSTR* newName)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_newName ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (m_newName)
     {
         hr = SHStrDup(m_newName, newName);
     }

@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
 {
-    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;
+    HRESULT hr = source ? S_OK : E_INVALIDARG;
     if (SUCCEEDED(hr))
     {
         PWSTR newName = nullptr;
@@ -38,7 +38,7 @@ HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
 HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags)
 {
     std::locale::global(std::locale(""));
-    HRESULT hr = (source && wcslen(source) > 0 && flags) ? S_OK : E_INVALIDARG;
+    HRESULT hr = (source && flags) ? S_OK : E_INVALIDARG;
     if (SUCCEEDED(hr))
     {
         if (flags & Uppercase)
