@@ -75,7 +75,8 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        FancyZonesLogger::GetLogger()->info("Fancy zone editor enabling");
+        FancyZonesLogger::GetLogger()->info("FancyZones enabling");
+
         if (!m_app)
         {
             InitializeWinhookEventIds();
