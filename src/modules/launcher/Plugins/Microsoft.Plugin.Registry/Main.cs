@@ -4,9 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.Plugin.Registry.Classes;
@@ -15,33 +15,38 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Registry
 {
-    // TEST:
-    // Computer\HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\Shell\Bags\31\Shell\{5C4F28B5-F869-4E84-8E60-F11DB97C5CC7}
-    // hklm/so/mi/wi/sh/ba/31/sh/{5c
+    /*
+     * TODO:
+     * - allow search by value name (search after ':')
+     * - multi-language
+     * - benchmark
+     * - unit-tests
+     */
 
-    // Finished:
-    // - shortcuts for main keys (e.g. HKLM)
-    // - support search for full main keys not only shortcuts
-    // - show all root keys when a user type only a part of "HKEY"
-    // - match keys they start with shortcut + search
-    // - list of found keys
-    // - result of found keys
-    // - auto replace "/" with "\"
-    // - always case-insensitive
-    // - command: open direct in regedit.exe
-    // - command: copy key or value name to clipboard
-
-    // TODO:
-    // - step into key values via ???
-    // - allow search by value name (search after ':')
-    // - multi-language
-    // - benchmark
-    // - unit-tests
-    public class Main : IPlugin, IContextMenu, IDisposable
+    public class Main : IPlugin, IContextMenu, IDisposable /* ,IResultUpdated */
     {
+        /// <summary>
+        /// The initial context for this plugin (contains API and meta-data)
+        /// </summary>
         private PluginInitContext? _context;
+
+        /// <summary>
+        /// The path to the icon for each result
+        /// </summary>
         private string _defaultIconPath;
+
+        /// <summary>
+        /// Indicate that the plugin is disposed
+        /// </summary>
         private bool _disposed;
+
+        /*
+        * private Query? _query;
+        * /// <summary>
+        * /// This event is triggered when the result should be updated without any user interaction
+        * /// </summary>
+        * public event ResultUpdatedEventHandler? ResultsUpdated;
+        */
 
         public Main()
             => _defaultIconPath = "Images/reg.light.png";
@@ -55,34 +60,41 @@ namespace Microsoft.Plugin.Registry
 
         public List<Result> Query(Query query)
         {
-            if (query is null || query.Search.Length == 0)
+            /* _query = query; */
+
+            // Any main registry key have more than two characters
+            if (query is null || query.Search.Length < 2)
             {
                 return new List<Result>(0);
             }
 
-            var search = query.Search.Replace('/', '\\');
+            var rawSearch = query.Search.Replace('/', '\\');
 
-            var (mainKey, path) = RegistryHelper.GetRegistryMainKey(search.TrimEnd(':'));
+            var search = rawSearch.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase)
+                ? rawSearch.TrimEnd('\\')
+                : rawSearch;
+
+            var (mainKey, path) = RegistryHelper.GetRegistryMainKey(search);
             if (mainKey is null)
             {
-                return search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase)
+                return query.Search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase)
                     ? ResultHelper.GetResultList(RegistryHelper.GetAllMainKeys(), _defaultIconPath)
                     : new List<Result>(0);
             }
 
-            ICollection<RegistryEntry> list = new Collection<RegistryEntry>();
+            var list = RegistryHelper.SearchForSubKey(mainKey, path);
 
-            if (!(mainKey is null))
+            if (rawSearch.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase))
             {
-                list = RegistryHelper.SearchForSubKey(mainKey, path);
+                var firstEntry = list.FirstOrDefault(found => found.Key != null
+                                                            && found.Key.Name.StartsWith(search, StringComparison.InvariantCultureIgnoreCase));
+                if (!(firstEntry is null))
+                {
+                    return ResultHelper.GetValuesFromKey(firstEntry.Key, _defaultIconPath);
+                }
             }
 
-            return list.Count switch
-            {
-                0 => new List<Result>(0),
-                1 when search.EndsWith(':') => ResultHelper.GetValuesFromKey(list.FirstOrDefault().Key, _defaultIconPath),
-                _ => ResultHelper.GetResultList(list, _defaultIconPath),
-            };
+            return ResultHelper.GetResultList(list, _defaultIconPath);
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
@@ -96,10 +108,30 @@ namespace Microsoft.Plugin.Registry
 
             if (entry.Key?.Name == selectedResult.Title)
             {
+                /* doesn't work, surface don't refresh the result list
                 list.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Copy key to clipboard",
+                    Title = "Open registry key",
+                    Glyph = "\xE71E",                       // E71E => Zoom
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.O,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = (hideAfterSelectResult) =>
+                    {
+                        ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs(ResultHelper.GetValuesFromKey(entry.Key, _defaultIconPath))
+                        {
+                            Query = _query,   // WOX crash, when query is null
+                        });
+                    return false;            // return value currently not implemented in WOX
+                    },
+                });
+                */
+
+                list.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Copy registry key to clipboard",
                     Glyph = "\xF0E3",                       // E70F => ClipboardList
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,

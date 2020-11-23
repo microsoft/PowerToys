@@ -74,30 +74,47 @@ namespace Microsoft.Plugin.Registry.Helper
             }
 
             var resultList = new List<Result>();
-
-            foreach (var name in key.GetValueNames())
+            try
             {
-                try
+                foreach (var name in key.GetValueNames())
                 {
-                    resultList.Add(new Result
+                    try
                     {
-                        ContextData = new RegistryEntry(key),
-                        IcoPath = iconPath,
-                        SubTitle = $"Type: {ValueHelper.GetType(key, name)} * Value: {ValueHelper.GetValue(key, name, 50)}",
-                        Title = name,
-                        ToolTipData = new ToolTipData("Registry value", $"Key:\t{key.Name}\nName:\t{name}\nType:\t{ValueHelper.GetType(key, name)}\nValue:\t{ValueHelper.GetValue(key, name)}"),
-                    });
+                        resultList.Add(new Result
+                        {
+                            ContextData = new RegistryEntry(key),
+                            IcoPath = iconPath,
+                            SubTitle = $"Type: {ValueHelper.GetType(key, name)} * Value: {ValueHelper.GetValue(key, name, 50)}",
+                            Title = name,
+                            ToolTipData = new ToolTipData("Registry value", $"Key:\t{key.Name}\nName:\t{name}\nType:\t{ValueHelper.GetType(key, name)}\nValue:\t{ValueHelper.GetValue(key, name)}"),
+                            QueryTextDisplay = key.Name,
+                        });
+                    }
+                    catch (Exception exception)
+                    {
+                        resultList.Add(new Result
+                        {
+                            ContextData = new RegistryEntry(key.Name, exception),
+                            IcoPath = iconPath,
+                            SubTitle = exception.Message,
+                            Title = name,
+                            ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
+                            QueryTextDisplay = key.Name,
+                        });
+                    }
                 }
-                catch (Exception exception)
+            }
+            catch (Exception ex)
+            {
+                resultList.Add(new Result
                 {
-                    resultList.Add(new Result
-                    {
-                        ContextData = new RegistryEntry(key.Name, exception),
-                        IcoPath = iconPath,
-                        Title = exception.Message,
-                        ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
-                    });
-                }
+                    ContextData = new RegistryEntry(key.Name, ex),
+                    IcoPath = iconPath,
+                    SubTitle = ex.Message,
+                    Title = key.Name,
+                    ToolTipData = new ToolTipData(ex.Message, ex.ToString()),
+                    QueryTextDisplay = key.Name,
+                });
             }
 
             return resultList;
