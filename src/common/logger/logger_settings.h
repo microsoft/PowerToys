@@ -12,6 +12,8 @@ struct LogSettings
     inline const static std::wstring launcherLogPath = L"LogsModuleInterface\\launcher-log.txt";
     inline const static std::string fancyZonesLoggerName = "fancyzones";
     inline const static std::wstring fancyZonesLogPath = L"FancyZonesLogs\\fancyzones-log.txt";
+    inline const static std::string shortcutGuideLoggerName = "shortcut-guide";
+    inline const static std::wstring shortcutGuideLogPath = L"ShortcutGuideLogs\\shortcut-guide-log.txt";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();
