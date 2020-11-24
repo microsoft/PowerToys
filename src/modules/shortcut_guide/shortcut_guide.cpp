@@ -8,6 +8,8 @@
 #include <common/debug_control.h>
 #include <sstream>
 #include <modules\shortcut_guide\ShortcutGuideConstants.h>
+#include <modules\shortcut_guide\ShortcutGuideLogger.h>
+#include <common\settings_helpers.cpp>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -96,6 +98,8 @@ OverlayWindow::OverlayWindow()
 {
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
     app_key = ShortcutGuideConstants::ModuleKey;
+    ShortcutGuideLogger::Init(PTSettingsHelper::get_module_save_folder_location(app_key));
+    ShortcutGuideLogger::GetLogger()->info("Overlay Window is creating");
     init_settings();
 }
 
@@ -196,6 +200,8 @@ constexpr UINT alternative_switch_vk_code = VK_OEM_2;
 
 void OverlayWindow::enable()
 {
+    ShortcutGuideLogger::GetLogger()->info("Shortcut Guide is enabling");
+
     auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
         if (msg == WM_KEYDOWN && wparam == VK_ESCAPE && instance->target_state->active())
         {
@@ -247,6 +253,8 @@ void OverlayWindow::enable()
 
 void OverlayWindow::disable(bool trace_event)
 {
+    ShortcutGuideLogger::GetLogger()->info("Shortcut Guide is disabling");
+
     if (_enabled)
     {
         _enabled = false;
