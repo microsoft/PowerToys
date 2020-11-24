@@ -217,9 +217,49 @@ updates:
       interval: "daily"
       
   - package-ecosystem: "nuget"
-    directory: "/src/modules/powerrename/ui"
+    directory: "/src/modules/powerrename/unittests"
     schedule:
       interval: "daily"
       
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/previewpane/MarkdownPreviewHandler"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/previewpane/PreviewPaneUnitTests"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/previewpane/SvgPreviewHandler"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/previewpane/SvgThumbnailProvider"
+    schedule:
+      interval: "daily"
 
+# TODO Add rest of the things from /src/modules/previewpane
+
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/shortcut_guide"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/runner"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/settings"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/tests/win-app-driver"
+    schedule:
+      interval: "daily"
       
