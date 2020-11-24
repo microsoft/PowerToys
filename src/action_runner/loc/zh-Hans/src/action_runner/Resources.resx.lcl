@@ -58,6 +58,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";GITHUB_NEW_VERSION_CHECK_ERROR" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to connect to the server. Check your network connection or retry later.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Error: couldn't download PowerToys installer. Visit our GitHub page to update.]]></Val>
@@ -103,15 +109,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";GITHUB_NEW_VERSION_UNAVAILABLE" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[PowerToys is up to date.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys 是最新的。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[At next launch]]></Val>
@@ -136,6 +133,21 @@
       <Item ItemId=";GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[5 days]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";GITHUB_NEW_VERSION_UP_TO_DATE" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[PowerToys is up to date.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PowerToys 是最新的。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";GITHUB_NEW_VERSION_USING_LOCAL_BUILD_ERROR" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating from a local build is not supported.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
