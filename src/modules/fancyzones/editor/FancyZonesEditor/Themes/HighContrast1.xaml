@@ -24,4 +24,5 @@
 
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>
+    
 </ResourceDictionary>
