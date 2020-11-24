@@ -17,7 +17,7 @@ std::shared_ptr<Logger> ShortcutGuideLogger::GetLogger()
 {
     if (!logger)
     {
-        throw "Shortcut Guide logger is not initalized";
+        throw "Shortcut Guide logger is not initialized";
     }
 
     return logger;
