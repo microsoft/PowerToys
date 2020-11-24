@@ -360,7 +360,6 @@ void run_settings_window()
         process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
     }
 
-    // run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
     if (FALSE == process_created)
     {
         // The runner is not elevated or we failed to create the process using the
