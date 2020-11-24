@@ -1,0 +1,225 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions" # See documentation for possible values
+    directory: ".github/workflows" # Location of package manifests
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "src/action_runner"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/common/ManagedTelemetry/Telemetry"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/common/ManagedCommon"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/common/UnitTests-CommonLib"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/common/common-md-flag"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/common/interop-tests"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/common/interop"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/common/logger"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/common/notifications"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/common/updating"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/common"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/core/Microsoft.PowerToys.Settings.UI.Library"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/core/Microsoft.PowerToys.Settings.UI.Runner"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/core/Microsoft.PowerToys.Settings.UI.UnitTests"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/core/Microsoft.PowerToys.Settings.UI"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/logging"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/colorPicker/ColorPicker"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/colorPicker/ColorPickerUI"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/colorPicker/UnitTest-ColorPickerUI"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/fancyzones/dll"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/fancyzones/editor"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/fancyzones/lib"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/fancyzones/tests/UnitTests"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/imageresizer/dll"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/imageresizer/tests"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/imageresizer/ui"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/keyboardmanager/common"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/keyboardmanager/dll"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/keyboardmanager/test"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/keyboardmanager/ui"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/launcher/Microsoft.Launcher"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "nuget"
+    # I don't want to go into every single directory. Trying to use wildcards
+    directory: "/src/modules/launcher/Plugins/*"
+    schedule:
+      interval: "daily"
+  
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/launcher/PowerLauncher.Telemetry"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/launcher/PowerLauncher"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/launcher/Wox.Infrastructure"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/launcher/Wox.Plugin"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/launcher/Wox.Test"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/powerrename/UWPui"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/powerrename/dll"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/powerrename/lib"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/powerrename/testapp"
+    schedule:
+      interval: "daily"
+      
+  - package-ecosystem: "nuget"
+    directory: "/src/modules/powerrename/ui"
+    schedule:
+      interval: "daily"
+      
+
+      
