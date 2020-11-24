@@ -2045,7 +2045,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcuts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快捷键]]></Val>
+            <Val><![CDATA[快捷方式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
