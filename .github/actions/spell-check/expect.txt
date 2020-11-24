@@ -16,6 +16,7 @@ Acceleratorkeys
 ACCEPTFILES
 accessibile
 accessibilityinsights
+acf
 Acl
 aclapi
 AColumn
@@ -154,6 +155,7 @@ bc
 bcc
 bck
 Bcl
+bdaa
 bddac
 BEGINLABELEDIT
 betadele
@@ -955,6 +957,7 @@ IBackground
 IBeam
 IBind
 icase
+iccex
 IClass
 ico
 ICollection
@@ -1045,6 +1048,7 @@ Infotip
 ingbuffer
 inheritdoc
 ini
+INITCOMMONCONTROLSEX
 INITDIALOG
 INITGUID
 inl
@@ -1328,6 +1332,7 @@ makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
 MAKELANGID
+MAKELPARAM
 makepri
 malloc
 manifestdependency
@@ -1424,6 +1429,7 @@ MSIRESTARTMANAGERCONTROL
 msix
 msixbundle
 MSIXVERSION
+MSGBOX
 MSLLHOOKSTRUCT
 Mso
 msp
@@ -1450,6 +1456,7 @@ NAMECHANGE
 nameof
 NAMEONLY
 namespace
+NATIVEFNTCTL
 nc
 NCACTIVATE
 ncc
@@ -1979,8 +1986,10 @@ SETICON
 setings
 setlocal
 setnt
+SETRANGE
 Setrect
 SETREDRAW
+SETSTEP
 SETTEXT
 SETTINGCHANGE
 settingsheader
@@ -2130,6 +2139,7 @@ STDMETHODIMP
 stdout
 Stdout
 stefan
+STEPIT
 stgm
 STGMEDIUM
 stoi
