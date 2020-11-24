@@ -282,7 +282,8 @@ void run_settings_window()
     {
         auto val = get_last_error_message(GetLastError());
         runner_logger::get_logger()->warn(L"UuidCreate can not create guide. {}", val.has_value() ? val.value() : L"");
-    }else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
+    }
+    else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
     {
         auto val = get_last_error_message(GetLastError());
         runner_logger::get_logger()->warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
