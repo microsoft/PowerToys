@@ -36,7 +36,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="list">The original result list to convert</param>
         /// <param name="iconPath">The path to the icon of each entry</param>
-        /// <param name="maxLength">The maximum length of result text</param>
+        /// <param name="maxLength">(optional) The maximum length of result text</param>
         /// <returns>A list with <see cref="Result"/></returns>
         internal static List<Result> GetResultList(in ICollection<RegistryEntry> list, in string iconPath, in int maxLength = 45)
         {
@@ -83,7 +83,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="key">The <see cref="RegistryKey"/> that should contain entries for the list</param>
         /// <param name="iconPath">The path to the icon of each entry</param>
-        /// <param name="maxLength">The maximum length of result text</param>
+        /// <param name="maxLength">(optional) The maximum length of result text</param>
         /// <returns>A list with <see cref="Result"/></returns>
         internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, in int maxLength = 45)
         {
@@ -145,9 +145,9 @@ namespace Microsoft.Plugin.Registry.Helper
         /// Return a truncated name (right based with three left dots)
         /// </summary>
         /// <param name="text">The text to truncate</param>
-        /// <param name="maxLength">The maximum length of the text</param>
+        /// <param name="maxLength">(optional) The maximum length of the text</param>
         /// <returns>A truncated text with a maximum length</returns>
-        private static string GetTruncatedText(string text, in int maxLength)
+        internal static string GetTruncatedText(string text, in int maxLength = 45)
         {
             if (text.Length > maxLength)
             {
@@ -162,7 +162,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="registryKey">A registry key with a full base key</param>
         /// <returns>A registry key with a short base key</returns>
-        private static string GetShortBaseKey(in string registryKey)
+        internal static string GetShortBaseKey(in string registryKey)
         {
             foreach (var shortName in _shortBaseKeys)
             {

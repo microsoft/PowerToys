@@ -6,21 +6,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Helper;
 using Wox.Plugin;
 
+[assembly: InternalsVisibleTo("Microsoft.Plugin.Registry.UnitTest")]
+
 namespace Microsoft.Plugin.Registry
 {
     /*
      * TODO:
-     * - allow search by value name (search after ':')
+     * - unit-tests (on going)
+     * - documentation (plugin, markdown)
      * - multi-language
-     * - benchmark
-     * - unit-tests
+     * - allow search by value name (search after ':')
+     * - benchmark (later)
      */
 
     public class Main : IPlugin, IContextMenu, IDisposable /* ,IResultUpdated */
