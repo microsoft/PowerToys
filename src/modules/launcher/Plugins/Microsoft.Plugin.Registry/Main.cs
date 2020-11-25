@@ -62,7 +62,7 @@ namespace Microsoft.Plugin.Registry
         {
             /* _query = query; */
 
-            // Any main registry key have more than two characters
+            // Any base registry key have more than two characters
             if (query is null || query.Search.Length < 2)
             {
                 return new List<Result>(0);
@@ -72,15 +72,15 @@ namespace Microsoft.Plugin.Registry
                 ? query.Search.TrimEnd('\\')
                 : query.Search;
 
-            var (mainKey, path) = RegistryHelper.GetRegistryMainKey(search);
-            if (mainKey is null)
+            var (baseKey, path) = RegistryHelper.GetRegistryBaseKey(search);
+            if (baseKey is null)
             {
                 return query.Search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase)
-                    ? ResultHelper.GetResultList(RegistryHelper.GetAllMainKeys(), _defaultIconPath)
+                    ? ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath)
                     : new List<Result>(0);
             }
 
-            var list = RegistryHelper.SearchForSubKey(mainKey, path);
+            var list = RegistryHelper.SearchForSubKey(baseKey, path);
 
             if (query.Search.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase))
             {

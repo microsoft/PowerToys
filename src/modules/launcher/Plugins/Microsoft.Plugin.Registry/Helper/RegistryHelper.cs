@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Plugin.Registry.Classes;
+using Microsoft.Plugin.Registry.Constants;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Registry.Helper
@@ -20,50 +21,50 @@ namespace Microsoft.Plugin.Registry.Helper
     internal static class RegistryHelper
     {
         /// <summary>
-        /// A list that contain all registry main keys in a long/full version and in a short version (e.g HKLM = HKEY_LOCAL_MACHINE)
+        /// A list that contain all registry base keys in a long/full version and in a short version (e.g HKLM = HKEY_LOCAL_MACHINE)
         /// </summary>
-        private static readonly IReadOnlyDictionary<string, RegistryKey?> _mainKeys = new Dictionary<string, RegistryKey?>(14)
+        private static readonly IReadOnlyDictionary<string, RegistryKey?> _baseKeys = new Dictionary<string, RegistryKey?>(14)
         {
-            { "HKEY", null },
-            { "HKEY_", null },
-            { "HKCR", Win32.Registry.ClassesRoot },
+            { KeyName.FirstPart, null },
+            { KeyName.FirstPartUnderscore, null },
+            { KeyName.ClassRootShort, Win32.Registry.ClassesRoot },
             { Win32.Registry.ClassesRoot.Name, Win32.Registry.ClassesRoot },
-            { "HKCC", Win32.Registry.CurrentConfig },
+            { KeyName.CurrentConfigShort, Win32.Registry.CurrentConfig },
             { Win32.Registry.CurrentConfig.Name, Win32.Registry.CurrentConfig },
-            { "HKCU", Win32.Registry.CurrentUser },
+            { KeyName.CurrentUserShort, Win32.Registry.CurrentUser },
             { Win32.Registry.CurrentUser.Name, Win32.Registry.CurrentUser },
-            { "HKLM", Win32.Registry.LocalMachine },
+            { KeyName.LocalMachineShort, Win32.Registry.LocalMachine },
             { Win32.Registry.LocalMachine.Name, Win32.Registry.LocalMachine },
-            { "HKPD", Win32.Registry.PerformanceData },
+            { KeyName.PerformanceDataShort, Win32.Registry.PerformanceData },
             { Win32.Registry.PerformanceData.Name, Win32.Registry.PerformanceData },
-            { "HKU", Win32.Registry.Users },
+            { KeyName.UsersShort, Win32.Registry.Users },
             { Win32.Registry.Users.Name, Win32.Registry.Users },
         };
 
         /// <summary>
-        /// Try to find a registry main key based on the given query
+        /// Try to find a registry base key based on the given query
         /// </summary>
         /// <param name="query">The query to search</param>
-        /// <returns>A combination of the main <see cref="RegistryKey"/> and the sub keys</returns>
-        internal static (RegistryKey? mainKey, string subKey) GetRegistryMainKey(in string query)
+        /// <returns>A combination of the base <see cref="RegistryKey"/> and the sub keys</returns>
+        internal static (RegistryKey? baseKey, string subKey) GetRegistryBaseKey(in string query)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
                 return (null, string.Empty);
             }
 
-            var mainKey = query.Split('\\').FirstOrDefault();
-            var subKey = query.TrimStart('\\').Replace(mainKey, string.Empty, StringComparison.InvariantCultureIgnoreCase);
-            var mainKeyResult = _mainKeys.FirstOrDefault(found => found.Key.StartsWith(mainKey, StringComparison.InvariantCultureIgnoreCase));
+            var baseKey = query.Split('\\').FirstOrDefault();
+            var subKey = query.TrimStart('\\').Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase);
+            var baseKeyResult = _baseKeys.FirstOrDefault(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase));
 
-            return (mainKeyResult.Value, subKey);
+            return (baseKeyResult.Value, subKey);
         }
 
         /// <summary>
-        /// Return a list of all registry main key
+        /// Return a list of all registry base key
         /// </summary>
-        /// <returns>A list with all registry main keys</returns>
-        internal static ICollection<RegistryEntry> GetAllMainKeys()
+        /// <returns>A list with all registry base keys</returns>
+        internal static ICollection<RegistryEntry> GetAllBaseKeys()
             => new Collection<RegistryEntry>
             {
                 new RegistryEntry(Win32.Registry.ClassesRoot),
@@ -75,16 +76,16 @@ namespace Microsoft.Plugin.Registry.Helper
             };
 
         /// <summary>
-        /// Search for the given sub-key path in the given main registry key
+        /// Search for the given sub-key path in the given registry base key
         /// </summary>
-        /// <param name="mainKey">The main <see cref="RegistryKey"/></param>
+        /// <param name="baseKey">The base <see cref="RegistryKey"/></param>
         /// <param name="subKeyPath">The path of the registry sub-key</param>
         /// <returns>A list with all found registry keys</returns>
-        internal static ICollection<RegistryEntry> SearchForSubKey(in RegistryKey mainKey, in string subKeyPath)
+        internal static ICollection<RegistryEntry> SearchForSubKey(in RegistryKey baseKey, in string subKeyPath)
         {
             var subKeysNames = subKeyPath.Split('\\');
             var index = 0;
-            var subKey = mainKey;
+            var subKey = baseKey;
 
             ICollection<RegistryEntry> result;
 
@@ -94,7 +95,7 @@ namespace Microsoft.Plugin.Registry.Helper
 
                 if (result.Count == 0)
                 {
-                    return GetAllSubKeys(mainKey);
+                    return GetAllSubKeys(baseKey);
                 }
 
                 if (result.Count == 1 && index < subKeysNames.Length)

@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using Microsoft.Plugin.Registry.Classes;
+using Microsoft.Plugin.Registry.Constants;
 using Microsoft.Win32;
 using Wox.Plugin;
 
@@ -16,6 +16,19 @@ namespace Microsoft.Plugin.Registry.Helper
     /// </summary>
     internal static class ResultHelper
     {
+        /// <summary>
+        /// A list that contain short names of all registry base keys
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, string> _shortBaseKeys = new Dictionary<string, string>(6)
+        {
+            { Win32.Registry.ClassesRoot.Name, KeyName.ClassRootShort },
+            { Win32.Registry.CurrentConfig.Name, KeyName.CurrentConfigShort },
+            { Win32.Registry.CurrentUser.Name, KeyName.CurrentUserShort },
+            { Win32.Registry.LocalMachine.Name, KeyName.LocalMachineShort },
+            { Win32.Registry.PerformanceData.Name, KeyName.PerformanceDataShort },
+            { Win32.Registry.Users.Name, KeyName.UsersShort },
+        };
+
         #pragma warning disable CA1031 // Do not catch general exception types
 
         /// <summary>
@@ -138,47 +151,27 @@ namespace Microsoft.Plugin.Registry.Helper
         {
             if (text.Length > maxLength)
             {
-                text = GetShortMainKey(text);
+                text = GetShortBaseKey(text);
             }
 
             return text.Length > maxLength ? "..." + text[^maxLength..] : text;
         }
 
         /// <summary>
-        /// Return a registry key with a short main key (useful to reduce the text length of a registry key)
+        /// Return a registry key with a short base key (useful to reduce the text length of a registry key)
         /// </summary>
-        /// <param name="registryKey">A registry key with a full main key</param>
-        /// <returns>A registry key with a short main key</returns>
-        private static string GetShortMainKey(in string registryKey)
+        /// <param name="registryKey">A registry key with a full base key</param>
+        /// <returns>A registry key with a short base key</returns>
+        private static string GetShortBaseKey(in string registryKey)
         {
-            if (registryKey.StartsWith(Win32.Registry.ClassesRoot.Name, StringComparison.InvariantCultureIgnoreCase))
+            foreach (var shortName in _shortBaseKeys)
             {
-                return registryKey.Replace(Win32.Registry.ClassesRoot.Name, "HCCR", StringComparison.InvariantCultureIgnoreCase);
-            }
+                if (!registryKey.StartsWith(shortName.Key, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
 
-            if (registryKey.StartsWith(Win32.Registry.CurrentConfig.Name, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return registryKey.Replace(Win32.Registry.CurrentConfig.Name, "HCCC", StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            if (registryKey.StartsWith(Win32.Registry.CurrentUser.Name, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return registryKey.Replace(Win32.Registry.CurrentUser.Name, "HCCU", StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            if (registryKey.StartsWith(Win32.Registry.LocalMachine.Name, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return registryKey.Replace(Win32.Registry.LocalMachine.Name, "HCKR", StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            if (registryKey.StartsWith(Win32.Registry.PerformanceData.Name, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return registryKey.Replace(Win32.Registry.PerformanceData.Name, "HKPD", StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            if (registryKey.StartsWith(Win32.Registry.Users.Name, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return registryKey.Replace(Win32.Registry.Users.Name, "HKU", StringComparison.InvariantCultureIgnoreCase);
+                return registryKey.Replace(shortName.Key, shortName.Value, StringComparison.InvariantCultureIgnoreCase);
             }
 
             return registryKey;
