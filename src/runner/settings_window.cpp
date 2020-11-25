@@ -281,12 +281,12 @@ void run_settings_window()
     if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
     {
         auto val = get_last_error_message(GetLastError());
-        runner_logger::get_logger()->warn(L"UuidCreate can not create guide. {}", val.has_value() ? val.value() : L"");
+        Logger::warn(L"UuidCreate can not create guide. {}", val.has_value() ? val.value() : L"");
     }
     else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
     {
         auto val = get_last_error_message(GetLastError());
-        runner_logger::get_logger()->warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
+        Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
     }
 
     if (uuid_chars != nullptr)
@@ -407,7 +407,7 @@ void run_settings_window()
     else
     {
         auto val = get_last_error_message(GetLastError());
-        runner_logger::get_logger()->error(L"Process handle is empty. {}", val.has_value() ? val.value() : L"");
+        Logger::error(L"Process handle is empty. {}", val.has_value() ? val.value() : L"");
     }
 
 LExit:

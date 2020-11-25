@@ -36,7 +36,6 @@
 #endif
 #include <common/settings_helpers.h>
 #include <common/logger/logger.h>
-#include <runner/runner-logger.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 extern updating::notifications::strings Strings;
@@ -77,7 +76,7 @@ void open_menu_from_another_instance()
 
 int runner(bool isProcessElevated)
 {
-    runner_logger::get_logger()->info("Runner is starting. Elevated={}", isProcessElevated);
+    Logger::info("Runner is starting. Elevated={}", isProcessElevated);
     DPIAware::EnableDPIAwarenessForThisProcess();
 
 #if _DEBUG && _WIN64
@@ -296,7 +295,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-    runner_logger::init(PTSettingsHelper::get_root_save_folder_location());
+    std::filesystem::path logFilePath(PTSettingsHelper::get_root_save_folder_location());
+    logFilePath.append(LogSettings::runnerLogPath);
+    Logger::init(LogSettings::runnerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
     switch (should_run_in_special_mode(n_cmd_args, cmd_arg_list))

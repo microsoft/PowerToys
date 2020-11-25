@@ -33,31 +33,25 @@ level::level_enum getLogLevel(std::wstring_view logSettingsPath)
     return result;
 }
 
-Logger::Logger()
-{
-}
+std::shared_ptr<spdlog::logger> Logger::logger;
 
-Logger::Logger(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath)
+void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath)
 {
     auto logLevel = getLogLevel(logSettingsPath);
     try
     {
         auto sink = make_shared<sinks::daily_file_sink_mt>(logFilePath, 0, 0, false, LogSettings::retention);
-        this->logger = make_shared<spdlog::logger>(loggerName, sink);
+        logger = make_shared<spdlog::logger>(loggerName, sink);
     }
     catch (...)
     {
         cerr << "Can not create file logger. Create stdout logger instead" << endl;
-        this->logger = spdlog::stdout_color_mt("some_unique_name");
+        logger = spdlog::stdout_color_mt("some_unique_name");
     }
 
-    this->logger->set_level(logLevel);
-    this->logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
-    spdlog::register_logger(this->logger);
+    logger->set_level(logLevel);
+    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
+    spdlog::register_logger(logger);
     spdlog::flush_every(std::chrono::seconds(3));
-}
-
-Logger::~Logger()
-{
-    this->logger.reset();
+    logger->info("{} logger is initialized", loggerName);
 }
