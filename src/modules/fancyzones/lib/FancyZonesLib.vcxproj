@@ -103,6 +103,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FancyZonesLogger.h" />
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesDataTypes.h" />
     <ClInclude Include="FancyZonesWinHookEventIDs.h" />
@@ -128,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesDataTypes.cpp" />
+    <ClCompile Include="FancyZonesLogger.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="FancyZonesData.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
@@ -156,7 +158,13 @@
   <ItemGroup>
     <None Include="Resources.resx" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200902.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
     <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
