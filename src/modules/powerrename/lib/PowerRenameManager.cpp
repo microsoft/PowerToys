@@ -891,8 +891,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                     PWSTR currentNewName = nullptr;
                     winrt::check_hresult(spItem->GetNewName(&currentNewName));
 
-                    //winrt::check_hresult(E_INVALIDARG);
-
                     wchar_t sourceName[MAX_PATH] = { 0 };
                     if (flags & NameOnly)
                     {
@@ -1026,7 +1024,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
     }
     catch (...)
     {
-        MessageBox(NULL, L"RegexWorkerThread failed to execute.\nPlease report the bug to https://aka.ms/powerToysReportBug", L"PowerToys Settings Error", MB_OK);
+        MessageBox(NULL, L"RegexWorkerThread failed to execute.\nPlease report the bug to https://aka.ms/powerToysReportBug", L"PowerRename Error", MB_OK);
     }
 
     return 0;

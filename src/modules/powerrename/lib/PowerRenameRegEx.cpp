@@ -173,7 +173,7 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFileTime(_In_ SYSTEMTIME fileTime)
     SystemTimeToFileTime(&m_fileTime, &ft1.fileTime);
     SystemTimeToFileTime(&fileTime, &ft2.fileTime);
 
-    if(ft2.ul.QuadPart != ft1.ul.QuadPart)
+    if (ft2.ul.QuadPart != ft1.ul.QuadPart)
     {
         m_fileTime = fileTime;
         m_useFileTime = true;
