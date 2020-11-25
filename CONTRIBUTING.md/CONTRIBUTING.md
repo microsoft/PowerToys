@@ -1,6 +1,12 @@
 # Power Toys Contributor's Guide
 
-Below is our guidance for how to report issues, propose new features, and submit contributions via Pull Requests (PRs).
+Below is our guidance for how to report issues, propose new features, and submit contributions via Pull Requests (PRs).   
+<details>
+<summary>Localized Guide</summary>
+<div markdown="1">
+[Korean/한국어]("CONTRIBUTING.ko-KR.md")
+</div>
+</summary>
 
 ## Before you start, file an issue
 
