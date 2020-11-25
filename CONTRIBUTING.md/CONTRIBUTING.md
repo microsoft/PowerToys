@@ -5,7 +5,7 @@ Below is our guidance for how to report issues, propose new features, and submit
 <summary>Localized Guide</summary>
 <div markdown="1">
 
-[Korean/한국어]("CONTRIBUTING.ko-KR.md")
+[Korean/한국어](CONTRIBUTING.ko-KR.md)
 </div>
 </details>
 
