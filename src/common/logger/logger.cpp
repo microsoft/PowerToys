@@ -46,7 +46,7 @@ void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring
     catch (...)
     {
         cerr << "Can not create file logger. Create stdout logger instead" << endl;
-        logger = spdlog::stdout_color_mt("some_unique_name");
+        logger = spdlog::stdout_color_mt(loggerName);
     }
 
     logger->set_level(logLevel);
