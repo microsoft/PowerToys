@@ -19,10 +19,9 @@ namespace Microsoft.Plugin.Registry
 {
     /*
      * TODO:
-     * - unit-tests (on going)
      * - documentation (plugin, markdown)
      * - multi-language
-     * - allow search by value name (search after ':')
+     * - allow search by value name (search after ':') (on going)
      * - benchmark (later)
      */
 
@@ -43,14 +42,6 @@ namespace Microsoft.Plugin.Registry
         /// </summary>
         private bool _disposed;
 
-        /*
-        * private Query? _query;
-        * /// <summary>
-        * /// This event is triggered when the result should be updated without any user interaction
-        * /// </summary>
-        * public event ResultUpdatedEventHandler? ResultsUpdated;
-        */
-
         public Main()
             => _defaultIconPath = "Images/reg.light.png";
 
@@ -63,8 +54,6 @@ namespace Microsoft.Plugin.Registry
 
         public List<Result> Query(Query query)
         {
-            /* _query = query; */
-
             // Any base registry key have more than two characters
             if (query is null || query.Search.Length < 2)
             {
@@ -109,26 +98,6 @@ namespace Microsoft.Plugin.Registry
 
             if (entry.Key?.Name == selectedResult.Title)
             {
-                /* doesn't work, surface don't refresh the result list
-                list.Add(new ContextMenuResult
-                {
-                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Open registry key",
-                    Glyph = "\xE71E",                       // E71E => Zoom
-                    FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = Key.O,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = (hideAfterSelectResult) =>
-                    {
-                        ResultsUpdated?.Invoke(this, new ResultUpdatedEventArgs(ResultHelper.GetValuesFromKey(entry.Key, _defaultIconPath))
-                        {
-                            Query = _query,   // WOX crash, when query is null
-                        });
-                    return false;            // return value currently not implemented in WOX
-                    },
-                });
-                */
-
                 list.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
