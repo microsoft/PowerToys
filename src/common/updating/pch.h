@@ -17,4 +17,6 @@
 #include <filesystem>
 #include <expected.hpp>
 
+#include <optional>
+
 #endif //PCH_H
