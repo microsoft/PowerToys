@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Printing;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Win32;
 using Wox.Plugin;
