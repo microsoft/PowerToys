@@ -13,7 +13,7 @@
 #include <lib/FancyZonesData.h>
 #include <lib/FancyZonesWinHookEventIDs.h>
 #include <lib/FancyZonesData.cpp>
-#include <common\logger\logger.h>
+#include <common/logger/logger.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
