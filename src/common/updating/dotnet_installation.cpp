@@ -47,7 +47,7 @@ namespace updating
         return download_success ? std::make_optional(dotnet_download_path) : std::nullopt;
     }
 
-    bool install_dotnet(fs::path dotnet_download_path, const bool silent)
+    bool install_dotnet(fs::path dotnet_download_path, const bool silent = false)
     {
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };

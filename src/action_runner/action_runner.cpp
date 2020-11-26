@@ -234,21 +234,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
         }
     }
-    else if (action == L"-install_dotnet")
-    {
-        if (updating::dotnet_is_installed())
-        {
-            return 0;
-        }
-        const bool success = updating::install_dotnet();
-
-        MessageBoxW(nullptr,
-                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE).c_str(),
-                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE_TITLE).c_str(),
-                    MB_OK | MB_ICONERROR);
-
-        return !success;
-    }
     else if (action == L"-uninstall_msi")
     {
         return uninstall_msi_action();

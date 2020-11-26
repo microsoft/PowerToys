@@ -96,10 +96,6 @@
         Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
       
-      <Custom Action="InstallDotNet" After="InstallFinalize">
-        NOT Installed and (SKIPDOTNETINSTALL = 0)
-      </Custom>
-
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
       
     </InstallExecuteSequence>
@@ -111,14 +107,6 @@
       Execute="immediate"
       BinaryKey="PTCustomActions"
       DllEntry="TerminateProcessesCA" />
-
-    <CustomAction 
-      Id="InstallDotNet"
-      FileKey="action_runner.exe"
-      ExeCommand="-install_dotnet"
-      Return="asyncNoWait"
-      Execute="immediate"
-      Impersonate="no" />
 
     <CustomAction Id="SetRegisterPowerToysSchTaskParam"
                   Property="RegisterPowerToysSchTask"
