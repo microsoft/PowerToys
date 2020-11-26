@@ -11,16 +11,6 @@ namespace Microsoft.Plugin.Registry.UnitTest.Helper
     public sealed class ResultHelperTest
     {
         [TestMethod]
-        [DataRow(@"HKCR\*\OpenWithList", @"HKEY_CLASSES_ROOT\*\OpenWithList")]
-        [DataRow(@"HKCU\Control Panel\Accessibility", @"HKEY_CURRENT_USER\Control Panel\Accessibility")]
-        [DataRow(@"HKLM\HARDWARE\UEFI", @"HKEY_LOCAL_MACHINE\HARDWARE\UEFI")]
-        [DataRow(@"HKU\.DEFAULT\Environment", @"HKEY_USERS\.DEFAULT\Environment")]
-        [DataRow(@"HKCC\System\CurrentControlSet\Control", @"HKEY_CURRENT_CONFIG\System\CurrentControlSet\Control")]
-        [DataRow(@"HKPD\???", @"HKEY_PERFORMANCE_DATA\???")]
-        public void GetShortBaseKeyTest(string registryKeyShort, string registryKeyFull)
-            => Assert.AreEqual(registryKeyShort, ResultHelper.GetShortBaseKey(registryKeyFull));
-
-        [TestMethod]
         [DataRow(@"HKEY_CLASSES_ROOT\*\OpenWithList", @"HKEY_CLASSES_ROOT\*\OpenWithList")]
         [DataRow(@"HKEY_CURRENT_USER\Control Panel\Accessibility", @"HKEY_CURRENT_USER\Control Panel\Accessibility")]
         [DataRow(@"HKEY_LOCAL_MACHINE\HARDWARE\UEFI", @"HKEY_LOCAL_MACHINE\HARDWARE\UEFI")]

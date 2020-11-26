@@ -11,6 +11,7 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Helper;
+using Microsoft.VisualBasic;
 using Wox.Plugin;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Registry.UnitTest")]
@@ -21,11 +22,13 @@ namespace Microsoft.Plugin.Registry
      * TODO:
      * - documentation (plugin, markdown)
      * - multi-language
-     * - allow search by value name (search after ':') (on going)
      * - benchmark (later)
      */
 
-    public class Main : IPlugin, IContextMenu, IDisposable /* ,IResultUpdated */
+    /// <summary>
+    /// Main class of this plugin that implement all used interfaces
+    /// </summary>
+    public class Main : IPlugin, IContextMenu, IDisposable
     {
         /// <summary>
         /// The initial context for this plugin (contains API and meta-data)
@@ -42,9 +45,16 @@ namespace Microsoft.Plugin.Registry
         /// </summary>
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Main"/> class.
+        /// </summary>
         public Main()
             => _defaultIconPath = "Images/reg.light.png";
 
+        /// <summary>
+        /// Initialize the plugin with the given <see cref="PluginInitContext"/>
+        /// </summary>
+        /// <param name="context">The <see cref="PluginInitContext"/> for this plugin</param>
         public void Init(PluginInitContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -52,19 +62,22 @@ namespace Microsoft.Plugin.Registry
             UpdateIconPath(_context.API.GetCurrentTheme());
         }
 
+        /// <summary>
+        /// Return a filtered list, based on the given query
+        /// </summary>
+        /// <param name="query">The query to filter the list</param>
+        /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query)
         {
             // Any base registry key have more than two characters
-            if (query is null || query.Search.Length < 2)
+            if (query?.Search is null || query.Search.Length < 2)
             {
                 return new List<Result>(0);
             }
 
-            var search = query.Search.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase)
-                ? query.Search.TrimEnd('\\')
-                : query.Search;
+            var searchForValueName = QueryHelper.GetQueryParts(query.Search, out var queryKey, out var queryValueName);
 
-            var (baseKey, path) = RegistryHelper.GetRegistryBaseKey(search);
+            var (baseKey, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKey is null)
             {
                 return query.Search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase)
@@ -72,21 +85,27 @@ namespace Microsoft.Plugin.Registry
                     : new List<Result>(0);
             }
 
-            var list = RegistryHelper.SearchForSubKey(baseKey, path);
+            var list = RegistryHelper.SearchForSubKey(baseKey, subKey);
 
-            if (query.Search.EndsWith("\\\\", StringComparison.InvariantCultureIgnoreCase))
+            if (!searchForValueName)
             {
-                var firstEntry = list.FirstOrDefault(found => found.Key != null
-                                                            && found.Key.Name.StartsWith(search, StringComparison.InvariantCultureIgnoreCase));
-                if (!(firstEntry is null))
-                {
-                    return ResultHelper.GetValuesFromKey(firstEntry.Key, _defaultIconPath);
-                }
+                return ResultHelper.GetResultList(list, _defaultIconPath);
             }
 
-            return ResultHelper.GetResultList(list, _defaultIconPath);
+            queryKey = QueryHelper.GetKeyWithLongBaseKey(queryKey);
+
+            var firstEntry = list.FirstOrDefault(found => found.Key != null
+                                                        && found.Key.Name.StartsWith(queryKey, StringComparison.InvariantCultureIgnoreCase));
+            return firstEntry is null
+                ? ResultHelper.GetResultList(list, _defaultIconPath)
+                : ResultHelper.GetValuesFromKey(firstEntry.Key, _defaultIconPath, queryValueName);
         }
 
+        /// <summary>
+        /// Return a list context menu entries for a given <see cref="Result"/> (shown at the right side of the result)
+        /// </summary>
+        /// <param name="selectedResult">The <see cref="Result"/> for the list with context menu entries</param>
+        /// <returns>A list context menu entries</returns>
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             if (!(selectedResult?.ContextData is RegistryEntry entry))
@@ -102,7 +121,7 @@ namespace Microsoft.Plugin.Registry
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = "Copy registry key to clipboard",
-                    Glyph = "\xF0E3",                       // E70F => ClipboardList
+                    Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
@@ -115,7 +134,7 @@ namespace Microsoft.Plugin.Registry
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = "Copy value name to clipboard",
-                    Glyph = "\xF0E3",                       // E70F => ClipboardList
+                    Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.N,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
@@ -127,7 +146,7 @@ namespace Microsoft.Plugin.Registry
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = "Open key in registry editor",
-                Glyph = "\xE70F",                       // E70F => Edit (Pencil)
+                Glyph = "\xE70F",                       // E70F => Symbol: Pencil (means "Edit")
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
@@ -137,18 +156,32 @@ namespace Microsoft.Plugin.Registry
             return list;
         }
 
+        /// <summary>
+        /// Change all theme-based elements (typical called when the plugin theme has changed)
+        /// </summary>
+        /// <param name="oldtheme">The old <see cref="Theme"/></param>
+        /// <param name="newTheme">The new <see cref="Theme"/></param>
         private void OnThemeChanged(Theme oldtheme, Theme newTheme)
             => UpdateIconPath(newTheme);
 
+        /// <summary>
+        /// Update all icons (typical called when the plugin theme has changed)
+        /// </summary>
+        /// <param name="theme">The new <see cref="Theme"/> for the icons</param>
         private void UpdateIconPath(Theme theme)
             => _defaultIconPath = theme == Theme.Light || theme == Theme.HighContrastWhite ? "Images/reg.light.png" : "Images/reg.dark.png";
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Wrapper method for <see cref="Dispose"/> that dispose additional objects and events form the plugin itself
+        /// </summary>
+        /// <param name="disposing">Indicate that the plugin is disposed</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed || !disposing)

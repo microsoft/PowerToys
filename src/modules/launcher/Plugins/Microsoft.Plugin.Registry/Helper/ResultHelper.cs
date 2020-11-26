@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Plugin.Registry.Classes;
-using Microsoft.Plugin.Registry.Constants;
 using Microsoft.Win32;
 using Wox.Plugin;
 
@@ -16,19 +16,6 @@ namespace Microsoft.Plugin.Registry.Helper
     /// </summary>
     internal static class ResultHelper
     {
-        /// <summary>
-        /// A list that contain short names of all registry base keys
-        /// </summary>
-        private static readonly IReadOnlyDictionary<string, string> _shortBaseKeys = new Dictionary<string, string>(6)
-        {
-            { Win32.Registry.ClassesRoot.Name, KeyName.ClassRootShort },
-            { Win32.Registry.CurrentConfig.Name, KeyName.CurrentConfigShort },
-            { Win32.Registry.CurrentUser.Name, KeyName.CurrentUserShort },
-            { Win32.Registry.LocalMachine.Name, KeyName.LocalMachineShort },
-            { Win32.Registry.PerformanceData.Name, KeyName.PerformanceDataShort },
-            { Win32.Registry.Users.Name, KeyName.UsersShort },
-        };
-
         #pragma warning disable CA1031 // Do not catch general exception types
 
         /// <summary>
@@ -83,57 +70,71 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="key">The <see cref="RegistryKey"/> that should contain entries for the list</param>
         /// <param name="iconPath">The path to the icon of each entry</param>
+        /// <param name="valueName">(optional) When not <see cref="string.Empty"/> filter the list for the given value name</param>
         /// <param name="maxLength">(optional) The maximum length of result text</param>
         /// <returns>A list with <see cref="Result"/></returns>
-        internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, in int maxLength = 45)
+        internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, string valueName = "", in int maxLength = 45)
         {
             if (key is null)
             {
                 return new List<Result>(0);
             }
 
-            var resultList = new List<Result>();
+            IEnumerable<string> valueNameList;
+
             try
             {
-                foreach (var name in key.GetValueNames())
-                {
-                    try
-                    {
-                        resultList.Add(new Result
-                        {
-                            ContextData = new RegistryEntry(key),
-                            IcoPath = iconPath,
-                            SubTitle = $"Type: {ValueHelper.GetType(key, name)} * Value: {ValueHelper.GetValue(key, name, 50)}",
-                            Title = GetTruncatedText(name, maxLength),
-                            ToolTipData = new ToolTipData("Registry value", $"Key:\t{key.Name}\nName:\t{name}\nType:\t{ValueHelper.GetType(key, name)}\nValue:\t{ValueHelper.GetValue(key, name)}"),
-                            QueryTextDisplay = key.Name,
-                        });
-                    }
-                    catch (Exception exception)
-                    {
-                        resultList.Add(new Result
-                        {
-                            ContextData = new RegistryEntry(key.Name, exception),
-                            IcoPath = iconPath,
-                            SubTitle = exception.Message,
-                            Title = GetTruncatedText(name, maxLength),
-                            ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
-                            QueryTextDisplay = key.Name,
-                        });
-                    }
-                }
+                valueNameList = key.GetValueNames().AsEnumerable();
             }
             catch (Exception ex)
             {
-                resultList.Add(new Result
+                return new List<Result>(1)
                 {
-                    ContextData = new RegistryEntry(key.Name, ex),
-                    IcoPath = iconPath,
-                    SubTitle = ex.Message,
-                    Title = GetTruncatedText(key.Name, maxLength),
-                    ToolTipData = new ToolTipData(ex.Message, ex.ToString()),
-                    QueryTextDisplay = key.Name,
-                });
+                    new Result
+                    {
+                        ContextData = new RegistryEntry(key.Name, ex),
+                        IcoPath = iconPath,
+                        SubTitle = ex.Message,
+                        Title = GetTruncatedText(key.Name, maxLength),
+                        ToolTipData = new ToolTipData(ex.Message, ex.ToString()),
+                        QueryTextDisplay = key.Name,
+                    },
+                };
+            }
+
+            var resultList = new List<Result>();
+
+            if (!string.IsNullOrEmpty(valueName))
+            {
+                valueNameList = valueNameList.Where(found => found.Contains(valueName, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            foreach (var name in valueNameList)
+            {
+                try
+                {
+                    resultList.Add(new Result
+                    {
+                        ContextData = new RegistryEntry(key),
+                        IcoPath = iconPath,
+                        SubTitle = $"Type: {ValueHelper.GetType(key, name)} * Value: {ValueHelper.GetValue(key, name, 50)}",
+                        Title = GetTruncatedText(name, maxLength),
+                        ToolTipData = new ToolTipData("Registry value", $"Key:\t{key.Name}\nName:\t{name}\nType:\t{ValueHelper.GetType(key, name)}\nValue:\t{ValueHelper.GetValue(key, name)}"),
+                        QueryTextDisplay = key.Name,
+                    });
+                }
+                catch (Exception exception)
+                {
+                    resultList.Add(new Result
+                    {
+                        ContextData = new RegistryEntry(key.Name, exception),
+                        IcoPath = iconPath,
+                        SubTitle = exception.Message,
+                        Title = GetTruncatedText(name, maxLength),
+                        ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
+                        QueryTextDisplay = key.Name,
+                    });
+                }
             }
 
             return resultList;
@@ -151,30 +152,10 @@ namespace Microsoft.Plugin.Registry.Helper
         {
             if (text.Length > maxLength)
             {
-                text = GetShortBaseKey(text);
+                text = QueryHelper.GetKeyWithShortBaseKey(text);
             }
 
             return text.Length > maxLength ? "..." + text[^maxLength..] : text;
-        }
-
-        /// <summary>
-        /// Return a registry key with a short base key (useful to reduce the text length of a registry key)
-        /// </summary>
-        /// <param name="registryKey">A registry key with a full base key</param>
-        /// <returns>A registry key with a short base key</returns>
-        internal static string GetShortBaseKey(in string registryKey)
-        {
-            foreach (var shortName in _shortBaseKeys)
-            {
-                if (!registryKey.StartsWith(shortName.Key, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    continue;
-                }
-
-                return registryKey.Replace(shortName.Key, shortName.Value, StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            return registryKey;
         }
     }
 }
