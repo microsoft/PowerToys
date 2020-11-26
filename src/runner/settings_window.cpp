@@ -19,7 +19,7 @@
 #include <common/os-detect.h>
 #include <common/version.h>
 #include <common/VersionHelper.h>
-#include <runner/runner-logger.h>
+#include <common/logger/logger.h>
 
 #define BUFSIZE 1024
 
