@@ -11,7 +11,6 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Helper;
-using Microsoft.VisualBasic;
 using Wox.Plugin;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Registry.UnitTest")]
@@ -31,6 +30,11 @@ namespace Microsoft.Plugin.Registry
     public class Main : IPlugin, IContextMenu, IDisposable
     {
         /// <summary>
+        /// The name of this assembly
+        /// </summary>
+        private readonly string _assemblyName;
+
+        /// <summary>
         /// The initial context for this plugin (contains API and meta-data)
         /// </summary>
         private PluginInitContext? _context;
@@ -49,7 +53,10 @@ namespace Microsoft.Plugin.Registry
         /// Initializes a new instance of the <see cref="Main"/> class.
         /// </summary>
         public Main()
-            => _defaultIconPath = "Images/reg.light.png";
+        {
+            _assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? "Registry Plugin";
+            _defaultIconPath = "Images/reg.light.png";
+        }
 
         /// <summary>
         /// Initialize the plugin with the given <see cref="PluginInitContext"/>
@@ -70,12 +77,12 @@ namespace Microsoft.Plugin.Registry
         public List<Result> Query(Query query)
         {
             // Any base registry key have more than two characters
-            if (query?.Search is null || query.Search.Length < 2)
+            if (query?.RawQuery is null || query.Search.Length < 2)
             {
                 return new List<Result>(0);
             }
 
-            var searchForValueName = QueryHelper.GetQueryParts(query.Search, out var queryKey, out var queryValueName);
+            var searchForValueName = QueryHelper.GetQueryParts(query.RawQuery, out var queryKey, out var queryValueName);
 
             var (baseKey, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKey is null)
@@ -119,38 +126,38 @@ namespace Microsoft.Plugin.Registry
             {
                 list.Add(new ContextMenuResult
                 {
-                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Copy registry key to clipboard",
-                    Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
-                    FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.Key?.Name ?? entry.KeyPath),
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
+                    PluginName = _assemblyName,
+                    Title = $"Copy registry key to clipboard\n\nKey: {entry.Key?.Name ?? entry.KeyPath}",
                 });
             }
             else
             {
                 list.Add(new ContextMenuResult
                 {
-                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Copy value name to clipboard",
-                    Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
-                    FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.N,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ => ContextMenuHelper.TryToCopyToClipBoard(selectedResult.Title),
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
+                    PluginName = _assemblyName,
+                    Title = $"Copy value name to clipboard\n\nName: {selectedResult.Title}",
                 });
             }
 
             list.Add(new ContextMenuResult
             {
-                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = "Open key in registry editor",
-                Glyph = "\xE70F",                       // E70F => Symbol: Pencil (means "Edit")
-                FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ => ContextMenuHelper.TryToOpenInRegistryEditor(entry),
+                FontFamily = "Segoe MDL2 Assets",
+                Glyph = "\xE70F",                           // E70F => Symbol: Pencil (means "Edit")
+                PluginName = _assemblyName,
+                Title = $"Open key in registry editor\n\nKey: {entry.Key?.Name ?? entry.KeyPath}",
             });
 
             return list;
