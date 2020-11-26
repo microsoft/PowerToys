@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Printing;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Win32;
 using Wox.Plugin;
@@ -70,71 +71,76 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="key">The <see cref="RegistryKey"/> that should contain entries for the list</param>
         /// <param name="iconPath">The path to the icon of each entry</param>
-        /// <param name="valueName">(optional) When not <see cref="string.Empty"/> filter the list for the given value name</param>
+        /// <param name="searchValue">(optional) When not <see cref="string.Empty"/> filter the list for the given value name and value</param>
         /// <param name="maxLength">(optional) The maximum length of result text</param>
         /// <returns>A list with <see cref="Result"/></returns>
-        internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, string valueName = "", in int maxLength = 45)
+        internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, string searchValue = "", in int maxLength = 45)
         {
             if (key is null)
             {
                 return new List<Result>(0);
             }
 
-            IEnumerable<string> valueNameList;
-
-            try
-            {
-                valueNameList = key.GetValueNames().AsEnumerable();
-            }
-            catch (Exception ex)
-            {
-                return new List<Result>(1)
-                {
-                    new Result
-                    {
-                        ContextData = new RegistryEntry(key.Name, ex),
-                        IcoPath = iconPath,
-                        SubTitle = ex.Message,
-                        Title = GetTruncatedText(key.Name, maxLength),
-                        ToolTipData = new ToolTipData(ex.Message, ex.ToString()),
-                        QueryTextDisplay = key.Name,
-                    },
-                };
-            }
+            ICollection<KeyValuePair<string, object>> valueList = new List<KeyValuePair<string, object>>(key.ValueCount);
 
             var resultList = new List<Result>();
 
-            if (!string.IsNullOrEmpty(valueName))
+            try
             {
-                valueNameList = valueNameList.Where(found => found.Contains(valueName, StringComparison.InvariantCultureIgnoreCase));
-            }
+                var valueNames = key.GetValueNames();
 
-            foreach (var name in valueNameList)
-            {
                 try
+                {
+                    foreach (var valueName in valueNames)
+                    {
+                        valueList.Add(KeyValuePair.Create(valueName, key.GetValue(valueName)));
+                    }
+                }
+                catch (Exception valueException)
+                {
+                    resultList.Add(new Result
+                    {
+                        ContextData = new RegistryEntry(key.Name, valueException),
+                        IcoPath = iconPath,
+                        SubTitle = valueException.Message,
+                        Title = GetTruncatedText(key.Name, maxLength),
+                        ToolTipData = new ToolTipData(valueException.Message, valueException.ToString()),
+                        QueryTextDisplay = key.Name,
+                    });
+                }
+
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    var filteredValueName = valueList.Where(found => found.Key.Contains(searchValue, StringComparison.InvariantCultureIgnoreCase));
+                    var filteredValueList = valueList.Where(found => found.Value.ToString()?.Contains(searchValue, StringComparison.InvariantCultureIgnoreCase) ?? false);
+
+                    valueList = filteredValueName.Concat(filteredValueList).ToList();
+                }
+
+                foreach (var valueEntry in valueList)
                 {
                     resultList.Add(new Result
                     {
                         ContextData = new RegistryEntry(key),
                         IcoPath = iconPath,
-                        SubTitle = $"Type: {ValueHelper.GetType(key, name)} * Value: {ValueHelper.GetValue(key, name, 50)}",
-                        Title = GetTruncatedText(name, maxLength),
-                        ToolTipData = new ToolTipData("Registry value", $"Key:\t{key.Name}\nName:\t{name}\nType:\t{ValueHelper.GetType(key, name)}\nValue:\t{ValueHelper.GetValue(key, name)}"),
+                        SubTitle = $"Type: {ValueHelper.GetType(key, valueEntry.Key)} * Value: {ValueHelper.GetValue(key, valueEntry.Key, 50)}",
+                        Title = GetTruncatedText(valueEntry.Key, maxLength),
+                        ToolTipData = new ToolTipData("Registry value", $"Key:\t{key.Name}\nName:\t{valueEntry.Key}\nType:\t{ValueHelper.GetType(key, valueEntry.Key)}\nValue:\t{ValueHelper.GetValue(key, valueEntry.Key)}"),
                         QueryTextDisplay = key.Name,
                     });
                 }
-                catch (Exception exception)
+            }
+            catch (Exception exception)
+            {
+                resultList.Add(new Result
                 {
-                    resultList.Add(new Result
-                    {
-                        ContextData = new RegistryEntry(key.Name, exception),
-                        IcoPath = iconPath,
-                        SubTitle = exception.Message,
-                        Title = GetTruncatedText(name, maxLength),
-                        ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
-                        QueryTextDisplay = key.Name,
-                    });
-                }
+                    ContextData = new RegistryEntry(key.Name, exception),
+                    IcoPath = iconPath,
+                    SubTitle = exception.Message,
+                    Title = GetTruncatedText(key.Name, maxLength),
+                    ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
+                    QueryTextDisplay = key.Name,
+                });
             }
 
             return resultList;
