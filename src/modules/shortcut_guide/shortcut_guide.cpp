@@ -8,8 +8,9 @@
 #include <common/debug_control.h>
 #include <sstream>
 #include <modules\shortcut_guide\ShortcutGuideConstants.h>
-#include <common\settings_helpers.cpp>
-#include <common\logger\logger.h>
+#include <common/settings_helpers.cpp>
+#include <common/logger/logger.h>
+
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
