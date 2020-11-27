@@ -57,7 +57,6 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.*.resx" />
     <None Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
