@@ -169,7 +169,7 @@
     <value>Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".</value>
   </data>
   <data name="Save_Apply" xml:space="preserve">
-    <value>Save and apply</value>
+    <value>Save &amp; apply</value>
   </data>
   <data name="Show_Space_Zones" xml:space="preserve">
     <value>Show space around zones</value>
