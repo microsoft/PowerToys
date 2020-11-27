@@ -17,13 +17,6 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Registry
 {
-    /*
-     * TODO:
-     * - documentation (plugin, markdown)
-     * - multi-language
-     * - benchmark (later)
-     */
-
     /// <summary>
     /// Main class of this plugin that implement all used interfaces
     /// </summary>
