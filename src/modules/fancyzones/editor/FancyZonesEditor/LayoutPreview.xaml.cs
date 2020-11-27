@@ -27,8 +27,8 @@ namespace FancyZonesEditor
         private const string ObjectDependencyID = "IsActualSize";
 
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
-        public static readonly DependencyProperty ZoneBackgroundProperty = DependencyProperty.Register(PropertyZoneBackgroundID, typeof(SolidColorBrush), typeof(LayoutPreview), new PropertyMetadata(Brushes.LightGray));
-        public static readonly DependencyProperty ZoneBorderProperty = DependencyProperty.Register(PropertyZoneBorderID, typeof(SolidColorBrush), typeof(LayoutPreview), new PropertyMetadata(Brushes.DarkGray));
+        public static readonly DependencyProperty ZoneBackgroundProperty = DependencyProperty.Register(PropertyZoneBackgroundID, typeof(SolidColorBrush), typeof(LayoutPreview), new PropertyMetadata(Brushes.Red));
+        public static readonly DependencyProperty ZoneBorderProperty = DependencyProperty.Register(PropertyZoneBorderID, typeof(SolidColorBrush), typeof(LayoutPreview), new PropertyMetadata(Brushes.Red));
 
         private LayoutModel _model;
         private List<Int32Rect> _zones = new List<Int32Rect>();

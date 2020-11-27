@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using FancyZonesEditor.Models;
+using Windows.UI.Popups;
 
 namespace FancyZonesEditor
 {
@@ -117,6 +119,32 @@ namespace FancyZonesEditor
                 // presses Enter or Space key, layout will be applied.
                 Apply();
             }
+            else if (e.Key == Key.E)
+            {
+                Border selectedBorder = sender as Border;
+
+                ContentPresenter x = GetParent(selectedBorder);
+                if (x != null)
+                {
+                    x.ContextMenu.PlacementTarget = x;
+                    x.ContextMenu.IsOpen = true;
+                    ((MenuItem)x.ContextMenu.Items[0]).Focus();
+                }
+            }
+        }
+
+        private ContentPresenter GetParent(Visual v)
+        {
+            while (v != null)
+            {
+                v = VisualTreeHelper.GetParent(v) as Visual;
+                if (v is ContentPresenter)
+                {
+                    break;
+                }
+            }
+
+            return v as ContentPresenter;
         }
 
         private void Select(LayoutModel newSelection)
