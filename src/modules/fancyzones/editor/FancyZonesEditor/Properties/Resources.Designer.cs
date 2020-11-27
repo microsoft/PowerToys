@@ -358,7 +358,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Save and apply.
+        ///   Looks up a localized string similar to Save &amp; apply.
         /// </summary>
         public static string Save_Apply {
             get {
