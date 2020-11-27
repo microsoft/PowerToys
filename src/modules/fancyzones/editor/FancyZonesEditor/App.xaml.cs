@@ -69,7 +69,7 @@ namespace FancyZonesEditor
 
         public App()
         {
-            DebugModeCheck();
+            // DebugModeCheck();
             FancyZonesEditorIO = new FancyZonesEditorIO();
             Overlay = new Overlay();
             MainWindowSettings = new MainWindowSettingsModel();

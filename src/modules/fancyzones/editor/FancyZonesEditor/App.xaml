@@ -11,6 +11,30 @@
                 <ui:XamlControlsResources />
                 <ResourceDictionary Source="pack://application:,,,/Styles/ButtonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="GridLayoutPreviewStyle" TargetType="Rectangle">
+                <Setter Property="Fill" Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
+                <Setter Property="Stroke" Value="{DynamicResource LayoutItemBackgroundBrush}" />
+                <Setter Property="StrokeThickness" Value="1" />
+            </Style>
+
+            <Style x:Key="GridLayoutPreviewActualSizeStyle" TargetType="Rectangle">
+                <Setter Property="Fill" Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
+                <Setter Property="Stroke" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
+                <Setter Property="StrokeThickness" Value="1" />
+            </Style>
+
+            <Style x:Key="CanvasLayoutPreviewStyle" TargetType="Rectangle">
+                <Setter Property="Fill" Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
+                <Setter Property="Stroke" Value="{DynamicResource LayoutItemBackgroundBrush}" />
+                <Setter Property="StrokeThickness" Value="10" />
+            </Style>
+
+            <Style x:Key="CanvasLayoutPreviewActualSizeStyle" TargetType="Rectangle">
+                <Setter Property="Fill" Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
+                <Setter Property="Stroke" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
+                <Setter Property="StrokeThickness" Value="1" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
