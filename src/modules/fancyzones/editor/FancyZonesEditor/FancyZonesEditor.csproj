@@ -131,6 +131,11 @@
     <Compile Include="Models\LayoutType.cs" />
     <Compile Include="Models\Monitor.cs" />
     <Compile Include="Overlay.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />
     <Compile Include="CanvasEditor.xaml.cs">
@@ -264,11 +269,6 @@
   <ItemGroup>
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
