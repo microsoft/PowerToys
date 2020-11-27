@@ -174,8 +174,6 @@ namespace FancyZonesEditor
         {
             _layoutPreview = new LayoutPreview
             {
-                ZoneBorder = new System.Windows.Media.SolidColorBrush(Colors.Red),
-                ZoneBackground = new System.Windows.Media.SolidColorBrush(Colors.Red),
                 IsActualSize = true,
                 Opacity = 1,
             };

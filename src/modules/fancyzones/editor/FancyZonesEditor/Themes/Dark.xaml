@@ -10,7 +10,7 @@
     <system:String x:Key="Theme.ColorScheme">Accent1</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">Black</Color>
 
-    <SolidColorBrush x:Key="BackdropBrush" Color="Black" />
+    <SolidColorBrush x:Key="BackdropBrush" Color="#88000000" />
     <SolidColorBrush x:Key="TertairyBackgroundBrush" Color="#FF3b3b3b" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF333333" />
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF2b2b2b" />
@@ -28,14 +28,8 @@
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF6b6b6b" />
 
-    <!--<SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#BF1b1b1b"/>-->
-    <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush"
-                     Color="#BF1b1b1b" />
-    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="Black"/>
-
-
-
-
+    <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#BF1b1b1b" />
+    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF1b1b1b" />
 
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>

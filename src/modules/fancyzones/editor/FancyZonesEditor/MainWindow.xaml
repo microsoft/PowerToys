@@ -161,8 +161,6 @@
                         <RowDefinition Height="32"/>
                     </Grid.RowDefinitions>
                     <local:LayoutPreview Margin="16"
-                                         ZoneBackground="{DynamicResource LayoutPreviewZoneBackgroundBrush}"
-                                         ZoneBorder="{DynamicResource LayoutPreviewZoneBorderBrush}"
                                          VerticalAlignment="Stretch"
                                          HorizontalAlignment="Stretch"/>
                     <TextBlock Name="layoutName"
@@ -238,10 +236,11 @@
                             </ItemsControl.ItemContainerStyle>
                         </ItemsControl>
                         <StackPanel Grid.Column="1"
-                                    Width="120" 
+                                    Width="152" 
                                     Orientation="Vertical"
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Center">
+                            
                             <Button x:Name="incrementZones"
                                     Width="48"
                                     Height="48"
@@ -362,6 +361,7 @@
             <Button Content="&#xE115;"
                     TabIndex="4"
                     FontFamily="Segoe MDL2 Assets"
+                    FontSize="18"
                     Foreground="{DynamicResource SystemAccentColorLight1Brush}" Background="Transparent" Margin="8,0,0,0">
                 <ui:FlyoutService.Flyout>
                     <ui:Flyout>
