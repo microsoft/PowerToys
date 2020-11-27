@@ -9,12 +9,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemeResources />
                 <ui:XamlControlsResources />
-                <ResourceDictionary Source="pack://application:,,,/Styles/ButtonStyles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Styles/ButtonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF333333"/>
-            <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1a1a1a"/>
-            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

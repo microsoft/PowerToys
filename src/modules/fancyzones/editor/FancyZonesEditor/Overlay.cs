@@ -15,7 +15,6 @@ namespace FancyZonesEditor
     public class Overlay
     {
         private MainWindow _mainWindow;
-
         private LayoutPreview _layoutPreview;
         private UserControl _editor;
 
@@ -175,8 +174,8 @@ namespace FancyZonesEditor
         {
             _layoutPreview = new LayoutPreview
             {
-                ZoneBorder = new System.Windows.Media.SolidColorBrush(Colors.White),
-                ZoneBackground = new System.Windows.Media.SolidColorBrush(Colors.Black),
+                ZoneBorder = new System.Windows.Media.SolidColorBrush(Colors.Red),
+                ZoneBackground = new System.Windows.Media.SolidColorBrush(Colors.Red),
                 IsActualSize = true,
                 Opacity = 1,
             };
@@ -247,7 +246,7 @@ namespace FancyZonesEditor
             _layoutPreview = new LayoutPreview
             {
                 IsActualSize = true,
-                Opacity = 0.5,
+                Opacity = 1,
             };
 
             CurrentLayoutWindow.Content = _layoutPreview;

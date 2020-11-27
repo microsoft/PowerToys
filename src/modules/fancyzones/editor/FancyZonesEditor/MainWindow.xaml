@@ -27,6 +27,19 @@
         Initialized="OnInitialized"
         Closing="OnClosing">
     <Window.Resources>
+
+        <Style x:Key="MyFocusVisualStyle">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border Margin="-2"
+                                   BorderThickness="2"
+                                   BorderBrush="White" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
         <Converters:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
         <Converters:BooleanToIntConverter x:Key="BooleanToIntConverter" />
 
@@ -111,7 +124,7 @@
             </MenuItem>
         </ContextMenu>
 
-        <ContextMenu x:Key="CustomModelsContextMenu">
+        <ContextMenu x:Key="CustomModelsContextMenu" x:Name="CustomModelsContextMenu">
             <MenuItem Click="EditLayout_Click" Header="Edit">
                 <MenuItem.Icon>
                     <ui:FontIcon Glyph="&#xE104;" />
@@ -126,7 +139,7 @@
         </ContextMenu>
 
         <DataTemplate x:Key="LayoutItemTemplate">
-            <Border x:Name="LayoutItem" 
+            <Border x:Name="LayoutItem"
                     Background="{DynamicResource LayoutItemBackgroundBrush}"
                     BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
                     BorderThickness="1"
@@ -135,7 +148,9 @@
                     Focusable="True"
                     CornerRadius="4"
                     Margin="8"
-                    FocusManager.GotFocus="LayoutItem_Focused">
+                    FocusVisualStyle="{StaticResource MyFocusVisualStyle}"
+                    FocusManager.GotFocus="LayoutItem_Focused"
+                    KeyDown="LayoutItem_Apply">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="6" Opacity="0.24" ShadowDepth="1" />
                 </Border.Effect>
@@ -167,7 +182,8 @@
                     <Setter TargetName="layoutName" Property="Foreground" Value="#F2F2F2" />
                     <Setter TargetName="LayoutItem" Property="Background" Value="{DynamicResource SystemAccentColorLight1Brush}" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                <DataTrigger Binding="{Binding IsSelected}"
+                             Value="true">
                     <Setter TargetName="LayoutItem" Property="BorderBrush" Value="{DynamicResource LayoutItemBorderPointerOverBrush}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
@@ -204,8 +220,9 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <ItemsControl ItemsSource="{Binding DefaultModels}"
-                                  ItemTemplate="{StaticResource LayoutItemTemplate}"
-                                  Margin="8,8,0,0">
+                                      ItemTemplate="{StaticResource LayoutItemTemplate}"
+                                      TabIndex="1"
+                                      Margin="8,8,0,0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Orientation="Horizontal" 
@@ -273,6 +290,7 @@
                             Click="NewLayoutButton_Click"
                             HorizontalAlignment="Left"
                             Background="Transparent"
+                            TabIndex="2"
                             Margin="6,8,0,0">
                         <StackPanel Orientation="Horizontal" Margin="8">
                             <TextBlock Text="&#xE109;"
@@ -285,6 +303,7 @@
                     </Button>
 
                     <ItemsControl ItemsSource="{Binding CustomModels}"
+                                  TabIndex="3"
                                   ItemTemplate="{StaticResource LayoutItemTemplate}"
                                   Margin="8,8,0,0">
                         <ItemsControl.ItemsPanel>
@@ -318,7 +337,8 @@
                 <ScrollViewer.DataContext>
                     <local1:MonitorViewModel/>
                 </ScrollViewer.DataContext>
-                <ItemsControl x:Name="MainWindowItemControl" 
+                <ItemsControl x:Name="MainWindowItemControl"
+                              TabIndex="0"
                               ItemsSource="{Binding MonitorInfoForViewModel}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -339,16 +359,14 @@
         </Grid>
 
         <Grid Grid.Row="2" Background="{DynamicResource TertairyBackgroundBrush}">
-            <Button Content="Settings">
+            <Button Content="&#xE115;"
+                    TabIndex="4"
+                    FontFamily="Segoe MDL2 Assets"
+                    Foreground="{DynamicResource SystemAccentColorLight1Brush}" Background="Transparent" Margin="8,0,0,0">
                 <ui:FlyoutService.Flyout>
                     <ui:Flyout>
                         <Grid>
-                            <StackPanel Margin="16">
-                                <TextBlock Text="Configuration"
-                                           Style="{StaticResource BaseTextBlockStyle}"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                           Margin="0,28,0,24" />
-
+                            <StackPanel>
                                 <ui:ToggleSwitch x:Name="spaceAroundSetting"
                                                  Header="{x:Static props:Resources.Show_Space_Zones}"
                                                  IsOn="{Binding ShowSpacing}" />
@@ -377,6 +395,8 @@
                                          Width="86"
                                          AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
                                          HorizontalAlignment="Left" />
+
+                                <ui:HyperlinkButton Content="More settings" Margin="0,16,0,0"/>
                             </StackPanel>
                         </Grid>
                     </ui:Flyout>
@@ -387,13 +407,15 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Stretch">
                 <Button x:Name="ResetButton"
+                        TabIndex="5"
                         Content="{x:Static props:Resources.Reset_Layout}"
                         Style="{StaticResource DefaultButtonStyle}"
                         Click="Reset_Click"/>
                 
                 <Button x:Name="CloseButton" 
                         Content="{x:Static props:Resources.Close}"
-                        Margin="8,0,0,0"
+                        Margin="8,0,8,0"
+                        TabIndex="6"
                         Visibility="{Binding DesktopsPanelVisibility}"
                         Style="{StaticResource DefaultButtonStyle}"
                         Click="CloseButton_Click" >
@@ -406,7 +428,6 @@
         
         <ui:ContentDialog x:Name="NewLayoutDialog"
                           HorizontalAlignment="Center"
-                            
                           VerticalAlignment="Center"
                           Grid.RowSpan="3"
                           PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
