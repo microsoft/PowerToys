@@ -77,7 +77,7 @@ namespace Microsoft.Plugin.Registry
         public List<Result> Query(Query query)
         {
             // Any base registry key have more than two characters
-            if (query?.RawQuery is null || query.Search.Length < 2)
+            if (query?.Search is null || query.Search.Length < 2)
             {
                 return new List<Result>(0);
             }
