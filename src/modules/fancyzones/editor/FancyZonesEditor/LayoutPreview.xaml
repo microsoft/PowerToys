@@ -8,7 +8,6 @@
              Loaded="OnLoaded"
              d:DesignHeight="450"
              d:DesignWidth="800">
-    <Grid x:Name="Body">
-            
-    </Grid>
+    <Grid x:Name="Body"
+          Background="Transparent" />
 </UserControl>

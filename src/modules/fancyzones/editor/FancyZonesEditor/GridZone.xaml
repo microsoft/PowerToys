@@ -10,7 +10,7 @@
     Background="{DynamicResource GridZoneBackgroundBrush}"
     BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
     BorderThickness="1"
-    Opacity="0.8"
+    Opacity="1"
     mc:Ignorable="d">
     <Grid x:Name="Frame">
         <Canvas x:Name="Body" />
