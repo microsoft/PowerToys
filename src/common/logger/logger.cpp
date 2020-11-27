@@ -7,6 +7,7 @@
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog\sinks\stdout_color_sinks-inl.h>
 #include <iostream>
+#include <spdlog\sinks\null_sink.h>
 
 using namespace std;
 using namespace spdlog;
@@ -35,6 +36,15 @@ level::level_enum getLogLevel(std::wstring_view logSettingsPath)
 
 std::shared_ptr<spdlog::logger> Logger::logger;
 
+bool Logger::wasLogFailedShown()
+{
+    wchar_t* pValue;
+    size_t len;
+    errno_t err = _wdupenv_s(&pValue, &len, logFaildShown.c_str());
+    delete[] pValue;
+    return len;
+}
+
 void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath)
 {
     auto logLevel = getLogLevel(logSettingsPath);
@@ -45,8 +55,19 @@ void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring
     }
     catch (...)
     {
-        cerr << "Can not create file logger. Create stdout logger instead" << endl;
-        logger = spdlog::stdout_color_mt(loggerName);
+        logger = spdlog::null_logger_mt(loggerName);
+        if (!wasLogFailedShown())
+        {
+            // todo: that message should be shown from init caller and strings should be localized 
+            MessageBoxW(NULL,
+                        L"Logger can not be initialized",
+                        L"PowerToys",
+                        MB_OK | MB_ICONERROR);
+
+            SetEnvironmentVariable(logFaildShown.c_str(), L"yes");
+        }
+
+        return;
     }
 
     logger->set_level(logLevel);
