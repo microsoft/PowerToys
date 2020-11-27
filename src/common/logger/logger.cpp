@@ -40,7 +40,7 @@ bool Logger::wasLogFailedShown()
 {
     wchar_t* pValue;
     size_t len;
-    errno_t err = _wdupenv_s(&pValue, &len, logFaildShown.c_str());
+    _wdupenv_s(&pValue, &len, logFailedShown.c_str());
     delete[] pValue;
     return len;
 }
@@ -64,7 +64,7 @@ void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring
                         L"PowerToys",
                         MB_OK | MB_ICONERROR);
 
-            SetEnvironmentVariable(logFaildShown.c_str(), L"yes");
+            SetEnvironmentVariable(logFailedShown.c_str(), L"yes");
         }
 
         return;

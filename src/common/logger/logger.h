@@ -5,7 +5,7 @@
 class Logger
 {
 private:
-    inline const static std::wstring logFaildShown = L"logFailedShown";
+    inline const static std::wstring logFailedShown = L"logFailedShown";
     static std::shared_ptr<spdlog::logger> logger;
     static bool wasLogFailedShown();
 
