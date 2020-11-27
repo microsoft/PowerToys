@@ -10,8 +10,8 @@
     <system:String x:Key="Theme.ColorScheme">Accent1</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <SolidColorBrush x:Key="BackdropBrush" Color="White" />
-    
+    <SolidColorBrush x:Key="BackdropBrush" Color="#88FFFFFF" />
+
     <SolidColorBrush x:Key="TertairyBackgroundBrush" Color="#FFefefef" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFf6f6f6" />
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFffffff" />
@@ -25,9 +25,8 @@
 
     <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FFf6f6f6"/>
     <SolidColorBrush x:Key="LayoutItemBorderPointerOverBrush" Color="#FF898989"/>
-    
-    
-    <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#f5f5f5"/>
+
+    <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#88949494"/>
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#9c9c9c"/>
 
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FF000000" />

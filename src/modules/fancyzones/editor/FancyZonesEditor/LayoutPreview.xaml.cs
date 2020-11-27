@@ -27,9 +27,6 @@ namespace FancyZonesEditor
         private const string ObjectDependencyID = "IsActualSize";
 
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
-        public static readonly DependencyProperty ZoneBackgroundProperty = DependencyProperty.Register(PropertyZoneBackgroundID, typeof(SolidColorBrush), typeof(LayoutPreview), new PropertyMetadata(Brushes.Red));
-        public static readonly DependencyProperty ZoneBorderProperty = DependencyProperty.Register(PropertyZoneBorderID, typeof(SolidColorBrush), typeof(LayoutPreview), new PropertyMetadata(Brushes.Red));
-
         private LayoutModel _model;
         private List<Int32Rect> _zones = new List<Int32Rect>();
 
@@ -37,18 +34,6 @@ namespace FancyZonesEditor
         {
             get { return (bool)GetValue(IsActualSizeProperty); }
             set { SetValue(IsActualSizeProperty, value); }
-        }
-
-        public SolidColorBrush ZoneBackground
-        {
-            get { return (SolidColorBrush)GetValue(ZoneBackgroundProperty); }
-            set { SetValue(ZoneBackgroundProperty, value); }
-        }
-
-        public SolidColorBrush ZoneBorder
-        {
-            get { return (SolidColorBrush)GetValue(ZoneBorderProperty); }
-            set { SetValue(ZoneBorderProperty, value); }
         }
 
         public LayoutPreview()
@@ -193,9 +178,7 @@ namespace FancyZonesEditor
 
                         rect.Width = Math.Max(0, colInfo[maxCol].End - left);
                         rect.Height = Math.Max(0, rowInfo[maxRow].End - top);
-                        rect.StrokeThickness = 1;
-                        rect.Stroke = ZoneBorder;
-                        rect.Fill = ZoneBackground;
+                        rect.Style = (Style)FindResource("GridLayoutPreviewActualSizeStyle");
                         frame.Children.Add(rect);
                         _zones.Add(new Int32Rect(
                             (int)left, (int)top, (int)rect.Width, (int)rect.Height));
@@ -267,11 +250,8 @@ namespace FancyZonesEditor
                         }
 
                         Grid.SetColumnSpan(rect, span);
-
                         rect.Margin = margin;
-                        rect.StrokeThickness = 1;
-                        rect.Stroke = ZoneBorder;
-                        rect.Fill = ZoneBackground;
+                        rect.Style = (Style)FindResource("GridLayoutPreviewStyle");
                         Body.Children.Add(rect);
                     }
                 }
@@ -317,9 +297,16 @@ namespace FancyZonesEditor
                 Canvas.SetLeft(rect, zone.X);
                 rect.MinWidth = zone.Width;
                 rect.MinHeight = zone.Height;
-                rect.StrokeThickness = 5;
-                rect.Stroke = ZoneBorder;
-                rect.Fill = ZoneBackground;
+
+                if (IsActualSize)
+                {
+                   rect.Style = (Style)FindResource("CanvasLayoutPreviewActualSizeStyle");
+                }
+                else
+                {
+                   rect.Style = (Style)FindResource("CanvasLayoutPreviewStyle");
+                }
+
                 frame.Children.Add(rect);
             }
 
