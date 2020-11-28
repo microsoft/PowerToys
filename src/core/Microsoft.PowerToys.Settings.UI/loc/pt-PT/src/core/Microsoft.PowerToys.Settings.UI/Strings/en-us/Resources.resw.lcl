@@ -323,7 +323,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Create window layouts to help make multi-tasking easy.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Crie esquemas de janelas para ajudar a facilitar as multi-tarefas.]]></Val>
+            <Val><![CDATA[Crie esquemas de janelas para ajudar a facilitar as multitarefas.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -368,7 +368,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Para excluir uma aplicação de encaixar em zonas, adicione o nome aqui (um por linha). Estas aplicações reagirão apenas ao Windows Snap.]]></Val>
+            <Val><![CDATA[Para excluir uma aplicação de se encaixar em zonas, adicione o nome aqui (um por linha). Estas aplicações reagirão apenas ao Windows Snap.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -731,7 +731,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Learn more about administrator mode]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mais informações sobre o modo de administrador]]></Val>
+            <Val><![CDATA[Saiba mais sobre o modo de administrador]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1751,7 +1751,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable autocomplete for the search and replace fields]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ativar preenchimento automático para pesquisar e substituir campos]]></Val>
+            <Val><![CDATA[Ativar o preenchimento automático nos campos de pesquisa e substituição]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
