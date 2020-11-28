@@ -240,7 +240,7 @@ void FancyZonesData::UpdatePrimaryDesktopData(const GUID& desktopId)
     }
     for (auto& id : toReplace)
     {
-        auto& mapEntry = deviceInfoMap.extract(id);
+        auto mapEntry = deviceInfoMap.extract(id);
         id.virtualDesktopId = desktopId;
         mapEntry.key() = id;
         deviceInfoMap.insert(std::move(mapEntry));

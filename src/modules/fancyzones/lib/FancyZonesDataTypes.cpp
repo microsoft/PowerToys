@@ -122,7 +122,7 @@ namespace FancyZonesDataTypes
 
     std::wstring DeviceIdData::Serialize() const
     {
-        static std::wstring vdId = L"{00000000-0000-0000-0000-000000000000}";
+        std::wstring vdId = L"{00000000-0000-0000-0000-000000000000}";
         wil::unique_cotaskmem_string virtualDesktopIdStr;
         if (SUCCEEDED(StringFromCLSID(virtualDesktopId, &virtualDesktopIdStr)))
         {
@@ -181,7 +181,7 @@ namespace FancyZonesDataTypes
         }
 
         /*
-        Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
+        Refer to FancyZonesUtils::GenerateUniqueId parts contain:
         1. monitor id [string]
         2. width of device [int]
         3. height of device [int]
