@@ -135,7 +135,7 @@
         </DataTemplate>
         
         <DataTemplate x:Key="LayoutItemTemplate">
-            <Grid AutomationProperties.Name="TRootgrid">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="24" />
@@ -143,39 +143,37 @@
 
                 <Border x:Name="LayoutItem"
                         Background="{DynamicResource LayoutItemBackgroundBrush}"
-                    BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
-                    BorderThickness="1"                    
-                    MouseEnter="LayoutItem_MouseEnter"
-                    MouseDown="LayoutItem_Click"
-                    Focusable="True"
-                    CornerRadius="4"
-                    Margin="8"
-                    FocusVisualStyle="{StaticResource MyFocusVisualStyle}"
-                    FocusManager.GotFocus="LayoutItem_Focused"
-                    KeyDown="LayoutItem_Apply">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="6"
-                                      Opacity="0.24"
-                                      ShadowDepth="1" />
-                </Border.Effect>
+                        BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
+                        BorderThickness="1"
+                        MouseEnter="LayoutItem_MouseEnter"
+                        MouseDown="LayoutItem_Click"
+                        Focusable="True"
+                        CornerRadius="4"
+                        Margin="8"
+                        FocusVisualStyle="{StaticResource MyFocusVisualStyle}"
+                        FocusManager.GotFocus="LayoutItem_Focused"
+                        KeyDown="LayoutItem_Apply">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="6"
+                                          Opacity="0.24"
+                                          ShadowDepth="1" />
+                    </Border.Effect>
 
                     <local:LayoutPreview Margin="12"
                                          VerticalAlignment="Stretch"
-                                         AutomationProperties.Name="LayoutPreview"
                                          HorizontalAlignment="Stretch" />
                 </Border>
                 <TextBlock Name="layoutName"
-                               Padding="8,0,8,0"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding Name}"
-                               FontSize="14"
-                           AutomationProperties.Name="Text label"
-                               Grid.Row="2"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
-           
+                           Padding="8,0,8,0"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding Name}"
+                           FontSize="14"
+                           Grid.Row="2"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}" />
+
             </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsApplied}"
