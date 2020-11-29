@@ -161,6 +161,7 @@ namespace FancyZonesEditor
         private async void NewLayoutButton_Click(object sender, RoutedEventArgs e)
         {
             GridLayoutRadioButton.IsChecked = true;
+            GridLayoutRadioButton.Focus();
             await NewLayoutDialog.ShowAsync();
         }
 
@@ -173,8 +174,8 @@ namespace FancyZonesEditor
             }
 
             model.IsSelected = false;
-            Hide();
 
+            Hide();
             bool isPredefinedLayout = MainWindowSettingsModel.IsPredefinedLayout(model);
 
             if (!MainWindowSettingsModel.CustomModels.Contains(model) || isPredefinedLayout)
@@ -360,7 +361,8 @@ namespace FancyZonesEditor
             mainEditor.OpenEditor(selectedLayoutModel);
         }
 
-        private void MainWindow1_ContentRendered(object sender, EventArgs e)
+        // This is required to fix a WPF rendering bug when using custom chrome
+        private void OnContentRendered(object sender, EventArgs e)
         {
             InvalidateVisual();
         }

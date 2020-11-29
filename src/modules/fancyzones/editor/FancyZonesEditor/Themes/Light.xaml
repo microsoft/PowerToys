@@ -12,7 +12,7 @@
 
     <SolidColorBrush x:Key="BackdropBrush" Color="#88FFFFFF" />
 
-    <SolidColorBrush x:Key="TertairyBackgroundBrush" Color="#FFefefef" />
+    <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#FFefefef" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFf6f6f6" />
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFffffff" />
     <SolidColorBrush x:Key="WindowBorderBrush" Color="#FFf7f7f7"/>
@@ -33,5 +33,7 @@
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF949494" />
 
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BFffffff"/>
-    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FFffffff"/>
+    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E5ffffff"/>
+    
+    
 </ResourceDictionary>

@@ -25,21 +25,19 @@
                 <ControlTemplate TargetType="RadioButton">
                     <Border
                         x:Name="RootGrid"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        BorderThickness="2"
                  
                         SnapsToDevicePixels="True">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <Storyboard>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />
-
+                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1"
+                                                         Duration="0" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Unchecked" />
@@ -48,35 +46,33 @@
                         </VisualStateManager.VisualStateGroups>
                         <Grid>
 
-                            <Border
-                                    x:Name="CheckGlyph"
-                                
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
+                            <Border x:Name="CheckGlyph"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
                                     UseLayoutRounding="False"
                                     Opacity="0"
-                                            CornerRadius="2"
-                                             BorderThickness="2"
-                                     BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                                    CornerRadius="2"
+                                    BorderThickness="2"
+                                    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
 
-                            <ui:ContentPresenterEx
-                                x:Name="ContentPresenter"
-                                TextElement.Foreground="{TemplateBinding Foreground}"
-                                Margin="{TemplateBinding Padding}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Grid.Column="1"
-                                TextWrapping="Wrap"
-                                Focusable="False"
-                                RecognizesAccessKey="True"
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            <ui:ContentPresenterEx x:Name="ContentPresenter"
+                                                   TextElement.Foreground="{TemplateBinding Foreground}"
+                                                   Margin="{TemplateBinding Padding}"
+                                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                   Grid.Column="1"
+                                                   TextWrapping="Wrap"
+                                                   Focusable="False"
+                                                   RecognizesAccessKey="True"
+                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource RadioButtonForegroundPointerOver}" />
-                            <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource RadioButtonBackgroundPointerOver}" />
-                            <Setter TargetName="RootGrid" Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrushPointerOver}" />
+                            <Setter TargetName="ContentPresenter"
+                                    Property="Foreground"
+                                    Value="{DynamicResource RadioButtonForegroundPointerOver}" />
+                            <Setter TargetName="CheckGlyph" Property="Opacity" Value="0.6" />
 
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">

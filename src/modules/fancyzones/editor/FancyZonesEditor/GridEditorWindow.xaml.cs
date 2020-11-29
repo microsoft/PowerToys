@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Windows;
 using System.Windows.Input;
 using FancyZonesEditor.Models;
@@ -9,9 +10,6 @@ using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor
 {
-    /// <summary>
-    /// Interaction logic for Window2.xaml
-    /// </summary>
     public partial class GridEditorWindow : EditorWindow
     {
         public GridEditorWindow()
@@ -48,6 +46,12 @@ namespace FancyZonesEditor
         public System.Windows.Controls.TextBox NameTextBox()
         {
             return customLayoutNameTextBox;
+        }
+
+        // This is required to fix a WPF rendering bug when using custom chrome
+        private void OnContentRendered(object sender, EventArgs e)
+        {
+            InvalidateVisual();
         }
     }
 }

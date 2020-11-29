@@ -11,7 +11,7 @@
     <Color x:Key="Theme.PrimaryAccentColor">Black</Color>
 
     <SolidColorBrush x:Key="BackdropBrush" Color="#88000000" />
-    <SolidColorBrush x:Key="TertairyBackgroundBrush" Color="#FF3b3b3b" />
+    <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#FF3b3b3b" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF333333" />
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF2b2b2b" />
     <SolidColorBrush x:Key="WindowBorderBrush" Color="#FF535353"/>
@@ -32,7 +32,7 @@
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF1b1b1b" />
 
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
-    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>
+    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E51b1b1b"/>
     
     
 </ResourceDictionary>

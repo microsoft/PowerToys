@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FancyZonesEditor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -33,7 +34,8 @@
                                            FontFamily="Segoe MDL2 Assets"
                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
                                            Margin="0,3,8,0" />
-                                <TextBlock Text="Merge zones" Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                                <TextBlock Text="{x:Static props:Resources.Merge_zones}"
+                                           Foreground="{DynamicResource PrimaryForegroundBrush}"/>
                             </StackPanel>
                         </Button>
                     </Border>
