@@ -106,6 +106,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Choose layout type.
+        /// </summary>
+        public static string Choose_layout_type {
+            get {
+                return ResourceManager.GetString("Choose_layout_type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Close.
         /// </summary>
         public static string Close {
@@ -129,6 +138,24 @@ namespace FancyZonesEditor.Properties {
         public static string Crash_Report_Message_Box_Text_Part2 {
             get {
                 return ResourceManager.GetString("Crash_Report_Message_Box_Text_Part2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create.
+        /// </summary>
+        public static string Create {
+            get {
+                return ResourceManager.GetString("Create", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create new layout.
+        /// </summary>
+        public static string Create_new_layout {
+            get {
+                return ResourceManager.GetString("Create_new_layout", resourceCulture);
             }
         }
         
@@ -178,11 +205,38 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete.
+        /// </summary>
+        public static string Delete {
+            get {
+                return ResourceManager.GetString("Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Distance to highlight adjacent zones.
         /// </summary>
         public static string Distance_adjacent_zones {
             get {
                 return ResourceManager.GetString("Distance_adjacent_zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate.
+        /// </summary>
+        public static string Duplicate {
+            get {
+                return ResourceManager.GetString("Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit.
+        /// </summary>
+        public static string Edit {
+            get {
+                return ResourceManager.GetString("Edit", resourceCulture);
             }
         }
         
@@ -331,6 +385,60 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create layouts that have overlapping zones.
+        /// </summary>
+        public static string Layout_Canvas_Description {
+            get {
+                return ResourceManager.GetString("Layout_Canvas_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Canvas.
+        /// </summary>
+        public static string Layout_Canvas_Title {
+            get {
+                return ResourceManager.GetString("Layout_Canvas_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create layouts that are horizontally or vertically stacked.
+        /// </summary>
+        public static string Layout_Grid_Description {
+            get {
+                return ResourceManager.GetString("Layout_Grid_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grid.
+        /// </summary>
+        public static string Layout_Grid_Title {
+            get {
+                return ResourceManager.GetString("Layout_Grid_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Merge zones.
+        /// </summary>
+        public static string Merge_zones {
+            get {
+                return ResourceManager.GetString("Merge_zones", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Monitor.
+        /// </summary>
+        public static string Monitor {
+            get {
+                return ResourceManager.GetString("Monitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         public static string Name {
@@ -340,7 +448,8 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click &quot;merge&quot;..
+        ///   Looks up a localized string similar to Hold down Shift Key to change orientation of splitter.
+        ///To merge zones, select the zones and click &quot;merge&quot;..
         /// </summary>
         public static string Note_Custom_Table {
             get {
@@ -367,6 +476,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        public static string Settings {
+            get {
+                return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show space around zones.
         /// </summary>
         public static string Show_Space_Zones {
@@ -381,24 +499,6 @@ namespace FancyZonesEditor.Properties {
         public static string Space_Around_Zones {
             get {
                 return ResourceManager.GetString("Space_Around_Zones", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Custom tab selected, press ctrl + tab to switch to Templates.
-        /// </summary>
-        public static string Tab_Item_Custom {
-            get {
-                return ResourceManager.GetString("Tab_Item_Custom", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Templates tab selected, press ctrl + tab to switch to Custom.
-        /// </summary>
-        public static string Tab_Item_Templates {
-            get {
-                return ResourceManager.GetString("Tab_Item_Templates", resourceCulture);
             }
         }
         
