@@ -97,7 +97,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Choose your layout for this desktop.
+        ///   Looks up a localized string similar to Choose the layout for this desktop.
         /// </summary>
         public static string Choose_Layout {
             get {
@@ -169,7 +169,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create new custom.
+        ///   Looks up a localized string similar to Custom layout.
         /// </summary>
         public static string Custom_Layout_Create_New {
             get {
@@ -183,15 +183,6 @@ namespace FancyZonesEditor.Properties {
         public static string Custom_Layout_Creator {
             get {
                 return ResourceManager.GetString("Custom_Layout_Creator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delete custom layout.
-        /// </summary>
-        public static string Custom_Layout_Delete_Button {
-            get {
-                return ResourceManager.GetString("Custom_Layout_Delete_Button", resourceCulture);
             }
         }
         
@@ -448,7 +439,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hold down Shift Key to change orientation of splitter.
+        ///   Looks up a localized string similar to Hold down Shift key to change orientation of splitter.
         ///To merge zones, select the zones and click &quot;merge&quot;..
         /// </summary>
         public static string Note_Custom_Table {
