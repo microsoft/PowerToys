@@ -10,6 +10,7 @@
         xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         xmlns:local1="clr-namespace:FancyZonesEditor.ViewModels"
         xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
         ui:TitleBar.Background="{DynamicResource SecondaryBackgroundBrush}"
@@ -27,8 +28,7 @@
         Initialized="OnInitialized"
         Closing="OnClosing">
     <Window.Resources>
-
-        <Style x:Key="MyFocusVisualStyle">
+        <Style x:Key="UWPFocusVisualStyle">
             <Setter Property="Control.Template">
                 <Setter.Value>
                     <ControlTemplate>
@@ -43,97 +43,6 @@
 
         <Converters:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
         <Converters:BooleanToIntConverter x:Key="BooleanToIntConverter" />
-
-        <Style x:Key="desktopButtonStyle"
-               TargetType="Button">
-            <Setter Property="Background"
-                    Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
-            <Setter Property="Width"
-                    Value="{Binding DisplayWidth}" />
-            <Setter Property="Margin"
-                    Value="4" />
-            <Setter Property="Height"
-                    Value="{Binding DisplayHeight}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="4"
-                                BorderBrush="{TemplateBinding Background}"
-                                BorderThickness="1">
-                            <ContentPresenter x:Name="contentPresenter"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                              Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              Margin="{TemplateBinding Padding}" />
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="6"
-                                                  Opacity="0.24"
-                                                  ShadowDepth="1" />
-                            </Border.Effect>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver"
-                                     Value="True">
-                                <Setter Property="Opacity"
-                                        Value="0.7" />
-                                <Setter Property="BorderBrush"
-                                        Value="{DynamicResource LayoutItemBorderPointerOverBrush}" />
-                            </Trigger>
-                            <DataTrigger Binding="{Binding Selected}"
-                                         Value="true">
-                                <Setter Property="Background"
-                                        Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                            </DataTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-
-        <ControlTemplate x:Key="desktopButton">
-            <Button Style="{StaticResource desktopButtonStyle}"
-                    AutomationProperties.Name="{x:Static props:Resources.Monitor}"
-                    AutomationProperties.HelpText="{Binding Index}"
-                    Command="{Binding DataContext.SelectCommand, ElementName= MainWindowItemControl}"
-                    CommandParameter="{Binding}">
-                <Button.Content>
-                    <Grid Name="MonitorsGrid">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="0.40*" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Name="desktopId"
-                                   Text="{Binding Index}"
-                                   HorizontalAlignment="Center"
-                                   FontWeight="SemiBold"
-                                   FontSize="42"
-                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                   Grid.Row="0" />
-                        <TextBlock Name="desktopDimensions"
-                                   Text="{Binding Dimensions}"
-                                   HorizontalAlignment="Center"
-                                   FontSize="10"
-                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                   Grid.Row="1" />
-                    </Grid>
-                </Button.Content>
-            </Button>
-
-            <ControlTemplate.Triggers>
-                <DataTrigger Binding="{Binding Selected}"
-                             Value="true">
-                    <Setter TargetName="desktopId"
-                            Property="Foreground"
-                            Value="White" />
-                    <Setter TargetName="desktopDimensions"
-                            Property="Foreground"
-                            Value="White" />
-                </DataTrigger>
-            </ControlTemplate.Triggers>
-        </ControlTemplate>
 
         <ContextMenu x:Key="DefaultModelsContextMenu">
             <MenuItem Click="DuplicateLayout_Click"
@@ -167,12 +76,75 @@
             </MenuItem>
         </ContextMenu>
 
-        <DataTemplate x:Key="LayoutItemTemplate">
-            <Border x:Name="LayoutItem"
-                    Background="{DynamicResource LayoutItemBackgroundBrush}"
+        <DataTemplate x:Key="MonitorItemTemplate">
+            <Border x:Name="MonitorItem"
+                    Width="{Binding DisplayWidth}"
+                    Height="{Binding DisplayHeight}"
+                    AutomationProperties.Name="{x:Static props:Resources.Monitor}"
+                    AutomationProperties.HelpText="{Binding Index}"
+                    Background="{DynamicResource PrimaryBackgroundBrush}"
                     BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
                     BorderThickness="1"
-                    
+                    Focusable="True"
+                    CornerRadius="4"
+                    Margin="8"
+                    KeyDown="MonitorItem_KeyDown"
+                    MouseDown="MonitorItem_MouseDown"
+                    FocusVisualStyle="{StaticResource MyFocusVisualStyle}">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="6"
+                                      Opacity="0.24"
+                                      ShadowDepth="1" />
+                </Border.Effect>
+
+                <StackPanel Orientation="Vertical"
+                            Margin="0,-6,0,0"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
+                    <TextBlock Name="IndexText"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Index}"
+                               FontSize="32"
+                               Grid.Row="0"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                    <TextBlock Name="DimensionsText"
+                               Text="{Binding Dimensions}"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Selected}"
+                             Value="true">
+                    <Setter TargetName="IndexText"
+                            Property="Foreground"
+                            Value="White" />
+                    <Setter TargetName="DimensionsText"
+                            Property="Foreground"
+                            Value="White" />
+                    <Setter TargetName="MonitorItem"
+                            Property="Background"
+                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                </DataTrigger>
+
+            </DataTemplate.Triggers>
+        </DataTemplate>
+        
+        <DataTemplate x:Key="LayoutItemTemplate">
+            <Grid AutomationProperties.Name="TRootgrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="24" />
+                </Grid.RowDefinitions>
+
+                <Border x:Name="LayoutItem"
+                        Background="{DynamicResource LayoutItemBackgroundBrush}"
+                    BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
+                    BorderThickness="1"                    
                     MouseEnter="LayoutItem_MouseEnter"
                     MouseDown="LayoutItem_Click"
                     Focusable="True"
@@ -187,32 +159,30 @@
                                       ShadowDepth="1" />
                 </Border.Effect>
 
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="32" />
-                    </Grid.RowDefinitions>
-                    <local:LayoutPreview Margin="16"
+                    <local:LayoutPreview Margin="12"
                                          VerticalAlignment="Stretch"
+                                         AutomationProperties.Name="LayoutPreview"
                                          HorizontalAlignment="Stretch" />
-                    <TextBlock Name="layoutName"
+                </Border>
+                <TextBlock Name="layoutName"
                                Padding="8,0,8,0"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding Name}"
-                               FontSize="12"
-                               Grid.Row="1"
+                               FontSize="14"
+                           AutomationProperties.Name="Text label"
+                               Grid.Row="2"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
+                               VerticalAlignment="Center"
                                Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                </Grid>
-            </Border>
+           
+            </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsApplied}"
                              Value="true">
                     <Setter TargetName="layoutName"
                             Property="Foreground"
-                            Value="#F2F2F2" />
+                            Value="{DynamicResource SystemAccentColorLight1Brush}" />
                     <Setter TargetName="LayoutItem"
                             Property="Background"
                             Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
@@ -258,8 +228,8 @@
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Orientation="Horizontal"
-                                               ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}"
-                                               ItemHeight="{Binding ElementName=DefaultModelsWrapPanel, Path=ItemWidth}"
+                                               ItemWidth="164"
+                                               ItemHeight="148"
                                                x:Name="DefaultModelsWrapPanel" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
@@ -267,11 +237,12 @@
                                 <Style TargetType="{x:Type ContentPresenter}">
                                     <Setter Property="ContextMenu"
                                             Value="{StaticResource DefaultModelsContextMenu}" />
+                                   
                                 </Style>
                             </ItemsControl.ItemContainerStyle>
                         </ItemsControl>
                         <StackPanel Grid.Column="1"
-                                    Margin="-8,8,0,0"
+                                    Margin="-8,-2,0,0"
                                     Orientation="Vertical"
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Center">
@@ -286,6 +257,7 @@
                                     HorizontalAlignment="Center"
                                     FontFamily="Segoe MDL2 Assets"
                                     Style="{StaticResource DefaultButtonStyle}"
+                                    ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
                                     AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
                                     Click="IncrementZones_Click" />
 
@@ -309,6 +281,7 @@
                                     HorizontalAlignment="Center"
                                     Background="Transparent"
                                     FontFamily="Segoe MDL2 Assets"
+                                    ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
                                     AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
                                     Style="{StaticResource DefaultButtonStyle}"
                                     Click="DecrementZones_Click" />
@@ -319,7 +292,7 @@
                     <TextBlock Text="{x:Static props:Resources.Custom}"
                                x:Name="CustomHeaderBlock"
                                FontWeight="SemiBold"
-                               Margin="16,16,16,0"
+                               Margin="16,32,16,0"
                                FontSize="24" />
 
                     <Button x:Name="NewLayoutButton"
@@ -378,10 +351,11 @@
                               Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UIElement}}"
                               PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
                     <ScrollViewer.DataContext>
-                        <local1:MonitorViewModel />
+                        <local1:MonitorViewModel x:Name="monitorViewModel" />
                     </ScrollViewer.DataContext>
                     <ItemsControl x:Name="MainWindowItemControl"
                                   TabIndex="0"
+                                  ItemTemplate="{StaticResource MonitorItemTemplate}"
                                   ItemsSource="{Binding MonitorInfoForViewModel}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -392,11 +366,7 @@
                                             Visibility="{Binding DesktopsPanelVisibility}" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Button Template="{StaticResource desktopButton}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
+                        
                     </ItemsControl>
                 </ScrollViewer>
             </StackPanel>
