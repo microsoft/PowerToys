@@ -9,6 +9,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
+using FancyZonesEditor.ViewModels;
 using Windows.UI.Popups;
 
 namespace FancyZonesEditor
@@ -30,14 +32,6 @@ namespace FancyZonesEditor
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
-
-        public double SettingsTextMaxWidth
-        {
-            get
-            {
-                return (Width / 2) - 60;
-            }
-        }
 
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
@@ -365,6 +359,19 @@ namespace FancyZonesEditor
         private void OnContentRendered(object sender, EventArgs e)
         {
             InvalidateVisual();
+        }
+
+        private void MonitorItem_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return || e.Key == Key.Space)
+            {
+                monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
+            }
+        }
+
+        private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
         }
     }
 }

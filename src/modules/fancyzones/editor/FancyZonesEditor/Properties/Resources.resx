@@ -163,7 +163,7 @@
     <value>Name</value>
   </data>
   <data name="Note_Custom_Table" xml:space="preserve">
-    <value>Hold down Shift Key to change orientation of splitter.
+    <value>Hold down Shift key to change orientation of splitter.
 To merge zones, select the zones and click "merge".</value>
   </data>
   <data name="Save_Apply" xml:space="preserve">
@@ -183,9 +183,6 @@ To merge zones, select the zones and click "merge".</value>
   </data>
   <data name="Zone_Count_Increment" xml:space="preserve">
     <value>Increment number of zones in template layout</value>
-  </data>
-  <data name="Custom_Layout_Delete_Button" xml:space="preserve">
-    <value>Delete custom layout</value>
   </data>
   <data name="Error_Invalid_Arguments" xml:space="preserve">
     <value>FancyZones Editor arguments are invalid.</value>
@@ -246,7 +243,7 @@ To merge zones, select the zones and click "merge".</value>
     <comment>as in Reset to a blank value</comment>
   </data>
   <data name="Choose_Layout" xml:space="preserve">
-    <value>Choose your layout for this desktop</value>
+    <value>Choose the layout for this desktop</value>
   </data>
   <data name="Choose_layout_type" xml:space="preserve">
     <value>Choose layout type</value>
@@ -261,7 +258,7 @@ To merge zones, select the zones and click "merge".</value>
     <comment>Button label that allows the user to create a new layout</comment>
   </data>
   <data name="Custom_Layout_Create_New" xml:space="preserve">
-    <value>Create new custom</value>
+    <value>Custom layout</value>
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Delete</value>
