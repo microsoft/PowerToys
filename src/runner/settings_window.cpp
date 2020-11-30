@@ -19,6 +19,7 @@
 #include <common/os-detect.h>
 #include <common/version.h>
 #include <common/VersionHelper.h>
+#include <common/logger/logger.h>
 
 #define BUFSIZE 1024
 
@@ -276,9 +277,18 @@ void run_settings_window()
     std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
     std::wstring settings_pipe_name(L"\\\\.\\pipe\\powertoys_settings_");
     UUID temp_uuid;
-    UuidCreate(&temp_uuid);
-    wchar_t* uuid_chars;
-    UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars);
+    wchar_t* uuid_chars = nullptr;
+    if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
+    {
+        auto val = get_last_error_message(GetLastError());
+        Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
+    }
+    else if (UuidToString(&temp_uuid, (RPC_WSTR*)&uuid_chars) != RPC_S_OK)
+    {
+        auto val = get_last_error_message(GetLastError());
+        Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
+    }
+
     if (uuid_chars != nullptr)
     {
         powertoys_pipe_name += std::wstring(uuid_chars);
@@ -386,10 +396,18 @@ void run_settings_window()
     current_settings_ipc->start(hToken);
     g_settings_process_id = process_info.dwProcessId;
 
-    WaitForSingleObject(process_info.hProcess, INFINITE);
-    if (WaitForSingleObject(process_info.hProcess, INFINITE) != WAIT_OBJECT_0)
+    if (process_info.hProcess)
     {
-        show_last_error_message(L"Couldn't wait on the Settings Window to close.", GetLastError(), L"PowerToys - runner");
+        WaitForSingleObject(process_info.hProcess, INFINITE);
+        if (WaitForSingleObject(process_info.hProcess, INFINITE) != WAIT_OBJECT_0)
+        {
+            show_last_error_message(L"Couldn't wait on the Settings Window to close.", GetLastError(), L"PowerToys - runner");
+        }
+    }
+    else
+    {
+        auto val = get_last_error_message(GetLastError());
+        Logger::error(L"Process handle is empty. {}", val.has_value() ? val.value() : L"");
     }
 
 LExit:

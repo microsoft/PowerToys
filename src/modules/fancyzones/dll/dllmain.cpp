@@ -13,7 +13,7 @@
 #include <lib/FancyZonesData.h>
 #include <lib/FancyZonesWinHookEventIDs.h>
 #include <lib/FancyZonesData.cpp>
-#include <lib/FancyZonesLogger.h>
+#include <common/logger/logger.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -75,7 +75,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        FancyZonesLogger::GetLogger()->info("FancyZones enabling");
+        Logger::info("FancyZones enabling");
 
         if (!m_app)
         {
@@ -133,7 +133,7 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
-        FancyZonesLogger::GetLogger()->info("FancyZones disabling");
+        Logger::info("FancyZones disabling");
 
         Disable(true);
     }
@@ -155,7 +155,9 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         app_key = NonLocalizable::FancyZonesStr;
-        FancyZonesLogger::Init(PTSettingsHelper::get_module_save_folder_location(app_key));
+        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        logFilePath.append(LogSettings::fancyZonesLogPath);
+        Logger::init(LogSettings::fancyZonesLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name(), FancyZonesModule::get_key());
         FancyZonesDataInstance().LoadFancyZonesData();
         s_instance = this;

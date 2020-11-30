@@ -7,6 +7,7 @@
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog\sinks\stdout_color_sinks-inl.h>
 #include <iostream>
+#include <spdlog\sinks\null_sink.h>
 
 using namespace std;
 using namespace spdlog;
@@ -33,31 +34,45 @@ level::level_enum getLogLevel(std::wstring_view logSettingsPath)
     return result;
 }
 
-Logger::Logger()
+std::shared_ptr<spdlog::logger> Logger::logger;
+
+bool Logger::wasLogFailedShown()
 {
+    wchar_t* pValue;
+    size_t len;
+    _wdupenv_s(&pValue, &len, logFailedShown.c_str());
+    delete[] pValue;
+    return len;
 }
 
-Logger::Logger(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath)
+void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath)
 {
     auto logLevel = getLogLevel(logSettingsPath);
     try
     {
         auto sink = make_shared<sinks::daily_file_sink_mt>(logFilePath, 0, 0, false, LogSettings::retention);
-        this->logger = make_shared<spdlog::logger>(loggerName, sink);
+        logger = make_shared<spdlog::logger>(loggerName, sink);
     }
     catch (...)
     {
-        cerr << "Can not create file logger. Create stdout logger instead" << endl;
-        this->logger = spdlog::stdout_color_mt("some_unique_name");
+        logger = spdlog::null_logger_mt(loggerName);
+        if (!wasLogFailedShown())
+        {
+            // todo: that message should be shown from init caller and strings should be localized 
+            MessageBoxW(NULL,
+                        L"Logger can not be initialized",
+                        L"PowerToys",
+                        MB_OK | MB_ICONERROR);
+
+            SetEnvironmentVariable(logFailedShown.c_str(), L"yes");
+        }
+
+        return;
     }
 
-    this->logger->set_level(logLevel);
-    this->logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
-    spdlog::register_logger(this->logger);
+    logger->set_level(logLevel);
+    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [p-%P] [t-%t] [%l] %v");
+    spdlog::register_logger(logger);
     spdlog::flush_every(std::chrono::seconds(3));
-}
-
-Logger::~Logger()
-{
-    this->logger.reset();
+    logger->info("{} logger is initialized", loggerName);
 }
