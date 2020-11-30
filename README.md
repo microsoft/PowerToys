@@ -89,7 +89,7 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 #### Requirements
 
-- Windows 10 1803 (build 17134) or later.
+- Windows 10 v1903 (build 18362) or better perferred, Windows 10 version1803 (build 17134) minimium.  
 - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
@@ -129,57 +129,39 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### October 2020 Update
+### November 2020 Update
 
-Our goals for [0.25 release cycle][github-release-link] was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. Our first end to end localization pass has been done.  We know it isn't perfect but we are in 17 languages now. If you find an issue, please file a [localization bug][loc-bug].
-
-Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
+Our goals for [0.27 release cycle][github-release-link] was to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users.  Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. If you find an issue, please file a [localization bug][loc-bug].
 
 #### Highlights from October 2020
 
 **General**
-- First pass on localization complete.  17 different languages.  We know there will be some rough areas, please [make us aware so we can correct them][loc-bug].
-- Logging added into the installer
+- Installer improvements including darkmode
 - Large sums of accessibility issues fixed.
-- Less notifications for installing
-- FxCop work is almost fully wrapped up
-- Wrapped up the [Video GIF capture spec](https://github.com/microsoft/PowerToys/wiki/Video-GIF-Capture).  This is laying out our plan for the future work.
+- Worked on localization work. If you find issues, please [make us aware so we can correct them][loc-bug].
 
 **Color Picker**
-- Additional color style selections such as CYMK and HSL
+- Updated interface and new editor experience.
 
 **FancyZones**
-- Multiple bugs fixed
-- Better zone drawing improvements
+- Multi-monitor editor experience now drastically improved for discoverability.
+- Zones being forgotten on restart
+- Added in ability to have no layout
 
-**Keyboard manager**
-- Fixed terminal input map failure
-- Better app compat
-- Multiple bug fixes
-- Ability to directly disable keys/shortcuts
+**Image Resizer**
+- Updated interface
 
 **PowerToys Run**
-- expanded environment var searching such as %windr%
-- multiple crash bug fixes
-- Improvements on calculator plugin
-- Directly able to override theming
-- Windows will open to what shell you want
-- Better action key support
-  - `=` for direct calculator
-  - `?` for direct file searching
-  - `.` for direct for applications
-  - `//` for direct URL
-  - `<` for running processes
-  - `>` for shell processes
+- Removed unused dependencies
 
-**Dev docs**
-- Added multiple developer related docs.
+**PowerRename**
+- Added Lookbehind support via Boost library
 
 I'd like to directly call out [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@davidegiacometti](https://github.com/davidegiacometti), [@royvou](https://github.com/royvou), [@gordonwatts](https://github.com/gordonwatts), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@niels9001](https://github.com/niels9001) for their continued community support and helping directly make PowerToys a better piece of software.
 
-### What is being planned for 0.27 - November 2020
+### What is being planned for 0.29 - December 2020
 
-For [0.27](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F14), we are proactively working on:
+For [0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F14), we are proactively working on:
 
 - Stability
 - Accessibility
