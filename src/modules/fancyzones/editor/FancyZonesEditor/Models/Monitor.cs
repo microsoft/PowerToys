@@ -5,6 +5,7 @@
 using System;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using FancyZonesEditor.Utils;
 
@@ -31,6 +32,9 @@ namespace FancyZonesEditor.Models
                 Window.Opacity = 0.5;
                 Window.Background = (Brush)properties[milliseconds % properties.Length].GetValue(null, null);
             }
+
+            Window.KeyUp += ((App)Application.Current).App_KeyUp;
+            Window.KeyDown += ((App)Application.Current).App_KeyDown;
 
             Window.Left = workArea.X;
             Window.Top = workArea.Y;
