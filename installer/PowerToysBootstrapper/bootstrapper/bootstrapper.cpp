@@ -102,32 +102,9 @@ int bootstrapper(HINSTANCE hInstance)
     {
         cmdArgs = options.parse(__argc, const_cast<const char**>(__argv));
     }
-    catch (cxxopts::option_has_no_value_exception&)
-    {
-        showHelp = true;
-    }
-    catch (cxxopts::option_not_exists_exception&)
-    {
-        showHelp = true;
-    }
-    catch (cxxopts::option_not_present_exception&)
-    {
-        showHelp = true;
-    }
-    catch (cxxopts::option_not_has_argument_exception&)
-    {
-        showHelp = true;
-    }
-    catch (cxxopts::option_required_exception&)
-    {
-        showHelp = true;
-    }
-    catch (cxxopts::option_requires_argument_exception&)
-    {
-        showHelp = true;
-    }
     catch (...)
     {
+        showHelp = true;
     }
 
     showHelp = showHelp || cmdArgs["help"].as<bool>();
