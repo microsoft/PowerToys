@@ -133,6 +133,9 @@
       <Item ItemId=";ColorFormats.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Color formats]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Renk biçimleri]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -148,38 +151,53 @@
       <Item ItemId=";ColorPickerFirst.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Düzenleyici modu etkin Renk Seçici]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPickerFirst_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Pick a color from the screen, copy formatted value to clipboard, then to the editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ekrandan bir renk seçin, biçimlendirilmiş değeri önce panoya, sonra düzenleyiciye kopyalayın]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPickerOnly.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Color Picker only]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yalnızca Renk Seçici]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPickerOnly_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Pick a color from the screen and copy formatted value to clipboard]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ekrandan bir renk seçin ve biçimlendirilmiş değeri panoya kopyalayın]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPicker_ActivationAction.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Activation behavior]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Etkinleştirme davranışı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPicker_ActivationShortcut.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Activate Color Picker]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Renk Seçiciyi Aç]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Renk Seçiciyi Etkinleştir]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open Color Picker]]></Val>
@@ -199,14 +217,17 @@
       <Item ItemId=";ColorPicker_ColorFormatsDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Editor color formats (Change the order by dragging)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Düzenleyici renk biçimleri (Sürükleyerek sıralamayı değiştirin)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPicker_CopiedColorRepresentation.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Color format for clipboard]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Renk temsili kopyalandı]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pano için renk biçimi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Copied color representation]]></Val>
@@ -262,6 +283,9 @@
       <Item ItemId=";EditorFirst_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open directly into the editor mode]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Doğrudan düzenleyici modunda aç]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -344,7 +368,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uygulamayı bölgelere yaslama özelliğinden dışlamak için adını buraya ekleyin (her satıra bir uygulama). Bu uygulamalar yalnızca Windows Snap'e tepki verir.]]></Val>
+            <Val><![CDATA[Uygulamayı bölgelere tutturma özelliğinden dışlamak için adını buraya ekleyin (her satıra bir uygulama). Bu uygulamalar yalnızca Windows Snap'e tepki verir.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -452,7 +476,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap shortcut (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pencereleri bölgeler arasında taşımak için Windows Snap kısayolunu (Win + Ok) geçersiz kıl]]></Val>
+            <Val><![CDATA[Pencereleri bölgeler arasında taşımak için Windows Snap kısayolunu (Windows Tuşu + Ok) geçersiz kıl]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -461,7 +485,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Yaslaması kaldırılırken pencerenin özgün boyutunu geri yükle]]></Val>
+            <Val><![CDATA[Tutturulması kaldırılırken pencerelerin özgün boyutunu geri yükle]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1385,7 +1409,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kısayolları diğer kısayollara veya tuşlara yeniden eşleyin. Ayrıca, eşlemeler belirli uygulamalara da hedeflenebilir.]]></Val>
+            <Val><![CDATA[Kısayolları diğer kısayollara veya tuşlara yeniden eşleyin. Ayrıca, eşlemeler belirli uygulamaları da hedef alabilir.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1580,7 +1604,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Win+R shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Win+R kısayolunu geçersiz kıl]]></Val>
+            <Val><![CDATA[Windows Tuşu+R kısayolunu geçersiz kıl]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1589,7 +1613,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Win+S shortcut]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Win+S kısayolunu geçersiz kıl]]></Val>
+            <Val><![CDATA[Windows Tuşu+S kısayolunu geçersiz kıl]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

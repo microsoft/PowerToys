@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Move windows between zones across all monitors when snapping with (Win + Arrow)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[(Win + Ok) ile yaslanırken pencereleri tüm monitörlerde bölgeler arasında taşı]]></Val>
+            <Val><![CDATA[(Windows Tuşu + Ok) ile tutturulurken pencereleri tüm monitörlerde bölgeler arasında taşı]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +158,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Move windows based on their position when snapping with (Win + Arrow)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[(Win + Ok) ile yaslanırken pencereleri konumlarına göre taşı]]></Val>
+            <Val><![CDATA[(Windows Tuşu + Ok) ile tutturulurken pencereleri konumlarına göre taşı]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -176,7 +176,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap hotkeys (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pencereleri bölgeler arasında taşımak için Windows Snap kısayol tuşlarını (Win + Ok) geçersiz kılın]]></Val>
+            <Val><![CDATA[Pencereleri bölgeler arasında taşımak için Windows Snap kısayol tuşlarını (Windows Tuşu + Ok) geçersiz kılın]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -185,7 +185,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Yaslaması kaldırılırken pencerenin özgün boyutunu geri yükle]]></Val>
+            <Val><![CDATA[Tutturulması kaldırılırken pencerelerin özgün boyutunu geri yükle]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -278,7 +278,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uygulamayı bölgelere yaslama özelliğinden dışlamak için adını buraya ekleyin (her satıra bir uygulama). Dışlanan uygulamalar diğer tüm ayarlardan bağımsız olarak Windows Snap'e tepki verir.]]></Val>
+            <Val><![CDATA[Uygulamayı bölgelere tutturma özelliğinden dışlamak için adını buraya ekleyin (her satıra bir uygulama). Dışlanan uygulamalar diğer tüm ayarlardan bağımsız olarak Windows Snap'e tepki verir.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
