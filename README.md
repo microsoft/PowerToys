@@ -89,7 +89,7 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 #### Requirements
 
-- Windows 10 v1903 (build 18362) or better perferred, Windows 10 version1803 (build 17134) minimium.  
+- Windows 10 v1903 (build 18362) or better preferred, Windows 10 version1803 (build 17134) minimum.  
 - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
@@ -109,7 +109,7 @@ WinGet install powertoys
 
 Install the [pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from 0.23 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
-**Note:** We'll have 0.26 Experimental out in the first week of November 2020.
+**Note:** We'll have 0.28 Experimental out in the first week of December 2020.
 
 ### Other install methods
 
@@ -136,9 +136,9 @@ Our goals for [0.27 release cycle][github-release-link] was to focus on adding o
 #### Highlights from October 2020
 
 **General**
-- Installer improvements including darkmode
+- Installer improvements including dark mode
 - Large sums of accessibility issues fixed.
-- Worked on localization work. If you find issues, please [make us aware so we can correct them][loc-bug].
+- Worked on localization effort. If you find issues, please [make us aware so we can correct them][loc-bug].
 
 **Color Picker**
 - Updated interface and new editor experience.
