@@ -19,6 +19,7 @@ namespace FancyZonesEditor
             InitializeComponent();
 
             KeyUp += GridEditorWindow_KeyUp;
+            KeyDown += ((App)Application.Current).App_KeyDown;
 
             _stashedModel = (GridLayoutModel)(App.Overlay.CurrentDataContext as GridLayoutModel).Clone();
         }
@@ -36,6 +37,8 @@ namespace FancyZonesEditor
             {
                 OnCancel(sender, null);
             }
+
+            ((App)Application.Current).App_KeyUp(sender, e);
         }
 
         private GridLayoutModel _stashedModel;
