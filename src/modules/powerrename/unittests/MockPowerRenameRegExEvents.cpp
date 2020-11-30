@@ -66,8 +66,8 @@ HRESULT CMockPowerRenameRegExEvents::s_CreateInstance(_Outptr_ IPowerRenameRegEx
 {
     *ppsrree = nullptr;
     CMockPowerRenameRegExEvents* psrree = new CMockPowerRenameRegExEvents();
-    HRESULT hr = psrree ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (psrree)
     {
         hr = psrree->QueryInterface(IID_PPV_ARGS(ppsrree));
         psrree->Release();

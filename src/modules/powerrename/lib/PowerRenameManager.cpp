@@ -426,8 +426,8 @@ HRESULT CPowerRenameManager::s_CreateInstance(_Outptr_ IPowerRenameManager** pps
 {
     *ppsrm = nullptr;
     CPowerRenameManager *psrm = new CPowerRenameManager();
-    HRESULT hr = psrm ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (psrm)
     {
         hr = psrm->_Init();
         if (SUCCEEDED(hr))
@@ -652,8 +652,8 @@ HRESULT CPowerRenameManager::_PerformFileOperation()
 HRESULT CPowerRenameManager::_CreateFileOpWorkerThread()
 {
     WorkerThreadData* pwtd = new WorkerThreadData;
-    HRESULT hr = pwtd ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (pwtd)
     {
         pwtd->hwndManager = m_hwndMessage;
         pwtd->startEvent = m_startRegExWorkerEvent;
@@ -798,8 +798,8 @@ HRESULT CPowerRenameManager::_PerformRegExRename()
 HRESULT CPowerRenameManager::_CreateRegExWorkerThread()
 {
     WorkerThreadData* pwtd = new WorkerThreadData;
-    HRESULT hr = pwtd ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (pwtd)
     {
         pwtd->hwndManager = m_hwndMessage;
         pwtd->startEvent = m_startRegExWorkerEvent;

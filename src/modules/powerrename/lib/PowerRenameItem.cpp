@@ -34,8 +34,8 @@ IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
 {
     *path = nullptr;
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_path ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_FAIL;
+    if (m_path)
     {
         hr = SHStrDup(m_path, path);
     }
@@ -45,8 +45,12 @@ IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
 IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_isTimeParsed ? S_OK : E_FAIL ;
-    if (!m_isTimeParsed)
+    HRESULT hr = E_FAIL ;
+    if (m_isTimeParsed)
+    {
+        hr = S_OK;
+    }
+    else
     {
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
@@ -80,8 +84,8 @@ IFACEMETHODIMP CPowerRenameItem::GetShellItem(_Outptr_ IShellItem** ppsi)
 IFACEMETHODIMP CPowerRenameItem::GetOriginalName(_Outptr_ PWSTR* originalName)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_originalName ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_FAIL;
+    if (m_originalName)
     {
         hr = SHStrDup(m_originalName, originalName);
     }
@@ -217,8 +221,8 @@ HRESULT CPowerRenameItem::s_CreateInstance(_In_opt_ IShellItem* psi, _In_ REFIID
     *resultInterface = nullptr;
 
     CPowerRenameItem *newRenameItem = new CPowerRenameItem();
-    HRESULT hr = newRenameItem ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (newRenameItem)
     {
         if (psi != nullptr)
         {

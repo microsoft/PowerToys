@@ -76,8 +76,8 @@ IFACEMETHODIMP CPowerRenameRegEx::UnAdvise(_In_ DWORD cookie)
 IFACEMETHODIMP CPowerRenameRegEx::GetSearchTerm(_Outptr_ PWSTR* searchTerm)
 {
     *searchTerm = nullptr;
-    HRESULT hr = m_searchTerm ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (m_searchTerm)
     {
         CSRWSharedAutoLock lock(&m_lock);
         hr = SHStrDup(m_searchTerm, searchTerm);
@@ -88,8 +88,8 @@ IFACEMETHODIMP CPowerRenameRegEx::GetSearchTerm(_Outptr_ PWSTR* searchTerm)
 IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm)
 {
     bool changed = false;
-    HRESULT hr = searchTerm ? S_OK : E_INVALIDARG;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (searchTerm)
     {
         CSRWExclusiveAutoLock lock(&m_lock);
         if (m_searchTerm == nullptr || lstrcmp(searchTerm, m_searchTerm) != 0)
@@ -111,8 +111,8 @@ IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm)
 IFACEMETHODIMP CPowerRenameRegEx::GetReplaceTerm(_Outptr_ PWSTR* replaceTerm)
 {
     *replaceTerm = nullptr;
-    HRESULT hr = m_replaceTerm ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (m_replaceTerm)
     {
         CSRWSharedAutoLock lock(&m_lock);
         hr = SHStrDup(m_replaceTerm, replaceTerm);
@@ -123,8 +123,8 @@ IFACEMETHODIMP CPowerRenameRegEx::GetReplaceTerm(_Outptr_ PWSTR* replaceTerm)
 IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm)
 {
     bool changed = false;
-    HRESULT hr = replaceTerm ? S_OK : E_INVALIDARG;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (replaceTerm)
     {
         CSRWExclusiveAutoLock lock(&m_lock);
         if (m_replaceTerm == nullptr || lstrcmp(replaceTerm, m_replaceTerm) != 0)
@@ -196,8 +196,8 @@ HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameR
     *renameRegEx = nullptr;
 
     CPowerRenameRegEx *newRenameRegEx = new CPowerRenameRegEx();
-    HRESULT hr = newRenameRegEx ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (newRenameRegEx)
     {
         hr = newRenameRegEx->QueryInterface(IID_PPV_ARGS(renameRegEx));
         newRenameRegEx->Release();

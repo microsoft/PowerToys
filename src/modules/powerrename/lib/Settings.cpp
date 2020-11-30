@@ -312,8 +312,8 @@ HRESULT CRenameMRU::CreateInstance(_In_ const std::wstring& filePath, _In_ const
 {
     *ppUnk = nullptr;
     unsigned int maxMRUSize = CSettingsInstance().GetMaxMRUSize();
-    HRESULT hr = maxMRUSize > 0 ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_FAIL;
+    if (maxMRUSize > 0)
     {
         CRenameMRU* renameMRU = new CRenameMRU(maxMRUSize, filePath, regPath);
         hr = renameMRU ? S_OK : E_OUTOFMEMORY;

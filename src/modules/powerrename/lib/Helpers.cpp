@@ -9,8 +9,8 @@ namespace fs = std::filesystem;
 
 HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
 {
-    HRESULT hr = source ? S_OK : E_INVALIDARG;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_INVALIDARG;
+    if (source)
     {
         PWSTR newName = nullptr;
         hr = SHStrDup(source, &newName);
@@ -38,8 +38,8 @@ HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
 HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags)
 {
     std::locale::global(std::locale(""));
-    HRESULT hr = (source && flags) ? S_OK : E_INVALIDARG;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_INVALIDARG;
+    if (source && flags)
     {
         if (flags & Uppercase)
         {
@@ -188,8 +188,8 @@ bool isFileTimeUsed(_In_ PCWSTR source)
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME fileTime)
 {
     std::locale::global(std::locale(""));
-    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_INVALIDARG;     
+    if ((source && wcslen(source) > 0))
     {
         std::wstring res(source);
         wchar_t replaceTerm[MAX_PATH] = { 0 };
@@ -346,12 +346,11 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
 HRESULT EnumerateDataObject(_In_ IUnknown* dataSource, _In_ IPowerRenameManager* psrm)
 {
     CComPtr<IShellItemArray> spsia;
-    HRESULT hr = _GetShellItemArrayFromDataOject(dataSource, &spsia);
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_FAIL; 
+    if (SUCCEEDED(_GetShellItemArrayFromDataOject(dataSource, &spsia)))
     {
         CComPtr<IEnumShellItems> spesi;
-        hr = spsia->EnumItems(&spesi);
-        if (SUCCEEDED(hr))
+        if (SUCCEEDED(spsia->EnumItems(&spesi)))
         {
             hr = _ParseEnumItems(spesi, psrm);
         }

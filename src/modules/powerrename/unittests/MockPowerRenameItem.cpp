@@ -5,8 +5,8 @@ HRESULT CMockPowerRenameItem::CreateInstance(_In_opt_ PCWSTR path, _In_opt_ PCWS
 {
     *ppItem = nullptr;
     CMockPowerRenameItem* newItem = new CMockPowerRenameItem();
-    HRESULT hr = newItem ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (newItem)
     {
         newItem->Init(path, originalName, depth, isFolder, time);
         hr = newItem->QueryInterface(IID_PPV_ARGS(ppItem));
