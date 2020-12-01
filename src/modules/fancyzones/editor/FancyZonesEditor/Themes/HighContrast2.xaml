@@ -10,19 +10,18 @@
     <system:String x:Key="Theme.ColorScheme">Accent3</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF3a3a3a" />
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF333333" />
-    <SolidColorBrush x:Key="WindowBorderBrush" Color="#FF00ff00"/>
-    <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF9a9a9a"/>
-
-    <SolidColorBrush x:Key="ListViewPointerOverBrush" Color="#FF242424"/>
-    <SolidColorBrush x:Key="ListViewPressedBrush" Color="#FF333333"/>
-
-    <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FF454545"/>
-
-    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FF00ff00" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF2b2b2b" />
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF333333" />
+    <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#FF3b3b3b" />
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFffff00" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FFc0c0c0" />
-
-    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b"/>
-    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1b1b1b"/>
+    <SolidColorBrush x:Key="BackdropBrush" Color="#88000000" />
+    <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF9a9a9a" />
+    <SolidColorBrush x:Key="ScreenItemBackgroundBrush" Color="#FF2b2b2b" />
+    <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FF3b3b3b" />
+    <SolidColorBrush x:Key="LayoutItemBorderPointerOverBrush" Color="#FF454545" />
+    <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#BF1b1b1b" />
+    <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF1b1b1b" />
+    <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b" />
+    <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E51b1b1b" />
 </ResourceDictionary>
