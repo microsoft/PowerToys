@@ -660,8 +660,12 @@ HRESULT CPowerRenameManager::_CreateFileOpWorkerThread()
         pwtd->cancelEvent = nullptr;
         pwtd->spsrm = this;
         m_fileOpWorkerThreadHandle = CreateThread(nullptr, 0, s_fileOpWorkerThread, pwtd, 0, nullptr);
-        hr = (m_fileOpWorkerThreadHandle) ? S_OK : E_FAIL;
-        if (FAILED(hr))
+        hr = E_FAIL;
+        if (m_fileOpWorkerThreadHandle)
+        {
+            hr = S_OK;
+        }
+        else
         {
             delete pwtd;
         }
@@ -807,8 +811,12 @@ HRESULT CPowerRenameManager::_CreateRegExWorkerThread()
         pwtd->hwndParent = m_hwndParent;
         pwtd->spsrm = this;
         m_regExWorkerThreadHandle = CreateThread(nullptr, 0, s_regexWorkerThread, pwtd, 0, nullptr);
-        hr = (m_regExWorkerThreadHandle) ? S_OK : E_FAIL;
-        if (FAILED(hr))
+        hr = E_FAIL;
+        if (m_regExWorkerThreadHandle)
+        {
+            hr = S_OK;
+        }
+        else
         {
             delete pwtd;
         }

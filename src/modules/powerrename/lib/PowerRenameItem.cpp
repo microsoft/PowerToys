@@ -46,6 +46,7 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
     HRESULT hr = E_FAIL ;
+
     if (m_isTimeParsed)
     {
         hr = S_OK;
@@ -224,6 +225,7 @@ HRESULT CPowerRenameItem::s_CreateInstance(_In_opt_ IShellItem* psi, _In_ REFIID
     HRESULT hr = E_OUTOFMEMORY;
     if (newRenameItem)
     {
+        hr = S_OK ;
         if (psi != nullptr)
         {
             hr = newRenameItem->_Init(psi);

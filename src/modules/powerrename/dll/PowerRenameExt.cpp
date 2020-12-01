@@ -122,8 +122,8 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
         (LOWORD(pici->lpVerb) == 0))
     {
         Trace::Invoked();
-        hr = E_OUTOFMEMORY;
         InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
+        hr = E_OUTOFMEMORY;
         if (pInvokeData)
         {
             pInvokeData->hwndParent = pici->hwnd;

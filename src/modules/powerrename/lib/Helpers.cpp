@@ -189,7 +189,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
 {
     std::locale::global(std::locale(""));
     HRESULT hr = E_INVALIDARG;     
-    if ((source && wcslen(source) > 0))
+    if (source && wcslen(source) > 0)
     {
         std::wstring res(source);
         wchar_t replaceTerm[MAX_PATH] = { 0 };
@@ -346,7 +346,7 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
 HRESULT EnumerateDataObject(_In_ IUnknown* dataSource, _In_ IPowerRenameManager* psrm)
 {
     CComPtr<IShellItemArray> spsia;
-    HRESULT hr = E_FAIL; 
+    HRESULT hr = E_FAIL;
     if (SUCCEEDED(_GetShellItemArrayFromDataOject(dataSource, &spsia)))
     {
         CComPtr<IEnumShellItems> spesi;
