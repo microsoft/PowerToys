@@ -141,7 +141,7 @@ Our goals for [0.27 release cycle][github-release-link] was to focus on adding o
 - Worked on localization effort. If you find issues, please [make us aware so we can correct them][loc-bug].
 
 **Color Picker**
-- Updated interface and new editor experience.
+- Updated interface and new editor experience done by [@martinchrzan](https://github.com/martinchrzan) and [@niels9001](https://github.com/niels9001)
 
 **FancyZones**
 - Multi-monitor editor experience now drastically improved for discoverability.
@@ -157,7 +157,7 @@ Our goals for [0.27 release cycle][github-release-link] was to focus on adding o
 **PowerRename**
 - Added Lookbehind support via Boost library
 
-I'd like to directly call out [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@davidegiacometti](https://github.com/davidegiacometti), [@gordonwatts](https://github.com/gordonwatts), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@niels9001](https://github.com/niels9001) for their continued community support and helping directly make PowerToys a better piece of software.
+I'd like to directly call out [@davidegiacometti](https://github.com/davidegiacometti), [@gordonwatts](https://github.com/gordonwatts), [@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@alannt777](https://github.com/alannt777) for their continued community support and helping directly make PowerToys a better piece of software.
 
 ### What is being planned for 0.29 - December 2020
 
