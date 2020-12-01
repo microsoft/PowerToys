@@ -113,9 +113,6 @@
     <PackageReference Include="System.Runtime" Version="4.3.1" />    
     <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
     <PackageReference Include="System.Data.OleDb" Version="4.7.1" />
-    <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0">
-      <NoWarn>NU1701</NoWarn>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
