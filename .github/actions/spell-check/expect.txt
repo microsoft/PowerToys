@@ -44,6 +44,8 @@ AGGREGATABLE
 AHybrid
 Aissue
 akamaihd
+alannt
+alannt777
 ALarger
 alekhyareddy
 alertsolid
