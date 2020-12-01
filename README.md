@@ -161,7 +161,7 @@ I'd like to directly call out [@davidegiacometti](https://github.com/davidegiaco
 
 ### What is being planned for 0.29 - December 2020
 
-For [0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F14), we are proactively working on:
+For [0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F15), we are proactively working on:
 
 - Stability
 - Accessibility
