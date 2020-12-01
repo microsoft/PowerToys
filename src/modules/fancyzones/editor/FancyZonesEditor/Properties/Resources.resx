@@ -292,6 +292,6 @@ To merge zones, select the zones and click "merge".</value>
     <value>Monitor</value>
   </data>
   <data name="Settings" xml:space="preserve">
-    <value>Settings</value>
+    <value>Template settings</value>
   </data>
 </root>

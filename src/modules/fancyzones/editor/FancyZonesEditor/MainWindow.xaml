@@ -28,19 +28,6 @@
         Initialized="OnInitialized"
         Closing="OnClosing">
     <Window.Resources>
-        <Style x:Key="UWPFocusVisualStyle">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Border Margin="-2"
-                                CornerRadius="4"
-                                BorderThickness="2"
-                                BorderBrush="{DynamicResource PrimaryForegroundBrush}" />
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <Converters:ModelToVisibilityConverter x:Key="ModelToVisibilityConverter" />
         <Converters:BooleanToIntConverter x:Key="BooleanToIntConverter" />
 
@@ -90,7 +77,7 @@
                     Margin="8"
                     KeyDown="MonitorItem_KeyDown"
                     MouseDown="MonitorItem_MouseDown"
-                    FocusVisualStyle="{StaticResource MyFocusVisualStyle}">
+                    FocusVisualStyle="{StaticResource UWPFocusVisualStyle}">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="6"
                                       Opacity="0.24"
@@ -150,7 +137,7 @@
                         Focusable="True"
                         CornerRadius="4"
                         Margin="8"
-                        FocusVisualStyle="{StaticResource MyFocusVisualStyle}"
+                        FocusVisualStyle="{StaticResource UWPFocusVisualStyle}"
                         FocusManager.GotFocus="LayoutItem_Focused"
                         KeyDown="LayoutItem_Apply">
                     <Border.Effect>
@@ -208,11 +195,65 @@
             <ScrollViewer>
                 <StackPanel Orientation="Vertical"
                             Margin="0,0,0,32">
-                    <TextBlock Text="{x:Static props:Resources.Templates}"
-                               x:Name="TemplatesHeaderBlock"
-                               FontWeight="SemiBold"
-                               FontSize="24"
-                               Margin="16,16,16,0" />
+                    <StackPanel Orientation="Horizontal" Margin="16,16,16,0">
+                        <TextBlock Text="{x:Static props:Resources.Templates}"
+                                   x:Name="TemplatesHeaderBlock"
+                                   FontWeight="SemiBold"
+                                   FontSize="24"/>
+                        
+                        <Button Content="&#xE115;"
+                                TabIndex="5"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="18"
+                                VerticalAlignment="Center"
+                                ToolTip="{x:Static props:Resources.Settings}"
+                                AutomationProperties.Name="{x:Static props:Resources.Settings}"
+                                Foreground="{DynamicResource SystemAccentColorLight1Brush}"
+                                Background="Transparent"
+                                Margin="8,2,0,0">
+                            <ui:FlyoutService.Flyout>
+                                <ui:Flyout>
+                                    <Grid>
+                                        <StackPanel>
+                                            <ui:ToggleSwitch x:Name="spaceAroundSetting"
+                                                             Header="{x:Static props:Resources.Show_Space_Zones}"
+                                                             IsOn="{Binding ShowSpacing}" />
+
+                                            <TextBlock x:Name="paddingValue"
+                                                       Text="{x:Static props:Resources.Space_Around_Zones}"
+                                                       IsEnabled="{Binding ShowSpacing}"
+                                                       Margin="0,8,0,0"
+                                                       Foreground="{DynamicResource PrimaryForegroundBrush}" />
+
+                                            <TextBox Margin="0,6,0,0"
+                                                     IsEnabled="{Binding ShowSpacing}"
+                                                     Text="{Binding Spacing, Mode=TwoWay}"
+                                                     Width="86"
+                                                     HorizontalAlignment="Left"
+                                                     AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" />
+
+                                            <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
+                                                       IsEnabled="{Binding ShowSpacing}"
+                                                       Margin="0,16,0,0"
+                                                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                       x:Name="sensitivityRadiusValue" />
+
+                                            <TextBox Margin="0,6,0,0"
+                                                     Text="{Binding SensitivityRadius, Mode=TwoWay}"
+                                                     Width="86"
+                                                     AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
+                                                     HorizontalAlignment="Left" />
+
+                                            <!-- Button to deep link into FZ settings -->
+                                            <!--<ui:HyperlinkButton Content="Advanced settings"
+                                                        Margin="0,16,0,0" />-->
+                                        </StackPanel>
+                                    </Grid>
+                                </ui:Flyout>
+                            </ui:FlyoutService.Flyout>
+                        </Button>
+                    </StackPanel>
+                   
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -222,6 +263,7 @@
                                       ItemTemplate="{StaticResource LayoutItemTemplate}"
                                       AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"
                                       TabIndex="1"
+                                      x:Name="DefaultModelsItemsControl"
                                       Margin="8,8,8,0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -233,9 +275,7 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemContainerStyle>
                                 <Style TargetType="{x:Type ContentPresenter}">
-                                    <Setter Property="ContextMenu"
-                                            Value="{StaticResource DefaultModelsContextMenu}" />
-                                   
+                                    <Setter Property="ContextMenu" Value="{StaticResource DefaultModelsContextMenu}" />
                                 </Style>
                             </ItemsControl.ItemContainerStyle>
                         </ItemsControl>
@@ -319,8 +359,8 @@
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel Orientation="Horizontal"
-                                           ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}"
-                                           ItemHeight="{Binding ElementName=CustomModelsWrapPanel, Path=ItemWidth}"
+                                           ItemWidth="164"
+                                           ItemHeight="148"
                                            x:Name="CustomModelsWrapPanel" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
@@ -372,57 +412,9 @@
 
         <Grid Grid.Row="2"
               Background="{DynamicResource TertiaryBackgroundBrush}">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="&#xE115;"
-                        TabIndex="5"
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="18"
-                        ToolTip="{x:Static props:Resources.Settings}"
-                        AutomationProperties.Name="{x:Static props:Resources.Settings}"
-                        Foreground="{DynamicResource PrimaryForegroundBrush}"
-                        Background="Transparent"
-                        Margin="8,0,0,0">
-                    <ui:FlyoutService.Flyout>
-                        <ui:Flyout>
-                            <Grid>
-                                <StackPanel>
-                                    <ui:ToggleSwitch x:Name="spaceAroundSetting"
-                                                     Header="{x:Static props:Resources.Show_Space_Zones}"
-                                                     IsOn="{Binding ShowSpacing}" />
-
-                                    <TextBlock x:Name="paddingValue"
-                                               Text="{x:Static props:Resources.Space_Around_Zones}"
-                                               IsEnabled="{Binding ShowSpacing}"
-                                               Margin="0,8,0,0"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
-
-                                    <TextBox Margin="0,6,0,0"
-                                             IsEnabled="{Binding ShowSpacing}"
-                                             Text="{Binding Spacing, Mode=TwoWay}"
-                                             Width="86"
-                                             HorizontalAlignment="Left"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" />
-
-                                    <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
-                                               IsEnabled="{Binding ShowSpacing}"
-                                               Margin="0,16,0,0"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                               x:Name="sensitivityRadiusValue" />
-
-                                    <TextBox Margin="0,6,0,0"
-                                             Text="{Binding SensitivityRadius, Mode=TwoWay}"
-                                             Width="86"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
-                                             HorizontalAlignment="Left" />
-
-                                    <!-- Button to deep link into FZ settings -->
-                                    <!--<ui:HyperlinkButton Content="Advanced settings"
-                                                        Margin="0,16,0,0" />-->
-                                </StackPanel>
-                            </Grid>
-                        </ui:Flyout>
-                    </ui:FlyoutService.Flyout>
-                </Button>
+            <StackPanel Orientation="Horizontal"
+                        Margin="8,0,8,0"
+                        HorizontalAlignment="Right">
                 <Button x:Name="ResetButton"
                         Content="&#xE149;"
                         FontFamily="Segoe MDL2 Assets"
@@ -431,24 +423,17 @@
                         ToolTip="{x:Static props:Resources.Reset_Layout}"
                         AutomationProperties.Name="{x:Static props:Resources.Reset_Layout}"
                         Foreground="{DynamicResource PrimaryForegroundBrush}"
-                        Margin="8,0,0,0"
+                        Margin="0,0,8,0"
                         Background="Transparent"
                         Click="Reset_Click" />
+                <Button x:Name="CloseButton"
+                        Content="{x:Static props:Resources.Close}"
+                        TabIndex="7"
+                        MinWidth="64"
+                        Style="{StaticResource DefaultButtonStyle}"
+                        Click="CloseButton_Click">
+                </Button>
             </StackPanel>
-            <Button x:Name="CloseButton"
-                    Content="{x:Static props:Resources.Close}"
-                    Margin="8,0,8,0"
-                    TabIndex="7"
-                    HorizontalAlignment="Right"
-                    MinWidth="64"
-                    Visibility="{Binding DesktopsPanelVisibility}"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    Click="CloseButton_Click">
-                <Button.DataContext>
-                    <local1:MonitorViewModel />
-                </Button.DataContext>
-            </Button>
-
         </Grid>
 
         <ui:ContentDialog x:Name="NewLayoutDialog"
