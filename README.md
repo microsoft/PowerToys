@@ -131,7 +131,7 @@ We currently support the matrix below.
 
 ### November 2020 Update
 
-Our goals for [0.27 release cycle][github-release-link] was to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users.  Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. If you find an issue, please file a [localization bug][loc-bug].
+Our goals for [0.27 release cycle][github-release-link] was to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users.  Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
 #### Highlights from October 2020
 
@@ -165,7 +165,7 @@ For [0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+
 
 - Stability
 - Accessibility
-- Video conference mute
+- Video conference mute investigation toward a DirectShow filter versus a driver
 - OOBE work
 
 ### PowerToys roadmap
