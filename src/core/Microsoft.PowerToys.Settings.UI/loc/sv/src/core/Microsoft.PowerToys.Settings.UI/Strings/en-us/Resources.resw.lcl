@@ -136,7 +136,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Färgformat]]></Val>
           </Tgt>
-
         </Str>
         <Disp Icon="Str" />
       </Item>

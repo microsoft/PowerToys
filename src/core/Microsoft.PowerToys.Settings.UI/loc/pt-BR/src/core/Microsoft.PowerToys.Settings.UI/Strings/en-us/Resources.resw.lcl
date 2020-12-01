@@ -1319,7 +1319,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Reconfigure your keyboard by remapping keys and shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Reconfigure o seu teclado, remapeando as teclas e os atalhos.]]></Val>
+            <Val><![CDATA[Reconfigure seu teclado, remapeando as teclas e os atalhos.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
