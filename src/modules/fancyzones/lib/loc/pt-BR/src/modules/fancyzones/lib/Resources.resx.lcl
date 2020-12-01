@@ -176,7 +176,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap hotkeys (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Substituir as teclas de atalho de Ajuste do Windows (Win + Seta) para mover janelas entre as zonas]]></Val>
+            <Val><![CDATA[Substituir as teclas de atalho de Ajuste do Windows (Win + Seta) para mover as janelas entre as zonas]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

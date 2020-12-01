@@ -368,7 +368,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Per escludere un'applicazione dall'affiancamento delle finestre sulle zone, aggiungere qui il nome corrispondente (uno per riga). Queste app reagiscono solo alla funzionalità Affianca finestre di Windows.]]></Val>
+            <Val><![CDATA[Per escludere un'applicazione dall'affiancamento delle finestre sulle zone, aggiungere qui il nome corrispondente (uno per riga). Queste app reagiranno solo alla funzionalità Affianca finestre di Windows.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
