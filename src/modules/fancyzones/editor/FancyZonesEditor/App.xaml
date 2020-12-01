@@ -10,30 +10,20 @@
                 <ui:ThemeResources />
                 <ui:XamlControlsResources />
                 <ResourceDictionary Source="pack://application:,,,/Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/LayoutPreviewStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <Style x:Key="GridLayoutPreviewStyle" TargetType="Rectangle">
-                <Setter Property="Fill" Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
-                <Setter Property="Stroke" Value="{DynamicResource LayoutItemBackgroundBrush}" />
-                <Setter Property="StrokeThickness" Value="1" />
-            </Style>
-
-            <Style x:Key="GridLayoutPreviewActualSizeStyle" TargetType="Rectangle">
-                <Setter Property="Fill" Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
-                <Setter Property="Stroke" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
-                <Setter Property="StrokeThickness" Value="1" />
-            </Style>
-
-            <Style x:Key="CanvasLayoutPreviewStyle" TargetType="Rectangle">
-                <Setter Property="Fill" Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
-                <Setter Property="Stroke" Value="{DynamicResource LayoutItemBackgroundBrush}" />
-                <Setter Property="StrokeThickness" Value="10" />
-            </Style>
-
-            <Style x:Key="CanvasLayoutPreviewActualSizeStyle" TargetType="Rectangle">
-                <Setter Property="Fill" Value="{DynamicResource LayoutPreviewZoneBackgroundBrush}" />
-                <Setter Property="Stroke" Value="{DynamicResource LayoutPreviewZoneBorderBrush}" />
-                <Setter Property="StrokeThickness" Value="1" />
+            <Style x:Key="UWPFocusVisualStyle">
+                <Setter Property="Control.Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Border Margin="-2"
+                                    CornerRadius="4"
+                                    BorderThickness="2"
+                                    BorderBrush="{DynamicResource PrimaryForegroundBrush}" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

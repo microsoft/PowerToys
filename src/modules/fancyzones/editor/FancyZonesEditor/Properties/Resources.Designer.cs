@@ -467,7 +467,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings.
+        ///   Looks up a localized string similar to Template settings.
         /// </summary>
         public static string Settings {
             get {

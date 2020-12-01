@@ -225,6 +225,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Styles\LayoutPreviewStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Themes\Dark.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -313,13 +317,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\ChromeClose.png" />
-    <Resource Include="images\Delete.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\Merge.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\FancyZonesEditor.ico" />
