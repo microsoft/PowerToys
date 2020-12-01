@@ -233,7 +233,16 @@ void OverlayWindow::enable()
         winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
         winkey_popup->set_theme(theme.value);
         target_state = std::make_unique<TargetState>(pressTime.value);
-        winkey_popup->initialize();
+        try
+        {
+            winkey_popup->initialize();
+        }
+        catch (...)
+        {
+            Logger::critical("Winkey popup failed to initialize");
+            return;
+        }
+        
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
         const bool hook_disabled = IsDebuggerPresent();
 #else
