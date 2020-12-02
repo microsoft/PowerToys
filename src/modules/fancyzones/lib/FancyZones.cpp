@@ -2,6 +2,7 @@
 
 #include <common/common.h>
 #include <common/dpi_aware.h>
+#include <common/monitor_utils.h>
 #include <common/on_thread_executor.h>
 #include <common/window_helpers.h>
 
@@ -636,7 +637,7 @@ void FancyZones::ToggleEditor() noexcept
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
 
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+    allMonitors = GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
     
     // device id map 
     std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
@@ -1116,7 +1117,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     }
 
-    auto allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+    auto allMonitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
 
     if (current && allMonitors.size() > 1 && m_settings->GetSettings()->moveWindowAcrossMonitors)
     {

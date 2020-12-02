@@ -132,6 +132,9 @@
     <ClInclude Include="toast_dont_show_again.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="monitor_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
