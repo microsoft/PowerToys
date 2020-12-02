@@ -28,7 +28,7 @@
                          SelectedIndex="{Binding SelectedColorIndex}"
                          ItemContainerStyle="{DynamicResource ColorHistoryListViewStyle}">
                 <ui:ListView.ContextMenu>
-                    <ContextMenu>
+                    <ContextMenu Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
                         <MenuItem Header="{x:Static p:Resources.Remove}"
                                   Command="{Binding RemoveColorCommand}">
                             <MenuItem.Icon>
