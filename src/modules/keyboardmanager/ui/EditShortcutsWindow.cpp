@@ -7,6 +7,7 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/windows_colors.h>
 #include <common/dpi_aware.h>
+#include <common/monitor_utils.h>
 #include "Styles.h"
 #include "Dialog.h"
 #include <keyboardmanager/dll/Generated Files/resource.h>
@@ -77,9 +78,20 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         isEditShortcutsWindowRegistrationCompleted = true;
     }
 
-    // Find center screen coordinates
-    RECT desktopRect;
-    GetClientRect(GetDesktopWindow(), &desktopRect);
+    // Find coordinates of the screen where the settings window is placed.
+    HWND settingsWindow = GetForegroundWindow();
+    HMONITOR settingsMonitor = MonitorFromWindow(settingsWindow, MONITOR_DEFAULTTONULL);
+    RECT desktopRect{};
+    auto monitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+    for (const auto& monitor : monitors)
+    {
+        if (settingsMonitor == monitor.first)
+        {
+            desktopRect = monitor.second;
+            break;
+        }
+    }
+
     // Calculate DPI dependent window size
     int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth;
     int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight;
@@ -90,8 +102,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         szWindowClass,
         GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_WINDOWNAME).c_str(),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
-        (desktopRect.right / 2) - (windowWidth / 2),
-        (desktopRect.bottom / 2) - (windowHeight / 2),
+        ((desktopRect.right - desktopRect.left) / 2) + desktopRect.left - (windowWidth / 2),
+        ((desktopRect.bottom - desktopRect.top) / 2) + desktopRect.top - (windowHeight / 2),
         windowWidth,
         windowHeight,
         NULL,
