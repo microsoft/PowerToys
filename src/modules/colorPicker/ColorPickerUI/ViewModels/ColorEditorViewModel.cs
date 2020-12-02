@@ -130,6 +130,12 @@ namespace ColorPicker.ViewModels
 
         private void DeleteSelectedColor()
         {
+            if (ColorsHistory.Count == 0)
+            {
+                // nothing to do
+                return;
+            }
+
             // select new color on the same index if possible, otherwise the last one
             var indexToSelect = SelectedColorIndex == ColorsHistory.Count - 1 ? ColorsHistory.Count - 2 : SelectedColorIndex;
             ColorsHistory.RemoveAt(SelectedColorIndex);
