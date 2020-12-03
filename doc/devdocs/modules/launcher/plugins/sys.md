@@ -12,9 +12,9 @@ As the name suggests, the Sys Plugin is used to directly run Windows system comm
 
 ![Image of Sys plugin](/doc/images/launcher/plugins/sys.gif)
 
-## [`Sys`](src/modules/launcher/Plugins/Microsoft.Plugin.Sys/main.cs)
+## [`Sys`](/src/modules/launcher/Plugins/Microsoft.Plugin.Sys/main.cs)
 
-* Tries to parse the user input and returns a specific Windows system command by using a [`Result`](src/modules/launcher/Wox.Plugin/Result.cs) list.
+* Tries to parse the user input and returns a specific Windows system command by using a [`Result`](/src/modules/launcher/Wox.Plugin/Result.cs) list.
 
 * While parsing, the Sys plugin uses [`FuzzyMatch`](/src/modules/launcher/Wox.Infrastructure/StringMatcher.cs) to get characters matching a result in the list.
 
