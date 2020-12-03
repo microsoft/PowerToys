@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
+using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Helpers
 {
@@ -28,9 +30,18 @@ namespace ColorPicker.Helpers
                     }
                     catch (COMException ex)
                     {
+                        var hwnd = GetOpenClipboardWindow();
+                        var sb = new StringBuilder(501);
+                        _ = GetWindowText(hwnd.ToInt32(), sb, 500);
+                        var applicationUsingClipboard = sb.ToString();
+
                         if ((uint)ex.ErrorCode != ErrorCodeClipboardCantOpen)
                         {
                             Logger.LogError("Failed to set text into clipboard", ex);
+                        }
+                        else
+                        {
+                            Logger.LogError("Failed to set text into clipboard, application that is locking clipboard - " + applicationUsingClipboard, ex);
                         }
                     }
 
