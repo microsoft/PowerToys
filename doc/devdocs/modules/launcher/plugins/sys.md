@@ -1,6 +1,6 @@
 # Sys Plugin
 
-The Sys Plugin, as the name suggests is used to directly run Windows system commands that have been entered by the user as a query. This is done by parsing the entry and validating the command, followed by executing it.
+As the name suggests, the Sys Plugin is used to directly run Windows system commands that have been entered by the user as a query. This is done by parsing the entry and validating the command, followed by executing it.
 
 * Shutdown
 * Restart
