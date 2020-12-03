@@ -23,7 +23,7 @@ namespace ColorPicker.Helpers
                 {
                     try
                     {
-                        Clipboard.SetText(colorRepresentationToCopy);
+                        Clipboard.SetDataObject(colorRepresentationToCopy);
                         break;
                     }
                     catch (COMException ex)
