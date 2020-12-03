@@ -14,6 +14,8 @@ namespace ColorPicker.Helpers
     {
         private readonly IColorEditorViewModel _colorEditorViewModel;
         private ColorEditorWindow _colorEditorWindow;
+        private bool _colorPickerShown;
+        private object _colorPickerVisibilityLock = new object();
 
         [ImportingConstructor]
         public AppStateHandler(IColorEditorViewModel colorEditorViewModel)
@@ -30,16 +32,30 @@ namespace ColorPicker.Helpers
 
         public void ShowColorPicker()
         {
-            AppShown?.Invoke(this, EventArgs.Empty);
-            Application.Current.MainWindow.Opacity = 0;
-            Application.Current.MainWindow.Visibility = Visibility.Visible;
+            lock (_colorPickerVisibilityLock)
+            {
+                if (!_colorPickerShown)
+                {
+                    AppShown?.Invoke(this, EventArgs.Empty);
+                    Application.Current.MainWindow.Opacity = 0;
+                    Application.Current.MainWindow.Visibility = Visibility.Visible;
+                    _colorPickerShown = true;
+                }
+            }
         }
 
         public void HideColorPicker()
         {
-            Application.Current.MainWindow.Opacity = 0;
-            Application.Current.MainWindow.Visibility = Visibility.Collapsed;
-            AppHidden?.Invoke(this, EventArgs.Empty);
+            lock (_colorPickerVisibilityLock)
+            {
+                if (_colorPickerShown)
+                {
+                    Application.Current.MainWindow.Opacity = 0;
+                    Application.Current.MainWindow.Visibility = Visibility.Collapsed;
+                    AppHidden?.Invoke(this, EventArgs.Empty);
+                    _colorPickerShown = false;
+                }
+            }
         }
 
         public void ShowColorPickerEditor()

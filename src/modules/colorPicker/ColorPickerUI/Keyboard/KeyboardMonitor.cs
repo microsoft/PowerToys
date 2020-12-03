@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Windows.Input;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
@@ -21,10 +22,12 @@ namespace ColorPicker.Keyboard
     {
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
+        private List<string> _previouslyPressedKeys;
 
         private List<string> _activationKeys = new List<string>();
         private GlobalKeyboardHook _keyboardHook;
         private bool disposedValue;
+        private bool _activationShortcutPressed;
 
         [ImportingConstructor]
         public KeyboardMonitor(AppStateHandler appStateHandler, IUserSettings userSettings)
@@ -80,26 +83,38 @@ namespace ColorPicker.Keyboard
             // If the last key pressed is a modifier key, then currentlyPressedKeys cannot possibly match with _activationKeys
             // because _activationKeys contains exactly 1 non-modifier key. Hence, there's no need to check if `name` is a
             // modifier key or to do any additional processing on it.
-
-            // Check pressed modifier keys.
-            AddModifierKeys(currentlyPressedKeys);
-
             if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown || e.KeyboardState == GlobalKeyboardHook.KeyboardState.SysKeyDown)
             {
+                // Check pressed modifier keys.
+                AddModifierKeys(currentlyPressedKeys);
+
                 currentlyPressedKeys.Add(name);
             }
 
             currentlyPressedKeys.Sort();
 
+            if (currentlyPressedKeys.Count == 0 && _previouslyPressedKeys.Count != 0)
+            {
+                // no keys pressed, we can enable activation shortcut again
+                _activationShortcutPressed = false;
+            }
+
+            _previouslyPressedKeys = currentlyPressedKeys;
+
             if (ArraysAreSame(currentlyPressedKeys, _activationKeys))
             {
-                if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+                // avoid triggering this action multiple times as this will be called nonstop while keys are pressed
+                if (!_activationShortcutPressed)
                 {
-                    _appStateHandler.ShowColorPickerEditor();
-                }
-                else
-                {
-                    _appStateHandler.ShowColorPicker();
+                    _activationShortcutPressed = true;
+                    if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+                    {
+                        _appStateHandler.ShowColorPickerEditor();
+                    }
+                    else
+                    {
+                        _appStateHandler.ShowColorPicker();
+                    }
                 }
             }
         }
