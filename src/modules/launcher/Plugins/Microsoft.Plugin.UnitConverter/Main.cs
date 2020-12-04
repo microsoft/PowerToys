@@ -5,9 +5,11 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
-using UnitConversion;
+using UnitsNet;
+using UnitsNet.Units;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+
 
 namespace Microsoft.Plugin.UnitConverter
 {
@@ -16,7 +18,8 @@ namespace Microsoft.Plugin.UnitConverter
         private PluginInitContext _context;
         private static string _icon_path;
         private bool _disposed;
-        private DistanceConverter _ft_to_m = new DistanceConverter("ft", "m");
+        private readonly QuantityType[] _included = new QuantityType[] { QuantityType.Acceleration, QuantityType.Length, QuantityType.Mass, QuantityType.Speed, QuantityType.Temperature, QuantityType.Volume };
+
 
         public void Init(PluginInitContext context) {
             if (context == null) {
@@ -34,34 +37,51 @@ namespace Microsoft.Plugin.UnitConverter
             }
 
             string[] split = query.Search.Split(' ');
-            if (split.Length < 4) {
+            if (split.Length < 4 || split.Length > 4) {
+                // deny any other queries than:
+                // 10 ft in cm
+                // 10 ft to cm
                 return new List<Result>();
             }
 
-            double ans = _ft_to_m.LeftToRight(double.Parse(split[0]));
+            List<Result> final_list = new List<Result>();
 
-            return new List<Result>        {                new Result {
-                Title = string.Format("{0} {1}", ans.ToString(), split[3]),
-                IcoPath = _icon_path,
-                Score = 300,
-                SubTitle = "Copy to clipboard", //Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
-                Action = c => {
-                    var ret = false;
-                    var thread = new Thread(() => {
-                        try {
-                            Clipboard.SetText(ans.ToString());
-                            ret = true;
-                        }
-                        catch (ExternalException) {
-                            MessageBox.Show("Copy failed, please try later");
+            foreach (QuantityType quantity_type in _included) {
+                QuantityInfo unit_info = Quantity.GetInfo(quantity_type);
+
+                bool first_unit_recognized = UnitParser.Default.TryParse(split[1], unit_info.UnitType, out Enum first_unit);
+                bool second_unit_recognized = UnitParser.Default.TryParse(split[3], unit_info.UnitType, out Enum _);
+
+                if (first_unit_recognized && second_unit_recognized) {
+                    double converted = UnitsNet.UnitConverter.ConvertByAbbreviation(int.Parse(split[0]), unit_info.Name, split[1], split[3]);
+
+                    // answer found, add result to list
+                    final_list.Add(new Result {
+                        Title = string.Format("{0} {1}", converted, split[3]),
+                        IcoPath = _icon_path,
+                        Score = 300,
+                        SubTitle = "Copy to clipboard", //Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
+                        Action = c => {
+                            var ret = false;
+                            var thread = new Thread(() => {
+                                try {
+                                    Clipboard.SetText(converted.ToString());
+                                    ret = true;
+                                }
+                                catch (ExternalException) {
+                                    MessageBox.Show("Copy failed, please try later");
+                                }
+                            });
+                            thread.SetApartmentState(ApartmentState.STA);
+                            thread.Start();
+                            thread.Join();
+                            return ret;
                         }
                     });
-                    thread.SetApartmentState(ApartmentState.STA);
-                    thread.Start();
-                    thread.Join();
-                    return ret;
-                },
-            },};
+                }
+            }
+
+            return final_list;
         }
 
         private void OnThemeChanged(Theme _, Theme newTheme) {

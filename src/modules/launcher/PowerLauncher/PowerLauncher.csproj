@@ -113,7 +113,7 @@
     <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0">
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
-    <PackageReference Include="UnitConversion" Version="1.0.3" />
+    <PackageReference Include="UnitsNet" Version="4.76.0" />
   </ItemGroup>
 
   <ItemGroup>

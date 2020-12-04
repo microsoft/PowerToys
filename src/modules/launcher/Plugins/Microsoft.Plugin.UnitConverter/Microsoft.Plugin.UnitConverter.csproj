@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="UnitConversion" Version="1.0.3" />
+    <PackageReference Include="UnitsNet" Version="4.76.0" />
   </ItemGroup>
 
 </Project>
