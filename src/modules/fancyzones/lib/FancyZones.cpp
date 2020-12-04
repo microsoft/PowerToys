@@ -2,6 +2,7 @@
 
 #include <common/common.h>
 #include <common/dpi_aware.h>
+#include <common/logger/logger.h>
 #include <common/on_thread_executor.h>
 #include <common/window_helpers.h>
 
@@ -534,6 +535,9 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
     bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
     bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+
+    Logger::trace("OnKeyDown: shift {}", shift);
+
     if ((win && !shift && !ctrl) || (win && ctrl && alt))
     {
         // Temporarily disable Win+Ctrl+Number functionality
@@ -570,8 +574,10 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 
     if (m_windowMoveHandler.IsDragEnabled() && shift)
     {
+        Logger::trace("OnKeyDown: drag enabled -> return true");
         return true;
     }
+    Logger::trace("OnKeyDown: return false");
     return false;
 }
 
