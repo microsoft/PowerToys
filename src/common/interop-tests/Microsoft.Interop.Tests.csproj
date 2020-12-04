@@ -1,10 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Version.props" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
-	  
-	<AssemblyTitle>interop-tests</AssemblyTitle>
+
+	  <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	  <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+	  <Platforms>x64</Platforms>
+	  <AssemblyTitle>interop-tests</AssemblyTitle>
 	<Company>Microsoft Corp.</Company>
 	<Copyright>Copyright (C) 2020 Microsoft Corp.</Copyright>
   </PropertyGroup>
@@ -15,7 +21,6 @@
 
 	<PropertyGroup>
 		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 		<OutputType>Library</OutputType>
 		<RootNamespace>Microsoft.Interop.Tests</RootNamespace>
 		<AssemblyName>Microsoft.Interop.Tests</AssemblyName>
