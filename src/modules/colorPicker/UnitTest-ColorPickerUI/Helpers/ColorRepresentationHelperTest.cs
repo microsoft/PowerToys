@@ -7,7 +7,7 @@ using ColorPicker.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTest_ColorPickerUI.Helpers
+namespace Microsoft.ColorPicker.UnitTests
 {
     [TestClass]
     public class ColorRepresentationHelperTest
