@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              xmlns:shaders="clr-namespace:ColorPicker.Shaders"
-             xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
              Background="Transparent"
              Focusable="False">
