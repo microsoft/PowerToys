@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Create window layouts to help make multi-tasking easy]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Crie esquemas de janelas para ajudar a facilitar as multi-tarefas]]></Val>
+            <Val><![CDATA[Crie esquemas de janelas para ajudar a facilitar as multitarefas]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

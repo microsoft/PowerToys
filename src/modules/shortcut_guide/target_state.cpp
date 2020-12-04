@@ -3,6 +3,7 @@
 #include "common/start_visible.h"
 #include "keyboard_state.h"
 #include "common/shared_constants.h"
+#include <common\logger\logger.h>
 
 TargetState::TargetState(int ms_delay) :
     // TODO: All this processing should be done w/o a separate thread etc. in pre_wnd_proc of winkey_popup to avoid
@@ -143,13 +144,36 @@ void TargetState::thread_proc()
             handle_hidden();
             break;
         case Timeout:
-            handle_timeout();
+            try
+            {
+                handle_timeout();
+            }
+            catch (...)
+            {
+                Logger::critical("Timeout, handle_timeout failed.");
+            }
             break;
         case Shown:
-            handle_shown(false);
+            try
+            {
+                handle_shown(false);
+            }
+            catch (...)
+            {
+                Logger::critical("Shown, handle_shown failed.");
+            }
+            
             break;
         case ForceShown:
-            handle_shown(true);
+            try
+            {
+                handle_shown(true);
+            }
+            catch (...)
+            {
+                Logger::critical("ForceShown, handle_shown failed.");
+            }
+            
             break;
         case Exiting:
         default:

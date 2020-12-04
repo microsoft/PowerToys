@@ -58,6 +58,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BOOTSTRAPPER_PROGRESS_TITLE" xml:space="preserve">
+    <value>PowerToys installer</value>
+  </data>
   <data name="DOTNET_CORE_DOWNLOAD_FAILURE" xml:space="preserve">
     <value>Couldn't download .NET Core Desktop Runtime 3.1, please install it manually.</value>
   </data>
@@ -88,7 +91,7 @@
   <data name="GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT" xml:space="preserve">
     <value>An update to PowerToys is available. Visit our GitHub page to update.</value>
   </data>
-  <data name="GITHUB_NEW_VERSION_UNAVAILABLE" xml:space="preserve">
+  <data name="GITHUB_NEW_VERSION_UP_TO_DATE" xml:space="preserve">
     <value>PowerToys is up to date.</value>
   </data>
   <data name="GITHUB_NEW_VERSION_VISIT" xml:space="preserve">
@@ -130,28 +133,26 @@
   <data name="EXTRACTING_INSTALLER" xml:space="preserve">
     <value>Extracting PowerToys MSI...</value>
   </data>
-  <data name="UNINSTALLING_PREVIOUS_VERSION" xml:space="preserve">
-    <value>Uninstalling previous PowerToys version...</value>
-  </data>
   <data name="UNINSTALL_PREVIOUS_VERSION_ERROR" xml:space="preserve">
     <value>Couldn't uninstall previous PowerToys version!</value>
   </data>
-  <data name="INSTALLING_DOTNET" xml:space="preserve">
-    <value>Installing dotnet...</value>
+  <data name="DOWNLOADING_DOTNET" xml:space="preserve">
+    <value>Downloading .NET Core Runtime...</value>
   </data>
   <data name="DOTNET_INSTALL_ERROR" xml:space="preserve">
     <value>Couldn't install dotnet!</value>
-  </data>
-  <data name="INSTALLING_NEW_VERSION" xml:space="preserve">
-    <value>Installing new PowerToys version...</value>
-  </data>
-  <data name="NEW_VERSION_INSTALLATION_DONE" xml:space="preserve">
-    <value>PowerToys installation complete!</value>
   </data>
   <data name="NEW_VERSION_INSTALLATION_ERROR" xml:space="preserve">
     <value>Couldn't install new PowerToys version.</value>
   </data>
   <data name="SNOOZE_BUTTON" xml:space="preserve">
     <value>Snooze</value>
-  </data>  
+  </data>
+  <data name="GITHUB_NEW_VERSION_USING_LOCAL_BUILD_ERROR" xml:space="preserve">
+    <value>Updating from a local build is not supported.</value>
+    <comment>User cannot autoupdate from a locally-built PowerToys version</comment>
+  </data>
+  <data name="GITHUB_NEW_VERSION_CHECK_ERROR" xml:space="preserve">
+    <value>Failed to connect to the server. Check your network connection or retry later.</value>
+  </data>
 </root>

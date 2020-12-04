@@ -91,6 +91,22 @@ namespace FancyZonesEditor
             Overlay.Show();
         }
 
+        public void App_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.LeftShift || e.Key == System.Windows.Input.Key.RightShift)
+            {
+                MainWindowSettings.IsShiftKeyPressed = false;
+            }
+        }
+
+        public void App_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.LeftShift || e.Key == System.Windows.Input.Key.RightShift)
+            {
+                MainWindowSettings.IsShiftKeyPressed = true;
+            }
+        }
+
         public static void ShowExceptionMessageBox(string message, Exception exception = null)
         {
             string fullMessage = FancyZonesEditor.Properties.Resources.Error_Report + PowerToysIssuesURL + " \n" + message;

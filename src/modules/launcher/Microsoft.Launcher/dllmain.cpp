@@ -78,8 +78,6 @@ private:
     // Handle to event used to invoke the Runner
     HANDLE m_hEvent;
 
-    std::shared_ptr<Logger> logger;
-
 public:
     // Constructor
     Microsoft_Launcher()
@@ -88,8 +86,8 @@ public:
         app_key = LauncherConstants::ModuleKey;
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(this->app_key));
         logFilePath.append(LogSettings::launcherLogPath);
-        logger = std::make_shared<Logger>(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
-        logger->info("Launcher object is constructing");
+        Logger::init(LogSettings::launcherLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        Logger::info("Launcher object is constructing");
         init_settings();
 
         SECURITY_ATTRIBUTES sa;
@@ -101,8 +99,7 @@ public:
 
     ~Microsoft_Launcher()
     {
-        logger->info("Launcher object is destroying");
-        logger.reset();
+        Logger::info("Launcher object is destroying");
         if (m_enabled)
         {
             terminateProcess();
@@ -183,7 +180,7 @@ public:
     // Enable the powertoy
     virtual void enable()
     {
-        this->logger->info("Launcher is enabling");
+        Logger::info("Launcher is enabling");
         ResetEvent(m_hEvent);
         // Start PowerLauncher.exe only if the OS is 19H1 or higher
         if (UseNewSettings())
@@ -255,7 +252,7 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
-        this->logger->info("Launcher is disabling");
+        Logger::info("Launcher is disabling");
         if (m_enabled)
         {
             ResetEvent(m_hEvent);
@@ -327,7 +324,7 @@ public:
         if (TerminateProcess(m_hProcess, 1) == 0)
         {
             auto err = get_last_error_message(GetLastError());
-            this->logger->error(L"Launcher process was not terminated. {}", err.has_value() ? err.value() : L"");
+            Logger::error(L"Launcher process was not terminated. {}", err.has_value() ? err.value() : L"");
         }
 
         // Temporarily disable sending a message to close

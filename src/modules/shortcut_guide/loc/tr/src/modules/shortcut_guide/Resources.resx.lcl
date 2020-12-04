@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Snap left]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sola yasla]]></Val>
+            <Val><![CDATA[Sola tuttur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Snap lower left]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sol alta yasla]]></Val>
+            <Val><![CDATA[Sol alta tuttur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Snap lower right]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sağ alta yasla]]></Val>
+            <Val><![CDATA[Sağ alta tuttur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Snap right]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sağa yasla]]></Val>
+            <Val><![CDATA[Sağa tuttur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +158,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Snap upper left]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sol üste yasla]]></Val>
+            <Val><![CDATA[Sol üste tuttur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Snap upper right]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sağ üste yasla]]></Val>
+            <Val><![CDATA[Sağ üste tuttur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

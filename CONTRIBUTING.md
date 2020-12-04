@@ -59,7 +59,7 @@ If no existing item describes your issue/feature, great - please file a new issu
 * Don't assume we're experts in setting up YOUR environment and don't assume we are experts in YOUR workflow. Teach us to help you!
 * **We LOVE detailed repro steps!** What steps do we need to take to reproduce the issue? Assume we love to read repro steps. As much detail as you can stand is probably _barely_ enough detail for us!
 * Prefer error message text where possible or screenshots of errors if text cannot be captured
-* **If you intend to implement the fix/feature yourself then say so!** If you do not indicate otherwise we will assume that the issue is our to solve, or may label the issue as `Help-Wanted`.
+* **If you intend to implement the fix/feature yourself then say so!** If you do not indicate otherwise we will assume that the issue is ours to solve, or may label the issue as `Help-Wanted`.
 
 ### DO NOT post "+1" comments
 

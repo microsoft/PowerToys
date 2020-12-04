@@ -302,7 +302,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Reset layout]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Сбросить макет]]></Val>
+            <Val><![CDATA[Сброс макета]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

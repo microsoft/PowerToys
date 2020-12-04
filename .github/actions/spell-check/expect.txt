@@ -16,6 +16,7 @@ Acceleratorkeys
 ACCEPTFILES
 accessibile
 accessibilityinsights
+acf
 Acl
 aclapi
 AColumn
@@ -43,6 +44,8 @@ AGGREGATABLE
 AHybrid
 Aissue
 akamaihd
+alannt
+alannt777
 ALarger
 alekhyareddy
 alertsolid
@@ -154,6 +157,7 @@ bc
 bcc
 bck
 Bcl
+bdaa
 bddac
 BEGINLABELEDIT
 betadele
@@ -610,6 +614,7 @@ EDDD
 EDDE
 EDDF
 EDE
+ededf
 EDFF
 edgelogo
 edgeoldlogo
@@ -662,6 +667,7 @@ Elems
 ELogo
 elseif
 Emoji
+emptyrecyclebin
 ENABLEDPOPUP
 endforeach
 endif
@@ -698,6 +704,13 @@ eventdatemissed
 eventlog
 everytime
 evt
+EWX
+EWXFORCE
+EWXFORCEIFHUNG
+EWXLOGOFF
+EWXPOWEROFF
+EWXREBOOT
+EWXSHUTDOWN
 examplehandler
 examplepowertoy
 EXCLUDEFILES
@@ -773,6 +786,7 @@ FOFX
 FOLDERID
 folderpath
 fonttbl
+FORCEIFHUNG
 FORCEOFFLINE
 foreach
 formatetc
@@ -946,6 +960,7 @@ IBackground
 IBeam
 IBind
 icase
+iccex
 IClass
 ico
 ICollection
@@ -1036,6 +1051,7 @@ Infotip
 ingbuffer
 inheritdoc
 ini
+INITCOMMONCONTROLSEX
 INITDIALOG
 INITGUID
 inl
@@ -1319,6 +1335,7 @@ makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
 MAKELANGID
+MAKELPARAM
 makepri
 malloc
 manifestdependency
@@ -1327,6 +1344,7 @@ MAPTOSAMESHORTCUT
 MAPVK
 Markdig
 martinchrzan
+martinmoene
 MATCHALLOCCURENCES
 MATCHMODE
 MAXIMIZEBOX
@@ -1414,6 +1432,7 @@ MSIRESTARTMANAGERCONTROL
 msix
 msixbundle
 MSIXVERSION
+MSGBOX
 MSLLHOOKSTRUCT
 Mso
 msp
@@ -1440,6 +1459,7 @@ NAMECHANGE
 nameof
 NAMEONLY
 namespace
+NATIVEFNTCTL
 nc
 NCACTIVATE
 ncc
@@ -1504,6 +1524,7 @@ nonclient
 NONCONVERT
 NONELEVATED
 NONINFRINGEMENT
+nonstd
 nonwin
 NOOWNERZORDER
 NOPARENTNOTIFY
@@ -1573,6 +1594,7 @@ Onboarding
 onebranch
 onedrive
 onedrivelogo
+onstd
 ONITEM
 OOBE
 opencode
@@ -1687,6 +1709,7 @@ Portugu
 posix
 powerappscds
 powerlauncher
+POWEROFF
 powerpreview
 powerrename
 POWERRENAMETEST
@@ -1695,6 +1718,7 @@ powertoy
 POWERTOYNAME
 powertoysinterop
 powertoyssetup
+Powrprof
 ppenum
 ppidl
 pprm
@@ -1965,8 +1989,10 @@ SETICON
 setings
 setlocal
 setnt
+SETRANGE
 Setrect
 SETREDRAW
+SETSTEP
 SETTEXT
 SETTINGCHANGE
 settingsheader
@@ -2116,6 +2142,7 @@ STDMETHODIMP
 stdout
 Stdout
 stefan
+STEPIT
 stgm
 STGMEDIUM
 stoi
@@ -2148,6 +2175,7 @@ subfolder
 Subheader
 subkey
 SUBLANG
+sublicensable
 subquery
 subsetted
 subsetter
@@ -2476,6 +2504,7 @@ website
 webview
 wekyb
 wexfs
+wdupenv
 Whichdoes
 whitespaces
 WIC

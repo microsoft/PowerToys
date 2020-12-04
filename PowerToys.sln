@@ -74,7 +74,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests-CommonLib", "src\
 		{74485049-C722-400F-ABE5-86AC52D929B3} = {74485049-C722-400F-ABE5-86AC52D929B3}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FancyZonesEditor", "src\modules\fancyzones\editor\FancyZonesEditor\FancyZonesEditor.csproj", "{5CCC8468-DEC8-4D36-99D4-5C891BEBD481}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FancyZonesEditor", "src\modules\fancyzones\editor\FancyZonesEditor\FancyZonesEditor.csproj", "{5CCC8468-DEC8-4D36-99D4-5C891BEBD481}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "powerrename", "powerrename", "{89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}"
 EndProject
@@ -270,6 +270,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest-ColorPickerUI", "src\modules\colorPicker\UnitTest-ColorPickerUI\UnitTest-ColorPickerUI.csproj", "{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logging", "src\logging\logging.vcxproj", "{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Sys", "src\modules\launcher\Plugins\Microsoft.Plugin.Sys\Microsoft.Plugin.Sys.csproj", "{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Sys.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Sys.UnitTests\Microsoft.Plugin.Sys.UnitTests.csproj", "{DA5A6FE9-0040-40CC-83CC-764AE5306590}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "src\common\logger\logger.vcxproj", "{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}"
 EndProject
@@ -551,6 +555,14 @@ Global
 		{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}.Debug|x64.Build.0 = Debug|x64
 		{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}.Release|x64.ActiveCfg = Release|x64
 		{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}.Release|x64.Build.0 = Release|x64
+		{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}.Debug|x64.ActiveCfg = Debug|x64
+		{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}.Debug|x64.Build.0 = Debug|x64
+		{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}.Release|x64.ActiveCfg = Release|x64
+		{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}.Release|x64.Build.0 = Release|x64
+		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Debug|x64.ActiveCfg = Debug|x64
+		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Debug|x64.Build.0 = Debug|x64
+		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Release|x64.ActiveCfg = Release|x64
+		{DA5A6FE9-0040-40CC-83CC-764AE5306590}.Release|x64.Build.0 = Release|x64
 		{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}.Debug|x64.ActiveCfg = Debug|x64
 		{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}.Debug|x64.Build.0 = Debug|x64
 		{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}.Release|x64.ActiveCfg = Release|x64
@@ -634,6 +646,8 @@ Global
 		{4FA206A5-F69F-4193-BF8F-F6EEB496734C} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1} = {1D78B84B-CA39-406C-98F4-71F7EC266CC0}
 		{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{DA5A6FE9-0040-40CC-83CC-764AE5306590} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

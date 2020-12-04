@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Plugin.Sys.UnitTests")]
 
 namespace Wox.Infrastructure
 {

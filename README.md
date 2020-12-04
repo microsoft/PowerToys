@@ -18,8 +18,7 @@ For a video overview of PowerToys, including install steps and a walkthrough of 
 
 ### Color Picker
 
-[<img align="left" src="https://aka.ms/powerToysColorPickerImageSmall" />](https://aka.ms/PowerToysOverview_ColorPicker) [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) is a simple and quick system-wide color picker with <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. Color Picker allows to pick colors from any currently running application and automatically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
-<br/>
+[<img align="left" src="https://aka.ms/powerToysColorPickerImageSmall" />](https://aka.ms/PowerToysOverview_ColorPicker) [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) is a simple and quick system-wide color picker with <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. Color Picker allows to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard. Color Picker also contains an editor that shows a history of previously picked colors, allows you to fine-tune the selected color and to copy different string representations. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker) and [Niels Laute's UX concept](https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c).
 <br/>
 <br/>
 
@@ -89,12 +88,12 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 #### Requirements
 
-- Windows 10 1803 (build 17134) or later.
-- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer should handle this but we want to directly make people aware.
+- Windows 10 v1903 (build 18362) or better preferred, Windows 10 v1803 (build 17134) minimum.  
+- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.10-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
 ### Via GitHub with EXE [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.25.0-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.27.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -107,9 +106,7 @@ WinGet install powertoys
 
 ### Experimental PowerToys utility with Video conference muting
 
-Install the [pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from 0.23 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
-
-**Note:** We'll have 0.26 Experimental out in the first week of November 2020.
+Install the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from 0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
 ### Other install methods
 
@@ -129,61 +126,43 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### October 2020 Update
+### November 2020 Update
 
-Our goals for [0.25 release cycle][github-release-link] was to focus on stability, accessibility, localization and quality of life improvements for both the development team and our end users. Our first end to end localization pass has been done.  We know it isn't perfect but we are in 17 languages now. If you find an issue, please file a [localization bug][loc-bug].
+Our goals for [0.27 release cycle][github-release-link] was to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users.  Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
-Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
-
-#### Highlights from October 2020
+#### Highlights from 0.27
 
 **General**
-- First pass on localization complete.  17 different languages.  We know there will be some rough areas, please [make us aware so we can correct them][loc-bug].
-- Logging added into the installer
+- Installer improvements including dark mode
 - Large sums of accessibility issues fixed.
-- Less notifications for installing
-- FxCop work is almost fully wrapped up
-- Wrapped up the [Video GIF capture spec](https://github.com/microsoft/PowerToys/wiki/Video-GIF-Capture).  This is laying out our plan for the future work.
+- Worked on localization effort. If you find issues, please [make us aware so we can correct them][loc-bug].
 
 **Color Picker**
-- Additional color style selections such as CYMK and HSL
+- Updated interface and new editor experience done by [@martinchrzan](https://github.com/martinchrzan) and [@niels9001](https://github.com/niels9001)
 
 **FancyZones**
-- Multiple bugs fixed
-- Better zone drawing improvements
+- Multi-monitor editor experience now drastically improved for discoverability.
+- Zones being forgotten on restart
+- Added in ability to have no layout
 
-**Keyboard manager**
-- Fixed terminal input map failure
-- Better app compat
-- Multiple bug fixes
-- Ability to directly disable keys/shortcuts
+**Image Resizer**
+- Updated interface
 
 **PowerToys Run**
-- expanded environment var searching such as %windr%
-- multiple crash bug fixes
-- Improvements on calculator plugin
-- Directly able to override theming
-- Windows will open to what shell you want
-- Better action key support
-  - `=` for direct calculator
-  - `?` for direct file searching
-  - `.` for direct for applications
-  - `//` for direct URL
-  - `<` for running processes
-  - `>` for shell processes
+- Removed unused dependencies
 
-**Dev docs**
-- Added multiple developer related docs.
+**PowerRename**
+- Added Lookbehind support via Boost library
 
-I'd like to directly call out [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@davidegiacometti](https://github.com/davidegiacometti), [@royvou](https://github.com/royvou), [@gordonwatts](https://github.com/gordonwatts), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@niels9001](https://github.com/niels9001) for their continued community support and helping directly make PowerToys a better piece of software.
+I'd like to directly call out [@davidegiacometti](https://github.com/davidegiacometti), [@gordonwatts](https://github.com/gordonwatts), [@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@alannt777](https://github.com/alannt777) for their continued community support and helping directly make PowerToys a better piece of software.
 
-### What is being planned for 0.27 - November 2020
+### What is being planned for 0.29 - December 2020
 
-For [0.27](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F14), we are proactively working on:
+For [0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F15), we are proactively working on:
 
 - Stability
 - Accessibility
-- Video conference mute
+- Video conference mute investigation toward a DirectShow filter versus a driver
 - OOBE work
 
 ### PowerToys roadmap
@@ -219,7 +198,7 @@ The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.24.0
+[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.28.0
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
 [privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
