@@ -1302,6 +1302,7 @@ bool FancyZones::IsSplashScreen(HWND window)
 
 void FancyZones::OnEditorExitEvent() noexcept
 {
+    Logger::trace("OnEditorExitEvent");
     // Collect information about changes in zone layout after editor exited.
     FancyZonesDataInstance().ParseDataFromTmpFiles();
 
