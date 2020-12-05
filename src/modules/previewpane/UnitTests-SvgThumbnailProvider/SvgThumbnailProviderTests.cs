@@ -8,13 +8,14 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Common.ComInterlop;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Svg;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 namespace SvgThumbnailProviderUnitTests
 {
-    [TestClass]
+    [STATestClass]
     public class SvgThumbnailProviderTests
     {
         [TestMethod]

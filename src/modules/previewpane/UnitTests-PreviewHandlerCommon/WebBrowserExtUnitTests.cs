@@ -3,12 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Reflection;
+using Microsoft.PowerToys.STATestExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PreviewHandlerCommon;
 
 namespace PreviewHandlerCommonUnitTests
 {
-    [TestClass]
+    [STATestClass]
     public class WebBrowserExtUnitTests : WebBrowserExt
     {
         private const string DISPIDAMBIENTDLCONTROL = "[DISPID=-5512]";
