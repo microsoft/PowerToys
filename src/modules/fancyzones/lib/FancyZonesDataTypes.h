@@ -42,8 +42,8 @@ namespace FancyZonesDataTypes
         std::wstring monitorId;
 
         bool empty() const;
-        std::wstring Serialize() const;
-        static DeviceIdData Parse(const std::wstring& deviceId);
+        std::optional<std::wstring> Serialize() const;
+        static std::optional<DeviceIdData> Parse(const std::wstring& deviceId);
 
         bool operator==(const DeviceIdData& deviceId) const
         {

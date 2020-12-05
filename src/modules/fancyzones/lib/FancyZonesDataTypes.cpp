@@ -117,22 +117,23 @@ namespace FancyZonesDataTypes
 
     bool DeviceIdData::empty() const
     {
-        return *this == DeviceIdData{};
+        static DeviceIdData emptyDeviceIdData{};
+        return *this == emptyDeviceIdData;
     }
 
-    std::wstring DeviceIdData::Serialize() const
+    std::optional<std::wstring> DeviceIdData::Serialize() const
     {
-        std::wstring vdId = L"{00000000-0000-0000-0000-000000000000}";
         wil::unique_cotaskmem_string virtualDesktopIdStr;
         if (SUCCEEDED(StringFromCLSID(virtualDesktopId, &virtualDesktopIdStr)))
         {
-            vdId = std::wstring{ virtualDesktopIdStr.get() };
+            std::wstring vdId = std::wstring{ virtualDesktopIdStr.get() };
+            return deviceName + L"_" + std::to_wstring(width) + L"_" + std::to_wstring(height) + L"_" + vdId;
         }
 
-        return deviceName + L"_" + std::to_wstring(width) + L"_" + std::to_wstring(height) + L"_" + vdId;
+        return std::nullopt;
     }
 
-    DeviceIdData DeviceIdData::Parse(const std::wstring& deviceId)
+    std::optional<DeviceIdData> DeviceIdData::Parse(const std::wstring& deviceId)
     {
         DeviceIdData data;
 
@@ -165,7 +166,7 @@ namespace FancyZonesDataTypes
         }
         else
         {
-            return {};
+            return std::nullopt;
         }
 
         // Step 2: parse the rest of the id
@@ -177,7 +178,7 @@ namespace FancyZonesDataTypes
 
         if (parts.size() != 3 && parts.size() != 4)
         {
-            return {};
+            return std::nullopt;
         }
 
         /*
@@ -204,12 +205,12 @@ namespace FancyZonesDataTypes
         }
         catch (const std::exception&)
         {
-            return {};
+            return std::nullopt;
         }
 
         if (!SUCCEEDED(CLSIDFromString(parts[2].c_str(), &data.virtualDesktopId)))
         {
-            return {};
+            return std::nullopt;
         }
 
         if (parts.size() == 4)

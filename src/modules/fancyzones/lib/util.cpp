@@ -387,7 +387,7 @@ namespace FancyZonesUtils
         return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
     }
 
-    FancyZonesDataTypes::DeviceIdData GenerateUniqueId(HMONITOR monitor, const std::wstring& deviceId, const GUID& virtualDesktopId)
+    std::optional<FancyZonesDataTypes::DeviceIdData> GenerateUniqueId(HMONITOR monitor, const std::wstring& deviceId, const GUID& virtualDesktopId)
     {
         MONITORINFOEXW mi;
         mi.cbSize = sizeof(mi);
@@ -395,21 +395,21 @@ namespace FancyZonesUtils
         {
             Rect const monitorRect(mi.rcMonitor);
             // Unique identifier format: <parsed-device-id>_<width>_<height>_<virtual-desktop-id>
-            return { TrimDeviceId(deviceId), monitorRect.width(), monitorRect.height(), virtualDesktopId };
+            return FancyZonesDataTypes::DeviceIdData{ TrimDeviceId(deviceId), monitorRect.width(), monitorRect.height(), virtualDesktopId };
         }
-        return {};
+        return std::nullopt;
     }
 
-    FancyZonesDataTypes::DeviceIdData GenerateUniqueIdAllMonitorsArea(const GUID& virtualDesktopId)
+    std::optional<FancyZonesDataTypes::DeviceIdData> GenerateUniqueIdAllMonitorsArea(const GUID& virtualDesktopId)
     {
         RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
         int combinedResolutionWidth = static_cast<int>(combinedResolution.right - combinedResolution.left);
         int combinedResolutionHeight = static_cast<int>(combinedResolution.bottom - combinedResolution.top);
 
-        return { ZonedWindowProperties::MultiMonitorDeviceID, combinedResolutionWidth, combinedResolutionHeight, virtualDesktopId };
+        return FancyZonesDataTypes::DeviceIdData{ ZonedWindowProperties::MultiMonitorDeviceID, combinedResolutionWidth, combinedResolutionHeight, virtualDesktopId };
     }
 
-    FancyZonesDataTypes::DeviceIdData GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId)
+    std::optional<FancyZonesDataTypes::DeviceIdData> GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId)
     {
         DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
         PCWSTR deviceId = nullptr;

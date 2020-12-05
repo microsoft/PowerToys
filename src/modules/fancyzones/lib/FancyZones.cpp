@@ -644,14 +644,23 @@ void FancyZones::ToggleEditor() noexcept
     for (auto& monitor : allMonitors)
     {
         auto monitorId = FancyZonesUtils::GenerateMonitorId(monitor.second, monitor.first, m_currentDesktopId);
-        const auto monitorIdStr = monitorId.Serialize();
+        if (!monitorId.has_value())
+        {
+            continue;
+        }
+
+        const auto monitorIdStr = monitorId->Serialize();
+        if (!monitorIdStr.has_value())
+        {
+            continue;
+        }
 
         if (monitor.first == targetMonitor)
         {
-            params += monitorIdStr + divider; /* Monitor id where the Editor should be opened */
+            params += *monitorIdStr + divider; /* Monitor id where the Editor should be opened */
         }
 
-        monitorsData += monitorIdStr + divider; /* Monitor id */
+        monitorsData += *monitorIdStr + divider; /* Monitor id */
 
         UINT dpiX = 0;
         UINT dpiY = 0;
@@ -888,7 +897,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
 
     if (m_workAreaHandler.IsNewWorkArea(m_currentDesktopId, monitor))
     {
-        FancyZonesDataTypes::DeviceIdData uniqueId;
+        std::optional<FancyZonesDataTypes::DeviceIdData> uniqueId;
 
         if (monitor)
         {
@@ -899,13 +908,18 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, const std::wstring& deviceId) n
             uniqueId = FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(m_currentDesktopId);
         }
 
+        if (!uniqueId.has_value())
+        {
+            return;
+        }
+
         FancyZonesDataTypes::DeviceIdData parentId{};
         auto parentArea = m_workAreaHandler.GetWorkArea(m_previousDesktopId, monitor);
         if (parentArea)
         {
             parentId = parentArea->UniqueId();
         }
-        auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId);
+        auto workArea = MakeZoneWindow(this, m_hinstance, monitor, *uniqueId, parentId);
         if (workArea)
         {
             m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);

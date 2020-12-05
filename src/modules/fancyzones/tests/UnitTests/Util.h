@@ -81,6 +81,6 @@ namespace Microsoft::VisualStudio::CppUnitTestFramework
     template<>
     inline std::wstring ToString<FancyZonesDataTypes::DeviceIdData>(const FancyZonesDataTypes::DeviceIdData& v)
     {
-        return v.Serialize();
+        return *v.Serialize();
     }
 }

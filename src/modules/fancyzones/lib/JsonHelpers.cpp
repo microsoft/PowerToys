@@ -91,7 +91,13 @@ namespace
             data.zoneIndexSet = { static_cast<size_t>(json.GetNamedNumber(NonLocalizable::ZoneIndexStr)) };
         }
 
-        data.deviceId = FancyZonesDataTypes::DeviceIdData::Parse(std::wstring{ json.GetNamedString(NonLocalizable::DeviceIdStr) });
+        auto deviceId = FancyZonesDataTypes::DeviceIdData::Parse(std::wstring{ json.GetNamedString(NonLocalizable::DeviceIdStr) });
+        if (!deviceId.has_value())
+        {
+            return std::nullopt;
+        }
+
+        data.deviceId = *deviceId;
         data.zoneSetUuid = json.GetNamedString(NonLocalizable::ZoneSetUuidStr);
 
         if (!FancyZonesUtils::IsValidGuid(data.zoneSetUuid) || data.deviceId.empty())
@@ -347,8 +353,14 @@ namespace JSONHelpers
                 jsonIndexSet.Append(json::value(static_cast<int>(index)));
             }
 
+            auto deviceIdSerialized = data.deviceId.Serialize();
+            if (!deviceIdSerialized.has_value())
+            {
+                continue;
+            }
+
             desktopData.SetNamedValue(NonLocalizable::ZoneIndexSetStr, jsonIndexSet);
-            desktopData.SetNamedValue(NonLocalizable::DeviceIdStr, json::value(data.deviceId.Serialize()));
+            desktopData.SetNamedValue(NonLocalizable::DeviceIdStr, json::value(*deviceIdSerialized));
             desktopData.SetNamedValue(NonLocalizable::ZoneSetUuidStr, json::value(data.zoneSetUuid));
 
             appHistoryArray.Append(desktopData);
@@ -399,11 +411,17 @@ namespace JSONHelpers
         }
     }
 
-    json::JsonObject DeviceInfoJSON::ToJson(const DeviceInfoJSON& device)
+    std::optional<json::JsonObject> DeviceInfoJSON::ToJson(const DeviceInfoJSON& device)
     {
         json::JsonObject result{};
 
-        result.SetNamedValue(NonLocalizable::DeviceIdStr, json::value(device.deviceId.Serialize()));
+        auto serializedDeviceId = device.deviceId.Serialize();
+        if (!serializedDeviceId.has_value())
+        {
+            return std::nullopt;
+        }
+
+        result.SetNamedValue(NonLocalizable::DeviceIdStr, json::value(*serializedDeviceId)); 
         result.SetNamedValue(NonLocalizable::ActiveZoneSetStr, JSONHelpers::ZoneSetDataJSON::ToJson(device.data.activeZoneSet));
         result.SetNamedValue(NonLocalizable::EditorShowSpacingStr, json::value(device.data.showSpacing));
         result.SetNamedValue(NonLocalizable::EditorSpacingStr, json::value(device.data.spacing));
@@ -419,11 +437,13 @@ namespace JSONHelpers
         {
             DeviceInfoJSON result;
 
-            result.deviceId = FancyZonesDataTypes::DeviceIdData::Parse(std::wstring{ device.GetNamedString(NonLocalizable::DeviceIdStr) });
-            if (result.deviceId.empty())
+            auto deviceId = FancyZonesDataTypes::DeviceIdData::Parse(std::wstring{ device.GetNamedString(NonLocalizable::DeviceIdStr) });
+            if (!deviceId.has_value())
             {
                 return std::nullopt;
             }
+
+            result.deviceId = *deviceId;
 
             if (auto zoneSet = JSONHelpers::ZoneSetDataJSON::FromJson(device.GetNamedObject(NonLocalizable::ActiveZoneSetStr)); zoneSet.has_value())
             {
@@ -455,7 +475,11 @@ namespace JSONHelpers
         for (const auto& info : deviceInfoMap)
         {
             JSONHelpers::DeviceInfoJSON deviceInfoJson{ info.first, info.second };
-            array.Append(JSONHelpers::DeviceInfoJSON::ToJson(deviceInfoJson));
+            auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfoJson);
+            if (json.has_value())
+            {
+                array.Append(*json);
+            }
         }
 
         result.SetNamedValue(NonLocalizable::AppliedZonesets, array);
@@ -472,7 +496,11 @@ namespace JSONHelpers
             if (info.first.virtualDesktopId == currentVirtualDesktop)
             {
                 JSONHelpers::DeviceInfoJSON deviceInfoJson{ info.first, info.second };
-                array.Append(JSONHelpers::DeviceInfoJSON::ToJson(deviceInfoJson));
+                auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfoJson);
+                if (json.has_value())
+                {
+                    array.Append(*json);
+                }
             }
         }
 
@@ -618,7 +646,11 @@ namespace JSONHelpers
 
         for (const auto& [deviceID, deviceData] : deviceInfoMap)
         {
-            DeviceInfosJSON.Append(DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData }));
+            auto json = DeviceInfoJSON::DeviceInfoJSON::ToJson(DeviceInfoJSON{ deviceID, deviceData });
+            if (json.has_value())
+            {
+                DeviceInfosJSON.Append(*json);
+            }
         }
 
         return DeviceInfosJSON;

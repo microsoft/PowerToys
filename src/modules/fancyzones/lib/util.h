@@ -203,9 +203,9 @@ namespace FancyZonesUtils
 
     bool IsValidGuid(const std::wstring& str);
 
-    FancyZonesDataTypes::DeviceIdData GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const GUID& virtualDesktopId);
-    FancyZonesDataTypes::DeviceIdData GenerateUniqueIdAllMonitorsArea(const GUID& virtualDesktopId);
-    FancyZonesDataTypes::DeviceIdData GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId);
+    std::optional<FancyZonesDataTypes::DeviceIdData> GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const GUID& virtualDesktopId);
+    std::optional<FancyZonesDataTypes::DeviceIdData> GenerateUniqueIdAllMonitorsArea(const GUID& virtualDesktopId);
+    std::optional<FancyZonesDataTypes::DeviceIdData> GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId);
 
     std::wstring TrimDeviceId(const std::wstring& deviceId);
 

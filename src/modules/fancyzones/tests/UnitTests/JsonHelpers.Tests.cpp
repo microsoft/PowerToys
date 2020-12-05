@@ -88,61 +88,67 @@ namespace FancyZonesUnitTests
         TEST_METHOD (DeviceId)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
+        }
+
+        TEST_METHOD (DeviceId2)
+        {
+            const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{00000000-0000-0000-0000-000000000000}";
+            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdWithoutHashInName)
         {
-            const auto deviceId = L"LOCALDISPLAY_5120_1440_{00000000-0000-0000-0000-000000000000}";
-            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            const auto deviceId = L"LOCALDISPLAY_5120_1440_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
+            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdWithoutHashInNameButWithUnderscores)
         {
-            const auto deviceId = L"LOCAL_DISPLAY_5120_1440_{00000000-0000-0000-0000-000000000000}";
-            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            const auto deviceId = L"LOCAL_DISPLAY_5120_1440_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
+            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdWithUnderscoresInName)
         {
-            const auto deviceId = L"Default_Monitor#1&1f0c3c2f&0&UID256_5120_1440_{00000000-0000-0000-0000-000000000000}";
-            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            const auto deviceId = L"Default_Monitor#1&1f0c3c2f&0&UID256_5120_1440_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
+            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdInvalidFormat)
         {
             const auto deviceId = L"_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdInvalidFormat2)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_19201200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_aaaa_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals2)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_19a0_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals3)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1900_120000000000000_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
 
         TEST_METHOD (DeviceIdInvalidGuid)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-4B5D-8851-4791D66B1539}";
-            Assert::IsTrue(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).empty());
+            Assert::IsFalse(FancyZonesDataTypes::DeviceIdData::Parse(deviceId).has_value());
         }
     };
     TEST_CLASS (ZoneSetLayoutTypeUnitTest)
@@ -862,7 +868,8 @@ namespace FancyZonesUnitTests
             json::JsonObject expected = m_defaultJson;
 
             auto actual = DeviceInfoJSON::ToJson(deviceInfo);
-            compareJsonObjects(expected, actual);
+            Assert::IsTrue(actual.has_value());
+            compareJsonObjects(expected, *actual);
         }
 
         TEST_METHOD (FromJson)
@@ -870,8 +877,10 @@ namespace FancyZonesUnitTests
             DeviceInfoJSON expected = m_defaultDeviceInfo;
             expected.data.spacing = true;
 
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
+            auto json = DeviceInfoJSON::ToJson(expected);
+            Assert::IsTrue(json.has_value());
+
+            auto actual = DeviceInfoJSON::FromJson(*json);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.deviceId, actual->deviceId, L"device id");
@@ -885,8 +894,10 @@ namespace FancyZonesUnitTests
             DeviceInfoJSON expected = m_defaultDeviceInfo;
             expected.data.spacing = true;
 
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
+            auto json = DeviceInfoJSON::ToJson(expected);
+            Assert::IsTrue(json.has_value());
+
+            auto actual = DeviceInfoJSON::FromJson(*json);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.data.spacing, actual->data.spacing);
@@ -897,8 +908,10 @@ namespace FancyZonesUnitTests
             DeviceInfoJSON expected = m_defaultDeviceInfo;
             expected.data.activeZoneSet.type = ZoneSetLayoutType::Custom;
 
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
+            auto json = DeviceInfoJSON::ToJson(expected);
+            Assert::IsTrue(json.has_value());
+
+            auto actual = DeviceInfoJSON::FromJson(*json);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual(expected.data.spacing, actual->data.spacing);
@@ -909,8 +922,10 @@ namespace FancyZonesUnitTests
             DeviceInfoJSON expected = m_defaultDeviceInfo;
             expected.data.activeZoneSet.type = ZoneSetLayoutType::PriorityGrid;
 
-            json::JsonObject json = DeviceInfoJSON::ToJson(expected);
-            auto actual = DeviceInfoJSON::FromJson(json);
+            auto json = DeviceInfoJSON::ToJson(expected);
+            Assert::IsTrue(json.has_value());
+
+            auto actual = DeviceInfoJSON::FromJson(*json);
             Assert::IsTrue(actual.has_value());
 
             Assert::AreEqual((int)expected.data.activeZoneSet.type, (int)actual->data.activeZoneSet.type, L"zone set type");
@@ -920,8 +935,9 @@ namespace FancyZonesUnitTests
         {
             DeviceInfoJSON deviceInfo{ m_defaultDeviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3, DefaultValues::SensitivityRadius } };
             const auto json = DeviceInfoJSON::ToJson(deviceInfo);
+            Assert::IsTrue(json.has_value());
 
-            auto iter = json.First();
+            auto iter = json->First();
             while (iter.HasCurrent())
             {
                 //this setting has been added later and gets a default value, so missing key still result is valid Json
@@ -931,7 +947,7 @@ namespace FancyZonesUnitTests
                     continue;
                 }
 
-                json::JsonObject modifiedJson = json::JsonObject::Parse(json.Stringify());
+                json::JsonObject modifiedJson = json::JsonObject::Parse(json->Stringify());
                 modifiedJson.Remove(iter.Current().Key());
 
                 auto actual = DeviceInfoJSON::FromJson(modifiedJson);
@@ -1878,7 +1894,9 @@ namespace FancyZonesUnitTests
                 json::JsonArray zoneSetsArray, appZonesArray, deviceInfoArray;
                 zoneSetsArray.Append(CustomZoneSetJSON::ToJson(zoneSets));
                 appZonesArray.Append(AppZoneHistoryJSON::ToJson(appZoneHistory));
-                deviceInfoArray.Append(DeviceInfoJSON::ToJson(deviceInfo));
+                auto deviceInfoJson = DeviceInfoJSON::ToJson(deviceInfo);
+                Assert::IsTrue(deviceInfoJson.has_value());
+                deviceInfoArray.Append(*deviceInfoJson);
                 json::JsonObject fancyZones;
                 fancyZones.SetNamedValue(L"custom-zone-sets", zoneSetsArray);
                 fancyZones.SetNamedValue(L"app-zone-history", appZonesArray);

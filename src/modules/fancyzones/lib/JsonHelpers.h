@@ -52,7 +52,7 @@ namespace JSONHelpers
         FancyZonesDataTypes::DeviceIdData deviceId;
         FancyZonesDataTypes::DeviceInfoData data;
 
-        static json::JsonObject ToJson(const DeviceInfoJSON& device);
+        static std::optional<json::JsonObject> ToJson(const DeviceInfoJSON& device);
         static std::optional<DeviceInfoJSON> FromJson(const json::JsonObject& device);
     };
 
