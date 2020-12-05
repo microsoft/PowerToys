@@ -11,6 +11,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
+    <StartupObject>ColorPicker.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
