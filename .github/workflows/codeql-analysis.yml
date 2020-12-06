@@ -12,7 +12,7 @@ on:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     strategy:
       fail-fast: false
@@ -40,6 +40,11 @@ jobs:
     # If this step fails, then you should remove it and run the build manually (see below)
     - name: Autobuild
       uses: github/codeql-action/autobuild@v1
+      if: ${{ matrix.language != 'cpp' }}
+    
+    - name: Manual build
+      run: .\.pipelines\build.cmd
+      if: ${{ matrix.language == 'cpp' }}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
