@@ -43,7 +43,9 @@ jobs:
       if: ${{ matrix.language != 'cpp' }}
     
     - name: Manual build
-      run: .\.pipelines\build.cmd
+      run: | 
+        .\.pipelines\restore.cmd
+        .\.pipelines\build.cmd
       if: ${{ matrix.language == 'cpp' }}
 
     - name: Perform CodeQL Analysis
