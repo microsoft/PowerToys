@@ -217,11 +217,10 @@ namespace FancyZonesEditor
             CurrentLayoutWindow.Content = _editor;
 
             EditorWindow window;
-            bool isGrid = false;
+
             if (model is GridLayoutModel)
             {
                 window = new GridEditorWindow();
-                isGrid = true;
             }
             else
             {
@@ -231,11 +230,6 @@ namespace FancyZonesEditor
             window.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
             window.DataContext = model;
             window.Show();
-
-            if (isGrid)
-            {
-                (window as GridEditorWindow).NameTextBox().Focus();
-            }
         }
 
         public void CloseEditor()

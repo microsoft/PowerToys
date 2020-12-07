@@ -12,6 +12,8 @@ using System.Windows.Media;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
 using FancyZonesEditor.ViewModels;
+using ModernWpf.Controls;
+using ModernWpf.Controls.Primitives;
 using Windows.UI.Popups;
 
 namespace FancyZonesEditor
@@ -56,7 +58,6 @@ namespace FancyZonesEditor
         public void Update()
         {
             DataContext = _settings;
-            SetSelectedItem();
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
@@ -83,21 +84,14 @@ namespace FancyZonesEditor
             }
         }
 
-        private void NewCustomLayoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            WindowLayout window = new WindowLayout();
-            window.Show();
-            Hide();
-        }
-
         private void LayoutItem_MouseEnter(object sender, MouseEventArgs e)
         {
-            Select(((Border)sender).DataContext as LayoutModel);
+            Select(((Grid)sender).DataContext as LayoutModel);
         }
 
         private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
         {
-            Select(((Border)sender).DataContext as LayoutModel);
+            Select(((Grid)sender).DataContext as LayoutModel);
             Apply();
         }
 
@@ -106,7 +100,7 @@ namespace FancyZonesEditor
             Select(((Border)sender).DataContext as LayoutModel);
         }
 
-        private void LayoutItem_Apply(object sender, KeyEventArgs e)
+        private void LayoutItem_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Return || e.Key == Key.Space)
             {
@@ -114,32 +108,6 @@ namespace FancyZonesEditor
                 // presses Enter or Space key, layout will be applied.
                 Apply();
             }
-            else if (e.Key == Key.E)
-            {
-                Border selectedBorder = sender as Border;
-
-                ContentPresenter x = GetParent(selectedBorder);
-                if (x != null)
-                {
-                    x.ContextMenu.PlacementTarget = x;
-                    x.ContextMenu.IsOpen = true;
-                    ((MenuItem)x.ContextMenu.Items[0]).Focus();
-                }
-            }
-        }
-
-        private ContentPresenter GetParent(Visual v)
-        {
-            while (v != null)
-            {
-                v = VisualTreeHelper.GetParent(v) as Visual;
-                if (v is ContentPresenter)
-                {
-                    break;
-                }
-            }
-
-            return v as ContentPresenter;
         }
 
         private void Select(LayoutModel newSelection)
@@ -232,32 +200,21 @@ namespace FancyZonesEditor
             App.Current.Shutdown();
         }
 
-        private void OnInitialized(object sender, EventArgs e)
+        private async void DeleteLayout_Click(object sender, RoutedEventArgs e)
         {
-            SetSelectedItem();
-        }
-
-        private void SetSelectedItem()
-        {
-            foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
+            var dialog = new ModernWpf.Controls.ContentDialog()
             {
-                if (model.IsSelected)
-                {
-                    // TemplateTab.SelectedItem = model;
-                    return;
-                }
-            }
-        }
-
-        private void DeleteLayout_Click(object sender, RoutedEventArgs e)
-        {
-            LayoutModel model = ((FrameworkElement)sender).DataContext as LayoutModel;
-            if (model.IsSelected)
+                Title = FancyZonesEditor.Properties.Resources.Are_You_Sure,
+                Content = FancyZonesEditor.Properties.Resources.Are_You_Sure_Description,
+                PrimaryButtonText = FancyZonesEditor.Properties.Resources.Delete,
+                SecondaryButtonText = FancyZonesEditor.Properties.Resources.Cancel,
+            };
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
             {
-                SetSelectedItem();
+                LayoutModel model = ((FrameworkElement)sender).DataContext as LayoutModel;
+                model.Delete();
             }
-
-            model.Delete();
         }
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
@@ -323,11 +280,11 @@ namespace FancyZonesEditor
 
             if (GridLayoutRadioButton.IsChecked == true)
             {
-                // 1:1 Copy from MainWindowSettingsModel
+                // 1:1 Copy from MainWindowSettingsModel, so probably needs to be refactored / combined.
                 int multiplier = 10000;
                 int zoneCount = 3;
 
-                GridLayoutModel columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
+                GridLayoutModel columnsModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Columns)
                 {
                     Rows = 1,
                     RowPercents = new List<int>(1) { multiplier },
@@ -347,7 +304,7 @@ namespace FancyZonesEditor
             }
             else
             {
-                selectedLayoutModel = new CanvasLayoutModel(Properties.Resources.Custom_Layout_Create_New, LayoutType.Blank);
+                selectedLayoutModel = new CanvasLayoutModel(LayoutNameText.Text, LayoutType.Blank);
             }
 
             App.Overlay.CurrentDataContext = selectedLayoutModel;
@@ -373,6 +330,11 @@ namespace FancyZonesEditor
         private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
             monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
+        }
+
+        private void LayoutItem_MouseLeave(object sender, MouseEventArgs e)
+        {
+            // TO DO: reset back to the applied layout
         }
     }
 }

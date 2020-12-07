@@ -45,7 +45,7 @@ namespace FancyZonesEditor
             {
                 _orientation = value;
                 ApplyTemplate();
-                StackPanel body = (StackPanel)Template.FindName("Body", this);
+                Border body = (Border)Template.FindName("Body", this);
                 if (value == Orientation.Vertical)
                 {
                     body.RenderTransform = null;

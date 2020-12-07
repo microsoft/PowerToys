@@ -8,13 +8,13 @@
                     xmlns:props="clr-namespace:FancyZonesEditor.Properties"
                     mc:Ignorable="d"
                     Title=""
-                    Width="386"
+                    Width="320"
+                    BorderThickness="0"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     ui:WindowHelper.UseModernWindowStyle="True"
                     SizeToContent="Height"
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
-                    ContentRendered="OnContentRendered"
                     WindowStartupLocation="CenterOwner"
                     Closed="OnClosed">
     <Grid>
@@ -23,6 +23,13 @@
               Margin="0,-36,0,0"
               VerticalAlignment="Top"
               HorizontalAlignment="Stretch">
+            <TextBlock Foreground="{DynamicResource TitleBarSecondaryForegroundBrush}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Left"
+                       FontFamily="Segoe MDL2 Assets"
+                       Text="&#xF5ED;"
+                       Margin="16,8,0,0"
+                       FontSize="16" />
             <Border Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
                     Width="30"
                     Height="3"
@@ -32,39 +39,22 @@
         </Grid>
         <StackPanel Margin="16"
                     FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
-            <TextBlock Name="windowEditorDialogTitle"
-                       Text="{x:Static props:Resources.Custom_Layout_Creator}"
-                       Style="{StaticResource SubtitleTextBlockStyle}" />
-            <TextBlock x:Name="customLayoutName"
-                       Text="{x:Static props:Resources.Name}"
-                       Margin="0,16,0,0"
-                       Foreground="{DynamicResource PrimaryForegroundBrush}" />
-            <TextBox Text="{Binding Name}"
-                     Margin="0,6,0,0"
-                     AutomationProperties.LabeledBy="{Binding ElementName=customLayoutName}"
-                     Style="{StaticResource DefaultTextBoxStyle}" />
 
             <Button x:Name="newZoneButton"
                     AutomationProperties.LabeledBy="{Binding ElementName=newZoneName}"
                     HorizontalAlignment="Stretch"
-                    Height="96"
-                    Margin="0,32,0,0"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    Click="OnAddZone">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock HorizontalAlignment="Center"
-                               Text="&#xE109;"
-                               FontSize="32"
-                               Margin="0,8,0,0"
-                               FontFamily="Segoe MDL2 Assets" />
+                    Height="64"
+                    Width="64"
+                    ui:ControlHelper.CornerRadius="64"
+                    Margin="0,8,0,0"
+                    Style="{StaticResource AccentButtonStyle}"
+                    FontFamily="Segoe MDL2 Assets"
+                    Content="&#xE109;"
+                    FontSize="24"
+                    ToolTip="{x:Static props:Resources.Add_zone}"
+                    Click="OnAddZone" />
 
-                    <TextBlock x:Name="newZoneName"
-                               Margin="12"
-                               Text="{x:Static props:Resources.Add_zone}" />
-                </StackPanel>
-            </Button>
-
-            <Grid Margin="0,48,0,0">
+            <Grid Margin="0,24,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="8" />

@@ -79,6 +79,24 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure?.
+        /// </summary>
+        public static string Are_You_Sure {
+            get {
+                return ResourceManager.GetString("Are_You_Sure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete this layout?.
+        /// </summary>
+        public static string Are_You_Sure_Description {
+            get {
+                return ResourceManager.GetString("Are_You_Sure_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string Cancel {
@@ -187,15 +205,6 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Custom table layout creator.
-        /// </summary>
-        public static string Custom_Table_Layout {
-            get {
-                return ResourceManager.GetString("Custom_Table_Layout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string Delete {
@@ -232,11 +241,20 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit selected layout.
+        ///   Looks up a localized string similar to Edit layout.
         /// </summary>
-        public static string Edit_Selected_Layout {
+        public static string Edit_Layout {
             get {
-                return ResourceManager.GetString("Edit_Selected_Layout", resourceCulture);
+                return ResourceManager.GetString("Edit_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit zones.
+        /// </summary>
+        public static string Edit_zones {
+            get {
+                return ResourceManager.GetString("Edit_zones", resourceCulture);
             }
         }
         

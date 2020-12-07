@@ -144,14 +144,11 @@
   <data name="Custom_Layout_Creator" xml:space="preserve">
     <value>Custom layout creator</value>
   </data>
-  <data name="Custom_Table_Layout" xml:space="preserve">
-    <value>Custom table layout creator</value>
-  </data>
   <data name="Distance_adjacent_zones" xml:space="preserve">
     <value>Distance to highlight adjacent zones</value>
   </data>
-  <data name="Edit_Selected_Layout" xml:space="preserve">
-    <value>Edit selected layout</value>
+  <data name="Edit_Layout" xml:space="preserve">
+    <value>Edit layout</value>
   </data>
   <data name="Fancy_Zones_Editor_App_Title" xml:space="preserve">
     <value>FancyZones Editor</value>
@@ -293,5 +290,14 @@ To merge zones, select the zones and click "merge".</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Template settings</value>
+  </data>
+  <data name="Are_You_Sure" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="Are_You_Sure_Description" xml:space="preserve">
+    <value>Are you sure you want to delete this layout?</value>
+  </data>
+  <data name="Edit_zones" xml:space="preserve">
+    <value>Edit zones</value>
   </data>
 </root>
