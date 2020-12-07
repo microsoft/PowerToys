@@ -184,6 +184,8 @@ namespace FancyZonesUtils
         return result;
     }
 
+    std::wstring GetDisplayDeviceId(const std::wstring& device, std::unordered_map<std::wstring, DWORD>& displayDeviceIdxMap);
+
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
     void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
     void SizeWindowToRect(HWND window, RECT rect) noexcept;
@@ -202,7 +204,6 @@ namespace FancyZonesUtils
 
     std::wstring GenerateUniqueId(HMONITOR monitor, const std::wstring& devideId, const std::wstring& virtualDesktopId);
     std::wstring GenerateUniqueIdAllMonitorsArea(const std::wstring& virtualDesktopId);
-    std::optional<std::wstring> GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId);
 
     std::wstring TrimDeviceId(const std::wstring& deviceId);
     std::optional<FancyZonesDataTypes::DeviceIdData> ParseDeviceId(const std::wstring& deviceId);
