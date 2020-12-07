@@ -8,7 +8,7 @@
 #include <common/os-detect.h>
 #include <launcher\Microsoft.Launcher\LauncherConstants.h>
 #include <common/logger/logger.h>
-#include <common\settings_helpers.h>
+#include <common/settings_helpers.h>
 #include <filesystem>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
