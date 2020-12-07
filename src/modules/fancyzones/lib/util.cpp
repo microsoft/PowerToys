@@ -585,18 +585,21 @@ namespace FancyZonesUtils
     std::optional<std::wstring> GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId)
     {
         DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
-        PCWSTR deviceId = nullptr;
+        std::wstring deviceId;
+        DWORD deviceIndex = 0;
 
-        bool validMonitor = true;
-        if (EnumDisplayDevices(mi.szDevice, 0, &displayDevice, 1))
+        while (EnumDisplayDevicesW(mi.szDevice, deviceIndex, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
         {
-            if (displayDevice.DeviceID[0] != L'\0')
+            ++deviceIndex;
+            if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
+                WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
             {
                 deviceId = displayDevice.DeviceID;
+                break;
             }
         }
 
-        if (!deviceId)
+        if (deviceId.empty())
         {
             deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
                            L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
