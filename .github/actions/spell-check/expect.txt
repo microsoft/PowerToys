@@ -530,6 +530,7 @@ dst
 DString
 DSVG
 DText
+dupenv
 dutil
 DVASPECT
 DVASPECTINFO
@@ -1758,6 +1759,7 @@ PRODUCTVERSION
 progman
 Progman
 programdata
+PROGRAMFILES
 Programpinyindb
 Progressbar
 Proj
