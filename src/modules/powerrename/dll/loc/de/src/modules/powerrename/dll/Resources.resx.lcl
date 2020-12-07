@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore search, replace and flags values on launch from previous run.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Hiermit werden Such-, Ersetzungs- und Flagwerte beim Start aus der vorherigen Ausführung wiederhergestellt.]]></Val>
+            <Val><![CDATA[Hiermit werden Such-, Ersetzungs- und Flagwerte aus der vorherigen Ausführung beim Start wiederhergestellt.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

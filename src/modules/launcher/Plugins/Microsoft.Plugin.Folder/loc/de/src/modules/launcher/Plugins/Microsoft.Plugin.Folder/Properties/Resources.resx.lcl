@@ -55,7 +55,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Showing {0:N0} of {1:N0} results]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -71,7 +71,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Warning: Folder Plugin Results truncated.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Warnung: Die Ordner-Plug-In-Ergebnisse wurden abgeschnitten.]]></Val>
+            <Val><![CDATA[Warnung: Die Ergebnisse für Ordner-Plug-Ins wurden abgeschnitten.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -80,7 +80,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open favorite folder from PowerToys Run directly]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Favoritenordner direkt aus dem PowerToys-Startprogramm ausführen]]></Val>
+            <Val><![CDATA[Favoritenordner direkt aus dem PowerToys-Startprogramm öffnen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -94,7 +94,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";wox_plugin_folder_select_file_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";wox_plugin_folder_select_file_result_subtitle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[File: {0}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -116,12 +116,12 @@
         <Str Cat="Text">
           <Val><![CDATA[Use > to search within the directory. Use * to search for file extensions. Or use both >*]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Verwenden Sie ">", um innerhalb des Verzeichnisses zu suchen. Verwenden Sie "*", um nach Dateierweiterungen zu suchen. Sie können auch beide Werte verwenden: ">*"]]></Val>
+            <Val><![CDATA[Verwenden Sie ">", um innerhalb des Verzeichnisses zu suchen. Verwenden Sie "*", um nach Dateierweiterungen zu suchen. Sie können auch beide Platzhalter (">*") verwenden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";wox_plugin_folder_select_folder_first_result_title" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";wox_plugin_folder_select_folder_first_result_title" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -130,7 +130,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";wox_plugin_folder_select_folder_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";wox_plugin_folder_select_folder_result_subtitle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Folder: {0}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

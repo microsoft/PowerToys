@@ -293,7 +293,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Obs! håll ned skift-tangenten om du vill ändra orienteringen för delaren. Om du vill slå samman zoner markerar du zonerna och klickar på slå samman.]]></Val>
+            <Val><![CDATA[Obs! Håll ned skift-tangenten om du vill ändra orienteringen för delaren. Om du vill slå samman zoner markerar du zonerna och klickar på Slå samman.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

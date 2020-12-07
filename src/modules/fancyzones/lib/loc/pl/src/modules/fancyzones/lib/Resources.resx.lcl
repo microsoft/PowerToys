@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zezwól strefom na rozciąganie się między monitorami (wszystkie monitory muszą mieć to samo skalowanie DPI)]]></Val>
+            <Val><![CDATA[Zezwalaj na rozciąganie stref między monitorami (wszystkie monitory muszą mieć to samo skalowanie DPI)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -332,7 +332,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The 'Allow zones to span across monitors' option requires all monitors to have the same DPI scaling to work properly.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Opcja „Zezwalaj strefom na rozciąganie się między monitorami” do poprawnego działania wymaga, aby wszystkie monitory miały to samo skalowanie DPI.]]></Val>
+            <Val><![CDATA[Opcja „Zezwalaj na rozciąganie stref między monitorami” do poprawnego działania wymaga, aby wszystkie monitory miały to samo skalowanie DPI.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -632,7 +632,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A reboot may be required for changes to these settings to take effect]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Puede que sea necesario reiniciar para que los cambios de esta configuración se apliquen.]]></Val>
+            <Val><![CDATA[Puede que sea necesario reiniciar para que los cambios realizados en esta configuración se apliquen.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -824,7 +824,7 @@
         <Str Cat="Text">
           <Val><![CDATA[You need to run as administrator to use this setting]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Debe ejecutar como administrador para usar esta configuración.]]></Val>
+            <Val><![CDATA[Debe ejecutarlo como administrador para usar esta configuración.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

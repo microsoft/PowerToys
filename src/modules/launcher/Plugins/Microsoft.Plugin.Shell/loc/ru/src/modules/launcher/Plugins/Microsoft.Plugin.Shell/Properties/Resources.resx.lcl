@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[this command has been executed {0} times]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[эта команда выполнялась следующее число раз: {0}]]></Val>
+            <Val><![CDATA[эта команда выполнялась такое количество раз: {0}]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

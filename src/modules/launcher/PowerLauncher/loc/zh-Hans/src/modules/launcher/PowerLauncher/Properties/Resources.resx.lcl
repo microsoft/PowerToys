@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Context Menu Icon]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[关联菜单图标]]></Val>
+            <Val><![CDATA[上下文菜单图标]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Context Menu Item]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[关联菜单项]]></Val>
+            <Val><![CDATA[上下文菜单项]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Context Menu Item Additional Information]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[关联菜单项附加信息]]></Val>
+            <Val><![CDATA[上下文菜单项附加信息]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Context Menu Items Collection]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[关联菜单项集合]]></Val>
+            <Val><![CDATA[上下文菜单项集合]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

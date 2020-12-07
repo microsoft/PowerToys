@@ -80,7 +80,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft PowerToys 是一组实用程序，以供高级用户调整和简化他们的 Windows 体验，从而提高工作效率。]]></Val>
+            <Val><![CDATA[Microsoft PowerToys 是一组实用程序，可帮助高级用户调整和简化他们的 Windows 体验，从而提高工作效率。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快速、简单的系统范围内颜色选择器。]]></Val>
+            <Val><![CDATA[快速、简单的系统范围颜色选择器。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -332,7 +332,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep windows in their zones when the screen resolution changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[当屏幕分辨率发生变化时，保持窗口位于各自的区域内]]></Val>
+            <Val><![CDATA[当屏幕分辨率发生变化时，使窗口保持在各自的区域内]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -440,7 +440,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[使用非主鼠标按钮来切换区域激活]]></Val>
+            <Val><![CDATA[使用次要鼠标按钮来切换区域激活]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -896,7 +896,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Lets you resize images by right-clicking.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[可便于你通过右键单击来调整图像大小。]]></Val>
+            <Val><![CDATA[让你可以通过右键单击来调整图像大小。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1769,7 +1769,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Show icon on context menu]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在关联菜单上显示图标]]></Val>
+            <Val><![CDATA[在上下文菜单上显示图标]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1778,7 +1778,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Appear only in extended context menu (Shift + Right-click)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[只在扩展的关联菜单中显示(Shift + 右键单击)]]></Val>
+            <Val><![CDATA[只在扩展的上下文菜单中显示(Shift + 右键单击)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

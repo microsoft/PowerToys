@@ -323,7 +323,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Create window layouts to help make multi-tasking easy.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Erstellen Sie Fensterlayouts für ein einfaches Multitasking.]]></Val>
+            <Val><![CDATA[Erstellen Sie Fensterlayouts, die Multitasking vereinfachen.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1409,7 +1409,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ordnen Sie Tastenkombinationen anderen Tastenkombinationen oder Tasten neu zu. Darüber hinaus können Zuordnungen auf bestimmte Zielanwendungen angewendet werden.]]></Val>
+            <Val><![CDATA[Ordnen Sie Tastenkombinationen anderen Tastenkombinationen oder Tasten neu zu. Darüber hinaus können Zuordnungen auf bestimmte Zielanwendungen beschränkt werden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -431,7 +431,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Versleepte venster doorzichtig maken]]></Val>
+            <Val><![CDATA[Versleept venster doorzichtig maken]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1778,7 +1778,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Appear only in extended context menu (Shift + Right-click)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wordt alleen weergegeven in het uitgebreide contextmenu (Shift + Rechtermuisknop)]]></Val>
+            <Val><![CDATA[Alleen weergegeven in het uitgebreide contextmenu (Shift + Rechtermuisknop)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

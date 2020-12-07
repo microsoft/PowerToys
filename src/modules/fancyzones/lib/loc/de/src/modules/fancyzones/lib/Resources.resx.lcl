@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The FancyZones editor failed to start. Please report the bug to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fehler beim Starten des FancyZones-Editors. Melden Sie den Fehler an]]></Val>
+            <Val><![CDATA[Fehler beim Starten des FancyZones-Editors. Melden Sie den Fehler unter]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -251,7 +251,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Flash zones when the active FancyZones layout changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bei Änderungen am aktiven FancyZones-Layout Blitzvorschau für Zonen anzeigen]]></Val>
+            <Val><![CDATA[Bei Änderungen am aktiven FancyZones-Layout blinken die Zonen kurz auf.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
