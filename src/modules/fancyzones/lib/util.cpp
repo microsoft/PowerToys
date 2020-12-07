@@ -155,6 +155,34 @@ namespace FancyZonesUtils
     }
     
     typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
+    std::wstring GetDisplayDeviceId(const std::wstring& device, std::unordered_map<std::wstring, DWORD>& displayDeviceIdxMap)
+    {
+        DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
+        std::wstring deviceId;
+        while (EnumDisplayDevicesW(device.c_str(), displayDeviceIdxMap[device], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
+        {
+            ++displayDeviceIdxMap[device];
+
+            // Only take active monitors (presented as being "on" by the respective GDI view) and monitors that don't
+            // represent a pseudo device used to mirror application drawing.
+            if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
+                WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
+            {
+                deviceId = displayDevice.DeviceID;
+                break;
+            }
+        }
+
+        if (deviceId.empty())
+        {
+            deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
+                           L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
+                           L"\\\\?\\DISPLAY#LOCALDISPLAY#";
+        }
+
+        return deviceId;
+    }
+
     UINT GetDpiForMonitor(HMONITOR monitor) noexcept
     {
         UINT dpi{};
@@ -580,39 +608,6 @@ namespace FancyZonesUtils
         result += virtualDesktopId;
 
         return result;
-    }
-
-    std::optional<std::wstring> GenerateMonitorId(MONITORINFOEX mi, HMONITOR monitor, const GUID& virtualDesktopId)
-    {
-        DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
-        std::wstring deviceId;
-        DWORD deviceIndex = 0;
-
-        while (EnumDisplayDevicesW(mi.szDevice, deviceIndex, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
-        {
-            ++deviceIndex;
-            if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
-                WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
-            {
-                deviceId = displayDevice.DeviceID;
-                break;
-            }
-        }
-
-        if (deviceId.empty())
-        {
-            deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
-                           L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
-                           L"\\\\?\\DISPLAY#LOCALDISPLAY#";
-        }
-
-        wil::unique_cotaskmem_string vdId;
-        if (SUCCEEDED(StringFromCLSID(virtualDesktopId, &vdId)))
-        {
-            return GenerateUniqueId(monitor, deviceId, vdId.get());
-        }
-
-        return std::nullopt;
     }
 
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept
