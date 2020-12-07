@@ -37,21 +37,5 @@ namespace FancyZonesEditor
         }
 
         private GridLayoutModel _stashedModel;
-
-        private void NameTextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            customLayoutNameTextBox.CaretIndex = customLayoutNameTextBox.Text.Length;
-        }
-
-        public System.Windows.Controls.TextBox NameTextBox()
-        {
-            return customLayoutNameTextBox;
-        }
-
-        // This is required to fix a WPF rendering bug when using custom chrome
-        private void OnContentRendered(object sender, EventArgs e)
-        {
-            InvalidateVisual();
-        }
     }
 }
