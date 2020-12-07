@@ -8,13 +8,13 @@
                     xmlns:props="clr-namespace:FancyZonesEditor.Properties"
                     mc:Ignorable="d"
                     Title=""
-                    Width="386"
+                    Width="320"
+                    BorderThickness="0"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     ui:WindowHelper.UseModernWindowStyle="True"
                     SizeToContent="Height"
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
-                    ContentRendered="OnContentRendered"
                     WindowStartupLocation="CenterOwner"
                     Closed="OnClosed">
     <Grid>
@@ -24,6 +24,13 @@
             Margin="0,-36,0,0"
             VerticalAlignment="Top"
             HorizontalAlignment="Stretch">
+            <TextBlock Foreground="{DynamicResource TitleBarSecondaryForegroundBrush}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Left"
+                       FontFamily="Segoe MDL2 Assets"
+                       Text="&#xE138;"
+                       Margin="16,8,0,0"
+                       FontSize="16" />
             <Border
                 Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
                 Width="30"
@@ -33,29 +40,13 @@
                 Margin="0,4,0,0" />
         </Grid>
         <StackPanel Margin="16">
-            <TextBlock Name="windowEditorDialogTitle"
-                       Text="{x:Static props:Resources.Custom_Table_Layout}"
-                       Style="{StaticResource SubtitleTextBlockStyle}"  />
-
-            <TextBlock x:Name="customLayoutName"
-                       Text="{x:Static props:Resources.Name}"
-                       Margin="0,16,0,0"
-                       Foreground="{DynamicResource PrimaryForegroundBrush}" />
-
-            <TextBox Name="customLayoutNameTextBox"
-                     Text="{Binding Name}"
-                     Margin="0,6,0,0"
-                     GotFocus="NameTextBox_GotFocus"
-                     AutomationProperties.LabeledBy="{Binding ElementName=customLayoutName}"
-                     Style="{StaticResource DefaultTextBoxStyle}" />
-            
             <TextBlock Text="{x:Static props:Resources.Note_Custom_Table}"
                        Foreground="{DynamicResource SecondaryForegroundBrush}"
                        Style="{StaticResource CaptionTextBlockStyle}"
-                       Margin="0,16,0,0"
+                       Margin="0,8,0,0"
                        TextWrapping="Wrap" />
       
-            <Grid Margin="0,48,0,0">
+            <Grid Margin="0,24,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="8"/>

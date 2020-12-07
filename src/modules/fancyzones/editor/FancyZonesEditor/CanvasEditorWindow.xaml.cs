@@ -58,11 +58,5 @@ namespace FancyZonesEditor
                 OnCancel(sender, null);
             }
         }
-
-        // This is required to fix a WPF rendering bug when using custom chrome
-        private void OnContentRendered(object sender, EventArgs e)
-        {
-            InvalidateVisual();
-        }
     }
 }
