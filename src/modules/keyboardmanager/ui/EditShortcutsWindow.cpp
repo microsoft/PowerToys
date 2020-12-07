@@ -7,7 +7,6 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/windows_colors.h>
 #include <common/dpi_aware.h>
-#include <common/monitor_utils.h>
 #include "Styles.h"
 #include "Dialog.h"
 #include <keyboardmanager/dll/Generated Files/resource.h>
@@ -79,18 +78,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     }
 
     // Find coordinates of the screen where the settings window is placed.
-    HWND settingsWindow = GetForegroundWindow();
-    HMONITOR settingsMonitor = MonitorFromWindow(settingsWindow, MONITOR_DEFAULTTONULL);
-    RECT desktopRect{};
-    auto monitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
-    for (const auto& monitor : monitors)
-    {
-        if (settingsMonitor == monitor.first)
-        {
-            desktopRect = monitor.second;
-            break;
-        }
-    }
+    RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
 
     // Calculate DPI dependent window size
     int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth;
