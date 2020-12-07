@@ -479,7 +479,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {0} hours, {1} minute remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Verbleibende Zeit: etwa {0} Stunden, {1} Minute.]]></Val>
+            <Val><![CDATA[Verbleibende Zeit: ca. {0} Stunden, {1} Minute.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -488,7 +488,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {0} hours, {1} minutes remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Verbleibende Zeit: etwa {0} Stunden, {1} Minuten.]]></Val>
+            <Val><![CDATA[Verbleibende Zeit: ca. {0} Stunden, {1} Minuten.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -497,7 +497,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {1} minute, {2} second remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Verbleibende Zeit: etwa {1} Minute, {2} Sekunde.]]></Val>
+            <Val><![CDATA[Verbleibende Zeit: ca. {1} Minute, {2} Sekunde.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -515,7 +515,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {1} minutes, {2} second remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Verbleibende Zeit: etwa {1} Minuten, {2} Sekunden.]]></Val>
+            <Val><![CDATA[Verbleibende Zeit: ca. {1} Minuten, {2} Sekunde.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -524,7 +524,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {1} minutes, {2} seconds remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Verbleibende Zeit: etwa {1} Minuten, {2} Sekunden.]]></Val>
+            <Val><![CDATA[Verbleibende Zeit: ca. {1} Minuten, {2} Sekunden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -542,7 +542,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {2} seconds remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Verbleibende Zeit: etwa {2} Sekunden.]]></Val>
+            <Val><![CDATA[Verbleibende Zeit: ca. {2} Sekunden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

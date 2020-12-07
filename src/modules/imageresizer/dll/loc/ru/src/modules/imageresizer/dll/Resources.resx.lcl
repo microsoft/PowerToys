@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Settings can be accessed from within Image Resizer.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Доступ к параметрам можно получить из расширения Изменения размера изображений.]]></Val>
+            <Val><![CDATA[Доступ к параметрам можно получить из расширения "Изменение размера изображений".]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

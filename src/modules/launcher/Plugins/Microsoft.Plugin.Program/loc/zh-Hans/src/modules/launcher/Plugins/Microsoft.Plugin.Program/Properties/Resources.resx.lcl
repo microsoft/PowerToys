@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open containing folder (Ctrl+Shift+E)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[打开包含文件夹(Ctrl+Shift+E)]]></Val>
+            <Val><![CDATA[打开所在文件夹(Ctrl+Shift+E)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

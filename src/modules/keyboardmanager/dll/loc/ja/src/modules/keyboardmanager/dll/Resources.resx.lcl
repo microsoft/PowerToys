@@ -10,7 +10,7 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
-      <Item ItemId=";Add_Key_Remap_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Add_Key_Remap_Button" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add Key Remap]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press A and get "Ctrl+C", key "A" would be your "Key" column and the shortcut "Ctrl+C" would be your "Mapped To" column.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[たとえば、A キーを押して "Ctrl+C" を取得する場合、"A" キーが "キー" 列になり、ショートカット "Ctrl+C" が "マップ先" 列になります。]]></Val>
+            <Val><![CDATA[たとえば、A キーを押したときに "Ctrl+C" として動作させたい場合、"A" キーが "キー" 列になり、ショートカット "Ctrl+C" が "マップ先" 列になります。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[For example, if you want to press A and get ""Ctrl+C"", key ""A"" would be your ""Key"" column and the shortcut ""Ctrl+C"" would be your ""Mapped To"" column.]]></Val>
@@ -170,7 +170,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Select the shortcut you want to change (Shortcut) and then the key or shortcut you want it to invoke (Mapped To).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[変更するショートカット (ショートカット) を選択してから、呼び出すキーまたはショートカット (マップ先) を選択します。]]></Val>
+            <Val><![CDATA[変更するショートカット (ショートカット) を選択してから、それによって呼び出すキーまたはショートカット (マップ先) を選択します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -254,7 +254,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap from/to Ctrl Alt Del]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ctrl、Alt、Del キーからの再マップまたは Ctrl、Alt、Del キーへの再マップを行うことはできません]]></Val>
+            <Val><![CDATA[Ctrl、Alt、Del キーからの、またはそれらへの再マップを行うことはできません]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -290,7 +290,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcuts can only have up to 2 modifier keys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ショートカットには、最大 2 つの修飾子キーのみを含めることができます]]></Val>
+            <Val><![CDATA[ショートカットには、最大 2 つの修飾キーのみを含めることができます]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -326,7 +326,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a shortcut more than once for the same target app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[同じターゲット アプリに対してショートカットを複数回再マップすることはできません]]></Val>
+            <Val><![CDATA[同じターゲット アプリに対して 1 つのショートカットを複数回再マップすることはできません]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -362,7 +362,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut cannot contain a repeated modifier]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ショートカットに同じ修飾子を含めることはできません]]></Val>
+            <Val><![CDATA[ショートカットに同じ修飾キーを含めることはできません]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -389,12 +389,12 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap from/to Win L]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Win+L からの再マップまたは Win+L への再マップを行うことはできません]]></Val>
+            <Val><![CDATA[Win+L からの、またはそれへの再マップを行うことはできません]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -424,7 +424,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";RegisterClassFailed_ErrorMessage" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";RegisterClassFailed_ErrorMessage" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows registration failed!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -464,7 +464,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press a key on selected keyboard:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[選択したキーボードでキーを押す:]]></Val>
+            <Val><![CDATA[選択したキーボードのキーを押してください:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -487,7 +487,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Type_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Type_Button" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Type]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

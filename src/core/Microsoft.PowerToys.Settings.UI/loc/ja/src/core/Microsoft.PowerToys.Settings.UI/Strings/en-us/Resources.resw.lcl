@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[迅速かつシンプルなシステム全体の Color Picker。]]></Val>
+            <Val><![CDATA[迅速かつシンプルなシステム全体のカラー ピッカー。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -332,7 +332,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep windows in their zones when the screen resolution changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[画面の解像度が変更されたときにウィンドウをゾーンに保持します]]></Val>
+            <Val><![CDATA[画面の解像度が変更されたときにウィンドウをゾーンに保持する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -368,7 +368,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[アプリケーションをゾーンへのスナップから除外するには、その名前をここに追加します (1 行につき 1 つ)。これらのアプリは、ウィンドウ スナップに対してのみ対応します。]]></Val>
+            <Val><![CDATA[アプリケーションをゾーンへのスナップから除外するには、その名前をここに追加します (1 行につき 1 つ)。これらのアプリは、Windows のスナップに対してのみ対応します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -431,7 +431,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ドラッグしたウィンドウを透明にします]]></Val>
+            <Val><![CDATA[ドラッグしたウィンドウを透明にする]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -440,7 +440,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プライマリ以外のマウス ボタンを使用してゾーンのアクティブ化を切り替えます]]></Val>
+            <Val><![CDATA[プライマリ以外のマウス ボタンを使用してゾーンのアクティブ化を切り替える]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -476,7 +476,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap shortcut (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーン間でウィンドウを移動するウィンドウ スナップ機能のショートカット (Win+矢印キー) をオーバーライドする]]></Val>
+            <Val><![CDATA[Windows のスナップ機能のショートカット (Win+矢印キー) をオーバーライドして、ゾーン間でウィンドウを移動する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -494,7 +494,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hold Shift key to activate zones while dragging]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Shift キーを長押ししてドラッグ中にゾーンをアクティブにします]]></Val>
+            <Val><![CDATA[ドラッグ中に Shift キーを長押ししてゾーンをアクティブにする]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -512,7 +512,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーンが複数のモニターにまたがることを許可します (すべてのモニターは同じ DPI スケールである必要があります)]]></Val>
+            <Val><![CDATA[ゾーンが複数のモニターにまたがることを許可する (すべてのモニターは同じ DPI スケールである必要があります)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -521,7 +521,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Follow mouse cursor instead of focus when launching editor in a multi screen environment]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マルチスクリーン環境でエディターを起動するときに、フォーカスする代わりにマウス カーソルの動きを追います]]></Val>
+            <Val><![CDATA[マルチスクリーン環境でエディターを起動するときに、フォーカスではなくマウス カーソルに従う]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -560,7 +560,7 @@
         <Str Cat="Text">
           <Val><![CDATA[During zone layout changes, windows assigned to a zone will match new size/positions]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーン レイアウトの変更時に、ゾーンに割り当てられているウィンドウが新しいサイズまたは位置と一致します]]></Val>
+            <Val><![CDATA[ゾーン レイアウトの変更時に、ゾーンに割り当てられているウィンドウを新しいサイズまたは位置に合わせます]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1769,7 +1769,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Show icon on context menu]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[コンテキスト メニューでのアイコンの表示]]></Val>
+            <Val><![CDATA[コンテキスト メニューにアイコンを表示する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2042,7 +2042,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[表示する前に長押しする時間 (ミリ秒)]]></Val>
+            <Val><![CDATA[表示する前に長押しする時間 (ms)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2051,7 +2051,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Only shortcuts with the following hotkeys are valid:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[次のホットキーのショートカットキーのみが有効です:]]></Val>
+            <Val><![CDATA[次のホットキーのショートカットのみが有効です:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open containing folder (Ctrl+Shift+E)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[打开包含文件夹(Ctrl+Shift+E)]]></Val>
+            <Val><![CDATA[打开所在文件夹(Ctrl+Shift+E)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -55,7 +55,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Microsoft_plugin_folder_truncation_warning_subtitle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Showing {0:N0} of {1:N0} results]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -94,7 +94,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";wox_plugin_folder_select_file_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";wox_plugin_folder_select_file_result_subtitle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[File: {0}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -121,7 +121,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";wox_plugin_folder_select_folder_first_result_title" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";wox_plugin_folder_select_folder_first_result_title" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -130,7 +130,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";wox_plugin_folder_select_folder_result_subtitle" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";wox_plugin_folder_select_folder_result_subtitle" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Folder: {0}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
