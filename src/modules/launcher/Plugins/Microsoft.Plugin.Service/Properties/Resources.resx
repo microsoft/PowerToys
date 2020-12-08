@@ -150,8 +150,29 @@
   <data name="wox_plugin_service_started_notification" xml:space="preserve">
     <value>{0} has been started</value>
   </data>
+  <data name="wox_plugin_service_startup" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="wox_plugin_service_start_mode_automatic" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="wox_plugin_service_start_mode_boot" xml:space="preserve">
+    <value>Boot</value>
+  </data>
+  <data name="wox_plugin_service_start_mode_disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="wox_plugin_service_start_mode_manual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="wox_plugin_service_start_mode_system" xml:space="preserve">
+    <value>System</value>
+  </data>
   <data name="wox_plugin_service_start_pending" xml:space="preserve">
     <value>Starting</value>
+  </data>
+  <data name="wox_plugin_service_status" xml:space="preserve">
+    <value>Status</value>
   </data>
   <data name="wox_plugin_service_stop" xml:space="preserve">
     <value>Stop</value>

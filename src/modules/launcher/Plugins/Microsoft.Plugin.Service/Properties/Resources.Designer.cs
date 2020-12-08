@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Plugin.Service.Properties
-{
-
-
+namespace Microsoft.Plugin.Service.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -142,6 +142,51 @@ namespace Microsoft.Plugin.Service.Properties
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Automatic.
+        /// </summary>
+        internal static string wox_plugin_service_start_mode_automatic {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_start_mode_automatic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Boot.
+        /// </summary>
+        internal static string wox_plugin_service_start_mode_boot {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_start_mode_boot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        internal static string wox_plugin_service_start_mode_disabled {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_start_mode_disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manual.
+        /// </summary>
+        internal static string wox_plugin_service_start_mode_manual {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_start_mode_manual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System.
+        /// </summary>
+        internal static string wox_plugin_service_start_mode_system {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_start_mode_system", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Starting.
         /// </summary>
         internal static string wox_plugin_service_start_pending {
@@ -165,6 +210,24 @@ namespace Microsoft.Plugin.Service.Properties
         internal static string wox_plugin_service_started_notification {
             get {
                 return ResourceManager.GetString("wox_plugin_service_started_notification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Startup.
+        /// </summary>
+        internal static string wox_plugin_service_startup {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_startup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        internal static string wox_plugin_service_status {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_status", resourceCulture);
             }
         }
         

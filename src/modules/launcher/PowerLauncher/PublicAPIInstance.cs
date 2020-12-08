@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -36,7 +36,7 @@ namespace Wox
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
             DesktopNotificationManagerCompat.RegisterActivator<LauncherNotificationActivator>();
-            DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("Microsoft.PowerToysWin32");
+            DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerLauncher");
         }
 
         public void ChangeQuery(string query, bool requery = false)

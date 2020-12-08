@@ -26,10 +26,10 @@ namespace Microsoft.Plugin.Service.Helper
                 .Where(s => s.DisplayName.StartsWith(search, StringComparison.OrdinalIgnoreCase) || s.ServiceName.StartsWith(search, StringComparison.OrdinalIgnoreCase))
                 .Select(s => new Result
                 {
-                    Title = s.DisplayName,
-                    SubTitle = GetLocalizedStatus(s.Status),
+                    Title = GetResultTitle(s),
+                    SubTitle = GetResultSubTitle(s),
                     IcoPath = icoPath,
-                    ContextData = new ServiceResult(s.ServiceName, s.DisplayName, s.Status != ServiceControllerStatus.Stopped && s.Status != ServiceControllerStatus.StopPending),
+                    ContextData = new ServiceResult(s),
                 });
         }
 
@@ -89,6 +89,27 @@ namespace Microsoft.Plugin.Service.Helper
             }
         }
 
+        private static string GetResultTitle(ServiceController serviceController)
+        {
+            if (serviceController == null)
+            {
+                throw new ArgumentNullException(nameof(serviceController));
+            }
+
+            var suffix = $"({serviceController.ServiceName})";
+            return serviceController.DisplayName.EndsWith(suffix, StringComparison.CurrentCulture) ? serviceController.DisplayName : $"{serviceController.DisplayName} {suffix}";
+        }
+
+        private static string GetResultSubTitle(ServiceController serviceController)
+        {
+            if (serviceController == null)
+            {
+                throw new ArgumentNullException(nameof(serviceController));
+            }
+
+            return $"{Resources.wox_plugin_service_status}: {GetLocalizedStatus(serviceController.Status)} - {Resources.wox_plugin_service_startup}: {GetLocalizedStartType(serviceController.StartType)}";
+        }
+
         private static string GetLocalizedStatus(ServiceControllerStatus status)
         {
             if (status == ServiceControllerStatus.Stopped)
@@ -115,9 +136,41 @@ namespace Microsoft.Plugin.Service.Helper
             {
                 return Resources.wox_plugin_service_pause_pending;
             }
-            else
+            else if (status == ServiceControllerStatus.Paused)
             {
                 return Resources.wox_plugin_service_paused;
+            }
+            else
+            {
+                return status.ToString();
+            }
+        }
+
+        private static string GetLocalizedStartType(ServiceStartMode startMode)
+        {
+            if (startMode == ServiceStartMode.Boot)
+            {
+                return Resources.wox_plugin_service_start_mode_boot;
+            }
+            else if (startMode == ServiceStartMode.System)
+            {
+                return Resources.wox_plugin_service_start_mode_system;
+            }
+            else if (startMode == ServiceStartMode.Automatic)
+            {
+                return Resources.wox_plugin_service_start_mode_automatic;
+            }
+            else if (startMode == ServiceStartMode.Manual)
+            {
+                return Resources.wox_plugin_service_start_mode_manual;
+            }
+            else if (startMode == ServiceStartMode.Disabled)
+            {
+                return Resources.wox_plugin_service_start_mode_disabled;
+            }
+            else
+            {
+                return startMode.ToString();
             }
         }
 
@@ -131,9 +184,13 @@ namespace Microsoft.Plugin.Service.Helper
             {
                 return string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_service_stopped_notification, serviceResult.DisplayName);
             }
-            else
+            else if (action == Action.Restart)
             {
                 return string.Format(CultureInfo.CurrentCulture, Resources.wox_plugin_service_restarted_notification, serviceResult.DisplayName);
+            }
+            else
+            {
+                return string.Empty;
             }
         }
     }
