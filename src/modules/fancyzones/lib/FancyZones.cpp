@@ -634,7 +634,7 @@ void FancyZones::ToggleEditor() noexcept
 
     const bool spanZonesAcrossMonitors = m_settings->GetSettings()->spanZonesAcrossMonitors;
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
-        
+
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
     allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
     
@@ -691,10 +691,16 @@ void FancyZones::ToggleEditor() noexcept
 
     if (showDpiWarning)
     {
-        MessageBoxW(NULL,
-                    GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
-                    GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                    MB_OK | MB_ICONWARNING);
+        // We must show the message box in a separate thread, since this code is called from a low-level
+        // keyboard hook callback, and launching messageboxes from it has unexpected side effects,
+        // like triggering EVENT_SYSTEM_MOVESIZEEND prematurely. 
+        // TODO: understand the root cause of this, until then it's commented out.
+        //std::thread{ [] {
+        //    MessageBoxW(nullptr,
+        //                GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
+        //                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+        //                MB_OK | MB_ICONWARNING);
+        //} }.detach();
     }
 
     const auto& fancyZonesData = FancyZonesDataInstance();
