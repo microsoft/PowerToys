@@ -121,8 +121,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
         {
             return false;
         }
-        const UINT dpi = GetDpiForMonitor(m_monitor);
-        workAreaRect = Rect(mi.rcWork, dpi);
+        workAreaRect = Rect(mi.rcWork);
     }
     else
     {
