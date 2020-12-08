@@ -22,7 +22,7 @@ namespace updating
 
     bool install_dotnet(const bool silent)
     {
-        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/3eb7efa1-96c6-4e97-bb9f-563ecf595f8a/7efd9c1cdd74df8fb0a34c288138a84f/windowsdesktop-runtime-3.1.6-win-x64.exe";
+        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/513acf37-8da2-497d-bdaa-84d6e33c1fee/eb7b010350df712c752f4ec4b615f89d/windowsdesktop-runtime-3.1.10-win-x64.exe";
         const wchar_t DOTNET_DESKTOP_FILENAME[] = L"windowsdesktop-runtime.exe";
 
         auto dotnet_download_path = fs::temp_directory_path() / DOTNET_DESKTOP_FILENAME;
