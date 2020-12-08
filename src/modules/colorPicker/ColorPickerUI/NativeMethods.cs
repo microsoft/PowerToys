@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text;
 
 namespace ColorPicker
 {
@@ -161,5 +162,11 @@ namespace ColorPicker
             /// </summary>
             public IntPtr AdditionalInformation;
         }
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetOpenClipboardWindow();
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        internal static extern int GetWindowText(int hwnd, StringBuilder text, int count);
     }
 }
