@@ -341,7 +341,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to install Windows event listener.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L'installation de l'écouteur d'événement Windows a échoué.]]></Val>
+            <Val><![CDATA[L'installation de l'écouteur d'événements Windows a échoué.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Versleepte venster doorzichtig maken]]></Val>
+            <Val><![CDATA[Versleept venster doorzichtig maken]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -461,7 +461,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {0} hour, {1} minute remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pozostało: około {0} godz., {1} min.]]></Val>
+            <Val><![CDATA[Pozostało: około {0} godz. {1} min.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -515,7 +515,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {1} minutes, {2} second remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pozostało: około {1} min, {2} s.]]></Val>
+            <Val><![CDATA[Pozostało: około {1} min {2} s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -524,7 +524,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About {1} minutes, {2} seconds remaining.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pozostało: około {1} min, {2} s.]]></Val>
+            <Val><![CDATA[Pozostało: około {1} min {2} s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

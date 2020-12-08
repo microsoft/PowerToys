@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for bulk image resizing.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uma extensão do Windows Shell para redimensionamento de imagens em massa.]]></Val>
+            <Val><![CDATA[Uma extensão da Shell do Windows para redimensionamento de imagens em massa.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

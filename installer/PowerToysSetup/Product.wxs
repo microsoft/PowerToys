@@ -96,10 +96,6 @@
         Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
       
-      <Custom Action="InstallDotNet" After="InstallFinalize">
-        NOT Installed and (SKIPDOTNETINSTALL = 0)
-      </Custom>
-
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
       
     </InstallExecuteSequence>
@@ -111,14 +107,6 @@
       Execute="immediate"
       BinaryKey="PTCustomActions"
       DllEntry="TerminateProcessesCA" />
-
-    <CustomAction 
-      Id="InstallDotNet"
-      FileKey="action_runner.exe"
-      ExeCommand="-install_dotnet"
-      Return="asyncNoWait"
-      Execute="immediate"
-      Impersonate="no" />
 
     <CustomAction Id="SetRegisterPowerToysSchTaskParam"
                   Property="RegisterPowerToysSchTask"
@@ -368,23 +356,14 @@
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\fancyzones.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" >
-          <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
-        </File>
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\MahApps.Metro.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe.config" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Bcl.AsyncInterfaces.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Buffers.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Memory.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Numerics.Vectors.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Runtime.CompilerServices.Unsafe.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Encodings.Web.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Json.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Threading.Tasks.Extensions.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.ValueTuple.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedCommon.dll" />	  
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedCommon.dll" />
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Telemetry.dll" />
         <File Id="FancyZone_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.IO.Abstractions.dll" />
       </Component>

@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep windows in their zones when the screen resolution changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Az ablakok a zónáikban tartása a képernyőfelbontás módosításakor]]></Val>
+            <Val><![CDATA[Az ablakok zónáikban tartása a képernyőfelbontás módosításakor]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -332,7 +332,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The 'Allow zones to span across monitors' option requires all monitors to have the same DPI scaling to work properly.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A „Zónák több képernyőre való kiterjedésének engedélyezése” beállítás megfelelő működéséhoz minden képernyőnek ugyanolyan DPI-skálázással kell rendelkeznie.]]></Val>
+            <Val><![CDATA[A „Zónák több képernyőre való kiterjedésének engedélyezése” beállítás megfelelő működéséhez minden képernyőnek ugyanolyan DPI-skálázással kell rendelkeznie.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -40,7 +40,6 @@ void to_file(std::wstring_view file_name, const JsonObject& obj)
     }
     catch (...)
     {
-        std::cerr << "Can not create log config file" << std::endl;
     }
 }
 
@@ -61,7 +60,6 @@ LogSettings to_settings(JsonObject jobject)
     }
     catch (...)
     {
-        std::cerr << "Can not read log level from config file" << std::endl;
         result.logLevel = LogSettings::defaultLogLevel;
     }
     

@@ -67,8 +67,8 @@
       <Item ItemId=";About_PowerRename.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[About PowerRename]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Power Rename のバージョン情報]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PowerRename について]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[About Power Rename]]></Val>
@@ -76,7 +76,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";About_PowerToys.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";About_PowerToys.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -130,6 +130,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ColorFormats.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Color formats]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[色の形式]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorModeHeader.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Choose a mode]]></Val>
@@ -139,12 +148,60 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ColorPickerFirst.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Color Picker が有効なカラー ピッカー]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColorPickerFirst_Description.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Pick a color from the screen, copy formatted value to clipboard, then to the editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[画面から色を選択し、書式設定された値をクリップボードにコピーしてからエディターにコピーします]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColorPickerOnly.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Color Picker only]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[カラー ピッカーのみ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColorPickerOnly_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Pick a color from the screen and copy formatted value to clipboard]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[画面から色を選択し、書式設定された値をクリップボードにコピーします]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";ColorPicker_ActivationAction.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Activation behavior]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[アクティブ化の動作]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorPicker_ActivationShortcut.Header" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open Color Picker]]></Val>
+          <Val><![CDATA[Activate Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Color Picker を開く]]></Val>
+            <Val><![CDATA[カラー ピッカーのアクティブ化]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Open Color Picker]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -157,12 +214,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ColorPicker_ColorFormatsDescription.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Editor color formats (Change the order by dragging)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[エディターの色の形式 (順序を変更するにはドラッグします)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ColorPicker_CopiedColorRepresentation.Header" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Copied color representation]]></Val>
+          <Val><![CDATA[Color format for clipboard]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[コピーされた色の表現]]></Val>
+            <Val><![CDATA[クリップボードの色の形式]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Copied color representation]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -170,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[迅速かつシンプルなシステム全体の Color Picker。]]></Val>
+            <Val><![CDATA[迅速かつシンプルなシステム全体のカラー ピッカー。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -184,7 +253,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";ColorPicker_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";ColorPicker_Image.AutomationProperties.Name" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -202,6 +271,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";EditorFirst.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Editor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[エディター]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";EditorFirst_Description.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open directly into the editor mode]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[エディター モードで直接開きます]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";Encoding.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Encoding]]></Val>
@@ -211,7 +298,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_AppLastZoneMoveWindows.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_AppLastZoneMoveWindows.Content" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Move newly created windows to their last known zone]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -245,12 +332,12 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep windows in their zones when the screen resolution changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[画面の解像度が変更されたときにウィンドウをゾーンに保持します]]></Val>
+            <Val><![CDATA[画面の解像度が変更されたときにウィンドウをゾーンに保持する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";FancyZones_Editor_GroupSettings.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";FancyZones_Editor_GroupSettings.Text" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -281,7 +368,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[アプリケーションをゾーンへのスナップから除外するには、その名前をここに追加します (1 行につき 1 つ)。これらのアプリは、ウィンドウ スナップに対してのみ対応します。]]></Val>
+            <Val><![CDATA[アプリケーションをゾーンへのスナップから除外するには、その名前をここに追加します (1 行につき 1 つ)。これらのアプリは、Windows のスナップに対してのみ対応します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -344,7 +431,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ドラッグしたウィンドウを透明にします]]></Val>
+            <Val><![CDATA[ドラッグしたウィンドウを透明にする]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -353,7 +440,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プライマリ以外のマウス ボタンを使用してゾーンのアクティブ化を切り替えます]]></Val>
+            <Val><![CDATA[プライマリ以外のマウス ボタンを使用してゾーンのアクティブ化を切り替える]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -389,7 +476,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap shortcut (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーン間でウィンドウを移動するウィンドウ スナップ機能のショートカット (Win+矢印キー) をオーバーライドする]]></Val>
+            <Val><![CDATA[Windows のスナップ機能のショートカット (Win+矢印キー) をオーバーライドして、ゾーン間でウィンドウを移動する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -407,7 +494,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hold Shift key to activate zones while dragging]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Shift キーを長押ししてドラッグ中にゾーンをアクティブにします]]></Val>
+            <Val><![CDATA[ドラッグ中に Shift キーを長押ししてゾーンをアクティブにする]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -425,7 +512,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーンが複数のモニターにまたがることを許可します (すべてのモニターは同じ DPI スケールである必要があります)]]></Val>
+            <Val><![CDATA[ゾーンが複数のモニターにまたがることを許可する (すべてのモニターは同じ DPI スケールである必要があります)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -434,7 +521,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Follow mouse cursor instead of focus when launching editor in a multi screen environment]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マルチスクリーン環境でエディターを起動するときに、フォーカスする代わりにマウス カーソルの動きを追います]]></Val>
+            <Val><![CDATA[マルチスクリーン環境でエディターを起動するときに、フォーカスではなくマウス カーソルに従う]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -473,7 +560,7 @@
         <Str Cat="Text">
           <Val><![CDATA[During zone layout changes, windows assigned to a zone will match new size/positions]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーン レイアウトの変更時に、ゾーンに割り当てられているウィンドウが新しいサイズまたは位置と一致します]]></Val>
+            <Val><![CDATA[ゾーン レイアウトの変更時に、ゾーンに割り当てられているウィンドウを新しいサイズまたは位置に合わせます]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1612,15 +1699,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";PowerLauncher_Shortcuts.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Shortcuts]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ショートカット]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";PowerRename_AutoCompleteHeader.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Autocomplete]]></Val>
@@ -1691,7 +1769,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Show icon on context menu]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[コンテキスト メニューでのアイコンの表示]]></Val>
+            <Val><![CDATA[コンテキスト メニューにアイコンを表示する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1964,7 +2042,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[表示する前に長押しする時間 (ミリ秒)]]></Val>
+            <Val><![CDATA[表示する前に長押しする時間 (ms)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1973,7 +2051,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Only shortcuts with the following hotkeys are valid:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[次のホットキーのショートカットキーのみが有効です:]]></Val>
+            <Val><![CDATA[次のホットキーのショートカットのみが有効です:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1983,6 +2061,15 @@
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Shortcut Guide]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Shortcuts.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Shortcuts]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ショートカット]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

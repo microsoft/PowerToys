@@ -634,53 +634,73 @@ void FancyZones::ToggleEditor() noexcept
 
     const bool spanZonesAcrossMonitors = m_settings->GetSettings()->spanZonesAcrossMonitors;
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
-        
+
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
     allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
     
+    // device id map 
+    std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
+
     bool showDpiWarning = false;
     int prevDpiX = -1, prevDpiY = -1;
-    std::wstring monitorsData;
-    for (auto& monitor : allMonitors)
+    std::wstring monitorsDataStr;
+    for (auto& monitorData : allMonitors)
     {
-        auto monitorId = FancyZonesUtils::GenerateMonitorId(monitor.second, monitor.first, m_currentDesktopId);
-        if (monitor.first == targetMonitor)
+        HMONITOR monitor = monitorData.first;
+        auto monitorInfo = monitorData.second;
+        
+        std::wstring monitorId;
+        std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
+        wil::unique_cotaskmem_string virtualDesktopId;
+        if (SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopId)))
         {
-            params += *monitorId + divider; /* Monitor id where the Editor should be opened */
+            monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
+        }
+        else
+        {
+            continue;
         }
 
-        if (monitorId.has_value())
+        if (monitor == targetMonitor)
         {
-            monitorsData += std::move(*monitorId) + divider; /* Monitor id */
+            params += monitorId + divider; /* Monitor id where the Editor should be opened */
+        }
 
-            UINT dpiX = 0;
-            UINT dpiY = 0;
-            if (GetDpiForMonitor(monitor.first, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
+        monitorsDataStr += std::move(monitorId) + divider; /* Monitor id */
+
+        UINT dpiX = 0;
+        UINT dpiY = 0;
+        if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
+        {
+            monitorsDataStr += std::to_wstring(dpiX) + divider; /* DPI */
+            if (spanZonesAcrossMonitors && prevDpiX != -1 && (prevDpiX != dpiX || prevDpiY != dpiY))
             {
-                monitorsData += std::to_wstring(dpiX) + divider; /* DPI */
-                if (spanZonesAcrossMonitors && prevDpiX != -1 && (prevDpiX != dpiX || prevDpiY != dpiY))
-                {
-                    showDpiWarning = true;
-                }
-
-                prevDpiX = dpiX;
-                prevDpiY = dpiY;
+                showDpiWarning = true;
             }
 
-            monitorsData += std::to_wstring(monitor.second.rcMonitor.left) + divider;
-            monitorsData += std::to_wstring(monitor.second.rcMonitor.top) + divider;
+            prevDpiX = dpiX;
+            prevDpiY = dpiY;
         }
+
+        monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.left) + divider;
+        monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.top) + divider;
     }
 
     params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
-    params += monitorsData;
+    params += monitorsDataStr;
 
     if (showDpiWarning)
     {
-        MessageBoxW(NULL,
-                    GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
-                    GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
-                    MB_OK | MB_ICONWARNING);
+        // We must show the message box in a separate thread, since this code is called from a low-level
+        // keyboard hook callback, and launching messageboxes from it has unexpected side effects,
+        // like triggering EVENT_SYSTEM_MOVESIZEEND prematurely. 
+        // TODO: understand the root cause of this, until then it's commented out.
+        //std::thread{ [] {
+        //    MessageBoxW(nullptr,
+        //                GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),
+        //                GET_RESOURCE_STRING(IDS_POWERTOYS_FANCYZONES).c_str(),
+        //                MB_OK | MB_ICONWARNING);
+        //} }.detach();
     }
 
     const auto& fancyZonesData = FancyZonesDataInstance();
@@ -951,30 +971,8 @@ void FancyZones::UpdateZoneWindows() noexcept
             auto& displayDeviceIdxMap = *(params->displayDeviceIdx);
             FancyZones* fancyZones = params->fancyZones;
 
-            DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };
-            std::wstring deviceId;
-            while (EnumDisplayDevicesW(mi.szDevice, displayDeviceIdxMap[mi.szDevice], &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
-            {
-                ++displayDeviceIdxMap[mi.szDevice];
-                // Only take active monitors (presented as being "on" by the respective GDI view) and monitors that don't
-                // represent a pseudo device used to mirror application drawing.
-                if (WI_IsFlagSet(displayDevice.StateFlags, DISPLAY_DEVICE_ACTIVE) &&
-                    WI_IsFlagClear(displayDevice.StateFlags, DISPLAY_DEVICE_MIRRORING_DRIVER))
-                {
-                    deviceId = displayDevice.DeviceID;
-                    fancyZones->AddZoneWindow(monitor, deviceId);
-                    break;
-                }
-            }
-
-            if (deviceId.empty())
-            {
-                deviceId = GetSystemMetrics(SM_REMOTESESSION) ?
-                               L"\\\\?\\DISPLAY#REMOTEDISPLAY#" :
-                               L"\\\\?\\DISPLAY#LOCALDISPLAY#";
-
-                fancyZones->AddZoneWindow(monitor, deviceId);
-            }
+            std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(mi.szDevice, displayDeviceIdxMap);
+            fancyZones->AddZoneWindow(monitor, deviceId);
         }
         return TRUE;
     };

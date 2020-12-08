@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The Svg could not be preview due to an internal error in Svg Preview Handler.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось выполнить предварительный просмотр SVG из-за внутренней ошибки обработчика предварительного просмотра SVG.]]></Val>
+            <Val><![CDATA[ Не удалось выполнить предварительный просмотр SVG из-за внутренней ошибки обработчика просмотра SVG.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

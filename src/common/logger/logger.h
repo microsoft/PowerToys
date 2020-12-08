@@ -5,53 +5,54 @@
 class Logger
 {
 private:
-    std::shared_ptr<spdlog::logger> logger;
+    inline const static std::wstring logFailedShown = L"logFailedShown";
+    static std::shared_ptr<spdlog::logger> logger;
+    static bool wasLogFailedShown();
 
 public:
-    Logger();
-    Logger(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath);
+    Logger() = delete;
+
+    static void init(std::string loggerName, std::wstring logFilePath, std::wstring_view logSettingsPath);
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    void trace(const FormatString& fmt, const Args&... args)
+    static void trace(const FormatString& fmt, const Args&... args)
     {
-        this->logger->trace(fmt, args...);
+        logger->trace(fmt, args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    void debug(const FormatString& fmt, const Args&... args)
+    static void debug(const FormatString& fmt, const Args&... args)
     {
-        this->logger->debug(fmt, args...);
+        logger->debug(fmt, args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    void info(const FormatString& fmt, const Args&... args)
+    static void info(const FormatString& fmt, const Args&... args)
     {
-        this->logger->info(fmt, args...);
+        logger->info(fmt, args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    void warn(const FormatString& fmt, const Args&... args)
+    static void warn(const FormatString& fmt, const Args&... args)
     {
-        this->logger->warn(fmt, args...);
+        logger->warn(fmt, args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    void error(const FormatString& fmt, const Args&... args)
+    static void error(const FormatString& fmt, const Args&... args)
     {
-        this->logger->error(fmt, args...);
+        logger->error(fmt, args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    void critical(const FormatString& fmt, const Args&... args)
+    static void critical(const FormatString& fmt, const Args&... args)
     {
-        this->logger->critical(fmt, args...);
+        logger->critical(fmt, args...);
     }
-
-    ~Logger();
 };

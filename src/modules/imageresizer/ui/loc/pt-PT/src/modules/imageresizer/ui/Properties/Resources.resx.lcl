@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[JPEG quality level]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nível de qualidade JPEG]]></Val>
+            <Val><![CDATA[Nível de qualidade de JPEG]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PNG interlacing]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Entrelaçamento PNG]]></Val>
+            <Val><![CDATA[Entrelaçamento de PNG]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -256,8 +256,8 @@
       <Item ItemId=";Copyright" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[© 2020 Brice Lambson. All rights reserved.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[© 2019 Brice Lambson. Todos os direitos reservados.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[© 2020 Brice Lambson. Todos os direitos reservados.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[© 2019 Brice Lambson. All rights reserved.]]></Val>
@@ -295,8 +295,8 @@
       <Item ItemId=";Input_Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[_Select a size]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[_Selecione um tamanho.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[_Selecionar um tamanho]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[_Select a size.]]></Val>
@@ -649,6 +649,9 @@
       <Item ItemId=";Resize_Type" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resize type]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Redimensionar tipo]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -746,7 +749,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Times Symbol]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Símbolo de Tempo]]></Val>
+            <Val><![CDATA[Símbolo de Hora]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep windows in their zones when the screen resolution changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[当屏幕分辨率发生变化时，保持窗口位于各自的区域内]]></Val>
+            <Val><![CDATA[当屏幕分辨率发生变化时，使窗口保持在各自的区域内]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[使用非主鼠标按钮来切换区域激活]]></Val>
+            <Val><![CDATA[使用次要鼠标按钮来切换区域激活]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

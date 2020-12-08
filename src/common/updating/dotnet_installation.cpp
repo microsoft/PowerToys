@@ -20,9 +20,9 @@ namespace updating
         return runtimes->find(DESKTOP_DOTNET_RUNTIME_STRING) != std::string::npos;
     }
 
-    bool install_dotnet(const bool silent)
+    std::optional<fs::path> download_dotnet()
     {
-        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/3eb7efa1-96c6-4e97-bb9f-563ecf595f8a/7efd9c1cdd74df8fb0a34c288138a84f/windowsdesktop-runtime-3.1.6-win-x64.exe";
+        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/513acf37-8da2-497d-bdaa-84d6e33c1fee/eb7b010350df712c752f4ec4b615f89d/windowsdesktop-runtime-3.1.10-win-x64.exe";
         const wchar_t DOTNET_DESKTOP_FILENAME[] = L"windowsdesktop-runtime.exe";
 
         auto dotnet_download_path = fs::temp_directory_path() / DOTNET_DESKTOP_FILENAME;
@@ -44,10 +44,11 @@ namespace updating
                 // couldn't download
             }
         }
-        if (!download_success)
-        {
-            return false;
-        }
+        return download_success ? std::make_optional(dotnet_download_path) : std::nullopt;
+    }
+
+    bool install_dotnet(fs::path dotnet_download_path, const bool silent = false)
+    {
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
         sei.lpFile = dotnet_download_path.c_str();
