@@ -133,7 +133,7 @@
     <value>Service</value>
   </data>
   <data name="wox_plugin_service_restart" xml:space="preserve">
-    <value>Restart</value>
+    <value>Restart (Shift+Enter)</value>
   </data>
   <data name="wox_plugin_service_restarted_notification" xml:space="preserve">
     <value>{0} has been restarted</value>
@@ -142,7 +142,7 @@
     <value>Running</value>
   </data>
   <data name="wox_plugin_service_start" xml:space="preserve">
-    <value>Start</value>
+    <value>Start (Enter)</value>
   </data>
   <data name="wox_plugin_service_started" xml:space="preserve">
     <value>Started</value>
@@ -175,7 +175,7 @@
     <value>Status</value>
   </data>
   <data name="wox_plugin_service_stop" xml:space="preserve">
-    <value>Stop</value>
+    <value>Stop (Enter)</value>
   </data>
   <data name="wox_plugin_service_stopped" xml:space="preserve">
     <value>Stopped</value>

@@ -59,6 +59,8 @@ namespace Microsoft.Plugin.Service
                     Title = Resources.wox_plugin_service_restart,
                     Glyph = "\xE72C",
                     FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.Enter,
+                    AcceleratorModifiers = ModifierKeys.Shift,
                     Action = _ =>
                     {
                         Task.Run(() => ServiceHelper.ChangeStatus(serviceResult, Action.Restart, _context.API));

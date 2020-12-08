@@ -106,7 +106,7 @@ namespace Microsoft.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restart.
+        ///   Looks up a localized string similar to Restart (Shift+Enter).
         /// </summary>
         internal static string wox_plugin_service_restart {
             get {
@@ -133,7 +133,7 @@ namespace Microsoft.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Start.
+        ///   Looks up a localized string similar to Start (Enter).
         /// </summary>
         internal static string wox_plugin_service_start {
             get {
@@ -232,7 +232,7 @@ namespace Microsoft.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Stop.
+        ///   Looks up a localized string similar to Stop (Enter).
         /// </summary>
         internal static string wox_plugin_service_stop {
             get {
