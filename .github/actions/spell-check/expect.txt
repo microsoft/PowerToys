@@ -316,6 +316,7 @@ comctl
 COMDAT
 comdef
 comdlg
+comhost
 cominterop
 commandline
 commctrl
@@ -1147,6 +1148,7 @@ Italiano
 ITask
 ITemplate
 ITEMSTATEICONCLICK
+ITest
 ith
 IThrottled
 IThumbnail
