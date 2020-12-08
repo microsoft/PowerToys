@@ -248,6 +248,9 @@
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="ServicePluginFolder" Name="Microsoft.Plugin.Service">
+                  <Directory Id="ServiceImagesFolder" Name="Images" />
+                </Directory>
               </Directory>
               <Directory Id="LauncherPropertiesFolder" Name="Properties" />
             </Directory>
@@ -867,9 +870,17 @@
   </Fragment>
   <Fragment>
     <ComponentGroup Id="LauncherComponents">
+
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
+        
+        <!-- Toast Notification AUMID -->
+        <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
+          <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
+          <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]icon.ico" />
+        </RegistryKey>
+        
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
@@ -879,7 +890,7 @@
         <?endforeach?>
       </Component>  
       <Component Id="launcherImagesComponent" Directory="LauncherImagesFolder" Guid="D254220C-1DD9-4C74-8810-1AAB2F940DE8">
-        <?foreach File in app.dark.png;app.light.png;app_error.dark.png;app_error.light.png;Browser.png;calculator.png;cancel.png;close.png;cmd.png;color.png;copy.png;down.png;EXE.png;file.png;find.png;folder.png;history.png;image.png;Link.png;lock.png;logoff.png;ok.png;open.png;plugin.png;recyclebin.png;restart.png;search.png;settings.png;shutdown.png;sleep.png;up.png;update.png;warning.png?>
+        <?foreach File in app.dark.png;app.light.png;app_error.dark.png;app_error.light.png;Browser.png;calculator.png;cancel.png;close.png;cmd.png;color.png;copy.png;down.png;EXE.png;file.png;find.png;folder.png;history.png;image.png;Link.png;lock.png;logoff.png;ok.png;open.png;plugin.png;recyclebin.png;restart.png;search.png;settings.png;shutdown.png;sleep.png;up.png;update.png;warning.png;icon.ico?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Images\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)modules\launcher\Images\New Message.png" />
@@ -964,6 +975,17 @@
       <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
           <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.dark.png" />
           <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.light.png" />
+      </Component>
+      
+      <!-- Service Plugin -->
+      <Component Id="ServiceComponent" Directory="ServicePluginFolder" Guid="66245D20-0078-4136-8A34-4A282FB894D5">
+        <?foreach File in plugin.json;Microsoft.Plugin.Service.deps.json;Microsoft.Plugin.Service.dll?>
+          <File Id="Service_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Service\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="ServiceImagesComponent" Directory="ServiceImagesFolder" Guid="5846BF01-5BCB-47DC-9472-0E478A41B1AE">
+        <File Id="ServiceDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Service\Images\service.dark.png" />
+        <File Id="ServiceLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Service\Images\service.light.png" />
       </Component>
     
     </ComponentGroup>

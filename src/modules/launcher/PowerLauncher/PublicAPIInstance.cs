@@ -36,7 +36,7 @@ namespace Wox
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
 
             DesktopNotificationManagerCompat.RegisterActivator<LauncherNotificationActivator>();
-            DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerLauncher");
+            DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerToysRun");
         }
 
         public void ChangeQuery(string query, bool requery = false)
