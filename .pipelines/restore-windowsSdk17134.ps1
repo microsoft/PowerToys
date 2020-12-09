@@ -247,13 +247,13 @@ if ($InstallWindowsSDK)
     $downloadFileItem = Get-Item $downloadFile
 
     # Check to make sure the file is at least 10 MB.
-    if ($downloadFileItem.Length -lt 10*1024*1024)
-    {
-        Write-Host
-        Write-Host "ERROR: Downloaded file doesn't look large enough to be an ISO. The requested version may not be on microsoft.com yet."
-        Write-Host
-        Exit 1
-    }
+    # if ($downloadFileItem.Length -lt 10*1024*1024)
+    # {
+    #     Write-Host
+    #     Write-Host "ERROR: Downloaded file doesn't look large enough to be an ISO. The requested version may not be on microsoft.com yet."
+    #     Write-Host
+    #     Exit 1
+    # }
 
     # TODO Check if zip, exe, iso, etc.
     try
