@@ -3,3 +3,4 @@ steps:
     displayName: 'Install Windows All dependencies via Visual Studio'
     inputs:
       filename: restore-dependencies.cmd
+      workingFolder: .pipelines
