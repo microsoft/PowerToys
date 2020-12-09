@@ -241,9 +241,10 @@ if ($InstallWindowsSDK)
     # $file = "winsdk_$buildNumber.iso"
     $file = "winsdk_$buildNumber.exe"
 
-    Write-Verbose "Getting WinSDK from $uri"
+    Write-Host -NoNewline "Getting WinSDK from $uri"
     $downloadFile = Download-File $winsdkTempDir $uri $file
-    Write-Verbose "File is at $downloadFile"
+
+    Write-Host -NoNewline "File is at $downloadFile"
     $downloadFileItem = Get-Item $downloadFile
 
     # Check to make sure the file is at least 10 MB.
@@ -258,24 +259,13 @@ if ($InstallWindowsSDK)
     # TODO Check if zip, exe, iso, etc.
     try
     {
-        if (Test-Path $isoDrive)
-        {
-            Write-Host -NoNewLine "Installing WinSDK..."
+        Write-Host -NoNewLine "Installing WinSDK..."
 
-            # $setupPath = Join-Path "$isoDrive" "WinSDKSetup.exe" 
-            $setupPath = $downloadFileItem
-
-            Start-Process -Wait $setupPath "/features $WindowsSDKOptions /q"
-            Write-Host "Done"
-        }
-        else
-        {
-            throw "Could not find mounted ISO at ${isoDrive}"
-        }
+        Start-Process -Wait $downloadFileItem "/features $WindowsSDKOptions /q"
+        Write-Host "Done installing"
     }
     finally
     {
-        Write-Host -NoNewline "Dismounting ISO $file..."
         Write-Host "Done"
     }
 }
