@@ -5,7 +5,7 @@
 #include <future>
 
 #include "notifications.h"
-#include "../VersionHelper.h"
+#include "../version/helper.h"
 
 namespace updating
 {

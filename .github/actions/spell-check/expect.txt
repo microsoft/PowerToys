@@ -197,6 +197,7 @@ buf
 BUFSIZE
 Buid
 buildcommand
+buildtools
 buildtransitive
 BValue
 bytearray
@@ -336,11 +337,13 @@ CPlus
 cplusplus
 CPower
 cpp
+CPPARM
 cppblog
 cppm
 cpprestsdk
 cppstd
 cppwinrt
+CPPx
 CProj
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -362,6 +365,7 @@ cso
 csproj
 CSRW
 css
+cstdint
 cstdlib
 cstring
 CStyle
@@ -465,8 +469,8 @@ DISPIDAMBIENTDLCONTROL
 DISPINFO
 Displayandhidethedesktop
 DISPLAYCHANGE
-DISPLAYNAME
 displayname
+DISPLAYNAME
 divyan
 DLACTIVEXCTLS
 DLCONTROL
@@ -647,14 +651,14 @@ ENU
 enum
 ENUMITEMS
 EOAC
-eol
 EOL
+eol
 epicgames
 ERASEBKGND
 EREOF
 EResize
-errorlevel
 ERRORLEVEL
+errorlevel
 ERRORMESSAGE
 ERRORTITLE
 esize
@@ -854,8 +858,8 @@ HLSL
 hmenu
 hmodule
 hmon
-hmonitor
 HMONITOR
+hmonitor
 HOLDENTER
 HOLDESC
 homljgmgpmcbpjbnjpfijnhipfkiclkd
@@ -979,6 +983,7 @@ imageresizersettings
 IMain
 IMarkdown
 ime
+imeutil
 img
 IMonitor
 IMouse
@@ -1145,8 +1150,8 @@ keyremaps
 keystokes
 Keystool
 Keytool
-KEYUP
 keyup
+KEYUP
 Kf
 KILLFOCUS
 Knownfolders
@@ -1155,6 +1160,7 @@ LAlt
 lambson
 lamotile
 Lastdevice
+LASTEXITCODE
 laute
 laviusmotileng
 LAYOUTRTL
@@ -1184,6 +1190,7 @@ LIGHTTURQUOISE
 LIGHTYELLOW
 lindex
 linecap
+linkid
 Linkmenu
 linq
 LINQTo
@@ -1385,8 +1392,8 @@ multizone
 mutex
 mutexes
 muxc
-Mvvm
 mvvm
+Mvvm
 MYICON
 myuri
 NAMECHANGE
@@ -1441,6 +1448,7 @@ noactive
 Noactivewindow
 NOAGGREGATION
 NOASYNC
+nocache
 NOCLOSEPROCESS
 NOCOPYBITS
 nodeca
@@ -1475,6 +1483,7 @@ notafter
 notfound
 nothrow
 notificationsdll
+NOTIFICATIONSDLL
 NOTIFYICONDATAW
 NOTIMPL
 notmatch
@@ -1793,6 +1802,7 @@ resultlist
 resw
 resx
 returnvalue
+retval
 rfind
 rgb
 RGBQUAD
@@ -1894,6 +1904,7 @@ settingsheader
 settingshotkeycontrol
 settingsui
 settingsv
+Setttings
 setwindowpos
 SETWORKAREA
 sfgao
@@ -1908,8 +1919,8 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-shellscalingapi
 Shellscalingapi
+shellscalingapi
 Shelveset
 SHFILEINFO
 SHGFI
@@ -2048,8 +2059,8 @@ stringtable
 stringval
 strsafe
 strutil
-STTNGS
 sttngs
+STTNGS
 Stubless
 STYLECHANGED
 STYLECHANGING
@@ -2163,8 +2174,8 @@ toggleright
 toggleswitch
 toolbar
 Toolchain
-Toolset
 toolset
+Toolset
 tooltip
 toolwindow
 TOPDOWNDIB
@@ -2210,12 +2221,14 @@ Uid
 uifabric
 uifabricicons
 uint
+uintptr
 UIPI
 UIs
 ul
 ULARGE
 ULLONG
 ulong
+umd
 unchecks
 uncomment
 uncompilable
@@ -2234,8 +2247,8 @@ uninstalling
 uninstantiated
 Uniq
 uniquifier
-uniquifies
 Uniquifies
+uniquifies
 unittests
 unk
 unknwn
@@ -2351,6 +2364,7 @@ wdupenv
 weakme
 webapp
 webcam
+webclient
 webkit
 webp
 webpack
@@ -2368,9 +2382,11 @@ wikipedia
 wil
 wildcards
 WINAPI
+winapi
 winauto
 wincolor
 windef
+windevbuildagents
 Windowcontrols
 WINDOWCREATED
 WINDOWEDGE
@@ -2513,13 +2529,3 @@ ZONESETCHANGE
 Zoneszonabletester
 Zoomusingmagnifier
 zzz
-buildtools
-CPPARM
-CPPx
-LASTEXITCODE
-linkid
-nocache
-retval
-umd
-webclient
-windevbuildagents

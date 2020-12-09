@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Styles.h"
-#include <common/windows_colors.h>
+#include <common/themes/windows_colors.h>
 
 Style AccentButtonStyle()
 {

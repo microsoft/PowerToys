@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include <settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
+
 #include <powerpreview/settings.cpp>
 #include <powerpreview/trace.cpp>
-#include <common.h>
 #include <powerpreview/registry_wrapper.h>
 #include <powerpreview/preview_handler.cpp>
 #include <powerpreview/thumbnail_provider.cpp>
@@ -14,8 +14,6 @@ using namespace PowerPreviewSettings;
 
 namespace FileExplorerPreviewSettingsTest
 {
-    extern "C" IMAGE_DOS_HEADER __ImageBase;
-
     struct FunctionProperties
     {
     public:

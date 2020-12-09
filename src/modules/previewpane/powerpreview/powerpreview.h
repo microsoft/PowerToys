@@ -1,16 +1,15 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <common.h>
 #include "trace.h"
 #include "settings.h"
 #include "thumbnail_provider.h"
 #include "preview_handler.h"
 #include "registry_wrapper.h"
-#include <powerpreview\powerpreviewConstants.h>
+#include <powerpreview/powerpreviewConstants.h>
+
+#include <functional>
 
 using namespace PowerPreviewSettings;
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 // Implement the PowerToy Module Interface and all the required methods.
 class PowerPreviewModule : public PowertoyModuleIface

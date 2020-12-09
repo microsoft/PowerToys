@@ -1,10 +1,9 @@
 #include "pch.h"
 
-#include <common/common.h>
-#include <common/dpi_aware.h>
-#include <common/monitor_utils.h>
-#include <common/on_thread_executor.h>
-#include <common/window_helpers.h>
+#include <common/display/dpi_aware.h>
+#include <common/logger/logger.h>
+#include <common/utils/resources.h>
+#include <common/utils/window.h>
 
 #include "FancyZones.h"
 #include "lib/Settings.h"
@@ -14,13 +13,13 @@
 #include "lib/WindowMoveHandler.h"
 #include "lib/FancyZonesWinHookEventIDs.h"
 #include "lib/util.h"
+#include "on_thread_executor.h"
 #include "trace.h"
 #include "VirtualDesktopUtils.h"
 #include "MonitorWorkAreaHandler.h"
+#include "util.h"
 
 #include <lib/SecondaryMouseButtonsHook.h>
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 enum class DisplayChangeType
 {
@@ -637,9 +636,9 @@ void FancyZones::ToggleEditor() noexcept
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
 
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-    allMonitors = GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-    
-    // device id map 
+    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+
+    // device id map
     std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
 
     bool showDpiWarning = false;
@@ -649,7 +648,7 @@ void FancyZones::ToggleEditor() noexcept
     {
         HMONITOR monitor = monitorData.first;
         auto monitorInfo = monitorData.second;
-        
+
         std::wstring monitorId;
         std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
         wil::unique_cotaskmem_string virtualDesktopId;
@@ -1117,7 +1116,7 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
         current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     }
 
-    auto allMonitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+    auto allMonitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
 
     if (current && allMonitors.size() > 1 && m_settings->GetSettings()->moveWindowAcrossMonitors)
     {

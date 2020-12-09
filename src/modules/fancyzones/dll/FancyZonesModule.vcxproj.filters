@@ -34,8 +34,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\lib\fancyzones.rc">
-      <Filter>Generated Files</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="..\lib\Generated Files\fancyzones.rc" />
   </ItemGroup>
 </Project>

@@ -1,13 +1,15 @@
 #include "pch.h"
-#include <settings_objects.h>
-#include <common.h>
+#include <common/SettingsAPI/settings_objects.h>
 #include "powerpreview.h"
 #include "trace.h"
 #include "settings.h"
 #include "Generated Files/resource.h"
-#include <common/notifications.h>
-#include <common/os-detect.h>
-#include <common/toast_dont_show_again.h>
+#include <common/notifications/dont_show_again.h>
+#include <common/notifications/notifications.h>
+
+#include <common/utils/elevation.h>
+#include <common/utils/resources.h>
+#include <common/utils/os-detect.h>
 
 // Constructor
 PowerPreviewModule::PowerPreviewModule() :

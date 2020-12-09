@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
 
 // Zoned window properties are not localized.
 namespace ZonedWindowProperties

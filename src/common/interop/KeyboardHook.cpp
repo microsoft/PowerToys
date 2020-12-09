@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "KeyboardHook.h"
 #include <exception>
-#include <msclr\marshal.h>
-#include <msclr\marshal_cppstd.h>
+#include <msclr/marshal.h>
+#include <msclr/marshal_cppstd.h>
 #include <common/debug_control.h>
-#include <common/common.h>
+#include <common/utils/winapi_error.h>
 
 using namespace interop;
 using namespace System::Runtime::InteropServices;

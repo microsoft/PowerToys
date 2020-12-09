@@ -3,7 +3,7 @@
 #include <vector>
 #include <functional>
 
-#include <common/LowlevelKeyboardEvent.h>
+#include <common/hooks/LowlevelKeyboardEvent.h>
 
 // Class for mocked keyboard input
 class MockedInput :

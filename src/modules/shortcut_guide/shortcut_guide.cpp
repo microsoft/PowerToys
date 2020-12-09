@@ -3,18 +3,18 @@
 #include "target_state.h"
 #include "trace.h"
 
-#include <common/common.h>
-#include <common/settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
 #include <common/debug_control.h>
 #include <sstream>
 #include <modules/shortcut_guide/ShortcutGuideConstants.h>
 
-#include <common/settings_helpers.cpp>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/SettingsAPI/settings_objects.h>
 #include <common/logger/logger.h>
-
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
+#include <common/utils/window.h>
 // TODO: refactor singleton
 OverlayWindow* instance = nullptr;
 
@@ -242,7 +242,7 @@ void OverlayWindow::enable()
             Logger::critical("Winkey popup failed to initialize");
             return;
         }
-        
+
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
         const bool hook_disabled = IsDebuggerPresent();
 #else

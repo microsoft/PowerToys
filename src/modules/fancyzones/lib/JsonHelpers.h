@@ -2,7 +2,7 @@
 
 #include "FancyZonesDataTypes.h"
 
-#include <common/json.h>
+#include <common/utils/json.h>
 
 #include <string>
 #include <vector>

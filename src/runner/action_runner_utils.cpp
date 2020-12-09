@@ -2,8 +2,8 @@
 
 #include "action_runner_utils.h"
 
-#include <common/common.h>
-#include <common/winstore.h>
+#include <common/utils/process_path.h>
+#include <common/winstore/winstore.h>
 
 SHELLEXECUTEINFOW launch_action_runner(const wchar_t* cmdline)
 {

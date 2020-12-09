@@ -3,8 +3,9 @@
 #include "resource.h"
 #include <CLSID.h>
 #include <PowerRenameExt.h>
-#include <common.h>
-#include <com_object_factory.h>
+
+#include <common/utils/com_object_factory.h>
+#include <common/utils/window.h>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
 
@@ -24,7 +25,6 @@ void ModuleRelease()
     }
 }
 HINSTANCE g_hInst = 0;
-
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_opt_ HINSTANCE,

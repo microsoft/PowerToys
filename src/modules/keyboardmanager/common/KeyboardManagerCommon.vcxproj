@@ -31,20 +31,20 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\..\..\;..\..\..\common\telemetry;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4002</DisableSpecificWarnings>
       <AdditionalOptions>%(AdditionalOptions) /Zm200</AdditionalOptions>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Lib>    
+    </Lib>
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemGroup>
+    <ClCompile Include="..\..\..\common\interop\keyboard_layout.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="KeyboardManagerState.cpp" />
     <ClCompile Include="KeyDelay.cpp" />
@@ -68,8 +68,11 @@
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\common.vcxproj">
-      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
+    <ProjectReference Include="..\..\..\common\COMUtils\COMUtils.vcxproj">
+      <Project>{7319089e-46d6-4400-bc65-e39bdf1416ee}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
+      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -75,8 +75,8 @@
     <ClInclude Include="XamlBridge.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
-      <Project>{8affa899-0b73-49ec-8c50-0fadda57b2fc}</Project>
+    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+      <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

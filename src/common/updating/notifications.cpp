@@ -2,12 +2,12 @@
 
 #include "notifications.h"
 
-#include <common/notifications.h>
+#include <common/notifications/notifications.h>
 
 #include "updating.h"
 
-#include "VersionHelper.h"
-#include "version.h"
+#include <common/version/helper.h>
+#include <common/version/version.h>
 
 namespace updating
 {

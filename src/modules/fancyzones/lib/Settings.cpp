@@ -1,11 +1,10 @@
 #include "pch.h"
-#include <common/settings_objects.h>
-#include <common/common.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/resources.h>
+
 #include "lib/Settings.h"
 #include "lib/FancyZones.h"
 #include "trace.h"
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -43,20 +42,26 @@ namespace NonLocalizable
 struct FancyZonesSettings : winrt::implements<FancyZonesSettings, IFancyZonesSettings>
 {
 public:
-    FancyZonesSettings(HINSTANCE hinstance, PCWSTR name, PCWSTR key)
-        : m_hinstance(hinstance),
+    FancyZonesSettings(HINSTANCE hinstance, PCWSTR name, PCWSTR key) :
+        m_hinstance(hinstance),
         m_moduleName(name),
         m_moduleKey(key)
     {
         LoadSettings(name, true);
     }
 
-    IFACEMETHODIMP_(void) SetCallback(IFancyZonesCallback* callback) { m_callback = callback; }
-    IFACEMETHODIMP_(void) ResetCallback() { m_callback = nullptr; }
-    IFACEMETHODIMP_(bool) GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_sizeg) noexcept;
-    IFACEMETHODIMP_(void) SetConfig(PCWSTR config) noexcept;
-    IFACEMETHODIMP_(void) CallCustomAction(PCWSTR action) noexcept;
-    IFACEMETHODIMP_(const Settings*) GetSettings() const noexcept { return &m_settings; }
+    IFACEMETHODIMP_(void)
+    SetCallback(IFancyZonesCallback* callback) { m_callback = callback; }
+    IFACEMETHODIMP_(void)
+    ResetCallback() { m_callback = nullptr; }
+    IFACEMETHODIMP_(bool)
+    GetConfig(_Out_ PWSTR buffer, _Out_ int* buffer_sizeg) noexcept;
+    IFACEMETHODIMP_(void)
+    SetConfig(PCWSTR config) noexcept;
+    IFACEMETHODIMP_(void)
+    CallCustomAction(PCWSTR action) noexcept;
+    IFACEMETHODIMP_(const Settings*)
+    GetSettings() const noexcept { return &m_settings; }
 
 private:
     void LoadSettings(PCWSTR config, bool fromFile) noexcept;
@@ -74,7 +79,8 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[14 /* 15 */] = { // "Turning FLASHING_ZONE option off"
+    } m_configBools[14 /* 15 */] = {
+        // "Turning FLASHING_ZONE option off"
         { NonLocalizable::ShiftDragID, &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { NonLocalizable::MouseSwitchID, &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { NonLocalizable::OverrideSnapHotKeysID, &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
@@ -89,14 +95,14 @@ private:
         { NonLocalizable::OpenWindowOnActiveMonitorID, &m_settings.openWindowOnActiveMonitor, IDS_SETTING_DESCRIPTION_OPEN_WINDOW_ON_ACTIVE_MONITOR },
         { NonLocalizable::RestoreSizeID, &m_settings.restoreSize, IDS_SETTING_DESCRIPTION_RESTORESIZE },
         { NonLocalizable::UseCursorPosEditorStartupScreenID, &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
-        { NonLocalizable::ShowOnAllMonitorsID, &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS},
+        { NonLocalizable::ShowOnAllMonitorsID, &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS },
         { NonLocalizable::SpanZonesAcrossMonitorsID, &m_settings.spanZonesAcrossMonitors, IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS },
-        { NonLocalizable::MakeDraggedWindowTransparentID, &m_settings.makeDraggedWindowTransparent, IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT},
+        { NonLocalizable::MakeDraggedWindowTransparentID, &m_settings.makeDraggedWindowTransparent, IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT },
     };
-
 };
 
-IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int *buffer_size) noexcept
+IFACEMETHODIMP_(bool)
+FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ int* buffer_size) noexcept
 {
     PowerToysSettings::Settings settings(m_hinstance, m_moduleName);
 
@@ -112,8 +118,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
         NonLocalizable::ToggleEditorActionID, // action name.
         IDS_SETTING_LAUNCH_EDITOR_LABEL,
         IDS_SETTING_LAUNCH_EDITOR_BUTTON,
-        IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION
-    );
+        IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION);
     settings.add_hotkey(NonLocalizable::EditorHotkeyID, IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, m_settings.editorHotkey);
 
     for (auto const& setting : m_configBools)
@@ -132,7 +137,8 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
 
-IFACEMETHODIMP_(void) FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSettingsJson) noexcept
+IFACEMETHODIMP_(void)
+FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSettingsJson) noexcept
 {
     LoadSettings(serializedPowerToysSettingsJson, false /*fromFile*/);
     SaveSettings();
@@ -143,7 +149,8 @@ IFACEMETHODIMP_(void) FancyZonesSettings::SetConfig(PCWSTR serializedPowerToysSe
     Trace::SettingsChanged(m_settings);
 }
 
-IFACEMETHODIMP_(void) FancyZonesSettings::CallCustomAction(PCWSTR action) noexcept
+IFACEMETHODIMP_(void)
+FancyZonesSettings::CallCustomAction(PCWSTR action) noexcept
 {
     try
     {
@@ -173,8 +180,8 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept
     try
     {
         PowerToysSettings::PowerToyValues values = fromFile ?
-            PowerToysSettings::PowerToyValues::load_from_settings_file(m_moduleKey) :
-            PowerToysSettings::PowerToyValues::from_json_string(config, m_moduleKey);
+                                                       PowerToysSettings::PowerToyValues::load_from_settings_file(m_moduleKey) :
+                                                       PowerToysSettings::PowerToyValues::from_json_string(config, m_moduleKey);
 
         for (auto const& setting : m_configBools)
         {

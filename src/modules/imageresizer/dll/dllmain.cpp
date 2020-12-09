@@ -3,11 +3,11 @@
 #include "ImageResizerExt_i.h"
 #include "dllmain.h"
 #include <interface/powertoy_module_interface.h>
-#include <common/settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/resources.h>
 #include "Settings.h"
 #include "trace.h"
-#include <common/common.h>
-#include <imageresizer\dll\ImageResizerConstants.h>
+#include <imageresizer/dll/ImageResizerConstants.h>
 
 CImageResizerExtModule _AtlModule;
 HINSTANCE g_hInst_imageResizer = 0;
