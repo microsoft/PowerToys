@@ -2,13 +2,32 @@
 param([Parameter(Mandatory=$false, Position=0)]
       [string]$vsInstall = "enterprise")
 
+function Test-Admin
+{
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal $identity
+    $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+if (!(Test-Admin))
+{
+    Write-Host
+    throw "ERROR: Elevation required"
+}
+else
+{
+    Write-Host "CI has admin"
+}
+
 try
 {
-    Write-Host "Installing VS installer..."
+    Write-Host "Installing VS with workloads needed..."
 
     $vsPath = ${Env:ProgramFiles(x86)} + "\Microsoft Visual Studio\"
     $vsInstallPath = $vsPath + "2019\" + $vsInstall 
     $vsInstallerPath = $vsPath + "\Installer\vs_installer.exe"
+
+    Write-Host "Paths:"
     Write-Host $vsPath
     Write-Host $vsInstallPath
     Write-Host $vsInstallerPath
@@ -23,5 +42,3 @@ finally
 {
     Write-Host "Done"
 }
-
-
