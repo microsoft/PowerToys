@@ -22,8 +22,6 @@ namespace PowerLauncher.Helper
                     if (eventHandle.WaitOne())
                     {
                         Log.Info("Successfully waited for POWER_LAUNCHER_SHARED_EVENT", MethodBase.GetCurrentMethod().DeclaringType);
-
-                        // Log successfull wait
                         Application.Current.Dispatcher.Invoke(callback);
                     }
                 }
