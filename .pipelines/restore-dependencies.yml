@@ -3,4 +3,3 @@ steps:
     displayName: 'Install Windows All dependencies via Visual Studio'
     inputs:
       filePath: restore-dependencies.cmd
-      arguments: ${{ parameters.sdkVersion }}
