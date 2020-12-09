@@ -2,5 +2,5 @@ steps:
   - task: BatchScript@1
     displayName: 'Install Windows All dependencies via Visual Studio'
     inputs:
-      filePath: .\restore-dependencies.cmd
+      filePath: restore-dependencies.cmd
       arguments: ${{ parameters.sdkVersion }}
