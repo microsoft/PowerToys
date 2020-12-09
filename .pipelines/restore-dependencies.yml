@@ -1,5 +1,10 @@
+parameters:
+  sdkVersion: 17134
+
 steps:
-  - task: CmdLine@2
-    displayName: 'Install Windows All dependencies via Visual Studio'
+  - task: powershell@2
     inputs:
-      script: call .pipelines\restore-dependencies.cmd
+      targetType: filePath
+      filePath: .\restore-windowsSdk17134.ps1
+      arguments: ${{ parameters.sdkVersion }}
+    displayName: 'Install Windows SDK (${{ parameters.sdkVersion }})'

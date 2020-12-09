@@ -22,5 +22,9 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
 --add Microsoft.VisualStudio.Component.VC.ATL.Spectre ^
 --quiet ^
---norestart
+--norestart > nul 2> nul
+
+
+echo COMPLETE
+
 
