@@ -6,7 +6,10 @@
              xmlns:p="clr-namespace:ColorPicker.Properties"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d">
-
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="TextControlBorderBrushFocused"
+                         Color="Transparent" />
+    </UserControl.Resources>
     <Border x:Name="MainBorder"
                     Margin="12,16,12,0"
                     Width="308"
@@ -37,9 +40,8 @@
                        Background="Transparent"
                        BorderThickness="0"
                        IsReadOnly="True"
-                       Margin="8"
                        VerticalAlignment="Center"
-                       Style="{DynamicResource TextBoxStyle}"
+                       Padding="8"
                        AutomationProperties.LabeledBy="{Binding FormatNameTextBlock}"
                      />
 
