@@ -12,7 +12,7 @@ ECHO %targetFolder%
 cd "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\"
 ECHO %cd%
 
-vs_installer.exe ^
+start vs_installer.exe ^
 modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFolder%" ^
 --add Microsoft.VisualStudio.Workload.NativeDesktop ^
 --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
@@ -21,4 +21,6 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 --add Microsoft.VisualStudio.ComponentGroup.UWP.VC ^
 --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
 --add Microsoft.VisualStudio.Component.VC.ATL.Spectre ^
---quiet
+--quiet > nul
+
+echo %errorlevel%
