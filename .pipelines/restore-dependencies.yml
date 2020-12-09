@@ -2,4 +2,4 @@ steps:
   - task: BatchScript@1
     displayName: 'Install Windows All dependencies via Visual Studio'
     inputs:
-      filePath: restore-dependencies.cmd
+      filename: restore-dependencies.cmd
