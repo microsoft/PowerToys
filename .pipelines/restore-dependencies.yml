@@ -6,5 +6,5 @@ steps:
     inputs:
       targetType: filePath
       filePath: .\.pipelines\restore-dependencies.ps1 # .\.pipelines\restore-windowsSdk17134.ps1
-      arguments: ${{ parameters.sdkVersion }}
-    displayName: 'Install Windows SDK (${{ parameters.sdkVersion }})'
+      # arguments: ${{ parameters.sdkVersion }}
+    displayName: 'Install VS and Windows SDK 17134'

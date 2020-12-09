@@ -10,6 +10,8 @@ try
     $vsInstallPath = $vsPath + "2019\" + $vsInstall 
     $vsInstallerPath = $vsPath + "\Installer\vs_installer.exe"
     Write-Host $vsPath
+    Write-Host $vsInstallPath
+    Write-Host $vsInstallerPath
     
     # https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019
     # https://docs.microsoft.com/en-us/visualstudio/install/command-line-parameter-examples?view=vs-2019#using---wait
