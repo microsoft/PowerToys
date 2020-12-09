@@ -1,6 +1,5 @@
 steps:
-  - task: BatchScript@1
+  - task: CmdLine@2
     displayName: 'Install Windows All dependencies via Visual Studio'
     inputs:
-      filename: restore-dependencies.cmd
-      workingFolder: $(Agent.BuildDirectory)
+      script: call .\pipelines\restore-dependencies.cmd
