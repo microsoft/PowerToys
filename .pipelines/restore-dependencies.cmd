@@ -1,4 +1,6 @@
 cd "%ProgramFiles(x86)%\Microsoft Visual Studio\2019"
+ECHO %cd%
+
 SET targetFolder="\"
 IF EXIST Preview\NUL (SET targetFolder=Preview)
 IF EXIST Enterprise\NUL (SET targetFolder=Enterprise)
@@ -7,7 +9,10 @@ IF EXIST Community\NUL (SET targetFolder=Community)
 
 ECHO %targetFolder%
 
-"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vs_installer.exe" ^
+cd "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\"
+ECHO %cd%
+
+vs_installer.exe ^
 modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFolder%" ^
 --add Microsoft.VisualStudio.Workload.NativeDesktop ^
 --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
