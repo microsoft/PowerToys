@@ -2488,3 +2488,13 @@ ZONESETCHANGE
 Zoneszonabletester
 Zoomusingmagnifier
 zzz
+buildtools
+CPPARM
+CPPx
+LASTEXITCODE
+linkid
+nocache
+retval
+umd
+webclient
+windevbuildagents
