@@ -295,7 +295,6 @@ public:
             if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
             {
                 Logger::warn("PowerToys Run has exited unexpectedly, restarting PowerToys Run.");
-                // The process exited, restart it
                 enable();
             }
 
