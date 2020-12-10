@@ -129,7 +129,7 @@ public:
 
             SHELLEXECUTEINFOW sei{ sizeof(sei) };
             sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-            sei.lpFile = L"modules\\ColorPicker\\ColorPicker.exe";
+            sei.lpFile = L"modules\\ColorPicker\\ColorPickerUI.exe";
             sei.nShow = SW_SHOWNORMAL;
             sei.lpParameters = executable_args.data();
             ShellExecuteExW(&sei);

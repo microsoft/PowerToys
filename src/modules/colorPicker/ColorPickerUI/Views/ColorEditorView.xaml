@@ -7,7 +7,7 @@
              mc:Ignorable="d"
 
              xmlns:ui="http://schemas.modernwpf.com/2019"
-             xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:controls="clr-namespace:ColorPicker.Controls"
              xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
              WindowChrome.IsHitTestVisibleInChrome="True"           
