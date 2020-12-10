@@ -393,7 +393,7 @@ namespace ColorPicker.Controls
 
         private static string ColorToHex(Color color)
         {
-            return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty);
+            return "#" + BitConverter.ToString(new byte[] { color.R, color.G, color.B }).Replace("-", string.Empty, StringComparison.InvariantCulture);
         }
     }
 }
