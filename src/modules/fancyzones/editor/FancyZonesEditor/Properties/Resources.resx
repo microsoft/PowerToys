@@ -300,4 +300,7 @@ To merge zones, select the zones and click "merge".</value>
   <data name="Edit_zones" xml:space="preserve">
     <value>Edit zones</value>
   </data>
+  <data name="No_Custom_Layouts_Message" xml:space="preserve">
+    <value>Create or duplicate a layout to get started</value>
+  </data>
 </root>
