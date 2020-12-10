@@ -118,21 +118,21 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         isEditKeyboardWindowRegistrationCompleted = true;
     }
 
-    // Find center screen coordinates
-    RECT desktopRect;
-    GetClientRect(GetDesktopWindow(), &desktopRect);
+    // Find coordinates of the screen where the settings window is placed.
+    RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
+
     // Calculate DPI dependent window size
     int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth;
     int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight;
     DPIAware::Convert(nullptr, windowWidth, windowHeight);
-
+    
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         GET_RESOURCE_STRING(IDS_EDITKEYBOARD_WINDOWNAME).c_str(),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
-        (desktopRect.right / 2) - (windowWidth / 2),
-        (desktopRect.bottom / 2) - (windowHeight / 2),
+        ((desktopRect.right + desktopRect.left) / 2) - (windowWidth / 2),
+        ((desktopRect.bottom + desktopRect.top) / 2) - (windowHeight / 2),
         windowWidth,
         windowHeight,
         NULL,
