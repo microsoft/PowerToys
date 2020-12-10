@@ -123,6 +123,7 @@ namespace FancyZonesEditor
 
         private async void NewLayoutButton_Click(object sender, RoutedEventArgs e)
         {
+            LayoutNameText.Text = string.Empty;
             GridLayoutRadioButton.IsChecked = true;
             GridLayoutRadioButton.Focus();
             await NewLayoutDialog.ShowAsync();

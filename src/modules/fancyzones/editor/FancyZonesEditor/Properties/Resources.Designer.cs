@@ -457,6 +457,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create or duplicate a layout to get started.
+        /// </summary>
+        public static string No_Custom_Layouts_Message {
+            get {
+                return ResourceManager.GetString("No_Custom_Layouts_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hold down Shift key to change orientation of splitter.
         ///To merge zones, select the zones and click &quot;merge&quot;..
         /// </summary>
