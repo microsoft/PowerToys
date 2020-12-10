@@ -627,8 +627,7 @@
                           SecondaryButtonText="{x:Static props:Resources.Cancel}"
                           PrimaryButtonText="{x:Static props:Resources.Create}"
                           PrimaryButtonClick="NewLayoutDialog_PrimaryButtonClick"
-                          Title="{x:Static props:Resources.Choose_layout_type}"
-                          d:IsHidden="True">
+                          Title="{x:Static props:Resources.Choose_layout_type}">
             <StackPanel Margin="0,16,0,0">
                 <TextBlock x:Name="NameHeaderText"
                            Text="{x:Static props:Resources.Name}" />
