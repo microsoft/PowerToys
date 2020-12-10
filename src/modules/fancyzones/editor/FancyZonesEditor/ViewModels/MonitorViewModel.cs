@@ -22,14 +22,6 @@ namespace FancyZonesEditor.ViewModels
 
         public static double DesktopPreviewMultiplier { get; private set; }
 
-        public Visibility DesktopsPanelVisibility
-        {
-            get
-            {
-                return App.Overlay.MultiMonitorMode ? Visibility.Visible : Visibility.Collapsed;
-            }
-        }
-
         public RelayCommand AddCommand { get; set; }
 
         public RelayCommand DeleteCommand { get; set; }

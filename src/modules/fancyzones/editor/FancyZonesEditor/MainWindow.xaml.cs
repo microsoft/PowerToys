@@ -246,11 +246,6 @@ namespace FancyZonesEditor
             e.Handled = true;
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
             var overlay = App.Overlay;
