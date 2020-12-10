@@ -1,50 +1,10 @@
-# [CmdletBinding()]
-# param([Parameter(Mandatory=$false, Position=0)]
-#       [string]$vsInstall = "enterprise")
+# not using this but keeping around in case we need it in the future.  
+# good use case here could be to set up a new machine, we just point people at it.
+# https://github.com/microsoft/PowerToys/tree/master/doc/devdocs#prerequisites-for-compiling-powertoys
 
-# function Test-Admin
-# {
-#     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-#     $principal = New-Object Security.Principal.WindowsPrincipal $identity
-#     $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-# }
-
-# if (!(Test-Admin))
-# {
-#     Write-Host
-#     throw "ERROR: Elevation required"
-# }
-# else
-# {
-#     Write-Host "CI has admin"
-# }
-
-# try
-# {
-#     Write-Host "Installing VS with workloads needed..."
-
-#     $vsPath = ${Env:ProgramFiles(x86)} + "\Microsoft Visual Studio\"
-#     $vsInstallPath = $vsPath + "2019\" + $vsInstall 
-#     $vsInstallerPath = $vsPath + "\Installer\vs_installer.exe"
-
-#     Write-Host "Paths:"
-#     Write-Host $vsPath
-#     Write-Host $vsInstallPath
-#     Write-Host $vsInstallerPath
-    
-#     # https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019
-#     # https://docs.microsoft.com/en-us/visualstudio/install/command-line-parameter-examples?view=vs-2019#using---wait
-#     # https://docs.microsoft.com/en-us/visualstudio/install/workload-and-component-ids?view=vs-2019
-#     # https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-enterprise?view=vs-2019&preserve-view=true
-
-#     $process = Start-Process -FilePath $vsInstallerPath -ArgumentList "modify", "--installPath `"${vsInstallPath}`"", 
-#     , "--quiet" -Wait -PassThru
-#     Write-Host $process.ExitCode 
-# }
-# finally
-# {
-#     Write-Host "Done"
-# }
+# improvements if this script is used to replace the snippet
+# Add in a param for passive versus quiet.  Could be a IsSettingUpDevComputer true/false flag
+    # default it to true which would be passive flag for normal people, false would set to quiet
 
 $VS_DOWNLOAD_LINK = "https://aka.ms/vs/16/release/vs_buildtools.exe"
 $VS_INSTALL_ARGS = @("--nocache","--quiet","--wait", 
