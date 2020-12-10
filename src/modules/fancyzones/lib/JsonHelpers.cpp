@@ -6,6 +6,8 @@
 #include "trace.h"
 #include "util.h"
 
+#include <common/logger/logger.h>
+
 #include <filesystem>
 #include <optional>
 #include <utility>
@@ -691,6 +693,10 @@ namespace JSONHelpers
                 {
                     result = std::move(deviceInfo);
                 }
+                else
+                {
+                    Logger::trace(L"ParseDeviceInfoFromTmpFile: AppliedZonesetsJSON::FromJson parsing error, {}", zoneSetJson.value().Stringify());
+                }
             }
         }
 
@@ -714,11 +720,16 @@ namespace JSONHelpers
                         {
                             result.emplace_back(std::move(*customZoneSet));
                         }
+                        else
+                        {
+                            Logger::trace(L"ParseCustomZoneSetsFromTmpFile: CustomZoneSetJSON::FromJson parsing error, {}", zoneSet.GetObjectW().Stringify());
+                        }
                     }
                 }
             }
-            catch (const winrt::hresult_error&)
+            catch (const winrt::hresult_error& err)
             {
+                Logger::trace(L"ParseCustomZoneSetsFromTmpFile: CustomZoneSetJSON::FromJson parsing error, {}", err.message());
             }
 
             DeleteTmpFile(tmpFilePath);

@@ -10,6 +10,7 @@
 #include <common/timeutil.h>
 #include <common/updating/installer.h>
 #include <common/updating/updating.h>
+#include <common/updating/notifications.h>
 #include <runner/general_settings.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -74,17 +75,25 @@ void github_update_worker()
     }
 }
 
-std::wstring check_for_updates()
+std::optional<updating::new_version_download_info> check_for_updates()
 {
     try
     {
-        return updating::check_new_version_available(Strings).get();
+        const auto new_version = updating::get_new_github_version_info_async(Strings).get();
+        if (!new_version)
+        {
+            updating::notifications::show_unavailable(Strings, std::move(new_version.error()));
+            return std::nullopt;
+        }
+
+        updating::notifications::show_available(new_version.value(), Strings);
+        return std::move(new_version.value());
     }
     catch (...)
     {
         // Couldn't autoupdate
-        return std::wstring();
     }
+    return std::nullopt;
 }
 
 bool launch_pending_update()

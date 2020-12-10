@@ -650,7 +650,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Markdown (.md) preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aktivera markdown-förhandsgranskning (.md)]]></Val>
+            <Val><![CDATA[Aktivera Markdown-förhandsgranskning (.md)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

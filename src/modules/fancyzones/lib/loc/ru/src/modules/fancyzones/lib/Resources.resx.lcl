@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Move windows between zones across all monitors when snapping with (Win + Arrow)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Перемещать окна между зонами на всех мониторах при прикреплении с помощью сочетания клавиша Windows+клавиша со стрелкой]]></Val>
+            <Val><![CDATA[Перемещать окна между зонами на всех мониторах при прикреплении с помощью сочетания клавиша Windows+СТРЕЛКА]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

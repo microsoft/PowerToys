@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "UIHelpers.h"
 
+#include <common/monitor_utils.h>
+
 namespace UIHelpers
 {
     // This method sets focus to the first Type button on the last row of the Grid
@@ -14,5 +16,23 @@ namespace UIHelpers
 
         // Set programmatic focus on the button
         firstTypeButtonInLastRow.Focus(FocusState::Programmatic);
+    }
+
+    RECT GetForegroundWindowDesktopRect()
+    {
+        HWND window = GetForegroundWindow();
+        HMONITOR settingsMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        RECT desktopRect{};
+        auto monitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+        for (const auto& monitor : monitors)
+        {
+            if (settingsMonitor == monitor.first)
+            {
+                desktopRect = monitor.second;
+                break;
+            }
+        }
+
+        return desktopRect;
     }
 }

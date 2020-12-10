@@ -176,7 +176,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Use original date modified]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Oorspronkelijke datum van wijziging gebr_uiken]]></Val>
+            <Val><![CDATA[_Oorspronkelijke datum van wijziging gebruiken]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -353,7 +353,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Make pictures smaller but not larger]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Afbeeldingen kleiner, maar niet groter _maken]]></Val>
+            <Val><![CDATA[_Afbeeldingen kleiner, maar niet groter maken]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

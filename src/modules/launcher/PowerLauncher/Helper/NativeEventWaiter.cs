@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
+using Wox.Plugin.Logger;
 
 namespace PowerLauncher.Helper
 {
@@ -19,6 +21,7 @@ namespace PowerLauncher.Helper
                 {
                     if (eventHandle.WaitOne())
                     {
+                        Log.Info("Successfully waited for POWER_LAUNCHER_SHARED_EVENT", MethodBase.GetCurrentMethod().DeclaringType);
                         Application.Current.Dispatcher.Invoke(callback);
                     }
                 }

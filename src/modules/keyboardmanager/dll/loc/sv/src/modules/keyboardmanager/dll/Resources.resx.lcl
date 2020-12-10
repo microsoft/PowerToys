@@ -10,7 +10,7 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
-      <Item ItemId=";Add_Key_Remap_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Add_Key_Remap_Button" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add Key Remap]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -86,7 +86,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Disable can not be an action or a modifier key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inaktivera kan inte vara en åtgärds- eller ändringstangent]]></Val>
+            <Val><![CDATA[Inaktivera kan inte vara en åtgärds- eller modifierartangent]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -362,7 +362,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut cannot contain a repeated modifier]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Genvägen får inte innehålla en upprepad ändrare]]></Val>
+            <Val><![CDATA[Genvägen får inte innehålla en upprepad modifierare]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -394,7 +394,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Key_DropDown_Combobox" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Key]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -424,7 +424,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";RegisterClassFailed_ErrorMessage" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";RegisterClassFailed_ErrorMessage" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Windows registration failed!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -487,7 +487,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";Type_Button" ItemType="0;.resx" PsrId="211" Leaf="true">
+      <Item ItemId=";Type_Button" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Type]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

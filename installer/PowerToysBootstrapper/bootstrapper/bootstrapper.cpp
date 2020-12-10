@@ -85,6 +85,14 @@ void show_error_box(const wchar_t* message, const wchar_t* title)
 int bootstrapper(HINSTANCE hInstance)
 {
     winrt::init_apartment();
+    char* programFilesDir = nullptr;
+    size_t size = 0;
+    std::string defaultInstallDir;
+    if (!_dupenv_s(&programFilesDir, &size, "PROGRAMFILES"))
+    {
+        defaultInstallDir += programFilesDir;
+        defaultInstallDir += "\\PowerToys";
+    }
     cxxopts::Options options{ "PowerToysBootstrapper" };
     // clang-format off
     options.add_options()
@@ -94,7 +102,8 @@ int bootstrapper(HINSTANCE hInstance)
         ("no_start_pt", "Do not launch PowerToys after the installation is complete")
         ("skip_dotnet_install", "Skip dotnet 3.X installation even if it's not detected")
         ("log_level", "Log level. Possible values: off|debug|error", cxxopts::value<std::string>()->default_value("off"))
-        ("log_dir", "Log directory.", cxxopts::value<std::string>()->default_value("."));
+        ("log_dir", "Log directory", cxxopts::value<std::string>()->default_value("."))
+        ("install_dir", "Installation directory", cxxopts::value<std::string>()->default_value(defaultInstallDir));
     // clang-format on
     cxxopts::ParseResult cmdArgs;
     bool showHelp = false;
@@ -121,7 +130,26 @@ int bootstrapper(HINSTANCE hInstance)
     const bool noStartPT = cmdArgs["no_start_pt"].as<bool>();
     const auto logLevel = cmdArgs["log_level"].as<std::string>();
     const auto logDirArg = cmdArgs["log_dir"].as<std::string>();
+    const auto installDirArg = cmdArgs["install_dir"].as<std::string>();
     spdlog::level::level_enum severity = spdlog::level::off;
+
+    std::wstring installFolderProp;
+    if (!installDirArg.empty())
+    {
+        std::string installDir;
+        if (installDirArg.find(' ') != std::string::npos)
+        {
+            installDir = "\"" + installDirArg + "\"";
+        }
+        else
+        {
+            installDir = installDirArg;
+        }
+
+        installFolderProp = std::wstring(installDir.length(), L' ');
+        std::copy(installDir.begin(), installDir.end(), installFolderProp.begin());
+        installFolderProp = L"INSTALLFOLDER=" + installFolderProp;
+    }
 
     fs::path logDir = ".";
     try
@@ -145,7 +173,7 @@ int bootstrapper(HINSTANCE hInstance)
         severity = spdlog::level::err;
     }
     setup_log(logDir, severity);
-    spdlog::debug("PowerToys Bootstrapper is launched!\nnoFullUI: {}\nsilent: {}\nno_start_pt: {}\nskip_dotnet_install: {}\nlog_level: {}", noFullUI, silent, noStartPT, skipDotnetInstall, logLevel);
+    spdlog::debug("PowerToys Bootstrapper is launched!\nnoFullUI: {}\nsilent: {}\nno_start_pt: {}\nskip_dotnet_install: {}\nlog_level: {}\ninstall_dir: {}", noFullUI, silent, noStartPT, skipDotnetInstall, logLevel, installDirArg);
 
     if (!noFullUI)
     {
@@ -167,7 +195,17 @@ int bootstrapper(HINSTANCE hInstance)
             LPWSTR* argList = CommandLineToArgvW(GetCommandLineW(), &nCmdArgs);
             for (int i = 1; i < nCmdArgs; ++i)
             {
-                params += argList[i];
+                if (std::wstring_view{ argList[i] }.find(L' ') != std::wstring_view::npos)
+                {
+                    params += L'"';
+                    params += argList[i];
+                    params += L'"';
+                }
+                else
+                {
+                    params += argList[i];
+                }
+
                 if (i != nCmdArgs - 1)
                 {
                     params += L' ';
@@ -307,7 +345,7 @@ int bootstrapper(HINSTANCE hInstance)
     close_progressbar_window();
 
     // Always skip dotnet install, because we should've installed it from here earlier
-    std::wstring msiProps = L"SKIPDOTNETINSTALL=1 ";
+    std::wstring msiProps = L"SKIPDOTNETINSTALL=1 " + installFolderProp;
     spdlog::debug("Launching MSI installation for new package {}", installerPath->string());
     const bool installationDone = MsiInstallProductW(installerPath->c_str(), msiProps.c_str()) == ERROR_SUCCESS;
     if (!installationDone)

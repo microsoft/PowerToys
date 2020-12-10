@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Click to go to Windows Search settings to fix.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Щелкните, чтобы перейти к параметрам поиска Windows и исправить проблему.]]></Val>
+            <Val><![CDATA[Щелкните, чтобы перейти к параметрам Windows Search и исправить проблему.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

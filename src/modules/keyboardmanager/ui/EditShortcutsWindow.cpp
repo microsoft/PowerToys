@@ -77,9 +77,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         isEditShortcutsWindowRegistrationCompleted = true;
     }
 
-    // Find center screen coordinates
-    RECT desktopRect;
-    GetClientRect(GetDesktopWindow(), &desktopRect);
+    // Find coordinates of the screen where the settings window is placed.
+    RECT desktopRect = UIHelpers::GetForegroundWindowDesktopRect();
+
     // Calculate DPI dependent window size
     int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth;
     int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight;
@@ -90,8 +90,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         szWindowClass,
         GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_WINDOWNAME).c_str(),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
-        (desktopRect.right / 2) - (windowWidth / 2),
-        (desktopRect.bottom / 2) - (windowHeight / 2),
+        ((desktopRect.right + desktopRect.left) / 2) - (windowWidth / 2),
+        ((desktopRect.bottom + desktopRect.top) / 2) - (windowHeight / 2),
         windowWidth,
         windowHeight,
         NULL,

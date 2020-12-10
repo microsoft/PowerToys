@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keep windows in their zones when the screen resolution changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[画面の解像度が変更されたときにウィンドウをゾーンに保持します]]></Val>
+            <Val><![CDATA[画面の解像度が変更されたときにウィンドウをゾーンに保持する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Make dragged window transparent]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ドラッグしたウィンドウを透明にします]]></Val>
+            <Val><![CDATA[ドラッグしたウィンドウを透明にする]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use a non-primary mouse button to toggle zone activation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プライマリ以外のマウス ボタンを使用してゾーンのアクティブ化を切り替えます]]></Val>
+            <Val><![CDATA[プライマリ以外のマウス ボタンを使用してゾーンのアクティブ化を切り替える]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Hold Shift key to activate zones while dragging]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Shift キーを長押ししてドラッグ中にゾーンをアクティブにします]]></Val>
+            <Val><![CDATA[ドラッグ中に Shift キーを長押ししてゾーンをアクティブにする]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Allow zones to span across monitors (all monitors must have the same DPI scaling)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーンが複数のモニターにまたがることを許可します (すべてのモニターは同じ DPI スケールである必要があります)]]></Val>
+            <Val><![CDATA[ゾーンが複数のモニターにまたがることを許可する (すべてのモニターは同じ DPI スケールである必要があります)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -251,7 +251,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Flash zones when the active FancyZones layout changes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[アクティブな FancyZones レイアウトが変更されたときのゾーンをフラッシュします]]></Val>
+            <Val><![CDATA[アクティブな FancyZones レイアウトが変更されたときにゾーンを点滅させます]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -260,7 +260,7 @@
         <Str Cat="Text">
           <Val><![CDATA[During zone layout changes, windows assigned to a zone will match new size/positions]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーン レイアウトの変更時に、ゾーンに割り当てられているウィンドウが新しいサイズまたは位置と一致します]]></Val>
+            <Val><![CDATA[ゾーン レイアウトの変更時に、ゾーンに割り当てられているウィンドウを新しいサイズまたは位置に合わせます]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -278,7 +278,7 @@
         <Str Cat="Text">
           <Val><![CDATA[To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[アプリケーションをゾーンへのスナップから除外するには、その名前をここに追加します (1 行に 1 つ)。除外されたアプリは、他のすべての設定に関係なく、ウィンドウ スナップに対応します。]]></Val>
+            <Val><![CDATA[アプリケーションをゾーンへのスナップから除外するには、その名前をここに追加します (1 行に 1 つ)。除外されたアプリは、他のすべての設定に関係なく、Windows のスナップに対応します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -305,7 +305,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Configure the zone editor hotkey]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーン エディターのホットキーを構成する]]></Val>
+            <Val><![CDATA[ゾーン エディターのホットキーを構成]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -332,7 +332,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The 'Allow zones to span across monitors' option requires all monitors to have the same DPI scaling to work properly.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[ゾーンが複数のモニターにまたがることを許可します]5D; オプションは、適切に機能するためにすべてのモニターが同じ DPI スケールである必要があります。]]></Val>
+            <Val><![CDATA[[ゾーンが複数のモニターにまたがることを許可します]5D; オプションが適切に機能するには、すべてのモニターが同じ DPI スケールである必要があります。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

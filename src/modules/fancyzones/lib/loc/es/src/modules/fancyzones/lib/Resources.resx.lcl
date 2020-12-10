@@ -332,7 +332,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The 'Allow zones to span across monitors' option requires all monitors to have the same DPI scaling to work properly.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La opción "Permitir que las zonas se expandan entre los monitores " requiere que todos los monitores tengan el mismo ajuste de PPP para funcionar correctamente.]]></Val>
+            <Val><![CDATA[La opción "Permitir que las zonas se expandan entre los monitores" requiere que todos los monitores tengan el mismo ajuste de PPP para funcionar correctamente.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -341,7 +341,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to install Windows event listener.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[No se pudo instalar el cliente de escucha de eventos de Windows.]]></Val>
+            <Val><![CDATA[No se pudo instalar la escucha de eventos de Windows.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

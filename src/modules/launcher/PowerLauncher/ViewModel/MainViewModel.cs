@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,6 +24,7 @@ using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace PowerLauncher.ViewModel
 {
@@ -742,6 +744,7 @@ namespace PowerLauncher.ViewModel
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
+                Log.Info("OnHotkey", MethodBase.GetCurrentMethod().DeclaringType);
                 if (!ShouldIgnoreHotkeys())
                 {
                     // If launcher window was hidden and the hotkey was pressed, start telemetry event

@@ -62,7 +62,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Fail to open folder at]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[无法打开以下位置上的文件夹]]></Val>
+            <Val><![CDATA[无法打开以下位置的文件夹]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -80,7 +80,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Open containing folder (Ctrl+Shift+E)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[打开包含文件夹(Ctrl+Shift+E)]]></Val>
+            <Val><![CDATA[打开所在文件夹(Ctrl+Shift+E)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

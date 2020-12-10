@@ -8,7 +8,7 @@ using System.Globalization;
 using ColorPicker.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTest_ColorPickerUI.Helpers
+namespace Microsoft.ColorPicker.UnitTests
 {
     /// <summary>
     /// Test class to test <see cref="ColorConverter"/>
@@ -184,9 +184,16 @@ namespace UnitTest_ColorPickerUI.Helpers
         [DataRow("7E7EB8", 240.5, 013.5, 057.0)]
         public void ColorRGBtoHSITest(string hexValue, double hue, double saturation, double intensity)
         {
-            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
-            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
-            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+            if (string.IsNullOrWhiteSpace(hexValue))
+            {
+                Assert.IsNotNull(hexValue);
+            }
+
+            Assert.IsTrue(hexValue.Length >= 6);
+            
+            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToHSIColor(color);
@@ -225,9 +232,16 @@ namespace UnitTest_ColorPickerUI.Helpers
         [DataRow("7E7EB8", 240, 049, 028)]
         public void ColorRGBtoHWBTest(string hexValue, double hue, double whiteness, double blackness)
         {
-            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
-            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
-            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+            if (string.IsNullOrWhiteSpace(hexValue))
+            {
+                Assert.IsNotNull(hexValue);
+            }
+
+            Assert.IsTrue(hexValue.Length >= 6);
+
+            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToHWBColor(color);
@@ -266,9 +280,16 @@ namespace UnitTest_ColorPickerUI.Helpers
         [DataRow("7E7EB8", "B0", 049, 028)]
         public void ColorRGBtoNColTest(string hexValue, string hue, double whiteness, double blackness)
         {
-            var red = int.Parse(hexValue.Substring(0, 2), NumberStyles.HexNumber);
-            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber);
-            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber);
+            if (string.IsNullOrWhiteSpace(hexValue))
+            {
+                Assert.IsNotNull(hexValue);
+            }
+
+            Assert.IsTrue(hexValue.Length >= 6);
+
+            var red = int.Parse( hexValue.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
             var color = Color.FromArgb(255, red, green, blue);
             var result = ColorHelper.ConvertToNaturalColor(color);
@@ -300,7 +321,10 @@ namespace UnitTest_ColorPickerUI.Helpers
                         {
                             _ = ColorHelper.ConvertToCMYKColor(color);
                         }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        // intentionally trying to catch
                         catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             exception = ex;
                         }

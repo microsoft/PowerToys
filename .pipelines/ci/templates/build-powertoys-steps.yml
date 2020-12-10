@@ -90,6 +90,7 @@ steps:
       **\Wox.Test.dll
       **\*Microsoft.PowerToys.Settings.UI.UnitTests.dll
       **\UnitTest-ColorPickerUI.dll
+      **\Microsoft.Interop.Tests.dll
       !**\obj\**
 # .NetFramework assemblies
 - task: VSTest@2

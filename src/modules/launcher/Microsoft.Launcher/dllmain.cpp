@@ -294,10 +294,11 @@ public:
         {
             if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
             {
-                // The process exited, restart it
+                Logger::warn("PowerToys Run has exited unexpectedly, restarting PowerToys Run.");
                 enable();
             }
 
+            Logger::trace("Set POWER_LAUNCHER_SHARED_EVENT");
             SetEvent(m_hEvent);
             return true;
         }

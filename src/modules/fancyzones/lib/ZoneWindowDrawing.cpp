@@ -315,4 +315,9 @@ ZoneWindowDrawing::~ZoneWindowDrawing()
     }
     m_cv.notify_all();
     m_renderThread.join();
+
+    if (m_renderTarget)
+    {
+        m_renderTarget->Release();
+    }
 }
