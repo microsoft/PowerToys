@@ -34,6 +34,8 @@
     
 #     # https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019
 #     # https://docs.microsoft.com/en-us/visualstudio/install/command-line-parameter-examples?view=vs-2019#using---wait
+#     # https://docs.microsoft.com/en-us/visualstudio/install/workload-and-component-ids?view=vs-2019
+#     # https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-enterprise?view=vs-2019&preserve-view=true
 
 #     $process = Start-Process -FilePath $vsInstallerPath -ArgumentList "modify", "--installPath `"${vsInstallPath}`"", 
 #     , "--quiet" -Wait -PassThru
@@ -52,6 +54,7 @@ $VS_INSTALL_ARGS = @("--nocache","--quiet","--wait",
     "--add Microsoft.VisualStudio.ComponentGroup.UWP.VC", 
     "--add Microsoft.VisualStudio.Component.Windows10SDK.17134",
     "--add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre", 
+    "--add Microsoft.NetCore.Component.Runtime.3.1",
     "--add Microsoft.VisualStudio.Component.VC.ATL.Spectre")
 
 curl.exe --retry 3 -kL $VS_DOWNLOAD_LINK --output vs_installer.exe
