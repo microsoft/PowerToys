@@ -12,7 +12,7 @@ steps:
   inputs:
     versionSpec: 5.8.0
 
-- template: .\..\..\..\restore-dependencies.yml
+#- template: .\..\..\..\restore-dependencies.yml
 
 - task: VisualStudioTestPlatformInstaller@1
   displayName: Ensure VSTest Platform
