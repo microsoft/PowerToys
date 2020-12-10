@@ -118,7 +118,7 @@ atlfile
 atlstr
 attr
 Attribs
-AUMID
+aumid
 AUMID
 AUTHN
 AUTOAPPEND
@@ -187,7 +187,7 @@ BSODs
 bstr
 BText
 bti
-
+btn
 Btn
 BTNFACE
 Bto
@@ -195,7 +195,6 @@ buf
 BUFSIZE
 Buid
 buildcommand
-buildtools
 buildtransitive
 BValue
 bytearray
@@ -219,7 +218,6 @@ CDeclaration
 cdpx
 cdpxwin
 CENTERALIGN
-cerr
 Cfg
 cfg
 changecursor
@@ -314,7 +312,7 @@ constexpr
 contentdialog
 contentfiles
 CONTEXTHELP
-contextmenu
+CONTEXTMENU
 contextmenu
 CONTEXTMENUHANDLER
 CONTROLL
@@ -335,13 +333,11 @@ CPlus
 cplusplus
 CPower
 cpp
-CPPARM
 cppblog
 cppm
 cpprestsdk
 cppstd
 cppwinrt
-CPPx
 CProj
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -640,13 +636,13 @@ ENU
 enum
 ENUMITEMS
 EOAC
-EOL
+eol
 EOL
 epicgames
 ERASEBKGND
 EREOF
 EResize
-ERRORLEVEL
+errorlevel
 ERRORLEVEL
 ERRORMESSAGE
 ERRORTITLE
@@ -847,7 +843,7 @@ HLSL
 hmenu
 hmodule
 hmon
-HMONITOR
+hmonitor
 HMONITOR
 HOLDENTER
 HOLDESC
@@ -1060,7 +1056,7 @@ ISavable
 isbi
 ISearch
 IService
-ISetting
+isetting
 ISetting
 isfinite
 IShell
@@ -1117,7 +1113,7 @@ jyuwono
 Kaizala
 kbd
 KBDLLHOOKSTRUCT
-KBHOOK
+kbm
 KEYBDINPUT
 keyboardeventhandlers
 keyboardmanager
@@ -1146,11 +1142,6 @@ LAlt
 lambson
 lamotile
 Lastdevice
-LASTEXITCODE
-lastpos
-launcherpinyin
-Launcherpinyindb
-Laute
 laute
 laviusmotileng
 LAYOUTRTL
@@ -1174,7 +1165,6 @@ lhs
 LIBID
 lindex
 linecap
-linkid
 Linkmenu
 linq
 LINQTo
@@ -1291,7 +1281,6 @@ menuitem
 MENUITEMINFO
 MENUITEMINFOW
 menurc
-MENUSTART
 messagebox
 messageboxes
 METACHARSET
@@ -1321,7 +1310,7 @@ modulekey
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
-MONITORINFOF
+monitorinfof
 MONITORINFOF
 Monthand
 Moq
@@ -1433,7 +1422,6 @@ noactive
 Noactivewindow
 NOAGGREGATION
 NOASYNC
-nocache
 NOCLOSEPROCESS
 NOCOPYBITS
 nodeca
@@ -1752,8 +1740,6 @@ registrypath
 regkey
 reimplementing
 reloadable
-remapkey
-remapkeyboard
 Remapper
 remappings
 REMAPSUCCESSFUL
@@ -1786,8 +1772,6 @@ resultlist
 resw
 resx
 returnvalue
-retval
-reulst
 rfind
 rgb
 RGBQUAD
@@ -1903,9 +1887,8 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-Shellpinyindb
-Shellscalingapi
 shellscalingapi
+Shellscalingapi
 Shelveset
 SHFILEINFO
 SHGFI
@@ -2022,7 +2005,7 @@ stdin
 stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
-Stdout
+stdout
 Stdout
 STEPIT
 stgm
@@ -2192,7 +2175,6 @@ typeparam
 TYPESHORTCUT
 typings
 Tz
-TZone
 UAC
 UAL
 uap
@@ -2209,7 +2191,6 @@ UIs
 ul
 ULLONG
 ulong
-umd
 unchecks
 uncomment
 uncompilable
@@ -2345,8 +2326,6 @@ wdupenv
 weakme
 webapp
 webcam
-webcam
-webclient
 webkit
 webp
 webpack
@@ -2354,7 +2333,6 @@ webpage
 website
 webview
 wekyb
-wexfs
 Whichdoes
 whitespaces
 WIC
@@ -2368,7 +2346,6 @@ WINAPI
 winauto
 wincolor
 windef
-windevbuildagents
 Windowcontrols
 WINDOWCREATED
 WINDOWEDGE
@@ -2484,8 +2461,6 @@ XStr
 XToolset
 xunit
 XY
-xyzpreviewhandler
-YAML
 yaml
 YAML
 YAngle
