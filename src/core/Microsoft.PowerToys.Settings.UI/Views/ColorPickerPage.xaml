@@ -211,7 +211,9 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysColorPickerSettingImage">
                 <Image x:Uid="ColorPicker_Image" Source="ms-appx:///Assets/Modules/ColorPicker.png" />
+                </HyperlinkButton>
             </Border>
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
