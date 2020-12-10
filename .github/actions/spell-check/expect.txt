@@ -23,7 +23,7 @@ AColumn
 acos
 acrt
 Actioncenter
-actionkeyword
+Actionkeyword
 Actionkeyword
 actionrunner
 activatable
@@ -78,10 +78,10 @@ APIIs
 apos
 APPBARDATA
 appcontainer
-APPDATA
+appdata
 appdata
 APPICON
-APPID
+appid
 appid
 appium
 APPLASTZONE
@@ -128,7 +128,7 @@ atlfile
 atlstr
 attr
 Attribs
-aumid
+AUMID
 AUMID
 AUTHN
 AUTOAPPEND
@@ -187,7 +187,7 @@ bmi
 bmp
 bms
 Bokm
-BOKMAL
+Bokmal
 Bokmal
 bootstrapper
 BOTTOMALIGN
@@ -203,7 +203,7 @@ BSODs
 bstr
 BText
 bti
-Btn
+btn
 btn
 BTNFACE
 Bto
@@ -211,6 +211,7 @@ buf
 BUFSIZE
 Buid
 buildcommand
+buildtools
 buildtransitive
 BValue
 BYCOMMAND
@@ -240,7 +241,7 @@ cdpxwin
 cend
 CENTERALIGN
 cerr
-cfg
+Cfg
 Cfg
 changecursor
 Changemove
@@ -310,7 +311,7 @@ colorpickerref
 COLORREF
 colorscheme
 COLUMNCLICK
-Combobox
+combobox
 combobox
 comctl
 COMDAT
@@ -336,7 +337,7 @@ constexpr
 contentdialog
 contentfiles
 CONTEXTHELP
-CONTEXTMENU
+contextmenu
 contextmenu
 CONTEXTMENUHANDLER
 CONTROLL
@@ -358,11 +359,13 @@ CPlus
 cplusplus
 CPower
 cpp
+CPPARM
 cppblog
 cppm
 cpprestsdk
 cppstd
 cppwinrt
+CPPx
 CProj
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -393,7 +396,7 @@ CTest
 ctime
 ctor
 CTRLALTDEL
-ctx
+Ctx
 Ctx
 CUI
 currentculture
@@ -457,7 +460,7 @@ deref
 deseralization
 deserialization
 deserialize
-Deserialized
+deserialized
 deserialized
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
@@ -486,7 +489,7 @@ DISPIDAMBIENTDLCONTROL
 DISPINFO
 Displayandhidethedesktop
 DISPLAYCHANGE
-displayname
+DISPLAYNAME
 DISPLAYNAME
 divyan
 DLACTIVEXCTLS
@@ -575,7 +578,7 @@ EBE
 EBEC
 EBEE
 EBEF
-EBF
+ebf
 ebf
 EBFC
 ECAA
@@ -675,20 +678,20 @@ endl
 endregion
 Enque
 ENTERSIZEMOVE
-ENTIREITEMNAME
+Entireitemname
 Entireitemname
 entrypoint
 ENU
 enum
 ENUMITEMS
 EOAC
-eol
+EOL
 EOL
 epicgames
 ERASEBKGND
 EREOF
 EResize
-errorlevel
+ERRORLEVEL
 ERRORLEVEL
 ERRORMESSAGE
 ERRORTITLE
@@ -728,7 +731,7 @@ EXITSIZEMOVE
 exlist
 EXPCMDFLAGS
 EXPCMDSTATE
-EXPLR
+explr
 explr
 Expr
 exsb
@@ -803,7 +806,7 @@ FULLNAME
 fullscreen
 func
 fwlink
-Fx
+fx
 fx
 fxcop
 fxml
@@ -842,12 +845,12 @@ google
 gordonwatts
 GPTR
 grayscale
+GText
 gui
 guiddef
 GUITHREADINFO
 GValue
-GText
-GWL
+gwl
 gwl
 GWLP
 gwmi
@@ -878,13 +881,13 @@ hdrop
 HDS
 HEB
 helptext
-hglobal
+HGLOBAL
 HGLOBAL
 hh
 hhk
 HHmmss
 HHOOK
-hicon
+HICON
 HICON
 HIDEWINDOW
 Highcontrast
@@ -905,7 +908,7 @@ HLSL
 hmenu
 hmodule
 hmon
-hmonitor
+HMONITOR
 HMONITOR
 HOLDENTER
 HOLDESC
@@ -925,8 +928,8 @@ hres
 hresult
 hrgn
 HRSRC
-HSCROLL
 hsb
+HSCROLL
 hsi
 hsl
 hstring
@@ -1001,7 +1004,7 @@ IEquatable
 IEvent
 IExclusive
 IExec
-iexplore
+IEXPLORE
 IEXPLORE
 IExplorer
 Iface
@@ -1033,7 +1036,7 @@ IMAGERESIZEREXT
 imageresizersettings
 IMain
 IMarkdown
-IME
+ime
 ime
 img
 IMonitor
@@ -1128,7 +1131,7 @@ isbi
 isborderless
 ISearch
 IService
-isetting
+ISetting
 ISetting
 isfinite
 IShell
@@ -1188,7 +1191,7 @@ Kaizala
 kbd
 KBDLLHOOKSTRUCT
 KBHOOK
-KBM
+kbm
 kbm
 KEYBDINPUT
 keyboardeventhandlers
@@ -1208,7 +1211,7 @@ keyremaps
 keystokes
 Keystool
 Keytool
-keyup
+KEYUP
 KEYUP
 Kf
 KILLFOCUS
@@ -1220,6 +1223,7 @@ LAlt
 lambson
 lamotile
 Lastdevice
+LASTEXITCODE
 lastpos
 launcherpinyin
 Launcherpinyindb
@@ -1248,6 +1252,7 @@ lhs
 LIBID
 lindex
 linecap
+linkid
 Linkmenu
 linq
 LINQTo
@@ -1307,7 +1312,7 @@ LPW
 lpwndpl
 LPWSTR
 LRESULT
-LSHIFT
+lshift
 lshift
 lstrcmp
 lstrcmpi
@@ -1362,10 +1367,10 @@ Melman
 memcpy
 memset
 Mensching
-MENUITEMINFO
-menurc
 menuitem
+MENUITEMINFO
 MENUITEMINFOW
+menurc
 MENUSTART
 messagebox
 METACHARSET
@@ -1395,7 +1400,7 @@ modulekey
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
-monitorinfof
+MONITORINFOF
 MONITORINFOF
 Monthand
 Moq
@@ -1422,6 +1427,7 @@ mscorlib
 msdata
 msdn
 msedge
+MSGBOX
 mshtmdid
 msi
 MSIHANDLE
@@ -1432,7 +1438,6 @@ MSIRESTARTMANAGERCONTROL
 msix
 msixbundle
 MSIXVERSION
-MSGBOX
 MSLLHOOKSTRUCT
 Mso
 msp
@@ -1451,7 +1456,7 @@ multizone
 mutex
 mutexes
 muxc
-mvvm
+Mvvm
 Mvvm
 MYICON
 myuri
@@ -1509,6 +1514,7 @@ noactive
 Noactivewindow
 NOAGGREGATION
 NOASYNC
+nocache
 NOCLOSEPROCESS
 NOCOPYBITS
 nodeca
@@ -1594,8 +1600,8 @@ Onboarding
 onebranch
 onedrive
 onedrivelogo
-onstd
 ONITEM
+onstd
 OOBE
 opencode
 opensource
@@ -1676,7 +1682,7 @@ pinfo
 pinvoke
 pinyindb
 Pipelinhttps
-Pipename
+pipename
 pipename
 pitem
 PKBDLLHOOKSTRUCT
@@ -1744,7 +1750,7 @@ PREVIEWGROUP
 previewhandlerframeinfo
 previewpane
 PREVIOUSVERSIONSINSTALLED
-PREVPANE
+prevpane
 prevpane
 prgms
 pri
@@ -1755,7 +1761,7 @@ prm
 proactively
 PROCESSKEY
 PRODUCTVERSION
-progman
+Progman
 Progman
 programdata
 Programpinyindb
@@ -1766,7 +1772,7 @@ propkey
 propvarutil
 Prt
 prui
-prvpane
+PRVPANE
 PRVPANE
 psapi
 PSECURITY
@@ -1851,7 +1857,7 @@ reimplementing
 reloadable
 remapkey
 remapkeyboard
-remapper
+Remapper
 Remapper
 remappings
 remapshort
@@ -1886,6 +1892,7 @@ resultlist
 resw
 resx
 returnvalue
+retval
 reulst
 rfind
 rgb
@@ -1893,7 +1900,7 @@ rgba
 RGBQUAD
 rge
 rgelt
-rgn
+Rgn
 Rgn
 rgs
 rhs
@@ -1912,7 +1919,7 @@ royvou
 rpc
 RPressed
 RRF
-rshift
+RSHIFT
 RSHIFT
 Rsp
 rst
@@ -1938,7 +1945,7 @@ Runtimes
 rv
 rvalue
 rvm
-RWIN
+rwin
 rwin
 rx
 ryanbodrug
@@ -1954,7 +1961,7 @@ Schd
 Scn
 SCOPEID
 screenshot
-Scrollable
+scrollable
 scrollable
 scrollbar
 scrollviewer
@@ -1981,7 +1988,7 @@ serizalization
 serverside
 sessionending
 SETCONTEXT
-setcursor
+SETCURSOR
 SETCURSOR
 SETFOCUS
 SETFOREGROUND
@@ -2015,7 +2022,7 @@ shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
 Shellpinyindb
-shellscalingapi
+Shellscalingapi
 Shellscalingapi
 Shelveset
 SHFILEINFO
@@ -2043,7 +2050,7 @@ SHOWMAXIMIZED
 SHOWMINIMIZED
 SHOWNA
 SHOWNORMAL
-SHOWWINDOW
+showwindow
 showwindow
 shtypes
 sid
@@ -2139,7 +2146,7 @@ stdin
 stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
-stdout
+Stdout
 Stdout
 stefan
 STEPIT
@@ -2162,14 +2169,14 @@ stringtable
 stringval
 strsafe
 strutil
-sttngs
+STTNGS
 STTNGS
 Stubless
 STYLECHANGED
 STYLECHANGING
 stylecop
 stylesheet
-subdir
+Subdir
 Subdir
 subfolder
 Subheader
@@ -2204,9 +2211,9 @@ SYSCOMMAND
 SYSDEADCHAR
 SYSICONINDEX
 SYSKEY
-SYSKEYDOWN
 syskeydown
-syskeyup
+syskeydown
+SYSKEYUP
 SYSKEYUP
 syslog
 SYSMENU
@@ -2288,7 +2295,7 @@ toggleswitch
 tohex
 toolbar
 Toolchain
-toolset
+Toolset
 Toolset
 tooltip
 toolwindow
@@ -2328,7 +2335,7 @@ TYPESHORTCUT
 typings
 Tz
 TZone
-uac
+UAC
 UAC
 UAL
 uap
@@ -2347,6 +2354,7 @@ uk
 ul
 ULLONG
 ulong
+umd
 unchecks
 uncomment
 uncompilable
@@ -2365,7 +2373,7 @@ uninstalling
 uninstantiated
 Uniq
 uniquifier
-Uniquifies
+uniquifies
 uniquifies
 unittests
 unk
@@ -2377,7 +2385,7 @@ Unpublish
 unregister
 unregistering
 unremapped
-Unsubscribe
+unsubscribe
 unsubscribe
 Unsync
 Untag
@@ -2396,7 +2404,7 @@ USERDATA
 USERDOMAIN
 USEREGEX
 username
-USERPROFILE
+userprofile
 userprofile
 USESHOWWINDOW
 USESTDHANDLES
@@ -2471,7 +2479,7 @@ wangyiyun
 watsonportal
 wav
 WBounds
-wca
+Wca
 Wca
 wcautil
 WCE
@@ -2489,12 +2497,14 @@ wcsncmp
 wcsnicmp
 wcsrchr
 wdp
-wds
 WDS
+WDS
+wdupenv
 weakme
 webapp
-Webcam
 webcam
+webcam
+webclient
 webkit
 webp
 webpack
@@ -2504,7 +2514,6 @@ website
 webview
 wekyb
 wexfs
-wdupenv
 Whichdoes
 whitespaces
 WIC
@@ -2514,7 +2523,7 @@ wiki
 wikipedia
 wil
 wildcards
-winapi
+WINAPI
 WINAPI
 winauto
 wincolor
@@ -2644,7 +2653,7 @@ XToolset
 xunit
 XY
 xyzpreviewhandler
-yaml
+YAML
 YAML
 YAngle
 YDiff
