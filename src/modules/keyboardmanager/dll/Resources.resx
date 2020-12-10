@@ -153,6 +153,7 @@
   </data>
   <data name="EditKeyboard_SourceHeader" xml:space="preserve">
     <value>Key:</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="EditKeyboard_TargetHeader" xml:space="preserve">
     <value>Mapped To:</value>
@@ -193,15 +194,19 @@
   </data>
   <data name="TypeKey_Title" xml:space="preserve">
     <value>Press a key on selected keyboard:</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="TypeShortcut_Title" xml:space="preserve">
     <value>Press the keys in shortcut:</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="TypeKey_Header" xml:space="preserve">
     <value>Key Pressed:</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="TypeShortcut_Header" xml:space="preserve">
     <value>Keys Pressed:</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="Type_HoldEnter" xml:space="preserve">
     <value>Hold Enter to continue</value>
@@ -220,12 +225,15 @@
   </data>
   <data name="ErrorMessage_SameKeyPreviouslyMapped" xml:space="preserve">
     <value>Cannot remap a key more than once</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_MappedToSameKey" xml:space="preserve">
     <value>Cannot remap a key to itself</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_ConflictingModifierKey" xml:space="preserve">
     <value>Cannot remap this key as it conflicts with another remapped key</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_SameShortcutPreviouslyMapped" xml:space="preserve">
     <value>Cannot remap a shortcut more than once for the same target app</value>
@@ -238,6 +246,7 @@
   </data>
   <data name="ErrorMessage_WinL" xml:space="preserve">
     <value>Cannot remap from/to Win L</value>
+    <comment>Win refers to Windows as in the OS</comment>
   </data>
   <data name="ErrorMessage_CtrlAltDel" xml:space="preserve">
     <value>Cannot remap from/to Ctrl Alt Del</value>
@@ -247,21 +256,26 @@
   </data>
   <data name="ErrorMessage_ShortcutStartWithModifier" xml:space="preserve">
     <value>Shortcut must start with a modifier key</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_ShortcutNoRepeatedModifier" xml:space="preserve">
     <value>Shortcut cannot contain a repeated modifier</value>
   </data>
   <data name="ErrorMessage_ShortcutAtleast2Keys" xml:space="preserve">
     <value>Shortcut must have atleast 2 keys</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_ShortcutOneActionKey" xml:space="preserve">
     <value>Shortcut must contain an action key</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_ShortcutMaxOneActionKey" xml:space="preserve">
     <value>Shortcut cannot have more than one action key</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_MaxShortcutSize" xml:space="preserve">
     <value>Shortcuts can only have up to 2 modifier keys</value>
+    <comment>Key on a keyboard</comment>
   </data>
   <data name="ErrorMessage_Default" xml:space="preserve">
     <value>Unexpected error</value>
@@ -285,5 +299,6 @@
   </data>
   <data name="ERRORMESSAGE_DISABLEASACTIONKEY" xml:space="preserve">
     <value>Disable can not be an action or a modifier key</value>
+    <comment>Key on a keyboard</comment>
   </data>
 </root>
