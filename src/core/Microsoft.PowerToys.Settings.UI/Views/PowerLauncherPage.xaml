@@ -193,7 +193,9 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysPowerLauncherSettingImage">
                 <Image x:Uid="PowerToys_Run_Image" Source="ms-appx:///Assets/Modules/PowerLauncher.png" />
+                </HyperlinkButton>
             </Border>
 
             <StackPanel x:Name="LinksPanel"

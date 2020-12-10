@@ -110,7 +110,9 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysPowerPreviewSettingImage">
                 <Image x:Uid="FileExplorerPreview_Image" Source="https://aka.ms/powerToysPowerPreviewSettingImage" />
+                </HyperlinkButton>
             </Border>
 
             <StackPanel x:Name="LinksPanel"
