@@ -328,7 +328,9 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysFancyZoneSettingImage">
                 <Image x:Uid="Fancyzones_Image" Source="ms-appx:///Assets/Modules/FancyZones.png" />
+                </HyperlinkButton>
             </Border>
 
             <StackPanel x:Name="LinksPanel"
