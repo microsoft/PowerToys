@@ -64,7 +64,8 @@ build:
           include:
             - 'action_runner.exe'
             - 'modules\ColorPicker\ColorPicker.dll'
-            - 'modules\ColorPicker\ColorPicker.exe'
+            - 'modules\ColorPicker\ColorPickerUI.dll'
+            - 'modules\ColorPicker\ColorPickerUI.exe'
             - 'modules\ColorPicker\ManagedCommon.dll'
             - 'modules\ColorPicker\Microsoft.PowerToys.Settings.UI.Lib.dll'
             - 'modules\ColorPicker\PowerToysInterop.dll'
