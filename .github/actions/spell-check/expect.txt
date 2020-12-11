@@ -166,6 +166,7 @@ bitmask
 bla
 blockquote
 blog
+BLUEGRAY
 BLURBEHIND
 BLURREGION
 bmi
@@ -180,6 +181,7 @@ BPBF
 bpp
 Breadcrumb
 bricelam
+BRIGHTGREEN
 Browsable
 bsd
 bsearch
@@ -391,11 +393,19 @@ CYSMICON
 cz
 Dac
 dacl
+DARKBLUE
+DARKGRAY
+DARKGREEN
+DARKPURPLE
+DARKRED
+DARKTEAL
+DARKYELLOW
 Dataflows
 DATAW
 davidegiacometti
 Dayof
 Dbg
+DBLEPSILON
 DBLCLKS
 DCOM
 dcomp
@@ -898,6 +908,7 @@ IBeam
 IBind
 icase
 iccex
+ICEBLUE
 IClass
 ico
 ICollection
@@ -1165,6 +1176,12 @@ LEVELID
 LExit
 lhs
 LIBID
+LIGHTBLUE
+LIGHTGRAY
+LIGHTGREEN
+LIGHTORANGE
+LIGHTTURQUOISE
+LIGHTYELLOW
 lindex
 linecap
 Linkmenu
@@ -1503,6 +1520,7 @@ OLECHAR
 oledb
 oledbcommand
 oledbconnection
+OLIVEGREEN
 OLogo
 Onboarding
 onebranch
@@ -1537,6 +1555,7 @@ OWNDC
 PACL
 PAINTSTRUCT
 PAIT
+PALEBLUE
 PALETTEWINDOW
 Pano
 paramref
@@ -1910,6 +1929,7 @@ Shortcuttool
 shortdate
 SHORTPATH
 should've
+showcolorname
 SHOWDEFAULT
 SHOWELEVATIONPROMPT
 SHOWMAXIMIZED
@@ -1944,6 +1964,7 @@ SKIPDOTNETINSTALL
 SKIPOWNPROCESS
 sku
 Skype
+SKYBLUE
 SLGP
 Slideshow
 sln
