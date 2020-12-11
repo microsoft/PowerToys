@@ -36,17 +36,11 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
-      if: ${{ matrix.language != 'cpp' }}
-    
     - name: Manual build
       run: | 
         .\.pipelines\restore.cmd
         .\.pipelines\build.cmd
-      if: ${{ matrix.language == 'cpp' }}
+      if: ${{ matrix.language == 'cpp' || matrix.language == 'csharp' }}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
