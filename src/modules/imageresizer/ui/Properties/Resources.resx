@@ -345,24 +345,29 @@
   </data>
   <data name="TiffCompressOption_Ccitt3" xml:space="preserve">
     <value>CCITT3</value>
+    <comment>Do not loc</comment>
   </data>
   <data name="TiffCompressOption_Ccitt4" xml:space="preserve">
     <value>CCITT4</value>
+    <comment>Do not loc</comment>
   </data>
   <data name="TiffCompressOption_Default" xml:space="preserve">
     <value>(Default)</value>
   </data>
   <data name="TiffCompressOption_Lzw" xml:space="preserve">
     <value>LZW</value>
+    <comment>Do not loc</comment>
   </data>
   <data name="TiffCompressOption_None" xml:space="preserve">
     <value>None</value>
   </data>
   <data name="TiffCompressOption_Rle" xml:space="preserve">
     <value>RLE</value>
+    <comment>Do not loc</comment>
   </data>
   <data name="TiffCompressOption_Zip" xml:space="preserve">
-    <value>Zip</value>
+    <value>ZIP</value>
+    <comment>Do not loc</comment>
   </data>
   <data name="Times_Symbol" xml:space="preserve">
     <value>Times Symbol</value>

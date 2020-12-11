@@ -781,7 +781,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Zip.
+        ///   Looks up a localized string similar to ZIP.
         /// </summary>
         public static string TiffCompressOption_Zip {
             get {
