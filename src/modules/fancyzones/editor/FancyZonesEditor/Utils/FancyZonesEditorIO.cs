@@ -645,25 +645,17 @@ namespace FancyZonesEditor.Utils
 
         private string LayoutTypeToJsonTag(LayoutType type)
         {
-            switch (type)
+            return type switch
             {
-                case LayoutType.Blank:
-                    return BlankJsonTag;
-                case LayoutType.Focus:
-                    return FocusJsonTag;
-                case LayoutType.Rows:
-                    return RowsJsonTag;
-                case LayoutType.Columns:
-                    return ColumnsJsonTag;
-                case LayoutType.Grid:
-                    return GridJsonTag;
-                case LayoutType.PriorityGrid:
-                    return PriorityGridJsonTag;
-                case LayoutType.Custom:
-                    return CustomJsonTag;
-            }
-
-            return string.Empty;
+                LayoutType.Blank => BlankJsonTag,
+                LayoutType.Focus => FocusJsonTag,
+                LayoutType.Rows => RowsJsonTag,
+                LayoutType.Columns => ColumnsJsonTag,
+                LayoutType.Grid => GridJsonTag,
+                LayoutType.PriorityGrid => PriorityGridJsonTag,
+                LayoutType.Custom => CustomJsonTag,
+                _ => string.Empty,
+            };
         }
 
         private static string ParsingCmdArgsErrorReport(string args, int count, string targetMonitorName, List<NativeMonitorData> monitorData, List<Monitor> monitors)
