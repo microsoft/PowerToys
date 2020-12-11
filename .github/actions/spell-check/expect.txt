@@ -292,6 +292,7 @@ comctl
 COMDAT
 comdef
 comdlg
+comhost
 cominterop
 commandline
 commctrl
@@ -1074,6 +1075,7 @@ ITab
 ITask
 ITemplate
 ITEMSTATEICONCLICK
+ITest
 ith
 IThrottled
 IThumbnail

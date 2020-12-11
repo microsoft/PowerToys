@@ -4,11 +4,12 @@
 
 using System.Text;
 using Microsoft.PowerToys.PreviewHandler.Svg.Utilities;
+using Microsoft.PowerToys.STATestExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SvgPreviewHandlerUnitTests
 {
-    [TestClass]
+    [STATestClass]
     public class SvgPreviewHandlerHelperTests
     {
         [TestMethod]

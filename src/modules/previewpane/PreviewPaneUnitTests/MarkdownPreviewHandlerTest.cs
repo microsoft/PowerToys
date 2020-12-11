@@ -5,12 +5,13 @@
 using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.PowerToys.PreviewHandler.Markdown;
+using Microsoft.PowerToys.STATestExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PreviewHandlerCommon;
 
 namespace PreviewPaneUnitTests
 {
-    [TestClass]
+    [STATestClass]
     public class MarkdownPreviewHandlerTest
     {
         [TestMethod]
