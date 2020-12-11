@@ -870,4 +870,7 @@
   <data name="ColorPicker_ColorFormatsDescription.Text" xml:space="preserve">
     <value>Editor color formats (Change the order by dragging)</value>
   </data>
+  <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
+    <value>Show color name</value>
+  </data>
 </root>

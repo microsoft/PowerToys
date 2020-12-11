@@ -188,6 +188,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public bool ShowColorName
+        {
+            get => _colorPickerSettings.Properties.ShowColorName;
+            set
+            {
+                if (_colorPickerSettings.Properties.ShowColorName != value)
+                {
+                    _colorPickerSettings.Properties.ShowColorName = value;
+                    OnPropertyChanged(nameof(ShowColorName));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public ObservableCollection<ColorFormatModel> ColorFormats { get; } = new ObservableCollection<ColorFormatModel>();
 
         private void InitializeColorFormats()

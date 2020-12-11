@@ -21,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             VisibleColorFormats.Add("HEX", true);
             VisibleColorFormats.Add("RGB", true);
             VisibleColorFormats.Add("HSL", true);
+            ShowColorName = false;
             ActivationAction = ColorPickerActivationAction.OpenColorPickerAndThenEditor;
         }
 
@@ -46,6 +47,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("visiblecolorformats")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Need to change this collection")]
         public Dictionary<string, bool> VisibleColorFormats { get; set; }
+
+        [JsonPropertyName("showcolorname")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool ShowColorName { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this);

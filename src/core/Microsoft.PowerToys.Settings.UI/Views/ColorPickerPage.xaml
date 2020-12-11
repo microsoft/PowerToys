@@ -51,6 +51,11 @@
             <ToggleSwitch x:Uid="ColorPicker_EnableColorPicker" 
                           IsOn="{Binding IsEnabled, Mode=TwoWay}"/>
 
+            <CheckBox x:Uid="ColorPicker_ShowColorName"
+                          IsChecked="{Binding ShowColorName, Mode=TwoWay}"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsEnabled="{Binding IsEnabled}"/>
+            
             <TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
@@ -101,16 +106,16 @@
                          Margin="{StaticResource SmallTopMargin}" 
                          IsEnabled="{Binding IsEnabled}"
                          GroupName="ColorPickerActivationAction">
-                <RadioButton.Content>
+                    <RadioButton.Content>
                         <TextBlock TextWrapping="WrapWholeWords" LineHeight="20">
                         <Run x:Uid="ColorPickerOnly"/>
                         <LineBreak/>
                         <Run x:Uid="ColorPickerOnly_Description" Foreground="{ThemeResource SystemBaseMediumColor}"/>
-                    </TextBlock>
-                </RadioButton.Content>
-            </RadioButton>
+                        </TextBlock>
+                    </RadioButton.Content>
+                </RadioButton>
             </StackPanel>
-            
+
             <TextBlock x:Uid="ColorFormats"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
@@ -232,6 +237,12 @@
                                 NavigateUri="https://github.com/martinchrzan/ColorPicker/">
                     <TextBlock Text="Martin Chrzan's Color Picker" TextWrapping="Wrap" />
                 </HyperlinkButton>
+
+                <HyperlinkButton Margin="0,-3,0,0"
+                                NavigateUri="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c">
+                    <TextBlock Text="Niels Laute's UX concept" TextWrapping="Wrap" />
+                </HyperlinkButton>
+                
             </StackPanel>
         </RelativePanel>
     </Grid>
