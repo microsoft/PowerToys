@@ -122,7 +122,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysPowerRenameSettingImage">
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerRename">
                 <Image x:Uid="PowerRename_Image" Source="ms-appx:///Assets/Modules/PowerRename.png" />
                 </HyperlinkButton>
             </Border>

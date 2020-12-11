@@ -357,7 +357,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysKBMSettingImage">
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_KeyboardManager">
                 <Image x:Uid="KeyboardManager_Image" Source="ms-appx:///Assets/Modules/KBM.png" />
                 </HyperlinkButton>
             </Border>
