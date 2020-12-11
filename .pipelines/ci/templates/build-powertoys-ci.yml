@@ -1,7 +1,7 @@
 parameters:
   configuration: 'Release'
   platform: ''
-  additionalBuildArguments: '/p:CIBuild=true'
+  additionalBuildArguments: '-m'
 
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}
@@ -9,7 +9,7 @@ jobs:
   variables:
     BuildConfiguration: ${{ parameters.configuration }}
     BuildPlatform: ${{ parameters.platform }}
-  pool: { vmImage: windows-2019 }
+  pool: "windevbuildagents"
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
