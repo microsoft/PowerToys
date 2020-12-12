@@ -1294,7 +1294,7 @@ bool FancyZones::IsSplashScreen(HWND window)
 void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
-    FancyZonesDataInstance().ParseDataFromTmpFiles();
+    FancyZonesDataInstance().LoadFancyZonesData();
 
     for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
     {
