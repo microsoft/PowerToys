@@ -70,6 +70,15 @@ namespace Microsoft.Plugin.Service.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open services (Ctrl+Shift+O).
+        /// </summary>
+        internal static string wox_plugin_service_open_services {
+            get {
+                return ResourceManager.GetString("wox_plugin_service_open_services", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pausing.
         /// </summary>
         internal static string wox_plugin_service_pause_pending {
@@ -106,7 +115,7 @@ namespace Microsoft.Plugin.Service.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restart (Shift+Enter).
+        ///   Looks up a localized string similar to Restart (Ctrl+Shift+R).
         /// </summary>
         internal static string wox_plugin_service_restart {
             get {

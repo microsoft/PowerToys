@@ -89,6 +89,24 @@ namespace Microsoft.Plugin.Service.Helper
             }
         }
 
+        public static void OpenServices()
+        {
+            try
+            {
+                var info = new ProcessStartInfo
+                {
+                    FileName = "services.msc",
+                    UseShellExecute = true,
+                };
+
+                Process.Start(info);
+            }
+            catch (Win32Exception ex)
+            {
+                Log.Error(ex.Message, MethodBase.GetCurrentMethod().DeclaringType);
+            }
+        }
+
         private static string GetResultTitle(ServiceController serviceController)
         {
             if (serviceController == null)

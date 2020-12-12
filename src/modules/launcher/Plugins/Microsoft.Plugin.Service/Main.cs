@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ namespace Microsoft.Plugin.Service
 
             if (serviceResult.IsRunning)
             {
+                // Stop
                 contextMenuResult.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
@@ -53,14 +55,15 @@ namespace Microsoft.Plugin.Service
                     },
                 });
 
+                // Restart
                 contextMenuResult.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Resources.wox_plugin_service_restart,
                     Glyph = "\xE72C",
                     FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = Key.Enter,
-                    AcceleratorModifiers = ModifierKeys.Shift,
+                    AcceleratorKey = Key.R,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
                         Task.Run(() => ServiceHelper.ChangeStatus(serviceResult, Action.Restart, _context.API));
@@ -70,6 +73,7 @@ namespace Microsoft.Plugin.Service
             }
             else
             {
+                // Start
                 contextMenuResult.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
@@ -84,6 +88,22 @@ namespace Microsoft.Plugin.Service
                     },
                 });
             }
+
+            // Open services
+            contextMenuResult.Add(new ContextMenuResult
+            {
+                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                Title = Resources.wox_plugin_service_open_services,
+                Glyph = "\xE8A7",
+                FontFamily = "Segoe MDL2 Assets",
+                AcceleratorKey = Key.O,
+                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                Action = _ =>
+                {
+                    Task.Run(() => ServiceHelper.OpenServices());
+                    return true;
+                },
+            });
 
             return contextMenuResult;
         }
