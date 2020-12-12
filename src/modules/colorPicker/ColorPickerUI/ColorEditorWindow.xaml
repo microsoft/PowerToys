@@ -7,7 +7,7 @@
         xmlns:p="clr-namespace:ColorPicker.Properties"
         mc:Ignorable="d"
         AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
-        xmlns:e="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
         ui:TitleBar.ExtendViewIntoTitleBar="True"
         ui:TitleBar.ButtonStyle="{DynamicResource AppTitleBarButtonStyle}"

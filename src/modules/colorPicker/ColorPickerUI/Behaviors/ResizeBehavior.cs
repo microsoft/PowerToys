@@ -4,8 +4,8 @@
 
 using System;
 using System.Windows;
-using System.Windows.Interactivity;
 using System.Windows.Media.Animation;
+using Microsoft.Xaml.Behaviors;
 
 namespace ColorPicker.Behaviors
 {
