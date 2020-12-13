@@ -12,6 +12,7 @@
                     BorderThickness="0"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     ui:WindowHelper.UseModernWindowStyle="True"
+                    ui:TitleBar.IsIconVisible="True"
                     SizeToContent="Height"
                     Background="{DynamicResource PrimaryBackgroundBrush}"
                     ResizeMode="NoResize"
@@ -24,13 +25,7 @@
             Margin="0,-36,0,0"
             VerticalAlignment="Top"
             HorizontalAlignment="Stretch">
-            <TextBlock Foreground="{DynamicResource TitleBarSecondaryForegroundBrush}"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Left"
-                       FontFamily="Segoe MDL2 Assets"
-                       Text="&#xE138;"
-                       Margin="16,8,0,0"
-                       FontSize="16" />
+
             <Border
                 Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
                 Width="30"
