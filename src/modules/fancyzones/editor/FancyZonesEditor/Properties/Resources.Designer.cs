@@ -214,6 +214,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete zone.
+        /// </summary>
+        public static string Delete_Zone {
+            get {
+                return ResourceManager.GetString("Delete_Zone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Distance to highlight adjacent zones.
         /// </summary>
         public static string Distance_adjacent_zones {

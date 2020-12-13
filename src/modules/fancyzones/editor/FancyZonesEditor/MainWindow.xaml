@@ -439,19 +439,20 @@
                                 Orientation="Horizontal"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
-                        <Button x:Name="incrementZones"
+
+                        <Button x:Name="decrementZones"
                                 Width="32"
                                 Height="32"
+                                Content="&#xE949;"
                                 FontSize="14"
                                 TabIndex="2"
-                                Background="Transparent"
-                                Content="&#xE948;"
                                 HorizontalAlignment="Center"
+                                Background="Transparent"
                                 FontFamily="Segoe MDL2 Assets"
+                                ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
+                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
                                 Style="{StaticResource DefaultButtonStyle}"
-                                ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
-                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
-                                Click="IncrementZones_Click" />
+                                Click="DecrementZones_Click" />
 
                         <TextBlock x:Name="zoneCount"
                                    Text="{Binding ZoneCount}"
@@ -464,19 +465,19 @@
                                    HorizontalAlignment="Stretch"
                                    VerticalAlignment="Center" />
 
-                        <Button x:Name="decrementZones"
+                        <Button x:Name="incrementZones"
                                 Width="32"
                                 Height="32"
-                                Content="&#xE949;"
                                 FontSize="14"
                                 TabIndex="3"
-                                HorizontalAlignment="Center"
                                 Background="Transparent"
+                                Content="&#xE948;"
+                                HorizontalAlignment="Center"
                                 FontFamily="Segoe MDL2 Assets"
-                                ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
-                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
                                 Style="{StaticResource DefaultButtonStyle}"
-                                Click="DecrementZones_Click" />
+                                ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
+                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
+                                Click="IncrementZones_Click" />
                     </StackPanel>
 
                     <ItemsControl ItemsSource="{Binding DefaultModels}"
