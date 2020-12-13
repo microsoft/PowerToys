@@ -303,4 +303,8 @@ To merge zones, select the zones and click "merge".</value>
   <data name="No_Custom_Layouts_Message" xml:space="preserve">
     <value>Create or duplicate a layout to get started</value>
   </data>
+  <data name="Delete_Zone" xml:space="preserve">
+    <value>Delete zone</value>
+    <comment>A tooltip on a button that allows the user to delete a zone</comment>
+  </data>
 </root>
