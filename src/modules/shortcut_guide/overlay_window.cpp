@@ -1,13 +1,13 @@
 ﻿#include "pch.h"
 #include "overlay_window.h"
-#include "common/monitors.h"
-#include "common/tasklist_positions.h"
-#include "common/start_visible.h"
+#include <common/common.h>
+#include <common/monitors.h>
+#include <common/tasklist_positions.h>
+#include <common/start_visible.h>
 #include "keyboard_state.h"
 #include "shortcut_guide.h"
 #include "trace.h"
 #include "Generated Files/resource.h"
-#include <common/common.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 

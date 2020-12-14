@@ -8,14 +8,14 @@
 #include <common/two_way_pipe_message_ipc.h>
 #include "tray_icon.h"
 #include "general_settings.h"
-#include "common/windows_colors.h"
-#include "common/common.h"
+#include <common/windows_colors.h>
+#include <common/common.h>
 #include "restart_elevated.h"
 #include "update_utils.h"
 #include "centralized_kb_hook.h"
 
 #include <common/json.h>
-#include <common\settings_helpers.cpp>
+#include <common/settings_helpers.cpp>
 #include <common/os-detect.h>
 #include <common/version.h>
 #include <common/VersionHelper.h>

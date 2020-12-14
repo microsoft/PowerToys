@@ -2126,6 +2126,7 @@ tif
 TILEDWINDOW
 timeinfo
 Timeline
+timeunion
 timeutil
 titlecase
 tlb
@@ -2191,6 +2192,7 @@ uint
 UIPI
 UIs
 ul
+ULARGE
 ULLONG
 ulong
 unchecks
@@ -2490,3 +2492,13 @@ ZONESETCHANGE
 Zoneszonabletester
 Zoomusingmagnifier
 zzz
+buildtools
+CPPARM
+CPPx
+LASTEXITCODE
+linkid
+nocache
+retval
+umd
+webclient
+windevbuildagents

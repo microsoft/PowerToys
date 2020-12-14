@@ -71,6 +71,7 @@
     </ClInclude>
     <ClInclude Include="Generated Files/resource.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
     <ClInclude Include="KeyState.h">
       <Filter>Header Files</Filter>
     </ClInclude>

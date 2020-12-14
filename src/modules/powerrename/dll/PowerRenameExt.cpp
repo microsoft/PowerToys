@@ -123,8 +123,8 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
     {
         Trace::Invoked();
         InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
-        hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
-        if (SUCCEEDED(hr))
+        hr = E_OUTOFMEMORY;
+        if (pInvokeData)
         {
             pInvokeData->hwndParent = pici->hwnd;
             hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &(pInvokeData->pstrm));
@@ -248,8 +248,8 @@ HRESULT __stdcall CPowerRenameMenu::Invoke(IShellItemArray* psiItemArray, IBindC
 #endif
     Trace::Invoked();
     InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
-    HRESULT hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (pInvokeData)
     {
         pInvokeData->hwndParent = nullptr;
         hr = CoMarshalInterThreadInterfaceInStream(__uuidof(psiItemArray), psiItemArray, &(pInvokeData->pstrm));

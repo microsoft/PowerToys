@@ -832,7 +832,7 @@
                     <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />
                 </Component>
                 <Component Id="ColorPicker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)ColorPickerInstallFolder">
-                    <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\ColorPicker.resources.dll" />
+                    <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.Language)\ColorPickerUI.resources.dll" />
                 </Component>
                 <Component Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FileExplorerPreviewInstallFolder">
                     <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\FileExplorerPreview\$(var.Language)\MarkdownPreviewHandler.resources.dll" />

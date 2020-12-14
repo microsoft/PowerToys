@@ -3,8 +3,8 @@
 #include "keyboardmanager/common/Helpers.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include "BufferValidationHelpers.h"
-#include <common\shared_constants.h>
-#include <common\keyboard_layout_impl.h>
+#include <common/shared_constants.h>
+#include <common/keyboard_layout_impl.h>
 #include <modules\keyboardmanager\common\Helpers.h>
 
 // Initialized to null

@@ -120,8 +120,8 @@ HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt
 {
     *ppsrui = nullptr;
     CPowerRenameUI* prui = new CPowerRenameUI();
-    HRESULT hr = prui ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (prui)
     {
         // Pass the IPowerRenameManager to the IPowerRenameUI so it can subscribe to events
         hr = prui->_Initialize(psrm, dataSource, enableDragDrop);

@@ -46,6 +46,7 @@ public:
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
     IFACEMETHODIMP OnReplaceTermChanged(_In_ PCWSTR replaceTerm);
     IFACEMETHODIMP OnFlagsChanged(_In_ DWORD flags);
+    IFACEMETHODIMP OnFileTimeChanged(_In_ SYSTEMTIME fileTime);
 
     static HRESULT s_CreateInstance(_Outptr_ IPowerRenameManager** ppsrm);
 

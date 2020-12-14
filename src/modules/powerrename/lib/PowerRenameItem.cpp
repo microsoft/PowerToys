@@ -34,19 +34,24 @@ IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
 {
     *path = nullptr;
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_path ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_FAIL;
+    if (m_path)
     {
         hr = SHStrDup(m_path, path);
     }
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
+IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_isDateParsed ? S_OK : E_FAIL ;
-    if (!m_isDateParsed)
+    HRESULT hr = E_FAIL ;
+
+    if (m_isTimeParsed)
+    {
+        hr = S_OK;
+    }
+    else
     {
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
@@ -59,8 +64,8 @@ IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
                 {
                     if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
                     {
-                        m_date = LocalTime;
-                        m_isDateParsed = true;
+                        m_time = LocalTime;
+                        m_isTimeParsed = true;
                         hr = S_OK;
                     }
                 }
@@ -68,7 +73,7 @@ IFACEMETHODIMP CPowerRenameItem::GetDate(_Outptr_ SYSTEMTIME* date)
         }
         CloseHandle(hFile);
     }
-    *date = m_date;
+    *time = m_time;
     return hr;
 }
 
@@ -80,8 +85,8 @@ IFACEMETHODIMP CPowerRenameItem::GetShellItem(_Outptr_ IShellItem** ppsi)
 IFACEMETHODIMP CPowerRenameItem::GetOriginalName(_Outptr_ PWSTR* originalName)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_originalName ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_FAIL;
+    if (m_originalName)
     {
         hr = SHStrDup(m_originalName, originalName);
     }
@@ -104,8 +109,8 @@ IFACEMETHODIMP CPowerRenameItem::PutNewName(_In_opt_ PCWSTR newName)
 IFACEMETHODIMP CPowerRenameItem::GetNewName(_Outptr_ PWSTR* newName)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = m_newName ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (m_newName)
     {
         hr = SHStrDup(m_newName, newName);
     }
@@ -217,9 +222,10 @@ HRESULT CPowerRenameItem::s_CreateInstance(_In_opt_ IShellItem* psi, _In_ REFIID
     *resultInterface = nullptr;
 
     CPowerRenameItem *newRenameItem = new CPowerRenameItem();
-    HRESULT hr = newRenameItem ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (newRenameItem)
     {
+        hr = S_OK ;
         if (psi != nullptr)
         {
             hr = newRenameItem->_Init(psi);

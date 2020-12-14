@@ -59,7 +59,7 @@ TEST_METHOD(ReplaceNoSearchOrReplaceTerm)
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
     PWSTR result = nullptr;
-    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) != S_OK);
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) == S_OK);
     Assert::IsTrue(result == nullptr);
     CoTaskMemFree(result);
 }
@@ -427,6 +427,8 @@ TEST_METHOD(VerifyEventsFire)
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
     Assert::IsTrue(renameRegEx->PutSearchTerm(L"FOO") == S_OK);
     Assert::IsTrue(renameRegEx->PutReplaceTerm(L"BAR") == S_OK);
+    Assert::IsTrue(renameRegEx->PutFileTime(SYSTEMTIME{0}) == S_OK);
+    Assert::IsTrue(renameRegEx->ResetFileTime() == S_OK);
     Assert::IsTrue(lstrcmpi(L"FOO", mockEvents->m_searchTerm) == 0);
     Assert::IsTrue(lstrcmpi(L"BAR", mockEvents->m_replaceTerm) == 0);
     Assert::IsTrue(flags == mockEvents->m_flags);
