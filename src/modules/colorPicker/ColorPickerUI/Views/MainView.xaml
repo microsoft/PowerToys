@@ -83,7 +83,7 @@
                            FontSize="16"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource PrimaryForegroundBrush}"
-                           Visibility="{Binding ShowColorName, Converter={StaticResource bool2VisibilityConverter}}"
+                           Opacity="0.6"
                            Text="{Binding ColorName}"/>
                 </Grid>
             </Grid>
