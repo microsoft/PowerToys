@@ -13,10 +13,10 @@ namespace Microsoft.Plugin.Registry.UnitTest.Helper
         [TestMethod]
         [DataRow(@"HKLM", false, @"HKLM", "")]
         [DataRow(@"HKLM\", false, @"HKLM\", "")]
-        [DataRow(@"HKLM\ ", true, @"HKLM", "")]
-        [DataRow(@"HKLM\ Test", true, @"HKLM", "Test")]
-        [DataRow(@"HKLM\Test\ TestTest", true,  @"HKLM\Test", "TestTest")]
-        [DataRow(@"HKLM\Test\ \TestTest", true,  @"HKLM\Test", @"\TestTest")]
+        [DataRow(@"HKLM\\", true, @"HKLM", "")]
+        [DataRow(@"HKLM\\Test", true, @"HKLM", "Test")]
+        [DataRow(@"HKLM\Test\\TestTest", true,  @"HKLM\Test", "TestTest")]
+        [DataRow(@"HKLM\Test\\\TestTest", true,  @"HKLM\Test", @"\TestTest")]
         public void GetQueryPartsTest(string query, bool expectedHasValueName, string expectedQueryKey, string expectedQueryValueName)
         {
             var hasValueName = QueryHelper.GetQueryParts(query, out var queryKey, out var queryValueName);
