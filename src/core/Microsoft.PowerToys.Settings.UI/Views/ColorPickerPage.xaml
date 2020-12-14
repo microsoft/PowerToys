@@ -51,11 +51,6 @@
             <ToggleSwitch x:Uid="ColorPicker_EnableColorPicker" 
                           IsOn="{Binding IsEnabled, Mode=TwoWay}"/>
 
-            <CheckBox x:Uid="ColorPicker_ShowColorName"
-                          IsChecked="{Binding ShowColorName, Mode=TwoWay}"
-                          Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{Binding IsEnabled}"/>
-            
             <TextBlock x:Uid="Shortcuts"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
@@ -131,7 +126,12 @@
                       Loaded="ColorPicker_ComboBox_Loaded"
                       SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
                       SelectedValuePath="Key" />
-
+            
+            <CheckBox x:Uid="ColorPicker_ShowColorName"
+                          IsChecked="{Binding ShowColorName, Mode=TwoWay}"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsEnabled="{Binding IsEnabled}"/>
+            
             <TextBlock Margin="{StaticResource MediumTopMargin}"
                        x:Name="ColorFormatsListViewLabel"
                        TextWrapping="WrapWholeWords"
