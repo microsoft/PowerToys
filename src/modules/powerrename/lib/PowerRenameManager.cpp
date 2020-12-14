@@ -8,6 +8,7 @@
 #include "window_helpers.h"
 #include <filesystem>
 #include "trace.h"
+#include <winrt/base.h>
 
 namespace fs = std::filesystem;
 
@@ -415,12 +416,18 @@ IFACEMETHODIMP CPowerRenameManager::OnFlagsChanged(_In_ DWORD flags)
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameManager::OnFileTimeChanged(_In_ SYSTEMTIME /*fileTime*/)
+{
+    _PerformRegExRename();
+    return S_OK;
+}
+
 HRESULT CPowerRenameManager::s_CreateInstance(_Outptr_ IPowerRenameManager** ppsrm)
 {
     *ppsrm = nullptr;
     CPowerRenameManager *psrm = new CPowerRenameManager();
-    HRESULT hr = psrm ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (psrm)
     {
         hr = psrm->_Init();
         if (SUCCEEDED(hr))
@@ -645,16 +652,20 @@ HRESULT CPowerRenameManager::_PerformFileOperation()
 HRESULT CPowerRenameManager::_CreateFileOpWorkerThread()
 {
     WorkerThreadData* pwtd = new WorkerThreadData;
-    HRESULT hr = pwtd ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (pwtd)
     {
         pwtd->hwndManager = m_hwndMessage;
         pwtd->startEvent = m_startRegExWorkerEvent;
         pwtd->cancelEvent = nullptr;
         pwtd->spsrm = this;
         m_fileOpWorkerThreadHandle = CreateThread(nullptr, 0, s_fileOpWorkerThread, pwtd, 0, nullptr);
-        hr = (m_fileOpWorkerThreadHandle) ? S_OK : E_FAIL;
-        if (FAILED(hr))
+        hr = E_FAIL;
+        if (m_fileOpWorkerThreadHandle)
+        {
+            hr = S_OK;
+        }
+        else
         {
             delete pwtd;
         }
@@ -791,8 +802,8 @@ HRESULT CPowerRenameManager::_PerformRegExRename()
 HRESULT CPowerRenameManager::_CreateRegExWorkerThread()
 {
     WorkerThreadData* pwtd = new WorkerThreadData;
-    HRESULT hr = pwtd ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (pwtd)
     {
         pwtd->hwndManager = m_hwndMessage;
         pwtd->startEvent = m_startRegExWorkerEvent;
@@ -800,8 +811,12 @@ HRESULT CPowerRenameManager::_CreateRegExWorkerThread()
         pwtd->hwndParent = m_hwndParent;
         pwtd->spsrm = this;
         m_regExWorkerThreadHandle = CreateThread(nullptr, 0, s_regexWorkerThread, pwtd, 0, nullptr);
-        hr = (m_regExWorkerThreadHandle) ? S_OK : E_FAIL;
-        if (FAILED(hr))
+        hr = E_FAIL;
+        if (m_regExWorkerThreadHandle)
+        {
+            hr = S_OK;
+        }
+        else
         {
             delete pwtd;
         }
@@ -812,8 +827,9 @@ HRESULT CPowerRenameManager::_CreateRegExWorkerThread()
 
 DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
 {
-    if (SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
+    try
     {
+        winrt::check_hresult(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE));
         WorkerThreadData* pwtd = reinterpret_cast<WorkerThreadData*>(pv);
         if (pwtd)
         {
@@ -823,191 +839,200 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
             if (WaitForSingleObject(pwtd->startEvent, INFINITE) == WAIT_OBJECT_0)
             {
                 CComPtr<IPowerRenameRegEx> spRenameRegEx;
-                if (SUCCEEDED(pwtd->spsrm->GetRenameRegEx(&spRenameRegEx)))
+
+                winrt::check_hresult(pwtd->spsrm->GetRenameRegEx(&spRenameRegEx));
+
+                DWORD flags = 0;
+                winrt::check_hresult(spRenameRegEx->GetFlags(&flags));
+
+                PWSTR replaceTerm = nullptr;
+                bool useFileTime = false;
+
+                winrt::check_hresult(spRenameRegEx->GetReplaceTerm(&replaceTerm));
+
+                if (isFileTimeUsed(replaceTerm))
                 {
-                    DWORD flags = 0;
-                    spRenameRegEx->GetFlags(&flags);
+                    useFileTime = true;
+                }
 
-                    UINT itemCount = 0;
-                    unsigned long itemEnumIndex = 1;
-                    pwtd->spsrm->GetItemCount(&itemCount);
-                    for (UINT u = 0; u <= itemCount; u++)
+                UINT itemCount = 0;
+                unsigned long itemEnumIndex = 1;
+                winrt::check_hresult(pwtd->spsrm->GetItemCount(&itemCount));
+                for (UINT u = 0; u < itemCount; u++)
+                {
+                    // Check if cancel event is signaled
+                    if (WaitForSingleObject(pwtd->cancelEvent, 0) == WAIT_OBJECT_0)
                     {
-                        // Check if cancel event is signaled
-                        if (WaitForSingleObject(pwtd->cancelEvent, 0) == WAIT_OBJECT_0)
+                        // Canceled from manager
+                        // Send the manager thread the canceled message
+                        PostMessage(pwtd->hwndManager, SRM_REGEX_CANCELED, GetCurrentThreadId(), 0);
+                        break;
+                    }
+
+                    CComPtr<IPowerRenameItem> spItem;
+                    winrt::check_hresult(pwtd->spsrm->GetItemByIndex(u, &spItem));
+
+                    int id = -1;
+                    winrt::check_hresult(spItem->GetId(&id));
+
+                    bool isFolder = false;
+                    bool isSubFolderContent = false;
+                    winrt::check_hresult(spItem->GetIsFolder(&isFolder));
+                    winrt::check_hresult(spItem->GetIsSubFolderContent(&isSubFolderContent));
+                    if ((isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
+                        (!isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
+                        (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)))
+                    {
+                        // Exclude this item from renaming.  Ensure new name is cleared.
+                        winrt::check_hresult(spItem->PutNewName(nullptr));
+
+                        // Send the manager thread the item processed message
+                        PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
+
+                        continue;
+                    }
+
+                    PWSTR originalName = nullptr;
+                    winrt::check_hresult(spItem->GetOriginalName(&originalName));
+
+
+                    PWSTR currentNewName = nullptr;
+                    winrt::check_hresult(spItem->GetNewName(&currentNewName));
+
+                    wchar_t sourceName[MAX_PATH] = { 0 };
+                    if (flags & NameOnly)
+                    {
+                        StringCchCopy(sourceName, ARRAYSIZE(sourceName), fs::path(originalName).stem().c_str());
+                    }
+                    else if (flags & ExtensionOnly)
+                    {
+                        std::wstring extension = fs::path(originalName).extension().wstring();
+                        if (!extension.empty() && extension.front() == '.')
                         {
-                            // Canceled from manager
-                            // Send the manager thread the canceled message
-                            PostMessage(pwtd->hwndManager, SRM_REGEX_CANCELED, GetCurrentThreadId(), 0);
-                            break;
+                            extension = extension.erase(0, 1);
                         }
+                        StringCchCopy(sourceName, ARRAYSIZE(sourceName), extension.c_str());
+                    }
+                    else
+                    {
+                        StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
+                    }
 
-                        CComPtr<IPowerRenameItem> spItem;
-                        if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
+                    SYSTEMTIME fileTime = { 0 };
+
+                    if (useFileTime)
+                    {
+                        winrt::check_hresult(spItem->GetTime(&fileTime));
+                        winrt::check_hresult(spRenameRegEx->PutFileTime(fileTime));
+                    }
+
+                    PWSTR newName = nullptr;
+
+                    // Failure here means we didn't match anything or had nothing to match
+                    // Call put_newName with null in that case to reset it
+                    winrt::check_hresult(spRenameRegEx->Replace(sourceName, &newName));
+
+                    if (useFileTime)
+                    {
+                        winrt::check_hresult(spRenameRegEx->ResetFileTime());
+                    }
+
+                    wchar_t resultName[MAX_PATH] = { 0 };
+
+                    PWSTR newNameToUse = nullptr;
+
+                    // newName == nullptr likely means we have an empty search string.  We should leave newNameToUse
+                    // as nullptr so we clear the renamed column
+                    // Except string transformation is selected.
+
+                    if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
+                    {
+                        SHStrDup(sourceName, &newName);
+                    }
+
+                    if (newName != nullptr)
+                    {
+                        newNameToUse = resultName;
+                        if (flags & NameOnly)
                         {
-                            int id = -1;
-                            spItem->GetId(&id);
-
-                            bool isFolder = false;
-                            bool isSubFolderContent = false;
-                            spItem->GetIsFolder(&isFolder);
-                            spItem->GetIsSubFolderContent(&isSubFolderContent);
-                            if ((isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
-                                (!isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
-                                (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)))
+                            StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s%s", newName, fs::path(originalName).extension().c_str());
+                        }
+                        else if (flags & ExtensionOnly)
+                        {
+                            std::wstring extension = fs::path(originalName).extension().wstring();
+                            if (!extension.empty())
                             {
-                                // Exclude this item from renaming.  Ensure new name is cleared.
-                                spItem->PutNewName(nullptr);
-
-                                // Send the manager thread the item processed message
-                                PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
-
-                                continue;
+                                StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s.%s", fs::path(originalName).stem().c_str(), newName);
                             }
-
-                            PWSTR originalName = nullptr;
-                            if (SUCCEEDED(spItem->GetOriginalName(&originalName)))
+                            else
                             {
-                                PWSTR currentNewName = nullptr;
-                                spItem->GetNewName(&currentNewName);
-
-                                wchar_t sourceName[MAX_PATH] = { 0 };
-                                if (flags & NameOnly)
-                                {
-                                    StringCchCopy(sourceName, ARRAYSIZE(sourceName), fs::path(originalName).stem().c_str());
-                                }
-                                else if (flags & ExtensionOnly)
-                                {
-                                    std::wstring extension = fs::path(originalName).extension().wstring();
-                                    if (!extension.empty() && extension.front() == '.')
-                                    {
-                                        extension = extension.erase(0, 1);
-                                    }
-                                    StringCchCopy(sourceName, ARRAYSIZE(sourceName), extension.c_str());
-                                }
-                                else
-                                {
-                                    StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
-                                }
-
-                                wchar_t newReplaceTerm[MAX_PATH] = { 0 };
-                                PWSTR replaceTerm = nullptr;
-                                SYSTEMTIME LocalTime;
-
-                                if (SUCCEEDED(spRenameRegEx->GetReplaceTerm(&replaceTerm)) && isFileAttributesUsed(replaceTerm))
-                                {
-                                    if (SUCCEEDED(spItem->GetDate(&LocalTime)))
-                                    {
-                                        if (SUCCEEDED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTerm, LocalTime)))
-                                        {
-                                            spRenameRegEx->PutReplaceTerm(newReplaceTerm);
-                                        }
-                                    }
-                                }
-
-                                PWSTR newName = nullptr;
-                                // Failure here means we didn't match anything or had nothing to match
-                                // Call put_newName with null in that case to reset it
-                                spRenameRegEx->Replace(sourceName, &newName);
-
-                                spRenameRegEx->PutReplaceTerm(replaceTerm);
-
-                                wchar_t resultName[MAX_PATH] = { 0 };
-
-                                PWSTR newNameToUse = nullptr;
-
-                                // newName == nullptr likely means we have an empty search string.  We should leave newNameToUse
-                                // as nullptr so we clear the renamed column
-                                // Except string transformation is selected.
-                                
-                                if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
-                                {
-                                    SHStrDup(sourceName, &newName);
-                                }
-
-                                if (newName != nullptr)
-                                {
-                                    newNameToUse = resultName;
-                                    if (flags & NameOnly)
-                                    {
-                                        StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s%s", newName, fs::path(originalName).extension().c_str());
-                                    }
-                                    else if (flags & ExtensionOnly)
-                                    {
-                                        std::wstring extension = fs::path(originalName).extension().wstring();
-                                        if (!extension.empty())
-                                        {
-                                            StringCchPrintf(resultName, ARRAYSIZE(resultName), L"%s.%s", fs::path(originalName).stem().c_str(), newName);
-                                        }
-                                        else
-                                        {
-                                            StringCchCopy(resultName, ARRAYSIZE(resultName), originalName);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
-                                    }
-                                }
-                                
-                                wchar_t trimmedName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(trimmedName, ARRAYSIZE(trimmedName), newNameToUse)))
-                                {
-                                    newNameToUse = trimmedName;
-                                }
-                                                                
-                                wchar_t transformedName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
-                                {
-                                    if (SUCCEEDED(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags)))
-                                    {
-                                        newNameToUse = transformedName;
-                                    }
-                                }
-
-                                // No change from originalName so set newName to
-                                // null so we clear it from our UI as well.
-                                if (lstrcmp(originalName, newNameToUse) == 0)
-                                {
-                                    newNameToUse = nullptr;
-                                }
-
-                                wchar_t uniqueName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr && (flags & EnumerateItems))
-                                {
-                                    unsigned long countUsed = 0;
-                                    if (GetEnumeratedFileName(uniqueName, ARRAYSIZE(uniqueName), newNameToUse, nullptr, itemEnumIndex, &countUsed))
-                                    {
-                                        newNameToUse = uniqueName;
-                                    }
-                                    itemEnumIndex++;
-                                }
-
-                                spItem->PutNewName(newNameToUse);
-
-                                // Was there a change?
-                                if (lstrcmp(currentNewName, newNameToUse) != 0)
-                                {
-                                    // Send the manager thread the item processed message
-                                    PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
-                                }
-
-                                CoTaskMemFree(newName);
-                                CoTaskMemFree(replaceTerm);
-                                CoTaskMemFree(currentNewName);
-                                CoTaskMemFree(originalName);
+                                StringCchCopy(resultName, ARRAYSIZE(resultName), originalName);
                             }
+                        }
+                        else
+                        {
+                            StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
                         }
                     }
+
+                    wchar_t trimmedName[MAX_PATH] = { 0 };
+                    if (newNameToUse != nullptr)
+                    {
+                        winrt::check_hresult(GetTrimmedFileName(trimmedName, ARRAYSIZE(trimmedName), newNameToUse));
+                        newNameToUse = trimmedName;
+                    }
+
+                    wchar_t transformedName[MAX_PATH] = { 0 };
+                    if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
+                    {
+                        winrt::check_hresult(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags));
+                        newNameToUse = transformedName;
+                    }
+
+                    // No change from originalName so set newName to
+                    // null so we clear it from our UI as well.
+                    if (lstrcmp(originalName, newNameToUse) == 0)
+                    {
+                        newNameToUse = nullptr;
+                    }
+
+                    wchar_t uniqueName[MAX_PATH] = { 0 };
+                    if (newNameToUse != nullptr && (flags & EnumerateItems))
+                    {
+                        unsigned long countUsed = 0;
+                        if (GetEnumeratedFileName(uniqueName, ARRAYSIZE(uniqueName), newNameToUse, nullptr, itemEnumIndex, &countUsed))
+                        {
+                            newNameToUse = uniqueName;
+                        }
+                        itemEnumIndex++;
+                    }
+
+                    winrt::check_hresult(spItem->PutNewName(newNameToUse));
+
+                    // Was there a change?
+                    if (lstrcmp(currentNewName, newNameToUse) != 0)
+                    {
+                        // Send the manager thread the item processed message
+                        PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
+                    }
+                    CoTaskMemFree(newName);
+                    CoTaskMemFree(currentNewName);
+                    CoTaskMemFree(originalName);
                 }
+                CoTaskMemFree(replaceTerm);
             }
 
             // Send the manager thread the completion message
             PostMessage(pwtd->hwndManager, SRM_REGEX_COMPLETE, GetCurrentThreadId(), 0);
 
             delete pwtd;
+            
         }
         CoUninitialize();
+    }
+    catch (...)
+    {
+        MessageBox(NULL, L"RegexWorkerThread failed to execute.\nPlease report the bug to https://aka.ms/powerToysReportBug", L"PowerRename Error", MB_OK);
     }
 
     return 0;

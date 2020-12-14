@@ -81,8 +81,8 @@ HRESULT CMockPowerRenameManagerEvents::s_CreateInstance(_In_ IPowerRenameManager
 {
     *ppsrui = nullptr;
     CMockPowerRenameManagerEvents* events = new CMockPowerRenameManagerEvents();
-    HRESULT hr = events != nullptr ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (events != nullptr)
     {
         hr = events->QueryInterface(IID_PPV_ARGS(ppsrui));
         events->Release();

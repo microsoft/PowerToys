@@ -5,7 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <boost/regex.hpp>
-
+#include <helpers.cpp>
 
 using namespace std;
 using std::regex_error;
@@ -76,8 +76,8 @@ IFACEMETHODIMP CPowerRenameRegEx::UnAdvise(_In_ DWORD cookie)
 IFACEMETHODIMP CPowerRenameRegEx::GetSearchTerm(_Outptr_ PWSTR* searchTerm)
 {
     *searchTerm = nullptr;
-    HRESULT hr = m_searchTerm ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (m_searchTerm)
     {
         CSRWSharedAutoLock lock(&m_lock);
         hr = SHStrDup(m_searchTerm, searchTerm);
@@ -88,8 +88,8 @@ IFACEMETHODIMP CPowerRenameRegEx::GetSearchTerm(_Outptr_ PWSTR* searchTerm)
 IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm)
 {
     bool changed = false;
-    HRESULT hr = searchTerm ? S_OK : E_INVALIDARG;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (searchTerm)
     {
         CSRWExclusiveAutoLock lock(&m_lock);
         if (m_searchTerm == nullptr || lstrcmp(searchTerm, m_searchTerm) != 0)
@@ -111,8 +111,8 @@ IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm)
 IFACEMETHODIMP CPowerRenameRegEx::GetReplaceTerm(_Outptr_ PWSTR* replaceTerm)
 {
     *replaceTerm = nullptr;
-    HRESULT hr = m_replaceTerm ? S_OK : E_FAIL;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (m_replaceTerm)
     {
         CSRWSharedAutoLock lock(&m_lock);
         hr = SHStrDup(m_replaceTerm, replaceTerm);
@@ -123,8 +123,8 @@ IFACEMETHODIMP CPowerRenameRegEx::GetReplaceTerm(_Outptr_ PWSTR* replaceTerm)
 IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm)
 {
     bool changed = false;
-    HRESULT hr = replaceTerm ? S_OK : E_INVALIDARG;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (replaceTerm)
     {
         CSRWExclusiveAutoLock lock(&m_lock);
         if (m_replaceTerm == nullptr || lstrcmp(replaceTerm, m_replaceTerm) != 0)
@@ -159,13 +159,45 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameRegEx::PutFileTime(_In_ SYSTEMTIME fileTime)
+{
+    union timeunion
+    {
+        FILETIME fileTime;
+        ULARGE_INTEGER ul;
+    };
+
+    timeunion ft1;
+    timeunion ft2;
+
+    SystemTimeToFileTime(&m_fileTime, &ft1.fileTime);
+    SystemTimeToFileTime(&fileTime, &ft2.fileTime);
+
+    if (ft2.ul.QuadPart != ft1.ul.QuadPart)
+    {
+        m_fileTime = fileTime;
+        m_useFileTime = true;
+        _OnFileTimeChanged();
+    }
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::ResetFileTime()
+{
+    SYSTEMTIME ZERO = { 0 };
+    m_fileTime = ZERO;
+    m_useFileTime = false;
+    _OnFileTimeChanged();
+    return S_OK;
+}
+
 HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx)
 {
     *renameRegEx = nullptr;
 
     CPowerRenameRegEx *newRenameRegEx = new CPowerRenameRegEx();
-    HRESULT hr = newRenameRegEx ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (newRenameRegEx)
     {
         hr = newRenameRegEx->QueryInterface(IID_PPV_ARGS(renameRegEx));
         newRenameRegEx->Release();
@@ -194,73 +226,90 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
     *result = nullptr;
 
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = (source && wcslen(source) > 0 && m_searchTerm && wcslen(m_searchTerm) > 0) ? S_OK : E_INVALIDARG;
-    if (SUCCEEDED(hr))
+    HRESULT hr = S_OK;
+    if (!(m_searchTerm && wcslen(m_searchTerm) > 0 && source && wcslen(source) > 0))
     {
-        wstring res = source;
-        try
+        return hr;
+    }
+    wstring res = source;
+    try
+    {
+        // TODO: creating the regex could be costly.  May want to cache this.
+        wchar_t newReplaceTerm[MAX_PATH] = { 0 };
+        bool fileTimeErrorOccurred = false;
+        if (m_useFileTime)
         {
-            // TODO: creating the regex could be costly.  May want to cache this.
-            std::wstring sourceToUse(source);
-            std::wstring searchTerm(m_searchTerm);
-            std::wstring replaceTerm(m_replaceTerm ? wstring(m_replaceTerm) : wstring(L""));
+            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, m_fileTime)))
+                fileTimeErrorOccurred = true;
+        }
 
-            replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$[0]"), L"$1$$$0");
-            replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$([1-9])"), L"$1$0$4");
+        std::wstring sourceToUse(source);
+        std::wstring searchTerm(m_searchTerm);
+        std::wstring replaceTerm(L"");
+        if (m_useFileTime && !fileTimeErrorOccurred)
+        {
+            replaceTerm = wstring(newReplaceTerm);
+        }
+        else if (m_replaceTerm)
+        {
+            replaceTerm = wstring(m_replaceTerm);
+        }
 
-            if (m_flags & UseRegularExpressions)
+        replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$[0]"), L"$1$$$0");
+        replaceTerm = regex_replace(replaceTerm, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$([1-9])"), L"$1$0$4");
+
+        if (m_flags & UseRegularExpressions)
+        {
+            if (_useBoostLib)
             {
-                if (_useBoostLib)
+                boost::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? boost::regex::icase | boost::regex::ECMAScript : boost::regex::ECMAScript);
+                if (m_flags & MatchAllOccurences)
                 {
-                    boost::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? boost::regex::icase | boost::regex::ECMAScript : boost::regex::ECMAScript);
-                    if (m_flags & MatchAllOccurences)
-                    {
-                        res = boost::regex_replace(wstring(source), pattern, replaceTerm);
-                    }
-                    else
-                    {
-                        res = boost::regex_replace(wstring(source), pattern, replaceTerm, boost::regex_constants::format_first_only);
-                    }
+                    res = boost::regex_replace(wstring(source), pattern, replaceTerm);
                 }
                 else
                 {
-                    std::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? regex_constants::icase | regex_constants::ECMAScript : regex_constants::ECMAScript);
-                    if (m_flags & MatchAllOccurences)
-                    {
-                        res = regex_replace(wstring(source), pattern, replaceTerm);
-                    }
-                    else
-                    {
-                        res = regex_replace(wstring(source), pattern, replaceTerm, regex_constants::format_first_only);
-                    }
+                    res = boost::regex_replace(wstring(source), pattern, replaceTerm, boost::regex_constants::format_first_only);
                 }
             }
             else
             {
-                // Simple search and replace
-                size_t pos = 0;
-                do
+                std::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? regex_constants::icase | regex_constants::ECMAScript : regex_constants::ECMAScript);
+                if (m_flags & MatchAllOccurences)
                 {
-                    pos = _Find(sourceToUse, searchTerm, (!(m_flags & CaseSensitive)), pos);
-                    if (pos != std::string::npos)
-                    {
-                        res = sourceToUse.replace(pos, searchTerm.length(), replaceTerm);
-                        pos += replaceTerm.length();
-                    }
-
-                    if (!(m_flags & MatchAllOccurences))
-                    {
-                        break;
-                    }
-                } while (pos != std::string::npos);
+                    res = regex_replace(wstring(source), pattern, replaceTerm);
+                }
+                else
+                {
+                    res = regex_replace(wstring(source), pattern, replaceTerm, regex_constants::format_first_only);
+                }
             }
-
-            hr = SHStrDup(res.c_str(), result);
         }
-        catch (regex_error e)
+        else
         {
-            hr = E_FAIL;
+            // Simple search and replace
+            size_t pos = 0;
+            do
+            {
+                pos = _Find(sourceToUse, searchTerm, (!(m_flags & CaseSensitive)), pos);
+                if (pos != std::string::npos)
+                {
+                    res = sourceToUse.replace(pos, searchTerm.length(), replaceTerm);
+                    pos += replaceTerm.length();
+                }
+
+                if (!(m_flags & MatchAllOccurences))
+                {
+                    break;
+                }
+            } while (pos != std::string::npos);
         }
+
+        hr = SHStrDup(res.c_str(), result);
+    }
+    catch (regex_error e)
+    {
+        hr = E_FAIL;
     }
     return hr;
 }
@@ -313,6 +362,19 @@ void CPowerRenameRegEx::_OnFlagsChanged()
         if (it.pEvents)
         {
             it.pEvents->OnFlagsChanged(m_flags);
+        }
+    }
+}
+
+void CPowerRenameRegEx::_OnFileTimeChanged()
+{
+    CSRWSharedAutoLock lock(&m_lockEvents);
+
+    for (auto it : m_renameRegExEvents)
+    {
+        if (it.pEvents)
+        {
+            it.pEvents->OnFileTimeChanged(m_fileTime);
         }
     }
 }
