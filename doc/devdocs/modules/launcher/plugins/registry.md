@@ -1,11 +1,12 @@
 # Registry Plugin
 
-The registry plugin allow the users to search into the Windows registry.
+The registry plugin allows users to search the Windows registry.
 
 ## Special functions (differ from the regular functions)
 
 * Support full base keys and short base keys (e.g. `HKLM` for `HKEY_LOCALE_MACHINE`).
 * Show count of sub-keys and count of values in the second result line.
+* Search for value names and values inside a registry key (syntax: `[RegistryKey]\\[ValueName]` and `[RegistryKey]\\[Value]`)
 
 ## The Windows Registry
 
@@ -13,7 +14,7 @@ The registry contains all settings for the Windows operating system and many set
 
 *Note: Linux and macOS program ports typical store the settings in it's own configuration files and not in the Windows registry.*
 
-For more information about the Windows registry, see [the official documentation about it](https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry).
+For more information about the Windows registry, see [the official documentation](https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry).
 
 For advanced information about the Windows registry, see [Windows registry information for advanced users](https://docs.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users).
 
