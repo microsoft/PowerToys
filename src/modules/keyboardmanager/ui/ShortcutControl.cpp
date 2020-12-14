@@ -3,9 +3,9 @@
 #include "KeyDropDownControl.h"
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "keyboardmanager/common/Helpers.h"
-#include "common/common.h"
+#include <common/common.h>
 #include "keyboardmanager/dll/Generated Files/resource.h"
-#include <common\shared_constants.h>
+#include <common/shared_constants.h>
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 //Both static members are initialized to null
