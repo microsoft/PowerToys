@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 #pragma warning(push)
-#pragma warning(disable: 4067)
+#pragma warning(disable : 4067)
 #include <Sddl.h>
 #pragma warning(pop)
 
@@ -13,15 +13,15 @@
 template<typename T>
 struct typed_storage
 {
-  std::unique_ptr<char[]> _buffer;
-  inline explicit typed_storage(const DWORD size) :
-    _buffer{std::make_unique<char[]>(size)}
-  {
-  }
-  inline operator T * ()
-  {
-    return reinterpret_cast<T *>(_buffer.get());
-  }
+    std::unique_ptr<char[]> _buffer;
+    inline explicit typed_storage(const DWORD size) :
+        _buffer{ std::make_unique<char[]>(size) }
+    {
+    }
+    inline operator T*()
+    {
+        return reinterpret_cast<T*>(_buffer.get());
+    }
 };
 
 bool initializeCOMSecurity(const wchar_t* securityDescriptor)
