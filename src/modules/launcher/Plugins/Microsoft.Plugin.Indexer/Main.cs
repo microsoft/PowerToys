@@ -101,7 +101,7 @@ namespace Microsoft.Plugin.Indexer
 
                         // This uses the Microsoft.Search.Interop assembly
                         var searchManager = new CSearchManager();
-                        var searchResultsList = _api.Search(searchQuery, searchManager, isFullQuery, maxCount: _settings.MaxSearchCount).ToList();
+                        var searchResultsList = _api.Search(searchQuery, searchManager, maxCount: _settings.MaxSearchCount).ToList();
 
                         // If the delayed execution query is not required (since the SQL query is fast) return empty results
                         if (searchResultsList.Count == 0 && isFullQuery)
@@ -179,7 +179,8 @@ namespace Microsoft.Plugin.Indexer
         // This function uses the Windows indexer and returns the list of results obtained. This version is required to implement the interface
         public List<Result> Query(Query query)
         {
-            return Query(query, false);
+            // All plugins have to implement IPlugin interface. We return empty collection as we do not want any computation with constant search plugins.
+            return new List<Result>();
         }
 
         public void Init(PluginInitContext context)
