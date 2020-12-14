@@ -148,8 +148,27 @@ void zipFolder(filesystem::path folderPath, filesystem::path zipPath)
     CloseZip(hz);
 }
 
-int main()
+void wmain(int argc, wchar_t* argv[], wchar_t*)
 {
+    // Get path to save zip
+    wstring saveZipPath;
+    if (argc > 1)
+    {
+        saveZipPath = argv[1];
+    }
+    else
+    {
+        wchar_t buffer[MAX_PATH];
+        if (SHGetSpecialFolderPath(HWND_DESKTOP, buffer, CSIDL_DESKTOP, FALSE))
+        {
+            saveZipPath = buffer;
+        }
+        else
+        {
+            printf("Can not retrieve a desktop path. Error code: %d", GetLastError());
+        }
+    }
+
     auto powerToys = get_root_save_folder_location();
     
     // Copy to a temp folder
@@ -163,7 +182,7 @@ int main()
     hideUserPrivateInfo(tmpDir);
 
     // Zip folder
-    auto zipPath = path::path(L"C:\\JaneaSystems\\1\\");
+    auto zipPath = path::path(saveZipPath);
     zipPath = zipPath.append("PowerToys.zip");
     zipFolder(tmpDir, zipPath);
 }
