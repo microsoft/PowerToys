@@ -15,9 +15,9 @@ namespace Microsoft.Plugin.Registry.Helper
     internal static class QueryHelper
     {
         /// <summary>
-        /// The character to distinguish if the search query contain multiple parts
+        /// The character to distinguish if the search query contain multiple parts (typically "\\")
         /// </summary>
-        private const string _querySplitCharacter = "\\ ";
+        private const string _querySplitCharacter = "\\\\";
 
         /// <summary>
         /// A list that contain short names of all registry base keys
