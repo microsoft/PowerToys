@@ -6,7 +6,7 @@
     <ProjectGuid>{17DA04DF-E393-4397-9CF0-84DABE11032E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>updating</RootNamespace>
-    <ProjectName>Updating</ProjectName>
+    <ProjectName>ApplicationUpdate</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\..\deps\expected.props" />

@@ -290,9 +290,9 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">
+    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj">
       <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
-      <Name>Telemetry</Name>
+      <Name>ManagedTelemetry</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj">
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>

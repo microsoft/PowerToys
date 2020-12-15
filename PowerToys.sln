@@ -113,7 +113,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "action_runner", "src\action
 		{17DA04DF-E393-4397-9CF0-84DABE11032E} = {17DA04DF-E393-4397-9CF0-84DABE11032E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Updating", "src\common\updating\updating.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ApplicationUpdate", "src\common\updating\updating.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "keyboardmanager", "keyboardmanager", "{38BDB927-829B-4C65-9CD9-93FB05D66D65}"
 EndProject
@@ -201,7 +201,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerLauncher.Telemetry", "src\modules\launcher\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj", "{08C8C05F-0362-41BC-818C-724572DF8B06}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telemetry", "src\common\ManagedTelemetry\Telemetry\Telemetry.csproj", "{5D00D290-4016-4CFE-9E41-1E7C724509BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedTelemetry", "src\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj", "{5D00D290-4016-4CFE-9E41-1E7C724509BA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerTest", "src\modules\keyboardmanager\test\KeyboardManagerTest.vcxproj", "{62173D9A-6724-4C00-A1C8-FB646480A9EC}"
 EndProject
@@ -285,6 +285,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "old-settings-ui", "src\settings\old-settings-ui.vcxproj", "{07C389E3-6BC8-41CF-923E-307B1265FA2D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{8F62026A-294B-41C6-8839-87463613F216}"
+	ProjectSection(SolutionItems) = preProject
+		src\common\Telemetry\ProjectTelemetry.h = src\common\Telemetry\ProjectTelemetry.h
+		src\common\Telemetry\TelemetryBase.cs = src\common\Telemetry\TelemetryBase.cs
+		src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -682,6 +689,7 @@ Global
 		{CABA8DFB-823B-4BF2-93AC-3F31984150D9} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{B39DC643-4663-475E-B329-03F0C9918D48} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{8F62026A-294B-41C6-8839-87463613F216} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

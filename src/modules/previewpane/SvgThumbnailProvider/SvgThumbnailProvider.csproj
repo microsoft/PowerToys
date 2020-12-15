@@ -52,7 +52,7 @@
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
   </ItemGroup>
   <ItemGroup>

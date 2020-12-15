@@ -79,7 +79,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\common\interop\PowerToysInterop.vcxproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj" />
+    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj" />
   </ItemGroup>
