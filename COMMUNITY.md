@@ -6,9 +6,12 @@ Names are in alphabetical order based on first name.
 
 ## High impact community members
 
+### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
+Davide has helped fix multiple bugs, added new features, as well as help us with the ARM64 effort by porting applications to .NET Core.
+
 ### [@Niels9001](https://github.com/niels9001/) - [Niels Laute](https://nielslaute.com/)
 
-Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44) and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
+Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44), color picker UX update and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
 
 ### [@riverar](https://github.com/riverar) - [Rafael Rivera](https://withinrafael.com/)
 
@@ -53,13 +56,6 @@ PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Expl
 
 Color Picker is from Martin.
 
-<!--
-@alekhyareddy28 
-@jyuwono 
-@laviusmotileng-ms 
-@ryanbodrug-microsoft 
-@saahmedm
-@somil55
-@traies 
-@udit3333
--->
+### Microsoft InVEST team
+
+This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2.  @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
