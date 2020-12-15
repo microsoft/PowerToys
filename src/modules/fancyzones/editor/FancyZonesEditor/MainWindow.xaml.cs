@@ -196,7 +196,7 @@ namespace FancyZonesEditor
 
         private void OnClosing(object sender, EventArgs e)
         {
-            LayoutModel.SerializeDeletedCustomZoneSets();
+            App.FancyZonesEditorIO.SerializeZoneSettings();
             App.Overlay.CloseLayoutWindow();
             App.Current.Shutdown();
         }
@@ -250,7 +250,6 @@ namespace FancyZonesEditor
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
             var overlay = App.Overlay;
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
 
             if (overlay.CurrentDataContext is LayoutModel model)
             {
@@ -258,11 +257,11 @@ namespace FancyZonesEditor
                 model.IsApplied = false;
             }
 
-            overlay.CurrentLayoutSettings.ZonesetUuid = settings.BlankModel.Uuid;
+            overlay.CurrentLayoutSettings.ZonesetUuid = MainWindowSettingsModel.BlankModel.Uuid;
             overlay.CurrentLayoutSettings.Type = LayoutType.Blank;
-            overlay.CurrentDataContext = settings.BlankModel;
+            overlay.CurrentDataContext = MainWindowSettingsModel.BlankModel;
 
-            App.FancyZonesEditorIO.SerializeAppliedLayouts();
+            App.FancyZonesEditorIO.SerializeZoneSettings();
 
             if (!overlay.MultiMonitorMode)
             {

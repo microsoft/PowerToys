@@ -4,10 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
@@ -18,17 +16,6 @@ namespace FancyZonesEditor.Utils
     public class FancyZonesEditorIO
     {
         // Non-localizable strings: JSON tags
-        private const string AppliedZonesetsJsonTag = "applied-zonesets";
-        private const string DevicesJsonTag = "devices";
-        private const string DeviceIdJsonTag = "device-id";
-        private const string ActiveZoneSetJsonTag = "active-zoneset";
-        private const string UuidJsonTag = "uuid";
-        private const string TypeJsonTag = "type";
-        private const string EditorShowSpacingJsonTag = "editor-show-spacing";
-        private const string EditorSpacingJsonTag = "editor-spacing";
-        private const string EditorZoneCountJsonTag = "editor-zone-count";
-        private const string EditorSensitivityRadiusJsonTag = "editor-sensitivity-radius";
-
         private const string BlankJsonTag = "blank";
         private const string FocusJsonTag = "focus";
         private const string ColumnsJsonTag = "columns";
@@ -37,42 +24,18 @@ namespace FancyZonesEditor.Utils
         private const string PriorityGridJsonTag = "priority-grid";
         private const string CustomJsonTag = "custom";
 
-        private const string NameJsonTag = "name";
-        private const string CustomZoneSetsJsonTag = "custom-zone-sets";
-        private const string InfoJsonTag = "info";
-        private const string RowsPercentageJsonTag = "rows-percentage";
-        private const string ColumnsPercentageJsonTag = "columns-percentage";
-        private const string CellChildMapJsonTag = "cell-child-map";
-        private const string ZonesJsonTag = "zones";
-        private const string CanvasJsonTag = "canvas";
-        private const string RefWidthJsonTag = "ref-width";
-        private const string RefHeightJsonTag = "ref-height";
-        private const string XJsonTag = "X";
-        private const string YJsonTag = "Y";
-        private const string WidthJsonTag = "width";
-        private const string HeightJsonTag = "height";
-
         // Non-localizable strings: Files
         private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
-        private const string ActiveZoneSetsTmpFileName = "FancyZonesActiveZoneSets.json";
-        private const string AppliedZoneSetsTmpFileName = "FancyZonesAppliedZoneSets.json";
-        private const string DeletedCustomZoneSetsTmpFileName = "FancyZonesDeletedCustomZoneSets.json";
 
         // Non-localizable string: Multi-monitor id
         private const string MultiMonitorId = "FancyZones#MultiMonitorDevice";
 
         private readonly IFileSystem _fileSystem = new FileSystem();
 
-        private JsonSerializerOptions _options = new JsonSerializerOptions
+        private readonly JsonSerializerOptions _options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = new DashCaseNamingPolicy(),
         };
-
-        public string ActiveZoneSetTmpFile { get; private set; }
-
-        public string AppliedZoneSetTmpFile { get; private set; }
-
-        public string DeletedCustomZoneSetsTmpFile { get; private set; }
 
         public string FancyZonesSettingsFile { get; private set; }
 
@@ -123,7 +86,7 @@ namespace FancyZonesEditor.Utils
             public string Type { get; set; }
         }
 
-        private struct AppliedZoneSet
+        private struct DeviceWrapper
         {
             public string DeviceId { get; set; }
 
@@ -138,29 +101,81 @@ namespace FancyZonesEditor.Utils
             public int EditorSensitivityRadius { get; set; }
         }
 
-        private struct AppliedZonesetsToDesktops
+        private struct CanvasZoneWrapper
         {
-            public List<AppliedZoneSet> AppliedZonesets { get; set; }
+            public int X { get; set; }
+
+            public int Y { get; set; }
+
+            public int Width { get; set; }
+
+            public int Height { get; set; }
         }
 
-        private struct DeletedCustomZoneSetsWrapper
+        private struct CanvasInfoWrapper
         {
-            public List<string> DeletedCustomZoneSets { get; set; }
+            public int RefWidth { get; set; }
+
+            public int RefHeight { get; set; }
+
+            public List<CanvasZoneWrapper> Zones { get; set; }
         }
 
-        private struct CreatedCustomZoneSetsWrapper
+        private struct GridInfoWrapper
         {
-            public List<JsonElement> CreatedCustomZoneSets { get; set; }
+            public int Rows { get; set; }
+
+            public int Columns { get; set; }
+
+            public List<int> RowsPercentage { get; set; }
+
+            public List<int> ColumnsPercentage { get; set; }
+
+            public int[][] CellChildMap { get; set; }
+        }
+
+        private struct CustomLayoutWrapper
+        {
+            public string Uuid { get; set; }
+
+            public string Name { get; set; }
+
+            public string Type { get; set; }
+
+            public JsonElement Info { get; set; }
+        }
+
+        private struct CustomCanvasLayoutWrapper
+        {
+            public string Uuid { get; set; }
+
+            public string Name { get; set; }
+
+            public string Type { get; set; }
+
+            public CanvasInfoWrapper Info { get; set; }
+        }
+
+        private struct CustomGridLayoutWrapper
+        {
+            public string Uuid { get; set; }
+
+            public string Name { get; set; }
+
+            public string Type { get; set; }
+
+            public GridInfoWrapper Info { get; set; }
+        }
+
+        private struct ZoneSettingsWrapper
+        {
+            public List<DeviceWrapper> Devices { get; set; }
+
+            public List<CustomLayoutWrapper> CustomZoneSets { get; set; }
         }
 
         public FancyZonesEditorIO()
         {
-            string tmpDirPath = _fileSystem.Path.GetTempPath();
-
-            ActiveZoneSetTmpFile = tmpDirPath + ActiveZoneSetsTmpFileName;
-            AppliedZoneSetTmpFile = tmpDirPath + AppliedZoneSetsTmpFileName;
-            DeletedCustomZoneSetsTmpFile = tmpDirPath + DeletedCustomZoneSetsTmpFileName;
-
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             FancyZonesSettingsFile = localAppDataDir + ZonesSettingsFile;
         }
@@ -320,70 +335,97 @@ namespace FancyZonesEditor.Utils
             }
         }
 
-        public void ParseDeviceInfoData()
+        public void ParseZoneSettings()
         {
             try
             {
-                JsonElement jsonObject = default(JsonElement);
-
                 if (_fileSystem.File.Exists(FancyZonesSettingsFile))
                 {
                     Stream inputStream = _fileSystem.File.Open(FancyZonesSettingsFile, FileMode.Open);
-                    jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
+                    StreamReader reader = new StreamReader(inputStream);
+                    string data = reader.ReadToEnd();
                     inputStream.Close();
 
-                    JsonElement json = jsonObject.GetProperty(DevicesJsonTag);
+                    var zoneSettings = JsonSerializer.Deserialize<ZoneSettingsWrapper>(data, _options);
+
+                    // Set devices
                     var monitors = App.Overlay.Monitors;
-
-                    for (int i = 0; i < json.GetArrayLength(); i++)
+                    foreach (var device in zoneSettings.Devices)
                     {
-                        var zonesetData = json[i];
-
-                        string deviceId = zonesetData.GetProperty(DeviceIdJsonTag).GetString();
-                        string currentLayoutType = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(TypeJsonTag).GetString();
-                        LayoutType type = JsonTagToLayoutType(currentLayoutType);
+                        var settings = new LayoutSettings
+                        {
+                            ZonesetUuid = device.ActiveZoneset.Uuid,
+                            ShowSpacing = device.EditorShowSpacing,
+                            Spacing = device.EditorSpacing,
+                            Type = JsonTagToLayoutType(device.ActiveZoneset.Type),
+                            ZoneCount = device.EditorZoneCount,
+                            SensitivityRadius = device.EditorSensitivityRadius,
+                        };
 
                         if (!App.Overlay.SpanZonesAcrossMonitors)
                         {
                             foreach (Monitor monitor in monitors)
                             {
-                                if (monitor.Device.Id == deviceId)
+                                if (monitor.Device.Id == device.DeviceId)
                                 {
-                                    monitor.Settings = new LayoutSettings
-                                    {
-                                        ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
-                                        ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
-                                        Spacing = zonesetData.GetProperty(EditorSpacingJsonTag).GetInt32(),
-                                        Type = type,
-                                        ZoneCount = zonesetData.GetProperty(EditorZoneCountJsonTag).GetInt32(),
-                                        SensitivityRadius = zonesetData.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32(),
-                                    };
-
+                                    monitor.Settings = settings;
                                     break;
                                 }
                             }
                         }
                         else
                         {
-                            bool isLayoutMultiMonitor = deviceId.StartsWith(MultiMonitorId);
+                            bool isLayoutMultiMonitor = device.DeviceId.StartsWith(MultiMonitorId);
                             if (isLayoutMultiMonitor)
                             {
                                 // one zoneset for all desktops
-                                App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings = new LayoutSettings
-                                {
-                                    ZonesetUuid = zonesetData.GetProperty(ActiveZoneSetJsonTag).GetProperty(UuidJsonTag).GetString(),
-                                    ShowSpacing = zonesetData.GetProperty(EditorShowSpacingJsonTag).GetBoolean(),
-                                    Spacing = zonesetData.GetProperty(EditorSpacingJsonTag).GetInt32(),
-                                    Type = type,
-                                    ZoneCount = zonesetData.GetProperty(EditorZoneCountJsonTag).GetInt32(),
-                                    SensitivityRadius = zonesetData.GetProperty(EditorSensitivityRadiusJsonTag).GetInt32(),
-                                };
-
-                                App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = deviceId;
-
+                                App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings = settings;
+                                App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = device.DeviceId;
                                 break;
                             }
                         }
+                    }
+
+                    // Set layouts
+                    MainWindowSettingsModel.CustomModels.Clear();
+                    MainWindowSettingsModel.CustomModels.Add(MainWindowSettingsModel.BlankModel);
+                    foreach (var zoneSet in zoneSettings.CustomZoneSets)
+                    {
+                        LayoutModel layout;
+                        if (zoneSet.Type == CanvasLayoutModel.ModelTypeID)
+                        {
+                            var info = JsonSerializer.Deserialize<CanvasInfoWrapper>(zoneSet.Info.GetRawText(), _options);
+
+                            var zones = new List<Int32Rect>();
+                            foreach (var zone in info.Zones)
+                            {
+                                zones.Add(new Int32Rect { X = (int)zone.X, Y = (int)zone.Y, Width = (int)zone.Width, Height = (int)zone.Height });
+                            }
+
+                            layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, info.RefWidth, info.RefHeight);
+                        }
+                        else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
+                        {
+                            var info = JsonSerializer.Deserialize<GridInfoWrapper>(zoneSet.Info.GetRawText(), _options);
+
+                            var cells = new int[info.Rows, info.Columns];
+                            for (int row = 0; row < info.Rows; row++)
+                            {
+                                for (int column = 0; column < info.Columns; column++)
+                                {
+                                    cells[row, column] = info.CellChildMap[row][column];
+                                }
+                            }
+
+                            layout = new GridLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
+                        }
+                        else
+                        {
+                            // Error
+                            continue;
+                        }
+
+                        MainWindowSettingsModel.CustomModels.Add(layout);
                     }
                 }
             }
@@ -393,155 +435,13 @@ namespace FancyZonesEditor.Utils
             }
         }
 
-        public void ParseLayouts(ref ObservableCollection<LayoutModel> custom, ref List<string> deleted)
+        public void SerializeZoneSettings()
         {
-            try
-            {
-                Stream inputStream = _fileSystem.File.Open(FancyZonesSettingsFile, FileMode.Open);
-                JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
-                JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty(CustomZoneSetsJsonTag).EnumerateArray();
+            ZoneSettingsWrapper zoneSettings = new ZoneSettingsWrapper { };
+            zoneSettings.Devices = new List<DeviceWrapper>();
+            zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
 
-                while (customZoneSetsEnumerator.MoveNext())
-                {
-                    var current = customZoneSetsEnumerator.Current;
-                    string name = current.GetProperty(NameJsonTag).GetString();
-                    string type = current.GetProperty(TypeJsonTag).GetString();
-                    string uuid = current.GetProperty(UuidJsonTag).GetString();
-                    var info = current.GetProperty(InfoJsonTag);
-
-                    if (type.Equals(GridJsonTag, StringComparison.OrdinalIgnoreCase))
-                    {
-                        bool error = false;
-
-                        int rows = info.GetProperty(RowsJsonTag).GetInt32();
-                        int columns = info.GetProperty(ColumnsJsonTag).GetInt32();
-
-                        List<int> rowsPercentage = new List<int>(rows);
-                        JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty(RowsPercentageJsonTag).EnumerateArray();
-
-                        List<int> columnsPercentage = new List<int>(columns);
-                        JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty(ColumnsPercentageJsonTag).EnumerateArray();
-
-                        if (rows <= 0 || columns <= 0 || rowsPercentageEnumerator.Count() != rows || columnsPercentageEnumerator.Count() != columns)
-                        {
-                            error = true;
-                        }
-
-                        while (!error && rowsPercentageEnumerator.MoveNext())
-                        {
-                            int percentage = rowsPercentageEnumerator.Current.GetInt32();
-                            if (percentage <= 0)
-                            {
-                                error = true;
-                                break;
-                            }
-
-                            rowsPercentage.Add(percentage);
-                        }
-
-                        while (!error && columnsPercentageEnumerator.MoveNext())
-                        {
-                            int percentage = columnsPercentageEnumerator.Current.GetInt32();
-                            if (percentage <= 0)
-                            {
-                                error = true;
-                                break;
-                            }
-
-                            columnsPercentage.Add(percentage);
-                        }
-
-                        int i = 0;
-                        JsonElement.ArrayEnumerator cellChildMapRows = info.GetProperty(CellChildMapJsonTag).EnumerateArray();
-                        int[,] cellChildMap = new int[rows, columns];
-
-                        if (cellChildMapRows.Count() != rows)
-                        {
-                            error = true;
-                        }
-
-                        while (!error && cellChildMapRows.MoveNext())
-                        {
-                            int j = 0;
-                            JsonElement.ArrayEnumerator cellChildMapRowElems = cellChildMapRows.Current.EnumerateArray();
-                            if (cellChildMapRowElems.Count() != columns)
-                            {
-                                error = true;
-                                break;
-                            }
-
-                            while (cellChildMapRowElems.MoveNext())
-                            {
-                                cellChildMap[i, j++] = cellChildMapRowElems.Current.GetInt32();
-                            }
-
-                            i++;
-                        }
-
-                        if (error)
-                        {
-                            App.ShowExceptionMessageBox(string.Format(Properties.Resources.Error_Layout_Malformed_Data, name));
-                            deleted.Add(Guid.Parse(uuid).ToString().ToUpperInvariant());
-                            continue;
-                        }
-
-                        custom.Add(new GridLayoutModel(uuid, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
-                    }
-                    else if (type.Equals(CanvasJsonTag, StringComparison.OrdinalIgnoreCase))
-                    {
-                        int workAreaWidth = info.GetProperty(RefWidthJsonTag).GetInt32();
-                        int workAreaHeight = info.GetProperty(RefHeightJsonTag).GetInt32();
-
-                        JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty(ZonesJsonTag).EnumerateArray();
-                        IList<Int32Rect> zones = new List<Int32Rect>();
-
-                        bool error = false;
-
-                        if (workAreaWidth <= 0 || workAreaHeight <= 0)
-                        {
-                            error = true;
-                        }
-
-                        while (!error && zonesEnumerator.MoveNext())
-                        {
-                            int x = zonesEnumerator.Current.GetProperty(XJsonTag).GetInt32();
-                            int y = zonesEnumerator.Current.GetProperty(YJsonTag).GetInt32();
-                            int width = zonesEnumerator.Current.GetProperty(WidthJsonTag).GetInt32();
-                            int height = zonesEnumerator.Current.GetProperty(HeightJsonTag).GetInt32();
-
-                            if (width <= 0 || height <= 0)
-                            {
-                                error = true;
-                                break;
-                            }
-
-                            zones.Add(new Int32Rect(x, y, width, height));
-                        }
-
-                        if (error)
-                        {
-                            App.ShowExceptionMessageBox(string.Format(Properties.Resources.Error_Layout_Malformed_Data, name));
-                            deleted.Add(Guid.Parse(uuid).ToString().ToUpperInvariant());
-                            continue;
-                        }
-
-                        custom.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, zones, workAreaWidth, workAreaHeight));
-                    }
-                }
-
-                inputStream.Close();
-            }
-            catch (Exception ex)
-            {
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Loading_Custom_Layouts, ex);
-            }
-        }
-
-        public void SerializeAppliedLayouts()
-        {
-            AppliedZonesetsToDesktops applied = new AppliedZonesetsToDesktops { };
-            applied.AppliedZonesets = new List<AppliedZoneSet>();
-
+            // Serialize devices
             foreach (var monitor in App.Overlay.Monitors)
             {
                 LayoutSettings zoneset = monitor.Settings;
@@ -550,17 +450,14 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
-                ActiveZoneSetWrapper activeZoneSet = new ActiveZoneSetWrapper
-                {
-                    Uuid = zoneset.ZonesetUuid,
-                };
-
-                activeZoneSet.Type = LayoutTypeToJsonTag(zoneset.Type);
-
-                applied.AppliedZonesets.Add(new AppliedZoneSet
+                zoneSettings.Devices.Add(new DeviceWrapper
                 {
                     DeviceId = monitor.Device.Id,
-                    ActiveZoneset = activeZoneSet,
+                    ActiveZoneset = new ActiveZoneSetWrapper
+                    {
+                        Uuid = zoneset.ZonesetUuid,
+                        Type = LayoutTypeToJsonTag(zoneset.Type),
+                    },
                     EditorShowSpacing = zoneset.ShowSpacing,
                     EditorSpacing = zoneset.Spacing,
                     EditorZoneCount = zoneset.ZoneCount,
@@ -568,50 +465,101 @@ namespace FancyZonesEditor.Utils
                 });
             }
 
+            // Serialize custom zonesets
+            foreach (LayoutModel layout in MainWindowSettingsModel.CustomModels)
+            {
+                if (layout.Type == LayoutType.Blank)
+                {
+                    continue;
+                }
+
+                JsonElement info;
+                string type;
+
+                if (layout is CanvasLayoutModel)
+                {
+                    type = CanvasLayoutModel.ModelTypeID;
+                    var canvasLayout = layout as CanvasLayoutModel;
+
+                    var canvasRect = canvasLayout.CanvasRect;
+                    if (canvasRect.Width == 0 || canvasRect.Height == 0)
+                    {
+                        canvasRect = App.Overlay.WorkArea;
+                    }
+
+                    var wrapper = new CanvasInfoWrapper
+                    {
+                        RefWidth = (int)canvasRect.Width,
+                        RefHeight = (int)canvasRect.Height,
+                        Zones = new List<CanvasZoneWrapper>(),
+                    };
+
+                    foreach (var zone in canvasLayout.Zones)
+                    {
+                        wrapper.Zones.Add(new CanvasZoneWrapper
+                        {
+                            X = zone.X,
+                            Y = zone.Y,
+                            Width = zone.Width,
+                            Height = zone.Height,
+                        });
+                    }
+
+                    string json = JsonSerializer.Serialize(wrapper, _options);
+                    info = JsonSerializer.Deserialize<JsonElement>(json);
+                }
+                else if (layout is GridLayoutModel)
+                {
+                    type = GridLayoutModel.ModelTypeID;
+                    var gridLayout = layout as GridLayoutModel;
+
+                    var cells = new int[gridLayout.Rows][];
+                    for (int row = 0; row < gridLayout.Rows; row++)
+                    {
+                        cells[row] = new int[gridLayout.Columns];
+                        for (int column = 0; column < gridLayout.Columns; column++)
+                        {
+                            cells[row][column] = gridLayout.CellChildMap[row, column];
+                        }
+                    }
+
+                    var wrapper = new GridInfoWrapper
+                    {
+                        Rows = gridLayout.Rows,
+                        Columns = gridLayout.Columns,
+                        RowsPercentage = gridLayout.RowPercents,
+                        ColumnsPercentage = gridLayout.ColumnPercents,
+                        CellChildMap = cells,
+                    };
+
+                    string json = JsonSerializer.Serialize(wrapper, _options);
+                    info = JsonSerializer.Deserialize<JsonElement>(json);
+                }
+                else
+                {
+                    // Error
+                    continue;
+                }
+
+                CustomLayoutWrapper customLayout = new CustomLayoutWrapper
+                {
+                    Uuid = layout.Uuid,
+                    Name = layout.Name,
+                    Type = type,
+                    Info = info,
+                };
+
+                zoneSettings.CustomZoneSets.Add(customLayout);
+            }
+
             try
             {
-                string jsonString = JsonSerializer.Serialize(applied, _options);
-                _fileSystem.File.WriteAllText(ActiveZoneSetTmpFile, jsonString);
+                string jsonString = JsonSerializer.Serialize(zoneSettings, _options);
+                _fileSystem.File.WriteAllText(FancyZonesSettingsFile, jsonString);
             }
             catch (Exception ex)
             {
                 App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
-            }
-        }
-
-        public void SerializeDeletedCustomZoneSets(List<string> models)
-        {
-            DeletedCustomZoneSetsWrapper deletedLayouts = new DeletedCustomZoneSetsWrapper
-            {
-                DeletedCustomZoneSets = models,
-            };
-
-            try
-            {
-                string jsonString = JsonSerializer.Serialize(deletedLayouts, _options);
-                _fileSystem.File.WriteAllText(DeletedCustomZoneSetsTmpFile, jsonString);
-            }
-            catch (Exception ex)
-            {
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Serializing_Deleted_Layouts, ex);
-            }
-        }
-
-        public void SerializeCreatedCustomZonesets(List<JsonElement> models)
-        {
-            CreatedCustomZoneSetsWrapper layouts = new CreatedCustomZoneSetsWrapper
-            {
-                CreatedCustomZoneSets = models,
-            };
-
-            try
-            {
-                string jsonString = JsonSerializer.Serialize(layouts, _options);
-                _fileSystem.File.WriteAllText(AppliedZoneSetTmpFile, jsonString);
-            }
-            catch (Exception ex)
-            {
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Persisting_Custom_Layout, ex);
             }
         }
 

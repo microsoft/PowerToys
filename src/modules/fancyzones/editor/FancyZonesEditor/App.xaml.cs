@@ -87,7 +87,7 @@ namespace FancyZonesEditor
             _themeManager = new ThemeManager(this);
 
             FancyZonesEditorIO.ParseCommandLineArguments();
-            FancyZonesEditorIO.ParseDeviceInfoData();
+            FancyZonesEditorIO.ParseZoneSettings();
 
             MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;
             settings.UpdateSelectedLayoutModel();

@@ -25,7 +25,7 @@ namespace FancyZonesEditor
                 model.Persist();
             }
 
-            LayoutModel.SerializeDeletedCustomZoneSets();
+            App.FancyZonesEditorIO.SerializeZoneSettings();
 
             _backToLayoutPicker = false;
             Close();

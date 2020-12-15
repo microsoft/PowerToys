@@ -344,26 +344,19 @@ namespace FancyZonesEditor
         {
             get
             {
-                if (_customModels == null)
-                {
-                    _customModels = LayoutModel.LoadCustomModels();
-                }
-
                 return _customModels;
             }
         }
 
-        private static ObservableCollection<LayoutModel> _customModels;
+        private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
 
-        public CanvasLayoutModel BlankModel
+        public static CanvasLayoutModel BlankModel
         {
             get
             {
-                return _blankModel;
+                return _blankCustomModel;
             }
         }
-
-        private CanvasLayoutModel _blankModel = new CanvasLayoutModel(string.Empty, LayoutType.Blank);
 
         public static bool IsPredefinedLayout(LayoutModel model)
         {
