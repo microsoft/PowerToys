@@ -282,9 +282,16 @@ void notifications::show_toast_with_activations(std::wstring message,
     std::wstring toast_xml;
     toast_xml.reserve(2048);
 
+    // We must set toast's title and contents immediately, because some of the toasts we send could be snoozed.
+    // Windows instantiates the snoozed toast from scratch before showing it again, so all bindings that were set
+    // using NotificationData would be empty.
     toast_xml += LR"(<?xml version="1.0"?><toast><visual><binding template="ToastGeneric">)";
-    toast_xml += LR"(<text id="1">{title}</text>)";
-    toast_xml += LR"(<text id="2">{message}</text>)";
+    toast_xml += LR"(<text id="1">)";
+    toast_xml += std::move(title);
+    toast_xml += LR"(</text>)";
+    toast_xml += LR"(<text id="2">)";
+    toast_xml += std::move(message);
+    toast_xml += LR"(</text>)";
 
     if (params.progress_bar.has_value())
     {
@@ -382,8 +389,6 @@ void notifications::show_toast_with_activations(std::wstring message,
     notification.Group(DEFAULT_TOAST_GROUP);
 
     winrt::Windows::Foundation::Collections::StringMap map;
-    map.Insert(L"message", std::move(message));
-    map.Insert(L"title", std::move(title));
     if (params.progress_bar.has_value())
     {
         float progress = std::clamp(params.progress_bar->progress, 0.0f, 1.0f);
@@ -432,21 +437,6 @@ void notifications::update_toast_progress_bar(std::wstring_view tag, progress_ba
     map.Insert(L"progressValue", std::to_wstring(progress));
     map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
     map.Insert(L"progressTitle", params.progress_title);
-
-    winrt::Windows::UI::Notifications::NotificationData data(map);
-    winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
-}
-
-void notifications::update_toast_contents(std::wstring_view tag, std::wstring plaintext_message, std::wstring title)
-{
-    const auto notifier = winstore::running_as_packaged() ?
-                              ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
-                              ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
-
-    winrt::Windows::Foundation::Collections::StringMap map;
-
-    map.Insert(L"title", std::move(title));
-    map.Insert(L"message", std::move(plaintext_message));
 
     winrt::Windows::UI::Notifications::NotificationData data(map);
     winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
