@@ -48,15 +48,21 @@ void FileWatcher::Run()
 FileWatcher::FileWatcher(const std::wstring& path, std::function<void()> callback, DWORD refreshPeriod) :
     m_refreshPeriod(refreshPeriod),
     m_path(path),
-    m_callback(callback),
-    m_abortEvent(CreateEventW(nullptr, TRUE, FALSE, nullptr)),
-    m_thread([this]() { Run(); })
+    m_callback(callback)
 {
+    m_abortEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    if (m_abortEvent)
+    {
+        m_thread = std::thread([this]() { Run(); });
+    }
 }
 
 FileWatcher::~FileWatcher()
 {
-    SetEvent(m_abortEvent);
-    m_thread.join();
-    CloseHandle(m_abortEvent);
+    if (m_abortEvent)
+    {
+        SetEvent(m_abortEvent);
+        m_thread.join();
+        CloseHandle(m_abortEvent);
+    }
 }
