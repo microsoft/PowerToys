@@ -9,11 +9,12 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Constants;
+using Microsoft.Plugin.Registry.Properties;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Registry.Helper
 {
-    #pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031 // Do not catch general exception types
 
     /// <summary>
     /// Helper class to easier work with the registry
@@ -121,7 +122,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="key">The <see cref="RegistryKey"/> for the summary</param>
         /// <returns>A human readable summary</returns>
         internal static string GetSummary(in RegistryKey key)
-            => $"Sub-keys: {key.SubKeyCount} - Values: {key.ValueCount}";
+            => $"{Resources.SubKeys} {key.SubKeyCount} - {Resources.Values} {key.ValueCount}";
 
         /// <summary>
         /// Open a given registry key in the registry editor

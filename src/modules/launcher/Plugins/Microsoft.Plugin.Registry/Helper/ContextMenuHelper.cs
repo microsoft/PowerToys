@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using Microsoft.Plugin.Registry.Classes;
+using Microsoft.Plugin.Registry.Properties;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Registry.Helper
@@ -31,8 +32,8 @@ namespace Microsoft.Plugin.Registry.Helper
             catch (System.ComponentModel.Win32Exception)
             {
                 MessageBox.Show(
-                    "You do not have enough rights to open the Windows registry editor",
-                    "Error on open Registry Editor",
+                    Resources.OpenInRegistryEditorAccessExceptionText,
+                    Resources.OpenInRegistryEditorAccessExceptionTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 return false;

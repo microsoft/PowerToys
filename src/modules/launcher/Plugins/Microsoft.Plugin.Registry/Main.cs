@@ -11,6 +11,7 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Helper;
+using Microsoft.Plugin.Registry.Properties;
 using Wox.Plugin;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Registry.UnitTest")]
@@ -20,7 +21,7 @@ namespace Microsoft.Plugin.Registry
     /// <summary>
     /// Main class of this plugin that implement all used interfaces
     /// </summary>
-    public class Main : IPlugin, IContextMenu, IDisposable
+    public class Main : IPlugin, IContextMenu, IPluginI18n, IDisposable
     {
         /// <summary>
         /// The name of this assembly
@@ -47,7 +48,7 @@ namespace Microsoft.Plugin.Registry
         /// </summary>
         public Main()
         {
-            _assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? "Registry Plugin";
+            _assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? GetTranslatedPluginTitle();
             _defaultIconPath = "Images/reg.light.png";
         }
 
@@ -125,7 +126,7 @@ namespace Microsoft.Plugin.Registry
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
                     PluginName = _assemblyName,
-                    Title = $"Copy registry key to clipboard\n\nKey: {entry.Key?.Name ?? entry.KeyPath}",
+                    Title = $"{Resources.CopyRegistryKeyToClipboard}{Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
                 });
             }
             else
@@ -138,7 +139,7 @@ namespace Microsoft.Plugin.Registry
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
                     PluginName = _assemblyName,
-                    Title = $"Copy value name to clipboard\n\nName: {selectedResult.Title}",
+                    Title = $"{Resources.CopyValueNameToClipboard}{Environment.NewLine}{Environment.NewLine}{Resources.Name} {selectedResult.Title}",
                 });
             }
 
@@ -150,7 +151,7 @@ namespace Microsoft.Plugin.Registry
                 FontFamily = "Segoe MDL2 Assets",
                 Glyph = "\xE70F",                           // E70F => Symbol: Pencil (means "Edit")
                 PluginName = _assemblyName,
-                Title = $"Open key in registry editor\n\nKey: {entry.Key?.Name ?? entry.KeyPath}",
+                Title = $"{Resources.OpenKeyInRegistryEditor}{Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
             });
 
             return list;
@@ -196,5 +197,13 @@ namespace Microsoft.Plugin.Registry
 
             _disposed = true;
         }
+
+        /// <inheritdoc/>
+        public string GetTranslatedPluginTitle()
+            => Resources.PluginTitle;
+
+        /// <inheritdoc/>
+        public string GetTranslatedPluginDescription()
+            => Resources.PluginDescription;
     }
 }

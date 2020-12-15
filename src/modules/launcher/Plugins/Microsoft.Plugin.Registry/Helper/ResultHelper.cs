@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.Registry.Classes;
+using Microsoft.Plugin.Registry.Properties;
 using Microsoft.Win32;
 using Wox.Plugin;
 
@@ -57,7 +58,7 @@ namespace Microsoft.Plugin.Registry.Helper
                 }
 
                 result.ContextData = entry;
-                result.ToolTipData = new ToolTipData("Registry key", $"Key:\t{result.Title}");
+                result.ToolTipData = new ToolTipData(Resources.RegistryKey, $"{Resources.Key}\t{result.Title}");
 
                 resultList.Add(result);
             }
@@ -122,9 +123,9 @@ namespace Microsoft.Plugin.Registry.Helper
                     {
                         ContextData = new RegistryEntry(key),
                         IcoPath = iconPath,
-                        SubTitle = $"Type: {ValueHelper.GetType(key, valueEntry.Key)} * Value: {ValueHelper.GetValue(key, valueEntry.Key, 50)}",
+                        SubTitle = $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)} * {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}",
                         Title = GetTruncatedText(valueEntry.Key, maxLength),
-                        ToolTipData = new ToolTipData("Registry value", $"Key:\t{key.Name}\nName:\t{valueEntry.Key}\nType:\t{ValueHelper.GetType(key, valueEntry.Key)}\nValue:\t{ValueHelper.GetValue(key, valueEntry.Key)}"),
+                        ToolTipData = new ToolTipData(Resources.RegistryValue, GetToolTipTextForRegistryValue(key, valueEntry)),
                         QueryTextDisplay = key.Name,
                     });
                 }
@@ -162,5 +163,17 @@ namespace Microsoft.Plugin.Registry.Helper
 
             return text.Length > maxLength ? "..." + text[^maxLength..] : text;
         }
+
+        /// <summary>
+        /// Return the tool-tip text for a registry value
+        /// </summary>
+        /// <param name="key">The registry key for the tool-tip</param>
+        /// <param name="valueEntry">The value name and value of the registry value</param>
+        /// <returns>A tool-tip text</returns>
+        private static string GetToolTipTextForRegistryValue(RegistryKey key, KeyValuePair<string, object> valueEntry)
+            => $"{Resources.Key}\t{key.Name}{Environment.NewLine}"
+            + $"{Resources.Name}\t{valueEntry.Key}{Environment.NewLine}"
+            + $"{Resources.Type}\t{ValueHelper.GetType(key, valueEntry.Key)}{Environment.NewLine}"
+            + $"{Resources.Value}\t{ValueHelper.GetValue(key, valueEntry.Key)}";
     }
 }

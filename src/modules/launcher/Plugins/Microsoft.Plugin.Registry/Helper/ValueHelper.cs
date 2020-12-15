@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Plugin.Registry.Properties;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Registry.Helper
@@ -46,8 +47,8 @@ namespace Microsoft.Plugin.Registry.Helper
         internal static object GetType(RegistryKey key, string valueName)
             => key.GetValueKind(valueName) switch
             {
-                RegistryValueKind.None => "No data type",
-                RegistryValueKind.Unknown => "Unsupported data type",
+                RegistryValueKind.None => Resources.RegistryValueKindNone,
+                RegistryValueKind.Unknown => Resources.RegistryValueKindUnknown,
                 RegistryValueKind.String => "REG_SZ",
                 RegistryValueKind.ExpandString => "REG_EXPAND_SZ",
                 RegistryValueKind.MultiString => "REG_MULTI_SZ",
