@@ -18,6 +18,7 @@ struct typed_storage
         _buffer{ std::make_unique<char[]>(size) }
     {
     }
+    
     inline operator T*()
     {
         return reinterpret_cast<T*>(_buffer.get());
