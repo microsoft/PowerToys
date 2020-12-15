@@ -116,7 +116,7 @@ public
             return gcnew String(get_product_version().c_str());
         }
 
-            static bool ShouldNewSettingsBeUsed()
+        static bool ShouldNewSettingsBeUsed()
         {
             return UseNewSettings();
         }
