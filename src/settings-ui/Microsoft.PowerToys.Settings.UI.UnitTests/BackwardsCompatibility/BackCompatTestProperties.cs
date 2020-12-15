@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
 {
     public static class BackCompatTestProperties
     {
-        public const string RootPathStubFiles = "..\\..\\..\\..\\src\\core\\Microsoft.PowerToys.Settings.UI.UnitTests\\BackwardsCompatibility\\TestFiles\\{0}\\Microsoft\\PowerToys\\{1}\\{2}";
+        public const string RootPathStubFiles = "..\\..\\..\\..\\src\\settings-ui\\Microsoft.PowerToys.Settings.UI.UnitTests\\BackwardsCompatibility\\TestFiles\\{0}\\Microsoft\\PowerToys\\{1}\\{2}";
 
         // Using Ordinal since this is used internally for a path
         private static readonly Expression<Func<string, bool>> SettingsFilterExpression = s => s == null || s.Contains("Microsoft\\PowerToys\\settings.json", StringComparison.Ordinal);
