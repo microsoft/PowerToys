@@ -9,6 +9,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
@@ -87,7 +89,42 @@ namespace FancyZonesEditor
             _themeManager = new ThemeManager(this);
 
             FancyZonesEditorIO.ParseCommandLineArguments();
-            FancyZonesEditorIO.ParseZoneSettings();
+
+            var parseResult = FancyZonesEditorIO.ParseZoneSettings();
+
+            // 10ms retry loop with 1 second timeout
+            if (!parseResult.Item1)
+            {
+                CancellationTokenSource ts = new CancellationTokenSource();
+                Task t = Task.Run(() =>
+                {
+                    while (!parseResult.Item1 && !ts.IsCancellationRequested)
+                    {
+                        Task.Delay(10).Wait();
+                        parseResult = FancyZonesEditorIO.ParseZoneSettings();
+                    }
+                });
+
+                try
+                {
+                    bool result = t.Wait(1000, ts.Token);
+                    ts.Cancel();
+                }
+                catch (OperationCanceledException)
+                {
+                    ts.Dispose();
+                }
+            }
+
+            // Error message if parsing failed
+            if (!parseResult.Item1)
+            {
+                string message = parseResult.Item2 + Environment.NewLine + Environment.NewLine + FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_User_Choice;
+                if (MessageBox.Show(message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.YesNo) == MessageBoxResult.No)
+                {
+                    Environment.Exit(0);
+                }
+            }
 
             MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;
             settings.UpdateSelectedLayoutModel();
