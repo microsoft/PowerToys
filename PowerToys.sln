@@ -87,8 +87,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUnitTests", "src
 		{B25AC7A5-FB9F-4789-B392-D5C85E948670} = {B25AC7A5-FB9F-4789-B392-D5C85E948670}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{BEEAB7F2-FFF6-45AB-9CDB-B04CC0734B88}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleTemplateCompileTest", "tools\project_template\ModuleTemplate\ModuleTemplateCompileTest.vcxproj", "{64A80062-4D8B-4229-8A38-DFA1D7497749}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUWPUI", "src\modules\powerrename\UWPui\PowerRenameUWPUI.vcxproj", "{0485F45C-EA7A-4BB5-804B-3E8D14699387}"
@@ -183,9 +181,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreviewTest", "src\mod
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "settings-ui", "settings-ui", "{C3081D9A-1586-441A-B5F4-ED815B3719C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Runner", "src\core\Microsoft.PowerToys.Settings.UI.Runner\Microsoft.PowerToys.Settings.UI.Runner.csproj", "{E4E0D2AE-B17D-4BD4-8BEE-AFC8CC464C5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Runner", "src\settings-ui\Microsoft.PowerToys.Settings.UI.Runner\Microsoft.PowerToys.Settings.UI.Runner.csproj", "{E4E0D2AE-B17D-4BD4-8BEE-AFC8CC464C5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UI", "src\core\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj", "{A7D5099E-F0FD-4BF3-8522-5A682759F915}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UI", "src\settings-ui\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj", "{A7D5099E-F0FD-4BF3-8522-5A682759F915}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4981CCD1-4CD9-4A49-B240-00AA46493FF8}"
 	ProjectSection(SolutionItems) = preProject
@@ -193,7 +191,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\tests\win-app-driver\packages.config = src\tests\win-app-driver\packages.config
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Library", "src\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Library", "src\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysInterop", "src\common\interop\PowerToysInterop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
 EndProject
@@ -223,7 +221,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri.UnitTests\Microsoft.Plugin.Uri.UnitTests.csproj", "{B81FB7B6-D30E-428F-908A-41422EFC1172}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\core\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.UnitTests", "src\settings-ui\Microsoft.PowerToys.Settings.UI.UnitTests\Microsoft.PowerToys.Settings.UI.UnitTests.csproj", "{0F85E674-34AE-443D-954C-8321EB8B93B1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Calculator.UnitTest", "src\modules\launcher\Plugins\Microsoft.Plugin.Calculator.UnitTest\Microsoft.Plugin.Calculator.UnitTest.csproj", "{632BBE62-5421-49EA-835A-7FFA4F499BD6}"
 EndProject
@@ -618,7 +616,6 @@ Global
 		{0E072714-D127-460B-AFAD-B4C40B412798} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{A3935CF4-46C5-4A88-84D3-6B12E16E6BA2} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{2151F984-E006-4A9F-92EF-C6DDE3DC8413} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
-		{64A80062-4D8B-4229-8A38-DFA1D7497749} = {BEEAB7F2-FFF6-45AB-9CDB-B04CC0734B88}
 		{0485F45C-EA7A-4BB5-804B-3E8D14699387} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{89F34AF7-1C34-4A72-AA6E-534BCF972BD9} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{6C7F47CC-2151-44A3-A546-41C70025132C} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
