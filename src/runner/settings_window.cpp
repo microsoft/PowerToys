@@ -5,21 +5,23 @@
 #include <aclapi.h>
 
 #include "powertoy_module.h"
-#include <common/two_way_pipe_message_ipc.h>
+#include <common/interop/two_way_pipe_message_ipc.h>
 #include "tray_icon.h"
 #include "general_settings.h"
-#include <common/windows_colors.h>
-#include <common/common.h>
+#include <common/themes/windows_colors.h>
 #include "restart_elevated.h"
 #include "update_utils.h"
 #include "centralized_kb_hook.h"
 
-#include <common/json.h>
-#include <common/settings_helpers.cpp>
-#include <common/os-detect.h>
-#include <common/version.h>
-#include <common/VersionHelper.h>
+#include <common/utils/json.h>
+#include <common/SettingsAPI/settings_helpers.cpp>
+#include <common/version/version.h>
+#include <common/version/helper.h>
 #include <common/logger/logger.h>
+#include <common/utils/elevation.h>
+#include <common/utils/winapi_error.h>
+#include <common/utils/process_path.h>
+#include <common/utils/os-detect.h>
 
 #define BUFSIZE 1024
 

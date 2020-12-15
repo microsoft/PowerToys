@@ -1,18 +1,9 @@
 #include "pch.h"
 
 #include "installer.h"
-#include "version.h"
-#include <common/common.h>
-#include <common/notifications.h>
-
-#include <msi.h>
-#include <PathCch.h>
-
-#include <winrt/base.h>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.ApplicationModel.h>
-#include <winrt/Windows.Management.Deployment.h>
+#include <common/version/version.h>
+#include <common/notifications/notifications.h>
+#include "utils/winapi_error.h"
 
 namespace // Strings in this namespace should not be localized
 {

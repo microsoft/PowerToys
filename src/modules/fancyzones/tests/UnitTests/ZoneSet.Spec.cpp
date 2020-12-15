@@ -8,7 +8,7 @@
 #include <filesystem>
 
 #include "Util.h"
-#include <common/settings_helpers.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <modules\fancyzones\lib\JsonHelpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

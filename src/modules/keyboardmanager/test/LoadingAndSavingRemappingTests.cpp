@@ -3,7 +3,7 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/ui/LoadingAndSavingRemappingHelper.h>
 #include "TestHelpers.h"
-#include "../common/shared_constants.h"
+#include <common/interop/shared_constants.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

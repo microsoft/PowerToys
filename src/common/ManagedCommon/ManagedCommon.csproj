@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ManagedTelemetry\Telemetry\Telemetry.csproj" />
+    <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json">

@@ -1,19 +1,22 @@
 #include "pch.h"
 #include "Generated Files/resource.h"
 
-#include <common/common.h>
-#include <common/RcResource.h>
+#include "RcResource.h"
 #include <common/updating/dotnet_installation.h>
 #include <common/updating/installer.h>
-#include <common/version.h>
-#include <common/appMutex.h>
-#include <common/processApi.h>
+#include <common/updating/notifications.h>
+#include <common/version/version.h>
+#include <common/utils/appMutex.h>
+#include <common/utils/elevation.h>
+#include <common/utils/processApi.h>
+#include <common/utils/resources.h>
+#include <common/utils/window.h>
+#include <common/utils/winapi_error.h>
 
 #include <runner/action_runner_utils.h>
 
 #include "progressbar_window.h"
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 auto Strings = create_notifications_strings();
 

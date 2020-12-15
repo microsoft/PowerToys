@@ -1,13 +1,14 @@
 #pragma once
 
-#include <msclr\marshal.h>
-#include <msclr\marshal_cppstd.h>
+#include <msclr/marshal.h>
+#include <msclr/marshal_cppstd.h>
 #include <functional>
-#include "..\keyboard_layout.h"
-#include "..\two_way_pipe_message_ipc.h"
-#include "..\common.h"
-#include "..\shared_constants.h"
-#include "..\os-detect.h"
+#include "keyboard_layout.h"
+#include "two_way_pipe_message_ipc.h"
+#include "shared_constants.h"
+#include "../utils/os-detect.h"
+
+#include <common/version/version.h>
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
@@ -56,7 +57,7 @@ public
         {
             _wrapperCallback = gcnew InternalReadCallback(this, &TwoWayPipeMessageIPCManaged::ReadCallbackHelper);
             _callback = callback;
-            
+
             TwoWayPipeMessageIPC::callback_function cb = nullptr;
             if (callback != nullptr)
             {
@@ -107,12 +108,11 @@ public
         }
     };
 
-    public
+public
     ref class CommonManaged
     {
     public:
-        static String^ GetProductVersion() 
-        {
+        static String ^ GetProductVersion() {
             return gcnew String(get_product_version().c_str());
         }
 
@@ -122,14 +122,13 @@ public
         }
     };
 
-    public
+public
     ref class Constants
     {
     public:
         literal int VK_WIN_BOTH = CommonSharedConstants::VK_WIN_BOTH;
-        
-        static String^ PowerLauncherSharedEvent()
-        {
+
+        static String ^ PowerLauncherSharedEvent() {
             return gcnew String(CommonSharedConstants::POWER_LAUNCHER_SHARED_EVENT);
         }
     };

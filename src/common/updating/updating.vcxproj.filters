@@ -33,6 +33,9 @@
     <ClInclude Include="installer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="winstore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

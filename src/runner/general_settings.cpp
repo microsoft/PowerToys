@@ -3,20 +3,20 @@
 #include "auto_start_helper.h"
 #include "Generated files/resource.h"
 
-#include <common/common.h>
-#include <common/settings_helpers.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include "powertoy_module.h"
-#include <common/windows_colors.h>
-#include <common/winstore.h>
+#include <common/themes/windows_colors.h>
+#include <common/winstore/winstore.h>
 
 #include "trace.h"
+#include <common/utils/elevation.h>
+#include <common/version/version.h>
+#include <common/utils/resources.h>
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
 static bool download_updates_automatically = true;
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 json::JsonObject GeneralSettings::to_json()
 {

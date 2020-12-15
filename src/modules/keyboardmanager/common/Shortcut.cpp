@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Shortcut.h"
-#include "../common/keyboard_layout.h"
-#include "../common/shared_constants.h"
+#include <common/interop/keyboard_layout.h>
+#include <common/interop/shared_constants.h>
 #include "Helpers.h"
 #include "InputInterface.h"
 

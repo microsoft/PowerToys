@@ -39,6 +39,9 @@
     <ClCompile Include="centralized_kb_hook.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -140,13 +143,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="runner.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="PowerToys.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="runner.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="Generated Files/runner.rc" />
   </ItemGroup>
 </Project>

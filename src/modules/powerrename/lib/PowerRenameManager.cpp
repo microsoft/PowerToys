@@ -5,7 +5,6 @@
 #include <shlobj.h>
 #include <cstring>
 #include "helpers.h"
-#include "window_helpers.h"
 #include <filesystem>
 #include "trace.h"
 #include <winrt/base.h>
@@ -14,15 +13,45 @@ namespace fs = std::filesystem;
 
 extern HINSTANCE g_hInst;
 
+HWND CreateMsgWindow(_In_ HINSTANCE hInst, _In_ WNDPROC pfnWndProc, _In_ void* p)
+{
+    WNDCLASS wc = { 0 };
+
+    PCWSTR wndClassName = L"MsgWindow";
+
+    wc.lpfnWndProc = DefWindowProc;
+    wc.cbWndExtra = sizeof(void*);
+    wc.hInstance = hInst;
+    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.lpszClassName = wndClassName;
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(
+        0, wndClassName, nullptr, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hInst, nullptr);
+    if (hwnd)
+    {
+        SetWindowLongPtr(hwnd, 0, (LONG_PTR)p);
+        if (pfnWndProc)
+        {
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)pfnWndProc);
+        }
+    }
+
+    return hwnd;
+}
+
 // The default FOF flags to use in the rename operations
 #define FOF_DEFAULTFLAGS (FOF_ALLOWUNDO | FOFX_ADDUNDORECORD | FOFX_SHOWELEVATIONPROMPT | FOF_RENAMEONCOLLISION)
 
-IFACEMETHODIMP_(ULONG) CPowerRenameManager::AddRef()
+IFACEMETHODIMP_(ULONG)
+CPowerRenameManager::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }
 
-IFACEMETHODIMP_(ULONG) CPowerRenameManager::Release()
+IFACEMETHODIMP_(ULONG)
+CPowerRenameManager::Release()
 {
     long refCount = InterlockedDecrement(&m_refCount);
 
@@ -170,7 +199,7 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemByIndex(_In_ UINT index, _COM_
         UINT realIndex = 0, visibleIndex = 0;
         for (size_t i = 0; i < m_isVisible.size(); i++)
         {
-            if (m_isVisible[i]  && visibleIndex == index)
+            if (m_isVisible[i] && visibleIndex == index)
             {
                 realIndex = static_cast<UINT>(i);
                 break;
@@ -194,7 +223,7 @@ IFACEMETHODIMP CPowerRenameManager::GetItemById(_In_ int id, _COM_Outptr_ IPower
     HRESULT hr = E_FAIL;
     std::map<int, IPowerRenameItem*>::iterator it;
     it = m_renameItems.find(id);
-    if (it !=  m_renameItems.end())
+    if (it != m_renameItems.end())
     {
         *ppItem = m_renameItems[id];
         (*ppItem)->AddRef();
@@ -221,7 +250,7 @@ IFACEMETHODIMP CPowerRenameManager::SetVisible()
     for (auto rit = m_renameItems.rbegin(); rit != m_renameItems.rend(); ++rit, --i)
     {
         bool isVisible = false;
-        if (m_filter == PowerRenameFilters::ShouldRename && 
+        if (m_filter == PowerRenameFilters::ShouldRename &&
             (FAILED(m_spRegEx->GetSearchTerm(&searchTerm)) || searchTerm && wcslen(searchTerm) == 0))
         {
             isVisible = true;
@@ -239,17 +268,17 @@ IFACEMETHODIMP CPowerRenameManager::SetVisible()
         {
             lastVisibleDepth = itemDepth;
         }
-        else if (lastVisibleDepth == itemDepth+1)
+        else if (lastVisibleDepth == itemDepth + 1)
         {
             isVisible = true;
             lastVisibleDepth = itemDepth;
         }
-        
+
         m_isVisible[i] = isVisible;
         hr = S_OK;
     }
 
-    return hr; 
+    return hr;
 }
 
 IFACEMETHODIMP CPowerRenameManager::GetVisibleItemCount(_Out_ UINT* count)
@@ -273,7 +302,7 @@ IFACEMETHODIMP CPowerRenameManager::GetVisibleItemCount(_Out_ UINT* count)
     {
         GetItemCount(count);
     }
-    
+
     return S_OK;
 }
 
@@ -465,11 +494,11 @@ HRESULT CPowerRenameManager::_Init()
 // Custom messages for worker threads
 enum
 {
-    SRM_REGEX_ITEM_UPDATED = (WM_APP + 1),  // Single rename item processed by regex worker thread
-    SRM_REGEX_STARTED,                      // RegEx operation was started
-    SRM_REGEX_CANCELED,                     // Regex operation was canceled
-    SRM_REGEX_COMPLETE,                     // Regex worker thread completed
-    SRM_FILEOP_COMPLETE                     // File Operation worker thread completed
+    SRM_REGEX_ITEM_UPDATED = (WM_APP + 1), // Single rename item processed by regex worker thread
+    SRM_REGEX_STARTED, // RegEx operation was started
+    SRM_REGEX_CANCELED, // Regex operation was canceled
+    SRM_REGEX_COMPLETE, // Regex worker thread completed
+    SRM_FILEOP_COMPLETE // File Operation worker thread completed
 };
 
 struct WorkerThreadData
@@ -555,7 +584,6 @@ void CPowerRenameManager::_LogOperationTelemetry()
     GetSelectedItemCount(&selectedItemCount);
     GetRenameItemCount(&renameItemCount);
     GetFlags(&flags);
-
 
     // Enumerate extensions used into a map
     std::map<std::wstring, int> extensionsMap;
@@ -748,7 +776,7 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
                             {
                                 spFileOp->SetOwnerWindow(pwtd->hwndParent);
                             }
-                            
+
                             // Perform the operation
                             // We don't care about the return code here. We would rather
                             // return control back to explorer so the user can cleanly

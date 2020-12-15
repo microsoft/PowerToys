@@ -1,5 +1,4 @@
 #include "pch.h"
-#include <common.h>
 #include "settings.h"
 #include "trace.h"
 #include <iostream>
@@ -9,8 +8,6 @@ using namespace std;
 
 namespace PowerPreviewSettings
 {
-    extern "C" IMAGE_DOS_HEADER __ImageBase;
-
     // Base Settings Class Implementation
     FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, std::unique_ptr<RegistryWrapperIface> registryWrapper) :
         m_toggleSettingEnabled(toggleSettingEnabled),

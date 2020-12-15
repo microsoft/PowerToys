@@ -1,23 +1,15 @@
 #include "pch.h"
 
-#include "version.h"
+#include <common/version/version.h>
+#include <common/version/helper.h>
 
 #include "http_client.h"
 #include "notifications.h"
 #include "updating.h"
 
-#include <common/common.h>
-#include <common/json.h>
-#include <common/settings_helpers.h>
-#include <common/winstore.h>
-#include <common/notifications.h>
-
-#include <winrt/base.h>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.Networking.Connectivity.h>
-
-#include "VersionHelper.h"
+#include <common/utils/json.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/notifications/notifications.h>
 
 namespace // Strings in this namespace should not be localized
 {

@@ -4,7 +4,7 @@
 #include <queue>
 #include <mutex>
 
-#include <LowlevelKeyboardEvent.h>
+#include <common/hooks/LowlevelKeyboardEvent.h>
 // Available states for the KeyDelay state machine.
 enum class KeyDelayState
 {

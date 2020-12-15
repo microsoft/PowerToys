@@ -1,19 +1,16 @@
 #include "pch.h"
 
-#include <common/common.h>
 #include "Generated Files/resource.h"
 
 #include "action_runner_utils.h"
 #include "update_state.h"
 #include "update_utils.h"
 
-#include <common/timeutil.h>
 #include <common/updating/installer.h>
 #include <common/updating/updating.h>
-#include <common/updating/notifications.h>
+#include <common/utils/resources.h>
+#include <common/utils/timeutil.h>
 #include <runner/general_settings.h>
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 auto Strings = create_notifications_strings();
 

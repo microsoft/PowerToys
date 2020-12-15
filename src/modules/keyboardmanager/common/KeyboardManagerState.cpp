@@ -2,7 +2,7 @@
 #include "KeyboardManagerState.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
-#include <../common/settings_helpers.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include "KeyDelay.h"
 #include "Helpers.h"
 

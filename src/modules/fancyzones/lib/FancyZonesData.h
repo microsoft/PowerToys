@@ -2,8 +2,8 @@
 
 #include "JsonHelpers.h"
 
-#include <common/settings_helpers.h>
-#include <common/json.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/json.h>
 #include <mutex>
 
 #include <string>

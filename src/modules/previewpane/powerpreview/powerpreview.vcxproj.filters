@@ -55,6 +55,7 @@
     <ClInclude Include="thumbnail_provider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="powerpreviewConstants.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="powerpreview.def" />

@@ -4,11 +4,13 @@
 #include <PowerRenameItem.h>
 #include <PowerRenameManager.h>
 #include <trace.h>
-#include <common.h>
 #include <Helpers.h>
-#include <icon_helpers.h>
+#include <common/themes/icon_helpers.h>
 #include <Settings.h>
 #include "Generated Files/resource.h"
+
+#include <common/utils/resources.h>
+#include <common/utils/process_path.h>
 
 extern HINSTANCE g_hInst;
 

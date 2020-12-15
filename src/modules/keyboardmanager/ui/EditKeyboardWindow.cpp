@@ -6,17 +6,15 @@
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <set>
-#include <common/common.h>
-#include <common/windows_colors.h>
-#include <common/dpi_aware.h>
+#include <common/themes/windows_colors.h>
+#include <common/display/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
 #include <keyboardmanager/dll/Generated Files/resource.h>
-#include "../common/shared_constants.h"
+#include <common/interop/shared_constants.h>
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "LoadingAndSavingRemappingHelper.h"
 #include "UIHelpers.h"
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
 

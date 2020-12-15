@@ -28,8 +28,6 @@ END
 ```cpp
 #include <common.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-
 std::wstring GET_RESOURCE_STRING(IDS_MODULE_DISPLAYNAME)
 ```
 

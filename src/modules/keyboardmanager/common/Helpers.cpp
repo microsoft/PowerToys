@@ -1,13 +1,16 @@
 #include "pch.h"
 #include "Helpers.h"
 #include <sstream>
-#include "../common/shared_constants.h"
+
+#include <common/interop/keyboard_layout.h>
+#include <common/interop/shared_constants.h>
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+
 #include <shlwapi.h>
-#include "../../common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
-#include "../common/keyboard_layout.h"
+#include <common/interop/keyboard_layout.h>
 #include "KeyboardManagerConstants.h"
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using namespace winrt::Windows::Foundation;
 
@@ -196,7 +199,7 @@ namespace KeyboardManagerHelper
         }
         keyEventArray[index].ki.dwExtraInfo = extraInfo;
 
-        // Set wScan to the value from MapVirtualKey as some applications may use the scan code for handling input, for instance, Windows Terminal ignores non-character input which has scancode set to 0. 
+        // Set wScan to the value from MapVirtualKey as some applications may use the scan code for handling input, for instance, Windows Terminal ignores non-character input which has scancode set to 0.
         // MapVirtualKey returns 0 if the key code does not correspond to a physical key (such as unassigned/reserved keys). More details at https://github.com/microsoft/PowerToys/pull/7143#issue-498877747
         keyEventArray[index].ki.wScan = (WORD)MapVirtualKey(keyCode, MAPVK_VK_TO_VSC);
     }
