@@ -354,9 +354,11 @@ namespace FancyZonesEditor
         {
             get
             {
-                return _blankCustomModel;
+                return _blankModel;
             }
         }
+
+        private static CanvasLayoutModel _blankModel = new CanvasLayoutModel(string.Empty, LayoutType.Blank);
 
         public static bool IsPredefinedLayout(LayoutModel model)
         {

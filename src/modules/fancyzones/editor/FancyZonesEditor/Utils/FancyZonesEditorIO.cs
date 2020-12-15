@@ -528,7 +528,6 @@ namespace FancyZonesEditor.Utils
         private bool SetCustomLayouts(List<CustomLayoutWrapper> customLayouts)
         {
             MainWindowSettingsModel.CustomModels.Clear();
-            MainWindowSettingsModel.CustomModels.Add(MainWindowSettingsModel.BlankModel);
             bool result = true;
 
             foreach (var zoneSet in customLayouts)
@@ -609,17 +608,23 @@ namespace FancyZonesEditor.Utils
 
         private string LayoutTypeToJsonTag(LayoutType type)
         {
-            return type switch
+            switch (type)
             {
-                LayoutType.Blank => BlankJsonTag,
-                LayoutType.Focus => FocusJsonTag,
-                LayoutType.Rows => RowsJsonTag,
-                LayoutType.Columns => ColumnsJsonTag,
-                LayoutType.Grid => GridJsonTag,
-                LayoutType.PriorityGrid => PriorityGridJsonTag,
-                LayoutType.Custom => CustomJsonTag,
-                _ => string.Empty,
-            };
+                case LayoutType.Focus:
+                    return FocusJsonTag;
+                case LayoutType.Columns:
+                    return ColumnsJsonTag;
+                case LayoutType.Rows:
+                    return RowsJsonTag;
+                case LayoutType.Grid:
+                    return GridJsonTag;
+                case LayoutType.PriorityGrid:
+                    return PriorityGridJsonTag;
+                case LayoutType.Custom:
+                    return CustomJsonTag;
+                default:
+                    return string.Empty;
+            }
         }
 
         private static string ParsingCmdArgsErrorReport(string args, int count, string targetMonitorName, List<NativeMonitorData> monitorData, List<Monitor> monitors)
