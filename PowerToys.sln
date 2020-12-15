@@ -178,6 +178,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules\previewpane\powerpreview\powerpreview.vcxproj", "{217DF501-135C-4E38-BFC8-99D4821032EA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreviewTest", "src\modules\previewpane\powerpreviewTest\powerpreviewTest.vcxproj", "{47310AB4-9034-4BD1-8D8B-E88AD21A171B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{217DF501-135C-4E38-BFC8-99D4821032EA} = {217DF501-135C-4E38-BFC8-99D4821032EA}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "settings-ui", "settings-ui", "{C3081D9A-1586-441A-B5F4-ED815B3719C1}"
 EndProject
