@@ -65,6 +65,7 @@
     <ClCompile Include="FancyZonesDataTypes.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="FancyZonesData.cpp" />
+    <ClCompile Include="FileWatcher.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
     <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="OnThreadExecutor.cpp" />
