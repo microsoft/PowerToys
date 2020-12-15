@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "installer.h"
-#include "../version/version.h"
+#include <common/version/version.h>
 #include <common/notifications/notifications.h>
 #include "utils/winapi_error.h"
 

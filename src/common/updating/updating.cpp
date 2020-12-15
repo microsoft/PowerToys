@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "../version/version.h"
-#include "../version/helper.h"
+#include <common/version/version.h>
+#include <common/version/helper.h>
 
 #include "http_client.h"
 #include "notifications.h"
