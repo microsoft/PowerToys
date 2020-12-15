@@ -6,14 +6,13 @@
         mc:Ignorable="d"
         xmlns:e="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:behaviors="clr-namespace:ColorPicker.Behaviors"
-        Height="64"
         WindowStyle="None"
         Opacity="0.01"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
         Topmost="True"
         Background="Transparent"
-        SizeToContent="Width"
+        SizeToContent="WidthAndHeight"
         AllowsTransparency="True">
     <e:Interaction.Behaviors>
         <behaviors:ChangeWindowPositionBehavior/>

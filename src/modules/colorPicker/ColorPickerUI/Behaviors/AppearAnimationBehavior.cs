@@ -45,6 +45,10 @@ namespace ColorPicker.Behaviors
             };
 
             AssociatedObject.BeginAnimation(UIElement.OpacityProperty, opacityAppear);
+
+            // force re-evaluation of tooltip size
+            AssociatedObject.SizeToContent = SizeToContent.Manual;
+            AssociatedObject.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
         private void Hide()
