@@ -10,5 +10,6 @@
     - [Indexer](/doc/devdocs/modules/launcher/plugins/indexer.md)
     - [Program](/doc/devdocs/modules/launcher/plugins/program.md)
     - [Shell](/doc/devdocs/modules/launcher/plugins/shell.md)
+    - [Sys](/doc/devdocs/modules/launcher/plugins/sys.md)
     - [Uri](/doc/devdocs/modules/launcher/plugins/uri.md)
     - [Window Walker](/doc/devdocs/modules/launcher/plugins/windowwalker.md)
