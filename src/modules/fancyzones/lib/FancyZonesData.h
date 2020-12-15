@@ -90,6 +90,11 @@ private:
         deviceInfoMap[deviceId] = data;
     }
 
+    inline void SetCustomZonesets(const std::wstring& uuid, FancyZonesDataTypes::CustomZoneSetData data)
+    {
+        customZoneSetsMap[uuid] = data;
+    }
+
     inline bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
     {
         deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
