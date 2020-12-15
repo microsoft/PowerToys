@@ -187,7 +187,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
             // newWorkArea = false - zoneWindow won't be cloned from parent
-            auto actualZoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {});
+            auto actualZoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), m_parentUniqueId.str());
 
             Assert::IsNotNull(actualZoneWindow->ActiveZoneSet());
             const auto actualZoneSet = actualZoneWindow->ActiveZoneSet()->GetZones();
