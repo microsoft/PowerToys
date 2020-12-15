@@ -79,15 +79,15 @@ namespace FancyZonesEditor.Utils
             }
         }
 
-        private struct ActiveZoneSetWrapper
-        {
-            public string Uuid { get; set; }
-
-            public string Type { get; set; }
-        }
-
         private struct DeviceWrapper
         {
+            public struct ActiveZoneSetWrapper
+            {
+                public string Uuid { get; set; }
+
+                public string Type { get; set; }
+            }
+
             public string DeviceId { get; set; }
 
             public ActiveZoneSetWrapper ActiveZoneset { get; set; }
@@ -101,19 +101,19 @@ namespace FancyZonesEditor.Utils
             public int EditorSensitivityRadius { get; set; }
         }
 
-        private struct CanvasZoneWrapper
+        private struct CanvasInfoWrapper
         {
-            public int X { get; set; }
+            public struct CanvasZoneWrapper
+            {
+                public int X { get; set; }
 
-            public int Y { get; set; }
+                public int Y { get; set; }
 
             public int Width { get; set; }
 
-            public int Height { get; set; }
-        }
+                public int Height { get; set; }
+            }
 
-        private struct CanvasInfoWrapper
-        {
             public int RefWidth { get; set; }
 
             public int RefHeight { get; set; }
@@ -142,29 +142,7 @@ namespace FancyZonesEditor.Utils
 
             public string Type { get; set; }
 
-            public JsonElement Info { get; set; }
-        }
-
-        private struct CustomCanvasLayoutWrapper
-        {
-            public string Uuid { get; set; }
-
-            public string Name { get; set; }
-
-            public string Type { get; set; }
-
-            public CanvasInfoWrapper Info { get; set; }
-        }
-
-        private struct CustomGridLayoutWrapper
-        {
-            public string Uuid { get; set; }
-
-            public string Name { get; set; }
-
-            public string Type { get; set; }
-
-            public GridInfoWrapper Info { get; set; }
+            public JsonElement Info { get; set; } // CanvasInfoWrapper or GridInfoWrapper
         }
 
         private struct ZoneSettingsWrapper
