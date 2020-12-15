@@ -12,7 +12,7 @@
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
-  <?define DiagnosticToolDir="$(var.RepoDir)src\bug-report\DiagnosticTool\x64\$(var.Configuration)\" ?>
+  <?define BugReportToolDir="$(var.RepoDir)src\bug-report\BugReportTool\x64\$(var.Configuration)\" ?>
 
 	<Product Id="*"
        Name="PowerToys (Preview)"
@@ -48,7 +48,7 @@
       <ComponentGroupRef Id="CoreComponents" />
       <ComponentGroupRef Id="ResourcesComponents" />
       <ComponentGroupRef Id="LauncherComponents" />
-	  <ComponentRef Id="DiagnosticTool"/>
+	  <ComponentRef Id="BugReportTool"/>
     </Feature>
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
 
@@ -209,7 +209,7 @@
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
-	      <Directory Id="DiagnosticToolFolder" Name="DiagnosticTool"/>
+	      <Directory Id="BugReportToolFolder" Name="BugReportTool"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
@@ -340,9 +340,9 @@
         <?endforeach?>
       </Component>
     </DirectoryRef>
-	<DirectoryRef Id="DiagnosticToolFolder" FileSource="$(var.DiagnosticToolDir)">
-		<Component Id="DiagnosticTool" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
-			<File Source="$(var.DiagnosticToolDir)DiagnosticTool.exe" />
+	<DirectoryRef Id="BugReportToolFolder" FileSource="$(var.BugReportToolDir)">
+		<Component Id="BugReportTool" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
+			<File Source="$(var.BugReportToolDir)BugReportTool.exe" />
 		</Component>
 	</DirectoryRef>
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">

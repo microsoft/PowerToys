@@ -7,7 +7,6 @@
 #include <winrt/Windows.Foundation.Collections.h>
 
 #include "zip.h"
-
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
