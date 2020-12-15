@@ -15,16 +15,13 @@
 namespace NonLocalizable
 {
     const wchar_t ActiveZoneSetStr[] = L"active-zoneset";
-    const wchar_t AppliedZonesets[] = L"applied-zonesets";
     const wchar_t AppPathStr[] = L"app-path";
     const wchar_t AppZoneHistoryStr[] = L"app-zone-history";
     const wchar_t CanvasStr[] = L"canvas";
     const wchar_t CellChildMapStr[] = L"cell-child-map";
     const wchar_t ColumnsPercentageStr[] = L"columns-percentage";
     const wchar_t ColumnsStr[] = L"columns";
-    const wchar_t CreatedCustomZoneSets[] = L"created-custom-zone-sets";
     const wchar_t CustomZoneSetsStr[] = L"custom-zone-sets";
-    const wchar_t DeletedCustomZoneSetsStr[] = L"deleted-custom-zone-sets";
     const wchar_t DeviceIdStr[] = L"device-id";
     const wchar_t DevicesStr[] = L"devices";
     const wchar_t EditorShowSpacingStr[] = L"editor-show-spacing";
@@ -447,64 +444,6 @@ namespace JSONHelpers
         }
     }
 
-    json::JsonObject AppliedZonesetsJSON::ToJson(const TDeviceInfoMap& deviceInfoMap)
-    {
-        json::JsonObject result{};
-
-        json::JsonArray array;
-        for (const auto& info : deviceInfoMap)
-        {
-            JSONHelpers::DeviceInfoJSON deviceInfoJson{ info.first, info.second };
-            array.Append(JSONHelpers::DeviceInfoJSON::ToJson(deviceInfoJson));
-        }
-
-        result.SetNamedValue(NonLocalizable::AppliedZonesets, array);
-        return result;
-    }
-
-    json::JsonObject AppliedZonesetsJSON::ToJson(const TDeviceInfoMap& deviceInfoMap, const GUID& currentVirtualDesktop)
-    {
-        json::JsonObject result{};
-
-        json::JsonArray array;
-        for (const auto& info : deviceInfoMap)
-        {
-            std::optional<FancyZonesDataTypes::DeviceIdData> id = FancyZonesUtils::ParseDeviceId(info.first);
-            if (id.has_value() && id->virtualDesktopId == currentVirtualDesktop)
-            {
-                JSONHelpers::DeviceInfoJSON deviceInfoJson{ info.first, info.second };
-                array.Append(JSONHelpers::DeviceInfoJSON::ToJson(deviceInfoJson));
-            }
-        }
-
-        result.SetNamedValue(NonLocalizable::AppliedZonesets, array);
-        return result;
-    }
-
-    std::optional<TDeviceInfoMap> AppliedZonesetsJSON::FromJson(const json::JsonObject& json)
-    {
-        try
-        {
-            std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData> appliedZonesets;
-
-            auto zonesets = json.GetNamedArray(NonLocalizable::AppliedZonesets);
-            for (const auto& zoneset : zonesets)
-            {
-                std::optional<DeviceInfoJSON> device = DeviceInfoJSON::FromJson(zoneset.GetObjectW());
-                if (device.has_value())
-                {
-                    appliedZonesets.insert(std::make_pair(device->deviceId, device->data));
-                }
-            }
-
-            return appliedZonesets;
-        }
-        catch (const winrt::hresult_error&)
-        {
-            return std::nullopt;
-        }
-    }
-
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName)
     {
         auto result = json::from_file(zonesSettingsFileName);
@@ -658,96 +597,5 @@ namespace JSONHelpers
         }
 
         return customZoneSetsJSON;
-    }
-
-    void SerializeDeviceInfoToTmpFile(const TDeviceInfoMap& deviceInfoMap, const GUID& currentVirtualDesktop, std::wstring_view tmpFilePath)
-    {
-        json::to_file(tmpFilePath, JSONHelpers::AppliedZonesetsJSON::ToJson(deviceInfoMap, currentVirtualDesktop));
-    }
-
-    void SerializeCustomZoneSetsToTmpFile(const TCustomZoneSetsMap& customZoneSetsMap, std::wstring_view tmpFilePath)
-    {
-        json::JsonObject result{};
-
-        json::JsonArray array;
-        for (const auto& zoneSet : customZoneSetsMap)
-        {
-            CustomZoneSetJSON json{ zoneSet.first, zoneSet.second };
-            array.Append(JSONHelpers::CustomZoneSetJSON::ToJson(json));
-        }
-
-        result.SetNamedValue(NonLocalizable::CreatedCustomZoneSets, array);
-        json::to_file(tmpFilePath, result);
-    }
-
-    std::optional<TDeviceInfoMap> ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath)
-    {
-        std::optional<TDeviceInfoMap> result{ std::nullopt };
-        if (std::filesystem::exists(tmpFilePath))
-        {
-            if (auto zoneSetJson = json::from_file(tmpFilePath); zoneSetJson.has_value())
-            {
-                if (auto deviceInfo = JSONHelpers::AppliedZonesetsJSON::FromJson(zoneSetJson.value()); deviceInfo.has_value())
-                {
-                    result = std::move(deviceInfo);
-                }
-            }
-        }
-
-        DeleteTmpFile(tmpFilePath);
-        return result;
-    }
-
-    std::vector<CustomZoneSetJSON> ParseCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
-    {
-        std::vector<CustomZoneSetJSON> result;
-        if (std::filesystem::exists(tmpFilePath))
-        {
-            try
-            {
-                if (auto customZoneSetJson = json::from_file(tmpFilePath); customZoneSetJson.has_value())
-                {
-                    auto zoneSetArray = customZoneSetJson.value().GetNamedArray(NonLocalizable::CreatedCustomZoneSets);
-                    for (const auto& zoneSet : zoneSetArray)
-                    {
-                        if (auto customZoneSet = JSONHelpers::CustomZoneSetJSON::FromJson(zoneSet.GetObjectW()); customZoneSet.has_value())
-                        {
-                            result.emplace_back(std::move(*customZoneSet));
-                        }
-                    }
-                }
-            }
-            catch (const winrt::hresult_error&)
-            {
-            }
-
-            DeleteTmpFile(tmpFilePath);
-        }
-        return result;
-    }
-
-    std::vector<std::wstring> ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
-    {
-        std::vector<std::wstring> result{};
-        if (std::filesystem::exists(tmpFilePath))
-        {
-            auto deletedZoneSetsJson = json::from_file(tmpFilePath);
-            try
-            {
-                auto deletedCustomZoneSets = deletedZoneSetsJson->GetNamedArray(NonLocalizable::DeletedCustomZoneSetsStr);
-                for (auto zoneSet : deletedCustomZoneSets)
-                {
-                    std::wstring uuid = L"{" + std::wstring{ zoneSet.GetString() } + L"}";
-                    result.push_back(uuid);
-                }
-            }
-            catch (const winrt::hresult_error&)
-            {
-            }
-
-            DeleteTmpFile(tmpFilePath);
-        }
-
-        return result;
     }
 }

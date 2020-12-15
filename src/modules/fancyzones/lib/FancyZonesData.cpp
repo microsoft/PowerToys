@@ -26,10 +26,6 @@ namespace NonLocalizable
     const wchar_t FancyZonesAppZoneHistoryFile[] = L"app-zone-history.json";
     const wchar_t DefaultGuid[] = L"{00000000-0000-0000-0000-000000000000}";
     const wchar_t RegistryPath[] = L"Software\\SuperFancyZones";
-
-    const wchar_t ActiveZoneSetsTmpFileName[] = L"FancyZonesActiveZoneSets.json";
-    const wchar_t AppliedZoneSetsTmpFileName[] = L"FancyZonesAppliedZoneSets.json";
-    const wchar_t DeletedCustomZoneSetsTmpFileName[] = L"FancyZonesDeletedCustomZoneSets.json";
 }
 
 namespace
@@ -151,10 +147,6 @@ FancyZonesData::FancyZonesData()
 
     zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesDataFile);
     appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(NonLocalizable::FancyZonesAppZoneHistoryFile);
-
-    activeZoneSetTmpFileName = GetTempDirPath() + NonLocalizable::ActiveZoneSetsTmpFileName;
-    appliedZoneSetTmpFileName = GetTempDirPath() + NonLocalizable::AppliedZoneSetsTmpFileName;
-    deletedCustomZoneSetsTmpFileName = GetTempDirPath() + NonLocalizable::DeletedCustomZoneSetsTmpFileName;
 }
 
 std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const std::wstring& zoneWindowId) const
@@ -476,49 +468,6 @@ void FancyZonesData::SetActiveZoneSet(const std::wstring& deviceId, const FancyZ
     if (it != deviceInfoMap.end())
     {
         it->second.activeZoneSet = data;
-    }
-}
-
-void FancyZonesData::ParseDataFromTmpFiles()
-{
-    ParseDeviceInfoFromTmpFile(activeZoneSetTmpFileName);
-    ParseDeletedCustomZoneSetsFromTmpFile(deletedCustomZoneSetsTmpFileName);
-    ParseCustomZoneSetsFromTmpFile(appliedZoneSetTmpFileName);
-    SaveFancyZonesData();
-}
-
-void FancyZonesData::ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath)
-{
-    std::scoped_lock lock{ dataLock };
-    const auto& appliedZonesets = JSONHelpers::ParseDeviceInfoFromTmpFile(tmpFilePath);
-
-    if (appliedZonesets)
-    {
-        for (const auto& zoneset : *appliedZonesets)
-        {
-            deviceInfoMap[zoneset.first] = std::move(zoneset.second);
-        }
-    }
-}
-
-void FancyZonesData::ParseCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
-{
-    std::scoped_lock lock{ dataLock };
-    const auto& customZoneSets = JSONHelpers::ParseCustomZoneSetsFromTmpFile(tmpFilePath);
-
-    for (const auto& zoneSet : customZoneSets)
-    {
-        customZoneSetsMap[zoneSet.uuid] = zoneSet.data;
-    }
-}
-
-void FancyZonesData::ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
-{
-    std::scoped_lock lock{ dataLock };
-    const auto& deletedCustomZoneSets = JSONHelpers::ParseDeletedCustomZoneSetsFromTmpFile(tmpFilePath);
-    for (const auto& zoneSet : deletedCustomZoneSets)
-    {
-        customZoneSetsMap.erase(zoneSet);
     }
 }
 
