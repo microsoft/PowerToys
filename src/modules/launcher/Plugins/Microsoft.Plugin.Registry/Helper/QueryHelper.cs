@@ -17,7 +17,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <summary>
         /// The character to distinguish if the search query contain multiple parts (typically "\\")
         /// </summary>
-        private const string _querySplitCharacter = "\\\\";
+        internal const string QuerySplitCharacter = "\\\\";
 
         /// <summary>
         /// A list that contain short names of all registry base keys
@@ -41,14 +41,14 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <returns><see langword="true"/> when the query search for a key and a value name, otherwise <see langword="false"/></returns>
         internal static bool GetQueryParts(in string query, out string queryKey, out string queryValueName)
         {
-            if (!query.Contains(_querySplitCharacter, StringComparison.InvariantCultureIgnoreCase))
+            if (!query.Contains(QuerySplitCharacter, StringComparison.InvariantCultureIgnoreCase))
             {
                 queryKey = query;
                 queryValueName = string.Empty;
                 return false;
             }
 
-            var querySplit = query.Split(_querySplitCharacter);
+            var querySplit = query.Split(QuerySplitCharacter);
 
             queryKey = querySplit.FirstOrDefault();
             queryValueName = querySplit.LastOrDefault();

@@ -126,7 +126,9 @@ namespace Microsoft.Plugin.Registry.Helper
                         SubTitle = $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)} * {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}",
                         Title = GetTruncatedText(valueEntry.Key, maxLength),
                         ToolTipData = new ToolTipData(Resources.RegistryValue, GetToolTipTextForRegistryValue(key, valueEntry)),
-                        QueryTextDisplay = key.Name,
+
+                        // Avoid user handling interrupt when move up/down inside the results of a registry key
+                        QueryTextDisplay = $"{key.Name}{QueryHelper.QuerySplitCharacter}",
                     });
                 }
             }
