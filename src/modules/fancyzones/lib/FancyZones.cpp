@@ -1253,17 +1253,15 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
+    // We already checked in ShouldProcessSnapHotkey whether the foreground window is a candidate for zoning
     auto window = GetForegroundWindow();
-    if (FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
+    if (m_settings->GetSettings()->moveWindowsBasedOnPosition)
     {
-        if (m_settings->GetSettings()->moveWindowsBasedOnPosition)
-        {
-            return OnSnapHotkeyBasedOnPosition(window, vkCode);
-        }
-        else
-        {
-            return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && OnSnapHotkeyBasedOnZoneNumber(window, vkCode);
-        }
+        return OnSnapHotkeyBasedOnPosition(window, vkCode);
+    }
+    else
+    {
+        return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && OnSnapHotkeyBasedOnZoneNumber(window, vkCode);
     }
     return false;
 }
@@ -1326,7 +1324,8 @@ void FancyZones::UpdateZoneSets() noexcept
 
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 {
-    if (m_settings->GetSettings()->overrideSnapHotkeys)
+    auto window = GetForegroundWindow();
+    if (m_settings->GetSettings()->overrideSnapHotkeys && FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
     {
         HMONITOR monitor;
         if (m_settings->GetSettings()->spanZonesAcrossMonitors)
@@ -1339,7 +1338,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         }
 
         auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-        if (zoneWindow && zoneWindow->ActiveZoneSet() != nullptr)
+        if (zoneWindow && zoneWindow->ActiveZoneSet() && zoneWindow->ActiveZoneSet()->LayoutType() != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
         {
             if (vkCode == VK_UP || vkCode == VK_DOWN)
             {
