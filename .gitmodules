@@ -7,7 +7,3 @@
 [submodule "deps/expected-lite"]
 	path = deps/expected-lite
 	url = https://github.com/martinmoene/expected-lite.git
-[submodule "deps/zip"]
-	path = deps/zip
-	url = https://github.com/mykhailopylyp/zip.git
-	branch = msvs-latest
