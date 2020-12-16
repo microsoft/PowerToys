@@ -7,6 +7,8 @@
 #include <winrt/Windows.Foundation.Collections.h>
 
 #include "zip.h"
+#include "..\zip\zipfolder.h"
+
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
@@ -125,29 +127,7 @@ void hideUserPrivateInfo(filesystem::path dir)
     }
 }
 
-// create zip folder
-// Zip utility from https://www.codeproject.com/Articles/7530/Zip-Utils-Clean-Elegant-Simple-Cplusplus-Win
-// Alternative. Use Shell COM object. https://stackoverflow.com/questions/118547/creating-a-zip-file-on-windows-xp-2003-in-c-c
-// Alternative. https://github.com/sebastiandev/zipper
-void zipFolder(filesystem::path folderPath, filesystem::path zipPath) 
-{
-    HZIP hz = CreateZip(zipPath.c_str(), 0);
-    using recursive_directory_iterator = recursive_directory_iterator;
-    int rootSize = folderPath.wstring().size();
-    for (const auto& dirEntry : recursive_directory_iterator(folderPath))
-    {
-        if (dirEntry.is_regular_file())
-        {
-            auto path = dirEntry.path().wstring();
-            auto relativePath = path.substr(rootSize, path.size());
-            ZipAdd(hz, relativePath.c_str(), path.c_str());
-        }
-    }
-
-    CloseZip(hz);
-}
-
-void wmain(int argc, wchar_t* argv[], wchar_t*)
+int wmain(int argc, wchar_t* argv[], wchar_t*)
 {
     // Get path to save zip
     wstring saveZipPath;
@@ -183,5 +163,6 @@ void wmain(int argc, wchar_t* argv[], wchar_t*)
     // Zip folder
     auto zipPath = path::path(saveZipPath);
     zipPath = zipPath.append("PowerToys.zip");
-    zipFolder(tmpDir, zipPath);
+    zip_folder(zipPath, tmpDir);
+    return 0;
 }
