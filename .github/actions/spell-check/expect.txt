@@ -397,6 +397,7 @@ cxxopts
 CYMK
 CYSMICON
 cz
+cziplib
 Dac
 dacl
 DARKBLUE
