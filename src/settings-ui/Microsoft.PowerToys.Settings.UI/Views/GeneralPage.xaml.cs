@@ -53,8 +53,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 try
                 {
-                    string version = json.GetNamedString("version");
-                    bool isLatest = json.GetNamedBoolean("isVersionLatest");
+                    string version = json.GetNamedString("version", string.Empty);
+                    bool isLatest = json.GetNamedBoolean("isVersionLatest", false);
 
                     var str = string.Empty;
                     if (isLatest)
@@ -71,7 +71,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     }
 
                     // Using CurrentCulture since this is user-facing
-                    ViewModel.LatestAvailableVersion = string.Format(CultureInfo.CurrentCulture, str);
+                    if (!string.IsNullOrEmpty(str))
+                    {
+                       ViewModel.LatestAvailableVersion = string.Format(CultureInfo.CurrentCulture, str);
+                    }
+
+                    string updateStateDate = json.GetNamedString("updateStateDate", string.Empty);
+                    if (!string.IsNullOrEmpty(updateStateDate) && long.TryParse(updateStateDate, out var uTCTime))
+                    {
+                        var localTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(uTCTime).ToLocalTime();
+                        ViewModel.UpdateCheckedDate = localTime.ToString(CultureInfo.CurrentCulture);
+                    }
                 }
                 catch (Exception e)
                 {

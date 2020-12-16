@@ -127,6 +127,14 @@
                            Margin="16,0,0,0" />
             </StackPanel>
 
+            <StackPanel Orientation="Horizontal" 
+                        Margin="{StaticResource SmallBottomMargin}"
+                        AutomationProperties.LabeledBy="{Binding ElementName=General_VersionLastChecked}">
+                 <TextBlock x:Name="General_VersionLastChecked" x:Uid="General_VersionLastChecked" />
+                 <TextBlock Text="{x:Bind ViewModel.UpdateCheckedDate, Mode=OneWay}"
+                            Foreground="{ThemeResource ListViewItemForegroundPointerOver}"
+                            Margin="6,0" />
+            </StackPanel>
 
             <Button x:Uid="GeneralPage_CheckForUpdates"
                     Style="{StaticResource AccentButtonStyle}"

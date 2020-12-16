@@ -99,6 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private bool _autoDownloadUpdates;
 
         private string _latestAvailableVersion = string.Empty;
+        private string _updateCheckedDate = string.Empty;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -333,6 +334,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public string UpdateCheckedDate
+        {
+            get
+            {
+                RequestUpdateCheckedDate();
+                return _updateCheckedDate;
+            }
+
+            set
+            {
+                if (_updateCheckedDate != value)
+                {
+                    _updateCheckedDate = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         // Temp string. Appears when a user clicks "Check for updates" button and shows latest version available on the Github.
         public string LatestAvailableVersion
         {
@@ -364,6 +383,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private void CheckForUpdatesClick()
         {
             GeneralSettingsConfig.CustomActionName = "check_for_updates";
+
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
+            GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
+
+            SendCheckForUpdatesConfigMSG(customaction.ToString());
+            RequestUpdateCheckedDate();
+        }
+
+        private void RequestUpdateCheckedDate()
+        {
+            GeneralSettingsConfig.CustomActionName = "request_update_state_date";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
