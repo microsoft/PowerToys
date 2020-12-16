@@ -73,12 +73,12 @@ void hideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
 
     if (p == xpathArray.size() - 1)
     {
-        auto privateDatavalue = JsonValue::CreateStringValue(L"<private_data>");
         if (val.ValueType() == JsonValueType::Object)
         {
             auto obj = val.GetObjectW();
             if (obj.HasKey(xpathArray[p]))
             {
+                auto privateDatavalue = JsonValue::CreateStringValue(L"<private_data>");
                 obj.SetNamedValue(xpathArray[p], privateDatavalue);
             }
         }
