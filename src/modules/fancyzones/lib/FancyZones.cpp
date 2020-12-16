@@ -10,6 +10,7 @@
 #include "lib/ZoneWindow.h"
 #include "lib/FancyZonesData.h"
 #include "lib/ZoneSet.h"
+#include "lib/FileWatcher.h"
 #include "lib/WindowMoveHandler.h"
 #include "lib/FancyZonesWinHookEventIDs.h"
 #include "lib/util.h"
@@ -50,6 +51,9 @@ public:
         m_settings(settings),
         m_windowMoveHandler(settings, [this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        }),
+        m_fileWatcher(FancyZonesDataInstance().GetZonesSettingsFileName(), [this]() {
+            PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
         })
     {
         m_settings->SetCallback(this);
@@ -221,6 +225,7 @@ private:
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<size_t>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
+    void UpdateZoneSets() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
@@ -232,6 +237,7 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
+    FileWatcher m_fileWatcher;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
@@ -249,6 +255,7 @@ private:
     static UINT WM_PRIV_VD_SWITCH; // Scheduled when virtual desktop switch occurs
     static UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
     static UINT WM_PRIV_EDITOR; // Scheduled when the editor exits
+    static UINT WM_PRIV_FILE_UPDATE; // Scheduled when the a watched file is updated
 
     static UINT WM_PRIV_LOWLEVELKB; // Scheduled when we receive a key down press
 
@@ -266,6 +273,7 @@ UINT FancyZones::WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b
 UINT FancyZones::WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
 UINT FancyZones::WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
 UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
+UINT FancyZones::WM_PRIV_FILE_UPDATE = RegisterWindowMessage(L"{632f17a9-55a7-45f1-a4db-162e39271d92}");
 UINT FancyZones::WM_PRIV_LOWLEVELKB = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
 
 // IFancyZones
@@ -856,6 +864,11 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             auto hwnd = reinterpret_cast<HWND>(wparam);
             WindowCreated(hwnd);
         }
+        else if (message == WM_PRIV_FILE_UPDATE)
+        {
+            FancyZonesDataInstance().LoadFancyZonesData();
+            UpdateZoneSets();
+        }
         else
         {
             return DefWindowProc(window, message, wparam, lparam);
@@ -1296,7 +1309,11 @@ void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
     FancyZonesDataInstance().ParseDataFromTmpFiles();
+    UpdateZoneSets();
+}
 
+void FancyZones::UpdateZoneSets() noexcept
+{
     for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
     {
         workArea->UpdateActiveZoneSet();

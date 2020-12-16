@@ -59,6 +59,11 @@ public:
         return appZoneHistoryMap;
     }
 
+    inline const std::wstring& GetZonesSettingsFileName() const 
+    {
+        return zonesSettingsFileName;
+    }
+
     bool AddDevice(const std::wstring& deviceId);
     void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
     void UpdatePrimaryDesktopData(const std::wstring& desktopId);
