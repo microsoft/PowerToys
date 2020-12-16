@@ -13,7 +13,6 @@
 \.woff$
 \.zip$
 ^\.github/actions/spell-check/
-^\deps/zip/
 /package(?:-lock|)\.json$
 /pinyindb/
 /settings-html/
