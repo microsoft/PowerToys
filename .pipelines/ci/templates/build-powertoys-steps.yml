@@ -36,6 +36,16 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
+- task: VSBuild@1
+  displayName: 'Build BugReportTool.sln'
+  inputs:
+    solution: '**\BugReportTool.sln'
+    vsVersion: 16.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    maximumCpuCount: true
+
 - task: NuGetCommand@2
   displayName: Restore NuGet packages for PowerToysSetup.sln
   inputs:
