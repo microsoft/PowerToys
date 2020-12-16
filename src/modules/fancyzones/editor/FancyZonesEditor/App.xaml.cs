@@ -129,7 +129,7 @@ namespace FancyZonesEditor
                 sb.AppendLine(parseResult.Message);
                 sb.AppendLine();
                 sb.AppendLine(ParsingErrorDataTag);
-                sb.AppendLine(parseResult.ManlformedData);
+                sb.AppendLine(parseResult.MalformedData);
 
                 string message = parseResult.Message + Environment.NewLine + Environment.NewLine + FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_User_Choice;
                 if (MessageBox.Show(message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.YesNo) == MessageBoxResult.No)

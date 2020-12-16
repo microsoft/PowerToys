@@ -158,13 +158,13 @@ namespace FancyZonesEditor.Utils
 
             public string Message { get; }
 
-            public string ManlformedData { get; }
+            public string MalformedData { get; }
 
             public ParsingResult(bool result, string message = "", string data = "")
             {
                 Result = result;
                 Message = message;
-                ManlformedData = data;
+                MalformedData = data;
             }
         }
 
