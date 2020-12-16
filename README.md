@@ -2,7 +2,7 @@
 
 <img src="./doc/images/overview/PT%20hero%20image.png"/>
 
-Welcome to Microsoft PowerToys! **For new users, check out our newly published [Mircosoft Docs: PowerToys](https://docs.microsoft.com/en-us/windows/powertoys/) page to get started.** The content on this repo will be focused on relevant updates and resources for active contributors and developers of the various PowerToys projects. For info on [downloads & installation](https://docs.microsoft.com/en-us/windows/powertoys/install), [PowerToys guides and overviews](https://docs.microsoft.com/en-us/windows/powertoys/), or any other tools and resources for [Windows development environments](https://docs.microsoft.com/en-us/windows/dev-environment/overview), be sure to check out Microsoft Docs!
+Welcome to Microsoft PowerToys! **For new users, check out our newly published [Microsoft Docs: PowerToys](https://docs.microsoft.com/en-us/windows/powertoys/) page to get started.** The content on this repo will be focused on relevant updates and resources for active contributors and developers of the various PowerToys projects. For info on [downloads & installation](https://docs.microsoft.com/en-us/windows/powertoys/install), [PowerToys guides and overviews](https://docs.microsoft.com/en-us/windows/powertoys/), or any other tools and resources for [Windows development environments](https://docs.microsoft.com/en-us/windows/dev-environment/overview), be sure to check out Microsoft Docs!
 
 [Known issues](#known-issues) | [What's Happening](#whats-happening) | [Core-Team Roadmap](#powertoys-roadmap) | [Contributing to PowerToys](#contributing)
 
