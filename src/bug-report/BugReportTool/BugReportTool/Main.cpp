@@ -6,7 +6,7 @@
 #include <winrt/Windows.Data.Json.h>
 #include <winrt/Windows.Foundation.Collections.h>
 
-#include "..\zip\ZipFolder.h"
+#include "../zip/ZipFolder.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -74,12 +74,32 @@ void hideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
     if (p == xpathArray.size() - 1)
     {
         auto privateDatavalue = JsonValue::CreateStringValue(L"<private_data>");
-        val.GetObjectW().SetNamedValue(xpathArray[p], privateDatavalue);
+        if (val.ValueType() == JsonValueType::Object)
+        {
+            auto obj = val.GetObjectW();
+            if (obj.HasKey(xpathArray[p]))
+            {
+                obj.SetNamedValue(xpathArray[p], privateDatavalue);
+            }
+        }
+        
         return;
     }
 
-    auto newVal = val.GetObjectW().GetNamedValue(xpathArray[p]);
-    hideByXPath(newVal, xpathArray, p + 1);
+    if (val.ValueType() == JsonValueType::Object)
+    {
+        IJsonValue newVal;
+        try
+        {
+            newVal = val.GetObjectW().GetNamedValue(xpathArray[p]);
+        }
+        catch (...)
+        {
+            return;
+        }
+        
+        hideByXPath(newVal, xpathArray, p + 1);    
+    }
 }
 
 void hideForFile(path dir, wstring relativePath)
@@ -92,7 +112,6 @@ void hideForFile(path dir, wstring relativePath)
         jsonString += tmp;
     }
 
-    JsonObject::Parse(jsonString);
     JsonValue jValue = NULL;
     if (!JsonValue::TryParse(jsonString, jValue))
     {
@@ -111,6 +130,19 @@ void hideForFile(path dir, wstring relativePath)
     out << jsonString;
 }
 
+bool del(wstring path)
+{
+    error_code err;
+    remove_all(path, err);
+    if (err.value() != 0)
+    {
+        wprintf_s(L"Can not delete %s. Error code: %d", path.c_str(), err.value());
+        return false;
+    }
+
+    return true;
+}
+
 void hideUserPrivateInfo(filesystem::path dir) 
 {
     // Replace data in json files
@@ -122,7 +154,7 @@ void hideUserPrivateInfo(filesystem::path dir)
     // delete files
     for (auto it : filesToDelete)
     {
-        remove_all(it);
+        del(it);
     }
 }
 
@@ -153,8 +185,25 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     auto tmpDir = temp_directory_path();
     tmpDir = tmpDir.append("PowerToys\\");
     powerToys = powerToys + L"\\";
-    remove_all(tmpDir);
-    copy(powerToys, tmpDir, copy_options::recursive);
+    if (!del(tmpDir))
+    {
+        return 1;
+    }
+
+    try
+    {
+        copy(powerToys, tmpDir, copy_options::recursive);
+    }
+    catch (std::bad_alloc err)
+    {
+        printf("Copy PowerToys directory failed. %s", err.what());
+        return 1;
+    }
+    catch (...)
+    {
+        printf("Copy PowerToys directory failed");
+        return 1;
+    }
     
     // Hide sensative information
     hideUserPrivateInfo(tmpDir);
@@ -162,6 +211,16 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Zip folder
     auto zipPath = path::path(saveZipPath);
     zipPath = zipPath.append("PowerToys.zip");
-    zipFolder(zipPath, tmpDir);
+    try
+    {
+        zipFolder(zipPath, tmpDir);
+    }
+    catch (...)
+    {
+        printf("Zip folder failed");
+        return 1;
+    }
+    
+    del(tmpDir);
     return 0;
 }
