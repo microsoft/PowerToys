@@ -4,14 +4,13 @@
 
 Welcome to Microsoft PowerToys! **For new users, check out our newly published [Microsoft Docs: PowerToys](https://docs.microsoft.com/en-us/windows/powertoys/) page to get started.** The content on this repo will be focused on relevant updates and resources for active contributors and developers of the various PowerToys projects. For info on [downloads & installation](https://docs.microsoft.com/en-us/windows/powertoys/install), [PowerToys guides and overviews](https://docs.microsoft.com/en-us/windows/powertoys/), or any other tools and resources for [Windows development environments](https://docs.microsoft.com/en-us/windows/dev-environment/overview), be sure to check out Microsoft Docs!
 
-[Known issues](#known-issues) | [What's Happening](#whats-happening) | [Core-Team Roadmap](#powertoys-roadmap) | [Contributing to PowerToys](#contributing)
+[What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap) | [Contributing to PowerToys](#contributing) | [Known issues](#known-issues)
 
 ## Build status
 
 | Architecture | Master | Stable | Installer |
 |--------------|--------|--------|-----------|
 | x64 | [![Build Status for Master](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=master) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status for Installer](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/powertoys/powertoys-Windows-Official-master-Test?branchName=master)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=61&branchName=master) |
-
 
 ## Known Issues
 
@@ -90,25 +89,9 @@ PowerToys is still a very fluidic project and the team is actively working out o
 
  Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
 
-## Acknowledgements
+## PowerToys Community
 
-The PowerToys team is extremely grateful to have the support of an amazing active community. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.
-
-Below we'd like to specifically call-out and thank our high impact community members, ordered alphabetical based on first name. More special call-outs and thanks can be found in our [COMMUNITY.md](COMMUNITY.md) file.
-
-#### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
-Davide has helped fix multiple bugs, added new features, as well as helps us with the ARM64 effort by porting applications to .NET Core.
-
-#### [@Niels9001](https://github.com/niels9001/) - [Niels Laute](https://nielslaute.com/)
-
-Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44), color picker UX update and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
-
-#### [@riverar](https://github.com/riverar) - [Rafael Rivera](https://withinrafael.com/)
-
-Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/microsoft/PowerToys/issues/1907). He directly provided feedback to the CppWinRT team for bugs from this migration as well.
-
-#### [@royvou](https://github.com/royvou)
-Roy has helped out contributing features to PowerToys Run
+The PowerToys team is extremely grateful to have the [support of an amazing active community](COMMUNITY.md). The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.
 
 ## Code of Conduct
 
