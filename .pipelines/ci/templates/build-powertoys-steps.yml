@@ -36,6 +36,15 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
+- task: NuGetCommand@2
+  displayName: Restore NuGet packages for BugReportTool.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: src\bug-report\BugReportTool\BugReportTool.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\src\bug-report\BugReportTool\packages'
+
 - task: VSBuild@1
   displayName: 'Build BugReportTool.sln'
   inputs:
