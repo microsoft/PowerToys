@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Windows;
 
 namespace FancyZonesEditor.Models
@@ -14,7 +13,7 @@ namespace FancyZonesEditor.Models
     public class CanvasLayoutModel : LayoutModel
     {
         // Non-localizable strings
-        private const string ModelTypeID = "canvas";
+        public const string ModelTypeID = "canvas";
 
         public Rect CanvasRect { get; private set; }
 
@@ -83,84 +82,11 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private struct Zone
-        {
-            public int X { get; set; }
-
-            public int Y { get; set; }
-
-            public int Width { get; set; }
-
-            public int Height { get; set; }
-        }
-
-        private struct CanvasLayoutInfo
-        {
-            public int RefWidth { get; set; }
-
-            public int RefHeight { get; set; }
-
-            public Zone[] Zones { get; set; }
-        }
-
-        private struct CanvasLayoutJson
-        {
-            public string Uuid { get; set; }
-
-            public string Name { get; set; }
-
-            public string Type { get; set; }
-
-            public CanvasLayoutInfo Info { get; set; }
-        }
-
         // PersistData
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
             AddCustomLayout(this);
-
-            var canvasRect = CanvasRect;
-            if (canvasRect.Width == 0 || canvasRect.Height == 0)
-            {
-                canvasRect = App.Overlay.WorkArea;
-            }
-
-            CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
-            {
-                RefWidth = (int)canvasRect.Width,
-                RefHeight = (int)canvasRect.Height,
-                Zones = new Zone[Zones.Count],
-            };
-
-            for (int i = 0; i < Zones.Count; ++i)
-            {
-                Zone zone = new Zone
-                {
-                    X = Zones[i].X,
-                    Y = Zones[i].Y,
-                    Width = Zones[i].Width,
-                    Height = Zones[i].Height,
-                };
-
-                layoutInfo.Zones[i] = zone;
-            }
-
-            CanvasLayoutJson jsonObj = new CanvasLayoutJson
-            {
-                Uuid = Uuid,
-                Name = Name,
-                Type = ModelTypeID,
-                Info = layoutInfo,
-            };
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = new DashCaseNamingPolicy(),
-            };
-
-            string jsonString = JsonSerializer.Serialize(jsonObj, options);
-            AddCustomLayoutJson(JsonSerializer.Deserialize<JsonElement>(jsonString));
-            SerializeCreatedCustomZonesets();
         }
     }
 }

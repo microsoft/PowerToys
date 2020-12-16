@@ -344,18 +344,13 @@ namespace FancyZonesEditor
         {
             get
             {
-                if (_customModels == null)
-                {
-                    _customModels = LayoutModel.LoadCustomModels();
-                }
-
                 return _customModels;
             }
         }
 
-        private static ObservableCollection<LayoutModel> _customModels;
+        private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
 
-        public CanvasLayoutModel BlankModel
+        public static CanvasLayoutModel BlankModel
         {
             get
             {
@@ -363,7 +358,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private CanvasLayoutModel _blankModel = new CanvasLayoutModel(string.Empty, LayoutType.Blank);
+        private static CanvasLayoutModel _blankModel = new CanvasLayoutModel(string.Empty, LayoutType.Blank);
 
         public static bool IsPredefinedLayout(LayoutModel model)
         {

@@ -29,7 +29,7 @@ namespace FancyZonesEditor
                     return Monitors[CurrentDesktop].Device.WorkAreaRect;
                 }
 
-                return default(Rect);
+                return default;
             }
         }
 
@@ -55,7 +55,7 @@ namespace FancyZonesEditor
                     return Monitors[CurrentDesktop].Window;
                 }
 
-                return default(Window);
+                return default;
             }
         }
 
@@ -131,8 +131,8 @@ namespace FancyZonesEditor
 
                 if (_spanZonesAcrossMonitors)
                 {
-                    Rect workArea = default(Rect);
-                    Rect bounds = default(Rect);
+                    Rect workArea = default;
+                    Rect bounds = default;
 
                     foreach (Monitor monitor in Monitors)
                     {
