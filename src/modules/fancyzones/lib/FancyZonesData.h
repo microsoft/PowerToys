@@ -78,9 +78,6 @@ public:
 
     void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
-    void SerializeDeviceInfoToTmpFile(const GUID& currentVirtualDesktop) const;
-    void ParseDataFromTmpFiles();
-
     json::JsonObject GetPersistFancyZonesJSON();
 
     void LoadFancyZonesData();
@@ -99,6 +96,11 @@ private:
     inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
     {
         deviceInfoMap[deviceId] = data;
+    }
+
+    inline void SetCustomZonesets(const std::wstring& uuid, FancyZonesDataTypes::CustomZoneSetData data)
+    {
+        customZoneSetsMap[uuid] = data;
     }
 
     inline bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
@@ -121,10 +123,6 @@ private:
         appZoneHistoryFileName = result + L"\\" + std::wstring(L"app-zone-history.json");
     }
 #endif
-    void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
-    void ParseCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
-    void ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
-
     void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 
     // Maps app path to app's zone history data
@@ -136,10 +134,6 @@ private:
 
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
-
-    std::wstring activeZoneSetTmpFileName;
-    std::wstring appliedZoneSetTmpFileName;
-    std::wstring deletedCustomZoneSetsTmpFileName;
 
     mutable std::recursive_mutex dataLock;
 };

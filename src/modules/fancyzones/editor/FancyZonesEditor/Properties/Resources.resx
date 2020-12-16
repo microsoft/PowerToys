@@ -307,4 +307,13 @@ To merge zones, select the zones and click "merge".</value>
     <value>Delete zone</value>
     <comment>A tooltip on a button that allows the user to delete a zone</comment>
   </data>
+  <data name="Error_Parsing_Zones_Settings_Malformed_Data" xml:space="preserve">
+    <value>'zones-settings.json' contains malformed data.</value>
+  </data>
+  <data name="Error_Parsing_Zones_Settings_Title" xml:space="preserve">
+    <value>Editor settings parsing error.</value>
+  </data>
+  <data name="Error_Parsing_Zones_Settings_User_Choice" xml:space="preserve">
+    <value>Would you like to continue? Malformed data will be lost.</value>
+  </data>
 </root>

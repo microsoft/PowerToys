@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Windows;
 
 namespace FancyZonesEditor.Models
 {
@@ -14,7 +12,7 @@ namespace FancyZonesEditor.Models
     public class GridLayoutModel : LayoutModel
     {
         // Non-localizable strings
-        private const string ModelTypeID = "grid";
+        public const string ModelTypeID = "grid";
 
         // Rows - number of rows in the Grid
         public int Rows
@@ -173,69 +171,11 @@ namespace FancyZonesEditor.Models
             layout.ColumnPercents = colPercents;
         }
 
-        private struct GridLayoutInfo
-        {
-            public int Rows { get; set; }
-
-            public int Columns { get; set; }
-
-            public List<int> RowsPercentage { get; set; }
-
-            public List<int> ColumnsPercentage { get; set; }
-
-            public int[][] CellChildMap { get; set; }
-        }
-
-        private struct GridLayoutJson
-        {
-            public string Uuid { get; set; }
-
-            public string Name { get; set; }
-
-            public string Type { get; set; }
-
-            public GridLayoutInfo Info { get; set; }
-        }
-
         // PersistData
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
             AddCustomLayout(this);
-
-            GridLayoutInfo layoutInfo = new GridLayoutInfo
-            {
-                Rows = Rows,
-                Columns = Columns,
-                RowsPercentage = RowPercents,
-                ColumnsPercentage = ColumnPercents,
-                CellChildMap = new int[Rows][],
-            };
-
-            for (int row = 0; row < Rows; row++)
-            {
-                layoutInfo.CellChildMap[row] = new int[Columns];
-                for (int col = 0; col < Columns; col++)
-                {
-                    layoutInfo.CellChildMap[row][col] = CellChildMap[row, col];
-                }
-            }
-
-            GridLayoutJson jsonObj = new GridLayoutJson
-            {
-                Uuid = Uuid,
-                Name = Name,
-                Type = ModelTypeID,
-                Info = layoutInfo,
-            };
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = new DashCaseNamingPolicy(),
-            };
-
-            string jsonString = JsonSerializer.Serialize(jsonObj, options);
-            AddCustomLayoutJson(JsonSerializer.Deserialize<JsonElement>(jsonString));
-            SerializeCreatedCustomZonesets();
         }
     }
 }

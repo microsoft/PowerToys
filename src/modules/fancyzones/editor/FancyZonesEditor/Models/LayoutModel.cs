@@ -3,11 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace FancyZonesEditor.Models
 {
@@ -134,11 +131,11 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
-            int i = _customModels.IndexOf(this);
+            var customModels = MainWindowSettingsModel.CustomModels;
+            int i = customModels.IndexOf(this);
             if (i != -1)
             {
-                _customModels.RemoveAt(i);
-                _deletedCustomModels.Add(Guid.ToString().ToUpper());
+                customModels.RemoveAt(i);
             }
         }
 
@@ -146,48 +143,23 @@ namespace FancyZonesEditor.Models
         public void AddCustomLayout(LayoutModel model)
         {
             bool updated = false;
-            for (int i = 0; i < _customModels.Count && !updated; i++)
+            var customModels = MainWindowSettingsModel.CustomModels;
+            for (int i = 0; i < customModels.Count && !updated; i++)
             {
-                if (_customModels[i].Uuid == model.Uuid)
+                if (customModels[i].Uuid == model.Uuid)
                 {
-                    _customModels[i] = model;
+                    customModels[i] = model;
                     updated = true;
                 }
             }
 
             if (!updated)
             {
-                _customModels.Add(model);
+                customModels.Add(model);
             }
-        }
 
-        // Add custom layouts json data that would be serialized to a temp file
-        public void AddCustomLayoutJson(JsonElement json)
-        {
-            _createdCustomLayouts.Add(json);
+            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
-
-        public static void SerializeDeletedCustomZoneSets()
-        {
-            App.FancyZonesEditorIO.SerializeDeletedCustomZoneSets(_deletedCustomModels);
-        }
-
-        public static void SerializeCreatedCustomZonesets()
-        {
-            App.FancyZonesEditorIO.SerializeCreatedCustomZonesets(_createdCustomLayouts);
-        }
-
-        // Loads all the custom Layouts from tmp file passed by FancyZonesLib
-        public static ObservableCollection<LayoutModel> LoadCustomModels()
-        {
-            _customModels = new ObservableCollection<LayoutModel>();
-            App.FancyZonesEditorIO.ParseLayouts(ref _customModels, ref _deletedCustomModels);
-            return _customModels;
-        }
-
-        private static ObservableCollection<LayoutModel> _customModels;
-        private static List<string> _deletedCustomModels = new List<string>();
-        private static List<JsonElement> _createdCustomLayouts = new List<JsonElement>();
 
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract void PersistData();
@@ -211,7 +183,7 @@ namespace FancyZonesEditor.Models
             App.Overlay.CurrentLayoutSettings.Type = Type;
 
             // update temp file
-            App.FancyZonesEditorIO.SerializeAppliedLayouts();
+            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
     }
 }
