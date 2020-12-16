@@ -1200,6 +1200,7 @@ linkid
 Linkmenu
 linq
 LINQTo
+Linux
 listbox
 listview
 llkhf
@@ -2096,6 +2097,7 @@ SYSCOLORCHANGE
 SYSCOMMAND
 SYSDEADCHAR
 SYSICONINDEX
+sysinfo
 SYSKEY
 syskeydown
 syskeyup
@@ -2522,3 +2524,4 @@ ZONESETCHANGE
 Zoneszonabletester
 Zoomusingmagnifier
 zzz
+`303417D927BF4C97BCFFC78A123BE0C8`
