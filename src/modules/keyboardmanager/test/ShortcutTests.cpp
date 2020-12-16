@@ -3,7 +3,7 @@
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/Helpers.h>
 #include "TestHelpers.h"
-#include "../common/keyboard_layout.h"
+#include <common/interop/keyboard_layout.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

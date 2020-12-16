@@ -3,16 +3,14 @@
 #include <interface/powertoy_module_interface.h>
 #include <settings.h>
 #include <trace.h>
-#include <common/settings_objects.h>
-#include <common/common.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/resources.h>
 #include "Generated Files/resource.h"
 #include <atomic>
 #include <dll/PowerRenameConstants.h>
 
 std::atomic<DWORD> g_dwModuleRefCount = 0;
 HINSTANCE g_hInst = 0;
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 class CPowerRenameClassFactory : public IClassFactory
 {

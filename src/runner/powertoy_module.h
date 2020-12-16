@@ -6,7 +6,7 @@
 #include <vector>
 #include <functional>
 
-#include <common/json.h>
+#include <common/utils/json.h>
 
 struct PowertoyModuleDeleter
 {

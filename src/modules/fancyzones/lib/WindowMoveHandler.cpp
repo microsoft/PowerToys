@@ -1,17 +1,16 @@
 #include "pch.h"
 #include "WindowMoveHandler.h"
 
-#include <common/dpi_aware.h>
-#include <common/notifications.h>
-#include <common/toast_dont_show_again.h>
-#include <common/window_helpers.h>
+#include <common/display/dpi_aware.h>
+#include <common/notifications/notifications.h>
+#include <common/notifications/dont_show_again.h>
+#include <common/utils/elevation.h>
+#include <common/utils/resources.h>
 
 #include "FancyZonesData.h"
 #include "Settings.h"
 #include "ZoneWindow.h"
 #include "util.h"
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -301,6 +300,7 @@ void WindowMoveHandler::WarnIfElevationIsRequired(HWND window) noexcept
 {
     using namespace notifications;
     using namespace NonLocalizable;
+    using namespace FancyZonesUtils;
 
     static bool warning_shown = false;
     if (!is_process_elevated() && IsProcessOfWindowElevated(window))

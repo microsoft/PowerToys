@@ -193,4 +193,172 @@
     <value>Value slider</value>
     <comment>Tool tip that appears when hovering over a slider that represents the color value (from HSV)</comment>
   </data>
+  <data name="TEXT_COLOR_WHITE" xml:space="preserve">
+    <value>White</value>
+    <comment>White color</comment>
+  </data>
+  <data name="TEXT_COLOR_BLACK" xml:space="preserve">
+    <value>Black</value>
+    <comment>Black color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTGRAY" xml:space="preserve">
+    <value>Light gray</value>
+    <comment>Light gray color</comment>
+  </data>
+  <data name="TEXT_COLOR_GRAY" xml:space="preserve">
+    <value>Gray</value>
+    <comment>Gray color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKGRAY" xml:space="preserve">
+    <value>Dark gray</value>
+    <comment>Dark gray color</comment>
+  </data>
+  <data name="TEXT_COLOR_CORAL" xml:space="preserve">
+    <value>Coral</value>
+    <comment>Coral color</comment>
+  </data>
+  <data name="TEXT_COLOR_ROSE" xml:space="preserve">
+    <value>Rose</value>
+    <comment>Rose color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTORANGE" xml:space="preserve">
+    <value>Light orange</value>
+    <comment>Light orange color</comment>
+  </data>
+  <data name="TEXT_COLOR_TAN" xml:space="preserve">
+    <value>Tan</value>
+    <comment>Tan color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTYELLOW" xml:space="preserve">
+    <value>Light yellow</value>
+    <comment>Light yellow color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTGREEN" xml:space="preserve">
+    <value>Light green</value>
+    <comment>Light green color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIME" xml:space="preserve">
+    <value>Lime</value>
+    <comment>Lime color</comment>
+  </data>
+  <data name="TEXT_COLOR_AQUA" xml:space="preserve">
+    <value>Aqua</value>
+    <comment>Aqua color</comment>
+  </data>
+  <data name="TEXT_COLOR_SKYBLUE" xml:space="preserve">
+    <value>Sky blue</value>
+    <comment>Sky blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTTURQUOISE" xml:space="preserve">
+    <value>Light turquoise</value>
+    <comment>Light turquoise color</comment>
+  </data>
+  <data name="TEXT_COLOR_PALEBLUE" xml:space="preserve">
+    <value>Pale blue</value>
+    <comment>Pale blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTBLUE" xml:space="preserve">
+    <value>Light blue</value>
+    <comment>Light blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_ICEBLUE" xml:space="preserve">
+    <value>Ice blue</value>
+    <comment>Ice blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_PERIWINKLE" xml:space="preserve">
+    <value>Periwinkle</value>
+    <comment>Periwinkle color</comment>
+  </data>
+  <data name="TEXT_COLOR_LAVENDER" xml:space="preserve">
+    <value>Lavender</value>
+    <comment>Lavender color</comment>
+  </data>
+  <data name="TEXT_COLOR_PINK" xml:space="preserve">
+    <value>Pink</value>
+    <comment>Pink color</comment>
+  </data>
+  <data name="TEXT_COLOR_RED" xml:space="preserve">
+    <value>Red</value>
+    <comment>Red color</comment>
+  </data>
+  <data name="TEXT_COLOR_ORANGE" xml:space="preserve">
+    <value>Orange</value>
+    <comment>Orange color</comment>
+  </data>
+  <data name="TEXT_COLOR_BROWN" xml:space="preserve">
+    <value>Brown</value>
+    <comment>Brown color</comment>
+  </data>
+  <data name="TEXT_COLOR_GOLD" xml:space="preserve">
+    <value>Gold</value>
+    <comment>Gold color</comment>
+  </data>
+  <data name="TEXT_COLOR_YELLOW" xml:space="preserve">
+    <value>Yellow</value>
+    <comment>Yellow color</comment>
+  </data>
+  <data name="TEXT_COLOR_OLIVEGREEN" xml:space="preserve">
+    <value>Olive green</value>
+    <comment>Olive green color</comment>
+  </data>
+  <data name="TEXT_COLOR_GREEN" xml:space="preserve">
+    <value>Green</value>
+    <comment>Green color</comment>
+  </data>
+  <data name="TEXT_COLOR_BRIGHTGREEN" xml:space="preserve">
+    <value>Bright green</value>
+    <comment>Rose color</comment>
+  </data>
+  <data name="TEXT_COLOR_TEAL" xml:space="preserve">
+    <value>Teal</value>
+    <comment>Teal color</comment>
+  </data>
+  <data name="TEXT_COLOR_TURQUOISE" xml:space="preserve">
+    <value>Turquoise</value>
+    <comment>Turquoise color</comment>
+  </data>
+  <data name="TEXT_COLOR_BLUE" xml:space="preserve">
+    <value>Blue</value>
+    <comment>Blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_BLUEGRAY" xml:space="preserve">
+    <value>Blue gray</value>
+    <comment>Blue gray color</comment>
+  </data>
+  <data name="TEXT_COLOR_INDIGO" xml:space="preserve">
+    <value>Indigo</value>
+    <comment>Indigo color</comment>
+  </data>
+  <data name="TEXT_COLOR_PURPLE" xml:space="preserve">
+    <value>Purple</value>
+    <comment>Purple color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKRED" xml:space="preserve">
+    <value>Dark red</value>
+    <comment>Dark red color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKYELLOW" xml:space="preserve">
+    <value>Dark yellow</value>
+    <comment>Dark yellow color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKGREEN" xml:space="preserve">
+    <value>Dark green</value>
+    <comment>Dark green color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKTEAL" xml:space="preserve">
+    <value>Dark teal</value>
+    <comment>Dark teal color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKBLUE" xml:space="preserve">
+    <value>Dark blue</value>
+    <comment>Dark blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKPURPLE" xml:space="preserve">
+    <value>Dark purple</value>
+    <comment>Dark purple color</comment>
+  </data>
+  <data name="TEXT_COLOR_PLUM" xml:space="preserve">
+    <value>Plum</value>
+    <comment>Plum color</comment>
+  </data>
 </root>

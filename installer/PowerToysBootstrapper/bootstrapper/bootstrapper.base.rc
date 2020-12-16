@@ -1,6 +1,6 @@
 #include <windows.h>
 #include "resource.h"
-#include "../../../src/common/version.h"
+#include "../../../src/common/version/version.h"
 
 MAINICON ICON "../../../src/runner/svgs/icon.ico" 
 IDR_BIN_ICON BIN "../../../src/runner/svgs/icon.ico" 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/json.h>
+#include <common/utils/json.h>
 
 struct GeneralSettings
 {

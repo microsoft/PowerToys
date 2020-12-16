@@ -3,7 +3,7 @@ setlocal enableDelayedExpansion
 IF NOT DEFINED PTRoot (SET PTRoot=..\..)
 
 rem Publish Settings
-SET settingsProfileFolderName=!PTRoot!\src\core\Microsoft.PowerToys.Settings.UI.Runner\Properties\PublishProfiles\
+SET settingsProfileFolderName=!PTRoot!\src\settings-ui\Microsoft.PowerToys.Settings.UI.Runner\Properties\PublishProfiles\
 rem Create the publish profile folder if it doesn't exist
 IF NOT EXIST !settingsProfileFolderName! (mkdir !settingsProfileFolderName!)
 SET settingsProfileFileName=SettingsProfile.pubxml
@@ -29,7 +29,7 @@ echo   ^</PropertyGroup^> >> !settingsPublishProfile!
 echo ^</Project^> >> !settingsPublishProfile!
 
 rem In case of Release we should not use Debug CRT in VCRT forwarders
-msbuild !PTRoot!\src\core\Microsoft.PowerToys.Settings.UI.Runner\Microsoft.PowerToys.Settings.UI.Runner.csproj -t:Publish -p:Configuration="Release" -p:Platform="x64" -p:AppxBundle=Never -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=!settingsProfileFileName!
+msbuild !PTRoot!\src\settings-ui\Microsoft.PowerToys.Settings.UI.Runner\Microsoft.PowerToys.Settings.UI.Runner.csproj -t:Publish -p:Configuration="Release" -p:Platform="x64" -p:AppxBundle=Never -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=!settingsProfileFileName!
 
 
 rem Publish Launcher

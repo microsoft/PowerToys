@@ -1,9 +1,8 @@
 #pragma once
 #include <string>
 #include <winrt/base.h>
-#include "../../common/common.h"
+#include <common/utils/resources.h>
 #include "keyboardmanager/dll/Generated Files/resource.h"
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace KeyboardManagerConstants
 {

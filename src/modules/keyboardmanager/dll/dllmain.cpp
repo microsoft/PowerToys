@@ -1,7 +1,7 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <common/settings_objects.h>
-#include <common/shared_constants.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/interop/shared_constants.h>
 #include "Generated Files/resource.h"
 #include <keyboardmanager/ui/EditKeyboardWindow.h>
 #include <keyboardmanager/ui/EditShortcutsWindow.h>
@@ -9,14 +9,13 @@
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
-#include <common/settings_helpers.h>
 #include <common/debug_control.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/winapi_error.h>
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/Helpers.h>
 #include "KeyboardEventHandlers.h"
 #include "Input.h"
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {

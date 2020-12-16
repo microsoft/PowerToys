@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brice Lambson
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
@@ -52,14 +52,7 @@ namespace ImageResizer.Models
         public ResizeFit Fit
         {
             get => _fit;
-            set
-            {
-                Set(ref _fit, value);
-                if (!Equals(_fit, value))
-                {
-                    UpdateShowHeight();
-                }
-            }
+            set => Set(ref _fit, value);
         }
 
         [JsonProperty(PropertyName = "width")]
@@ -77,7 +70,10 @@ namespace ImageResizer.Models
         }
 
         public bool ShowHeight
-            => _showHeight;
+        {
+            get => _showHeight;
+            set => Set(ref _showHeight, value);
+        }
 
         public bool HasAuto
             => Width == 0 || Height == 0;
@@ -88,8 +84,9 @@ namespace ImageResizer.Models
             get => _unit;
             set
             {
+                var previousUnit = _unit;
                 Set(ref _unit, value);
-                if (!Equals(_unit, value))
+                if (!Equals(previousUnit, value))
                 {
                     UpdateShowHeight();
                 }
@@ -114,9 +111,9 @@ namespace ImageResizer.Models
                 : text;
 
         private void UpdateShowHeight()
-            => Set(
-                ref _showHeight,
-                Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent);
+        {
+            ShowHeight = Unit != ResizeUnit.Percent;
+        }
 
         private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
         {

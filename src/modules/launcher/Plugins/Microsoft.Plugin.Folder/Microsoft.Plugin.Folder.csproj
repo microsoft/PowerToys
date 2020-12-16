@@ -60,7 +60,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" >
+    <ProjectReference Include="..\..\..\..\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" >
       <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" >

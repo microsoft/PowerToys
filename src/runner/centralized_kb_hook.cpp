@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "centralized_kb_hook.h"
-#include <common/common.h>
 #include <common/debug_control.h>
+#include <common/utils/winapi_error.h>
 
 namespace CentralizedKeyboardHook
 {
@@ -11,11 +11,10 @@ namespace CentralizedKeyboardHook
         std::wstring moduleName;
         std::function<bool()> action;
 
-        bool operator<(const HotkeyDescriptor& other) const 
+        bool operator<(const HotkeyDescriptor& other) const
         {
             return hotkey < other.hotkey;
         };
-
     };
 
     std::multiset<HotkeyDescriptor> hotkeyDescriptors;

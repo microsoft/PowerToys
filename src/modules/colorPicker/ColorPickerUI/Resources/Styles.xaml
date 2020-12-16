@@ -4,6 +4,7 @@
                     xmlns:converters="clr-namespace:ColorPicker.Converters">
     <!--CONVERTERS-->
     <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+    <converters:BoolToInvertedVisibilityConverter x:Key="bool2InvertedVisibilityConverter"/>
     <converters:ColorToBrushConverter x:Key="colorToBrushConverter"/>
     <converters:ColorToStringConverter x:Key="colorToStringConverter"/>
     <converters:NumberToVisibilityConverter x:Key="numberToVisibilityConverter"/>

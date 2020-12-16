@@ -1,8 +1,7 @@
 #pragma once
-#include <pch.h>
 #include <string>
 #include "Generated Files/resource.h"
-#include <settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
 #include "registry_wrapper_interface.h"
 
 namespace PowerPreviewSettings

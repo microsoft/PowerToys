@@ -22,26 +22,70 @@
                     ShadowDepth="1" />
             </Border.Effect>-->
 
-            <Grid Margin="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="36"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <Grid>
+                <!--only color format - one line -->
+                <Grid Margin="2" Visibility="{Binding ShowColorName, Converter={StaticResource bool2InvertedVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="36"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <Border Background="{Binding ColorBrush}"
+                    <Border Background="{Binding ColorBrush}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     BorderBrush="{DynamicResource WindowBorderBrush}"
                     BorderThickness="1"
-                    x:Name="ColorBorder"
+                    x:Name="ColorBorderSmall"
                     CornerRadius="4"/>
 
-            <TextBlock Margin="8,5,8,8"
+                    <TextBlock Margin="8,5,8,8"
                        FontSize="16"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource PrimaryForegroundBrush}"
                        Grid.Column="1"
                        Text="{Binding ColorText}"/>
+                </Grid>
+
+                <!--color format and color name - two lines-->
+                <Grid Margin="2" Visibility="{Binding ShowColorName, Converter={StaticResource bool2VisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26"/>
+                        <RowDefinition Height="26"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="52"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Background="{Binding ColorBrush}"
+                        HorizontalAlignment="Stretch"
+                        Grid.RowSpan="2"
+                        VerticalAlignment="Stretch"
+                        BorderBrush="{DynamicResource WindowBorderBrush}"
+                        BorderThickness="1"
+                        Margin="1"
+                        x:Name="ColorBorderBig"
+                        CornerRadius="4"/>
+
+                    <TextBlock Margin="8,5,6,0"
+                           FontSize="16"
+                           Grid.Row="0"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                           Grid.Column="1"
+                           Text="{Binding ColorText}"/>
+
+                    <TextBlock Margin="8,0,8,2"
+                           Height="26"
+                           Grid.Row="1"
+                           Grid.Column="1"
+                           Grid.ColumnSpan="2"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                           Opacity="0.6"
+                           Text="{Binding ColorName}"/>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

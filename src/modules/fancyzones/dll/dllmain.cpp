@@ -1,8 +1,8 @@
 #include "pch.h"
-#include <common/settings_objects.h>
-#include <common/common.h>
+
+#include <common/SettingsAPI/settings_objects.h>
 #include <common/debug_control.h>
-#include <common/LowlevelKeyboardEvent.h>
+#include <common/hooks/LowlevelKeyboardEvent.h>
 #include <interface/powertoy_module_interface.h>
 #include <lib/ZoneSet.h>
 
@@ -14,8 +14,9 @@
 #include <lib/FancyZonesWinHookEventIDs.h>
 #include <lib/FancyZonesData.cpp>
 #include <common/logger/logger.h>
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
+#include <common/utils/window.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {

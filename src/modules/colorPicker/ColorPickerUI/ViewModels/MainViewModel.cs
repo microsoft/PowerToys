@@ -37,6 +37,11 @@ namespace ColorPicker.ViewModels
         /// </summary>
         private Brush _colorBrush;
 
+        /// <summary>
+        /// Backing field for <see cref="ColorName"/>
+        /// </summary>
+        private string _colorName;
+
         [ImportingConstructor]
         public MainViewModel(
             IMouseInfoProvider mouseInfoProvider,
@@ -56,6 +61,7 @@ namespace ColorPicker.ViewModels
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
             }
 
+            _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
             keyboardMonitor?.Start();
         }
 
@@ -85,6 +91,21 @@ namespace ColorPicker.ViewModels
             }
         }
 
+        public string ColorName
+        {
+            get => _colorName;
+            private set
+            {
+                _colorName = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool ShowColorName
+        {
+            get => _userSettings.ShowColorName.Value;
+        }
+
         /// <summary>
         /// Tell the color picker that the color on the position of the mouse cursor have changed
         /// </summary>
@@ -94,6 +115,10 @@ namespace ColorPicker.ViewModels
         {
             ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
             ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value);
+            if (_userSettings.ShowColorName.Value)
+            {
+                ColorName = ColorNameHelper.GetColorName(color);
+            }
         }
 
         /// <summary>

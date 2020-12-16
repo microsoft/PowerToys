@@ -1,15 +1,17 @@
 #include "pch.h"
 #include "PowerRenameItem.h"
-#include "icon_helpers.h"
+#include <common/themes/icon_helpers.h>
 
 int CPowerRenameItem::s_id = 0;
 
-IFACEMETHODIMP_(ULONG) CPowerRenameItem::AddRef()
+IFACEMETHODIMP_(ULONG)
+CPowerRenameItem::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }
 
-IFACEMETHODIMP_(ULONG) CPowerRenameItem::Release()
+IFACEMETHODIMP_(ULONG)
+CPowerRenameItem::Release()
 {
     long refCount = InterlockedDecrement(&m_refCount);
 
@@ -198,9 +200,9 @@ IFACEMETHODIMP CPowerRenameItem::IsItemVisible(_In_ DWORD filter, _In_ DWORD fla
         GetSelected(isItemVisible);
         break;
     case PowerRenameFilters::FlagsApplicable:
-        *isItemVisible = !((m_isFolder && (flags & PowerRenameFlags::ExcludeFolders)) || 
-            (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles)) || 
-            (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders)));
+        *isItemVisible = !((m_isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
+                           (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
+                           (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders)));
         break;
     case PowerRenameFilters::ShouldRename:
         ShouldRenameItem(flags, isItemVisible);

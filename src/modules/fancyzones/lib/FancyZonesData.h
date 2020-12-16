@@ -2,8 +2,8 @@
 
 #include "JsonHelpers.h"
 
-#include <common/settings_helpers.h>
-#include <common/json.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/json.h>
 #include <mutex>
 
 #include <string>
@@ -57,6 +57,11 @@ public:
     {
         std::scoped_lock lock{ dataLock };
         return appZoneHistoryMap;
+    }
+
+    inline const std::wstring& GetZonesSettingsFileName() const 
+    {
+        return zonesSettingsFileName;
     }
 
     bool AddDevice(const std::wstring& deviceId);

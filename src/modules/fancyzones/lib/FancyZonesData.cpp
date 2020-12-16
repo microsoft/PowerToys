@@ -5,8 +5,7 @@
 #include "ZoneSet.h"
 #include "Settings.h"
 
-#include <common/common.h>
-#include <common/json.h>
+#include <common/utils/json.h>
 
 #include <shlwapi.h>
 #include <filesystem>
@@ -15,6 +14,7 @@
 #include <regex>
 #include <sstream>
 #include <unordered_set>
+#include <common/utils/process_path.h>
 
 // Non-localizable strings
 namespace NonLocalizable
