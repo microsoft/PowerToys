@@ -6,8 +6,7 @@
 #include <winrt/Windows.Data.Json.h>
 #include <winrt/Windows.Foundation.Collections.h>
 
-#include "zip.h"
-#include "..\zip\zipfolder.h"
+#include "..\zip\ZipFolder.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -163,6 +162,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Zip folder
     auto zipPath = path::path(saveZipPath);
     zipPath = zipPath.append("PowerToys.zip");
-    zip_folder(zipPath, tmpDir);
+    zipFolder(zipPath, tmpDir);
     return 0;
 }

@@ -1,7 +1,7 @@
 #include "zipfolder.h"
 #include "..\..\..\..\deps\zip\src\zip.h"
 
-void zip_folder(std::filesystem::path zipPath, std::filesystem::path folderPath)
+void zipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
 {
     struct zip_t* zip = zip_open(zipPath.string().c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
     using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;

@@ -1298,6 +1298,7 @@ millis
 mimetype
 Minimizeallwindows
 MINIMIZEBOX
+miniz
 MINMAXINFO
 Miracast
 mixin
@@ -2390,6 +2391,7 @@ wixproj
 wixtoolset
 WIXUI
 WKSG
+wmain
 wmi
 WMKEYDOWN
 WMKEYUP

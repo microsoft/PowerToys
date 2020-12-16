@@ -13,11 +13,11 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\deps\zip\src\miniz.h" />
     <ClInclude Include="..\..\..\..\deps\zip\src\zip.h" />
-    <ClInclude Include="zipfolder.h" />
+    <ClInclude Include="ZipFolder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\deps\zip\src\zip.c" />
-    <ClCompile Include="zipfolder.cpp" />
+    <ClCompile Include="ZipFolder.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

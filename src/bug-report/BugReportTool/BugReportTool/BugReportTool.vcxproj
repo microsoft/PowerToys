@@ -83,13 +83,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="zip.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="zip.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\zip\zip.vcxproj">

@@ -5,9 +5,5 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="zip.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="zip.h" />
   </ItemGroup>
 </Project>
