@@ -113,7 +113,7 @@ namespace Wox.Infrastructure
             {
                 WorkingDirectory = path,
                 FileName = "cmd.exe",
-                Arguments = $"/C wt.exe -d {path} 2> NUL >NUL || cmd.exe"
+                Arguments = $"/C wt.exe -d {path} 2> NUL >NUL || cmd.exe",
             };
 
             return Process.Start(processStartInfo);
