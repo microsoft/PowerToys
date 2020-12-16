@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\deps\zip\src\miniz.h" />
-    <ClInclude Include="..\..\..\..\deps\zip\src\zip.h" />
+    <ClInclude Include="..\..\..\..\deps\cziplib\src\miniz.h" />
+    <ClInclude Include="..\..\..\..\deps\cziplib\src\zip.h" />
     <ClInclude Include="ZipFolder.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\deps\zip\src\zip.c" />
+    <ClCompile Include="..\..\..\..\deps\cziplib\src\zip.c" />
     <ClCompile Include="ZipFolder.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
