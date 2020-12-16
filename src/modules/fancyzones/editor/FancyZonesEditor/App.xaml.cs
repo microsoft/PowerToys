@@ -43,6 +43,9 @@ namespace FancyZonesEditor
         private const string CrashReportDynamicAssemblyTag = "dynamic assembly doesn't have location";
         private const string CrashReportLocationNullTag = "location is null or empty";
 
+        private const string ParsingErrorReportTag = "Settings parsing error";
+        private const string ParsingErrorDataTag = "Data: ";
+
         public MainWindowSettingsModel MainWindowSettings { get; }
 
         public static FancyZonesEditorIO FancyZonesEditorIO { get; private set; }
@@ -93,12 +96,12 @@ namespace FancyZonesEditor
             var parseResult = FancyZonesEditorIO.ParseZoneSettings();
 
             // 10ms retry loop with 1 second timeout
-            if (!parseResult.Item1)
+            if (!parseResult.Result)
             {
                 CancellationTokenSource ts = new CancellationTokenSource();
                 Task t = Task.Run(() =>
                 {
-                    while (!parseResult.Item1 && !ts.IsCancellationRequested)
+                    while (!parseResult.Result && !ts.IsCancellationRequested)
                     {
                         Task.Delay(10).Wait();
                         parseResult = FancyZonesEditorIO.ParseZoneSettings();
@@ -117,13 +120,25 @@ namespace FancyZonesEditor
             }
 
             // Error message if parsing failed
-            if (!parseResult.Item1)
+            if (!parseResult.Result)
             {
-                string message = parseResult.Item2 + Environment.NewLine + Environment.NewLine + FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_User_Choice;
+                var sb = new StringBuilder();
+                sb.AppendLine();
+                sb.AppendLine("## " + ParsingErrorReportTag);
+                sb.AppendLine();
+                sb.AppendLine(parseResult.Message);
+                sb.AppendLine();
+                sb.AppendLine(ParsingErrorDataTag);
+                sb.AppendLine(parseResult.ManlformedData);
+
+                string message = parseResult.Message + Environment.NewLine + Environment.NewLine + FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_User_Choice;
                 if (MessageBox.Show(message, FancyZonesEditor.Properties.Resources.Error_Parsing_Zones_Settings_Title, MessageBoxButton.YesNo) == MessageBoxResult.No)
                 {
+                    ShowExceptionReportMessageBox(sb.ToString());
                     Environment.Exit(0);
                 }
+
+                ShowExceptionReportMessageBox(sb.ToString());
             }
 
             MainWindowSettingsModel settings = ((App)Current).MainWindowSettings;

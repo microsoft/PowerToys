@@ -152,6 +152,22 @@ namespace FancyZonesEditor.Utils
             public List<CustomLayoutWrapper> CustomZoneSets { get; set; }
         }
 
+        public struct ParsingResult
+        {
+            public bool Result { get; }
+
+            public string Message { get; }
+
+            public string ManlformedData { get; }
+
+            public ParsingResult(bool result, string message = "", string data = "")
+            {
+                Result = result;
+                Message = message;
+                ManlformedData = data;
+            }
+        }
+
         public FancyZonesEditorIO()
         {
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -313,29 +329,40 @@ namespace FancyZonesEditor.Utils
             }
         }
 
-        public Tuple<bool, string> ParseZoneSettings()
+        public ParsingResult ParseZoneSettings()
         {
             if (_fileSystem.File.Exists(FancyZonesSettingsFile))
             {
+                ZoneSettingsWrapper zoneSettings;
+                string settingsString = string.Empty;
+
                 try
                 {
-                    var zoneSettings = ReadZoneSettings(FancyZonesSettingsFile);
+                    settingsString = ReadZoneSettings(FancyZonesSettingsFile);
+                    zoneSettings = JsonSerializer.Deserialize<ZoneSettingsWrapper>(settingsString, _options);
+                }
+                catch (Exception ex)
+                {
+                    return new ParsingResult(false, ex.Message, settingsString);
+                }
 
+                try
+                {
                     bool devicesParsingResult = SetDevices(zoneSettings.Devices);
                     bool customZonesParsingResult = SetCustomLayouts(zoneSettings.CustomZoneSets);
 
                     if (!devicesParsingResult || !customZonesParsingResult)
                     {
-                        return new Tuple<bool, string>(false, Properties.Resources.Error_Parsing_Zones_Settings_Malformed_Data);
+                        return new ParsingResult(false, Properties.Resources.Error_Parsing_Zones_Settings_Malformed_Data, settingsString);
                     }
                 }
                 catch (Exception ex)
                 {
-                    return new Tuple<bool, string>(false, ex.Message);
+                    return new ParsingResult(false, ex.Message, settingsString);
                 }
             }
 
-            return new Tuple<bool, string>(true, string.Empty);
+            return new ParsingResult(true);
         }
 
         public void SerializeZoneSettings()
@@ -466,14 +493,13 @@ namespace FancyZonesEditor.Utils
             }
         }
 
-        private ZoneSettingsWrapper ReadZoneSettings(string fileName)
+        private string ReadZoneSettings(string fileName)
         {
             Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
             StreamReader reader = new StreamReader(inputStream);
             string data = reader.ReadToEnd();
             inputStream.Close();
-
-            return JsonSerializer.Deserialize<ZoneSettingsWrapper>(data, _options);
+            return data;
         }
 
         private bool SetDevices(List<DeviceWrapper> devices)
