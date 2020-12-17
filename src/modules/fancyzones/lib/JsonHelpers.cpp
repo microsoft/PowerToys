@@ -56,7 +56,7 @@ namespace NonLocalizable
     const wchar_t LeftCoordinate[] = L"left-coordinate";
     const wchar_t IsSelected[] = L"is-selected";
     const wchar_t ProcessId[] = L"process-id";
-    const wchar_t SpanZonesActrossMonitors[] = L"span-zones-across-monitors";
+    const wchar_t SpanZonesAcrossMonitors[] = L"span-zones-across-monitors";
     const wchar_t Monitors[] = L"monitors";
 }
 
@@ -474,7 +474,7 @@ namespace JSONHelpers
         json::JsonObject result{};
 
         result.SetNamedValue(NonLocalizable::ProcessId, json::value(args.processId));
-        result.SetNamedValue(NonLocalizable::SpanZonesActrossMonitors, json::value(args.spanZonesAcrossMonitors));
+        result.SetNamedValue(NonLocalizable::SpanZonesAcrossMonitors, json::value(args.spanZonesAcrossMonitors));
 
         json::JsonArray monitors;
         for (const auto& monitor : args.monitors)
