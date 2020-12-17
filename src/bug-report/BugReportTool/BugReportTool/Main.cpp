@@ -190,11 +190,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     {
         copy(powerToys, tmpDir, copy_options::recursive);
     }
-    catch (std::bad_alloc err)
-    {
-        printf("Copy PowerToys directory failed. %s", err.what());
-        return 1;
-    }
     catch (...)
     {
         printf("Copy PowerToys directory failed");
