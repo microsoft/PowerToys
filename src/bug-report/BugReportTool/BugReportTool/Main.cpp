@@ -14,7 +14,9 @@ using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
 
 map<wstring, vector<wstring>> escapeInfo = {
-    { L"FancyZones\\app-zone-history.json", { L"app-zone-history/app-path" } }
+    { L"FancyZones\\app-zone-history.json", { L"app-zone-history/app-path" } },
+    { L"PowerRename\\replace-mru.json", { L"MRUList" } },
+    { L"PowerRename\\search-mru.json", { L"MRUList" } }
 };
 
 vector<wstring> filesToDelete = {
