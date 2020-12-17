@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using ManagedCommon;
-using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Helper;
 using Microsoft.Plugin.Registry.Properties;
 using Wox.Plugin;
@@ -109,63 +107,7 @@ namespace Microsoft.Plugin.Registry
         /// <returns>A list context menu entries</returns>
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            if (!(selectedResult?.ContextData is RegistryEntry entry))
-            {
-                return new List<ContextMenuResult>(0);
-            }
-
-            var list = new List<ContextMenuResult>();
-
-            if (entry.Key?.Name == selectedResult.Title)
-            {
-                list.Add(new ContextMenuResult
-                {
-                    AcceleratorKey = Key.C,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.Key?.Name ?? entry.KeyPath),
-                    FontFamily = "Segoe MDL2 Assets",
-                    Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
-                    PluginName = _assemblyName,
-                    Title = $"{Resources.CopyRegistryKeyToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
-                });
-            }
-            else
-            {
-                list.Add(new ContextMenuResult
-                {
-                    AcceleratorKey = Key.C,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Alt,
-                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.Value?.ToString() ?? string.Empty),
-                    FontFamily = "Segoe MDL2 Assets",
-                    Glyph = "\xF413",                       // F413 => Symbol: CopyTo
-                    PluginName = _assemblyName,
-                    Title = $"{Resources.CopyValueToClipboard} (CTRL+ALT+C){Environment.NewLine}{Environment.NewLine}{Resources.Value} {entry.Value}",
-                });
-
-                list.Add(new ContextMenuResult
-                {
-                    AcceleratorKey = Key.C,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.ValueName?.ToString() ?? string.Empty),
-                    FontFamily = "Segoe MDL2 Assets",
-                    Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
-                    PluginName = _assemblyName,
-                    Title = $"{Resources.CopyValueNameToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Name} {entry.ValueName}",
-                });
-            }
-
-            list.Add(new ContextMenuResult
-            {
-                AcceleratorKey = Key.Enter,
-                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                Action = _ => ContextMenuHelper.TryToOpenInRegistryEditor(entry),
-                FontFamily = "Segoe MDL2 Assets",
-                Glyph = "\xE70F",                           // E70F => Symbol: Pencil (means "Edit")
-                PluginName = _assemblyName,
-                Title = $"{Resources.OpenKeyInRegistryEditor} (CTRL+SHIFT+ENTER){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
-            });
-
-            return list;
+            return ContextMenuHelper.GetContextMenu(selectedResult, _assemblyName);
         }
 
         /// <summary>

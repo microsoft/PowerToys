@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Properties;
+using Wox.Plugin;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Registry.Helper
@@ -15,6 +18,73 @@ namespace Microsoft.Plugin.Registry.Helper
     /// </summary>
     internal static class ContextMenuHelper
     {
+        /// <summary>
+        /// Return a list with all context menu entries for the given <see cref="Result"/>
+        /// </summary>
+        /// <param name="result">The result for the context menu entires</param>
+        /// <param name="assemblyName">The anme of the this assembly</param>
+        /// <returns>A list with context menu entries</returns>
+        internal static List<ContextMenuResult> GetContextMenu(Result result, string assemblyName)
+        {
+            if (!(result?.ContextData is RegistryEntry entry))
+            {
+                return new List<ContextMenuResult>(0);
+            }
+
+            var list = new List<ContextMenuResult>();
+
+            if (string.IsNullOrEmpty(entry.ValueName))
+            {
+                list.Add(new ContextMenuResult
+                {
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ => TryToCopyToClipBoard(entry.Key?.Name ?? entry.KeyPath),
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
+                    PluginName = assemblyName,
+                    Title = $"{Resources.CopyRegistryKeyToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
+                });
+            }
+            else
+            {
+                list.Add(new ContextMenuResult
+                {
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Alt,
+                    Action = _ => TryToCopyToClipBoard(entry.Value?.ToString() ?? string.Empty),
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xF413",                       // F413 => Symbol: CopyTo
+                    PluginName = assemblyName,
+                    Title = $"{Resources.CopyValueToClipboard} (CTRL+ALT+C){Environment.NewLine}{Environment.NewLine}{Resources.Value} {entry.Value}",
+                });
+
+                list.Add(new ContextMenuResult
+                {
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ => TryToCopyToClipBoard(entry.ValueName?.ToString() ?? string.Empty),
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
+                    PluginName = assemblyName,
+                    Title = $"{Resources.CopyValueNameToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Name} {entry.ValueName}",
+                });
+            }
+
+            list.Add(new ContextMenuResult
+            {
+                AcceleratorKey = Key.Enter,
+                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                Action = _ => TryToOpenInRegistryEditor(entry),
+                FontFamily = "Segoe MDL2 Assets",
+                Glyph = "\xE70F",                           // E70F => Symbol: Pencil (means "Edit")
+                PluginName = assemblyName,
+                Title = $"{Resources.OpenKeyInRegistryEditor} (CTRL+SHIFT+ENTER){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
+            });
+
+            return list;
+        }
+
         #pragma warning disable CA1031 // Do not catch general exception types
 
         /// <summary>
@@ -22,7 +92,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="entry">The <see cref="RegistryEntry"/> to jump in</param>
         /// <returns><see langword="true"/> if the registry editor was successful open, otherwise <see langword="false"/></returns>
-        internal static bool TryToOpenInRegistryEditor(in RegistryEntry entry)
+        private static bool TryToOpenInRegistryEditor(in RegistryEntry entry)
         {
             try
             {
@@ -50,7 +120,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="text">The text to copy to the clipboard</param>
         /// <returns><see langword="true"/>The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
-        internal static bool TryToCopyToClipBoard(in string text)
+        private static bool TryToCopyToClipBoard(in string text)
         {
             try
             {
