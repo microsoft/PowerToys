@@ -642,13 +642,13 @@ void FancyZones::ToggleEditor() noexcept
     * (8) monitor top
     * ...
     */
-    std::wstring params;
+    std::wstring params; 
     const std::wstring divider = L"/";
     params += std::to_wstring(GetCurrentProcessId()) + divider; /* Process id */
-
+    
     const bool spanZonesAcrossMonitors = m_settings->GetSettings()->spanZonesAcrossMonitors;
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
-
+    
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
     allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
 
@@ -672,7 +672,7 @@ void FancyZones::ToggleEditor() noexcept
         }
 
         monitorsDataStr += std::move(monitorId) + divider; /* Monitor id */
-
+         
         UINT dpiX = 0;
         UINT dpiY = 0;
         if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
@@ -693,6 +693,8 @@ void FancyZones::ToggleEditor() noexcept
 
     params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
     params += monitorsDataStr;
+
+    FancyZonesDataInstance().SaveFancyZonesEditorParameters(spanZonesAcrossMonitors, virtualDesktopId.get(), targetMonitor); /* Write parameters to json file */
 
     if (showDpiWarning)
     {
