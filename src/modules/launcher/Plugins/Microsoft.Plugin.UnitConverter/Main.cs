@@ -51,29 +51,41 @@ namespace Microsoft.Plugin.UnitConverter
 
             foreach (QuantityType quantity_type in _included) {
                 QuantityInfo unit_info = Quantity.GetInfo(quantity_type);
-                bool first_unit_recognized = UnitParser.Default.TryParse(split[1], unit_info.UnitType, out Enum first_unit);
-                bool second_unit_recognized = UnitParser.Default.TryParse(split[3], unit_info.UnitType, out Enum _);
+                bool first_unit_is_abbreviated = UnitParser.Default.TryParse(split[1], unit_info.UnitType, out Enum first_unit);
+                bool second_unit_is_abbreviated = UnitParser.Default.TryParse(split[3], unit_info.UnitType, out Enum second_unit);
 
                 // 3 types of matches:
                 // a) 10 ft in cm (double abbreviation)
                 // b) 10 feet in centimeter (double unabbreviated)
                 // c) 10 feet in cm (single abbreviation
 
-                if (first_unit_recognized && second_unit_recognized) {
+                if (first_unit_is_abbreviated && second_unit_is_abbreviated) {
                     // a
                     converted = UnitsNet.UnitConverter.ConvertByAbbreviation(int.Parse(split[0]), unit_info.Name, input_first_unit, input_second_unit);
                     AddToResult(final_list, converted, split[3]);
                 }
-                else if ((first_unit_recognized && !second_unit_recognized) || (!first_unit_recognized && second_unit_recognized)) {
+                else if ((first_unit_is_abbreviated && !second_unit_is_abbreviated) || (!first_unit_is_abbreviated && second_unit_is_abbreviated)) {
                     // c
-                    if (first_unit_recognized) {
-                        // get first unabbreviated, convert first to second
+                    if (first_unit_is_abbreviated) {
+                        bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit);
+
+                        if (second_unabbreviated) {
+                            UnitInfo second = Array.Find(unit_info.UnitInfos, info => info.Name.ToLower() == input_second_unit.ToLower());
+                            converted = UnitsNet.UnitConverter.Convert(double.Parse(split[0]), first_unit, second.Value);
+                            AddToResult(final_list, converted, split[3]);
+                        }
                     }
-                    else if (second_unit_recognized) {
-                        // get second unabbreviated, convert first to second
+                    else if (second_unit_is_abbreviated) {
+                        bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit);
+
+                        if (first_unabbreviated) {
+                            UnitInfo first = Array.Find(unit_info.UnitInfos, info => info.Name.ToLower() == input_first_unit.ToLower());
+                            converted = UnitsNet.UnitConverter.Convert(double.Parse(split[0]), first.Value, second_unit);
+                            AddToResult(final_list, converted, split[3]);
+                        }
                     }
                 }
-                else if ((!first_unit_recognized) && (!second_unit_recognized)) {
+                else if ((!first_unit_is_abbreviated) && (!second_unit_is_abbreviated)) {
                     // b
                     bool first_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_first_unit);
                     bool second_unabbreviated = Array.Exists(unit_info.UnitInfos, unitName => unitName.Name.ToLower() == input_second_unit);
