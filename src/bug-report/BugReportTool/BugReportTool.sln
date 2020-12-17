@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BugReportTool", "BugReportTool\BugReportTool.vcxproj", "{99126840-5C30-4E9E-AC6C-E73DDED5C3BD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zip", "zip\zip.vcxproj", "{604A3D82-2F37-459C-BEF9-F0585595E9AC}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SetttingsAPI", "..\..\common\SettingsAPI\SetttingsAPI.vcxproj", "{6955446D-23F7-4023-9BB3-8657F904AF99}"
 EndProject
 Global
@@ -19,10 +17,6 @@ Global
 		{99126840-5C30-4E9E-AC6C-E73DDED5C3BD}.Debug|x64.Build.0 = Debug|x64
 		{99126840-5C30-4E9E-AC6C-E73DDED5C3BD}.Release|x64.ActiveCfg = Release|x64
 		{99126840-5C30-4E9E-AC6C-E73DDED5C3BD}.Release|x64.Build.0 = Release|x64
-		{604A3D82-2F37-459C-BEF9-F0585595E9AC}.Debug|x64.ActiveCfg = Debug|x64
-		{604A3D82-2F37-459C-BEF9-F0585595E9AC}.Debug|x64.Build.0 = Debug|x64
-		{604A3D82-2F37-459C-BEF9-F0585595E9AC}.Release|x64.ActiveCfg = Release|x64
-		{604A3D82-2F37-459C-BEF9-F0585595E9AC}.Release|x64.Build.0 = Release|x64
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Debug|x64.ActiveCfg = Debug|x64
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Debug|x64.Build.0 = Debug|x64
 		{6955446D-23F7-4023-9BB3-8657F904AF99}.Release|x64.ActiveCfg = Release|x64

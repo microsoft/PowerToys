@@ -5,5 +5,27 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="..\..\..\..\deps\cziplib\src\zip.c">
+      <Filter>ZipTools</Filter>
+    </ClCompile>
+    <ClCompile Include="ZipTools\zipfolder.cpp">
+      <Filter>ZipTools</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ZipTools">
+      <UniqueIdentifier>{3ae1b6aa-4134-47b1-afdf-dfb3b5901dcc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\deps\cziplib\src\miniz.h">
+      <Filter>ZipTools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\deps\cziplib\src\zip.h">
+      <Filter>ZipTools</Filter>
+    </ClInclude>
+    <ClInclude Include="ZipTools\zipfolder.h">
+      <Filter>ZipTools</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

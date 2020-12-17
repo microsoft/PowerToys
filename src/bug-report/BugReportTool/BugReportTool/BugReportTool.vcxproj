@@ -45,7 +45,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\deps\cziplib\src\zip.c" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="ZipTools\zipfolder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -54,9 +56,11 @@
     <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\zip\zip.vcxproj">
-      <Project>{604a3d82-2f37-459c-bef9-f0585595e9ac}</Project>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\deps\cziplib\src\miniz.h" />
+    <ClInclude Include="..\..\..\..\deps\cziplib\src\zip.h" />
+    <ClInclude Include="ZipTools\zipfolder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -6,7 +6,7 @@
 #include <winrt/Windows.Data.Json.h>
 #include <winrt/Windows.Foundation.Collections.h>
 
-#include "../zip/ZipFolder.h"
+#include "ZipTools/ZipFolder.h"
 #include "../../../common/SettingsAPI/settings_helpers.h"
 
 using namespace std;
