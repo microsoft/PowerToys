@@ -190,7 +190,7 @@ int bootstrapper(HINSTANCE hInstance)
         }
         else
         {
-            spdlog::error("MSI installer couldn't be extracted!");
+            spdlog::error("MSI installer couldn't be extracted");
         }
         return 0;
     }
