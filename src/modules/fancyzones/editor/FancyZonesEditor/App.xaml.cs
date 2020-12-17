@@ -91,7 +91,10 @@ namespace FancyZonesEditor
 
             _themeManager = new ThemeManager(this);
 
-            FancyZonesEditorIO.ParseCommandLineArguments();
+            if (!FancyZonesEditorIO.ParseParams().Result)
+            {
+                FancyZonesEditorIO.ParseCommandLineArguments();
+            }
 
             var parseResult = FancyZonesEditorIO.ParseZoneSettings();
 
