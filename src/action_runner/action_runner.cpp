@@ -173,7 +173,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-    if (action == L"-run-non-elevated")
+    if (action == RUN_NONELEVATED_CMDARG)
     {
         int nextArg = 2;
 
@@ -235,7 +235,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
         }
     }
-    else if (action == L"-uninstall_msi")
+    else if (action == UNINSTALL_MSI_CMDARG)
     {
         return uninstall_msi_action();
     }
