@@ -7,6 +7,7 @@
 #include <winrt/Windows.Foundation.Collections.h>
 
 #include "../zip/ZipFolder.h"
+#include "../../../common/SettingsAPI/settings_helpers.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -18,22 +19,6 @@ map<wstring, vector<wstring>> escapeInfo = {
 
 vector<wstring> filesToDelete = {
 };
-
-std::wstring get_root_save_folder_location()
-{
-    PWSTR local_app_path;
-    winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &local_app_path));
-    std::wstring result{ local_app_path };
-    CoTaskMemFree(local_app_path);
-
-    result += L"\\Microsoft\\PowerToys";
-    path save_path(result);
-    if (!exists(save_path))
-    {
-        create_directories(save_path);
-    }
-    return result;
-}
 
 vector<wstring> getXpathArray(wstring xpath)
 {
@@ -179,7 +164,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         }
     }
 
-    auto powerToys = get_root_save_folder_location();
+    auto powerToys = PTSettingsHelper::get_root_save_folder_location();
     
     // Copy to a temp folder
     auto tmpDir = temp_directory_path();
