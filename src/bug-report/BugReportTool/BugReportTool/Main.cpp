@@ -142,15 +142,15 @@ void hideUserPrivateInfo(filesystem::path dir)
 string getCurrentDate()
 {
     time_t now = time(0);
-    tm ltm; 
-    if (localtime_s(&ltm, &now) != 0)
+    tm localTime; 
+    if (localtime_s(&localTime, &now) != 0)
     {
         return "";
     }
 
-    int year = 1900 + ltm.tm_year;
-    int month = 1 + ltm.tm_mon;
-    int day = ltm.tm_mday;
+    int year = 1900 + localTime.tm_year;
+    int month = 1 + localTime.tm_mon;
+    int day = localTime.tm_mday;
     return to_string(year) + "-" + to_string(month) + "-" + to_string(day);
 }
 
