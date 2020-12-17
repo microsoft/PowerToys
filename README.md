@@ -1,16 +1,66 @@
-# Overview
+# Welcome to the Microsoft PowerToys repo
 
 <img src="./doc/images/overview/PT%20hero%20image.png"/>
 
-Welcome to Microsoft PowerToys! **For new users, check out our newly published [Microsoft Docs: PowerToys](https://docs.microsoft.com/en-us/windows/powertoys/) page to get started.** The content on this repo will be focused on relevant updates and resources for active contributors and developers of the various PowerToys projects. For info on [downloads & installation](https://docs.microsoft.com/en-us/windows/powertoys/install), [PowerToys guides and overviews](https://docs.microsoft.com/en-us/windows/powertoys/), or any other tools and resources for [Windows development environments](https://docs.microsoft.com/en-us/windows/dev-environment/overview), be sure to check out Microsoft Docs!
-
-[What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap) | [Contributing to PowerToys](#contributing) | [Known issues](#known-issues)
+[Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap) |  [Known issues](#known-issues)
 
 ## Build status
 
 | Architecture | Master | Stable | Installer |
 |--------------|--------|--------|-----------|
 | x64 | [![Build Status for Master](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=master) | [![Build Status for Stable](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=stable)](https://dev.azure.com/ms/PowerToys/_build/latest?definitionId=219&branchName=stable) | [![Build Status for Installer](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/powertoys/powertoys-Windows-Official-master-Test?branchName=master)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=61&branchName=master) |
+
+## About
+
+Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. For more info on [PowerToys guides and overviews](https://docs.microsoft.com/en-us/windows/powertoys/), or any other tools and resources for [Windows development environments](https://docs.microsoft.com/en-us/windows/dev-environment/overview), be sure to check out our [Microsoft Docs](https://docs.microsoft.com/en-us/)! 
+
+Current utilities:
+
+- **[Color Picker](https://aka.ms/PowerToysOverview_ColorPicker)**
+- **[FancyZones](https://aka.ms/PowerToysOverview_FancyZones)**
+- **[File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns)**
+- **[Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer)**
+- **[Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager)**
+- **[PowerRename](https://aka.ms/PowerToysOverview_PowerRename)**
+- **[PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun)**
+- **[Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide)**
+- **[Video Conference Mute (Experimental)](https://aka.ms/PowerToysOverview_VideoConference)**
+
+## Installing and running Microsoft PowerToys
+
+### Requirements
+
+- Windows 10 v1903 (build 18362) or better preferred, Windows 10 v1803 (build 17134) minimum.  
+- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.10-windows-x64-installer). The installer should handle this but we want to directly make people aware.
+
+### Via GitHub with EXE [Recommended]
+
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.27.1-x64.exe` to download the PowerToys installer.
+
+This is our preferred method.
+
+### Via WinGet (Preview)
+Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
+
+```powershell
+WinGet install powertoys
+```
+
+## Contributing
+
+This project welcomes contributions of all types. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
+
+We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
+
+For guidance on developing for PowerToys, please read the [developer docs](/doc/devdocs) for a detailed breakdown.
+
+### ⚠ State of code ⚠
+
+PowerToys is still a very fluidic project and the team is actively working out of this repository.  We will be periodically re-structuring/refactoring the code to make it easier to comprehend, navigate, build, test, and contribute to, so **DO expect significant changes to code layout on a regular basis**.
+
+### License Info
+
+ Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
 
 ## Known Issues
 
@@ -72,22 +122,6 @@ For [v0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue
 ## PowerToys Roadmap
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
-
-## Contributing
-
-This project welcomes contributions of all types. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
-
-We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
-
-For guidance on developing for PowerToys, please read the [developer docs](/doc/devdocs) for a detailed breakdown.
-
-### ⚠ State of code ⚠
-
-PowerToys is still a very fluidic project and the team is actively working out of this repository.  We will be periodically re-structuring/refactoring the code to make it easier to comprehend, navigate, build, test, and contribute to, so **DO expect significant changes to code layout on a regular basis**.
-
-### License Info
-
- Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
 
 ## PowerToys Community
 
