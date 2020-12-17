@@ -124,7 +124,7 @@ namespace Microsoft.Plugin.Registry
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.Key?.Name ?? entry.KeyPath),
                     FontFamily = "Segoe MDL2 Assets",
-                    Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
+                    Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = _assemblyName,
                     Title = $"{Resources.CopyRegistryKeyToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
                 });
@@ -134,12 +134,23 @@ namespace Microsoft.Plugin.Registry
                 list.Add(new ContextMenuResult
                 {
                     AcceleratorKey = Key.C,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(selectedResult.Title),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Alt,
+                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.Value?.ToString() ?? string.Empty),
                     FontFamily = "Segoe MDL2 Assets",
-                    Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
+                    Glyph = "\xF413",                       // F413 => Symbol: CopyTo
                     PluginName = _assemblyName,
-                    Title = $"{Resources.CopyValueNameToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Name} {selectedResult.Title}",
+                    Title = $"{Resources.CopyValueToClipboard} (CTRL+ALT+C){Environment.NewLine}{Environment.NewLine}{Resources.Value} {entry.Value}",
+                });
+
+                list.Add(new ContextMenuResult
+                {
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = _ => ContextMenuHelper.TryToCopyToClipBoard(entry.ValueName?.ToString() ?? string.Empty),
+                    FontFamily = "Segoe MDL2 Assets",
+                    Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
+                    PluginName = _assemblyName,
+                    Title = $"{Resources.CopyValueNameToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Name} {entry.ValueName}",
                 });
             }
 

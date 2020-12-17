@@ -168,4 +168,7 @@
   <data name="RegistryValueKindUnknown" xml:space="preserve">
     <value>Unsupported data type</value>
   </data>
+  <data name="CopyValueToClipboard" xml:space="preserve">
+    <value>Copy value to clipboard</value>
+  </data>
 </root>

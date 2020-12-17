@@ -121,7 +121,7 @@ namespace Microsoft.Plugin.Registry.Helper
                 {
                     resultList.Add(new Result
                     {
-                        ContextData = new RegistryEntry(key),
+                        ContextData = new RegistryEntry(key, valueEntry.Key, valueEntry.Value),
                         IcoPath = iconPath,
                         SubTitle = $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)} * {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}",
                         Title = GetTruncatedText(valueEntry.Key, maxLength),

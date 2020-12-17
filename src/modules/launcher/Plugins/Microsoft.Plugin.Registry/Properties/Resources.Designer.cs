@@ -79,6 +79,15 @@ namespace Microsoft.Plugin.Registry.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy value to clipboard.
+        /// </summary>
+        internal static string CopyValueToClipboard {
+            get {
+                return ResourceManager.GetString("CopyValueToClipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Key:.
         /// </summary>
         internal static string Key {
