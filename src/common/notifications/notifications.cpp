@@ -28,6 +28,9 @@
 
 using namespace winrt::Windows::ApplicationModel::Background;
 using winrt::Windows::Data::Xml::Dom::XmlDocument;
+using winrt::Windows::UI::Notifications::NotificationData;
+using winrt::Windows::UI::Notifications::NotificationUpdateResult;
+using winrt::Windows::UI::Notifications::ScheduledToastNotification;
 using winrt::Windows::UI::Notifications::ToastNotification;
 using winrt::Windows::UI::Notifications::ToastNotificationManager;
 
@@ -396,7 +399,7 @@ void notifications::show_toast_with_activations(std::wstring message,
         map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
         map.Insert(L"progressTitle", params.progress_bar->progress_title);
     }
-    winrt::Windows::UI::Notifications::NotificationData data{ map };
+    NotificationData data{ map };
     notification.Data(std::move(data));
 
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
@@ -438,14 +441,13 @@ void notifications::update_toast_progress_bar(std::wstring_view tag, progress_ba
     map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
     map.Insert(L"progressTitle", params.progress_title);
 
-    winrt::Windows::UI::Notifications::NotificationData data(map);
-    winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
+    NotificationData data(map);
+    NotificationUpdateResult res = notifier.Update(data, tag, DEFAULT_TOAST_GROUP);
 }
 
-void notifications::remove_toasts(std::wstring_view tag)
+void notifications::remove_toasts_by_tag(std::wstring_view tag)
 {
     using namespace winrt::Windows::System;
-
     try
     {
         User currentUser{ *User::FindAllAsync(UserType::LocalUser, UserAuthenticationStatus::LocallyAuthenticated).get().First() };
@@ -455,10 +457,28 @@ void notifications::remove_toasts(std::wstring_view tag)
         }
         currentUser.GetPropertyAsync(KnownUserProperties::AccountName());
         auto toastHistory = ToastNotificationManager::GetForUser(currentUser).History();
+
         toastHistory.Remove(tag, DEFAULT_TOAST_GROUP, APPLICATION_ID);
     }
     catch (...)
     {
         // Couldn't get the current user or problem removing the toast => nothing we can do
+    }
+}
+
+void notifications::remove_all_scheduled_toasts()
+{
+    const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
+                                                            ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+
+    try
+    {
+        for (const auto& scheduled_toast : notifier.GetScheduledToastNotifications())
+        {
+            notifier.RemoveFromSchedule(scheduled_toast);
+        }
+    }
+    catch (...)
+    {
     }
 }
