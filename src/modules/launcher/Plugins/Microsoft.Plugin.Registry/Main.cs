@@ -126,20 +126,20 @@ namespace Microsoft.Plugin.Registry
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
                     PluginName = _assemblyName,
-                    Title = $"{Resources.CopyRegistryKeyToClipboard}{Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
+                    Title = $"{Resources.CopyRegistryKeyToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
                 });
             }
             else
             {
                 list.Add(new ContextMenuResult
                 {
-                    AcceleratorKey = Key.N,
+                    AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ => ContextMenuHelper.TryToCopyToClipBoard(selectedResult.Title),
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF0E3",                       // E70F => Symbol: ClipboardList
                     PluginName = _assemblyName,
-                    Title = $"{Resources.CopyValueNameToClipboard}{Environment.NewLine}{Environment.NewLine}{Resources.Name} {selectedResult.Title}",
+                    Title = $"{Resources.CopyValueNameToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Name} {selectedResult.Title}",
                 });
             }
 
@@ -151,7 +151,7 @@ namespace Microsoft.Plugin.Registry
                 FontFamily = "Segoe MDL2 Assets",
                 Glyph = "\xE70F",                           // E70F => Symbol: Pencil (means "Edit")
                 PluginName = _assemblyName,
-                Title = $"{Resources.OpenKeyInRegistryEditor}{Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
+                Title = $"{Resources.OpenKeyInRegistryEditor} (CTRL+SHIFT+ENTER){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
             });
 
             return list;
