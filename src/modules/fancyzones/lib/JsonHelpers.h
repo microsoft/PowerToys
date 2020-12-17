@@ -59,6 +59,26 @@ namespace JSONHelpers
     using TDeviceInfoMap = std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData>;
     using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData>;
 
+    struct MonitorJSON
+    {
+        int dpi;
+        std::wstring id;
+        int top;
+        int left;
+        bool isSelected = false;
+
+        static json::JsonObject ToJson(const MonitorJSON& monitor);
+    };
+    
+    struct EditorArgsJSON
+    {
+        DWORD processId;
+        bool spanZonesAcrossMonitors;
+        std::vector<MonitorJSON> monitors;
+
+        static json::JsonObject ToJson(const EditorArgsJSON& args);
+    };
+
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
     void SaveFancyZonesData(const std::wstring& zonesSettingsFileName,
                             const std::wstring& appZoneHistoryFileName,
