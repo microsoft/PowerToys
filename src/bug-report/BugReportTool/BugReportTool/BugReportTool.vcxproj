@@ -60,6 +60,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\deps\cziplib\src\miniz.h" />
     <ClInclude Include="..\..\..\..\deps\cziplib\src\zip.h" />
+    <ClInclude Include="..\..\..\common\utils\json.h" />
     <ClInclude Include="ZipTools\zipfolder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -4,6 +4,12 @@
 void zipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
 {
     struct zip_t* zip = zip_open(zipPath.string().c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
+    if (!zip)
+    {
+        printf("Can not open zip.");
+        throw -1;
+    }
+
     using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
     int rootSize = folderPath.wstring().size();
     for (const auto& dirEntry : recursive_directory_iterator(folderPath))

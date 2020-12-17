@@ -8,6 +8,7 @@
 
 #include "ZipTools/ZipFolder.h"
 #include "../../../common/SettingsAPI/settings_helpers.h"
+#include "../../../common/utils/json.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -89,32 +90,25 @@ void hideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
     }
 }
 
-void hideForFile(path dir, wstring relativePath)
+void hideForFile(const path& dir, const wstring& relativePath)
 {
-    wstring jsonString, tmp;
-    dir = dir.append(relativePath);
-    wifstream file(dir);
-    while (std::getline(file, tmp))
+    path jsonPath = dir;
+    jsonPath.append(relativePath);
+    auto jObject = json::from_file(jsonPath.wstring());
+    if (!jObject.has_value())
     {
-        jsonString += tmp;
+        wprintf(L"Can not parse file %s\n", jsonPath.c_str());
+        return;        
     }
 
-    JsonValue jValue = NULL;
-    if (!JsonValue::TryParse(jsonString, jValue))
-    {
-        wprintf(L"Can not parse file %s", dir.c_str());
-        return;
-    }
-
+    JsonValue jValue = json::value(jObject.value());
     for (auto xpath : escapeInfo[relativePath])
     {
         vector<wstring> xpathArray = getXpathArray(xpath);
         hideByXPath(jValue, xpathArray, 0);
     }
 
-    jsonString = jValue.Stringify();
-    wofstream out(dir);
-    out << jsonString;
+    json::to_file(jsonPath.wstring(), jObject.value());
 }
 
 bool del(wstring path)
@@ -143,6 +137,21 @@ void hideUserPrivateInfo(filesystem::path dir)
     {
         del(it);
     }
+}
+
+string getCurrentDate()
+{
+    time_t now = time(0);
+    tm ltm; 
+    if (localtime_s(&ltm, &now) != 0)
+    {
+        return "";
+    }
+
+    int year = 1900 + ltm.tm_year;
+    int month = 1 + ltm.tm_mon;
+    int day = ltm.tm_mday;
+    return to_string(year) + "-" + to_string(month) + "-" + to_string(day);
 }
 
 int wmain(int argc, wchar_t* argv[], wchar_t*)
@@ -197,7 +206,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
-    zipPath = zipPath.append("PowerToys.zip");
+    zipPath = zipPath.append("PowerToysReport_" + getCurrentDate() + ".zip");
     try
     {
         zipFolder(zipPath, tmpDir);

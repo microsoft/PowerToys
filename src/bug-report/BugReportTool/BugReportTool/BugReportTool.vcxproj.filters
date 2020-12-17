@@ -27,5 +27,6 @@
     <ClInclude Include="ZipTools\zipfolder.h">
       <Filter>ZipTools</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\common\utils\json.h" />
   </ItemGroup>
 </Project>
