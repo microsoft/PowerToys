@@ -38,3 +38,6 @@ TestCase\("[^"]+"
 
 # UnitTests
 \[DataRow\(.*\)\]
+
+# Id info inside markdown file (registry.md) 
+^\s+\|\s+ID\s+\|\s*\`[0-9A-F]{32}\`
