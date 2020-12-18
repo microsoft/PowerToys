@@ -48,6 +48,16 @@ namespace NonLocalizable
     const wchar_t ZoneIndexStr[] = L"zone-index";
     const wchar_t ZoneSetUuidStr[] = L"zoneset-uuid";
     const wchar_t ZonesStr[] = L"zones";
+
+    // Editor arguments
+    const wchar_t Dpi[] = L"dpi";
+    const wchar_t MonitorId[] = L"monitor-id";
+    const wchar_t TopCoordinate[] = L"top-coordinate";
+    const wchar_t LeftCoordinate[] = L"left-coordinate";
+    const wchar_t IsSelected[] = L"is-selected";
+    const wchar_t ProcessId[] = L"process-id";
+    const wchar_t SpanZonesAcrossMonitors[] = L"span-zones-across-monitors";
+    const wchar_t Monitors[] = L"monitors";
 }
 
 namespace
@@ -444,6 +454,37 @@ namespace JSONHelpers
         {
             return std::nullopt;
         }
+    }
+
+    json::JsonObject MonitorInfo::ToJson(const MonitorInfo& monitor)
+    {
+        json::JsonObject result{};
+
+        result.SetNamedValue(NonLocalizable::Dpi, json::value(monitor.dpi));
+        result.SetNamedValue(NonLocalizable::MonitorId, json::value(monitor.id));
+        result.SetNamedValue(NonLocalizable::TopCoordinate, json::value(monitor.top));
+        result.SetNamedValue(NonLocalizable::LeftCoordinate, json::value(monitor.left));
+        result.SetNamedValue(NonLocalizable::IsSelected, json::value(monitor.isSelected));
+
+        return result;
+    }
+
+    json::JsonObject EditorArgs::ToJson(const EditorArgs& args)
+    {
+        json::JsonObject result{};
+
+        result.SetNamedValue(NonLocalizable::ProcessId, json::value(args.processId));
+        result.SetNamedValue(NonLocalizable::SpanZonesAcrossMonitors, json::value(args.spanZonesAcrossMonitors));
+
+        json::JsonArray monitors;
+        for (const auto& monitor : args.monitors)
+        {
+            monitors.Append(MonitorInfo::ToJson(monitor));
+        }
+
+        result.SetNamedValue(NonLocalizable::Monitors, monitors);
+
+        return result;
     }
 
     json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName)

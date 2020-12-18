@@ -621,6 +621,12 @@ void FancyZones::ToggleEditor() noexcept
         return;
     }
 
+    wil::unique_cotaskmem_string virtualDesktopId;
+    if (!SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopId)))
+    {
+        return;   
+    }
+
     /*
     * Divider: /
     * Parts:
@@ -639,10 +645,8 @@ void FancyZones::ToggleEditor() noexcept
     std::wstring params;
     const std::wstring divider = L"/";
     params += std::to_wstring(GetCurrentProcessId()) + divider; /* Process id */
-
     const bool spanZonesAcrossMonitors = m_settings->GetSettings()->spanZonesAcrossMonitors;
     params += std::to_wstring(spanZonesAcrossMonitors) + divider; /* Span zones */
-
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
     allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
 
@@ -657,17 +661,8 @@ void FancyZones::ToggleEditor() noexcept
         HMONITOR monitor = monitorData.first;
         auto monitorInfo = monitorData.second;
 
-        std::wstring monitorId;
         std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
-        wil::unique_cotaskmem_string virtualDesktopId;
-        if (SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopId)))
-        {
-            monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
-        }
-        else
-        {
-            continue;
-        }
+        std::wstring monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
 
         if (monitor == targetMonitor)
         {
@@ -675,7 +670,6 @@ void FancyZones::ToggleEditor() noexcept
         }
 
         monitorsDataStr += std::move(monitorId) + divider; /* Monitor id */
-
         UINT dpiX = 0;
         UINT dpiY = 0;
         if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
@@ -690,12 +684,14 @@ void FancyZones::ToggleEditor() noexcept
             prevDpiY = dpiY;
         }
 
-        monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.left) + divider;
-        monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.top) + divider;
+        monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.left) + divider; /* Top coordinate */
+        monitorsDataStr += std::to_wstring(monitorInfo.rcMonitor.top) + divider; /* Left coordinate */
     }
 
     params += std::to_wstring(allMonitors.size()) + divider; /* Monitors count */
     params += monitorsDataStr;
+
+    FancyZonesDataInstance().SaveFancyZonesEditorParameters(spanZonesAcrossMonitors, virtualDesktopId.get(), targetMonitor); /* Write parameters to json file */
 
     if (showDpiWarning)
     {
