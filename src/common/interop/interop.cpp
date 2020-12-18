@@ -20,7 +20,7 @@
 using namespace System;
 using namespace System::Runtime::InteropServices;
 
-//https://docs.microsoft.com/en-us/cpp/dotnet/how-to-wrap-native-class-for-use-by-csharp?view=vs-2019
+// https://docs.microsoft.com/en-us/cpp/dotnet/how-to-wrap-native-class-for-use-by-csharp?view=vs-2019
 namespace interop
 {
 public
