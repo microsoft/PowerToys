@@ -1334,7 +1334,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         }
         else
         {
-            monitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTONULL);
+            monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         }
 
         auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
