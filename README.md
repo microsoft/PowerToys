@@ -14,17 +14,11 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. For more info on [PowerToys guides and overviews](https://docs.microsoft.com/en-us/windows/powertoys/), or any other tools and resources for [Windows development environments](https://docs.microsoft.com/en-us/windows/dev-environment/overview), be sure to check out our [Microsoft Docs](https://docs.microsoft.com/en-us/)! 
 
-Current utilities:
-
-- **[Color Picker](https://aka.ms/PowerToysOverview_ColorPicker)**
-- **[FancyZones](https://aka.ms/PowerToysOverview_FancyZones)**
-- **[File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns)**
-- **[Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer)**
-- **[Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager)**
-- **[PowerRename](https://aka.ms/PowerToysOverview_PowerRename)**
-- **[PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun)**
-- **[Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide)**
-- **[Video Conference Mute (Experimental)](https://aka.ms/PowerToysOverview_VideoConference)**
+|   | Current utilities: |   |
+|--------------|--------|--------|
+| [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) |  [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) |
+| [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) |
+| [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Video Conference Mute (Experimental)](https://aka.ms/PowerToysOverview_VideoConference) |
 
 ## Installing and running Microsoft PowerToys
 
@@ -35,9 +29,15 @@ Current utilities:
 
 ### Via GitHub with EXE [Recommended]
 
+#### Stable version
+
 Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.27.1-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
+
+#### Experiemental version
+To install the Video Conference mute, please use the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
+
 
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
@@ -46,35 +46,37 @@ Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/release
 WinGet install powertoys
 ```
 
+### Other install methods
+
+There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop.  If these are your preferred install solutions, this will have the install instructions.
+
+### Processor support
+
+We currently support the matrix below.
+
+| x64 | x86 | ARM64 |
+|:---:|:---:|:---:|
+| [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
+
 ## Contributing
 
 This project welcomes contributions of all types. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
 We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
 
-For guidance on developing for PowerToys, please read the [developer docs](/doc/devdocs) for a detailed breakdown.
+Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
 
-### ⚠ State of code ⚠
-
-PowerToys is still a very fluidic project and the team is actively working out of this repository.  We will be periodically re-structuring/refactoring the code to make it easier to comprehend, navigate, build, test, and contribute to, so **DO expect significant changes to code layout on a regular basis**.
-
-### License Info
-
- Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
-
-## Known Issues
-
-- Color Picker at times won't work when PT is running elevated - [#5348](https://github.com/microsoft/PowerToys/issues/5348).  We are currently working on a fix now for this.
-
-### Processor support
-
-We currently support the matrix below.
-
-| x64 | x86 | ARM |
-|:---:|:---:|:---:|
-| [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
+For guidance on developing for PowerToys, please read the [developer docs](/doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
 
 ## What's Happening
+
+### PowerToys Roadmap
+
+Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
+
+### Known Issues
+
+- Color Picker at times won't work when PT is running elevated - [#5348](https://github.com/microsoft/PowerToys/issues/5348).  We are currently working on a fix now for this.
 
 ### November 2020 Update
 
@@ -106,10 +108,6 @@ Our goals for [v0.27 release cycle][github-release-link] were to focus on adding
 
 I'd like to directly call out [@davidegiacometti](https://github.com/davidegiacometti), [@gordonwatts](https://github.com/gordonwatts), [@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@alannt777](https://github.com/alannt777) for their continued community support and helping directly make PowerToys a better piece of software.
 
-#### Experimental PowerToys utility with Video conference muting
-
-Install the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
-
 #### What is being planned for v0.29 - December 2020
 
 For [v0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F15), we are proactively working on:
@@ -118,10 +116,6 @@ For [v0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue
 - Accessibility
 - Video conference mute investigation toward a DirectShow filter versus a driver
 - OOBE work
-
-## PowerToys Roadmap
-
-Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
 ## PowerToys Community
 
