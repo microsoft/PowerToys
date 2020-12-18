@@ -119,8 +119,8 @@ atlfile
 atlstr
 attr
 Attribs
-AUMID
 aumid
+AUMID
 AUTHN
 AUTOAPPEND
 autocomplete
@@ -473,8 +473,8 @@ DISPIDAMBIENTDLCONTROL
 DISPINFO
 Displayandhidethedesktop
 DISPLAYCHANGE
-DISPLAYNAME
 displayname
+DISPLAYNAME
 divyan
 DLACTIVEXCTLS
 DLCONTROL
@@ -712,6 +712,7 @@ fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
+FARPROC
 Favicon
 fbdc
 fcharset
@@ -863,8 +864,8 @@ HLSL
 hmenu
 hmodule
 hmon
-HMONITOR
 hmonitor
+HMONITOR
 HOLDENTER
 HOLDESC
 homljgmgpmcbpjbnjpfijnhipfkiclkd
@@ -1243,6 +1244,7 @@ LPNMHDR
 LPNMHEADER
 LPNMLISTVIEW
 LPOLESTR
+LPOSVERSIONINFOEXW
 LPPOINT
 lprc
 LPRECT
@@ -1345,8 +1347,8 @@ modulekey
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
-MONITORINFOF
 monitorinfof
+MONITORINFOF
 Monthand
 Moq
 MOUSEACTIVATE
@@ -1402,8 +1404,8 @@ multizone
 mutex
 mutexes
 muxc
-Mvvm
 mvvm
+Mvvm
 MYICON
 myuri
 NAMECHANGE
@@ -1506,7 +1508,9 @@ npm
 npmjs
 npos
 NResize
+ntdll
 NTFS
+NTSTATUS
 nuget
 nullopt
 nullptr
@@ -1559,6 +1563,7 @@ oss
 ostr
 ostream
 ostringstream
+OSVERSIONINFOEXW
 osx
 otating
 ouicompat
@@ -1834,8 +1839,8 @@ roslyn
 royvou
 rpc
 RRF
-RSHIFT
 rshift
+RSHIFT
 Rsp
 rst
 Rstrtmgr
@@ -2050,8 +2055,8 @@ stdin
 stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
-Stdout
 stdout
+Stdout
 STEPIT
 stgm
 STGMEDIUM
@@ -2370,8 +2375,8 @@ wcslen
 wcsncmp
 wcsnicmp
 wdp
-WDS
 wds
+WDS
 wdupenv
 weakme
 webapp
@@ -2394,8 +2399,8 @@ wiki
 wikipedia
 wil
 wildcards
-WINAPI
 winapi
+WINAPI
 winauto
 wincolor
 windef
@@ -2517,8 +2522,8 @@ XStr
 XToolset
 xunit
 XY
-YAML
 yaml
+YAML
 YAngle
 YDiff
 YESNO
