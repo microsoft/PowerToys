@@ -199,7 +199,7 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     }
     catch (...)
     {
-        printf("Can get windows version info\n");
+        printf("Cannot get windows version info\n");
         return;
     }
 
