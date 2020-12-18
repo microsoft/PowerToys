@@ -26,7 +26,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="iconPath">The path to the icon of each entry</param>
         /// <param name="maxLength">(optional) The maximum length of result text</param>
         /// <returns>A list with <see cref="Result"/></returns>
-        internal static List<Result> GetResultList(in ICollection<RegistryEntry> list, in string iconPath, in int maxLength = 45)
+        internal static List<Result> GetResultList(in IEnumerable<RegistryEntry> list, in string iconPath, in int maxLength = 45)
         {
             var resultList = new List<Result>();
 

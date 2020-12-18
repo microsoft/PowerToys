@@ -24,10 +24,8 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <summary>
         /// A list that contain all registry base keys in a long/full version and in a short version (e.g HKLM = HKEY_LOCAL_MACHINE)
         /// </summary>
-        private static readonly IReadOnlyDictionary<string, RegistryKey?> _baseKeys = new Dictionary<string, RegistryKey?>(14)
+        private static readonly IReadOnlyDictionary<string, RegistryKey> _baseKeys = new Dictionary<string, RegistryKey>(12)
         {
-            { KeyName.FirstPart, null },
-            { KeyName.FirstPartUnderscore, null },
             { KeyName.ClassRootShort, Win32.Registry.ClassesRoot },
             { Win32.Registry.ClassesRoot.Name, Win32.Registry.ClassesRoot },
             { KeyName.CurrentConfigShort, Win32.Registry.CurrentConfig },
@@ -43,11 +41,11 @@ namespace Microsoft.Plugin.Registry.Helper
         };
 
         /// <summary>
-        /// Try to find a registry base key based on the given query
+        /// Try to find registry base keys based on the given query
         /// </summary>
         /// <param name="query">The query to search</param>
-        /// <returns>A combination of the base <see cref="RegistryKey"/> and the sub keys</returns>
-        internal static (RegistryKey? baseKey, string subKey) GetRegistryBaseKey(in string query)
+        /// <returns>A combination of a list of base <see cref="RegistryKey"/> and the sub keys</returns>
+        internal static (IEnumerable<RegistryKey>? baseKey, string subKey) GetRegistryBaseKey(in string query)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -56,9 +54,12 @@ namespace Microsoft.Plugin.Registry.Helper
 
             var baseKey = query.Split('\\').FirstOrDefault();
             var subKey = query.TrimStart('\\').Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase);
-            var baseKeyResult = _baseKeys.FirstOrDefault(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase));
 
-            return (baseKeyResult.Value, subKey);
+            var baseKeyResult = _baseKeys
+                .Where(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase))
+                .Select(found => found.Value);
+
+            return (baseKeyResult, subKey);
         }
 
         /// <summary>

@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ManagedCommon;
+using Microsoft.Plugin.Registry.Classes;
+using Microsoft.Plugin.Registry.Constants;
 using Microsoft.Plugin.Registry.Helper;
 using Microsoft.Plugin.Registry.Properties;
 using Wox.Plugin;
@@ -69,22 +71,29 @@ namespace Microsoft.Plugin.Registry
         public List<Result> Query(Query query)
         {
             // Any base registry key have more than two characters
-            if (query?.Search is null || query.Search.Length < 2)
+            if (query?.Search is null || query.Search.Length < 3)
             {
                 return new List<Result>(0);
             }
 
             var searchForValueName = QueryHelper.GetQueryParts(query.RawQuery, out var queryKey, out var queryValueName);
 
-            var (baseKey, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
-            if (baseKey is null)
+            var (baseKeyList, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
+            if (baseKeyList is null)
             {
-                return query.Search.StartsWith("HKEY", StringComparison.InvariantCultureIgnoreCase)
+                // no base key found -> test is the key starts with "HKE" or "HKEY" (case-intesitive)
+                return query.Search.StartsWith(KeyName.FirstPart, StringComparison.InvariantCultureIgnoreCase)
                     ? ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath)
                     : new List<Result>(0);
             }
+            else if (baseKeyList.Count() > 1)
+            {
+                // more than one base key was found -> show results
+                return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
+            }
 
-            var list = RegistryHelper.SearchForSubKey(baseKey, subKey);
+            // only one base key found -> start serach for the sub key
+            var list = RegistryHelper.SearchForSubKey(baseKeyList.First(), subKey);
 
             if (!searchForValueName)
             {
