@@ -26,6 +26,7 @@ namespace FancyZonesEditor.Utils
 
         // Non-localizable strings: Files
         private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
+        private const string ParamsFile = "\\Microsoft\\PowerToys\\FancyZones\\editor-parameters.json";
 
         // Non-localizable string: Multi-monitor id
         private const string MultiMonitorId = "FancyZones#MultiMonitorDevice";
@@ -38,6 +39,8 @@ namespace FancyZonesEditor.Utils
         };
 
         public string FancyZonesSettingsFile { get; private set; }
+
+        public string FancyZonesEditorParamsFile { get; private set; }
 
         private enum CmdArgs
         {
@@ -53,27 +56,29 @@ namespace FancyZonesEditor.Utils
 
         private struct NativeMonitorData
         {
-            public string Id { get; set; }
+            public string MonitorId { get; set; }
 
             public int Dpi { get; set; }
 
-            public int X { get; set; }
+            public int LeftCoordinate { get; set; }
 
-            public int Y { get; set; }
+            public int TopCoordinate { get; set; }
+
+            public bool IsSelected { get; set; }
 
             public override string ToString()
             {
                 var sb = new StringBuilder();
 
                 sb.Append("ID: ");
-                sb.AppendLine(Id);
+                sb.AppendLine(MonitorId);
                 sb.Append("DPI: ");
                 sb.AppendLine(Dpi.ToString());
 
                 sb.Append("X: ");
-                sb.AppendLine(X.ToString());
+                sb.AppendLine(LeftCoordinate.ToString());
                 sb.Append("Y: ");
-                sb.AppendLine(Y.ToString());
+                sb.AppendLine(TopCoordinate.ToString());
 
                 return sb.ToString();
             }
@@ -152,6 +157,15 @@ namespace FancyZonesEditor.Utils
             public List<CustomLayoutWrapper> CustomZoneSets { get; set; }
         }
 
+        private struct EditorParams
+        {
+            public int ProcessId { get; set; }
+
+            public bool SpanZonesAcrossMonitors { get; set; }
+
+            public List<NativeMonitorData> Monitors { get; set; }
+        }
+
         public struct ParsingResult
         {
             public bool Result { get; }
@@ -172,6 +186,7 @@ namespace FancyZonesEditor.Utils
         {
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             FancyZonesSettingsFile = localAppDataDir + ZonesSettingsFile;
+            FancyZonesEditorParamsFile = localAppDataDir + ParamsFile;
         }
 
         // All strings in this function shouldn't be localized.
@@ -239,14 +254,14 @@ namespace FancyZonesEditor.Utils
                     for (int i = 0; i < count; i++)
                     {
                         var nativeData = default(NativeMonitorData);
-                        nativeData.Id = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
+                        nativeData.MonitorId = argsParts[(int)CmdArgs.MonitorId + (i * monitorArgsCount)];
                         nativeData.Dpi = int.Parse(argsParts[(int)CmdArgs.DPI + (i * monitorArgsCount)]);
-                        nativeData.X = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
-                        nativeData.Y = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
+                        nativeData.LeftCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorLeft + (i * monitorArgsCount)]);
+                        nativeData.TopCoordinate = int.Parse(argsParts[(int)CmdArgs.MonitorTop + (i * monitorArgsCount)]);
 
                         nativeMonitorData.Add(nativeData);
 
-                        if (nativeData.X == 0 && nativeData.Y == 0)
+                        if (nativeData.LeftCoordinate == 0 && nativeData.TopCoordinate == 0)
                         {
                             primaryMonitorDPI = nativeData.Dpi;
                         }
@@ -266,15 +281,15 @@ namespace FancyZonesEditor.Utils
                     {
                         foreach (NativeMonitorData nativeData in nativeMonitorData)
                         {
-                            var splittedId = nativeData.Id.Split('_');
+                            var splittedId = nativeData.MonitorId.Split('_');
                             int width = int.Parse(splittedId[1]);
                             int height = int.Parse(splittedId[2]);
 
-                            Rect bounds = new Rect(nativeData.X, nativeData.Y, width, height);
-                            bool isPrimary = nativeData.X == 0 && nativeData.Y == 0;
+                            Rect bounds = new Rect(nativeData.LeftCoordinate, nativeData.TopCoordinate, width, height);
+                            bool isPrimary = nativeData.LeftCoordinate == 0 && nativeData.TopCoordinate == 0;
 
                             Monitor monitor = new Monitor(bounds, bounds, isPrimary);
-                            monitor.Device.Id = nativeData.Id;
+                            monitor.Device.Id = nativeData.MonitorId;
                             monitor.Device.Dpi = nativeData.Dpi;
 
                             monitors.Add(monitor);
@@ -293,10 +308,10 @@ namespace FancyZonesEditor.Utils
                             foreach (NativeMonitorData nativeData in nativeMonitorData)
                             {
                                 // Can't do an exact match since the rounding algorithm used by the framework is different from ours
-                                if (scaledBoundX >= (nativeData.X - 1) && scaledBoundX <= (nativeData.X + 1) &&
-                                    scaledBoundY >= (nativeData.Y - 1) && scaledBoundY <= (nativeData.Y + 1))
+                                if (scaledBoundX >= (nativeData.LeftCoordinate - 1) && scaledBoundX <= (nativeData.LeftCoordinate + 1) &&
+                                    scaledBoundY >= (nativeData.TopCoordinate - 1) && scaledBoundY <= (nativeData.TopCoordinate + 1))
                                 {
-                                    monitor.Device.Id = nativeData.Id;
+                                    monitor.Device.Id = nativeData.MonitorId;
                                     monitor.Device.Dpi = nativeData.Dpi;
                                     matchFound = true;
                                     break;
@@ -329,6 +344,111 @@ namespace FancyZonesEditor.Utils
             }
         }
 
+        public ParsingResult ParseParams()
+        {
+            if (_fileSystem.File.Exists(FancyZonesEditorParamsFile))
+            {
+                string data = string.Empty;
+
+                try
+                {
+                    data = ReadFile(FancyZonesEditorParamsFile);
+                    EditorParams editorParams = JsonSerializer.Deserialize<EditorParams>(data, _options);
+
+                    // Process ID
+                    App.PowerToysPID = editorParams.ProcessId;
+
+                    // Span zones across monitors
+                    App.Overlay.SpanZonesAcrossMonitors = editorParams.SpanZonesAcrossMonitors;
+
+                    if (!App.Overlay.SpanZonesAcrossMonitors)
+                    {
+                        // Monitors count
+                        if (editorParams.Monitors.Count != App.Overlay.DesktopsCount)
+                        {
+                            MessageBox.Show(Properties.Resources.Error_Invalid_Arguments, Properties.Resources.Error_Message_Box_Title);
+                            ((App)Application.Current).Shutdown();
+                        }
+
+                        string targetMonitorName = string.Empty;
+
+                        double primaryMonitorDPI = 96f;
+                        double minimalUsedMonitorDPI = double.MaxValue;
+                        foreach (NativeMonitorData nativeData in editorParams.Monitors)
+                        {
+                            if (nativeData.LeftCoordinate == 0 && nativeData.TopCoordinate == 0)
+                            {
+                                primaryMonitorDPI = nativeData.Dpi;
+                            }
+
+                            if (minimalUsedMonitorDPI > nativeData.Dpi)
+                            {
+                                minimalUsedMonitorDPI = nativeData.Dpi;
+                            }
+
+                            if (nativeData.IsSelected)
+                            {
+                                targetMonitorName = nativeData.MonitorId;
+                            }
+                        }
+
+                        var monitors = App.Overlay.Monitors;
+                        double identifyScaleFactor = minimalUsedMonitorDPI / primaryMonitorDPI;
+                        double scaleFactor = 96f / primaryMonitorDPI;
+
+                        // Update monitors data
+                        foreach (Monitor monitor in monitors)
+                        {
+                            bool matchFound = false;
+                            monitor.Scale(scaleFactor);
+
+                            double scaledBoundX = (int)(monitor.Device.UnscaledBounds.X * identifyScaleFactor);
+                            double scaledBoundY = (int)(monitor.Device.UnscaledBounds.Y * identifyScaleFactor);
+
+                            foreach (NativeMonitorData nativeData in editorParams.Monitors)
+                            {
+                                // Can't do an exact match since the rounding algorithm used by the framework is different from ours
+                                if (scaledBoundX >= (nativeData.LeftCoordinate - 1) && scaledBoundX <= (nativeData.LeftCoordinate + 1) &&
+                                    scaledBoundY >= (nativeData.TopCoordinate - 1) && scaledBoundY <= (nativeData.TopCoordinate + 1))
+                                {
+                                    monitor.Device.Id = nativeData.MonitorId;
+                                    monitor.Device.Dpi = nativeData.Dpi;
+                                    matchFound = true;
+                                    break;
+                                }
+                            }
+
+                            if (matchFound == false)
+                            {
+                                MessageBox.Show(string.Format(Properties.Resources.Error_Monitor_Match_Not_Found, monitor.Device.UnscaledBounds.ToString()));
+                            }
+                        }
+
+                        // Set active desktop
+                        for (int i = 0; i < monitors.Count; i++)
+                        {
+                            var monitor = monitors[i];
+                            if (monitor.Device.Id == targetMonitorName)
+                            {
+                                App.Overlay.CurrentDesktop = i;
+                                break;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new ParsingResult(false, ex.Message, data);
+                }
+
+                return new ParsingResult(true);
+            }
+            else
+            {
+                return new ParsingResult(false);
+            }
+        }
+
         public ParsingResult ParseZoneSettings()
         {
             if (_fileSystem.File.Exists(FancyZonesSettingsFile))
@@ -338,7 +458,7 @@ namespace FancyZonesEditor.Utils
 
                 try
                 {
-                    settingsString = ReadZoneSettings(FancyZonesSettingsFile);
+                    settingsString = ReadFile(FancyZonesSettingsFile);
                     zoneSettings = JsonSerializer.Deserialize<ZoneSettingsWrapper>(settingsString, _options);
                 }
                 catch (Exception ex)
@@ -493,7 +613,7 @@ namespace FancyZonesEditor.Utils
             }
         }
 
-        private string ReadZoneSettings(string fileName)
+        private string ReadFile(string fileName)
         {
             Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
             StreamReader reader = new StreamReader(inputStream);

@@ -85,6 +85,8 @@ public:
     void SaveZoneSettings() const;
     void SaveAppZoneHistory() const;
 
+    void SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor) const;
+
 private:
 #if defined(UNIT_TESTS)
     friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
@@ -134,6 +136,7 @@ private:
 
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;
+    std::wstring editorParametersFileName;
 
     mutable std::recursive_mutex dataLock;
 };
