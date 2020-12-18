@@ -35,7 +35,7 @@ Install from the [Microsoft PowerToys GitHub releases page][github-release-link]
 
 This is our preferred method.
 
-#### Experiemental version
+#### Experimental version
 To install the Video Conference mute, please use the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
 
 
