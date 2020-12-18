@@ -257,7 +257,7 @@ private:
     static UINT WM_PRIV_EDITOR; // Scheduled when the editor exits
     static UINT WM_PRIV_FILE_UPDATE; // Scheduled when the a watched file is updated
 
-    static UINT WM_PRIV_LOWLEVELKB; // Scheduled when we receive a key down press
+    static UINT WM_PRIV_SNAP_HOTKEY; // Scheduled when we receive a snap hotkey key down press
 
     // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
@@ -274,7 +274,7 @@ UINT FancyZones::WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e
 UINT FancyZones::WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
 UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
 UINT FancyZones::WM_PRIV_FILE_UPDATE = RegisterWindowMessage(L"{632f17a9-55a7-45f1-a4db-162e39271d92}");
-UINT FancyZones::WM_PRIV_LOWLEVELKB = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
+UINT FancyZones::WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -561,8 +561,8 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
             if (ShouldProcessSnapHotkey(info->vkCode))
             {
                 Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-                // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_LOWLEVELKB's handled
-                PostMessageW(m_window, WM_PRIV_LOWLEVELKB, 0, info->vkCode);
+                // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_SNAP_HOTKEY's handled
+                PostMessageW(m_window, WM_PRIV_SNAP_HOTKEY, 0, info->vkCode);
                 return true;
             }
         }
@@ -806,7 +806,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         POINT ptScreen;
         GetPhysicalCursorPos(&ptScreen);
 
-        if (message == WM_PRIV_LOWLEVELKB)
+        if (message == WM_PRIV_SNAP_HOTKEY)
         {
             OnSnapHotkey(static_cast<DWORD>(lparam));
         }
@@ -1253,17 +1253,15 @@ bool FancyZones::OnSnapHotkeyBasedOnPosition(HWND window, DWORD vkCode) noexcept
 
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
+    // We already checked in ShouldProcessSnapHotkey whether the foreground window is a candidate for zoning
     auto window = GetForegroundWindow();
-    if (FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
+    if (m_settings->GetSettings()->moveWindowsBasedOnPosition)
     {
-        if (m_settings->GetSettings()->moveWindowsBasedOnPosition)
-        {
-            return OnSnapHotkeyBasedOnPosition(window, vkCode);
-        }
-        else
-        {
-            return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && OnSnapHotkeyBasedOnZoneNumber(window, vkCode);
-        }
+        return OnSnapHotkeyBasedOnPosition(window, vkCode);
+    }
+    else
+    {
+        return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && OnSnapHotkeyBasedOnZoneNumber(window, vkCode);
     }
     return false;
 }
@@ -1326,7 +1324,8 @@ void FancyZones::UpdateZoneSets() noexcept
 
 bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
 {
-    if (m_settings->GetSettings()->overrideSnapHotkeys)
+    auto window = GetForegroundWindow();
+    if (m_settings->GetSettings()->overrideSnapHotkeys && FancyZonesUtils::IsCandidateForZoning(window, m_settings->GetSettings()->excludedAppsArray))
     {
         HMONITOR monitor;
         if (m_settings->GetSettings()->spanZonesAcrossMonitors)
@@ -1335,11 +1334,11 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         }
         else
         {
-            monitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTONULL);
+            monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         }
 
         auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-        if (zoneWindow && zoneWindow->ActiveZoneSet() != nullptr)
+        if (zoneWindow && zoneWindow->ActiveZoneSet() && zoneWindow->ActiveZoneSet()->LayoutType() != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
         {
             if (vkCode == VK_UP || vkCode == VK_DOWN)
             {
