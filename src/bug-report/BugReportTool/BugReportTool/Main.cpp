@@ -9,6 +9,7 @@
 #include "ZipTools/ZipFolder.h"
 #include "../../../common/SettingsAPI/settings_helpers.h"
 #include "../../../common/utils/json.h"
+#include "../../../../tools/monitor_info_report/report-monitor-info.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -159,6 +160,26 @@ string getCurrentDate()
     return to_string(year) + "-" + to_string(month) + "-" + to_string(day);
 }
 
+void reportMonitorInfo(const filesystem::path& tmpDir)
+{
+    auto monitorReportPath = tmpDir;
+    monitorReportPath.append("monitor-report-info.txt");
+    wofstream monitorReport(monitorReportPath);
+    try
+    {
+        monitorReport << "GetSystemMetrics = " << GetSystemMetrics(SM_CMONITORS) << '\n';
+        report(monitorReport);
+    }
+    catch (std::exception& ex)
+    {
+        monitorReport << "exception: " << ex.what() << '\n';
+    }
+    catch (...)
+    {
+        monitorReport << "unknown exception." << '\n';
+    }
+}
+
 int wmain(int argc, wchar_t* argv[], wchar_t*)
 {
     // Get path to save zip
@@ -203,6 +224,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     
     // Hide sensative information
     hideUserPrivateInfo(tmpDir);
+
+    // Write monitors info to the temp folder
+    reportMonitorInfo(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);

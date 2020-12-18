@@ -11,10 +11,16 @@
     <ClCompile Include="ZipTools\zipfolder.cpp">
       <Filter>ZipTools</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\tools\monitor_info_report\report-monitor-info.cpp">
+      <Filter>MonitorReportTool</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ZipTools">
       <UniqueIdentifier>{3ae1b6aa-4134-47b1-afdf-dfb3b5901dcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorReportTool">
+      <UniqueIdentifier>{83b7e7d9-49b7-4fc8-9853-9dbb8f2c0e76}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -28,5 +34,8 @@
       <Filter>ZipTools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\common\utils\json.h" />
+    <ClInclude Include="..\..\..\..\tools\monitor_info_report\report-monitor-info.h">
+      <Filter>MonitorReportTool</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
