@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// Return a list with all context menu entries for the given <see cref="Result"/>
         /// </summary>
         /// <param name="result">The result for the context menu entires</param>
-        /// <param name="assemblyName">The anme of the this assembly</param>
+        /// <param name="assemblyName">The name of the this assembly</param>
         /// <returns>A list with context menu entries</returns>
         internal static List<ContextMenuResult> GetContextMenu(Result result, string assemblyName)
         {
