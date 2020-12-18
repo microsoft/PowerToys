@@ -13,16 +13,30 @@ namespace Microsoft.Plugin.Registry.UnitTest.Helper
     public sealed class RegistryHelperTest
     {
         [TestMethod]
+        [DataRow(@"HKCC\System\CurrentControlSet\Control", "HKEY_CURRENT_CONFIG")]
         [DataRow(@"HKCR\*\OpenWithList", "HKEY_CLASSES_ROOT")]
         [DataRow(@"HKCU\Control Panel\Accessibility", "HKEY_CURRENT_USER")]
         [DataRow(@"HKLM\HARDWARE\UEFI", "HKEY_LOCAL_MACHINE")]
-        [DataRow(@"HKU\.DEFAULT\Environment", "HKEY_USERS")]
-        [DataRow(@"HKCC\System\CurrentControlSet\Control", "HKEY_CURRENT_CONFIG")]
         [DataRow(@"HKPD\???", "HKEY_PERFORMANCE_DATA")]
-        public void GetRegistryBaseKeyTestBaseKey(string query, string expectedBaseKey)
+        [DataRow(@"HKU\.DEFAULT\Environment", "HKEY_USERS")]
+        public void GetRegistryBaseKeyTestOnlyOneBaseKey(string query, string expectedBaseKey)
         {
-            var (baseKey, _) = RegistryHelper.GetRegistryBaseKey(query);
-            Assert.AreEqual(expectedBaseKey, baseKey?.Name);
+            var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey(query);
+            Assert.IsTrue(baseKeyList.Count() == 1);
+            Assert.AreEqual(expectedBaseKey, baseKeyList.FirstOrDefault().Name);
+        }
+
+        [TestMethod]
+        public void GetRegistryBaseKeyTestMoreThanOneBaseKey()
+        {
+            var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility");
+
+            Assert.IsTrue(baseKeyList.Count() > 1);
+
+            var list = baseKeyList.Select(found => found.Name);
+            Assert.IsTrue(list.Contains("HKEY_CLASSES_ROOT"));
+            Assert.IsTrue(list.Contains("HKEY_CURRENT_CONFIG"));
+            Assert.IsTrue(list.Contains("HKEY_CURRENT_USER"));
         }
 
         [TestMethod]
