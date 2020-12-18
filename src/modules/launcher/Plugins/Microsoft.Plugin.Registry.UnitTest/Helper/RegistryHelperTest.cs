@@ -29,7 +29,7 @@ namespace Microsoft.Plugin.Registry.UnitTest.Helper
         [TestMethod]
         public void GetRegistryBaseKeyTestMoreThanOneBaseKey()
         {
-            var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility");
+            var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility"); /* #no-spell-check-line */
 
             Assert.IsTrue(baseKeyList.Count() > 1);
 

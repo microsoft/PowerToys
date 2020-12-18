@@ -41,3 +41,7 @@ TestCase\("[^"]+"
 
 # Id info inside markdown file (registry.md) 
 ^\|\s+ID\s+\|\s*\`[0-9A-F]{32}\`
+
+# marker for ignoring a comment to the end of the line
+^.*/\* #no-spell-check-line \*/.*$
+// #no-spell-check.*$
