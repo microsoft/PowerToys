@@ -3,9 +3,6 @@
 #include <string>
 #include <map>
 #include <mutex>
-#include <winrt/Windows.UI.Core.h>
-
-using namespace winrt;
 
 // Wrapper class to handle keyboard layout
 class LayoutMap::LayoutMapImpl

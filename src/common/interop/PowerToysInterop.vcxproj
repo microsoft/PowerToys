@@ -84,9 +84,7 @@
   </Target>
   <ItemGroup>
     <ClInclude Include="HotkeyManager.h" />
-    <ClInclude Include="interop.h" />
     <ClInclude Include="KeyboardHook.h" />
-    <ClInclude Include="os-detect.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
@@ -96,12 +94,10 @@
     <ClCompile Include="interop.cpp" />
     <ClCompile Include="KeyboardHook.cpp" />
     <ClCompile Include="keyboard_layout.cpp">
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
