@@ -164,19 +164,55 @@ void reportMonitorInfo(const filesystem::path& tmpDir)
 {
     auto monitorReportPath = tmpDir;
     monitorReportPath.append("monitor-report-info.txt");
-    wofstream monitorReport(monitorReportPath);
+    
     try
     {
+        wofstream monitorReport(monitorReportPath);
         monitorReport << "GetSystemMetrics = " << GetSystemMetrics(SM_CMONITORS) << '\n';
         report(monitorReport);
     }
     catch (std::exception& ex)
     {
-        monitorReport << "exception: " << ex.what() << '\n';
+        printf("Can not report monitor info. %s\n", ex.what());
     }
     catch (...)
     {
-        monitorReport << "unknown exception." << '\n';
+        printf("Can not report monitor info\n");
+    }
+}
+
+void reportWindowsVersion(const filesystem::path& tmpDir)
+{
+    auto versionReportPath = tmpDir;
+    versionReportPath = versionReportPath.append("windows-version.txt");
+    OSVERSIONINFOEXW osInfo;
+
+    try
+    {
+        NTSTATUS(WINAPI * RtlGetVersion)(LPOSVERSIONINFOEXW);
+        *(FARPROC*)&RtlGetVersion = GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
+        if (NULL != RtlGetVersion)
+        {
+            osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+            RtlGetVersion(&osInfo);
+        }
+    }
+    catch (...)
+    {
+        printf("Can get windows version info\n");
+        return;
+    }
+
+    try
+    {
+        wofstream versionReport(versionReportPath);
+        versionReport << "MajorVersion: " << osInfo.dwMajorVersion << endl;
+        versionReport << "MinorVersion: " << osInfo.dwMinorVersion << endl;
+        versionReport << "BuildNumber: " << osInfo.dwBuildNumber << endl;
+    }
+    catch(...)
+    {
+        printf("Can not write to %s", versionReportPath.string().c_str());
     }
 }
 
@@ -225,8 +261,11 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Hide sensative information
     hideUserPrivateInfo(tmpDir);
 
-    // Write monitors info to the temp folder
+    // Write monitors info to the temporary folder
     reportMonitorInfo(tmpDir);
+
+    // Write windows version info to the temporary folder
+    reportWindowsVersion(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
