@@ -18,7 +18,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)..\..\tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h bootstrapper.base.rc bootstrapper.rc 105" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)..\..\tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h bootstrapper.base.rc bootstrapper.rc 105" />
   </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

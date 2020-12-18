@@ -63,7 +63,7 @@ If you already have a .rc file, copy the string table to a separate txt file and
 After generating the resx file, rename the existing rc and h files to ProjName.base.rc and resource.base.h. In the rc file remove the string table which is to be localized and in the .h file remove all `#define`s corresponding to localized resources. In the vcxproj of the C++ project, add the following build event:
 ```
 <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h ProjName.base.rc ProjName.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ProjName.base.rc ProjName.rc" />
 </Target>
 ```
 
