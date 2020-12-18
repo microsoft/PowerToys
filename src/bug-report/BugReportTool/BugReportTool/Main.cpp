@@ -17,10 +17,13 @@ using namespace winrt::Windows::Data::Json;
 map<wstring, vector<wstring>> escapeInfo = {
     { L"FancyZones\\app-zone-history.json", { L"app-zone-history/app-path" } },
     { L"PowerRename\\replace-mru.json", { L"MRUList" } },
-    { L"PowerRename\\search-mru.json", { L"MRUList" } }
+    { L"PowerRename\\search-mru.json", { L"MRUList" } },
+    { L"FancyZones\\settings.json", { L"properties/fancyzones_excluded_apps" } },
+    { L"PowerToys Run\\Settings\\QueryHistory.json", { L"Items" } },
 };
 
 vector<wstring> filesToDelete = {
+    L"PowerToys Run\\Cache\\Image.cache"
 };
 
 vector<wstring> getXpathArray(wstring xpath)
@@ -124,7 +127,7 @@ bool del(wstring path)
     return true;
 }
 
-void hideUserPrivateInfo(filesystem::path dir) 
+void hideUserPrivateInfo(const filesystem::path& dir) 
 {
     // Replace data in json files
     for (auto& it : escapeInfo)
@@ -135,7 +138,9 @@ void hideUserPrivateInfo(filesystem::path dir)
     // delete files
     for (auto it : filesToDelete)
     {
-        del(it);
+        auto path = dir;
+        path = path.append(it);
+        del(path);
     }
 }
 
