@@ -509,7 +509,7 @@ void FancyZonesData::SaveFancyZonesData() const
 
 void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors, const std::wstring& virtualDesktopId, const HMONITOR& targetMonitor) const
 {
-    JSONHelpers::EditorArgsJSON argsJson; /* json arguments */
+    JSONHelpers::EditorArgs argsJson; /* json arguments */
     argsJson.processId = GetCurrentProcessId(); /* Process id */
     argsJson.spanZonesAcrossMonitors = spanZonesAcrossMonitors; /* Span zones */
 
@@ -524,7 +524,7 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
         HMONITOR monitor = monitorData.first;
         auto monitorInfo = monitorData.second;
 
-        JSONHelpers::MonitorJSON monitorJson;
+        JSONHelpers::MonitorInfo monitorJson;
 
         std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
         std::wstring monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId);
@@ -549,7 +549,7 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
         argsJson.monitors.emplace_back(std::move(monitorJson)); /* add monitor data */
     }
 
-    json::to_file(editorParametersFileName, JSONHelpers::EditorArgsJSON::ToJson(argsJson));
+    json::to_file(editorParametersFileName, JSONHelpers::EditorArgs::ToJson(argsJson));
 }
 
 void FancyZonesData::RemoveDesktopAppZoneHistory(const std::wstring& desktopId)

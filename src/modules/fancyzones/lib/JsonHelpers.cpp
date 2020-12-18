@@ -456,7 +456,7 @@ namespace JSONHelpers
         }
     }
 
-    json::JsonObject MonitorJSON::ToJson(const MonitorJSON& monitor)
+    json::JsonObject MonitorInfo::ToJson(const MonitorInfo& monitor)
     {
         json::JsonObject result{};
 
@@ -469,7 +469,7 @@ namespace JSONHelpers
         return result;
     }
 
-    json::JsonObject EditorArgsJSON::ToJson(const EditorArgsJSON& args)
+    json::JsonObject EditorArgs::ToJson(const EditorArgs& args)
     {
         json::JsonObject result{};
 
@@ -479,7 +479,7 @@ namespace JSONHelpers
         json::JsonArray monitors;
         for (const auto& monitor : args.monitors)
         {
-            monitors.Append(MonitorJSON::ToJson(monitor));
+            monitors.Append(MonitorInfo::ToJson(monitor));
         }
 
         result.SetNamedValue(NonLocalizable::Monitors, monitors);

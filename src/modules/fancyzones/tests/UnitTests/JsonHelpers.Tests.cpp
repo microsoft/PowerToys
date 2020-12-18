@@ -1853,22 +1853,22 @@ namespace FancyZonesUnitTests
         TEST_METHOD(MonitorToJson)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            MonitorJSON monitor{ 144, deviceId, -10, 0, true };
+            MonitorInfo monitor{ 144, deviceId, -10, 0, true };
 
             const auto expectedStr = L"{\"dpi\": 144, \"monitor-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"top-coordinate\": -10, \"left-coordinate\": 0, \"is-selected\": true}";
             const auto expected = json::JsonObject::Parse(expectedStr);
 
-            const auto actual = MonitorJSON::ToJson(monitor);
+            const auto actual = MonitorInfo::ToJson(monitor);
 
             compareJsonObjects(expected, actual);
         }
 
         TEST_METHOD(EditorArgsToJson)
         {
-            MonitorJSON monitor1{ 144, L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}", -10, 0, true };
-            MonitorJSON monitor2{ 96, L"AOC2460#4&fe3a015&0&UID65793_1920_1080_{39B25DD2-130D-4B5D-8851-4791D66B1538}", 0, 1920, false };
-            EditorArgsJSON args{
-                1, true, std::vector<MonitorJSON>{ monitor1, monitor2 }
+            MonitorInfo monitor1{ 144, L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}", -10, 0, true };
+            MonitorInfo monitor2{ 96, L"AOC2460#4&fe3a015&0&UID65793_1920_1080_{39B25DD2-130D-4B5D-8851-4791D66B1538}", 0, 1920, false };
+            EditorArgs args{
+                1, true, std::vector<MonitorInfo>{ monitor1, monitor2 }
             };
 
             const std::wstring expectedMonitor1 = L"{\"dpi\": 144, \"monitor-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"top-coordinate\": -10, \"left-coordinate\": 0, \"is-selected\": true}";
@@ -1876,7 +1876,7 @@ namespace FancyZonesUnitTests
             const std::wstring expectedStr = L"{\"process-id\": 1, \"span-zones-across-monitors\": true, \"monitors\": [" + expectedMonitor1 + L", " + expectedMonitor2 + L"]}";
             
             const auto expected = json::JsonObject::Parse(expectedStr);
-            const auto actual = EditorArgsJSON::ToJson(args);
+            const auto actual = EditorArgs::ToJson(args);
 
             compareJsonObjects(expected, actual);
         }
