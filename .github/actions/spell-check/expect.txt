@@ -850,6 +850,7 @@ hk
 HKCC
 HKCU
 HKCR
+HKE
 hkey
 HKL
 HKLM

@@ -81,7 +81,7 @@ namespace Microsoft.Plugin.Registry
             var (baseKeyList, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKeyList is null)
             {
-                // no base key found -> test is the key starts with "HKE" or "HKEY" (case-intesitive)
+                // no base key found -> test is the key starts with "HKE" or "HKEY" (case-insensitive)
                 return query.Search.StartsWith(KeyName.FirstPart, StringComparison.InvariantCultureIgnoreCase)
                     ? ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath)
                     : new List<Result>(0);
@@ -92,7 +92,7 @@ namespace Microsoft.Plugin.Registry
                 return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
             }
 
-            // only one base key found -> start serach for the sub key
+            // only one base key found -> start search for the sub key
             var list = RegistryHelper.SearchForSubKey(baseKeyList.First(), subKey);
 
             if (!searchForValueName)
