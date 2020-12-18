@@ -281,6 +281,7 @@ codebase
 codecvt
 codeofconduct
 codereview
+codeql
 COINIT
 Colorbrush
 colorconv
@@ -1114,6 +1115,7 @@ IZoom
 JArray
 jarro
 Jarryd
+javascript
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
