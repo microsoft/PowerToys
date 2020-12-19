@@ -75,11 +75,20 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 --add Microsoft.VisualStudio.Component.VC.ATL.Spectre
 ```
 
-### Compiling Source Code
+### Compiling Source Code from Visual Studio
 
 - Open `powertoys.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
 - The PowerToys binaries will be in your repo under `x64\Release`.
 - If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
+
+### Compiling Source Code from the command line
+
+Run these commands in Developer Command Prompt for Visual Studio or the Developer PowerShell for Visual Studio:
+```
+git submodule update --init --recurse
+msbuild -t:restore
+msbuild PowerToys.sln
+```
 
 ## Building the Installers
 
