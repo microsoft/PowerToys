@@ -83,7 +83,7 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 
 ### Compiling Source Code from the command line
 
-Run these commands in Developer Command Prompt for Visual Studio or the Developer PowerShell for Visual Studio:
+Run these commands in the Developer Command Prompt for Visual Studio or the Developer PowerShell for Visual Studio:
 ```shell
 git submodule update --init --recursive
 msbuild -t:restore
