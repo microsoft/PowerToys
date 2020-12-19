@@ -2,7 +2,7 @@
 #include "KeyboardEventHandlers.h"
 #include "keyboardmanager/common/Shortcut.h"
 #include "keyboardmanager/common/RemapShortcut.h"
-#include "../common/shared_constants.h"
+#include <common/interop/shared_constants.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>

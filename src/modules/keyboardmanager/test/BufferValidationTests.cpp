@@ -2,8 +2,8 @@
 #include "CppUnitTest.h"
 #include <keyboardmanager/ui/BufferValidationHelpers.h>
 #include "TestHelpers.h"
-#include <common/keyboard_layout.h>
-#include <common/shared_constants.h>
+#include <common/interop/keyboard_layout.h>
+#include <common/interop/shared_constants.h>
 #include <functional>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

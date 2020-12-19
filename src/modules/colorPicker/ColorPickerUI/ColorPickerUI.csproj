@@ -76,8 +76,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj" />
-    <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />

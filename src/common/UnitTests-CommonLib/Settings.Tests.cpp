@@ -1,7 +1,7 @@
 #include "pch.h"
-#include <settings_objects.h>
+#include <common/SettingsAPI/settings_objects.h>
 
-#include "VersionHelper.h"
+#include "version/helper.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace PowerToysSettings;

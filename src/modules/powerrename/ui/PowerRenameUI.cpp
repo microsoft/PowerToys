@@ -1,15 +1,15 @@
 #include "pch.h"
 #include "Generated Files/resource.h"
 #include "PowerRenameUI.h"
-#include "dpi_aware.h"
+
+#include <common/utils/resources.h>
+#include <common/display/dpi_aware.h>
 #include <commctrl.h>
 #include <Shlobj.h>
 #include <helpers.h>
 #include <windowsx.h>
 #include <thread>
 #include <trace.h>
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 extern HINSTANCE g_hInst;
 
@@ -120,8 +120,8 @@ HRESULT CPowerRenameUI::s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt
 {
     *ppsrui = nullptr;
     CPowerRenameUI* prui = new CPowerRenameUI();
-    HRESULT hr = prui ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (prui)
     {
         // Pass the IPowerRenameManager to the IPowerRenameUI so it can subscribe to events
         hr = prui->_Initialize(psrm, dataSource, enableDragDrop);
@@ -739,7 +739,7 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
     LPNMHDR pnmdr = (LPNMHDR)lParam;
     LPNMLISTVIEW pnmlv = (LPNMLISTVIEW)pnmdr;
     NMLVEMPTYMARKUP* pnmMarkup = NULL;
-    
+
     if (pnmdr)
     {
         BOOL checked = FALSE;
@@ -785,7 +785,8 @@ BOOL CPowerRenameUI::_OnNotify(_In_ WPARAM wParam, _In_ LPARAM lParam)
             }
             break;
 
-        case NM_CLICK: {
+        case NM_CLICK:
+        {
             if (m_spsrm)
             {
                 m_listview.OnClickList(m_spsrm, (NM_LISTVIEW*)pnmdr);
@@ -941,7 +942,7 @@ void CPowerRenameUI::_SetCheckboxesFromFlags(_In_ DWORD flags)
 
 void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
 {
-    if (checkBoxId == IDC_TRANSFORM_UPPERCASE )
+    if (checkBoxId == IDC_TRANSFORM_UPPERCASE)
     {
         if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE)) == BST_CHECKED)
         {
@@ -1035,14 +1036,14 @@ void CPowerRenameUI::_CollectItemPosition(_In_ DWORD id)
     switch (id)
     {
     case IDC_EDIT_SEARCHFOR:
-    /* IDC_EDIT_REPLACEWITH uses same value*/
+        /* IDC_EDIT_REPLACEWITH uses same value*/
         m_itemsPositioning.searchReplaceWidthDiff = m_initialWidth - itemWidth;
         break;
     case IDC_PREVIEWGROUP:
         m_itemsPositioning.previewGroupHeightDiff = m_initialHeight - itemHeight;
         break;
     case IDC_SEARCHREPLACEGROUP:
-    /* IDC_OPTIONSGROUP uses same value */
+        /* IDC_OPTIONSGROUP uses same value */
         m_itemsPositioning.groupsWidthDiff = m_initialWidth - itemWidth;
         break;
     case IDC_LIST_PREVIEW:
@@ -1130,7 +1131,6 @@ void CPowerRenameListView::ToggleItem(_In_ IPowerRenameManager* psrm, _In_ int i
         spItem->GetSelected(&selected);
         spItem->PutSelected(!selected);
 
-        
         UINT visibleItemCount = 0;
         psrm->GetVisibleItemCount(&visibleItemCount);
         SetItemCount(visibleItemCount);
@@ -1427,7 +1427,6 @@ void CPowerRenameListView::_UpdateHeaderFilterState(_In_ DWORD filter)
         }
 
         Header_SetItem(hwndHeader, 1, &hdiRename);
-
     }
 }
 
@@ -1443,4 +1442,3 @@ void CPowerRenameListView::OnColumnClick(_In_ IPowerRenameManager* psrm, _In_ in
     psrm->GetFilter(&filter);
     _UpdateHeaderFilterState(filter);
 }
-    

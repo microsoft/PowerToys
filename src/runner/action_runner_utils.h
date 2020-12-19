@@ -12,4 +12,8 @@ const inline wchar_t* UPDATE_NOW_LAUNCH_STAGE2_CMDARG = L"-update_now_stage_2";
 const inline wchar_t* UPDATE_STAGE2_RESTART_PT_CMDARG = L"restart";
 const inline wchar_t* UPDATE_STAGE2_DONT_START_PT_CMDARG = L"dont_start";
 
+const inline wchar_t * UNINSTALL_MSI_CMDARG = L"-uninstall_msi";
+const inline wchar_t * RUN_NONELEVATED_CMDARG = L"-run-non-elevated";
+
 const inline wchar_t* UPDATE_REPORT_SUCCESS = L"-report_update_success";
+

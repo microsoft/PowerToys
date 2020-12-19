@@ -1,3 +1,0 @@
-#pragma once
-
-bool UseNewSettings();

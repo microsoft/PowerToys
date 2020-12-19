@@ -3,7 +3,7 @@
 #include <mutex>
 #include "keyboardmanager/common/KeyboardManagerConstants.h"
 
-#include <common/LowlevelKeyboardEvent.h>
+#include <common/hooks/LowlevelKeyboardEvent.h>
 
 class InputInterface;
 class KeyboardManagerState;

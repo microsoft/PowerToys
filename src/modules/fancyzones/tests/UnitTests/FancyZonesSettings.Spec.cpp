@@ -4,7 +4,7 @@
 
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>
-#include <common/settings_helpers.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

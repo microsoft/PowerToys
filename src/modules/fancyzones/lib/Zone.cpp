@@ -3,8 +3,8 @@
 
 #include <Shellscalingapi.h>
 
-#include <common/dpi_aware.h>
-#include <common/monitors.h>
+#include <common/display/dpi_aware.h>
+#include <common/display/monitors.h>
 #include "Zone.h"
 #include "Settings.h"
 #include "util.h"

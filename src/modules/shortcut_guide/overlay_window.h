@@ -1,11 +1,12 @@
 #pragma once
+#include "animation.h"
 #include "d2d_svg.h"
 #include "d2d_window.h"
 #include "d2d_text.h"
-#include "common/monitors.h"
-#include "common/animation.h"
-#include "common/windows_colors.h"
-#include "common/tasklist_positions.h"
+
+#include <common/display/monitors.h>
+#include <common/themes/windows_colors.h>
+#include "tasklist_positions.h"
 
 struct ScaleResult
 {

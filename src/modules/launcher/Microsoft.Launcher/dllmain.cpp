@@ -1,17 +1,20 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <common/settings_objects.h>
-#include <common/common.h>
-#include <common/shared_constants.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/interop/shared_constants.h>
 #include "trace.h"
 #include "Generated Files/resource.h"
-#include <common/os-detect.h>
 #include <launcher\Microsoft.Launcher\LauncherConstants.h>
 #include <common/logger/logger.h>
-#include <common\settings_helpers.h>
-#include <filesystem>
+#include <common/SettingsAPI/settings_helpers.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
+#include <common/utils/os-detect.h>
+#include <common/utils/winapi_error.h>
+
+#include <filesystem>
 
 namespace
 {

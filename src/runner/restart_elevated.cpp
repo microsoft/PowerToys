@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "restart_elevated.h"
-#include "common/common.h"
+
+#include <common/utils/elevation.h>
 
 enum State
 {

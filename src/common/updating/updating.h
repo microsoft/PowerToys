@@ -8,7 +8,7 @@
 #include <expected.hpp>
 
 #include "notifications.h"
-#include "../VersionHelper.h"
+#include <common/version/helper.h>
 
 namespace updating
 {

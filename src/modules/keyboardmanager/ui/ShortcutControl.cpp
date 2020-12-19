@@ -3,10 +3,8 @@
 #include "KeyDropDownControl.h"
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "keyboardmanager/common/Helpers.h"
-#include "common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
-#include <common\shared_constants.h>
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include <common/interop/shared_constants.h>
 
 //Both static members are initialized to null
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
@@ -76,8 +74,8 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     newrow.emplace_back(std::make_unique<ShortcutControl>(parent, row, 0, targetAppTextBox));
     newrow.emplace_back(std::make_unique<ShortcutControl>(parent, row, 1, targetAppTextBox));
     keyboardRemapControlObjects.push_back(std::move(newrow));
-    
-    row.Padding({10, 10, 10, 10});
+
+    row.Padding({ 10, 10, 10, 10 });
     row.Orientation(Orientation::Horizontal);
     auto brush = Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundListLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>();
     if (keyboardRemapControlObjects.size() % 2)
@@ -124,7 +122,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         {
             return;
         }
-        
+
         // rowIndex could be out of bounds if the the row got deleted after LostFocus handler was invoked. In this case it should return
         if (rowIndex >= keyboardRemapControlObjects.size())
         {
@@ -206,9 +204,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
             row.Background(i % 2 ? brush : Media::SolidColorBrush(Colors::Transparent()));
             StackPanel sourceCol = row.Children().GetAt(0).as<StackPanel>();
             StackPanel targetCol = row.Children().GetAt(2).as<StackPanel>();
-            TextBox targetApp = row.Children().GetAt(3).as<StackPanel>()
-                .Children().GetAt(0).as<StackPanel>()
-                .Children().GetAt(0).as<TextBox>();
+            TextBox targetApp = row.Children().GetAt(3).as<StackPanel>().Children().GetAt(0).as<StackPanel>().Children().GetAt(0).as<TextBox>();
             Button delButton = row.Children().GetAt(4).as<StackPanel>().Children().GetAt(0).as<Button>();
             UpdateAccessibleNames(sourceCol, targetCol, targetApp, delButton, i);
         }

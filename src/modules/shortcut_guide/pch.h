@@ -26,3 +26,4 @@
 #include <unordered_set>
 #include <string>
 #include <ProjectTelemetry.h>
+#include <filesystem>

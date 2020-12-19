@@ -42,6 +42,7 @@ namespace ColorPicker.Settings
             ActivationAction = new SettingItem<ColorPickerActivationAction>(ColorPickerActivationAction.OpenEditor);
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
+            ShowColorName = new SettingItem<bool>(false);
 
             LoadSettingsFromJson();
 
@@ -73,6 +74,8 @@ namespace ColorPicker.Settings
 
         public ObservableCollection<string> VisibleColorFormats { get; private set; } = new ObservableCollection<string>();
 
+        public SettingItem<bool> ShowColorName { get; }
+
         private void LoadSettingsFromJson()
         {
             // TODO this IO call should by Async, update GetFileWatcher helper to support async
@@ -103,6 +106,7 @@ namespace ColorPicker.Settings
                                 CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
                                 ActivationAction.Value = settings.Properties.ActivationAction;
                                 ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
+                                ShowColorName.Value = settings.Properties.ShowColorName;
 
                                 if (settings.Properties.ColorHistory == null)
                                 {

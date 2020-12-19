@@ -4,10 +4,8 @@
 #include "keyboardmanager/common/KeyboardManagerConstants.h"
 #include "keyboardmanager/common/KeyboardManagerState.h"
 #include "ShortcutControl.h"
-#include "common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
-#include <common\shared_constants.h>
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include <common/interop/shared_constants.h>
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
@@ -80,7 +78,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     newrow.emplace_back(std::make_unique<SingleKeyRemapControl>(parent, row, 1));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
-    row.Padding({10, 10, 10, 10});
+    row.Padding({ 10, 10, 10, 10 });
     row.Orientation(Orientation::Horizontal);
     auto brush = Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundListLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>();
     if (keyboardRemapControlObjects.size() % 2)
@@ -147,7 +145,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         {
             return;
         }
-        
+
         // Update accessible names and background for each row after the deleted row
         for (uint32_t i = rowIndex + 1; i < children.Size(); i++)
         {

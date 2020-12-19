@@ -7,11 +7,14 @@
 #include <filesystem>
 #include <string_view>
 
-#include <common/common.h>
 #include <common/updating/updating.h>
 #include <common/updating/installer.h>
 #include <common/updating/http_client.h>
 #include <common/updating/dotnet_installation.h>
+
+#include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
+#include <common/utils/resources.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
@@ -19,8 +22,6 @@
 
 #include "../runner/tray_icon.h"
 #include "../runner/action_runner_utils.h"
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 auto Strings = create_notifications_strings();
 
@@ -172,7 +173,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-    if (action == L"-run-non-elevated")
+    if (action == RUN_NONELEVATED_CMDARG)
     {
         int nextArg = 2;
 
@@ -234,7 +235,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
         }
     }
-    else if (action == L"-uninstall_msi")
+    else if (action == UNINSTALL_MSI_CMDARG)
     {
         return uninstall_msi_action();
     }

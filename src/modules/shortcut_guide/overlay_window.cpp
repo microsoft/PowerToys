@@ -1,15 +1,99 @@
 ﻿#include "pch.h"
 #include "overlay_window.h"
-#include "common/monitors.h"
-#include "common/tasklist_positions.h"
-#include "common/start_visible.h"
+#include <common/display/monitors.h>
+#include "tasklist_positions.h"
+#include "start_visible.h"
+#include <common/utils/resources.h>
+#include <common/utils/window.h>
+
 #include "keyboard_state.h"
 #include "shortcut_guide.h"
 #include "trace.h"
 #include "Generated Files/resource.h"
-#include <common/common.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+namespace
+{
+    // Gets position of given window.
+    std::optional<RECT> get_window_pos(HWND hwnd)
+    {
+        RECT window;
+        if (DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &window, sizeof(window)) == S_OK)
+        {
+            return window;
+        }
+        else
+        {
+            return {};
+        }
+    }
+
+    enum WindowState
+    {
+        UNKNOWN,
+        MINIMIZED,
+        MAXIMIZED,
+        SNAPED_TOP_LEFT,
+        SNAPED_LEFT,
+        SNAPED_BOTTOM_LEFT,
+        SNAPED_TOP_RIGHT,
+        SNAPED_RIGHT,
+        SNAPED_BOTTOM_RIGHT,
+        RESTORED
+    };
+
+    inline WindowState get_window_state(HWND hwnd)
+    {
+        WINDOWPLACEMENT placement;
+        placement.length = sizeof(WINDOWPLACEMENT);
+
+        if (GetWindowPlacement(hwnd, &placement) == 0)
+        {
+            return UNKNOWN;
+        }
+
+        if (placement.showCmd == SW_MINIMIZE || placement.showCmd == SW_SHOWMINIMIZED || IsIconic(hwnd))
+        {
+            return MINIMIZED;
+        }
+
+        if (placement.showCmd == SW_MAXIMIZE || placement.showCmd == SW_SHOWMAXIMIZED)
+        {
+            return MAXIMIZED;
+        }
+
+        auto rectp = get_window_pos(hwnd);
+        if (!rectp)
+        {
+            return UNKNOWN;
+        }
+
+        auto rect = *rectp;
+        MONITORINFO monitor;
+        monitor.cbSize = sizeof(MONITORINFO);
+        auto h_monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+        GetMonitorInfo(h_monitor, &monitor);
+        bool top_left = monitor.rcWork.top == rect.top && monitor.rcWork.left == rect.left;
+        bool bottom_left = monitor.rcWork.bottom == rect.bottom && monitor.rcWork.left == rect.left;
+        bool top_right = monitor.rcWork.top == rect.top && monitor.rcWork.right == rect.right;
+        bool bottom_right = monitor.rcWork.bottom == rect.bottom && monitor.rcWork.right == rect.right;
+
+        if (top_left && bottom_left)
+            return SNAPED_LEFT;
+        if (top_left)
+            return SNAPED_TOP_LEFT;
+        if (bottom_left)
+            return SNAPED_BOTTOM_LEFT;
+        if (top_right && bottom_right)
+            return SNAPED_RIGHT;
+        if (top_right)
+            return SNAPED_TOP_RIGHT;
+        if (bottom_right)
+            return SNAPED_BOTTOM_RIGHT;
+
+        return RESTORED;
+    }
+
+}
 
 D2DOverlaySVG& D2DOverlaySVG::load(const std::wstring& filename, ID2D1DeviceContext5* d2d_dc)
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "json.h"
+#include <common/utils/json.h>
 
 class CSettings
 {

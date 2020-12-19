@@ -3,5 +3,4 @@
 #include <windows.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
-#include <common/common.h>
 #include <ProjectTelemetry.h>

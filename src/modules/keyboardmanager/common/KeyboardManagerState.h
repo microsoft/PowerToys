@@ -1,8 +1,8 @@
 #pragma once
 #include <mutex>
 #include "KeyboardManagerConstants.h"
-#include "../common/keyboard_layout.h"
-#include "../common/LowlevelKeyboardEvent.h"
+#include <common/interop/keyboard_layout.h>
+#include "../common/hooks/LowlevelKeyboardEvent.h"
 #include <functional>
 #include <variant>
 #include "Shortcut.h"

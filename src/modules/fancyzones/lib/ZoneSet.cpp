@@ -8,7 +8,7 @@
 #include "Zone.h"
 #include "util.h"
 
-#include <common/dpi_aware.h>
+#include <common/display/dpi_aware.h>
 
 #include <limits>
 #include <map>

@@ -107,5 +107,5 @@ steps:
       **\UnitTests-PreviewHandlerCommon.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\powerpreviewTest.dll
+      **\PowerRenameUnitTests.dll
       !**\obj\**
-#      **\PowerRenameUnitTests.dll

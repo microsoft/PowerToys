@@ -3,9 +3,9 @@
 #include "keyboardmanager/common/Helpers.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include "BufferValidationHelpers.h"
-#include <common\shared_constants.h>
-#include <common\keyboard_layout_impl.h>
-#include <modules\keyboardmanager\common\Helpers.h>
+#include <common/interop/shared_constants.h>
+#include <common/interop/keyboard_layout_impl.h>
+#include <modules/keyboardmanager/common/Helpers.h>
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -143,7 +143,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
     uint32_t dropDownIndex = -1;
     bool dropDownFound = parent.Children().IndexOf(currentDropDown, dropDownIndex);
     std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> validationResult = std::make_pair(KeyboardManagerHelper::ErrorType::NoError, BufferValidationHelpers::DropDownAction::NoAction);
-    
+
     uint32_t rowIndex;
     bool controlIindexFound = table.Children().IndexOf(row, rowIndex);
     if (controlIindexFound)
@@ -368,7 +368,7 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
 }
 
 // Function to add a shortcut to the UI control as combo boxes
-void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel  row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
+void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
     // Delete the existing drop down menus
     parent.Children().Clear();

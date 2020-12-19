@@ -5,27 +5,31 @@
 #include "logger.h"
 #include <map>
 #include <spdlog/sinks/daily_file_sink.h>
-#include <spdlog\sinks\stdout_color_sinks-inl.h>
+#include <spdlog/sinks/msvc_sink.h>
+#include <spdlog/sinks/null_sink.h>
+#include <spdlog/sinks/stdout_color_sinks-inl.h>
 #include <iostream>
-#include <spdlog\sinks\null_sink.h>
 
-using namespace std;
-using namespace spdlog;
+using spdlog::sinks_init_list;
+using spdlog::level::level_enum;
+using spdlog::sinks::daily_file_sink_mt;
+using spdlog::sinks::msvc_sink_mt;
+using std::make_shared;
 
-map<wstring, spdlog::level::level_enum> logLevelMapping = {
-    { L"trace", level::trace },
-    { L"debug", level::debug },
-    { L"info", level::info },
-    { L"warn", level::warn },
-    { L"err", level::err },
-    { L"critical", level::critical },
-    { L"off", level::off },
+std::map<std::wstring, level_enum> logLevelMapping = {
+    { L"trace", level_enum::trace },
+    { L"debug", level_enum::debug },
+    { L"info", level_enum::info },
+    { L"warn", level_enum::warn },
+    { L"err", level_enum::err },
+    { L"critical", level_enum::critical },
+    { L"off", level_enum::off },
 };
 
-level::level_enum getLogLevel(std::wstring_view logSettingsPath)
+level_enum getLogLevel(std::wstring_view logSettingsPath)
 {
     auto logLevel = get_log_settings(logSettingsPath).logLevel;
-    level::level_enum result = logLevelMapping[LogSettings::defaultLogLevel];
+    level_enum result = logLevelMapping[LogSettings::defaultLogLevel];
     if (logLevelMapping.find(logLevel) != logLevelMapping.end())
     {
         result = logLevelMapping[logLevel];
@@ -50,15 +54,24 @@ void Logger::init(std::string loggerName, std::wstring logFilePath, std::wstring
     auto logLevel = getLogLevel(logSettingsPath);
     try
     {
-        auto sink = make_shared<sinks::daily_file_sink_mt>(logFilePath, 0, 0, false, LogSettings::retention);
-        logger = make_shared<spdlog::logger>(loggerName, sink);
+        auto sink = make_shared<daily_file_sink_mt>(logFilePath, 0, 0, false, LogSettings::retention);
+        if (IsDebuggerPresent())
+        {
+            auto msvc_sink = make_shared<msvc_sink_mt>();
+            msvc_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] [t-%t] [%l] %v");
+            logger = make_shared<spdlog::logger>(loggerName, sinks_init_list{ sink, msvc_sink });
+        }
+        else
+        {
+            logger = make_shared<spdlog::logger>(loggerName, sink);
+        }
     }
     catch (...)
     {
         logger = spdlog::null_logger_mt(loggerName);
         if (!wasLogFailedShown())
         {
-            // todo: that message should be shown from init caller and strings should be localized 
+            // todo: that message should be shown from init caller and strings should be localized
             MessageBoxW(NULL,
                         L"Logger can not be initialized",
                         L"PowerToys",

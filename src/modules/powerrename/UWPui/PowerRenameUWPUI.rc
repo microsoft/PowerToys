@@ -1,6 +1,6 @@
 #include <windows.h>
 #include "resource.h"
-#include "../../../common/version.h"
+#include "../../../common/version/version.h"
 
 // We need both DLL and UI resource files for UWP UI.
 #include "../dll/Generated Files/PowerRenameExt.rc"

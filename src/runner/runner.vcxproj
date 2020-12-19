@@ -1,43 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h runner.base.rc runner.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h runner.base.rc runner.rc" />
   </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}</ProjectGuid>
     <RootNamespace>powertoys</RootNamespace>
     <ProjectName>runner</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\deps\expected.props" />
   <ImportGroup Label="Shared" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+  <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-    <SpectreMitigation>Spectre</SpectreMitigation>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -51,24 +28,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup>
     <TargetName>PowerToys</TargetName>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>PowerToys</TargetName>
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\common\inc;..\common\os-detection;..\common\Telemetry;..;..\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
@@ -78,39 +43,9 @@
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\common\inc;..\common\os-detection;..\common\Telemetry;..;..\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-    <Link>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
-      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>Msi.lib;WindowsApp.lib;Rstrtmgr.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <Manifest>
-      <EnableDpiAwareness>false</EnableDpiAwareness>
-    </Manifest>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="action_runner_utils.cpp" />
     <ClCompile Include="auto_start_helper.cpp" />
     <ClCompile Include="general_settings.cpp" />
@@ -152,97 +87,95 @@
     <CopyFileToFolders Include="svgs\0.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\1.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\2.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\3.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\4.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\5.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\6.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\7.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\8.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\9.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\no_active_window.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\overlay.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\overlay_portrait.svg">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="svgs\icon.ico">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders>$(OutDir)\svgs</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\common\common.vcxproj">
-      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
+    <ProjectReference Include="..\common\COMUtils\COMUtils.vcxproj">
+      <Project>{7319089e-46d6-4400-bc65-e39bdf1416ee}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\Display\Display.vcxproj">
+      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>
     <ProjectReference Include="..\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\common\notifications\notifications.vcxproj">
+      <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\Themes\Themes.vcxproj">
+      <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\common\updating\updating.vcxproj">
       <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\WinStore\Winstore.vcxproj">
+      <Project>{c502a854-53ac-4ebb-8dc0-e4af2191e4f6}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

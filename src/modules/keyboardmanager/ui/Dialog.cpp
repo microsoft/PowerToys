@@ -1,9 +1,8 @@
 #include "pch.h"
 #include "Dialog.h"
 #include <set>
-#include "common/common.h"
 #include "keyboardmanager/dll/Generated Files/resource.h"
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include <common/utils/resources.h>
 
 using namespace winrt::Windows::Foundation;
 

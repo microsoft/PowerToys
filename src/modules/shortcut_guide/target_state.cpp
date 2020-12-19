@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "target_state.h"
-#include "common/start_visible.h"
+#include "start_visible.h"
 #include "keyboard_state.h"
-#include "common/shared_constants.h"
-#include <common\logger\logger.h>
+#include <common/interop/shared_constants.h>
+#include <common/logger/logger.h>
 
 TargetState::TargetState(int ms_delay) :
     // TODO: All this processing should be done w/o a separate thread etc. in pre_wnd_proc of winkey_popup to avoid
@@ -162,7 +162,7 @@ void TargetState::thread_proc()
             {
                 Logger::critical("Shown, handle_shown failed.");
             }
-            
+
             break;
         case ForceShown:
             try
@@ -173,7 +173,7 @@ void TargetState::thread_proc()
             {
                 Logger::critical("ForceShown, handle_shown failed.");
             }
-            
+
             break;
         case Exiting:
         default:

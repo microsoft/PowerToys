@@ -71,10 +71,14 @@
     </ClInclude>
     <ClInclude Include="Generated Files/resource.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
     <ClInclude Include="KeyState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ZoneWindowDrawing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileWatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -128,6 +132,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ZoneWindowDrawing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OnThreadExecutor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileWatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

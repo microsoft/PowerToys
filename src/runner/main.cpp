@@ -7,19 +7,20 @@
 #include "trace.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
+#include "RestartManagement.h"
 #include "Generated files/resource.h"
 
-#include <common/appMutex.h>
-#include <common/common.h>
-#include <common/comUtils.h>
-#include <common/dpi_aware.h>
-#include <common/notifications.h>
-#include <common/processApi.h>
-#include <common/RestartManagement.h>
-#include <common/toast_dont_show_again.h>
+#include <common/comUtils/comUtils.h>
+#include <common/display/dpi_aware.h>
+#include <common/notifications/notifications.h>
+#include <common/notifications/dont_show_again.h>
 #include <common/updating/installer.h>
 #include <common/updating/updating.h>
-#include <common/winstore.h>
+#include <common/utils/appMutex.h>
+#include <common/utils/elevation.h>
+#include <common/utils/processApi.h>
+#include <common/utils/resources.h>
+#include <common/winstore/winstore.h>
 
 #include "update_state.h"
 #include "update_utils.h"
@@ -34,10 +35,12 @@
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
 #endif
-#include <common/settings_helpers.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
+#include <common/utils/winapi_error.h>
+#include <common/version/version.h>
+#include <common/utils/window.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 extern updating::notifications::strings Strings;
 
 namespace
@@ -315,7 +318,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
     case SpecialMode::ReportSuccessfulUpdate:
     {
-        notifications::remove_toasts(notifications::UPDATING_PROCESS_TOAST_TAG);
+        notifications::remove_toasts_by_tag(notifications::UPDATING_PROCESS_TOAST_TAG);
+        notifications::remove_all_scheduled_toasts();
         notifications::show_toast(GET_RESOURCE_STRING(IDS_PT_UPDATE_MESSAGE_BOX_TEXT),
                                   L"PowerToys",
                                   notifications::toast_params{ notifications::UPDATING_PROCESS_TOAST_TAG });

@@ -2,14 +2,14 @@
 #include <Commdlg.h>
 #include "StreamUriResolverFromFile.h"
 #include <Shellapi.h>
-#include <common/two_way_pipe_message_ipc.h>
+#include <common/interop/two_way_pipe_message_ipc.h>
 #include <ShellScalingApi.h>
 #include "resource.h"
-#include <common/dpi_aware.h>
-#include <common/common.h>
-#include <common/comUtils.h>
+#include <common/display/dpi_aware.h>
+#include <common/comUtils/comUtils.h>
 
 #include "trace.h"
+#include <common/utils/elevation.h>
 
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "shcore.lib")

@@ -1,7 +1,6 @@
 #include "pch.h"
 
-#include <common/common.h>
-#include <common/on_thread_executor.h>
+#include <common/logger/logger.h>
 
 #include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
@@ -9,6 +8,7 @@
 #include "ZoneWindowDrawing.h"
 #include "trace.h"
 #include "util.h"
+#include "on_thread_executor.h"
 #include "Settings.h"
 
 #include <ShellScalingApi.h>
@@ -195,7 +195,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
     {
         m_zoneWindowDrawing->DrawActiveZoneSet(m_activeZoneSet->GetZones(), m_highlightZone, m_host);
     }
-    
+
     return S_OK;
 }
 

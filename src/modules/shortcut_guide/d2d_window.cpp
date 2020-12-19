@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "d2d_window.h"
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include <common/utils/resources.h>
 
 D2DWindow::D2DWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> _pre_wnd_proc) :
     pre_wnd_proc(std::move(_pre_wnd_proc))

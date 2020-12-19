@@ -1,14 +1,14 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
-#include <common/common.h>
+
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
 #include "Generated Files/resource.h"
-#include <common\settings_objects.h>
-#include <common\os-detect.h>
-#include <colorPicker\ColorPicker\ColorPickerConstants.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/os-detect.h>
+#include <common/utils/resources.h>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+#include <colorPicker/ColorPicker/ColorPickerConstants.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule,
                       DWORD ul_reason_for_call,

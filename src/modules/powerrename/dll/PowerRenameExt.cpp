@@ -4,11 +4,13 @@
 #include <PowerRenameItem.h>
 #include <PowerRenameManager.h>
 #include <trace.h>
-#include <common.h>
 #include <Helpers.h>
-#include <icon_helpers.h>
+#include <common/themes/icon_helpers.h>
 #include <Settings.h>
 #include "Generated Files/resource.h"
+
+#include <common/utils/resources.h>
+#include <common/utils/process_path.h>
 
 extern HINSTANCE g_hInst;
 
@@ -123,8 +125,8 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
     {
         Trace::Invoked();
         InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
-        hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
-        if (SUCCEEDED(hr))
+        hr = E_OUTOFMEMORY;
+        if (pInvokeData)
         {
             pInvokeData->hwndParent = pici->hwnd;
             hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &(pInvokeData->pstrm));
@@ -248,8 +250,8 @@ HRESULT __stdcall CPowerRenameMenu::Invoke(IShellItemArray* psiItemArray, IBindC
 #endif
     Trace::Invoked();
     InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
-    HRESULT hr = pInvokeData ? S_OK : E_OUTOFMEMORY;
-    if (SUCCEEDED(hr))
+    HRESULT hr = E_OUTOFMEMORY;
+    if (pInvokeData)
     {
         pInvokeData->hwndParent = nullptr;
         hr = CoMarshalInterThreadInterfaceInStream(__uuidof(psiItemArray), psiItemArray, &(pInvokeData->pstrm));

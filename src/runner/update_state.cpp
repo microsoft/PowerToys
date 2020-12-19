@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "update_state.h"
 
-#include <common/json.h>
-#include <common/timeutil.h>
-#include <common/settings_helpers.h>
+#include <common/utils/json.h>
+#include <common/utils/timeutil.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 namespace
 {

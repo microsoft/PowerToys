@@ -18,7 +18,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)..\..\tools\build\convert-resx-to-rc.ps1 . resource.base.h resource.h bootstrapper.base.rc bootstrapper.rc 105" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)..\..\tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h bootstrapper.base.rc bootstrapper.rc 105" />
   </Target>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -120,6 +120,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="progressbar_window.cpp" />
+    <ClCompile Include="RcResource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\runner\updating.h" />
@@ -137,9 +138,6 @@
     <Image Include="..\runner\svgs\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\common\common.vcxproj">
-      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\src\common\updating\updating.vcxproj">
       <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
     </ProjectReference>
