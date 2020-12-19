@@ -7,7 +7,6 @@ using System.ComponentModel;
 using ImageResizer.Properties;
 using ImageResizer.Test;
 using Xunit;
-using Xunit.Extensions;
 
 namespace ImageResizer.Models
 {
@@ -268,6 +267,42 @@ namespace ImageResizer.Models
             var result = size.GetPixelWidth(100, 96);
 
             Assert.Equal(50, result);
+        }
+
+        [Theory]
+        [InlineData(ResizeFit.Fill, ResizeUnit.Centimeter)]
+        [InlineData(ResizeFit.Fill, ResizeUnit.Inch)]
+        [InlineData(ResizeFit.Fill, ResizeUnit.Pixel)]
+        [InlineData(ResizeFit.Fit, ResizeUnit.Centimeter)]
+        [InlineData(ResizeFit.Fit, ResizeUnit.Inch)]
+        [InlineData(ResizeFit.Fit, ResizeUnit.Pixel)]
+        [InlineData(ResizeFit.Stretch, ResizeUnit.Centimeter)]
+        [InlineData(ResizeFit.Stretch, ResizeUnit.Inch)]
+        [InlineData(ResizeFit.Stretch, ResizeUnit.Percent)]
+        [InlineData(ResizeFit.Stretch, ResizeUnit.Pixel)]
+        public void HeightVisible(ResizeFit fit, ResizeUnit unit)
+        {
+            var size = new ResizeSize
+            {
+                Fit = fit,
+                Unit = unit,
+            };
+
+            Assert.True(size.ShowHeight);
+        }
+
+        [Theory]
+        [InlineData(ResizeFit.Fill, ResizeUnit.Percent)]
+        [InlineData(ResizeFit.Fit, ResizeUnit.Percent)]
+        public void HeightNotVisible(ResizeFit fit, ResizeUnit unit)
+        {
+            var size = new ResizeSize
+            {
+                Fit = fit,
+                Unit = unit,
+            };
+
+            Assert.False(size.ShowHeight);
         }
     }
 }
