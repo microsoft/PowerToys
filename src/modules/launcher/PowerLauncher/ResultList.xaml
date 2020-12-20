@@ -12,9 +12,6 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Styles/ModernScrollBarStyle.xaml" />
-            </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <Style x:Key="FocusVisual">
@@ -99,15 +96,11 @@
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Grid>
                             <ControlTemplate.Triggers>
-                                <!-- Setting the opacity of the highlight border to improve the contrast of the AccentColorbrush when selected. In UWP we could call a different brush, in WPF we need to play with the opacity of the WindowGlassBrush-->
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="1" />
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.4" />
-                                    <Setter Property="Background" TargetName="HighlightBorder" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
-                                    <!-- Accent color brush -->
+                                    <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource AccentHighlightBrush}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -150,40 +143,15 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <Style x:Key="CollapsableTextblock" TargetType="TextBlock">
+            <Style x:Key="CollapsableTextblock"
+                   TargetType="TextBlock">
                 <Style.Triggers>
-                    <Trigger Property="Text" Value="">
-                        <Setter Property="Visibility" Value="Collapsed"/>
+                    <Trigger Property="Text"
+                             Value="">
+                        <Setter Property="Visibility"
+                                Value="Collapsed" />
                     </Trigger>
                 </Style.Triggers>
-            </Style>
-
-            <Style TargetType="{x:Type ToolTip}" >
-                <Setter Property="OverridesDefaultStyle" Value="true" />
-                <Setter Property="HasDropShadow" Value="True" />
-                <Setter Property="FontSize" Value="12" />
-                <Setter Property="Placement" Value="Bottom" />
-                <Setter Property="VerticalOffset" Value="0" />
-                <Setter Property="Padding" Value="8" />
-                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type ToolTip}" >
-                            <Grid Margin="8,2" >
-                                <Rectangle
-                                    Fill="{DynamicResource ToolTipBackgroundBrushKey}"
-                                    RadiusX="4"
-                                    RadiusY="4"
-                                    Stroke="{DynamicResource ToolTipBorderBrushKey}"
-                                    StrokeThickness="1"/>
-                                <ContentPresenter
-                                    Margin="4"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Top" />
-                            </Grid>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -235,16 +203,15 @@
                         </Grid.RowDefinitions>
                         <Grid.ToolTip>
                             <ToolTip Visibility="{Binding Result.ToolTipVisibility}">
-                                <StackPanel Margin="8,6">
+                                <StackPanel>
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
-                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontWeight="Bold" FontSize="12"
+                                        FontWeight="Bold"
                                         Text="{Binding Result.ToolTipData.Title}"
                                         TextWrapping="Wrap" 
                                         RenderOptions.ClearTypeHint="Enabled" />
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
-                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontSize="12"
                                         Text="{Binding Result.ToolTipData.Text}"                               
                                         TextWrapping="Wrap" 
                                         RenderOptions.ClearTypeHint="Enabled" />
@@ -317,9 +284,6 @@
                                                 <TextBlock
                                                     AutomationProperties.Name="{x:Static p:Resources.ContextMenuItemAdditionalInformation}"
                                                     Text="{Binding Title}"
-                                                    Foreground="{DynamicResource ToolTipForegroundBrushKey}"
-                                                    Margin="8,5"
-                                                    FontSize="12"
                                                     RenderOptions.ClearTypeHint="Enabled"/>
                                             </ToolTip>
                                         </ToolTipService.ToolTip>

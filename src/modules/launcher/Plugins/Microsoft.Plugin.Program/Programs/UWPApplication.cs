@@ -634,7 +634,7 @@ namespace Microsoft.Plugin.Program.Programs
                     var brush = new SolidColorBrush(color);
                     var pen = new Pen(brush, 1);
                     var backgroundArea = new Rect(0, 0, width, height);
-                    var rectangleGeometry = new RectangleGeometry(backgroundArea);
+                    var rectangleGeometry = new RectangleGeometry(backgroundArea, 2, 2);
                     var rectDrawing = new GeometryDrawing(brush, pen, rectangleGeometry);
                     group.Children.Add(rectDrawing);
 

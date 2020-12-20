@@ -29,22 +29,5 @@
     <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FFa1a1a1" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="White" />
     <SolidColorBrush x:Key="DialogBorderBrush" Color="#FF373737" />
-    
-    <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="#FF7a7a7a" />
-    <Color x:Key="ScrollBarThumbPointerOver">#FF767676</Color>
-    <Color x:Key="ScrollBarThumbPointerPressed">#FFa4a4a4</Color>
-    
-    <Color x:Key="ScrollBarBackgroundPointerOver">#FF1b1b1b</Color>
-
-    <SolidColorBrush x:Key="ScrollBarLineButtonForeground" Color="#FFcdcdcd" />
-    <Color x:Key="ScrollBarLineButtonForegroundPointerOver">#FFcdcdcd</Color>
-    <Color x:Key="ScrollBarLineButtonForegroundPointerPressed">#FF171717</Color>
-
-    <SolidColorBrush x:Key="ScrollBarLineButtonBackground" Color="Transparent"/>
-    <Color x:Key="ScrollBarLineButtonBackgroundPointerOver">#FF313131</Color>
-    <Color x:Key="ScrollBarLineButtonBackgroundPointerPressed">#FFa4a4a4</Color>
-
-    <SolidColorBrush x:Key="ToolTipBorderBrushKey" Color="#5B000000" />
-    <SolidColorBrush x:Key="ToolTipForegroundBrushKey" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ToolTipBackgroundBrushKey" Color="#FF2B2B2B" />
+    <SolidColorBrush x:Key="AccentHighlightBrush" Color="{DynamicResource SystemAccentColorDark1}" />
 </ResourceDictionary>
