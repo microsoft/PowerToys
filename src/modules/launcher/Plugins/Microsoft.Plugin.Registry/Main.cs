@@ -70,19 +70,30 @@ namespace Microsoft.Plugin.Registry
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query)
         {
-            // Any base registry key have more than two characters
-            if (query?.Search is null || query.Search.Length < 3)
+            if (query?.Search is null)
             {
                 return new List<Result>(0);
             }
 
-            var searchForValueName = QueryHelper.GetQueryParts(query.RawQuery, out var queryKey, out var queryValueName);
+            // The plugin is only triggered when the "ActionKeyword" is "HK" (case-insensitive).
+            // To make the develop of this plugin easier we put the "Query.ActionKeyword" and the "Query.Search" together,
+            // this allow us to use e.g. "HKLM" instead of "LM".
+            var serachFor = query.ActionKeyword + query.Search;
+
+            // WOX hack:
+            // This Plugin override the "Result.QueryTextDisplay" of each result, this is need to allow to work with short-hand base registry keys (e.g. HKLM).
+            // The WOX plugin use the changed "Result.QueryTextDisplay" and show "Query.ActionKeyword" + Space + "Result.QueryTextDisplay".
+            // We can't use "Query.RawQuery" because it have the same content ("Query.ActionKeyword" + Space + "Result.QueryTextDisplay").
+            // So we clear the action keyword to make sure it is not used for the display and the query.
+            query.ActionKeyword = string.Empty;
+
+            var searchForValueName = QueryHelper.GetQueryParts(serachFor, out var queryKey, out var queryValueName);
 
             var (baseKeyList, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKeyList is null)
             {
                 // no base key found -> test is the key starts with "HKE" or "HKEY" (case-insensitive)
-                return query.Search.StartsWith(KeyName.FirstPart, StringComparison.InvariantCultureIgnoreCase)
+                return serachFor.StartsWith(KeyName.FirstPart, StringComparison.InvariantCultureIgnoreCase)
                     ? ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath)
                     : new List<Result>(0);
             }
