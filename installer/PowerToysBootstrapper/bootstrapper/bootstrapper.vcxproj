@@ -76,8 +76,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation Condition="'$(CIBuild)'!='true'">true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>../../../src/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -98,8 +96,6 @@
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation Condition="'$(CIBuild)'!='true'">true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>../../../src/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
