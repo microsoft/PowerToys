@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Registry
             // The plugin is only triggered when the "ActionKeyword" is "HK" (case-insensitive).
             // To make the develop of this plugin easier we put the "Query.ActionKeyword" and the "Query.Search" together,
             // this allow us to use e.g. "HKLM" instead of "LM".
-            var serachFor = query.ActionKeyword + query.Search;
+            var searchFor = query.ActionKeyword + query.Search;
 
             // WOX hack:
             // This Plugin override the "Result.QueryTextDisplay" of each result, this is need to allow to work with short-hand base registry keys (e.g. HKLM).
@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.Registry
             // So we clear the action keyword to make sure it is not used for the display and the query.
             query.ActionKeyword = string.Empty;
 
-            var searchForValueName = QueryHelper.GetQueryParts(serachFor, out var queryKey, out var queryValueName);
+            var searchForValueName = QueryHelper.GetQueryParts(searchFor, out var queryKey, out var queryValueName);
 
             var (baseKeyList, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKeyList is null)
