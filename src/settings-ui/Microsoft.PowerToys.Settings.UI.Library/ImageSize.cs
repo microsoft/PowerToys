@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
-                if (Unit == 2)
+                if (Unit == 2 && Fit != 2)
                 {
                     return 0;
                 }
@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
-                if (Unit == 2)
+                if (Unit == 2 && Fit != 2)
                 {
                     return false;
                 }
@@ -128,6 +128,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _fit = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(ExtraBoxOpacity));
+                    OnPropertyChanged(nameof(EnableEtraBoxes));
                 }
             }
         }
