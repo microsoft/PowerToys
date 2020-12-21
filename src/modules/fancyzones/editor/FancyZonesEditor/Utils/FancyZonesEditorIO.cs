@@ -227,11 +227,11 @@ namespace FancyZonesEditor.Utils
                 // Span zones across monitors
                 App.Overlay.SpanZonesAcrossMonitors = int.Parse(argsParts[(int)CmdArgs.SpanZones]) == 1;
 
+                // Target monitor id
+                string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
+
                 if (!App.Overlay.SpanZonesAcrossMonitors)
                 {
-                    // Target monitor id
-                    string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
-
                     // Test launch with custom monitors configuration
                     bool isCustomMonitorConfigurationMode = targetMonitorName.StartsWith("Monitor#");
                     if (isCustomMonitorConfigurationMode)
@@ -338,6 +338,10 @@ namespace FancyZonesEditor.Utils
                         }
                     }
                 }
+                else
+                {
+                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = targetMonitorName;
+                }
             }
             catch (Exception)
             {
@@ -434,6 +438,31 @@ namespace FancyZonesEditor.Utils
                             {
                                 App.Overlay.CurrentDesktop = i;
                                 break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Update monitors data
+                        foreach (Monitor monitor in App.Overlay.Monitors)
+                        {
+                            bool matchFound = false;
+                            foreach (NativeMonitorData nativeData in editorParams.Monitors)
+                            {
+                                // Can't do an exact match since the rounding algorithm used by the framework is different from ours
+                                if (monitor.Device.UnscaledBounds.X >= (nativeData.LeftCoordinate - 1) && monitor.Device.UnscaledBounds.X <= (nativeData.LeftCoordinate + 1) &&
+                                    monitor.Device.UnscaledBounds.Y >= (nativeData.TopCoordinate - 1) && monitor.Device.UnscaledBounds.Y <= (nativeData.TopCoordinate + 1))
+                                {
+                                    monitor.Device.Id = nativeData.MonitorId;
+                                    monitor.Device.Dpi = nativeData.Dpi;
+                                    matchFound = true;
+                                    break;
+                                }
+                            }
+
+                            if (matchFound == false)
+                            {
+                                MessageBox.Show(string.Format(Properties.Resources.Error_Monitor_Match_Not_Found, monitor.Device.UnscaledBounds.ToString()));
                             }
                         }
                     }
@@ -644,37 +673,22 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
-                var settings = new LayoutSettings
-                {
-                    ZonesetUuid = device.ActiveZoneset.Uuid,
-                    ShowSpacing = device.EditorShowSpacing,
-                    Spacing = device.EditorSpacing,
-                    Type = JsonTagToLayoutType(device.ActiveZoneset.Type),
-                    ZoneCount = device.EditorZoneCount,
-                    SensitivityRadius = device.EditorSensitivityRadius,
-                };
-
                 bool unused = true;
-                if (!App.Overlay.SpanZonesAcrossMonitors)
+                foreach (Monitor monitor in monitors)
                 {
-                    foreach (Monitor monitor in monitors)
+                    if (monitor.Device.Id == device.DeviceId)
                     {
-                        if (monitor.Device.Id == device.DeviceId)
+                        var settings = new LayoutSettings
                         {
-                            monitor.Settings = settings;
-                            unused = false;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    bool isLayoutMultiMonitor = device.DeviceId.StartsWith(MultiMonitorId);
-                    if (isLayoutMultiMonitor)
-                    {
-                        // one zoneset for all desktops
-                        App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings = settings;
-                        App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = device.DeviceId;
+                            ZonesetUuid = device.ActiveZoneset.Uuid,
+                            ShowSpacing = device.EditorShowSpacing,
+                            Spacing = device.EditorSpacing,
+                            Type = JsonTagToLayoutType(device.ActiveZoneset.Type),
+                            ZoneCount = device.EditorZoneCount,
+                            SensitivityRadius = device.EditorSensitivityRadius,
+                        };
+
+                        monitor.Settings = settings;
                         unused = false;
                         break;
                     }

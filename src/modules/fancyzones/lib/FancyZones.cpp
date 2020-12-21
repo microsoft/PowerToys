@@ -650,6 +650,11 @@ void FancyZones::ToggleEditor() noexcept
     std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
     allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
 
+    if (spanZonesAcrossMonitors)
+    {
+        params += FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get()) + divider; /* Monitor id where the Editor should be opened */
+    }
+   
     // device id map
     std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
 
@@ -664,7 +669,7 @@ void FancyZones::ToggleEditor() noexcept
         std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
         std::wstring monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
 
-        if (monitor == targetMonitor)
+        if (monitor == targetMonitor && !spanZonesAcrossMonitors)
         {
             params += monitorId + divider; /* Monitor id where the Editor should be opened */
         }
