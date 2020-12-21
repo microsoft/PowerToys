@@ -161,7 +161,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Please file a bug in the]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Envíe un error en]]></Val>
+            <Val><![CDATA[Envíe un error en el]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
