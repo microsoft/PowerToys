@@ -11,10 +11,6 @@
 #include "trace.h"
 #include <common/utils/elevation.h>
 
-#pragma comment(lib, "shlwapi.lib")
-#pragma comment(lib, "shcore.lib")
-#pragma comment(lib, "windowsapp")
-
 #ifdef _DEBUG
 #define _DEBUG_WITH_LOCALHOST 0
 // Define as 1 For debug purposes, to access localhost servers.

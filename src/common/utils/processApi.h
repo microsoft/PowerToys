@@ -6,8 +6,6 @@
 #include <Psapi.h>
 #include <string_view>
 
-#pragma comment(lib, "Shlwapi.lib")
-
 inline std::vector<wil::unique_process_handle> getProcessHandlesByName(const std::wstring_view processName, DWORD handleAccess)
 {
     std::vector<wil::unique_process_handle> result;

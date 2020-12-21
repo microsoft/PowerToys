@@ -7,8 +7,6 @@
 #include <array>
 #include <optional>
 
-#pragma comment(lib, "dwmapi.lib")
-
 // Initializes and runs windows message loop
 inline int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_seconds = {})
 {
