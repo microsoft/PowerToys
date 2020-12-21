@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.Registry.Classes;
+using Microsoft.Plugin.Registry.Constants;
+using Microsoft.Plugin.Registry.Enumerations;
 using Microsoft.Plugin.Registry.Properties;
 using Microsoft.Win32;
 using Wox.Plugin;
@@ -24,9 +26,8 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="list">The original result list to convert</param>
         /// <param name="iconPath">The path to the icon of each entry</param>
-        /// <param name="maxLength">(optional) The maximum length of result text</param>
         /// <returns>A list with <see cref="Result"/></returns>
-        internal static List<Result> GetResultList(in IEnumerable<RegistryEntry> list, in string iconPath, in int maxLength = 45)
+        internal static List<Result> GetResultList(in IEnumerable<RegistryEntry> list, in string iconPath)
         {
             var resultList = new List<Result>();
 
@@ -42,19 +43,19 @@ namespace Microsoft.Plugin.Registry.Helper
                     // when key contains keys or fields
                     result.QueryTextDisplay = entry.Key.Name;
                     result.SubTitle = RegistryHelper.GetSummary(entry.Key);
-                    result.Title = GetTruncatedText(entry.Key.Name, maxLength);
+                    result.Title = GetTruncatedText(entry.Key.Name, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
                 }
                 else if (entry.Key is null && !(entry.Exception is null))
                 {
                     // on error (e.g access denied)
                     result.QueryTextDisplay = entry.KeyPath;
-                    result.SubTitle = entry.Exception.Message;
-                    result.Title = GetTruncatedText(entry.KeyPath, maxLength);
+                    result.SubTitle = GetTruncatedText(entry.Exception.Message, MaxTextLength.MaximumSubTitleLengthWithTwoSymbols, TruncateSide.OnlyFromRight);
+                    result.Title = GetTruncatedText(entry.KeyPath, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
                 }
                 else
                 {
                     result.QueryTextDisplay = entry.KeyPath;
-                    result.Title = GetTruncatedText(entry.KeyPath, maxLength);
+                    result.Title = GetTruncatedText(entry.KeyPath, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
                 }
 
                 result.ContextData = entry;
@@ -72,9 +73,8 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="key">The <see cref="RegistryKey"/> that should contain entries for the list</param>
         /// <param name="iconPath">The path to the icon of each entry</param>
         /// <param name="searchValue">(optional) When not <see cref="string.Empty"/> filter the list for the given value name and value</param>
-        /// <param name="maxLength">(optional) The maximum length of result text</param>
         /// <returns>A list with <see cref="Result"/></returns>
-        internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, string searchValue = "", in int maxLength = 45)
+        internal static List<Result> GetValuesFromKey(in RegistryKey? key, in string iconPath, string searchValue = "")
         {
             if (key is null)
             {
@@ -102,8 +102,8 @@ namespace Microsoft.Plugin.Registry.Helper
                     {
                         ContextData = new RegistryEntry(key.Name, valueException),
                         IcoPath = iconPath,
-                        SubTitle = valueException.Message,
-                        Title = GetTruncatedText(key.Name, maxLength),
+                        SubTitle = GetTruncatedText(valueException.Message, MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
+                        Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                         ToolTipData = new ToolTipData(valueException.Message, valueException.ToString()),
                         QueryTextDisplay = key.Name,
                     });
@@ -123,8 +123,8 @@ namespace Microsoft.Plugin.Registry.Helper
                     {
                         ContextData = new RegistryEntry(key, valueEntry.Key, valueEntry.Value),
                         IcoPath = iconPath,
-                        SubTitle = $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)} * {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}",
-                        Title = GetTruncatedText(valueEntry.Key, maxLength),
+                        SubTitle = GetTruncatedText(GetSubTileForRegistryValue(key, valueEntry), MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
+                        Title = GetTruncatedText(valueEntry.Key, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                         ToolTipData = new ToolTipData(Resources.RegistryValue, GetToolTipTextForRegistryValue(key, valueEntry)),
 
                         // Avoid user handling interrupt when move up/down inside the results of a registry key
@@ -138,8 +138,8 @@ namespace Microsoft.Plugin.Registry.Helper
                 {
                     ContextData = new RegistryEntry(key.Name, exception),
                     IcoPath = iconPath,
-                    SubTitle = exception.Message,
-                    Title = GetTruncatedText(key.Name, maxLength),
+                    SubTitle = GetTruncatedText(exception.Message, MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
+                    Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                     ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
                     QueryTextDisplay = key.Name,
                 });
@@ -151,19 +151,27 @@ namespace Microsoft.Plugin.Registry.Helper
 #pragma warning restore CA1031 // Do not catch general exception types
 
         /// <summary>
-        /// Return a truncated name (right based with three left dots)
+        /// Return a truncated name
         /// </summary>
         /// <param name="text">The text to truncate</param>
-        /// <param name="maxLength">(optional) The maximum length of the text</param>
+        /// <param name="maxLength">The maximum length of the text</param>
+        /// <param name="truncateSide">(optional) The side of the truncate</param>
         /// <returns>A truncated text with a maximum length</returns>
-        internal static string GetTruncatedText(string text, in int maxLength = 45)
+        internal static string GetTruncatedText(string text, in int maxLength, TruncateSide truncateSide = TruncateSide.OnlyFromLeft)
         {
-            if (text.Length > maxLength)
+            if (truncateSide == TruncateSide.OnlyFromLeft)
             {
-                text = QueryHelper.GetKeyWithShortBaseKey(text);
-            }
+                if (text.Length > maxLength)
+                {
+                    text = QueryHelper.GetKeyWithShortBaseKey(text);
+                }
 
-            return text.Length > maxLength ? "..." + text[^maxLength..] : text;
+                return text.Length > maxLength ? $"...{text[^maxLength..]}" : text;
+            }
+            else
+            {
+                return text.Length > maxLength ? $"{text[0..maxLength]}..." : text;
+            }
         }
 
         /// <summary>
@@ -177,5 +185,14 @@ namespace Microsoft.Plugin.Registry.Helper
             + $"{Resources.Name}\t{valueEntry.Key}{Environment.NewLine}"
             + $"{Resources.Type}\t{ValueHelper.GetType(key, valueEntry.Key)}{Environment.NewLine}"
             + $"{Resources.Value}\t{ValueHelper.GetValue(key, valueEntry.Key)}";
+
+        /// <summary>
+        /// Return the sub-title text for a registry value
+        /// </summary>
+        /// <param name="key">The registry key for the sub-title</param>
+        /// <param name="valueEntry">The value name and value of the registry value</param>
+        /// <returns>A sub-title text</returns>
+        private static string GetSubTileForRegistryValue(RegistryKey key, KeyValuePair<string, object> valueEntry)
+            => $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)} * {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}";
     }
 }
