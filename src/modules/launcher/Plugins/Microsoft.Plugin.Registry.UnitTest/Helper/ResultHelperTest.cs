@@ -23,6 +23,6 @@ namespace Microsoft.Plugin.Registry.UnitTest.Helper
         [DataRow(@"...anel\International\User Profile System Backup", @"HKEY_USERS\.DEFAULT\Control Panel\International\User Profile System Backup")]
         [DataRow(@"...stem\CurrentControlSet\Control\Print\Printers", @"HKEY_CURRENT_CONFIG\System\CurrentControlSet\Control\Print\Printers")]
         public void GetTruncatedTextTest(string registryKeyShort, string registryKeyFull)
-            => Assert.AreEqual(registryKeyShort, ResultHelper.GetTruncatedText(registryKeyFull));
+            => Assert.AreEqual(registryKeyShort, ResultHelper.GetTruncatedText(registryKeyFull, 45));
     }
 }
