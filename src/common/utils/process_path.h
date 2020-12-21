@@ -5,8 +5,6 @@
 
 #include <string>
 
-#pragma comment(lib, "shlwapi.lib")
-
 // Get the executable path or module name for modern apps
 inline std::wstring get_process_path(DWORD pid) noexcept
 {

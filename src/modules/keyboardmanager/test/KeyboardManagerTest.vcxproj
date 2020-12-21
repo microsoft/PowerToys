@@ -34,7 +34,6 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;$(SolutionDir)src\;$(SolutionDir)src\modules;$(SolutionDir)src\common\Telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UseFullPaths>true</UseFullPaths>
-      <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4002</DisableSpecificWarnings>
     </ClCompile>
     <Link>

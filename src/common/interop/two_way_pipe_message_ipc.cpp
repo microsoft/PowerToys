@@ -3,8 +3,6 @@
 
 #include <iterator>
 
-#pragma comment(lib, "advapi32.lib")
-
 TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
     std::wstring _input_pipe_name,
     std::wstring _output_pipe_name,

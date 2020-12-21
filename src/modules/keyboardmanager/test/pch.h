@@ -1,5 +1,4 @@
 #pragma once
-#pragma comment(lib, "shlwapi.lib")
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <ProjectTelemetry.h>

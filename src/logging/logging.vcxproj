@@ -34,7 +34,6 @@
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
