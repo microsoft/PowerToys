@@ -197,6 +197,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Library", "src\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj", "{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysInterop", "src\common\interop\PowerToysInterop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF} = {CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj", "{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}"
 EndProject
