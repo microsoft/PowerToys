@@ -96,7 +96,18 @@ namespace Wox.Infrastructure
                     spaceIndices.Add(compareStringIndex);
                 }
 
-                bool compareResult = opt.IgnoreCase ? string.Compare(fullStringToCompareWithoutCase[compareStringIndex].ToString(), currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString(), CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0 : fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex];
+                bool compareResult;
+                if (opt.IgnoreCase)
+                {
+                    var fullStringToCompare = fullStringToCompareWithoutCase[compareStringIndex].ToString();
+                    var querySubstring = currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString();
+                    compareResult = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
+                }
+                else
+                {
+                    compareResult = fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex];
+                }
+
                 if (compareResult)
                 {
                     matchFoundInPreviousLoop = false;
