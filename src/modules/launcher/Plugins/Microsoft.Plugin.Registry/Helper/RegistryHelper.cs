@@ -57,7 +57,8 @@ namespace Microsoft.Plugin.Registry.Helper
 
             var baseKeyResult = _baseKeys
                 .Where(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase))
-                .Select(found => found.Value);
+                .Select(found => found.Value)
+                .Distinct();
 
             return (baseKeyResult, subKey);
         }

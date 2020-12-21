@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using ManagedCommon;
 using Microsoft.Plugin.Registry.Classes;
-using Microsoft.Plugin.Registry.Constants;
 using Microsoft.Plugin.Registry.Helper;
 using Microsoft.Plugin.Registry.Properties;
 using Wox.Plugin;
@@ -75,6 +74,8 @@ namespace Microsoft.Plugin.Registry
                 return new List<Result>(0);
             }
 
+            List<Result> result;
+
             // The plugin is only triggered when the "ActionKeyword" is "HK" (case-insensitive).
             // To make the develop of this plugin easier we put the "Query.ActionKeyword" and the "Query.Search" together,
             // this allow us to use e.g. "HKLM" instead of "LM".
@@ -92,32 +93,34 @@ namespace Microsoft.Plugin.Registry
             var (baseKeyList, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKeyList is null)
             {
-                // no base key found -> test is the key starts with "HKE" or "HKEY" (case-insensitive)
-                return serachFor.StartsWith(KeyName.FirstPart, StringComparison.InvariantCultureIgnoreCase)
-                    ? ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath)
-                    : new List<Result>(0);
+                // no base key found
+                result = ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath);
             }
             else if (baseKeyList.Count() > 1)
             {
                 // more than one base key was found -> show results
-                return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
+                result = ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
             }
-
-            // only one base key found -> start search for the sub key
-            var list = RegistryHelper.SearchForSubKey(baseKeyList.First(), subKey);
-
-            if (!searchForValueName)
+            else
             {
-                return ResultHelper.GetResultList(list, _defaultIconPath);
+                // only one base key found -> start search for the sub key
+                var list = RegistryHelper.SearchForSubKey(baseKeyList.First(), subKey);
+
+                if (!searchForValueName)
+                {
+                    return ResultHelper.GetResultList(list, _defaultIconPath);
+                }
+
+                queryKey = QueryHelper.GetKeyWithLongBaseKey(queryKey);
+
+                var firstEntry = list.FirstOrDefault(found => found.Key != null
+                                                            && found.Key.Name.StartsWith(queryKey, StringComparison.InvariantCultureIgnoreCase));
+                result = firstEntry is null
+                    ? ResultHelper.GetResultList(list, _defaultIconPath)
+                    : ResultHelper.GetValuesFromKey(firstEntry.Key, _defaultIconPath, queryValueName);
             }
 
-            queryKey = QueryHelper.GetKeyWithLongBaseKey(queryKey);
-
-            var firstEntry = list.FirstOrDefault(found => found.Key != null
-                                                        && found.Key.Name.StartsWith(queryKey, StringComparison.InvariantCultureIgnoreCase));
-            return firstEntry is null
-                ? ResultHelper.GetResultList(list, _defaultIconPath)
-                : ResultHelper.GetValuesFromKey(firstEntry.Key, _defaultIconPath, queryValueName);
+            return result;
         }
 
         /// <summary>
