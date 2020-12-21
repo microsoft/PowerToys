@@ -38,6 +38,8 @@ namespace FancyZonesEditor.Utils
             PropertyNamingPolicy = new DashCaseNamingPolicy(),
         };
 
+        private List<DeviceWrapper> _unusedDevices = new List<DeviceWrapper>();
+
         public string FancyZonesSettingsFile { get; private set; }
 
         public string FancyZonesEditorParamsFile { get; private set; }
@@ -451,6 +453,8 @@ namespace FancyZonesEditor.Utils
 
         public ParsingResult ParseZoneSettings()
         {
+            _unusedDevices.Clear();
+
             if (_fileSystem.File.Exists(FancyZonesSettingsFile))
             {
                 ZoneSettingsWrapper zoneSettings;
@@ -491,7 +495,7 @@ namespace FancyZonesEditor.Utils
             zoneSettings.Devices = new List<DeviceWrapper>();
             zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
 
-            // Serialize devices
+            // Serialize used devices
             foreach (var monitor in App.Overlay.Monitors)
             {
                 LayoutSettings zoneset = monitor.Settings;
@@ -513,6 +517,12 @@ namespace FancyZonesEditor.Utils
                     EditorZoneCount = zoneset.ZoneCount,
                     EditorSensitivityRadius = zoneset.SensitivityRadius,
                 });
+            }
+
+            // Seriaslize unused devices
+            foreach (var device in _unusedDevices)
+            {
+                zoneSettings.Devices.Add(device);
             }
 
             // Serialize custom zonesets
@@ -644,6 +654,7 @@ namespace FancyZonesEditor.Utils
                     SensitivityRadius = device.EditorSensitivityRadius,
                 };
 
+                bool unused = true;
                 if (!App.Overlay.SpanZonesAcrossMonitors)
                 {
                     foreach (Monitor monitor in monitors)
@@ -651,6 +662,7 @@ namespace FancyZonesEditor.Utils
                         if (monitor.Device.Id == device.DeviceId)
                         {
                             monitor.Settings = settings;
+                            unused = false;
                             break;
                         }
                     }
@@ -663,8 +675,14 @@ namespace FancyZonesEditor.Utils
                         // one zoneset for all desktops
                         App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings = settings;
                         App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = device.DeviceId;
+                        unused = false;
                         break;
                     }
+                }
+
+                if (unused)
+                {
+                    _unusedDevices.Add(device);
                 }
             }
 
