@@ -222,8 +222,8 @@ CDeclaration
 cdpx
 cdpxwin
 CENTERALIGN
-Cfg
 cfg
+Cfg
 changecursor
 Changemove
 charset
@@ -317,8 +317,8 @@ constexpr
 contentdialog
 contentfiles
 CONTEXTHELP
-CONTEXTMENU
 contextmenu
+CONTEXTMENU
 CONTEXTMENUHANDLER
 CONTROLL
 CONTROLPARENT
@@ -362,6 +362,7 @@ crutkas
 CSearch
 CSettings
 csharp
+CSIDL
 csignal
 cso
 csproj
@@ -397,6 +398,7 @@ cxxopts
 CYMK
 CYSMICON
 cz
+cziplib
 Dac
 dacl
 DARKBLUE
@@ -407,12 +409,13 @@ DARKRED
 DARKTEAL
 DARKYELLOW
 Dataflows
+Datavalue
 DATAW
 davidegiacometti
 Dayof
 Dbg
-DBLEPSILON
 DBLCLKS
+DBLEPSILON
 DCOM
 dcomp
 DComposition
@@ -653,14 +656,14 @@ ENU
 enum
 ENUMITEMS
 EOAC
-EOL
 eol
+EOL
 epicgames
 ERASEBKGND
 EREOF
 EResize
-ERRORLEVEL
 errorlevel
+ERRORLEVEL
 ERRORMESSAGE
 ERRORTITLE
 esize
@@ -710,6 +713,7 @@ fancyzones
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 Farbraum
+FARPROC
 Favicon
 fbdc
 fcharset
@@ -767,6 +771,7 @@ FULLNAME
 fullscreen
 func
 fwlink
+fwrite
 fx
 fxcop
 gabime
@@ -860,8 +865,8 @@ HLSL
 hmenu
 hmodule
 hmon
-HMONITOR
 hmonitor
+HMONITOR
 HOLDENTER
 HOLDESC
 homljgmgpmcbpjbnjpfijnhipfkiclkd
@@ -975,6 +980,7 @@ IInput
 IInspectable
 IIO
 IItem
+IJson
 IList
 ILogon
 IMAGEHLP
@@ -1239,6 +1245,7 @@ LPNMHDR
 LPNMHEADER
 LPNMLISTVIEW
 LPOLESTR
+LPOSVERSIONINFOEXW
 LPPOINT
 lprc
 LPRECT
@@ -1298,6 +1305,7 @@ MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
 MBUTTONUP
+mday
 Mdb
 MDICHILD
 MDL
@@ -1325,6 +1333,7 @@ millis
 mimetype
 Minimizeallwindows
 MINIMIZEBOX
+miniz
 MINMAXINFO
 Miracast
 mixin
@@ -1384,6 +1393,7 @@ msrc
 mst
 msvc
 msvcp
+msvs
 MTND
 Mul
 multiline
@@ -1499,7 +1509,9 @@ npm
 npmjs
 npos
 NResize
+ntdll
 NTFS
+NTSTATUS
 nuget
 nullopt
 nullptr
@@ -1552,6 +1564,7 @@ oss
 ostr
 ostream
 ostringstream
+OSVERSIONINFOEXW
 osx
 otating
 ouicompat
@@ -1692,8 +1705,8 @@ propkey
 propvarutil
 Prt
 prui
-PRVPANE
 prvpane
+PRVPANE
 psapi
 PSECURITY
 psfgao
@@ -1827,8 +1840,8 @@ roslyn
 royvou
 rpc
 RRF
-RSHIFT
 rshift
+RSHIFT
 Rsp
 rst
 Rstrtmgr
@@ -1885,13 +1898,14 @@ Sekan
 SENDCHANGE
 sendinput
 sendvirtualinput
+sensative
 serializationexception
 serializer
 serizalization
 serverside
 SETCONTEXT
-SETCURSOR
 setcursor
+SETCURSOR
 SETFOCUS
 SETFOREGROUND
 SETICON
@@ -1922,8 +1936,8 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-Shellscalingapi
 shellscalingapi
+Shellscalingapi
 Shelveset
 SHFILEINFO
 SHGFI
@@ -1977,8 +1991,8 @@ sketchapp
 SKIPDOTNETINSTALL
 SKIPOWNPROCESS
 sku
-Skype
 SKYBLUE
+Skype
 SLGP
 Slideshow
 sln
@@ -2101,8 +2115,8 @@ SYSDEADCHAR
 SYSICONINDEX
 SYSKEY
 syskeydown
-SYSKEYUP
 syskeyup
+SYSKEYUP
 syslog
 SYSMENU
 systemd
@@ -2250,12 +2264,13 @@ uninstalling
 uninstantiated
 Uniq
 uniquifier
-Uniquifies
 uniquifies
+Uniquifies
 unittests
 unk
 unknwn
 UNLEN
+unlicense
 Unmap
 UNORM
 Unpublish
@@ -2361,8 +2376,8 @@ wcslen
 wcsncmp
 wcsnicmp
 wdp
-WDS
 wds
+WDS
 wdupenv
 weakme
 webapp
@@ -2379,13 +2394,14 @@ Whichdoes
 whitespaces
 WIC
 Wifi
+wifstream
 wih
 wiki
 wikipedia
 wil
 wildcards
-WINAPI
 winapi
+WINAPI
 winauto
 wincolor
 windef
@@ -2430,6 +2446,7 @@ wixproj
 wixtoolset
 WIXUI
 WKSG
+wmain
 wmi
 WMKEYDOWN
 WMKEYUP
@@ -2454,6 +2471,7 @@ wox
 wparam
 wpf
 wpr
+wprintf
 wprp
 wregex
 WResize
@@ -2522,6 +2540,7 @@ Zc
 ZEROINIT
 zh
 ZIndex
+zipfolder
 zm
 zom
 zonable

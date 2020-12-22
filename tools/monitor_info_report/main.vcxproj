@@ -12,6 +12,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="monitor-report-info.cpp" />
+    <ClCompile Include="report-monitor-info.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\common\utils\winapi_error.h" />
+    <ClInclude Include="report-monitor-info.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6A7F9A7C-56B6-9B0D-FFA2-8110EBB8170F}</ProjectGuid>
