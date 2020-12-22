@@ -355,14 +355,16 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image x:Uid="ImageResizer_Image" Source="ms-appx:///Assets/Modules/ImageResizer.png" />
+                <HyperlinkButton x:Uid="ImageResizer_ImageHyperlink">
+                    <Image x:Uid="ImageResizer_Image" Source="ms-appx:///Assets/Modules/ImageResizer.png" />
+                </HyperlinkButton>
             </Border>
 
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ImageResizer">
+                <HyperlinkButton x:Uid="ImageResizer_ImageHyperlink">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
