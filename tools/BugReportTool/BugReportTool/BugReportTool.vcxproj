@@ -11,6 +11,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>
+    <IntDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -24,14 +26,17 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>../../../src/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\deps\cziplib\src\zip.c" />
-    <ClCompile Include="..\..\..\..\tools\monitor_info_report\report-monitor-info.cpp" />
+    <ClCompile Include="..\..\..\deps\cziplib\src\zip.c">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="ReportMonitorInfo.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ZipTools\zipfolder.cpp" />
   </ItemGroup>
@@ -39,14 +44,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SetttingsAPI.vcxproj">
+    <ProjectReference Include="..\..\..\src\common\SettingsAPI\SetttingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\deps\cziplib\src\miniz.h" />
-    <ClInclude Include="..\..\..\..\deps\cziplib\src\zip.h" />
-    <ClInclude Include="..\..\..\..\tools\monitor_info_report\report-monitor-info.h" />
+    <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
+    <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
+    <ClInclude Include="ReportMonitorInfo.h" />
     <ClInclude Include="..\..\..\common\utils\json.h" />
     <ClInclude Include="ZipTools\zipfolder.h" />
   </ItemGroup>

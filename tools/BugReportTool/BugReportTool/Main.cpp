@@ -7,9 +7,11 @@
 #include <winrt/Windows.Foundation.Collections.h>
 
 #include "ZipTools/ZipFolder.h"
-#include "../../../common/SettingsAPI/settings_helpers.h"
-#include "../../../common/utils/json.h"
-#include "../../../../tools/monitor_info_report/report-monitor-info.h"
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/json.h>
+#include <common/utils/timeutil.h>
+
+#include "ReportMonitorInfo.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -57,7 +59,7 @@ void hideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
     {
         for (auto it : val.GetArray())
         {
-            hideByXPath(it, xpathArray, p);    
+            hideByXPath(it, xpathArray, p);
         }
 
         return;
@@ -74,7 +76,7 @@ void hideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
                 obj.SetNamedValue(xpathArray[p], privateDatavalue);
             }
         }
-        
+
         return;
     }
 
@@ -89,8 +91,8 @@ void hideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
         {
             return;
         }
-        
-        hideByXPath(newVal, xpathArray, p + 1);    
+
+        hideByXPath(newVal, xpathArray, p + 1);
     }
 }
 
@@ -102,7 +104,7 @@ void hideForFile(const path& dir, const wstring& relativePath)
     if (!jObject.has_value())
     {
         wprintf(L"Can not parse file %s\n", jsonPath.c_str());
-        return;        
+        return;
     }
 
     JsonValue jValue = json::value(jObject.value());
@@ -128,7 +130,7 @@ bool del(wstring path)
     return true;
 }
 
-void hideUserPrivateInfo(const filesystem::path& dir) 
+void hideUserPrivateInfo(const filesystem::path& dir)
 {
     // Replace data in json files
     for (auto& it : escapeInfo)
@@ -145,26 +147,11 @@ void hideUserPrivateInfo(const filesystem::path& dir)
     }
 }
 
-string getCurrentDate()
-{
-    time_t now = time(0);
-    tm localTime; 
-    if (localtime_s(&localTime, &now) != 0)
-    {
-        return "";
-    }
-
-    int year = 1900 + localTime.tm_year;
-    int month = 1 + localTime.tm_mon;
-    int day = localTime.tm_mday;
-    return to_string(year) + "-" + to_string(month) + "-" + to_string(day);
-}
-
 void reportMonitorInfo(const filesystem::path& tmpDir)
 {
     auto monitorReportPath = tmpDir;
     monitorReportPath.append("monitor-report-info.txt");
-    
+
     try
     {
         wofstream monitorReport(monitorReportPath);
@@ -189,9 +176,10 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
 
     try
     {
-        NTSTATUS(WINAPI * RtlGetVersion)(LPOSVERSIONINFOEXW);
+        NTSTATUS(WINAPI * RtlGetVersion)
+        (LPOSVERSIONINFOEXW) = nullptr;
         *(FARPROC*)&RtlGetVersion = GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
-        if (NULL != RtlGetVersion)
+        if (RtlGetVersion)
         {
             osInfo.dwOSVersionInfoSize = sizeof(osInfo);
             RtlGetVersion(&osInfo);
@@ -238,7 +226,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     }
 
     auto powerToys = PTSettingsHelper::get_root_save_folder_location();
-    
+
     // Copy to a temp folder
     auto tmpDir = temp_directory_path();
     tmpDir = tmpDir.append("PowerToys\\");
@@ -251,14 +239,16 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     try
     {
         copy(powerToys, tmpDir, copy_options::recursive);
+        // Remove updates folder contents
+        del(tmpDir / "Updates");
     }
     catch (...)
     {
         printf("Copy PowerToys directory failed");
         return 1;
     }
-    
-    // Hide sensative information
+
+    // Hide sensitive information
     hideUserPrivateInfo(tmpDir);
 
     // Write monitors info to the temporary folder
@@ -269,7 +259,11 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
-    zipPath = zipPath.append("PowerToysReport_" + getCurrentDate() + ".zip");
+    std::string reportFilename{"PowerToysReport_"};
+    reportFilename += timeutil::format_as_local("%F-%H-%M-%S", timeutil::now());
+    reportFilename += ".zip";
+    zipPath /= reportFilename;
+
     try
     {
         zipFolder(zipPath, tmpDir);
@@ -279,7 +273,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         printf("Zip folder failed");
         return 1;
     }
-    
+
     del(tmpDir);
     return 0;
 }
