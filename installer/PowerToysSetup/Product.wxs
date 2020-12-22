@@ -12,7 +12,6 @@
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
-  <?define BugReportToolDir="$(var.RepoDir)src\bug-report\BugReportTool\x64\$(var.Configuration)\" ?>
 
 	<Product Id="*"
        Name="PowerToys (Preview)"
@@ -48,7 +47,7 @@
       <ComponentGroupRef Id="CoreComponents" />
       <ComponentGroupRef Id="ResourcesComponents" />
       <ComponentGroupRef Id="LauncherComponents" />
-	  <ComponentRef Id="BugReportTool"/>
+      <ComponentGroupRef Id="ToolComponents" />
     </Feature>
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
 
@@ -208,7 +207,7 @@
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
-	      <Directory Id="BugReportToolFolder" Name="BugReportTool"/>
+	      <Directory Id="ToolsFolder" Name="Tools"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)" />
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
@@ -315,6 +314,7 @@
 
       </Component>
 
+
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
         <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
       </Component>
@@ -340,11 +340,6 @@
         <?endforeach?>
       </Component>
     </DirectoryRef>
-	<DirectoryRef Id="BugReportToolFolder" FileSource="$(var.BugReportToolDir)">
-		<Component Id="BugReportTool" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
-			<File Source="$(var.BugReportToolDir)BugReportTool.exe" />
-		</Component>
-	</DirectoryRef>
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
       <Component Id="PowerToysSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
         <File Source="$(var.BinX64Dir)svgs\0.svg" />
@@ -376,6 +371,12 @@
         <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedTelemetry.dll" />
         <File Id="FancyZone_System.IO.Abstractions.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.IO.Abstractions.dll" />
       </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ToolsFolder">
+      <Component Id="BugReportTool_exe" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
+        <File Source="$(var.BinX64Dir)BugReportTool\BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
+      </Component>      
     </DirectoryRef>
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
@@ -774,6 +775,9 @@
       <ComponentRef Id="settings_html" />
       <ComponentRef Id="settings_dark_html" />
       <ComponentRef Id="settings_js_bundle" />
+    </ComponentGroup>
+    <ComponentGroup Id="ToolComponents" Directory="ToolsFolder">
+      <ComponentRef Id="BugReportTool_exe" />
     </ComponentGroup>
   </Fragment>
 

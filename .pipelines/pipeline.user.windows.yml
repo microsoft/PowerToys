@@ -63,6 +63,7 @@ build:
           to: 'Build_Output'
           include:
             - 'action_runner.exe'
+            - 'BugReportTool\BugReportTool.exe'
             - 'modules\ColorPicker\ColorPicker.dll'
             - 'modules\ColorPicker\ColorPickerUI.dll'
             - 'modules\ColorPicker\ColorPickerUI.exe'
