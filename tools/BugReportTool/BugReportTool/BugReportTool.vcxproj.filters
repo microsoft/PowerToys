@@ -5,15 +5,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="..\..\..\..\deps\cziplib\src\zip.c">
-      <Filter>ZipTools</Filter>
-    </ClCompile>
     <ClCompile Include="ZipTools\zipfolder.cpp">
       <Filter>ZipTools</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\tools\monitor_info_report\report-monitor-info.cpp">
-      <Filter>MonitorReportTool</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\..\deps\cziplib\src\zip.c" />
+    <ClCompile Include="ReportMonitorInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ZipTools">
@@ -24,18 +20,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\deps\cziplib\src\miniz.h">
-      <Filter>ZipTools</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\deps\cziplib\src\zip.h">
-      <Filter>ZipTools</Filter>
-    </ClInclude>
     <ClInclude Include="ZipTools\zipfolder.h">
       <Filter>ZipTools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\common\utils\json.h" />
-    <ClInclude Include="..\..\..\..\tools\monitor_info_report\report-monitor-info.h">
-      <Filter>MonitorReportTool</Filter>
-    </ClInclude>
+    <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
+    <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
+    <ClInclude Include="ReportMonitorInfo.h" />
   </ItemGroup>
 </Project>

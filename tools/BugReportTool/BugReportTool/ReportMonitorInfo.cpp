@@ -1,7 +1,7 @@
 #pragma once
-#include "report-monitor-info.h"
+#include "ReportMonitorInfo.h"
 #include <Windows.h>
-#include "../../src/common/utils/winapi_error.h"
+#include "../../../src/common/utils/winapi_error.h"
 
 int report(std::wostream& os)
 {

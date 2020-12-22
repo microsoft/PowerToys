@@ -22,7 +22,6 @@ acos
 acrt
 Actioncenter
 Actionkeyword
-actionrunner
 activatable
 ACTIVATEAPP
 activationaction
@@ -33,7 +32,6 @@ ADifferent
 adopsinsider
 advapi
 advfirewall
-aeed
 AFeature
 AFX
 AGGREGATABLE
@@ -174,7 +172,6 @@ bmi
 bmp
 bms
 Bokm
-Bokmal
 BOKMAL
 bootstrapper
 BOTTOMALIGN
@@ -190,7 +187,6 @@ BSODs
 bstr
 BText
 bti
-btn
 Btn
 BTNFACE
 Bto
@@ -222,8 +218,8 @@ CDeclaration
 cdpx
 cdpxwin
 CENTERALIGN
-cfg
 Cfg
+cfg
 changecursor
 Changemove
 charset
@@ -302,7 +298,6 @@ commandline
 commctrl
 Commdlg
 commondataservicecds
-commonmdflag
 Compat
 COMPOSITIONFULL
 comsupp
@@ -317,7 +312,6 @@ constexpr
 contentdialog
 contentfiles
 CONTEXTHELP
-contextmenu
 CONTEXTMENU
 CONTEXTMENUHANDLER
 CONTROLL
@@ -656,14 +650,15 @@ ENU
 enum
 ENUMITEMS
 EOAC
-eol
 EOL
+eol
 epicgames
+eport
 ERASEBKGND
 EREOF
 EResize
-errorlevel
 ERRORLEVEL
+errorlevel
 ERRORMESSAGE
 ERRORTITLE
 esize
@@ -715,7 +710,6 @@ FANCYZONESEDITOR
 Farbraum
 FARPROC
 Favicon
-fbdc
 fcharset
 fd
 fda
@@ -1081,8 +1075,8 @@ ISavable
 isbi
 ISearch
 IService
-isetting
 ISetting
+isetting
 isfinite
 IShell
 ISingle
@@ -1158,8 +1152,8 @@ keyremaps
 keystokes
 Keystool
 Keytool
-keyup
 KEYUP
+keyup
 Kf
 KILLFOCUS
 Knownfolders
@@ -1285,7 +1279,6 @@ Mainwindow
 makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEW
-MAKELANGID
 MAKELPARAM
 makepri
 malloc
@@ -1393,7 +1386,6 @@ msrc
 mst
 msvc
 msvcp
-msvs
 MTND
 Mul
 multiline
@@ -1405,8 +1397,8 @@ multizone
 mutex
 mutexes
 muxc
-mvvm
 Mvvm
+mvvm
 MYICON
 myuri
 NAMECHANGE
@@ -1495,7 +1487,6 @@ NOSIZE
 notafter
 notfound
 nothrow
-notificationsdll
 NOTIFICATIONSDLL
 NOTIFYICONDATAW
 NOTIMPL
@@ -1705,8 +1696,8 @@ propkey
 propvarutil
 Prt
 prui
-prvpane
 PRVPANE
+prvpane
 psapi
 PSECURITY
 psfgao
@@ -1904,8 +1895,8 @@ serializer
 serizalization
 serverside
 SETCONTEXT
-setcursor
 SETCURSOR
+setcursor
 SETFOCUS
 SETFOREGROUND
 SETICON
@@ -1936,8 +1927,8 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-shellscalingapi
 Shellscalingapi
+shellscalingapi
 Shelveset
 SHFILEINFO
 SHGFI
@@ -1999,7 +1990,6 @@ sln
 SLogo
 SMALLICON
 SMTO
-SNAPED
 snd
 somil
 SORTDOWN
@@ -2056,8 +2046,8 @@ stdin
 stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
-stdout
 Stdout
+stdout
 STEPIT
 stgm
 STGMEDIUM
@@ -2076,8 +2066,8 @@ stringtable
 stringval
 strsafe
 strutil
-sttngs
 STTNGS
+sttngs
 Stubless
 STYLECHANGED
 STYLECHANGING
@@ -2115,8 +2105,8 @@ SYSDEADCHAR
 SYSICONINDEX
 SYSKEY
 syskeydown
-syskeyup
 SYSKEYUP
+syskeyup
 syslog
 SYSMENU
 systemd
@@ -2264,7 +2254,6 @@ uninstalling
 uninstantiated
 Uniq
 uniquifier
-uniquifies
 Uniquifies
 unittests
 unk
@@ -2365,7 +2354,6 @@ Wca
 wcautil
 WCE
 wcex
-WCF
 wchar
 WClass
 wcout
@@ -2376,8 +2364,8 @@ wcslen
 wcsncmp
 wcsnicmp
 wdp
-wds
 WDS
+wds
 wdupenv
 weakme
 webapp
@@ -2394,14 +2382,13 @@ Whichdoes
 whitespaces
 WIC
 Wifi
-wifstream
 wih
 wiki
 wikipedia
 wil
 wildcards
-winapi
 WINAPI
+winapi
 winauto
 wincolor
 windef
@@ -2514,7 +2501,7 @@ xml
 xmlns
 XNamespace
 XOffset
-XPath
+xpath
 XResource
 xsd
 xsi
@@ -2523,8 +2510,8 @@ XStr
 XToolset
 xunit
 XY
-yaml
 YAML
+yaml
 YAngle
 YDiff
 YESNO
