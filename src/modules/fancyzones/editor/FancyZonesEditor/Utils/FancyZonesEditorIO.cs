@@ -38,6 +38,8 @@ namespace FancyZonesEditor.Utils
             PropertyNamingPolicy = new DashCaseNamingPolicy(),
         };
 
+        private List<DeviceWrapper> _unusedDevices = new List<DeviceWrapper>();
+
         public string FancyZonesSettingsFile { get; private set; }
 
         public string FancyZonesEditorParamsFile { get; private set; }
@@ -225,11 +227,11 @@ namespace FancyZonesEditor.Utils
                 // Span zones across monitors
                 App.Overlay.SpanZonesAcrossMonitors = int.Parse(argsParts[(int)CmdArgs.SpanZones]) == 1;
 
+                // Target monitor id
+                string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
+
                 if (!App.Overlay.SpanZonesAcrossMonitors)
                 {
-                    // Target monitor id
-                    string targetMonitorName = argsParts[(int)CmdArgs.TargetMonitorId];
-
                     // Test launch with custom monitors configuration
                     bool isCustomMonitorConfigurationMode = targetMonitorName.StartsWith("Monitor#");
                     if (isCustomMonitorConfigurationMode)
@@ -336,6 +338,10 @@ namespace FancyZonesEditor.Utils
                         }
                     }
                 }
+                else
+                {
+                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = targetMonitorName;
+                }
             }
             catch (Exception)
             {
@@ -435,6 +441,31 @@ namespace FancyZonesEditor.Utils
                             }
                         }
                     }
+                    else
+                    {
+                        // Update monitors data
+                        foreach (Monitor monitor in App.Overlay.Monitors)
+                        {
+                            bool matchFound = false;
+                            foreach (NativeMonitorData nativeData in editorParams.Monitors)
+                            {
+                                // Can't do an exact match since the rounding algorithm used by the framework is different from ours
+                                if (monitor.Device.UnscaledBounds.X >= (nativeData.LeftCoordinate - 1) && monitor.Device.UnscaledBounds.X <= (nativeData.LeftCoordinate + 1) &&
+                                    monitor.Device.UnscaledBounds.Y >= (nativeData.TopCoordinate - 1) && monitor.Device.UnscaledBounds.Y <= (nativeData.TopCoordinate + 1))
+                                {
+                                    monitor.Device.Id = nativeData.MonitorId;
+                                    monitor.Device.Dpi = nativeData.Dpi;
+                                    matchFound = true;
+                                    break;
+                                }
+                            }
+
+                            if (matchFound == false)
+                            {
+                                MessageBox.Show(string.Format(Properties.Resources.Error_Monitor_Match_Not_Found, monitor.Device.UnscaledBounds.ToString()));
+                            }
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -451,6 +482,8 @@ namespace FancyZonesEditor.Utils
 
         public ParsingResult ParseZoneSettings()
         {
+            _unusedDevices.Clear();
+
             if (_fileSystem.File.Exists(FancyZonesSettingsFile))
             {
                 ZoneSettingsWrapper zoneSettings;
@@ -491,7 +524,7 @@ namespace FancyZonesEditor.Utils
             zoneSettings.Devices = new List<DeviceWrapper>();
             zoneSettings.CustomZoneSets = new List<CustomLayoutWrapper>();
 
-            // Serialize devices
+            // Serialize used devices
             foreach (var monitor in App.Overlay.Monitors)
             {
                 LayoutSettings zoneset = monitor.Settings;
@@ -513,6 +546,12 @@ namespace FancyZonesEditor.Utils
                     EditorZoneCount = zoneset.ZoneCount,
                     EditorSensitivityRadius = zoneset.SensitivityRadius,
                 });
+            }
+
+            // Serialize unused devices
+            foreach (var device in _unusedDevices)
+            {
+                zoneSettings.Devices.Add(device);
             }
 
             // Serialize custom zonesets
@@ -634,37 +673,30 @@ namespace FancyZonesEditor.Utils
                     continue;
                 }
 
-                var settings = new LayoutSettings
+                bool unused = true;
+                foreach (Monitor monitor in monitors)
                 {
-                    ZonesetUuid = device.ActiveZoneset.Uuid,
-                    ShowSpacing = device.EditorShowSpacing,
-                    Spacing = device.EditorSpacing,
-                    Type = JsonTagToLayoutType(device.ActiveZoneset.Type),
-                    ZoneCount = device.EditorZoneCount,
-                    SensitivityRadius = device.EditorSensitivityRadius,
-                };
-
-                if (!App.Overlay.SpanZonesAcrossMonitors)
-                {
-                    foreach (Monitor monitor in monitors)
+                    if (monitor.Device.Id == device.DeviceId)
                     {
-                        if (monitor.Device.Id == device.DeviceId)
+                        var settings = new LayoutSettings
                         {
-                            monitor.Settings = settings;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    bool isLayoutMultiMonitor = device.DeviceId.StartsWith(MultiMonitorId);
-                    if (isLayoutMultiMonitor)
-                    {
-                        // one zoneset for all desktops
-                        App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings = settings;
-                        App.Overlay.Monitors[App.Overlay.CurrentDesktop].Device.Id = device.DeviceId;
+                            ZonesetUuid = device.ActiveZoneset.Uuid,
+                            ShowSpacing = device.EditorShowSpacing,
+                            Spacing = device.EditorSpacing,
+                            Type = JsonTagToLayoutType(device.ActiveZoneset.Type),
+                            ZoneCount = device.EditorZoneCount,
+                            SensitivityRadius = device.EditorSensitivityRadius,
+                        };
+
+                        monitor.Settings = settings;
+                        unused = false;
                         break;
                     }
+                }
+
+                if (unused)
+                {
+                    _unusedDevices.Add(device);
                 }
             }
 
