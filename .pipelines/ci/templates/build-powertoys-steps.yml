@@ -42,7 +42,7 @@ steps:
     command: restore
     feedsToUse: config
     configPath: NuGet.config
-    restoreSolution: src\bug-report\BugReportTool\BugReportTool.sln
+    restoreSolution: tools\BugReportTool\BugReportTool.sln
     restoreDirectory: '$(Build.SourcesDirectory)\tools\BugReportTool\packages'
 
 - task: VSBuild@1
