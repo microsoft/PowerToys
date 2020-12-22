@@ -522,41 +522,59 @@ void FancyZonesData::SaveFancyZonesEditorParameters(bool spanZonesAcrossMonitors
     argsJson.processId = GetCurrentProcessId(); /* Process id */
     argsJson.spanZonesAcrossMonitors = spanZonesAcrossMonitors; /* Span zones */
 
-    std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
-    allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
-
-    // device id map for correct device ids
-    std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
-
-    for (auto& monitorData : allMonitors)
+    if (spanZonesAcrossMonitors)
     {
-        HMONITOR monitor = monitorData.first;
-        auto monitorInfo = monitorData.second;
+        auto monitorRect = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
+        std::wstring monitorId = FancyZonesUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId);
 
         JSONHelpers::MonitorInfo monitorJson;
-
-        std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
-        std::wstring monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId);
-        
-        if (monitor == targetMonitor)
-        {
-            monitorJson.isSelected = true; /* Is monitor selected for the main editor window opening */
-        }
-
-        monitorJson.id = monitorId; /* Monitor id */
-
-        UINT dpiX = 0;
-        UINT dpiY = 0;
-        if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
-        {
-            monitorJson.dpi = dpiX; /* DPI */
-        }
-
-        monitorJson.top = monitorInfo.rcMonitor.top; /* Top coordinate */
-        monitorJson.left = monitorInfo.rcMonitor.left; /* Left coordinate */
+        monitorJson.id = monitorId;
+        monitorJson.top = monitorRect.top;
+        monitorJson.left = monitorRect.left;
+        monitorJson.isSelected = true;
+        monitorJson.dpi = 0; // unused
 
         argsJson.monitors.emplace_back(std::move(monitorJson)); /* add monitor data */
     }
+    else
+    {
+        std::vector<std::pair<HMONITOR, MONITORINFOEX>> allMonitors;
+        allMonitors = FancyZonesUtils::GetAllMonitorInfo<&MONITORINFOEX::rcWork>();
+
+        // device id map for correct device ids
+        std::unordered_map<std::wstring, DWORD> displayDeviceIdxMap;
+
+        for (auto& monitorData : allMonitors)
+        {
+            HMONITOR monitor = monitorData.first;
+            auto monitorInfo = monitorData.second;
+
+            JSONHelpers::MonitorInfo monitorJson;
+
+            std::wstring deviceId = FancyZonesUtils::GetDisplayDeviceId(monitorInfo.szDevice, displayDeviceIdxMap);
+            std::wstring monitorId = FancyZonesUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId);
+
+            if (monitor == targetMonitor)
+            {
+                monitorJson.isSelected = true; /* Is monitor selected for the main editor window opening */
+            }
+
+            monitorJson.id = monitorId; /* Monitor id */
+
+            UINT dpiX = 0;
+            UINT dpiY = 0;
+            if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY) == S_OK)
+            {
+                monitorJson.dpi = dpiX; /* DPI */
+            }
+
+            monitorJson.top = monitorInfo.rcMonitor.top; /* Top coordinate */
+            monitorJson.left = monitorInfo.rcMonitor.left; /* Left coordinate */
+
+            argsJson.monitors.emplace_back(std::move(monitorJson)); /* add monitor data */
+        }
+    }
+    
 
     json::to_file(editorParametersFileName, JSONHelpers::EditorArgs::ToJson(argsJson));
 }
