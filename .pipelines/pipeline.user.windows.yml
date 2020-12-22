@@ -148,6 +148,16 @@ build:
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
+      name: 'Build Power Toys Tools'
+      command: '.pipelines\build-tools.cmd'
+      artifacts:
+        - from: 'x64\Release'
+          to: 'Build_Output'
+          include:
+            - 'BugReportTool\BugReportTool.exe'
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
+    - !!buildcommand
       name: 'Build Power Toys Installer'
       command: '.pipelines\build-installer.cmd'
       artifacts:
