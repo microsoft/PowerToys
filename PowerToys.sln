@@ -176,6 +176,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-PreviewHandlerCommon", "src\modules\previewpane\UnitTests-PreviewHandlerCommon\UnitTests-PreviewHandlerCommon.csproj", "{748417CA-F17E-487F-9411-CAFB6D3F4877}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules\previewpane\powerpreview\powerpreview.vcxproj", "{217DF501-135C-4E38-BFC8-99D4821032EA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF} = {CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreviewTest", "src\modules\previewpane\powerpreviewTest\powerpreviewTest.vcxproj", "{47310AB4-9034-4BD1-8D8B-E88AD21A171B}"
 	ProjectSection(ProjectDependencies) = postProject
