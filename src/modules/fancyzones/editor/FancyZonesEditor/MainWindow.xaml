@@ -26,6 +26,8 @@
         ResizeMode="CanResize">
     <Window.Resources>
 
+        <Converters:LayoutModelTypeToVisibilityConverter x:Key="LayoutModelTypeToVisibilityConverter" />
+
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
                     Width="{Binding DisplayWidth}"
@@ -153,20 +155,23 @@
                                             Orientation="Vertical">
                                     <ui:ToggleSwitch x:Name="spaceAroundSetting"
                                                      Header="{x:Static props:Resources.Show_Space_Zones}"
-                                                     IsOn="true" />
+                                                     IsOn="true" 
+                                                     Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
 
                                     <TextBlock x:Name="paddingValue"
                                                Text="{x:Static props:Resources.Space_Around_Zones}"
                                                IsEnabled="{Binding ShowSpacing}"
                                                Margin="0,8,0,0"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}" 
+                                               Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
 
                                     <TextBox Margin="0,6,0,0"
                                              IsEnabled="{Binding ShowSpacing}"
                                              Text="32"
                                              Width="86"
                                              HorizontalAlignment="Left"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" />
+                                             AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" 
+                                             Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
 
                                     <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
                                                IsEnabled="{Binding ShowSpacing}"
@@ -323,20 +328,23 @@
                                             Orientation="Vertical">
                                     <ui:ToggleSwitch x:Name="spaceAroundSetting"
                                                      Header="{x:Static props:Resources.Show_Space_Zones}"
-                                                     IsOn="true" />
+                                                     IsOn="true" 
+                                                     Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
 
                                     <TextBlock x:Name="paddingValue"
                                                Text="{x:Static props:Resources.Space_Around_Zones}"
                                                IsEnabled="{Binding ShowSpacing}"
                                                Margin="0,8,0,0"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}" 
+                                               Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
 
                                     <TextBox Margin="0,6,0,0"
                                              IsEnabled="{Binding ShowSpacing}"
                                              Text="32"
                                              Width="86"
                                              HorizontalAlignment="Left"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" />
+                                             AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" 
+                                             Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
 
                                     <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
                                                IsEnabled="{Binding ShowSpacing}"
