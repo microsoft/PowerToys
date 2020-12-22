@@ -100,7 +100,7 @@
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource AccentHighlightBrush}" />
+                                    <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>

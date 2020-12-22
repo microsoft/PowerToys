@@ -29,5 +29,4 @@
     <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FFc0c0c0" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="DialogBorderBrush" Color="White" />
-    <SolidColorBrush x:Key="AccentHighlightBrush" Color="{DynamicResource SystemAccentColorDark1}" />
 </ResourceDictionary>
