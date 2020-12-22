@@ -548,7 +548,7 @@ namespace FancyZonesEditor.Utils
                 });
             }
 
-            // Seriaslize unused devices
+            // Serialize unused devices
             foreach (var device in _unusedDevices)
             {
                 zoneSettings.Devices.Add(device);
