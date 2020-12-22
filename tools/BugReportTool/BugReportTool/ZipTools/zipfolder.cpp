@@ -1,5 +1,5 @@
 #include "zipfolder.h"
-#include "..\..\..\..\..\deps\cziplib\src\zip.h"
+#include "..\..\..\..\deps\cziplib\src\zip.h"
 
 void zipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
 {
@@ -11,7 +11,7 @@ void zipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
     }
 
     using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
-    int rootSize = folderPath.wstring().size();
+    const size_t rootSize = folderPath.wstring().size();
     for (const auto& dirEntry : recursive_directory_iterator(folderPath))
     {
         if (dirEntry.is_regular_file())

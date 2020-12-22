@@ -24,13 +24,16 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>../../../src/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\deps\cziplib\src\zip.c" />
+    <ClCompile Include="..\..\..\deps\cziplib\src\zip.c">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="ReportMonitorInfo.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ZipTools\zipfolder.cpp" />
