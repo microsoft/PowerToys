@@ -23,8 +23,6 @@
 #include <ShObjIdl.h>
 #include <optional>
 
-#pragma comment(lib, "windowsapp")
-
 namespace winrt
 {
     using namespace ::winrt;

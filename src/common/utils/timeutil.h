@@ -9,6 +9,15 @@
 
 namespace timeutil
 {
+    inline std::string format_as_local(const char* format_string, const time_t time)
+    {
+        char timeBuf[256] = {};
+        tm localtime{};
+        localtime_s(&localtime, &time);
+        std::strftime(timeBuf, sizeof(timeBuf), format_string, &localtime);
+        return timeBuf;
+    }
+
     inline std::wstring to_string(const time_t time)
     {
         return std::to_wstring(static_cast<uint64_t>(time));
