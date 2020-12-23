@@ -86,6 +86,7 @@
                             <Grid Background="Transparent">
                                 <Border x:Name="HighlightBorder"
                                         BorderThickness="0"
+                                        CornerRadius="4"
                                         Background="{DynamicResource SystemChromeLow}"
                                         BorderBrush="Transparent"
                                         SnapsToDevicePixels="true"/>
