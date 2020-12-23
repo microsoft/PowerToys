@@ -37,6 +37,10 @@ restore:
     - !!defaultcommand
       name: 'Restore Localization packages'
       command: '.pipelines\restore-localization.cmd'
+    - !!defaultcommand
+      name: 'Restore Tools packages'
+      command: '.pipelines\restore-tools.cmd'
+
 
 
 build:
