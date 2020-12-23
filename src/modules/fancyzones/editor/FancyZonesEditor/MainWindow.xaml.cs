@@ -140,35 +140,28 @@ namespace FancyZonesEditor
             model.IsSelected = false;
 
             Hide();
-            bool isPredefinedLayout = MainWindowSettingsModel.IsPredefinedLayout(model);
 
-            if (!MainWindowSettingsModel.CustomModels.Contains(model) || isPredefinedLayout)
+            // make a copy
+            model = model.Clone();
+            mainEditor.CurrentDataContext = model;
+
+            int maxCustomIndex = 0;
+            foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
-                if (isPredefinedLayout)
+                string name = customModel.Name;
+                if (name.StartsWith(_defaultNamePrefix))
                 {
-                    // make a copy
-                    model = model.Clone();
-                    mainEditor.CurrentDataContext = model;
-                }
-
-                int maxCustomIndex = 0;
-                foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
-                {
-                    string name = customModel.Name;
-                    if (name.StartsWith(_defaultNamePrefix))
+                    if (int.TryParse(name.Substring(_defaultNamePrefix.Length), out int i))
                     {
-                        if (int.TryParse(name.Substring(_defaultNamePrefix.Length), out int i))
+                        if (maxCustomIndex < i)
                         {
-                            if (maxCustomIndex < i)
-                            {
-                                maxCustomIndex = i;
-                            }
+                            maxCustomIndex = i;
                         }
                     }
                 }
-
-                model.Name = _defaultNamePrefix + (++maxCustomIndex);
             }
+
+            model.Name = _defaultNamePrefix + (++maxCustomIndex);
 
             mainEditor.OpenEditor(model);
         }
