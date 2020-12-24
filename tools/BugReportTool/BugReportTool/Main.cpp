@@ -19,14 +19,14 @@ using namespace winrt::Windows::Data::Json;
 
 map<wstring, vector<wstring>> escapeInfo = {
     { L"FancyZones\\app-zone-history.json", { L"app-zone-history/app-path" } },
-    { L"PowerRename\\replace-mru.json", { L"MRUList" } },
-    { L"PowerRename\\search-mru.json", { L"MRUList" } },
-    { L"FancyZones\\settings.json", { L"properties/fancyzones_excluded_apps" } },
-    { L"PowerToys Run\\Settings\\QueryHistory.json", { L"Items" } },
+    { L"FancyZones\\settings.json", { L"properties/fancyzones_excluded_apps" } }
 };
 
 vector<wstring> filesToDelete = {
-    L"PowerToys Run\\Cache\\Image.cache"
+    L"PowerToys Run\\Cache",
+    L"PowerToys Run\\Settings\\QueryHistory.json",
+    L"PowerRename\\replace-mru.json",
+    L"PowerRename\\search-mru.json"
 };
 
 vector<wstring> getXpathArray(wstring xpath)
