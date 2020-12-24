@@ -103,7 +103,7 @@ void hideForFile(const path& dir, const wstring& relativePath)
     auto jObject = json::from_file(jsonPath.wstring());
     if (!jObject.has_value())
     {
-        wprintf(L"Can not parse file %s\n", jsonPath.c_str());
+        wprintf(L"Failed to parse file %s\n", jsonPath.c_str());
         return;
     }
 
@@ -117,13 +117,13 @@ void hideForFile(const path& dir, const wstring& relativePath)
     json::to_file(jsonPath.wstring(), jObject.value());
 }
 
-bool del(wstring path)
+bool deleteFolder(wstring path)
 {
     error_code err;
     remove_all(path, err);
     if (err.value() != 0)
     {
-        wprintf_s(L"Can not delete %s. Error code: %d", path.c_str(), err.value());
+        wprintf_s(L"Failed to delete %s. Error code: %d\n", path.c_str(), err.value());
         return false;
     }
 
@@ -143,7 +143,7 @@ void hideUserPrivateInfo(const filesystem::path& dir)
     {
         auto path = dir;
         path = path.append(it);
-        del(path);
+        deleteFolder(path);
     }
 }
 
@@ -160,11 +160,11 @@ void reportMonitorInfo(const filesystem::path& tmpDir)
     }
     catch (std::exception& ex)
     {
-        printf("Can not report monitor info. %s\n", ex.what());
+        printf("Failed to report monitor info. %s\n", ex.what());
     }
     catch (...)
     {
-        printf("Can not report monitor info\n");
+        printf("Failed to report monitor info\n");
     }
 }
 
@@ -187,7 +187,7 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     }
     catch (...)
     {
-        printf("Cannot get windows version info\n");
+        printf("Failed to get windows version info\n");
         return;
     }
 
@@ -200,7 +200,7 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     }
     catch(...)
     {
-        printf("Can not write to %s", versionReportPath.string().c_str());
+        printf("Failed to write to %s\n", versionReportPath.string().c_str());
     }
 }
 
@@ -221,30 +221,32 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         }
         else
         {
-            printf("Can not retrieve a desktop path. Error code: %d", GetLastError());
+            printf("Failed to retrieve the desktop path. Error code: %d\n", GetLastError());
+            return 1;
         }
     }
 
-    auto powerToys = PTSettingsHelper::get_root_save_folder_location();
+    auto settingsRootPath = PTSettingsHelper::get_root_save_folder_location();
+    settingsRootPath = settingsRootPath + L"\\";
 
     // Copy to a temp folder
     auto tmpDir = temp_directory_path();
     tmpDir = tmpDir.append("PowerToys\\");
-    powerToys = powerToys + L"\\";
-    if (!del(tmpDir))
+    if (!deleteFolder(tmpDir))
     {
+        printf("Failed to delete temp folder\n");
         return 1;
     }
 
     try
     {
-        copy(powerToys, tmpDir, copy_options::recursive);
+        copy(settingsRootPath, tmpDir, copy_options::recursive);
         // Remove updates folder contents
-        del(tmpDir / "Updates");
+        deleteFolder(tmpDir / "Updates");
     }
     catch (...)
     {
-        printf("Copy PowerToys directory failed");
+        printf("Failed to copy PowerToys folder\n");
         return 1;
     }
 
@@ -270,10 +272,10 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     }
     catch (...)
     {
-        printf("Zip folder failed");
+        printf("Failed to zip folder\n");
         return 1;
     }
 
-    del(tmpDir);
+    deleteFolder(tmpDir);
     return 0;
 }
