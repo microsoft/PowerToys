@@ -15,9 +15,6 @@
     <Filter Include="ZipTools">
       <UniqueIdentifier>{3ae1b6aa-4134-47b1-afdf-dfb3b5901dcc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MonitorReportTool">
-      <UniqueIdentifier>{83b7e7d9-49b7-4fc8-9853-9dbb8f2c0e76}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZipTools\zipfolder.h">
