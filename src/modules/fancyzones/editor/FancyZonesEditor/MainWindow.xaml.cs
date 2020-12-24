@@ -31,9 +31,6 @@ namespace FancyZonesEditor
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
 
-        // Localizable string
-        private static readonly string _defaultNamePrefix = "Custom Layout ";
-
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
@@ -139,31 +136,45 @@ namespace FancyZonesEditor
 
             model.IsSelected = false;
 
-            Hide();
-
             // make a copy
             model = model.Clone();
             mainEditor.CurrentDataContext = model;
 
+            string name = model.Name;
+            var index = name.LastIndexOf('(');
+            if (index != -1)
+            {
+                name = name.Remove(index);
+                name = name.TrimEnd();
+            }
+
             int maxCustomIndex = 0;
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
-                string name = customModel.Name;
-                if (name.StartsWith(_defaultNamePrefix))
+                string customModelName = customModel.Name;
+                if (customModelName.StartsWith(name))
                 {
-                    if (int.TryParse(name.Substring(_defaultNamePrefix.Length), out int i))
+                    int openBraceIndex = customModelName.LastIndexOf('(');
+                    int closeBraceIndex = customModelName.LastIndexOf(')');
+                    if (openBraceIndex != -1 && closeBraceIndex != -1)
                     {
-                        if (maxCustomIndex < i)
+                        string indexSubstring = customModelName.Substring(openBraceIndex + 1, closeBraceIndex - openBraceIndex - 1);
+
+                        if (int.TryParse(indexSubstring, out int i))
                         {
-                            maxCustomIndex = i;
+                            if (maxCustomIndex < i)
+                            {
+                                maxCustomIndex = i;
+                            }
                         }
                     }
                 }
             }
 
-            model.Name = _defaultNamePrefix + (++maxCustomIndex);
+            model.Name = name + " (" + (++maxCustomIndex) + ')';
 
-            mainEditor.OpenEditor(model);
+            model.Persist();
+            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
         private void Apply_Click(object sender, RoutedEventArgs e)
