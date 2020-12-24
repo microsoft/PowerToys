@@ -33,6 +33,7 @@
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
                         <Setter Target="SidePanel.Width" Value="Auto"/>
                         <Setter Target="ImageResizerView.(Grid.Row)" Value="1" />
+                        <Setter Target="ImageResizerView.Margin" Value="0" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
                         <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
@@ -49,7 +50,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical" x:Name="ImageResizerView">
+        <StackPanel Orientation="Vertical" x:Name="ImageResizerView"
+                    Margin="0,0,48,0">
 
             <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
