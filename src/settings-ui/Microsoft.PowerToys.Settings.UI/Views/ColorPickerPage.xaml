@@ -162,7 +162,7 @@
                                        FontSize="16"
                                        Margin="0,8,0,0"
                                        Text="{Binding Name}"/>
-                            <TextBlock Foreground="{ThemeResource SystemAccentColor}"
+                            <TextBlock Foreground="{ThemeResource SystemBaseMediumColor}"
                                        Text="{Binding Example}"
                                        Grid.Row="1"
                                        Margin="0,0,0,8"/>
