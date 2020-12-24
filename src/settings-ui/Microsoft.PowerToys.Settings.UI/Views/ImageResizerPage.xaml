@@ -61,7 +61,7 @@
             <ListView x:Name="ImagesSizesListView" 
                       x:Uid="ImagesSizesListView"
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
-                      Padding="0"
+                      Padding="0,0,0,24"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
