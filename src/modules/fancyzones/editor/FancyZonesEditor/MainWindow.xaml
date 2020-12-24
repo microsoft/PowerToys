@@ -152,10 +152,35 @@
                         <ui:Flyout x:Name="EditFlyout"
                                    Placement="RightEdgeAlignedTop">
                             <StackPanel MinWidth="260">
+                                <Button Click="EditLayout_Click"
+                                        x:Name="editZoneLayoutButton"
+                                        HorizontalAlignment="Stretch"
+                                        AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
+                                        Height="48"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                    <Button.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE104;"
+                                                       Margin="0,2,8,0"
+                                                       FontFamily="Segoe MDL2 Assets" />
+                                            <TextBlock Text="{x:Static props:Resources.Edit_zones}" />
+                                        </StackPanel>
+                                    </Button.Content>
+                                </Button>
+                                <TextBlock x:Name="nameHeader"
+                                           Text="{x:Static props:Resources.Name}"
+                                           Margin="0,32,0,0"
+                                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}" />
+                                <TextBox Text="{Binding Name}"
+                                         Margin="0,6,0,16"
+                                         AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}"
+                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}"/>
+                                
                                 <StackPanel Margin="0,0,0,0"
                                             Orientation="Vertical">
                                     <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
-                                               IsEnabled="{Binding ShowSpacing}"
                                                Margin="0,16,0,0"
                                                Foreground="{DynamicResource PrimaryForegroundBrush}"
                                                x:Name="sensitivityRadiusValue" />
@@ -179,6 +204,21 @@
                                                            Margin="0,3,8,0"
                                                            FontFamily="Segoe MDL2 Assets" />
                                                 <TextBlock Text="{x:Static props:Resources.Duplicate}" />
+                                            </StackPanel>
+                                        </Button.Content>
+                                    </Button>
+
+                                    <Button Foreground="#FFC50500"
+                                            AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                            Click="DeleteLayout_Click"
+                                            Background="Transparent"
+                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                        <Button.Content>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xE107;"
+                                                           Margin="0,3,8,0"
+                                                           FontFamily="Segoe MDL2 Assets" />
+                                                <TextBlock Text="{x:Static props:Resources.Delete}" />
                                             </StackPanel>
                                         </Button.Content>
                                     </Button>
@@ -280,6 +320,32 @@
                         <ui:Flyout x:Name="EditFlyout"
                                    Placement="RightEdgeAlignedTop">
                             <StackPanel MinWidth="260">
+                                <Button Click="EditLayout_Click"
+                                        x:Name="editZoneLayoutButton"
+                                        HorizontalAlignment="Stretch"
+                                        AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
+                                        Height="48"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                    <Button.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE104;"
+                                                       Margin="0,2,8,0"
+                                                       FontFamily="Segoe MDL2 Assets" />
+                                            <TextBlock Text="{x:Static props:Resources.Edit_zones}" />
+                                        </StackPanel>
+                                    </Button.Content>
+                                </Button>
+                                <TextBlock x:Name="nameHeader"
+                                           Text="{x:Static props:Resources.Name}"
+                                           Margin="0,32,0,0"
+                                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}" />
+                                <TextBox Text="{Binding Name}"
+                                         Margin="0,6,0,16"
+                                         AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}"
+                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}"/>
+
                                 <StackPanel Margin="0,0,0,0"
                                             Orientation="Vertical">
                                     <ui:ToggleSwitch x:Name="spaceAroundSetting"
@@ -324,183 +390,12 @@
                                             </StackPanel>
                                         </Button.Content>
                                     </Button>
-                                </StackPanel>
-                            </StackPanel>
-                        </ui:Flyout>
-                    </ui:FlyoutService.Flyout>
-                </Button>
-            </Grid>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding IsApplied}"
-                             Value="true">
-                    <Setter TargetName="layoutName"
-                            Property="Foreground"
-                            Value="{DynamicResource SystemAccentColorLight1Brush}" />
-                    <Setter TargetName="EditLayoutButton"
-                            Property="Visibility"
-                            Value="Visible" />
-
-                    <Setter TargetName="SelectionHighlight"
-                            Property="Visibility"
-                            Value="Visible" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsSelected}"
-                             Value="true">
-                    <Setter TargetName="LayoutItem"
-                            Property="BorderBrush"
-                            Value="{DynamicResource LayoutItemBorderPointerOverBrush}" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
-        </DataTemplate>
-
-        <DataTemplate x:Key="CustomLayoutItemTemplate">
-            <Grid Background="Transparent"
-                  KeyDown="LayoutItem_KeyDown"
-                  MouseEnter="LayoutItem_MouseEnter"
-                  MouseLeave="LayoutItem_MouseLeave"
-                  MouseDown="LayoutItem_Click"
-                  Margin="0,0,0,12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="24" />
-                </Grid.RowDefinitions>
-
-                <Border x:Name="LayoutItem"
-                        Background="{DynamicResource LayoutItemBackgroundBrush}"
-                        BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
-                        BorderThickness="1"
-                        Focusable="True"
-                        CornerRadius="4"
-                        Margin="8"
-                        FocusVisualStyle="{StaticResource UWPFocusVisualStyle}"
-                        FocusManager.GotFocus="LayoutItem_Focused">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="6"
-                                          Opacity="0.24"
-                                          ShadowDepth="1" />
-                    </Border.Effect>
-
-                    <local:LayoutPreview Margin="12"
-                                         VerticalAlignment="Stretch"
-                                         HorizontalAlignment="Stretch" />
-                </Border>
-                <Border x:Name="SelectionHighlight"
-                        CornerRadius="4"
-                        BorderThickness="3"
-                        Margin="6"
-                        Visibility="Collapsed"
-                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                <TextBlock Name="layoutName"
-                           Padding="8,0,8,0"
-                           TextTrimming="CharacterEllipsis"
-                           Text="{Binding Name}"
-                           FontSize="14"
-                           Grid.Row="2"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                <Button Content="&#xE104;"
-                        x:Name="EditLayoutButton"
-                        Visibility="Collapsed"
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="14"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Width="36"
-                        Height="36"
-                        ToolTip="{x:Static props:Resources.Edit_Layout}"
-                        AutomationProperties.Name="{x:Static props:Resources.Edit_Layout}"
-                        Style="{StaticResource AccentButtonStyle}"
-                        ui:ControlHelper.CornerRadius="48">
-                    <Button.Effect>
-                        <DropShadowEffect BlurRadius="6"
-                                          Opacity="0.32"
-                                          ShadowDepth="1" />
-                    </Button.Effect>
-                    <ui:FlyoutService.Flyout>
-                        <ui:Flyout x:Name="EditFlyout"
-                                   Placement="RightEdgeAlignedTop">
-                            <StackPanel MinWidth="260">
-                                <Button Click="EditLayout_Click"
-                                        x:Name="editZoneLayoutButton"
-                                        HorizontalAlignment="Stretch"
-                                        AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
-                                        Height="48"
-                                        Style="{StaticResource AccentButtonStyle}">
-                                    <Button.Content>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="&#xE104;"
-                                                       Margin="0,2,8,0"
-                                                       FontFamily="Segoe MDL2 Assets" />
-                                            <TextBlock Text="{x:Static props:Resources.Edit_zones}" />
-                                        </StackPanel>
-                                    </Button.Content>
-                                </Button>
-
-
-                                <TextBlock x:Name="nameHeader"
-                                           Text="{x:Static props:Resources.Name}"
-                                           IsEnabled="{Binding ShowSpacing}"
-                                           Margin="0,32,0,0"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                                <TextBox Text="{Binding Name}"
-                                         Margin="0,6,0,0"
-                                         AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}" />
-                                <StackPanel Margin="0,16,0,0"
-                                            Orientation="Vertical">
-                                    <ui:ToggleSwitch x:Name="spaceAroundSetting"
-                                                     Header="{x:Static props:Resources.Show_Space_Zones}"
-                                                     IsOn="true" 
-                                                     Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
-
-                                    <TextBlock x:Name="paddingValue"
-                                               Text="{x:Static props:Resources.Space_Around_Zones}"
-                                               Margin="0,8,0,0"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}" 
-                                               Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
-
-                                    <TextBox Margin="0,6,0,0"
-                                             Text="32"
-                                             Width="86"
-                                             HorizontalAlignment="Left"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" 
-                                             Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
-
-                                    <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
-                                               IsEnabled="{Binding ShowSpacing}"
-                                               Margin="0,16,0,0"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                               x:Name="sensitivityRadiusValue" />
-
-                                    <TextBox Margin="0,6,0,0"
-                                             Text="20"
-                                             Width="86"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
-                                             HorizontalAlignment="Left" />
-                                </StackPanel>
-
-                                <StackPanel Orientation="Horizontal"
-                                            VerticalAlignment="Bottom"
-                                            Margin="0,16,0,0"
-                                            HorizontalAlignment="Right">
-                                    <Button Click="DuplicateLayout_Click"
-                                            AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
-                                            Background="Transparent">
-                                        <Button.Content>
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="&#xE8C8;"
-                                                           Margin="0,3,8,0"
-                                                           FontFamily="Segoe MDL2 Assets" />
-                                                <TextBlock Text="{x:Static props:Resources.Duplicate}" />
-                                            </StackPanel>
-                                        </Button.Content>
-                                    </Button>
 
                                     <Button Foreground="#FFC50500"
                                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                             Click="DeleteLayout_Click"
-                                            Background="Transparent">
+                                            Background="Transparent"
+                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
                                         <Button.Content>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="&#xE107;"
@@ -682,7 +577,6 @@
                     <ItemsControl ItemsSource="{Binding CustomModels}"
                                   TabIndex="6"
                                   AutomationProperties.LabeledBy="{Binding ElementName=CustomHeaderBlock}"
-                                  ItemTemplate="{StaticResource CustomLayoutItemTemplate}"
                                   Margin="-8,4,-8,0"
                                   Grid.Row="4">
                         <ItemsControl.ItemsPanel>
