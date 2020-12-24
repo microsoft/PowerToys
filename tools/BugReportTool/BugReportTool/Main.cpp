@@ -103,7 +103,7 @@ void hideForFile(const path& dir, const wstring& relativePath)
     auto jObject = json::from_file(jsonPath.wstring());
     if (!jObject.has_value())
     {
-        wprintf(L"Can not parse file %s\n", jsonPath.c_str());
+        wprintf(L"Failed to parse file %s\n", jsonPath.c_str());
         return;
     }
 
@@ -123,7 +123,7 @@ bool del(wstring path)
     remove_all(path, err);
     if (err.value() != 0)
     {
-        wprintf_s(L"Can not delete %s. Error code: %d", path.c_str(), err.value());
+        wprintf_s(L"Failed to delete %s. Error code: %d\n", path.c_str(), err.value());
         return false;
     }
 
@@ -160,11 +160,11 @@ void reportMonitorInfo(const filesystem::path& tmpDir)
     }
     catch (std::exception& ex)
     {
-        printf("Can not report monitor info. %s\n", ex.what());
+        printf("Failed to report monitor info. %s\n", ex.what());
     }
     catch (...)
     {
-        printf("Can not report monitor info\n");
+        printf("Failed to report monitor info\n");
     }
 }
 
@@ -187,7 +187,7 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     }
     catch (...)
     {
-        printf("Cannot get windows version info\n");
+        printf("Failed to get windows version info\n");
         return;
     }
 
@@ -200,7 +200,7 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     }
     catch(...)
     {
-        printf("Can not write to %s", versionReportPath.string().c_str());
+        printf("Failed to write to %s\n", versionReportPath.string().c_str());
     }
 }
 
@@ -221,7 +221,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         }
         else
         {
-            printf("Can not retrieve a desktop path. Error code: %d", GetLastError());
+            printf("Failed to retrieve the desktop path. Error code: %d\n", GetLastError());
+            return 1;
         }
     }
 
@@ -233,6 +234,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     powerToys = powerToys + L"\\";
     if (!del(tmpDir))
     {
+        printf("Failed to delete temp folder\n");
         return 1;
     }
 
@@ -244,7 +246,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     }
     catch (...)
     {
-        printf("Copy PowerToys directory failed");
+        printf("Failed to copy PowerToys folder\n");
         return 1;
     }
 
@@ -270,7 +272,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     }
     catch (...)
     {
-        printf("Zip folder failed");
+        printf("Failed to zip folder\n");
         return 1;
     }
 
