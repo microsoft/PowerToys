@@ -9,6 +9,7 @@
         xmlns:Converters="clr-namespace:FancyZonesEditor.Converters"
         xmlns:props="clr-namespace:FancyZonesEditor.Properties"
         xmlns:local1="clr-namespace:FancyZonesEditor.ViewModels"
+        xmlns:models="clr-namespace:FancyZonesEditor.Models"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:controls="clr-namespace:ModernWpf.Controls;assembly=ModernWpf"
@@ -81,8 +82,136 @@
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
-        
-        <DataTemplate x:Key="DefaultLayoutItemTemplate">
+
+        <DataTemplate DataType="{x:Type models:CanvasLayoutModel}">
+            <Grid Background="Transparent"
+                  KeyDown="LayoutItem_KeyDown"
+                  MouseEnter="LayoutItem_MouseEnter"
+                  MouseLeave="LayoutItem_MouseLeave"
+                  MouseDown="LayoutItem_Click"
+                  Margin="0,0,0,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="24" />
+                </Grid.RowDefinitions>
+
+                <Border x:Name="LayoutItem"
+                        Background="{DynamicResource LayoutItemBackgroundBrush}"
+                        BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
+                        BorderThickness="1"
+                        Focusable="True"
+                        CornerRadius="4"
+                        Margin="8"
+                        FocusVisualStyle="{StaticResource UWPFocusVisualStyle}"
+                        FocusManager.GotFocus="LayoutItem_Focused">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="6"
+                                          Opacity="0.24"
+                                          ShadowDepth="1" />
+                    </Border.Effect>
+
+                    <local:LayoutPreview Margin="12"
+                                         VerticalAlignment="Stretch"
+                                         HorizontalAlignment="Stretch" />
+                </Border>
+                <Border x:Name="SelectionHighlight"
+                        CornerRadius="4"
+                        BorderThickness="3"
+                        Margin="6"
+                        Visibility="Collapsed"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                <TextBlock Name="layoutName"
+                           Padding="8,0,8,0"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding Name}"
+                           FontSize="14"
+                           Grid.Row="2"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                <Button Content="&#xE104;"
+                        x:Name="EditLayoutButton"
+                        Visibility="Collapsed"
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="14"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="36"
+                        Height="36"
+                        ToolTip="{x:Static props:Resources.Edit_Layout}"
+                        AutomationProperties.Name="{x:Static props:Resources.Edit_Layout}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        ui:ControlHelper.CornerRadius="48">
+                    <Button.Effect>
+                        <DropShadowEffect BlurRadius="6"
+                                          Opacity="0.32"
+                                          ShadowDepth="1" />
+                    </Button.Effect>
+                    <ui:FlyoutService.Flyout>
+                        <ui:Flyout x:Name="EditFlyout"
+                                   Placement="RightEdgeAlignedTop">
+                            <StackPanel MinWidth="260">
+                                <StackPanel Margin="0,0,0,0"
+                                            Orientation="Vertical">
+                                    <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
+                                               IsEnabled="{Binding ShowSpacing}"
+                                               Margin="0,16,0,0"
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                               x:Name="sensitivityRadiusValue" />
+
+                                    <TextBox Margin="0,6,0,0"
+                                             Text="20"
+                                             Width="86"
+                                             AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
+                                             HorizontalAlignment="Left" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal"
+                                            VerticalAlignment="Bottom"
+                                            Margin="0,16,0,0"
+                                            HorizontalAlignment="Right">
+                                    <Button Click="DuplicateLayout_Click"
+                                            AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
+                                            Background="Transparent">
+                                        <Button.Content>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xE8C8;"
+                                                           Margin="0,3,8,0"
+                                                           FontFamily="Segoe MDL2 Assets" />
+                                                <TextBlock Text="{x:Static props:Resources.Duplicate}" />
+                                            </StackPanel>
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </ui:Flyout>
+                    </ui:FlyoutService.Flyout>
+                </Button>
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsApplied}"
+                             Value="true">
+                    <Setter TargetName="layoutName"
+                            Property="Foreground"
+                            Value="{DynamicResource SystemAccentColorLight1Brush}" />
+                    <Setter TargetName="EditLayoutButton"
+                            Property="Visibility"
+                            Value="Visible" />
+                    
+                    <Setter TargetName="SelectionHighlight"
+                            Property="Visibility"
+                            Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsSelected}"
+                             Value="true">
+                    <Setter TargetName="LayoutItem"
+                            Property="BorderBrush"
+                            Value="{DynamicResource LayoutItemBorderPointerOverBrush}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type models:GridLayoutModel}">
             <Grid Background="Transparent"
                   KeyDown="LayoutItem_KeyDown"
                   MouseEnter="LayoutItem_MouseEnter"
@@ -155,37 +284,30 @@
                                             Orientation="Vertical">
                                     <ui:ToggleSwitch x:Name="spaceAroundSetting"
                                                      Header="{x:Static props:Resources.Show_Space_Zones}"
-                                                     IsOn="true" 
-                                                     Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
+                                                     IsOn="{Binding ShowSpacing}" />
 
                                     <TextBlock x:Name="paddingValue"
                                                Text="{x:Static props:Resources.Space_Around_Zones}"
-                                               IsEnabled="{Binding ShowSpacing}"
                                                Margin="0,8,0,0"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}" 
-                                               Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}" />
 
                                     <TextBox Margin="0,6,0,0"
-                                             IsEnabled="{Binding ShowSpacing}"
-                                             Text="32"
+                                             Text="{Binding Spacing}"
                                              Width="86"
                                              HorizontalAlignment="Left"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" 
-                                             Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}"/>
+                                             AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" />
 
                                     <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
-                                               IsEnabled="{Binding ShowSpacing}"
                                                Margin="0,16,0,0"
                                                Foreground="{DynamicResource PrimaryForegroundBrush}"
                                                x:Name="sensitivityRadiusValue" />
 
                                     <TextBox Margin="0,6,0,0"
-                                             Text="20"
+                                             Text="{Binding SensitivityRadius}"
                                              Width="86"
                                              AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
                                              HorizontalAlignment="Left" />
                                 </StackPanel>
-
                                 <StackPanel Orientation="Horizontal"
                                             VerticalAlignment="Bottom"
                                             Margin="0,16,0,0"
@@ -217,7 +339,7 @@
                     <Setter TargetName="EditLayoutButton"
                             Property="Visibility"
                             Value="Visible" />
-                    
+
                     <Setter TargetName="SelectionHighlight"
                             Property="Visibility"
                             Value="Visible" />
@@ -230,6 +352,7 @@
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
+
         <DataTemplate x:Key="CustomLayoutItemTemplate">
             <Grid Background="Transparent"
                   KeyDown="LayoutItem_KeyDown"
@@ -333,13 +456,11 @@
 
                                     <TextBlock x:Name="paddingValue"
                                                Text="{x:Static props:Resources.Space_Around_Zones}"
-                                               IsEnabled="{Binding ShowSpacing}"
                                                Margin="0,8,0,0"
                                                Foreground="{DynamicResource PrimaryForegroundBrush}" 
                                                Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}" />
 
                                     <TextBox Margin="0,6,0,0"
-                                             IsEnabled="{Binding ShowSpacing}"
                                              Text="32"
                                              Width="86"
                                              HorizontalAlignment="Left"
@@ -490,7 +611,6 @@
 
                     <ItemsControl ItemsSource="{Binding DefaultModels}"
                                   Grid.Row="1"
-                                  ItemTemplate="{StaticResource DefaultLayoutItemTemplate}"
                                   AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"
                                   TabIndex="4"
                                   x:Name="DefaultModelsItemsControl"
