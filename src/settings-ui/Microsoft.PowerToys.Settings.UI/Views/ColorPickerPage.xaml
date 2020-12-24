@@ -135,10 +135,12 @@
             <TextBlock Margin="{StaticResource MediumTopMargin}"
                        x:Name="ColorFormatsListViewLabel"
                        TextWrapping="WrapWholeWords"
-                       x:Uid="ColorPicker_ColorFormatsDescription"/>
+                       x:Uid="ColorPicker_ColorFormatsDescription"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             <ListView ItemsSource="{Binding ColorFormats, Mode=TwoWay}"
                       AllowDrop="True"
                       MaxWidth="466"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       AutomationProperties.LabeledBy="{Binding ElementName=ColorFormatsListViewLabel}"
                       CanReorderItems="True"
                       HorizontalAlignment="Left"
