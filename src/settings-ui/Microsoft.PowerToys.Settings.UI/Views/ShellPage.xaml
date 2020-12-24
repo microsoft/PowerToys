@@ -27,7 +27,8 @@
         IsSettingsVisible="False"
         OpenPaneLength="296"
         CompactModeThresholdWidth="0"
-        Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+        Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
+        SelectionChanged="NavigationView_SelectionChanged">
             <winui:NavigationView.MenuItems>
                 <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage" AutomationProperties.HeadingLevel="Level1">
                     <winui:NavigationViewItem.Icon>
@@ -103,7 +104,8 @@
                 <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
             </ic:EventTriggerBehavior>
         </i:Interaction.Behaviors>
-        <ScrollViewer Grid.Column="0">
+        <ScrollViewer x:Name="scrollViewer"
+                      Grid.Column="0">
                 <Grid Margin="{StaticResource MediumLeftRightBottomMargin}">
                     <Frame x:Name="shellFrame" />
                 </Grid>
