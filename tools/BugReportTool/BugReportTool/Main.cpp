@@ -117,7 +117,7 @@ void hideForFile(const path& dir, const wstring& relativePath)
     json::to_file(jsonPath.wstring(), jObject.value());
 }
 
-bool del(wstring path)
+bool deleteFolder(wstring path)
 {
     error_code err;
     remove_all(path, err);
@@ -143,7 +143,7 @@ void hideUserPrivateInfo(const filesystem::path& dir)
     {
         auto path = dir;
         path = path.append(it);
-        del(path);
+        deleteFolder(path);
     }
 }
 
@@ -232,7 +232,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     auto tmpDir = temp_directory_path();
     tmpDir = tmpDir.append("PowerToys\\");
     powerToys = powerToys + L"\\";
-    if (!del(tmpDir))
+    if (!deleteFolder(tmpDir))
     {
         printf("Failed to delete temp folder\n");
         return 1;
@@ -242,7 +242,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     {
         copy(powerToys, tmpDir, copy_options::recursive);
         // Remove updates folder contents
-        del(tmpDir / "Updates");
+        deleteFolder(tmpDir / "Updates");
     }
     catch (...)
     {
@@ -276,6 +276,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         return 1;
     }
 
-    del(tmpDir);
+    deleteFolder(tmpDir);
     return 0;
 }
