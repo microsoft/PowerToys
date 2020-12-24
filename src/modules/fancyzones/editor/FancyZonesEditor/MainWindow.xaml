@@ -27,7 +27,7 @@
         ResizeMode="CanResize">
     <Window.Resources>
 
-        <Converters:LayoutModelTypeToVisibilityConverter x:Key="LayoutModelTypeToVisibilityConverter" />
+        <Converters:LayoutTypeToVisibilityConverter x:Key="LayoutTypeToVisibilityConverter" />
 
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
