@@ -332,7 +332,7 @@ namespace FancyZonesEditor
                 }
             }
 
-            zone = new GridZone(model.ShowSpacing ? model.Spacing : 0);
+            zone = new GridZone(Model.ShowSpacing ? Model.Spacing : 0);
             zone.Split += OnSplit;
             zone.MergeDrag += OnMergeDrag;
             zone.MergeComplete += OnMergeComplete;
