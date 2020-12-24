@@ -226,12 +226,12 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
         }
     }
 
-    auto powerToys = PTSettingsHelper::get_root_save_folder_location();
+    auto settingsRootPath = PTSettingsHelper::get_root_save_folder_location();
+    settingsRootPath = settingsRootPath + L"\\";
 
     // Copy to a temp folder
     auto tmpDir = temp_directory_path();
     tmpDir = tmpDir.append("PowerToys\\");
-    powerToys = powerToys + L"\\";
     if (!deleteFolder(tmpDir))
     {
         printf("Failed to delete temp folder\n");
@@ -240,7 +240,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
-        copy(powerToys, tmpDir, copy_options::recursive);
+        copy(settingsRootPath, tmpDir, copy_options::recursive);
         // Remove updates folder contents
         deleteFolder(tmpDir / "Updates");
     }
