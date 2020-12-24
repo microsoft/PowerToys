@@ -59,7 +59,7 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public GridZone()
+        public GridZone(int spacing)
         {
             InitializeComponent();
             OnSelectionChanged();
@@ -68,6 +68,9 @@ namespace FancyZonesEditor
                 Fill = SystemParameters.WindowGlassBrush,
             };
             Body.Children.Add(_splitter);
+
+            Spacing = spacing;
+            SplitterThickness = Math.Max(spacing, 1);
 
             ((App)Application.Current).MainWindowSettings.PropertyChanged += ZoneSettings_PropertyChanged;
         }
@@ -104,19 +107,9 @@ namespace FancyZonesEditor
             }
         }
 
-        private int SplitterThickness
-        {
-            get
-            {
-                MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-                if (!settings.ShowSpacing)
-                {
-                    return 1;
-                }
+        private int Spacing { get; set; }
 
-                return Math.Max(settings.Spacing, 1);
-            }
-        }
+        private int SplitterThickness { get; set; }
 
         private void UpdateSplitter()
         {
@@ -282,14 +275,7 @@ namespace FancyZonesEditor
 
         private void DoSplit(Orientation orientation, double offset)
         {
-            int spacing = 0;
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-            if (settings.ShowSpacing)
-            {
-                spacing = settings.Spacing;
-            }
-
-            Split?.Invoke(this, new SplitEventArgs(orientation, offset, spacing));
+            Split?.Invoke(this, new SplitEventArgs(orientation, offset, Spacing));
         }
 
         private void FullSplit_Click(object sender, RoutedEventArgs e)

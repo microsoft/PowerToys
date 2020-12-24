@@ -65,6 +65,12 @@ namespace FancyZonesEditor.Models
         // ColumnPercents - represents the %age width of each column in the grid
         public List<int> ColumnPercents { get; set; }
 
+        // ShowSpacing - flag if free space between cells should be presented
+        public bool ShowSpacing { get; set; } = true;
+
+        // Spacing - free space between cells
+        public int Spacing { get; set; } = 16;
+
         // FreeZones (not persisted) - used to keep track of child indices that are no longer in use in the CellChildMap,
         //  making them candidates for re-use when it's needed to add another child
         //  TODO: do I need FreeZones on the data model?  - I think I do
