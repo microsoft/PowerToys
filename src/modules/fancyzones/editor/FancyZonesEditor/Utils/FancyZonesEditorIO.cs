@@ -108,7 +108,7 @@ namespace FancyZonesEditor.Utils
             public int EditorSensitivityRadius { get; set; }
         }
 
-        private struct CanvasInfoWrapper
+        private class CanvasInfoWrapper
         {
             public struct CanvasZoneWrapper
             {
@@ -127,10 +127,10 @@ namespace FancyZonesEditor.Utils
 
             public List<CanvasZoneWrapper> Zones { get; set; }
 
-            public int SensitivityRadius { get; set; }
+            public int SensitivityRadius { get; set; } = LayoutSettings.DefaultSensitivityRadius;
         }
 
-        private struct GridInfoWrapper
+        private class GridInfoWrapper
         {
             public int Rows { get; set; }
 
@@ -142,11 +142,11 @@ namespace FancyZonesEditor.Utils
 
             public int[][] CellChildMap { get; set; }
 
-            public bool ShowSpacing { get; set; }
+            public bool ShowSpacing { get; set; } = LayoutSettings.DefaultShowSpacing;
 
-            public int Spacing { get; set; }
+            public int Spacing { get; set; } = LayoutSettings.DefaultSpacing;
 
-            public int SensitivityRadius { get; set; }
+            public int SensitivityRadius { get; set; } = LayoutSettings.DefaultSensitivityRadius;
         }
 
         private struct CustomLayoutWrapper

@@ -83,7 +83,7 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private bool _showSpacing = true;
+        private bool _showSpacing = LayoutSettings.DefaultShowSpacing;
 
         // Spacing - free space between cells
         public int Spacing
@@ -103,7 +103,7 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private int _spacing = 16;
+        private int _spacing = LayoutSettings.DefaultSpacing;
 
         // FreeZones (not persisted) - used to keep track of child indices that are no longer in use in the CellChildMap,
         //  making them candidates for re-use when it's needed to add another child

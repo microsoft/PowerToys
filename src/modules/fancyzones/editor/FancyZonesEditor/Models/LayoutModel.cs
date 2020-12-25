@@ -137,7 +137,7 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private int _sensitivityRadius = 20;
+        private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
 
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
