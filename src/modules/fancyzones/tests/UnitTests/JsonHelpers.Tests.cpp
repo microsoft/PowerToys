@@ -189,7 +189,8 @@ namespace FancyZonesUnitTests
 
     TEST_CLASS (CanvasLayoutInfoUnitTests)
     {
-        json::JsonObject m_json = json::JsonObject::Parse(L"{\"ref-width\": 123, \"ref-height\": 321, \"zones\": [{\"X\": 11, \"Y\": 22, \"width\": 33, \"height\": 44}, {\"X\": 55, \"Y\": 66, \"width\": 77, \"height\": 88}]}");
+        json::JsonObject m_json = json::JsonObject::Parse(L"{\"ref-width\": 123, \"ref-height\": 321, \"zones\": [{\"X\": 11, \"Y\": 22, \"width\": 33, \"height\": 44}, {\"X\": 55, \"Y\": 66, \"width\": 77, \"height\": 88}], \"sensitivity-radius\": 50}");
+        json::JsonObject m_jsonWithoutOptionalValues = json::JsonObject::Parse(L"{\"ref-width\": 123, \"ref-height\": 321, \"zones\": [{\"X\": 11, \"Y\": 22, \"width\": 33, \"height\": 44}, {\"X\": 55, \"Y\": 66, \"width\": 77, \"height\": 88}]}");
 
         TEST_METHOD (ToJson)
         {
@@ -197,6 +198,7 @@ namespace FancyZonesUnitTests
             info.lastWorkAreaWidth = 123;
             info.lastWorkAreaHeight = 321;
             info.zones = { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } };
+            info.sensitivityRadius = 50;
 
             auto actual = CanvasLayoutInfoJSON::ToJson(info);
             compareJsonObjects(m_json, actual);
@@ -208,6 +210,7 @@ namespace FancyZonesUnitTests
             expected.lastWorkAreaWidth = 123;
             expected.lastWorkAreaHeight = 321;
             expected.zones = { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } };
+            expected.sensitivityRadius = 50;
 
             auto actual = CanvasLayoutInfoJSON::FromJson(m_json);
             Assert::IsTrue(actual.has_value());
@@ -215,6 +218,30 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected.lastWorkAreaHeight, actual->lastWorkAreaHeight);
             Assert::AreEqual(expected.lastWorkAreaWidth, actual->lastWorkAreaWidth);
             Assert::AreEqual(expected.zones.size(), actual->zones.size());
+            Assert::AreEqual(expected.sensitivityRadius, actual->sensitivityRadius);
+            for (int i = 0; i < expected.zones.size(); i++)
+            {
+                Assert::AreEqual(expected.zones[i].x, actual->zones[i].x);
+                Assert::AreEqual(expected.zones[i].y, actual->zones[i].y);
+                Assert::AreEqual(expected.zones[i].width, actual->zones[i].width);
+                Assert::AreEqual(expected.zones[i].height, actual->zones[i].height);
+            }
+        }
+
+        TEST_METHOD (FromJsonWithoutOptionalValues)
+        {
+            CanvasLayoutInfo expected;
+            expected.lastWorkAreaWidth = 123;
+            expected.lastWorkAreaHeight = 321;
+            expected.zones = { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } };
+            
+            auto actual = CanvasLayoutInfoJSON::FromJson(m_jsonWithoutOptionalValues);
+            Assert::IsTrue(actual.has_value());
+
+            Assert::AreEqual(expected.lastWorkAreaHeight, actual->lastWorkAreaHeight);
+            Assert::AreEqual(expected.lastWorkAreaWidth, actual->lastWorkAreaWidth);
+            Assert::AreEqual(expected.zones.size(), actual->zones.size());
+            Assert::AreEqual(DefaultValues::SensitivityRadius, actual->sensitivityRadius);
             for (int i = 0; i < expected.zones.size(); i++)
             {
                 Assert::AreEqual(expected.zones[i].x, actual->zones[i].x);
@@ -226,7 +253,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (FromJsonMissingKeys)
         {
-            CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } } };
+            CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } }, 50 };
             const auto json = CanvasLayoutInfoJSON::ToJson(info);
 
             auto iter = json.First();
@@ -234,6 +261,11 @@ namespace FancyZonesUnitTests
             {
                 json::JsonObject modifiedJson = json::JsonObject::Parse(json.Stringify());
                 modifiedJson.Remove(iter.Current().Key());
+                if (iter.Current().Key() == L"sensitivity-radius")
+                {
+                    iter.MoveNext();
+                    continue;
+                }
 
                 auto actual = CanvasLayoutInfoJSON::FromJson(modifiedJson);
                 Assert::IsFalse(actual.has_value());
@@ -436,6 +468,27 @@ namespace FancyZonesUnitTests
                     compareJsonObjects(expected, actual);
                 }
 
+                
+                TEST_METHOD (ToJsonWithOptionals)
+                {
+                    json::JsonObject expected = json::JsonObject();
+                    expected = json::JsonObject::Parse(L"{\"rows\": 3, \"columns\": 4}");
+                    expected.SetNamedValue(L"rows-percentage", m_rowsArray);
+                    expected.SetNamedValue(L"columns-percentage", m_columnsArray);
+                    expected.SetNamedValue(L"cell-child-map", m_cells);
+                    expected.SetNamedValue(L"show-spacing", json::value(true));
+                    expected.SetNamedValue(L"spacing", json::value(99));
+                    expected.SetNamedValue(L"sensitivity-radius", json::value(55));
+
+                    GridLayoutInfo info = m_info;
+                    info.m_sensitivityRadius = 55;
+                    info.m_showSpacing = true;
+                    info.m_spacing = 99;
+
+                    auto actual = GridLayoutInfoJSON::ToJson(info);
+                    compareJsonObjects(expected, actual);
+                }
+
                 TEST_METHOD (FromJson)
                 {
                     json::JsonObject json = json::JsonObject(m_gridJson);
@@ -512,6 +565,27 @@ namespace FancyZonesUnitTests
 
                         iter.MoveNext();
                     }
+                }
+
+                TEST_METHOD(FromJsonWithOptionals)
+                {
+                    json::JsonObject json = json::JsonObject();
+                    json = json::JsonObject::Parse(L"{\"rows\": 3, \"columns\": 4}");
+                    json.SetNamedValue(L"rows-percentage", m_rowsArray);
+                    json.SetNamedValue(L"columns-percentage", m_columnsArray);
+                    json.SetNamedValue(L"cell-child-map", m_cells);
+                    json.SetNamedValue(L"show-spacing", json::value(true));
+                    json.SetNamedValue(L"spacing", json::value(99));
+                    json.SetNamedValue(L"sensitivity-radius", json::value(55));
+
+                    GridLayoutInfo expected = m_info;
+                    expected.m_sensitivityRadius = 55;
+                    expected.m_showSpacing = true;
+                    expected.m_spacing = 99;
+
+                    auto actual = GridLayoutInfoJSON::FromJson(json);
+                    Assert::IsTrue(actual.has_value());
+                    compareGridInfos(expected, *actual);
                 }
 
                 TEST_METHOD (FromJsonInvalidTypes)
