@@ -66,10 +66,44 @@ namespace FancyZonesEditor.Models
         public List<int> ColumnPercents { get; set; }
 
         // ShowSpacing - flag if free space between cells should be presented
-        public bool ShowSpacing { get; set; } = true;
+        public bool ShowSpacing
+        {
+            get
+            {
+                return _showSpacing;
+            }
+
+            set
+            {
+                if (value != _showSpacing)
+                {
+                    _showSpacing = value;
+                    App.FancyZonesEditorIO.SerializeZoneSettings();
+                }
+            }
+        }
+
+        private bool _showSpacing = true;
 
         // Spacing - free space between cells
-        public int Spacing { get; set; } = 16;
+        public int Spacing
+        {
+            get
+            {
+                return _spacing;
+            }
+
+            set
+            {
+                if (value != _spacing)
+                {
+                    _spacing = value;
+                    App.FancyZonesEditorIO.SerializeZoneSettings();
+                }
+            }
+        }
+
+        private int _spacing = 16;
 
         // FreeZones (not persisted) - used to keep track of child indices that are no longer in use in the CellChildMap,
         //  making them candidates for re-use when it's needed to add another child

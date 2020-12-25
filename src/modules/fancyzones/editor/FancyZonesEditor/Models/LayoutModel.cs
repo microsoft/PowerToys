@@ -120,7 +120,24 @@ namespace FancyZonesEditor.Models
 
         private bool _isApplied;
 
-        public int SensitivityRadius { get; set; } = 20;
+        public int SensitivityRadius
+        {
+            get
+            {
+                return _sensitivityRadius;
+            }
+
+            set
+            {
+                if (value != _sensitivityRadius)
+                {
+                    _sensitivityRadius = value;
+                    App.FancyZonesEditorIO.SerializeZoneSettings();
+                }
+            }
+        }
+
+        private int _sensitivityRadius = 20;
 
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
