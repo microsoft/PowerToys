@@ -126,6 +126,8 @@ namespace FancyZonesEditor.Utils
             public int RefHeight { get; set; }
 
             public List<CanvasZoneWrapper> Zones { get; set; }
+
+            public int SensitivityRadius { get; set; }
         }
 
         private struct GridInfoWrapper
@@ -139,6 +141,12 @@ namespace FancyZonesEditor.Utils
             public List<int> ColumnsPercentage { get; set; }
 
             public int[][] CellChildMap { get; set; }
+
+            public bool ShowSpacing { get; set; }
+
+            public int Spacing { get; set; }
+
+            public int SensitivityRadius { get; set; }
         }
 
         private struct CustomLayoutWrapper
@@ -581,6 +589,7 @@ namespace FancyZonesEditor.Utils
                         RefWidth = (int)canvasRect.Width,
                         RefHeight = (int)canvasRect.Height,
                         Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper>(),
+                        SensitivityRadius = canvasLayout.SensitivityRadius,
                     };
 
                     foreach (var zone in canvasLayout.Zones)
@@ -619,6 +628,9 @@ namespace FancyZonesEditor.Utils
                         RowsPercentage = gridLayout.RowPercents,
                         ColumnsPercentage = gridLayout.ColumnPercents,
                         CellChildMap = cells,
+                        ShowSpacing = gridLayout.ShowSpacing,
+                        Spacing = gridLayout.Spacing,
+                        SensitivityRadius = gridLayout.SensitivityRadius,
                     };
 
                     string json = JsonSerializer.Serialize(wrapper, _options);
@@ -728,6 +740,7 @@ namespace FancyZonesEditor.Utils
                     }
 
                     layout = new CanvasLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, zones, info.RefWidth, info.RefHeight);
+                    layout.SensitivityRadius = info.SensitivityRadius;
                 }
                 else if (zoneSet.Type == GridLayoutModel.ModelTypeID)
                 {
@@ -743,6 +756,9 @@ namespace FancyZonesEditor.Utils
                     }
 
                     layout = new GridLayoutModel(zoneSet.Uuid, zoneSet.Name, LayoutType.Custom, info.Rows, info.Columns, info.RowsPercentage, info.ColumnsPercentage, cells);
+                    layout.SensitivityRadius = info.SensitivityRadius;
+                    (layout as GridLayoutModel).ShowSpacing = info.ShowSpacing;
+                    (layout as GridLayoutModel).Spacing = info.Spacing;
                 }
                 else
                 {
