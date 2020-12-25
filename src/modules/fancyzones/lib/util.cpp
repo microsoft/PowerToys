@@ -171,6 +171,7 @@ namespace FancyZonesUtils
     }
 
     typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
+
     std::wstring GetDisplayDeviceId(const std::wstring& device, std::unordered_map<std::wstring, DWORD>& displayDeviceIdxMap)
     {
         DISPLAY_DEVICE displayDevice{ .cb = sizeof(displayDevice) };

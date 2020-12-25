@@ -5,38 +5,33 @@
 
 int report(std::wostream& os)
 {
+    struct capture
+    {
+        std::wostream* os = nullptr;
+    };
+
     auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM prm) -> BOOL {
-        std::wostream& os = *(std::wostream*)prm;
+        std::wostream& os = *((capture*)prm)->os;
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
-        if (GetMonitorInfo(monitor, &mi))
+
+        if (GetMonitorInfoW(monitor, &mi))
         {
             os << "GetMonitorInfo OK\n";
             DISPLAY_DEVICE displayDevice = { sizeof(displayDevice) };
 
-            if (EnumDisplayDevices(mi.szDevice, 0, &displayDevice, 1))
+            DWORD i = 0;
+            while (EnumDisplayDevicesW(mi.szDevice, i++, &displayDevice, EDD_GET_DEVICE_INTERFACE_NAME))
             {
-                if (displayDevice.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER)
-                {
-                    os << "EnumDisplayDevices OK[MIRRORING_DRIVER]: \n"
-                        << "\tDeviceID = " << displayDevice.DeviceID << '\n'
-                        << "\tDeviceKey = " << displayDevice.DeviceKey << '\n'
-                        << "\tDeviceName = " << displayDevice.DeviceName << '\n'
-                        << "\tDeviceString = " << displayDevice.DeviceString << '\n';
-                }
-                else
-                {
-                    os << "EnumDisplayDevices OK:\n"
-                        << "\tDeviceID = " << displayDevice.DeviceID << '\n'
-                        << "\tDeviceKey = " << displayDevice.DeviceKey << '\n'
-                        << "\tDeviceName = " << displayDevice.DeviceName << '\n'
-                        << "\tDeviceString = " << displayDevice.DeviceString << '\n';
-                }
-            }
-            else
-            {
-                auto message = get_last_error_message(GetLastError());
-                os << "EnumDisplayDevices FAILED: " << (message.has_value() ? message.value() : L"") << '\n';
+                const bool active = displayDevice.StateFlags & DISPLAY_DEVICE_ACTIVE;
+                const bool mirroring = displayDevice.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER;
+                os << "EnumDisplayDevices OK:\n"
+                   << "\tMirroring = " << mirroring << '\n'
+                   << "\tActive = " << active << '\n'
+                   << "\tDeviceID = " << displayDevice.DeviceID << '\n'
+                   << "\tDeviceKey = " << displayDevice.DeviceKey << '\n'
+                   << "\tDeviceName = " << displayDevice.DeviceName << '\n'
+                   << "\tDeviceString = " << displayDevice.DeviceString << '\n';
             }
         }
         else
@@ -46,8 +41,9 @@ int report(std::wostream& os)
         }
         return TRUE;
     };
-
-    if (EnumDisplayMonitors(nullptr, nullptr, callback, (LPARAM)&os))
+    capture c;
+    c.os = &os;
+    if (EnumDisplayMonitors(nullptr, nullptr, callback, (LPARAM)&c))
     {
         os << "EnumDisplayMonitors OK\n";
     }
