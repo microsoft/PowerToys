@@ -70,6 +70,7 @@ namespace FancyZonesEditor.Models
                 layout.Zones.Add(zone);
             }
 
+            layout.SensitivityRadius = SensitivityRadius;
             return layout;
         }
 
@@ -80,6 +81,8 @@ namespace FancyZonesEditor.Models
             {
                 other.Zones.Add(zone);
             }
+
+            other.SensitivityRadius = SensitivityRadius;
         }
 
         // PersistData

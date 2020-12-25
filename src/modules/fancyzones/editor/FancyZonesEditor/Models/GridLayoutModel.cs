@@ -175,6 +175,10 @@ namespace FancyZonesEditor.Models
             }
 
             layout.ColumnPercents = colPercents;
+
+            layout.ShowSpacing = ShowSpacing;
+            layout.Spacing = Spacing;
+            layout.SensitivityRadius = SensitivityRadius;
         }
 
         // PersistData
