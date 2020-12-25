@@ -132,6 +132,7 @@ namespace FancyZonesEditor.Models
                 if (value != _sensitivityRadius)
                 {
                     _sensitivityRadius = value;
+                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.SensitivityRadius = value;
                     App.FancyZonesEditorIO.SerializeZoneSettings();
                 }
             }

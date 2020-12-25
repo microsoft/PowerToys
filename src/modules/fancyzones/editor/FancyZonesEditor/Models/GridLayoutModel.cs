@@ -78,6 +78,7 @@ namespace FancyZonesEditor.Models
                 if (value != _showSpacing)
                 {
                     _showSpacing = value;
+                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.ShowSpacing = value;
                     App.FancyZonesEditorIO.SerializeZoneSettings();
                 }
             }
@@ -98,6 +99,7 @@ namespace FancyZonesEditor.Models
                 if (value != _spacing)
                 {
                     _spacing = value;
+                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.Spacing = value;
                     App.FancyZonesEditorIO.SerializeZoneSettings();
                 }
             }
