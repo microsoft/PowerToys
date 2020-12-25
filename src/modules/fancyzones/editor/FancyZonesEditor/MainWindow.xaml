@@ -186,7 +186,7 @@
                                                x:Name="sensitivityRadiusValue" />
 
                                     <TextBox Margin="0,6,0,0"
-                                             Text="20"
+                                             Text="{Binding SensitivityRadius}"
                                              Width="86"
                                              AutomationProperties.LabeledBy="{Binding ElementName=sensitivityRadiusValue}"
                                              HorizontalAlignment="Left" />
