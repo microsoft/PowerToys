@@ -12,7 +12,7 @@
 
 ## About
 
-Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. For more info on [PowerToys guides and overviews](https://docs.microsoft.com/en-us/windows/powertoys/), or any other tools and resources for [Windows development environments](https://docs.microsoft.com/en-us/windows/dev-environment/overview), be sure to check out our [Microsoft Docs](https://docs.microsoft.com/en-us/)! 
+Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows 10 experience for greater productivity. For more info on [PowerToys overviews and guides][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://docs.microsoft.com/windows/dev-environment/overview), head over to [docs.microsoft.com][usingPowerToys-docs-link]! 
 
 |   | Current utilities: |   |
 |--------------|--------|--------|
@@ -79,7 +79,7 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.29 - December 2020 Update
 
-Our goals for [v0.29 release cycle][github-release-link] were to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users. Due to the short dev cycle due to the holidays this month, a larger work items will show up next release such as FZ editor improvements and two new plug-ins for PowerToys Run.
+Our goals for [v0.29 release cycle][github-release-link] were to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users. Due to the short dev cycle due to the holidays this month, larger work items will show up next release such as FZ editor improvements and two new plug-ins for PowerToys Run.
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
 
@@ -89,17 +89,19 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 - Bug report tool and improved logging.
 - Various localization improvements. 
 - CodeQL added.  Triggered via a cron timer twice a day.
-- User facing docs moved to https://docs.microsoft.com/en-us/windows/powertoys/
+- "How to use" docs moved to https://docs.microsoft.com/windows/powertoys/
    - This will allow the community to do direct PRs against those documents
 
 **ARM64 Progress**
-- .NET Core upgrade for code bases the PowerToys team controls is complete.  We still have two external depedencies that are .NET Framework.
+- .NET Core upgrade for code bases the PowerToys team controls is complete.  We still have two external dependencies that are .NET Framework that need to be updated.
 
 **Color Picker** 
 - General bug fixes
+- Added ability to provide the name of the color at parity with Office and WinUI Color Picker.
 
 **FancyZones**
 - Allows to use Windows Snap on desktops that don't have a layout applied and for apps that are in the excluded list.
+- Bug fixes
 
 **PowerToys Run**
 - Improved performance
@@ -110,11 +112,25 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
    - Option to extract the MSI from the .exe for enterprise scenarios and more options to do unattended installations.
    - Removed toast notifications during installation.
 
-I'd like to directly call out [@](https://github.com/), [@gordonwatts](https://github.com/gordonwatts), [@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@alannt777](https://github.com/alannt777) for their continued community support and helping directly make PowerToys a better piece of software.
+We'd like to directly mention (in alphabetical order) for their continued community support this month and helping directly make PowerToys a better piece of software.  
+
+[@Aaron-Junker](https://github.com/Aaron-Junker), 
+[@benjamhooper](https://github.com/benjamhooper), 
+[@davidegiacometti](https://github.com/davidegiacometti), 
+[@eriawan](https://github.com/eriawan), 
+[@htcfreek](https://github.com/htcfreek), 
+[@jhutchings1](https://github.com/jhutchings1), 
+[@jsoref](https://github.com/jsoref), 
+[@jay-o-way](https://github.com/jay-o-way)
+[@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), 
+[@riverar](https://github.com/riverar), 
+[@snickler](https://github.com/snickler), 
+and 
+[@TobiasSekan](https://github.com/TobiasSekan) 
 
 #### What is being planned for v0.31 - January 2021
 
-For [v0.31](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F16), we are proactively working on:
+For [v0.31][github-next-release-work], we are proactively working on:
 
 - Stability
 - ARM64 work
@@ -123,7 +139,7 @@ For [v0.31](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue
 
 ## PowerToys Community
 
-The PowerToys team is extremely grateful to have the [support of an amazing active community](COMMUNITY.md). The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.
+The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.
 
 ## Code of Conduct
 
@@ -131,13 +147,18 @@ This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct
 
 ## Privacy Statement
 
-The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement][privacyLink] for more information.
+The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement][privacy-link] for more information.
 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
+[community-link]: COMMUNITY.md
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
-[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.28.0
 [roadmap]: https://github.com/microsoft/PowerToys/wiki/Roadmap
-[privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839
+[privacy-link]: http://go.microsoft.com/fwlink/?LinkId=521839
 [vidConfOverview]: https://aka.ms/PowerToysOverview_VideoConference
 [loc-bug]: https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=translation_issue.md&title=
+[usingPowerToys-docs-link]: https://docs.microsoft.com/windows/powertoys/
+
+<!-- items that need to be updated release to release -->
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F16
+[github-prerelease-link]: https://github.com/microsoft/PowerToys/releases/tag/v0.28.0
