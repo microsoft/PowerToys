@@ -191,11 +191,6 @@ namespace FancyZonesEditor
             {
                 model.Apply();
             }
-
-            if (!mainEditor.MultiMonitorMode)
-            {
-                Close();
-            }
         }
 
         private void OnClosing(object sender, EventArgs e)
@@ -266,11 +261,6 @@ namespace FancyZonesEditor
             overlay.CurrentDataContext = MainWindowSettingsModel.BlankModel;
 
             App.FancyZonesEditorIO.SerializeZoneSettings();
-
-            if (!overlay.MultiMonitorMode)
-            {
-                Close();
-            }
         }
 
         private void NewLayoutDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
