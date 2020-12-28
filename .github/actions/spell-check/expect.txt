@@ -146,6 +146,7 @@ Bcl
 bdaa
 bddac
 BEGINLABELEDIT
+benjamhooper
 betadele
 betsegaw
 BGR
@@ -657,6 +658,7 @@ eport
 ERASEBKGND
 EREOF
 EResize
+eriawan
 ERRORLEVEL
 errorlevel
 ERRORMESSAGE
@@ -1126,6 +1128,7 @@ JPN
 json
 JSONOf
 jsonval
+jsoref
 jsx
 junja
 jxr
@@ -1990,6 +1993,7 @@ SLogo
 SMALLICON
 SMTO
 snd
+snickler
 somil
 SORTDOWN
 SOURCECLIENTAREAONLY
