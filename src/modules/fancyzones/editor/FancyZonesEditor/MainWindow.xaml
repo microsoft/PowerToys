@@ -358,7 +358,7 @@
                                                Foreground="{DynamicResource PrimaryForegroundBrush}" />
 
                                     <TextBox Margin="0,6,0,0"
-                                             Text="{Binding Spacing}"
+                                             Text="{Binding Spacing, UpdateSourceTrigger=PropertyChanged}"
                                              Width="86"
                                              HorizontalAlignment="Left"
                                              AutomationProperties.LabeledBy="{Binding ElementName=paddingValue}" />
