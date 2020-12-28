@@ -50,7 +50,14 @@ namespace FancyZonesEditor
 
         private void LayoutPreview_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            if (_model != null)
+            {
+                _model.PropertyChanged -= LayoutModel_PropertyChanged;
+            }
+
             _model = (LayoutModel)DataContext;
+            _model.PropertyChanged += LayoutModel_PropertyChanged;
+
             RenderPreview();
         }
 
@@ -67,6 +74,11 @@ namespace FancyZonesEditor
                     RenderPreview();
                 }
             }
+        }
+
+        private void LayoutModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            RenderPreview();
         }
 
         public Int32Rect[] GetZoneRects()
