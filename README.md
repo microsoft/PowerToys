@@ -121,8 +121,9 @@ We'd like to directly mention (in alphabetical order) for their continued commun
 [@htcfreek](https://github.com/htcfreek), 
 [@jhutchings1](https://github.com/jhutchings1), 
 [@jsoref](https://github.com/jsoref), 
-[@jay-o-way](https://github.com/jay-o-way)
-[@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), 
+[@jay-o-way](https://github.com/jay-o-way), 
+[@martinchrzan](https://github.com/martinchrzan), 
+[@niels9001](https://github.com/niels9001), 
 [@riverar](https://github.com/riverar), 
 [@snickler](https://github.com/snickler), 
 and 
