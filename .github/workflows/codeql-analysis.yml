@@ -1,7 +1,7 @@
 name: "CodeQL"
 
 on:
-  push:
+  # push:
   # running on cron since this isn't running on our agent currently
   schedule:
     - cron: '0 0 * * *'
