@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Add new zone]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新しいゾーンの追加]]></Val>
+            <Val><![CDATA[新しいゾーンを追加]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Choose your layout for this desktop]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[このデスクトップのレイアウトを選択する]]></Val>
+            <Val><![CDATA[このデスクトップのレイアウトを選択します]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Error logged to ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[エラーを次へログされました:]]></Val>
+            <Val><![CDATA[エラー ログが次に記録されました: ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -320,7 +320,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Show space around zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーンの周りのスペースを表示する]]></Val>
+            <Val><![CDATA[ゾーンの周りにスペースを表示する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

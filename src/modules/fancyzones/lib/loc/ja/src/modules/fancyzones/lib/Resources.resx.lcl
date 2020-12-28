@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[FancyZones persisted data path not found. Please report the bug to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[FancyZones の持続的なデータ パスが見つかりませんでした。バグを以下へ報告してください:]]></Val>
+            <Val><![CDATA[FancyZones の持続的なデータ パスが見つかりませんでした。バグを次へ報告してください:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The FancyZones editor failed to start. Please report the bug to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[FancyZones エディターを開始できませんでした。バグを以下へ報告してください:]]></Val>
+            <Val><![CDATA[FancyZones エディターを開始できませんでした。バグを次へ報告してください:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to save the FancyZones settings. Please retry again later, if the problem persists report the bug to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[FancyZones の設定を保存できませんでした。後でもう一度お試しください。問題が解決しない場合は、バグを以下へ報告してください:]]></Val>
+            <Val><![CDATA[FancyZones の設定を保存できませんでした。後でもう一度お試しください。問題が解決しない場合は、バグを次へ報告してください:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Create window layouts to help make multi-tasking easy]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ウィンドウ レイアウトを作成して簡単にマルチタスクを行えるようにします]]></Val>
+            <Val><![CDATA[簡単にマルチタスクを行えるように、ウィンドウ レイアウトを作成します]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Move newly created windows to their last known zone]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新しく作成されたウィンドウを最後の既知のゾーンに移動します]]></Val>
+            <Val><![CDATA[新しく作成されたウィンドウを最後の既知のゾーンに移動する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -176,7 +176,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Override Windows Snap hotkeys (Win + Arrow) to move windows between zones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーン間でウィンドウを移動するウィンドウ スナップのホットキー (Win+矢印キー) をオーバーライドします]]></Val>
+            <Val><![CDATA[Windows スナップのホットキー (Win+矢印キー) をオーバーライドして、ゾーン間でウィンドウを移動する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -185,7 +185,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[スナップしない場合にウィンドウの元のサイズを復元する]]></Val>
+            <Val><![CDATA[スナップ解除する場合にウィンドウの元のサイズを復元する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +203,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Show zones on all monitors while dragging a window]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ウィンドウのドラッグ中にすべてのモニターでゾーンを表示します]]></Val>
+            <Val><![CDATA[ウィンドウのドラッグ中にすべてのモニターでゾーンを表示する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -314,7 +314,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zone configuration]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ゾーンの構成]]></Val>
+            <Val><![CDATA[ゾーンを構成]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[How long to press the Windows key before showing the Shortcut Guide (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Shortcut Guide を表示する前に Windows キーを長押しする時間 (ミリ秒)]]></Val>
+            <Val><![CDATA[Shortcut Guide を表示するために Windows キーを長押しする時間 (ms)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -104,7 +104,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows キーを押したときに Windows ショートカットを使用してヘルプ オーバーレイを表示します。]]></Val>
+            <Val><![CDATA[Windows キーを押したときに、Windows ショートカットを使用してヘルプ オーバーレイを表示します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[バージョン情報]]></Val>
+            <Val><![CDATA[詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Create a new size]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新しいサイズの作成]]></Val>
+            <Val><![CDATA[新しいサイズを作成]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -416,7 +416,7 @@
         <Str Cat="Text">
           <Val><![CDATA[(Default)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[(既定値)]]></Val>
+            <Val><![CDATA[(既定)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -704,7 +704,7 @@
         <Str Cat="Text">
           <Val><![CDATA[(Default)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[(既定値)]]></Val>
+            <Val><![CDATA[(既定)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -740,7 +740,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zip]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[郵便番号]]></Val>
+            <Val><![CDATA[zip 圧縮]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
