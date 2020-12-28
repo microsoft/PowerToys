@@ -2,8 +2,10 @@ name: "CodeQL"
 
 on:
   push:
+  # running on cron since this isn't running on our agent currently
   schedule:
-    - cron: '18 5 * * *'
+    - cron: '0 0 * * *'
+    - cron: '0 12 * * *'
 
 jobs:
   analyze:
@@ -15,8 +17,7 @@ jobs:
       matrix:
         language: [ 'cpp', 'csharp', 'javascript' ]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
-        # Learn more:
-        # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
+        # Learn more: https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
     - name: Checkout repository
@@ -32,6 +33,7 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
+    # these CMDs are being used on the Build farm signed instance, not the YML files for CI
     - name: Manual build
       run: | 
         .\.pipelines\restore.cmd
