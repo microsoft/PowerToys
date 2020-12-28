@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Settings Group Header Text]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[グループ ヘッダーのテキストを設定しています]]></Val>
+            <Val><![CDATA[設定グループ ヘッダー テキスト]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Explorer Icons]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[エクスプローラーのアイコン]]></Val>
+            <Val><![CDATA[エクスプローラー アイコン]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -146,7 +146,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Settings Group Header Text]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[グループ ヘッダーのテキストを設定しています]]></Val>
+            <Val><![CDATA[設定グループ ヘッダー テキスト]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

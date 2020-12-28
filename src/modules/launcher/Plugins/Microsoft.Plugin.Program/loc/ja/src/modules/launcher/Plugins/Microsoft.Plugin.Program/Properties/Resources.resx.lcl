@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Run as administrator (Ctrl+Shift+Enter)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[管理者として実行 (Ctrl+Shift+Enter)]]></Val>
+            <Val><![CDATA[管理者として実行する (Ctrl+Shift+Enter)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
