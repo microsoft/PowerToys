@@ -487,7 +487,7 @@ namespace JSONHelpers
     {
         try
         {
-            std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData> appliedZonesets;
+            TDeviceInfoMap appliedZonesets;
 
             auto zonesets = json.GetNamedArray(NonLocalizable::AppliedZonesets);
             for (const auto& zoneset : zonesets)
