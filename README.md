@@ -31,13 +31,12 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 #### Stable version
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.27.1-x64.exe` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.29.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
 #### Experimental version
 To install the Video Conference mute, please use the [v0.28 pre-release experimental version of PowerToys][github-prerelease-link] to try out this version. It includes all improvements from v0.27 in addition to the Video conference utility. Click on `Assets` to show the files available in the release and then download the .exe installer.
-
 
 ### Via WinGet (Preview)
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
@@ -78,42 +77,47 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 - Color Picker at times won't work when PT is running elevated - [#5348](https://github.com/microsoft/PowerToys/issues/5348).  We are currently working on a fix now for this.
 
-### November 2020 Update
+### 0.29 - December 2020 Update
 
-Our goals for [v0.27 release cycle][github-release-link] were to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users.  Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
+Our goals for [v0.29 release cycle][github-release-link] were to focus on adding on end-user experience, stability, accessibility, localization and quality of life improvements for both the development team and our end users. Due to the short dev cycle due to the holidays this month, a larger work items will show up next release such as FZ editor improvements and two new plug-ins for PowerToys Run.
 
-#### Highlights from v0.27
+Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on for the near future. We fixed a lot of localization issues from our initial release but we may not still be perfect. If you find an issue, please file a [localization bug][loc-bug].
+
+#### Highlights from v0.29
 
 **General**
-- Installer improvements including dark mode
-- Large sums of accessibility issues fixed.
-- Worked on localization effort. If you find issues, please [make us aware so we can correct them][loc-bug].
+- Bug report tool and improved logging.
+- Various localization improvements. 
+- CodeQL added.  Triggered via a cron timer twice a day.
+- User facing docs moved to https://docs.microsoft.com/en-us/windows/powertoys/
+   - This will allow the community to do direct PRs against those documents
 
-**Color Picker**
-- Updated interface and new editor experience done by [@martinchrzan](https://github.com/martinchrzan) and [@niels9001](https://github.com/niels9001)
+**ARM64 Progress**
+- .NET Core upgrade for code bases the PowerToys team controls is complete.  We still have two external depedencies that are .NET Framework.
+
+**Color Picker** 
+- General bug fixes
 
 **FancyZones**
-- Multi-monitor editor experience now drastically improved for discoverability.
-- Zones being forgotten on restart
-- Added in ability to have no layout
-
-**Image Resizer**
-- Updated interface
+- Allows to use Windows Snap on desktops that don't have a layout applied and for apps that are in the excluded list.
 
 **PowerToys Run**
-- Removed unused dependencies
+- Improved performance
+- PT Run now supports accented characters.
+- PT Run can now execute system commands such as sleep, lock, shutdown ...
 
-**PowerRename**
-- Added Lookbehind support via Boost library
+**Installer**
+   - Option to extract the MSI from the .exe for enterprise scenarios and more options to do unattended installations.
+   - Removed toast notifications during installation.
 
-I'd like to directly call out [@davidegiacometti](https://github.com/davidegiacometti), [@gordonwatts](https://github.com/gordonwatts), [@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@alannt777](https://github.com/alannt777) for their continued community support and helping directly make PowerToys a better piece of software.
+I'd like to directly call out [@](https://github.com/), [@gordonwatts](https://github.com/gordonwatts), [@martinchrzan](https://github.com/martinchrzan), [@niels9001](https://github.com/niels9001), [@p-storm](https://github.com/p-storm), [@TobiasSekan](https://github.com/TobiasSekan), [@Aaron-Junker](https://github.com/Aaron-Junker), [@htcfreek](https://github.com/htcfreek) and [@alannt777](https://github.com/alannt777) for their continued community support and helping directly make PowerToys a better piece of software.
 
-#### What is being planned for v0.29 - December 2020
+#### What is being planned for v0.31 - January 2021
 
-For [v0.29](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F15), we are proactively working on:
+For [v0.31](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F16), we are proactively working on:
 
 - Stability
-- Accessibility
+- ARM64 work
 - Video conference mute investigation toward a DirectShow filter versus a driver
 - OOBE work
 
