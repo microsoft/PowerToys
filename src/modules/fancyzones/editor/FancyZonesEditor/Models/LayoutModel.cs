@@ -100,6 +100,7 @@ namespace FancyZonesEditor.Models
 
         private bool _isSelected;
 
+        // IsApplied (not-persisted) - tracks whether or not this LayoutModel is applied in the picker
         public bool IsApplied
         {
             get
@@ -118,6 +119,26 @@ namespace FancyZonesEditor.Models
         }
 
         private bool _isApplied;
+
+        public int SensitivityRadius
+        {
+            get
+            {
+                return _sensitivityRadius;
+            }
+
+            set
+            {
+                if (value != _sensitivityRadius)
+                {
+                    _sensitivityRadius = value;
+                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.SensitivityRadius = value;
+                    App.FancyZonesEditorIO.SerializeZoneSettings();
+                }
+            }
+        }
+
+        private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
 
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

@@ -115,9 +115,7 @@ namespace FancyZonesEditor
             RowColInfo[] colInfo = (from percent in grid.ColumnPercents
                                     select new RowColInfo(percent)).ToArray();
 
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-
-            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
+            int spacing = grid.ShowSpacing ? grid.Spacing : 0;
 
             var workArea = App.Overlay.WorkArea;
             double width = workArea.Width - (spacing * (cols + 1));
@@ -215,8 +213,7 @@ namespace FancyZonesEditor
                 Body.ColumnDefinitions.Add(def);
             }
 
-            MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
-            Thickness margin = new Thickness(settings.ShowSpacing ? settings.Spacing / 20 : 0);
+            Thickness margin = new Thickness(grid.ShowSpacing ? grid.Spacing / 20 : 0);
 
             List<int> visited = new List<int>();
 

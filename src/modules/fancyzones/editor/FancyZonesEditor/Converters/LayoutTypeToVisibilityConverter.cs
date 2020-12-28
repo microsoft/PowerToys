@@ -9,11 +9,11 @@ using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor.Converters
 {
-    public class LayoutModelTypeToVisibilityConverter : IValueConverter
+    public class LayoutTypeToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return value is CanvasLayoutModel ? Visibility.Collapsed : Visibility.Visible;
+            return (LayoutType)value == LayoutType.Custom ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
