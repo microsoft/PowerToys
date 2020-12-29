@@ -210,11 +210,11 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    static inline FancyZonesModule* s_instance;
-    static inline HHOOK s_llKeyboardHook;
+    static inline FancyZonesModule* s_instance = nullptr;
+    static inline HHOOK s_llKeyboardHook = nullptr;
 
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
-    HWINEVENTHOOK m_objectLocationWinEventHook;
+    HWINEVENTHOOK m_objectLocationWinEventHook = nullptr;
 
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
