@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Copy this number to the clipboard]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[この数値をクリップボードにコピーする]]></Val>
+            <Val><![CDATA[この数値をクリップボードにコピーします]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

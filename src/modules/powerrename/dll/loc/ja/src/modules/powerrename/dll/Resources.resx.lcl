@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable autocomplete and autosuggest of recently used inputs for search and replace values.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[検索および置換の値に最近使用した入力のオートコンプリートと自動提案を有効にします。]]></Val>
+            <Val><![CDATA[検索および置換の値に、最近使用した入力のオートコンプリートと自動提案を有効にします。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[検索と置換または正規表現を使用して一括でより高度な名前変更を行う Windows Shell 拡張機能です。]]></Val>
+            <Val><![CDATA[検索と置換または正規表現を使用して、より高度な一括の名前変更を行う Windows Shell 拡張機能です。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -218,7 +218,6 @@ CDeclaration
 cdpx
 cdpxwin
 CENTERALIGN
-Cfg
 cfg
 changecursor
 Changemove
@@ -276,6 +275,7 @@ coclass
 codebase
 codecvt
 codeofconduct
+codeql
 codereview
 COINIT
 Colorbrush
@@ -329,13 +329,11 @@ countslabelrenamingfmt
 countslabelselectedfmt
 cout
 CPlus
-cplusplus
 CPower
 cpp
 CPPARM
 cppblog
 cppm
-cpprestsdk
 cppruntime
 cppstd
 cppwinrt
@@ -650,14 +648,11 @@ ENU
 enum
 ENUMITEMS
 EOAC
-EOL
 eol
 epicgames
-eport
 ERASEBKGND
 EREOF
 EResize
-ERRORLEVEL
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
@@ -1075,7 +1070,6 @@ ISavable
 isbi
 ISearch
 IService
-ISetting
 isetting
 isfinite
 IShell
@@ -1114,6 +1108,7 @@ IZoom
 JArray
 jarro
 Jarryd
+javascript
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
@@ -1152,7 +1147,6 @@ keyremaps
 keystokes
 Keystool
 Keytool
-KEYUP
 keyup
 Kf
 KILLFOCUS
@@ -1222,7 +1216,6 @@ LOGPIXELSX
 LOn
 lookbehind
 lowlevel
-lowlevelkb
 LOWORD
 lparam
 LPBYTE
@@ -1298,7 +1291,6 @@ MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
 MBUTTONUP
-mday
 Mdb
 MDICHILD
 MDL
@@ -1341,8 +1333,8 @@ modulekey
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
-monitorinfof
 MONITORINFOF
+monitorinfof
 Monthand
 Moq
 MOUSEACTIVATE
@@ -1397,7 +1389,6 @@ multizone
 mutex
 mutexes
 muxc
-Mvvm
 mvvm
 MYICON
 myuri
@@ -1696,7 +1687,6 @@ propkey
 propvarutil
 Prt
 prui
-PRVPANE
 prvpane
 psapi
 PSECURITY
@@ -1745,7 +1735,6 @@ RAII
 RAlt
 randyrants
 RAWPATH
-rawtime
 rbegin
 Rbp
 RBUTTON
@@ -1791,7 +1780,6 @@ RENAMEONCOLLISION
 Renamer
 Reparse
 REPLACEWITH
-reportd
 Reportx
 requery
 requerying
@@ -1889,13 +1877,11 @@ Sekan
 SENDCHANGE
 sendinput
 sendvirtualinput
-sensative
 serializationexception
 serializer
 serizalization
 serverside
 SETCONTEXT
-SETCURSOR
 setcursor
 SETFOCUS
 SETFOREGROUND
@@ -1927,7 +1913,6 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-Shellscalingapi
 shellscalingapi
 Shelveset
 SHFILEINFO
@@ -1947,12 +1932,12 @@ SHORTCUTSTARTWITHMODIFIER
 Shortcuttool
 shortdate
 SHORTPATH
-should've
 showcolorname
 SHOWDEFAULT
 SHOWELEVATIONPROMPT
 SHOWMAXIMIZED
 SHOWMINIMIZED
+SHOWNA
 SHOWNORMAL
 showwindow
 shtypes
@@ -1979,7 +1964,6 @@ SIZENWSE
 sizeof
 SIZEWE
 sketchapp
-SKIPDOTNETINSTALL
 SKIPOWNPROCESS
 sku
 SKYBLUE
@@ -2046,7 +2030,6 @@ stdin
 stdlib
 STDMETHODCALLTYPE
 STDMETHODIMP
-Stdout
 stdout
 STEPIT
 stgm
@@ -2066,7 +2049,6 @@ stringtable
 stringval
 strsafe
 strutil
-STTNGS
 sttngs
 Stubless
 STYLECHANGED
@@ -2105,7 +2087,6 @@ SYSDEADCHAR
 SYSICONINDEX
 SYSKEY
 syskeydown
-SYSKEYUP
 syskeyup
 syslog
 SYSMENU
@@ -2163,7 +2144,6 @@ THISCOMPONENT
 thre
 tif
 TILEDWINDOW
-timeinfo
 Timeline
 timeunion
 timeutil
@@ -2181,8 +2161,8 @@ toggleright
 toggleswitch
 toolbar
 Toolchain
-toolset
 Toolset
+toolset
 tooltip
 toolwindow
 TOPDOWNDIB
@@ -2346,7 +2326,6 @@ VSTT
 VTABLE
 Vtbl
 Vx
-walkthrough
 watsonportal
 wav
 WBounds
@@ -2364,12 +2343,11 @@ wcslen
 wcsncmp
 wcsnicmp
 wdp
-WDS
 wds
 wdupenv
 weakme
 webapp
-webcam
+Webcam
 webclient
 webkit
 webp
@@ -2387,7 +2365,6 @@ wiki
 wikipedia
 wil
 wildcards
-WINAPI
 winapi
 winauto
 wincolor
@@ -2434,7 +2411,6 @@ wixtoolset
 WIXUI
 WKSG
 wmain
-wmi
 WMKEYDOWN
 WMKEYUP
 wmonk
@@ -2449,11 +2425,9 @@ WNDPROC
 woff
 wofstream
 wordpad
-wordpress
 workaround
 workflow
 wostream
-wostringstream
 wox
 wparam
 wpf
@@ -2510,7 +2484,6 @@ XStr
 XToolset
 xunit
 XY
-YAML
 yaml
 YAngle
 YDiff
