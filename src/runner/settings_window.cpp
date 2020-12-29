@@ -151,34 +151,30 @@ void dispatch_received_json(const std::wstring& json_to_parse)
     const json::JsonObject j = json::JsonObject::Parse(json_to_parse);
     for (const auto& base_element : j)
     {
+        if (!current_settings_ipc)
+        {
+            continue;
+        }
+
         const auto name = base_element.Key();
         const auto value = base_element.Value();
 
         if (name == L"general")
         {
             apply_general_settings(value.GetObjectW());
-            if (current_settings_ipc != nullptr)
-            {
-                const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-                current_settings_ipc->send(settings_string);
-            }
+            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
+            current_settings_ipc->send(settings_string);
         }
         else if (name == L"powertoys")
         {
             dispatch_json_config_to_modules(value.GetObjectW());
-            if (current_settings_ipc != nullptr)
-            {
-                const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-                current_settings_ipc->send(settings_string);
-            }
+            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
+            current_settings_ipc->send(settings_string);
         }
         else if (name == L"refresh")
         {
-            if (current_settings_ipc != nullptr)
-            {
-                const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-                current_settings_ipc->send(settings_string);
-            }
+            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
+            current_settings_ipc->send(settings_string);
         }
         else if (name == L"action")
         {
