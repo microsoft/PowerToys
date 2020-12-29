@@ -146,6 +146,7 @@ Bcl
 bdaa
 bddac
 BEGINLABELEDIT
+benjamhooper
 betadele
 betsegaw
 BGR
@@ -653,6 +654,8 @@ epicgames
 ERASEBKGND
 EREOF
 EResize
+eriawan
+ERRORLEVEL
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
@@ -1111,6 +1114,7 @@ Jarryd
 javascript
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
+jhutchings
 jjw
 jobject
 jp
@@ -1121,6 +1125,7 @@ JPN
 json
 JSONOf
 jsonval
+jsoref
 jsx
 junja
 jxr
@@ -1975,6 +1980,7 @@ SLogo
 SMALLICON
 SMTO
 snd
+snickler
 somil
 SORTDOWN
 SOURCECLIENTAREAONLY
