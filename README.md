@@ -106,7 +106,6 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 **PowerToys Run**
 - Improved performance
 - PT Run now supports accented characters.
-- PT Run can now execute system commands such as sleep, lock, shutdown ...
 
 **Installer**
    - Option to extract the MSI from the .exe for enterprise scenarios and more options to do unattended installations.
