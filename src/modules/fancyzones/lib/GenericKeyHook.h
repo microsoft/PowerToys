@@ -39,7 +39,7 @@ public:
     }
 
 private:
-    inline static HHOOK hHook;
+    inline static HHOOK hHook = nullptr;
     inline static std::function<void(bool)> callback;
 
     static LRESULT CALLBACK GenericKeyHookProc(int nCode, WPARAM wParam, LPARAM lParam)
