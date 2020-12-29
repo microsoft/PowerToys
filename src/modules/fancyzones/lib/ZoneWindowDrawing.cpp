@@ -218,7 +218,7 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
 
     if (!m_animation)
     {
-        ShowWindow(m_window, SW_SHOWDEFAULT);
+        ShowWindow(m_window, SW_SHOWNA);
         if (animationMillis > 0)
         {
             m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis });
