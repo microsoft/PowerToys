@@ -1,0 +1,7 @@
+- [] - Upload exe
+- [] - Upload symbols
+- [] - Push live
+- [] - Push Readme live
+- [] - Push Docs.MSFT live
+- [] - Create YAML for winget-pkgs
+- [] - Submit PR to https://github.com/microsoft/winget-pkgs
