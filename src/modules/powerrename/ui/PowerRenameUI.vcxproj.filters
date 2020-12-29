@@ -37,10 +37,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="resource.base.h" />
     <None Include="PowerRenameUI.base.rc" />
     <None Include="Resources.resx" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/PowerRenameUI.rc">

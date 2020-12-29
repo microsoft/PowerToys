@@ -49,9 +49,7 @@
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.26" />
     <PackageReference Include="Markdig.Signed" Version="0.22.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

@@ -142,8 +142,8 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="runner.base.rc" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="PowerToys.exe.manifest" />

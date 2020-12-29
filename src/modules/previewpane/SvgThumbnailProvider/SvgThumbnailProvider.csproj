@@ -29,9 +29,6 @@
   <Import Project="..\..\..\Version.props" />
    
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.VersionCheckAnalyzer" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
