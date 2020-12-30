@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using ControlzEx.Theming;
 
-namespace Wox.Plugin
+namespace CommonUI
 {
     public class CustomLibraryThemeProvider : LibraryThemeProvider
     {

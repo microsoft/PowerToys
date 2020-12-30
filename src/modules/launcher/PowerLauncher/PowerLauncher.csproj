@@ -119,6 +119,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\CommonUI\CommonUI.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToysInterop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Microsoft.PowerToys.Settings.UI.Library\Microsoft.PowerToys.Settings.UI.Library.csproj" />

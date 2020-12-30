@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
 using System.Windows.Input;
+using CommonUI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerLauncher.Helper;

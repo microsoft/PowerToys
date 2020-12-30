@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using CommonUI;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;

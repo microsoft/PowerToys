@@ -61,7 +61,6 @@
     <Resource Include="Resources\ImageResizer.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ControlzEx" Version="4.4.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -76,6 +75,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\CommonUI\CommonUI.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToysInterop.vcxproj" />
   </ItemGroup>
   <ItemGroup>

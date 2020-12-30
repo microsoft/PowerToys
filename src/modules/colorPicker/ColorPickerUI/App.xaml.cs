@@ -5,9 +5,8 @@
 using System;
 using System.Threading;
 using System.Windows;
-using ColorPicker;
-using ColorPicker.Helpers;
 using ColorPicker.Mouse;
+using CommonUI;
 using ManagedCommon;
 
 namespace ColorPickerUI

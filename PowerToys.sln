@@ -300,6 +300,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 		src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonUI", "src\common\CommonUI\CommonUI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -606,6 +608,10 @@ Global
 		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Debug|x64.Build.0 = Debug|x64
 		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Release|x64.ActiveCfg = Release|x64
 		{07C389E3-6BC8-41CF-923E-307B1265FA2D}.Release|x64.Build.0 = Release|x64
+		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.ActiveCfg = Debug|x64
+		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.Build.0 = Debug|x64
+		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|x64.ActiveCfg = Release|x64
+		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -696,6 +702,7 @@ Global
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{B39DC643-4663-475E-B329-03F0C9918D48} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{8F62026A-294B-41C6-8839-87463613F216} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{C3A17DCA-217B-462C-BB0C-BE086AF80081} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
