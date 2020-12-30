@@ -140,6 +140,10 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     }
 
     MakeWindowTransparent(m_window.get());
+    // Call ShowWindow(m_window.get(), SW_SHOWNORMAL) here so we can call ShowWindow(m_window.get(), SW_SHOWNA) later
+    // without causing the unexpected behaviour reported in https://github.com/microsoft/PowerToys/issues/8808
+    ShowWindow(m_window.get(), SW_SHOWNORMAL);
+    ShowWindow(m_window.get(), SW_HIDE);
 
     m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window.get());
 
