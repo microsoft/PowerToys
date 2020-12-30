@@ -7,8 +7,6 @@
 
 ## Testing 
 
-Based on [wiki](https://github.com/microsoft/PowerToys/wiki/Release-check-list)
-
 ### Install tests
 - [ ] install a **previous version** on a clean machine (a clean machine doesn't the `%localappdata%\Microsoft\PowerToys` folder)
 - [ ] create a few FZ custom layouts:
@@ -49,45 +47,46 @@ Based on [wiki](https://github.com/microsoft/PowerToys/wiki/Release-check-list)
    1. run PT as a user
    1. open an elevated app (i.e. Task Manager)
    1. shift-drag the elevated app window
-   1.verify that a notification appears
-   1.restart PT as admin
-   1.shift-drag the elevated app window
+   1. verify that a notification appears
+   1. restart PT as admin
+   1. shift-drag the elevated app window
    1. verify the notification doesn't appear
 
-**PowerToys Run**
+#### PowerToys Run
 
- - Enable PT Run in settings and ensure that the hotkey brings up PT Run 
-   - when PowerToys is running unelevated on start-up
-   - when PowerToys is running as admin on start-up
-   - when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
- - Check that each of the plugins is working:
-   - Program - launch a Win32 application and a packaged application
-   - Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - Indexer - open a file on the disk.
-   - Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space.
-   - Folder - Search and open a sub-folder on entering the path.
-   - Uri - launch a web page on entering the uri.
-   - Window walker - Switch focus to a running window.
- - Validate that the context menu items work as expected for each of the plugins
-   - Run as admin
-   - Copy file path
-   - Open in console
-   - Open containing folder
- - Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+- [ ] Enable PT Run in settings and ensure that the hotkey brings up PT Run 
+   - [ ] when PowerToys is running unelevated on start-up
+   - [ ] when PowerToys is running as admin on start-up
+   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+- [ ] Check that each of the plugins is working:
+   - [ ] Program - launch a Win32 application and a packaged application
+   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [ ] Indexer - open a file on the disk.
+   - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space.
+   - [ ] Folder - Search and open a sub-folder on entering the path.
+   - [ ] Uri - launch a web page on entering the uri.
+   - [ ] Window walker - Switch focus to a running window.
+- [ ] Validate that the context menu items work as expected for each of the plugins
+   - [ ] Run as admin
+   - [ ] Copy file path
+   - [ ] Open in console
+   - [ ] Open containing folder
+- [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
 
-**Keyboard Manager**
+#### Keyboard Manager
 
-UI Validation:
+##### UI Validation
 
-  - In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
-  - Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
-  - Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remappings and ensure that you are able to select remappings both by using mouse and by keyboard navigation.
-  - Validate that remappings can be saved by pressing the OK button and re-opening the windows loads existing remappings.
+  - [ ] In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
+  - [ ] Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
+  - [ ] Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remappings and ensure that you are able to select remappings both by using mouse and by keyboard navigation.
+  - [ ] Validate that remappings can be saved by pressing the OK button and re-opening the windows loads existing remappings.
 
-Remapping Validation:
+##### Remapping Validation:
 
 For all the remappings below, try pressing and releasing the remapped key/shortcut and pressing and holding it. Try different behaviors like releasing the modifier key before the action key and vice versa.
-  - Test key to key remappings
+
+  - [ ] Test key to key remappings
     - A->B
     - Ctrl->A
     - A->Ctrl
@@ -95,22 +94,22 @@ For all the remappings below, try pressing and releasing the remapped key/shortc
     - B->Win (make sure Start menu doesn't appear accidentally)
     - A->Disable
     - Win->Disable
-  - Test key to shortcut remappings
+  - [ ] Test key to shortcut remappings
     - A->Ctrl+V
     - B->Win+A
-  - Test shortcut to shortcut remappings
+  - [ ] Test shortcut to shortcut remappings
     - Ctrl+A->Ctrl+V
     - Win+A->Ctrl+V
     - Ctrl+V->Win+A
     - Win+A->Win+F
-  - Test shortcut to key remappings
+  - [ ] Test shortcut to key remappings
     - Ctrl+A->B
     - Ctrl+A->Win
     - Win+A->B
-  - Test app-specific remaps
+  - [ ] Test app-specific remaps
     - Similar remaps to above with Edge, VSCode (entered as code) and cmd. For cmd try admin and non-admin (requires PT to run as admin)
     - Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
-  - Test switching between remappings while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
+  - [ ] Test switching between remappings while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
 
 ## Staging release
 
@@ -125,3 +124,5 @@ For all the remappings below, try pressing and releasing the remapped key/shortc
 - [ ] Merge Readme PR live
 - [ ] Merge Docs.MSFT live
 - [ ] Submit PR to (winget-pkgs)[https://github.com/microsoft/winget-pkgs]
+
+Based on [wiki](https://github.com/microsoft/PowerToys/wiki/Release-check-list)
