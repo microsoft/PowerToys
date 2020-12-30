@@ -1,6 +1,6 @@
 # Release Checklist - v0.XX
 
-## Prep
+## Leading to release
 
 - [ ] Readme Update created
 - [ ] Release template updated with any new features / updates for testing
@@ -8,6 +8,7 @@
 ## Testing 
 
 ### Install tests
+
 - [ ] install a **previous version** on a clean machine (a clean machine doesn't the `%localappdata%\Microsoft\PowerToys` folder)
 - [ ] create a few FZ custom layouts:
     - [ ] one from scratch with several zones
@@ -23,10 +24,63 @@
 ### Functional tests
 
 #### Color Picker
+
+# TODO
+
 #### FancyZones
 
 - [ ] Launch editor
 
+# TODO
+
+##### File Explorer
+
+- [ ] SVG as thumbnail
+- [ ] SVG in preview pane
+- [ ] Markdown file in preview pane
+
+##### Image Resizer
+
+# TODO
+
+#### Keyboard Manager
+
+##### UI Validation
+
+  - [ ] In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
+  - [ ] Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
+  - [ ] Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remappings and ensure that you are able to select remappings both by using mouse and by keyboard navigation.
+  - [ ] Validate that remappings can be saved by pressing the OK button and re-opening the windows loads existing remappings.
+
+##### Remapping Validation:
+
+For all the remappings below, try pressing and releasing the remapped key/shortcut and pressing and holding it. Try different behaviors like releasing the modifier key before the action key and vice versa.
+
+  - [ ] Test key to key remappings
+    - A->B
+    - Ctrl->A
+    - A->Ctrl
+    - Win->B (make sure Start menu doesn't appear accidentally)
+    - B->Win (make sure Start menu doesn't appear accidentally)
+    - A->Disable
+    - Win->Disable
+  - [ ] Test key to shortcut remappings
+    - A->Ctrl+V
+    - B->Win+A
+  - [ ] Test shortcut to shortcut remappings
+    - Ctrl+A->Ctrl+V
+    - Win+A->Ctrl+V
+    - Ctrl+V->Win+A
+    - Win+A->Win+F
+  - [ ] Test shortcut to key remappings
+    - Ctrl+A->B
+    - Ctrl+A->Win
+    - Win+A->B
+  - [ ] Test app-specific remaps
+    - Similar remaps to above with Edge, VSCode (entered as code) and cmd. For cmd try admin and non-admin (requires PT to run as admin)
+    - Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
+  - [ ] Test switching between remappings while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
+  
 #### Settings
 
 - [ ] Admin mode:
@@ -72,44 +126,15 @@
    - [ ] Open in console
    - [ ] Open containing folder
 - [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+- [ ] PT Run pulls up when shortcut is changed
 
-#### Keyboard Manager
+#### Shortcut Guide
 
-##### UI Validation
-
-  - [ ] In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
-  - [ ] Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
-  - [ ] Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remappings and ensure that you are able to select remappings both by using mouse and by keyboard navigation.
-  - [ ] Validate that remappings can be saved by pressing the OK button and re-opening the windows loads existing remappings.
-
-##### Remapping Validation:
-
-For all the remappings below, try pressing and releasing the remapped key/shortcut and pressing and holding it. Try different behaviors like releasing the modifier key before the action key and vice versa.
-
-  - [ ] Test key to key remappings
-    - A->B
-    - Ctrl->A
-    - A->Ctrl
-    - Win->B (make sure Start menu doesn't appear accidentally)
-    - B->Win (make sure Start menu doesn't appear accidentally)
-    - A->Disable
-    - Win->Disable
-  - [ ] Test key to shortcut remappings
-    - A->Ctrl+V
-    - B->Win+A
-  - [ ] Test shortcut to shortcut remappings
-    - Ctrl+A->Ctrl+V
-    - Win+A->Ctrl+V
-    - Ctrl+V->Win+A
-    - Win+A->Win+F
-  - [ ] Test shortcut to key remappings
-    - Ctrl+A->B
-    - Ctrl+A->Win
-    - Win+A->B
-  - [ ] Test app-specific remaps
-    - Similar remaps to above with Edge, VSCode (entered as code) and cmd. For cmd try admin and non-admin (requires PT to run as admin)
-    - Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
-  - [ ] Test switching between remappings while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
+- [ ] SG displays
+- [ ] SG displays against elevated focused apps if PT is elevated
+    1. PT is run under admin
+    1. Make task manager is in focus
+    1. Pull up SG
 
 ## Staging release
 
