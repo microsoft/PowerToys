@@ -28,9 +28,9 @@ class ZoneWindowDrawing
         unsigned duration;
     };
 
-    HWND m_window;
-    RECT m_clientRect;
-    ID2D1HwndRenderTarget* m_renderTarget;
+    HWND m_window = nullptr;
+    RECT m_clientRect{};
+    ID2D1HwndRenderTarget* m_renderTarget = nullptr;
     std::optional<AnimationInfo> m_animation;
 
     std::mutex m_mutex;
@@ -43,9 +43,9 @@ class ZoneWindowDrawing
     static D2D1_RECT_F ConvertRect(RECT rect);
     void Render();
 
-    std::atomic<bool> m_shouldRender;
-    std::atomic<bool> m_abortThread;
-    std::atomic<bool> m_lowLatencyLock;
+    std::atomic<bool> m_shouldRender = false;
+    std::atomic<bool> m_abortThread = false;
+    std::atomic<bool> m_lowLatencyLock = false;
     std::condition_variable m_cv;
     std::thread m_renderThread;
 
