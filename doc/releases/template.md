@@ -117,12 +117,12 @@ For all the remappings below, try pressing and releasing the remapped key/shortc
 - [ ] Create Release and base off Readme Update PR
 - [ ] Upload exe
 - [ ] Upload symbols
-- [ ] Create YAML for (winget-pkgs)[https://github.com/microsoft/winget-pkgs]
+- [ ] Create YAML for [winget-pkgs](https://github.com/microsoft/winget-pkgs)
 
 ## Releasing
 - [ ] Push live
 - [ ] Merge Readme PR live
-- [ ] Merge Docs.MSFT live
-- [ ] Submit PR to (winget-pkgs)[https://github.com/microsoft/winget-pkgs]
+- [ ] Merge Docs.Microsoft live
+- [ ] Submit PR to [winget-pkgs](https://github.com/microsoft/winget-pkgs)
 
 Based on [wiki](https://github.com/microsoft/PowerToys/wiki/Release-check-list)
