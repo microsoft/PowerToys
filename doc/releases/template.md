@@ -24,14 +24,19 @@ Based on [wiki](https://github.com/microsoft/PowerToys/wiki/Release-check-list)
 
 ### Functional tests
 
-#### General Settings
+#### Color Picker
+#### FancyZones
+
+- [ ] Launch editor
+
+#### Settings
 
 - [ ] Admin mode:
    1. restart as admin and verify FZ can snap an elevated window
-   1.  restart PT and verify it now runs as user
-   1.  restart as admin and set "Always run as admin"
-   1.  restart PT and verify it still runs as admin
-   1. if it's not on, turn on "Run at startup"
+   1. restart PT and verify it now runs as user
+   1. restart as admin and set "Always run as admin"
+   1. restart PT and verify it still runs as admin
+      1. if it's not on, turn on "Run at startup"
    1. reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
    1. turn Always run as admin" off
    1. reboot the machine and verify it now runs as user
