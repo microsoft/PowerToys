@@ -1060,7 +1060,9 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
     }
     catch (...)
     {
-        MessageBox(NULL, L"RegexWorkerThread failed to execute.\nPlease report the bug to https://aka.ms/powerToysReportBug", L"PowerRename Error", MB_OK);
+        // TODO: an exception can happen while typing the expression and the syntax is not correct yet,
+        // we need to be more granular and raise an exception only when a real problem happened.
+        // MessageBox(NULL, L"RegexWorkerThread failed to execute.\nPlease report the bug to https://aka.ms/powerToysReportBug", L"PowerRename Error", MB_OK);
     }
 
     return 0;
