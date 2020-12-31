@@ -247,7 +247,7 @@
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
                 </Directory>
-                <Directory Id="ServicePluginFolder" Name="Microsoft.PowerToys.Run.Plugin.Service">
+                <Directory Id="ServicePluginFolder" Name="Service">
                   <Directory Id="ServiceImagesFolder" Name="Images" />
                 </Directory>
               </Directory>
@@ -972,12 +972,12 @@
       <!-- Service Plugin -->
       <Component Id="ServiceComponent" Directory="ServicePluginFolder" Guid="66245D20-0078-4136-8A34-4A282FB894D5">
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll?>
-          <File Id="Service_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Service\$(var.File)" />
+          <File Id="Service_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="ServiceImagesComponent" Directory="ServiceImagesFolder" Guid="5846BF01-5BCB-47DC-9472-0E478A41B1AE">
-        <File Id="ServiceDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Service\Images\service.dark.png" />
-        <File Id="ServiceLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Service\Images\service.light.png" />
+        <File Id="ServiceDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.dark.png" />
+        <File Id="ServiceLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.light.png" />
       </Component>
     
     </ComponentGroup>
