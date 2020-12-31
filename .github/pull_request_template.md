@@ -14,7 +14,7 @@
 - [ ] **Installer:** Added/updated and all pass
 - [ ] **Localization:** All end user facing strings can be localized
 - [ ] **Docs:** Added/ updated
-- [ ] **Binaries:** Any new files are added to WSX / YML
+- [ ] **Binaries:** Any new files are added to WXS / YML
    - [ ] No new binaries
    - [ ] [YML for signing](https://github.com/microsoft/PowerToys/blob/master/.pipelines/pipeline.user.windows.yml#L68) for new binaries
    - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/master/installer/PowerToysSetup/Product.wxs) for new binaries
