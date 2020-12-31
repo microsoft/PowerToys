@@ -5,7 +5,7 @@
 using System;
 using System.ServiceProcess;
 
-namespace Microsoft.Plugin.Service
+namespace Microsoft.PowerToys.Run.Plugin.Service
 {
     public class ServiceResult
     {

@@ -3,17 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagedCommon;
-using Microsoft.Plugin.Service.Helper;
-using Microsoft.Plugin.Service.Properties;
+using Microsoft.PowerToys.Run.Plugin.Service.Helpers;
+using Microsoft.PowerToys.Run.Plugin.Service.Properties;
 using Wox.Plugin;
 
-namespace Microsoft.Plugin.Service
+namespace Microsoft.PowerToys.Run.Plugin.Service
 {
     public class Main : IPlugin, IContextMenu, IPluginI18n
     {
