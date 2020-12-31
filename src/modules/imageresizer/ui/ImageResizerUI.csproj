@@ -75,8 +75,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\CommonUI\CommonUI.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToysInterop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

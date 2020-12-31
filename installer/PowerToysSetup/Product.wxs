@@ -469,7 +469,7 @@
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.runtimeconfig.json" />
         <File Id="ImageResizer_ManagedCommon" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ManagedCommon.dll" />
         <File Id="ImageResizer_ManagedTelemetry" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ManagedTelemetry.dll" />
-        <File Id="ImageResizer_CommonUI" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\CommonUI.dll" />
+        <File Id="ImageResizer_Microsoft.PowerToys.Common.UI" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Microsoft.PowerToys.Common.UI.dll" />
         <File Id="Module_ImageResizer_ControlzEX" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ControlzEx.dll" />
         <File Id="Module_ImageResizer_ModernWpf_Controls" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ModernWpf.Controls.dll" />
         <File Id="Module_ImageResizer_ModernWpf" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ModernWpf.dll" />
@@ -578,7 +578,7 @@
 
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPickerUI.exe;ColorPickerUI.dll;ColorPickerUI.deps.json;ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Text.Json.dll;ManagedTelemetry.dll;ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;CommonUI.dll?>
+        <?foreach File in ColorPicker.dll;System.IO.Abstractions.dll;ColorPickerUI.exe;ColorPickerUI.dll;ColorPickerUI.deps.json;ColorPickerUI.runtimeconfig.json;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Text.Json.dll;ManagedTelemetry.dll;ManagedCommon.dll;ControlzEx.dll;Microsoft.Xaml.Behaviors.dll;ModernWpf.Controls.dll;ModernWpf.dll;System.ComponentModel.Composition.dll;Microsoft.PowerToys.Common.UI.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -878,7 +878,7 @@
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;CommonUI.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />

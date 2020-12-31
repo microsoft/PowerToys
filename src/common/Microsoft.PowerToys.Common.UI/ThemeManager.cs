@@ -8,7 +8,7 @@ using System.Windows;
 using ManagedCommon;
 using Microsoft.Win32;
 
-namespace CommonUI
+namespace Microsoft.PowerToys.Common.UI
 {
     public class ThemeManager : IDisposable
     {

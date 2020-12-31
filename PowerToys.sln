@@ -300,7 +300,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 		src\common\Telemetry\TraceLoggingDefines.h = src\common\Telemetry\TraceLoggingDefines.h
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonUI", "src\common\CommonUI\CommonUI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Common.UI", "src\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,12 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Windows;
-using CommonUI;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 
