@@ -81,11 +81,6 @@ namespace FancyZonesEditor
             }
         }
 
-        private void LayoutItem_MouseEnter(object sender, MouseEventArgs e)
-        {
-            Select(((Grid)sender).DataContext as LayoutModel);
-        }
-
         private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
         {
             Select(((Grid)sender).DataContext as LayoutModel);
@@ -319,11 +314,6 @@ namespace FancyZonesEditor
         private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
             monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
-        }
-
-        private void LayoutItem_MouseLeave(object sender, MouseEventArgs e)
-        {
-            // TO DO: reset back to the applied layout
         }
     }
 }

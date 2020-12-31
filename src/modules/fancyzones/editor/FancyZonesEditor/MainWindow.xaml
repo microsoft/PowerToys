@@ -86,8 +86,6 @@
         <DataTemplate DataType="{x:Type models:CanvasLayoutModel}">
             <Grid Background="Transparent"
                   KeyDown="LayoutItem_KeyDown"
-                  MouseEnter="LayoutItem_MouseEnter"
-                  MouseLeave="LayoutItem_MouseLeave"
                   MouseDown="LayoutItem_Click"
                   Margin="0,0,0,12">
                 <Grid.RowDefinitions>
@@ -254,8 +252,6 @@
         <DataTemplate DataType="{x:Type models:GridLayoutModel}">
             <Grid Background="Transparent"
                   KeyDown="LayoutItem_KeyDown"
-                  MouseEnter="LayoutItem_MouseEnter"
-                  MouseLeave="LayoutItem_MouseLeave"
                   MouseDown="LayoutItem_Click"
                   Margin="0,0,0,12">
                 <Grid.RowDefinitions>
