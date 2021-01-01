@@ -124,7 +124,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                     {
                         // Update the svg style to override any width or height explicit settings
                         // Setting to 100% width and height will allow to scale to our intended size
-                        // Otherwise, we would end up with a scaled up blury image.
+                        // Otherwise, we would end up with a scaled up blurry image.
                         svg.Style = "width:100%;height:100%";
 
                         // Wait for the browser to render the content.
