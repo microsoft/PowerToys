@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <LCX SchemaVersion="6.0" Name="S:\src\settings-ui\Microsoft.PowerToys.Settings.UI\Strings\en-us\Resources.resw" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="zh-CN" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
   <OwnedComments>
     <Cmt Name="Dev" />
@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[关于颜色选择器]]></Val>
+            <Val><![CDATA[关于屏幕取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[关于键盘管理器]]></Val>
+            <Val><![CDATA[关于快捷键助手]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,10 +68,10 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[关于 PowerRename]]></Val>
+            <Val><![CDATA[关于重命名助手]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[About Power Rename]]></Val>
+            <Val><![CDATA[关于重命名助手]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -89,7 +89,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[关于快捷键指南]]></Val>
+            <Val><![CDATA[关于快捷键速查表]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -143,7 +143,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Choose a mode]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[选择模式]]></Val>
+            <Val><![CDATA[主题模式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -152,7 +152,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker with editor mode enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启用了编辑器模式的 Color Picker]]></Val>
+            <Val><![CDATA[取色并编辑]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -161,7 +161,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Pick a color from the screen, copy formatted value to clipboard, then to the editor]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[从屏幕中选择一种颜色，将格式化值复制到剪贴板，然后再复制到编辑器]]></Val>
+            <Val><![CDATA[取色完成后，将格式化值复制到剪贴板，然后打开编辑器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -170,7 +170,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker only]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[仅 Color Picker]]></Val>
+            <Val><![CDATA[直接取色]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -179,7 +179,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Pick a color from the screen and copy formatted value to clipboard]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[从屏幕中选择一种颜色，然后将格式化值复制到剪贴板]]></Val>
+            <Val><![CDATA[取色完成后，将格式化值复制到剪贴板]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -188,7 +188,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Activation behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[激活行为]]></Val>
+            <Val><![CDATA[激活方式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -197,7 +197,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Activate Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[激活 Color Picker]]></Val>
+            <Val><![CDATA[激活屏幕取色器]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open Color Picker]]></Val>
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Quick and simple system-wide color picker.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快速、简单的系统范围颜色选择器。]]></Val>
+            <Val><![CDATA[快速、简单的系统范围屏幕取色器。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启用颜色选择器]]></Val>
+            <Val><![CDATA[启用屏幕取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -257,7 +257,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[颜色选择器]]></Val>
+            <Val><![CDATA[屏幕取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -686,7 +686,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Check for updates]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[检查是否有更新]]></Val>
+            <Val><![CDATA[检查更新]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1328,7 +1328,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启用键盘管理器]]></Val>
+            <Val><![CDATA[启用热键管理器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1337,7 +1337,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[键盘管理器]]></Val>
+            <Val><![CDATA[热键管理器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1712,7 +1712,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[行为]]></Val>
+            <Val><![CDATA[扩展]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1721,7 +1721,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[用于使用“搜索和替换”或正则表达式进行更高级的批量重命名的 Windows Shell 扩展。]]></Val>
+            <Val><![CDATA[更高效的批量文件重命名的工具，允许对关键词替换和正则表达式。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1730,7 +1730,7 @@
         <Str Cat="Text">
           <Val><![CDATA[PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerRename]]></Val>
+            <Val><![CDATA[重命名助手]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Power Rename]]></Val>
@@ -1742,7 +1742,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shell integration]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Shell 集成]]></Val>
+            <Val><![CDATA[右键菜单集成]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1751,7 +1751,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable autocomplete for the search and replace fields]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[为“搜索和替换”字段启用自动完成]]></Val>
+            <Val><![CDATA[为“搜索和替换”字段启用自动补全]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1760,7 +1760,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启用 PowerRename]]></Val>
+            <Val><![CDATA[启用重命名助手]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1769,7 +1769,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Show icon on context menu]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在上下文菜单上显示图标]]></Val>
+            <Val><![CDATA[在右键菜单工具图标]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1778,7 +1778,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Appear only in extended context menu (Shift + Right-click)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[只在扩展的上下文菜单中显示(Shift + 右键单击)]]></Val>
+            <Val><![CDATA[只在扩展菜单中显示(按住Shift + 右键单击)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1787,7 +1787,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Maximum number of items]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[最大项数]]></Val>
+            <Val><![CDATA[最大文件数量]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1805,7 +1805,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Use Boost library (provides extended features but may use different regex syntax)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[使用增强库(提供了扩展的功能，但可能使用不同的正则表达式语法) ]]></Val>
+            <Val><![CDATA[使用增强库 (提供了更丰富的扩展功能，但可能使用不同的正则表达式语法) ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1904,7 +1904,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut setting]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快捷方式设置]]></Val>
+            <Val><![CDATA[快捷键]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Set Shortcut]]></Val>
@@ -1925,7 +1925,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[颜色选择器]]></Val>
+            <Val><![CDATA[屏幕取色器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1961,7 +1961,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[键盘管理器]]></Val>
+            <Val><![CDATA[热键管理器]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1997,7 +1997,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快捷键指南]]></Val>
+            <Val><![CDATA[快捷键速查表]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2006,7 +2006,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Appearance & behavior]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[外观和行为]]></Val>
+            <Val><![CDATA[外观]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2015,7 +2015,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[当按下 Windows 键时，显示包含 Windows 快捷键的帮助叠加层。]]></Val>
+            <Val><![CDATA[长按 Windows 键时，显示包含 Windows 快捷键的速查表。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2024,7 +2024,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[启用快捷键指南]]></Val>
+            <Val><![CDATA[启用快捷键速查表]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2033,7 +2033,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opacity of background]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[背景的不透明度]]></Val>
+            <Val><![CDATA[背景不透明度]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2042,7 +2042,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press duration before showing (ms)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[需要按住多长时间(毫秒)才能显示]]></Val>
+            <Val><![CDATA[需要按住多长时间(毫秒)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2060,7 +2060,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[快捷键指南]]></Val>
+            <Val><![CDATA[快捷键速查表]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
