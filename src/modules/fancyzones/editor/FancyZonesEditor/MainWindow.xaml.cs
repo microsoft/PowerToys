@@ -83,13 +83,17 @@ namespace FancyZonesEditor
 
         private void LayoutItem_MouseEnter(object sender, MouseEventArgs e)
         {
-            Select(((Grid)sender).DataContext as LayoutModel);
+            // Select(((Grid)sender).DataContext as LayoutModel);
         }
 
-        private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
+        private async void LayoutItem_Click(object sender, MouseButtonEventArgs e)
         {
-            Select(((Grid)sender).DataContext as LayoutModel);
-            Apply();
+            LayoutModel selectedLayoutModel = ((Grid)sender).DataContext as LayoutModel;
+            Select(selectedLayoutModel);
+            EditLayoutDialog.DataContext = selectedLayoutModel;
+            await EditLayoutDialog.ShowAsync();
+
+           // Apply();
         }
 
         private void LayoutItem_Focused(object sender, RoutedEventArgs e)
@@ -175,11 +179,6 @@ namespace FancyZonesEditor
 
             model.Persist();
             App.FancyZonesEditorIO.SerializeZoneSettings();
-        }
-
-        private void Apply_Click(object sender, RoutedEventArgs e)
-        {
-            Apply();
         }
 
         private void Apply()
@@ -328,12 +327,16 @@ namespace FancyZonesEditor
 
         private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
+            }
         }
 
-        private void LayoutItem_MouseLeave(object sender, MouseEventArgs e)
+        private void ApplyLayoutButton_Click(object sender, RoutedEventArgs e)
         {
-            // TO DO: reset back to the applied layout
+            Select(((Button)sender).DataContext as LayoutModel);
+            Apply();
         }
     }
 }
