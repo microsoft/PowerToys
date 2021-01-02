@@ -84,8 +84,8 @@
 
         <DataTemplate x:Key="LayoutItemTemplate">
             <Grid Background="Transparent"
-                  Width="176"
-                  Height="186"
+                  Width="208"
+                  Height="196"
                   KeyDown="LayoutItem_KeyDown"
                   MouseDown="LayoutItem_Click"
                   Margin="0,0,0,12">
@@ -106,11 +106,6 @@
                     </ContextMenu>
                 </Grid.ContextMenu>
                 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="24" />
-                </Grid.RowDefinitions>
-
                 <Border x:Name="LayoutItem"
                         Background="{DynamicResource LayoutItemBackgroundBrush}"
                         BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
@@ -126,21 +121,31 @@
                                           ShadowDepth="1" />
                     </Border.Effect>
 
-                    <Grid>
+                    <Grid Margin="16">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="24" />
                             <RowDefinition Height="*" />
+                        
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <local:LayoutPreview Margin="12"
+                        <TextBlock Name="layoutName"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding Name}"
+                                   FontSize="14"
+                                   Grid.Row="0"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Margin="0,-4,0,0"
+                                   Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                        <local:LayoutPreview
+                                            Grid.Row="1"
+                            Margin="0,2,0,8"
                                              VerticalAlignment="Stretch"
                                              HorizontalAlignment="Stretch" />
-                        <Grid Grid.Row="1" Margin="14,0,12,12">
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock Foreground="{DynamicResource SecondaryForegroundBrush}">
-                                    <Run FontSize="10" Text="&#xE739;" FontFamily="Segoe MDL2 Assets" />
-                                    <Run Text=" 32" />
-                                </TextBlock>
-                                <TextBlock Foreground="{DynamicResource SecondaryForegroundBrush}">
+                        <Grid Grid.Row="2" Margin="2,0,0,0">
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" >
+                                <TextBlock ToolTip="Spacing around zones" Foreground="{DynamicResource SecondaryForegroundBrush}">
                                     <Run FontSize="10" Text="&#xE1D9;" FontFamily="Segoe MDL2 Assets" />
                                     <Run Text=" 20" />
                                 </TextBlock>
@@ -151,21 +156,21 @@
                                     FontSize="12"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Bottom"
-                                    Width="28"
-                                    Height="28"
+                                    Width="30"
+                                    Height="30"
                                     Click="ApplyLayoutButton_Click"
                                     Background="Transparent"
-                                    Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
-                                    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    BorderBrush="{DynamicResource SecondaryForegroundBrush}"
                                     ToolTip="{x:Static props:Resources.Apply_Layout}"
                                     AutomationProperties.Name="{x:Static props:Resources.Apply_Layout}"
                                     Style="{StaticResource AccentButtonStyle}"
                                     ui:ControlHelper.CornerRadius="48">
-                                <Button.Effect>
+                                <!--<Button.Effect>
                                     <DropShadowEffect BlurRadius="6"
                                                       Opacity="0.32"
                                                       ShadowDepth="1" />
-                                </Button.Effect>
+                                </Button.Effect>-->
                             </Button>
                         </Grid>
                     </Grid>
@@ -177,16 +182,7 @@
                         Margin="6"
                         Visibility="Collapsed"
                         BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                <TextBlock Name="layoutName"
-                           Padding="8,0,8,0"
-                           TextTrimming="CharacterEllipsis"
-                           Text="{Binding Name}"
-                           FontSize="14"
-                           Grid.Row="2"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                
             </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsApplied}"
@@ -203,6 +199,12 @@
                     <Setter TargetName="LayoutItem"
                             Property="BorderBrush"
                             Value="{DynamicResource LayoutItemBorderPointerOverBrush}" />
+                    <Setter TargetName="ApplyLayoutButton"
+                            Property="BorderBrush"
+                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                    <Setter TargetName="ApplyLayoutButton"
+                            Property="Foreground"
+                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
