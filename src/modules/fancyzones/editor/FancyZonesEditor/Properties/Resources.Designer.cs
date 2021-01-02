@@ -79,6 +79,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Apply layout.
+        /// </summary>
+        public static string Apply_Layout {
+            get {
+                return ResourceManager.GetString("Apply_Layout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Are you sure?.
         /// </summary>
         public static string Are_You_Sure {
