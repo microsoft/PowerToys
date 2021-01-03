@@ -1,6 +1,6 @@
 {
   "ID": "11A6C36E4E91439CA69F702CBD364EF7",
-  "ActionKeyword": "_",
+  "ActionKeyword": "!",
   "Name": "Service",
   "Description": "Manages Windows services",
   "Author": "davidegiacometti",
