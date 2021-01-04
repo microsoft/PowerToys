@@ -43,6 +43,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         public override void DoPreview<T>(T dataSource)
         {
             string svgData = null;
+            bool blocked = false;
 
             try
             {
@@ -53,6 +54,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                         svgData = reader.ReadToEnd();
                     }
                 }
+
+                blocked = SvgPreviewHandlerHelper.CheckBlockedElements(svgData);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -69,7 +72,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     _infoBarAdded = false;
 
                     // Add a info bar on top of the Preview if any blocked element is present.
-                    if (SvgPreviewHandlerHelper.CheckBlockedElements(svgData))
+                    if (blocked)
                     {
                         _infoBarAdded = true;
                         AddTextBoxControl(Resource.BlockedElementInfoText);
