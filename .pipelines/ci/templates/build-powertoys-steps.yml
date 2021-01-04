@@ -118,7 +118,7 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\PreviewPaneUnitTests.dll #this is the markdown tests
+      **\PreviewPaneUnitTests.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\ImageResizer.Test.dll
