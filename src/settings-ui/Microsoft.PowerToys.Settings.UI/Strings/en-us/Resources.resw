@@ -876,4 +876,40 @@
   <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
     <value>Show color name</value>
   </data>
+  <data name="ColorPicker_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_ColorPicker</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="FancyZones_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_FancyZones</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="GeneralPage_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/powertoys</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="ImageResizer_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_ImageResizer</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="FileExplorerPreview_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_FileExplorerAddOns</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="KeyboardManager_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_KeyboardManager</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="PowerRename_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_PowerRename</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="PowerToys_Run_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_PowerToysRun</value>
+    <comment>URL. Do not loc</comment>
+  </data>
+  <data name="ShortcutGuide_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
+    <value>https://aka.ms/PowerToysOverview_ShortcutGuide</value>
+    <comment>URL. Do not loc</comment>
+  </data>
 </root>
