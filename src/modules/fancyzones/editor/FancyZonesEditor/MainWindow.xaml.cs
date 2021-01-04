@@ -338,5 +338,14 @@ namespace FancyZonesEditor
             Select(((Button)sender).DataContext as LayoutModel);
             Apply();
         }
+
+        private void LayoutSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if ((sender as ToggleSwitch).IsOn)
+            {
+                Select(((ToggleSwitch)sender).DataContext as LayoutModel);
+                Apply();
+            }
+        }
     }
 }
