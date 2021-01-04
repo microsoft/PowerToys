@@ -328,7 +328,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="FancyZones_ImageHyperlink">
+                <HyperlinkButton x:Uid="FancyZones_ImageHyperlinkToDocs">
                     <Image x:Uid="Fancyzones_Image" Source="ms-appx:///Assets/Modules/FancyZones.png" />
                 </HyperlinkButton>
             </Border>
@@ -337,7 +337,7 @@
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="FancyZones_ImageHyperlink">
+                <HyperlinkButton x:Uid="FancyZones_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">

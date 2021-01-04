@@ -170,7 +170,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="GeneralPage_ImageHyperlink">
+                <HyperlinkButton x:Uid="GeneralPage_ImageHyperlinkToDocs">
                     <Image x:Uid="PowerToys_Icon" Source="ms-appx:///Assets/Modules/PT.png"/>
                 </HyperlinkButton>
             </Border>
@@ -179,7 +179,7 @@
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
 
-                <HyperlinkButton x:Uid="GeneralPage_ImageHyperlink">
+                <HyperlinkButton x:Uid="GeneralPage_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="General_Repository"/>
                 </HyperlinkButton>
 

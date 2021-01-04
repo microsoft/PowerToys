@@ -357,7 +357,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="KeyboardManager_ImageHyperlink">
+                <HyperlinkButton x:Uid="KeyboardManager_ImageHyperlinkToDocs">
                     <Image x:Uid="KeyboardManager_Image" Source="ms-appx:///Assets/Modules/KBM.png" />
                 </HyperlinkButton>
             </Border>
@@ -366,7 +366,7 @@
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="KeyboardManager_ImageHyperlink">
+                <HyperlinkButton x:Uid="KeyboardManager_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">

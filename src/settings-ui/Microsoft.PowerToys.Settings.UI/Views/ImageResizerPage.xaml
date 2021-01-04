@@ -355,7 +355,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="ImageResizer_ImageHyperlink">
+                <HyperlinkButton x:Uid="ImageResizer_ImageHyperlinkToDocs">
                     <Image x:Uid="ImageResizer_Image" Source="ms-appx:///Assets/Modules/ImageResizer.png" />
                 </HyperlinkButton>
             </Border>
@@ -364,7 +364,7 @@
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="ImageResizer_ImageHyperlink">
+                <HyperlinkButton x:Uid="ImageResizer_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">

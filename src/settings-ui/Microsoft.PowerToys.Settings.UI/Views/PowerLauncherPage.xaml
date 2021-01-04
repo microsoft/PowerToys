@@ -193,7 +193,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="PowerToys_Run_ImageHyperlink">
+                <HyperlinkButton x:Uid="PowerToys_Run_ImageHyperlinkToDocs">
                     <Image x:Uid="PowerToys_Run_Image" Source="ms-appx:///Assets/Modules/PowerLauncher.png" />
                 </HyperlinkButton>
             </Border>
@@ -202,7 +202,7 @@
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="PowerToys_Run_ImageHyperlink">
+                <HyperlinkButton x:Uid="PowerToys_Run_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">

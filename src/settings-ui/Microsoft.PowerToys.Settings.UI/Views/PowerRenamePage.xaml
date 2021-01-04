@@ -122,7 +122,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="PowerRename_ImageHyperlink">
+                <HyperlinkButton x:Uid="PowerRename_ImageHyperlinkToDocs">
                     <Image x:Uid="PowerRename_Image" Source="ms-appx:///Assets/Modules/PowerRename.png" />
                 </HyperlinkButton>
             </Border>
@@ -131,7 +131,7 @@
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="PowerRename_ImageHyperlink">
+                <HyperlinkButton x:Uid="PowerRename_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">

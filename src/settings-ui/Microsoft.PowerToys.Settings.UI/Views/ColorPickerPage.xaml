@@ -216,7 +216,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="ColorPicker_ImageHyperlink">
+                <HyperlinkButton x:Uid="ColorPicker_ImageHyperlinkToDocs">
                     <Image x:Uid="ColorPicker_Image" Source="ms-appx:///Assets/Modules/ColorPicker.png" />
                 </HyperlinkButton>
             </Border>
@@ -224,7 +224,7 @@
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="ColorPicker_ImageHyperlink">
+                <HyperlinkButton x:Uid="ColorPicker_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">

@@ -110,7 +110,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <HyperlinkButton x:Uid="FileExplorerPreview_ImageHyperlink">
+                <HyperlinkButton x:Uid="FileExplorerPreview_ImageHyperlinkToDocs">
                     <Image x:Uid="FileExplorerPreview_Image" Source="ms-appx:///Assets/Modules/PowerPreview.png" />
                 </HyperlinkButton>
             </Border>
@@ -119,7 +119,7 @@
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton x:Uid="FileExplorerPreview_ImageHyperlink">
+                <HyperlinkButton x:Uid="FileExplorerPreview_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
