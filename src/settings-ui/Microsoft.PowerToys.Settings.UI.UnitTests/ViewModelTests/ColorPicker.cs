@@ -29,12 +29,12 @@ namespace ViewModelTests
             var settingPathMock = new Mock<ISettingsPath>();
 
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object, settingPathMock.Object);
-            ColorPickerSettings originalSettings = mockSettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerSettings.ModuleName);
+            ColorPickerSettings originalSettings = mockSettingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerSettings.ModuleName);
 
             var mockGeneralIOProvider = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
 
             var mockGeneralSettingsUtils = new SettingsUtils(mockGeneralIOProvider.Object, settingPathMock.Object);
-            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettings<GeneralSettings>();
+            GeneralSettings originalGeneralSettings = mockGeneralSettingsUtils.GetSettingsOrDefault<GeneralSettings>();
             var generalSettingsRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(mockGeneralSettingsUtils);
 
             // Act

@@ -876,4 +876,16 @@
   <data name="ColorPicker_ShowColorName.Content" xml:space="preserve">
     <value>Show color name</value>
   </data>
+  <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="ImageResizer_DefaultSize_Medium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="ImageResizer_DefaultSize_Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="ImageResizer_DefaultSize_Small" xml:space="preserve">
+    <value>Small</value>
+  </data>
 </root>
