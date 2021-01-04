@@ -15,8 +15,13 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
             where T : ISettingsConfig, new()
         {
             var settingsUtils = new Mock<ISettingsUtils>();
-            settingsUtils.Setup(x => x.GetSettingsOrDefault<T>(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(new T());
+            settingsUtils
+                .Setup(x => x.GetSettingsOrDefault<T>(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new T());
+
+            settingsUtils
+                .Setup(x => x.GetSettings<T>(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new T());
 
             return settingsUtils;
         }
