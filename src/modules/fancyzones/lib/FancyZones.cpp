@@ -53,9 +53,7 @@ public:
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
         }),
         m_fileWatcher(FancyZonesDataInstance().GetZonesSettingsFileName(), [this]() {
-            // This is commented out until we figure out why calling UpdateZoneSets() in response to this message
-            // causes Win+Arrow to break.
-            //PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
+            PostMessageW(m_window, WM_PRIV_FILE_UPDATE, NULL, NULL);
         })
     {
         m_settings->SetCallback(this);
