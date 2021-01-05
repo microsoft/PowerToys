@@ -441,7 +441,7 @@ bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, 
                 data.processIdToHandleMap[processId] = window;
                 data.zoneSetUuid = zoneSetId;
                 data.zoneIndexSet = zoneIndexSet;
-                SaveAppZoneHistory();
+                SaveFancyZonesData();
                 return true;
             }
         }
@@ -465,7 +465,7 @@ bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, 
         appZoneHistoryMap[processPath] = std::vector<FancyZonesDataTypes::AppZoneHistoryData>{ data };
     }
 
-    SaveAppZoneHistory();
+    SaveFancyZonesData();
     return true;
 }
 
