@@ -2,9 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using Microsoft.PowerToys.Settings.UI.Library;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.Data.Json;
 using Windows.UI.Xaml.Controls;
@@ -128,6 +127,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void Refresh()
         {
             shellFrame.Navigate(typeof(GeneralPage));
+        }
+
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Params are required for event handler signature requirements.")]
+        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        {
+            scrollViewer.ChangeView(null, 0, null, true);
         }
     }
 }
