@@ -532,17 +532,6 @@ namespace JSONHelpers
         }
     }
 
-    void SaveFancyZonesData(const std::wstring& zonesSettingsFileName,
-                            const std::wstring& appZoneHistoryFileName,
-                            const TDeviceInfoMap& deviceInfoMap,
-                            const TCustomZoneSetsMap& customZoneSetsMap,
-                            const TAppZoneHistoryMap& appZoneHistoryMap)
-
-    {
-        SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
-        SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
-    }
-
     void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap)
     {
         json::JsonObject root{};

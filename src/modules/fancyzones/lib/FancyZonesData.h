@@ -85,6 +85,8 @@ public:
 
     void LoadFancyZonesData();
     void SaveFancyZonesData() const;
+    void SaveZoneSettings() const;
+    void SaveAppZoneHistory() const;
 
 private:
 #if defined(UNIT_TESTS)
