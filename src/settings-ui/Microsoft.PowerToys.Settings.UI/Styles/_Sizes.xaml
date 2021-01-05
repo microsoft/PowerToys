@@ -16,4 +16,7 @@
 
     <!-- Row spacing between content and sidepanel (in small mode) -->
     <x:Double x:Key="DefaultRowSpacing">24</x:Double>
+
+    <!-- MaxWidth of the content panel, similar to W10 Settings -->
+    <x:Double x:Key="MaxContentWidth">460</x:Double>
 </ResourceDictionary>

@@ -14,7 +14,7 @@
              AutomationProperties.HelpText="{Binding ElementName=ShortcutWarningLabelText, Path=Text}"
              IsReadOnly="True">
         <ToolTipService.ToolTip>
-            <TextBlock x:Name="ShortcutWarningLabelText">
+            <TextBlock x:Name="ShortcutWarningLabelText" TextWrapping="WrapWholeWords">
                 <Run x:Uid="ShortcutWarningLabel"/>
                 <LineBreak/>
                 <Run Text="{x:Bind Keys, Mode=OneTime}" FontWeight="SemiBold"/>
