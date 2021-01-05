@@ -5,7 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <boost/regex.hpp>
-#include <helpers.cpp>
+#include <helpers.h>
 
 using namespace std;
 using std::regex_error;

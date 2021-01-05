@@ -119,6 +119,21 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 var svg = browser.Document.GetElementsByTagName("svg").Cast<HtmlElement>().FirstOrDefault();
                 if (svg != null)
                 {
+                    var viewBox = svg.GetAttribute("viewbox");
+                    if (viewBox != null)
+                    {
+                        // Update the svg style to override any width or height explicit settings
+                        // Setting to 100% width and height will allow to scale to our intended size
+                        // Otherwise, we would end up with a scaled up blurry image.
+                        svg.Style = "width:100%;height:100%";
+
+                        // Wait for the browser to render the content.
+                        while (browser.IsBusy || browser.ReadyState != WebBrowserReadyState.Complete)
+                        {
+                            Application.DoEvents();
+                        }
+                    }
+
                     // Update the size of the browser control to fit the SVG
                     // in the visible viewport.
                     browser.Width = svg.OffsetRectangle.Width;

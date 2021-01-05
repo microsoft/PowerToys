@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Color Picker のバージョン情報]]></Val>
+            <Val><![CDATA[Color Picker の詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[FancyZones のバージョン情報]]></Val>
+            <Val><![CDATA[FancyZones の詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About File Explorer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[エクスプローラーのバージョン情報]]></Val>
+            <Val><![CDATA[エクスプローラーの詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Image Resizer のバージョン情報]]></Val>
+            <Val><![CDATA[Image Resizer の詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Keyboard Manager のバージョン情報]]></Val>
+            <Val><![CDATA[Keyboard Manager の詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Run のバージョン情報]]></Val>
+            <Val><![CDATA[PowerToys Run の詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -89,7 +89,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Shortcut Guide のバージョン情報]]></Val>
+            <Val><![CDATA[Shortcut Guide のShortcut Guide]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -98,7 +98,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About this feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[この機能のバージョン情報]]></Val>
+            <Val><![CDATA[この機能の詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -125,7 +125,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Attribution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[属性]]></Val>
+            <Val><![CDATA[帰属情報]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Color Picker]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Color Picker の有効化]]></Val>
+            <Val><![CDATA[Color Picker を有効化]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -266,7 +266,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Default]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[既定値]]></Val>
+            <Val><![CDATA[既定]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -302,7 +302,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Move newly created windows to their last known zone]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新しく作成されたウィンドウを最後の既知のゾーンに移動します]]></Val>
+            <Val><![CDATA[新しく作成されたウィンドウを最後の既知のゾーンに移動する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -323,7 +323,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Create window layouts to help make multi-tasking easy.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ウィンドウ レイアウトを作成して簡単にマルチタスクを行えるようにします。]]></Val>
+            <Val><![CDATA[簡単にマルチタスクを行えるように、ウィンドウ レイアウトを作成します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -350,7 +350,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable FancyZones]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[FancyZones の有効化]]></Val>
+            <Val><![CDATA[FancyZones を有効化する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -467,7 +467,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Move newly created windows to the current active monitor (EXPERIMENTAL)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新しく作成したウィンドウを現在アクティブなモニターに移動します (試験段階)]]></Val>
+            <Val><![CDATA[新しく作成したウィンドウを現在アクティブなモニターに移動する (試験段階)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -485,7 +485,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Restore the original size of windows when unsnapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[スナップしない場合にウィンドウの元のサイズを復元する]]></Val>
+            <Val><![CDATA[スナップ解除する場合にウィンドウの元のサイズを復元する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -503,7 +503,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Show zones on all monitors while dragging a window]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ウィンドウのドラッグ中にすべてのモニターでゾーンを表示します]]></Val>
+            <Val><![CDATA[ウィンドウのドラッグ中にすべてのモニターでゾーンを表示する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -650,7 +650,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Markdown (.md) preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Markdown (.md) プレビューの有効化]]></Val>
+            <Val><![CDATA[Markdown (.md) プレビューを有効化する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -659,7 +659,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable SVG (.svg) preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SVG (.svg) プレビューの有効化]]></Val>
+            <Val><![CDATA[SVG (.svg) プレビューを有効化する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -668,7 +668,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable SVG (.svg) thumbnails]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SVG (.svg) サムネイルの有効化]]></Val>
+            <Val><![CDATA[SVG (.svg) サムネイルを有効化する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -677,7 +677,7 @@
         <Str Cat="Text">
           <Val><![CDATA[About PowerToys]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys のバージョン情報]]></Val>
+            <Val><![CDATA[PowerToys の詳細]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -713,7 +713,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Request a feature]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[機能を要求する]]></Val>
+            <Val><![CDATA[機能をリクエストする]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -869,7 +869,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Add size]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[サイズの追加]]></Val>
+            <Val><![CDATA[サイズを追加]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -896,7 +896,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Lets you resize images by right-clicking.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[右クリックしてイメージのサイズを変更できます。]]></Val>
+            <Val><![CDATA[右クリックするとイメージのサイズを変更できます。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -923,7 +923,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Default]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[既定値]]></Val>
+            <Val><![CDATA[既定]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -959,7 +959,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Zip]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[郵便番号]]></Val>
+            <Val><![CDATA[zip 圧縮]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -968,7 +968,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Image Resizer]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Image Resizer の有効化]]></Val>
+            <Val><![CDATA[Image Resizer を有効化する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1175,7 +1175,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Save sizes]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[サイズの保存]]></Val>
+            <Val><![CDATA[サイズを保存]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1319,7 +1319,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Reconfigure your keyboard by remapping keys and shortcuts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[キーとショートカットを再マップして、キーボードを再構成します。]]></Val>
+            <Val><![CDATA[キーとショートカットを再マップして、お客様のキーボードを再構成します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1328,7 +1328,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Keyboard Manager]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Keyboard Manager の有効化]]></Val>
+            <Val><![CDATA[Keyboard Manager を有効化する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1436,7 +1436,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remapped to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[再マップ先]]></Val>
+            <Val><![CDATA[再マップ先:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1445,7 +1445,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Remapped to]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[再マップ先]]></Val>
+            <Val><![CDATA[再マップ先:]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1520,7 +1520,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Copy path location]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[パスの場所のコピー]]></Val>
+            <Val><![CDATA[パスの場所をコピー]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1529,7 +1529,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A quick launcher that has additional capabilities without sacrificing performance.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[パフォーマンスを犠牲にせずに、追加機能を備えたクイック ランチャーです。]]></Val>
+            <Val><![CDATA[パフォーマンスを損なわずに追加機能を利用できるクイック ランチャーです。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1550,7 +1550,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerToys Run]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerToys Run の有効化]]></Val>
+            <Val><![CDATA[PowerToys Run を有効化]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1721,7 +1721,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[検索と置換または正規表現を使用して一括でより高度な名前変更を行う Windows Shell 拡張機能です。]]></Val>
+            <Val><![CDATA[検索と置換または正規表現を使用して、より高度な一括の名前変更を行う Windows Shell 拡張機能です。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1760,7 +1760,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable PowerRename]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PowerRename の有効化]]></Val>
+            <Val><![CDATA[PowerRename を有効化する]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1778,7 +1778,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Appear only in extended context menu (Shift + Right-click)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[拡張コンテキスト メニューにのみ表示 (Shift+右クリック)]]></Val>
+            <Val><![CDATA[拡張コンテキスト メニューにのみ表示する (Shift+右クリック)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1877,7 +1877,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Current Shortcut Remappings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[現在のショートカットの再マップ]]></Val>
+            <Val><![CDATA[現在のショートカットを再マップ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2015,7 +2015,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Shows a help overlay with Windows shortcuts when the Windows key is pressed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows キーを押したときに Windows ショートカットを使用してヘルプ オーバーレイを表示します。]]></Val>
+            <Val><![CDATA[Windows キーを押したときに、Windows ショートカットを使用してヘルプ オーバーレイを表示します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2024,7 +2024,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable Shortcut Guide]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Shortcut Guide の有効化]]></Val>
+            <Val><![CDATA[Shortcut Guide を有効化]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

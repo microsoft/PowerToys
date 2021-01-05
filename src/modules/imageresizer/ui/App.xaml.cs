@@ -10,6 +10,7 @@ using ImageResizer.Properties;
 using ImageResizer.Utilities;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
+using Microsoft.PowerToys.Common.UI;
 
 namespace ImageResizer
 {

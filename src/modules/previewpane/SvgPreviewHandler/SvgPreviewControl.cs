@@ -42,22 +42,37 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            string svgData = null;
+            bool blocked = false;
+
+            try
+            {
+                using (var stream = new ReadonlyStream(dataSource as IStream))
+                {
+                    using (var reader = new StreamReader(stream))
+                    {
+                        svgData = reader.ReadToEnd();
+                    }
+                }
+
+                blocked = SvgPreviewHandlerHelper.CheckBlockedElements(svgData);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                PreviewError(ex, dataSource);
+                return;
+            }
+
             InvokeOnControlThread(() =>
             {
                 try
                 {
                     _infoBarAdded = false;
-                    string svgData = null;
-                    using (var stream = new ReadonlyStream(dataSource as IStream))
-                    {
-                        using (var reader = new StreamReader(stream))
-                        {
-                            svgData = reader.ReadToEnd();
-                        }
-                    }
 
                     // Add a info bar on top of the Preview if any blocked element is present.
-                    if (SvgPreviewHandlerHelper.CheckBlockedElements(svgData))
+                    if (blocked)
                     {
                         _infoBarAdded = true;
                         AddTextBoxControl(Resource.BlockedElementInfoText);
@@ -72,11 +87,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
-                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
-                    Controls.Clear();
-                    _infoBarAdded = true;
-                    AddTextBoxControl(Resource.SvgNotPreviewedError);
-                    base.DoPreview(dataSource);
+                    PreviewError(ex, dataSource);
                 }
             });
         }
@@ -137,6 +148,20 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             _textBox.ScrollBars = RichTextBoxScrollBars.None;
             _textBox.BorderStyle = BorderStyle.None;
             Controls.Add(_textBox);
+        }
+
+        /// <summary>
+        /// Called when an error occurs during preview.
+        /// </summary>
+        /// <param name="exception">The exception which occurred.</param>
+        /// <param name="dataSource">Stream reference to access source file.</param>
+        private void PreviewError<T>(Exception exception, T dataSource)
+        {
+            PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            Controls.Clear();
+            _infoBarAdded = true;
+            AddTextBoxControl(Resource.SvgNotPreviewedError);
+            base.DoPreview(dataSource);
         }
     }
 }

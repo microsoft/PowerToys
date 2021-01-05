@@ -140,6 +140,9 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     }
 
     MakeWindowTransparent(m_window.get());
+    // According to ShowWindow docs, we must call it with SW_SHOWNORMAL the first time
+    ShowWindow(m_window.get(), SW_SHOWNORMAL);
+    ShowWindow(m_window.get(), SW_HIDE);
 
     m_zoneWindowDrawing = std::make_unique<ZoneWindowDrawing>(m_window.get());
 

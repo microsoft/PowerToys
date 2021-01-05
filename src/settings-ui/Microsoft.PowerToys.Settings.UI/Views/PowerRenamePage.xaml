@@ -27,6 +27,7 @@
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
                         <Setter Target="SidePanel.Width" Value="Auto"/>
                         <Setter Target="PowerRenameView.(Grid.Row)" Value="1" />
+                        <Setter Target="PowerRenameView.Margin" Value="0" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
                         <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
@@ -44,7 +45,10 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical"
-                    x:Name="PowerRenameView">
+                    x:Name="PowerRenameView"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,48,0"
+                    MaxWidth="{StaticResource MaxContentWidth}">
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_Enable"
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"                          
@@ -122,14 +126,16 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image x:Uid="PowerRename_Image" Source="ms-appx:///Assets/Modules/PowerRename.png" />
+                <HyperlinkButton x:Uid="PowerRename_ImageHyperlinkToDocs">
+                    <Image x:Uid="PowerRename_Image" Source="ms-appx:///Assets/Modules/PowerRename.png" />
+                </HyperlinkButton>
             </Border>
 
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerRename">
+                <HyperlinkButton x:Uid="PowerRename_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">

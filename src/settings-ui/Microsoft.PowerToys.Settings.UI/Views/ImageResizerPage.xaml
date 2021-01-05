@@ -33,6 +33,7 @@
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
                         <Setter Target="SidePanel.Width" Value="Auto"/>
                         <Setter Target="ImageResizerView.(Grid.Row)" Value="1" />
+                        <Setter Target="ImageResizerView.Margin" Value="0" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
                         <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
@@ -49,7 +50,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical" x:Name="ImageResizerView">
+        <StackPanel Orientation="Vertical" x:Name="ImageResizerView"
+                    Margin="0,0,48,0">
 
             <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
@@ -61,7 +63,7 @@
             <ListView x:Name="ImagesSizesListView" 
                       x:Uid="ImagesSizesListView"
                       ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
-                      Padding="0"
+                      Padding="0,0,0,24"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       SelectionMode="None"
                       ScrollViewer.HorizontalScrollMode="Enabled"
@@ -355,14 +357,16 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image x:Uid="ImageResizer_Image" Source="ms-appx:///Assets/Modules/ImageResizer.png" />
+                <HyperlinkButton x:Uid="ImageResizer_ImageHyperlinkToDocs">
+                    <Image x:Uid="ImageResizer_Image" Source="ms-appx:///Assets/Modules/ImageResizer.png" />
+                </HyperlinkButton>
             </Border>
 
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ImageResizer">
+                <HyperlinkButton x:Uid="ImageResizer_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">

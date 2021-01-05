@@ -3,8 +3,6 @@
 #include <ShellScalingApi.h>
 #include <array>
 
-#pragma comment(lib, "shcore.lib")
-
 namespace DPIAware
 {
     HRESULT GetScreenDPIForWindow(HWND hwnd, UINT& dpi_x, UINT& dpi_y)

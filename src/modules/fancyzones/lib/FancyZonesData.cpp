@@ -553,11 +553,20 @@ void FancyZonesData::LoadFancyZonesData()
 void FancyZonesData::SaveFancyZonesData() const
 {
     std::scoped_lock lock{ dataLock };
-    JSONHelpers::SaveFancyZonesData(zonesSettingsFileName,
-                                    appZoneHistoryFileName,
-                                    deviceInfoMap,
-                                    customZoneSetsMap,
-                                    appZoneHistoryMap);
+    JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
+    JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
+}
+
+void FancyZonesData::SaveZoneSettings() const
+{
+    std::scoped_lock lock{ dataLock };
+    JSONHelpers::SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
+}
+
+void FancyZonesData::SaveAppZoneHistory() const
+{
+    std::scoped_lock lock{ dataLock };
+    JSONHelpers::SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
 }
 
 void FancyZonesData::RemoveDesktopAppZoneHistory(const std::wstring& desktopId)

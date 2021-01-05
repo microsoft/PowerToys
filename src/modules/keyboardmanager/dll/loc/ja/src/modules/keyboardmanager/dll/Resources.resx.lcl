@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Row ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[行]]></Val>
+            <Val><![CDATA[行 ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Call to CreateWindow failed!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[CreateWindow への呼び出しに失敗しました。]]></Val>
+            <Val><![CDATA[CreateWindow の呼び出しに失敗しました。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Delete Remapping]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[再マップの削除]]></Val>
+            <Val><![CDATA[再マップを削除]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -179,7 +179,7 @@
         <Str Cat="Text">
           <Val><![CDATA[For example, if you want to press "Ctrl+C" and get "Alt" only on Microsoft Edge, "Ctrl+C" would be your "Shortcut" column, the key "Alt" would be your "Mapped To" column, and "MSEdge" would be your "Target App" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[たとえば、"Ctrl+C" を押して Microsoft Edge で "Alt" のみを取得する場合、"Ctrl+C" が "ショートカット" 列に、"Alt" キーが "マップ先" 列、"MSEdge" が "ターゲット アプリ" 列になります。ターゲット アプリを指定しない場合、グローバルに適用されます。名前は、アプリ名ではなく、プロセス名にする必要があります。]]></Val>
+            <Val><![CDATA[たとえば、Microsoft Edge でのみ "Ctrl+C" を押したときに "Alt" として動作させたい場合、"Ctrl+C" が "ショートカット" 列に、"Alt" キーが "マップ先" 列、"MSEdge" が "ターゲット アプリ" 列になります。ターゲット アプリを入力しない場合、それはグローバルに適用されます。名前は、アプリ名ではなく、プロセス名にする必要があります。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[For example, if you want to press ""Ctrl+C"" and get ""Alt"" only on Microsoft Edge, ""Ctrl+C"" would be your ""Shortcut"" column, the key ""Alt"" would be your ""Mapped To"" column, and ""MSEdge"" would be your ""Target App"" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.]]></Val>
@@ -317,7 +317,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot remap a key more than once]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[キーを複数回再マップすることはできません]]></Val>
+            <Val><![CDATA[1 つのキーを複数回再マップすることはできません]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -428,7 +428,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Windows registration failed!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows を登録できませんでした。]]></Val>
+            <Val><![CDATA[ウィンドウを登録できませんでした。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

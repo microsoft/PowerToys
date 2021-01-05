@@ -30,6 +30,9 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..;..\common\Telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>Shlwapi.lib;Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
     <PostBuildEvent>
       <Command>XCOPY "$(ProjectDir)settings-html" "$(TargetDir)\settings-html\" /S /I /Y</Command>
     </PostBuildEvent>

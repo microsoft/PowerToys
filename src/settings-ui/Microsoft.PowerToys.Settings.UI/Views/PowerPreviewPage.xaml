@@ -30,6 +30,7 @@
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
                         <Setter Target="SidePanel.Width" Value="Auto"/>
                         <Setter Target="PowerPreviewView.(Grid.Row)" Value="1" />
+                        <Setter Target="PowerPreviewView.Margin" Value="0" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
                         <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
@@ -47,8 +48,11 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" 
-                    x:Name="PowerPreviewView">
+        <StackPanel Orientation="Vertical"
+                    x:Name="PowerPreviewView"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,48,0"
+                    MaxWidth="{StaticResource MaxContentWidth}">
             <TextBlock x:Uid="FileExplorerPreview_RunAsAdminRequired"
                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                        Visibility="{Binding Mode=OneWay, Path=IsElevated, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -110,14 +114,16 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image x:Uid="FileExplorerPreview_Image" Source="https://aka.ms/powerToysPowerPreviewSettingImage" />
+                <HyperlinkButton x:Uid="FileExplorerPreview_ImageHyperlinkToDocs">
+                    <Image x:Uid="FileExplorerPreview_Image" Source="ms-appx:///Assets/Modules/PowerPreview.png" />
+                </HyperlinkButton>
             </Border>
 
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FileExplorerAddOns">
+                <HyperlinkButton x:Uid="FileExplorerPreview_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">

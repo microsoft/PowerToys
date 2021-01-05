@@ -52,7 +52,15 @@ namespace ImageResizer.Models
         public ResizeFit Fit
         {
             get => _fit;
-            set => Set(ref _fit, value);
+            set
+            {
+                var previousFit = _fit;
+                Set(ref _fit, value);
+                if (!Equals(previousFit, value))
+                {
+                    UpdateShowHeight();
+                }
+            }
         }
 
         [JsonProperty(PropertyName = "width")]
@@ -112,7 +120,7 @@ namespace ImageResizer.Models
 
         private void UpdateShowHeight()
         {
-            ShowHeight = Unit != ResizeUnit.Percent;
+            ShowHeight = Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent;
         }
 
         private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)

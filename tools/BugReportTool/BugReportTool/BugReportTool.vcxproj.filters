@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="ZipTools\zipfolder.cpp">
+      <Filter>ZipTools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\deps\cziplib\src\zip.c" />
+    <ClCompile Include="ReportMonitorInfo.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ZipTools">
+      <UniqueIdentifier>{3ae1b6aa-4134-47b1-afdf-dfb3b5901dcc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ZipTools\zipfolder.h">
+      <Filter>ZipTools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\common\utils\json.h" />
+    <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
+    <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
+    <ClInclude Include="ReportMonitorInfo.h" />
+  </ItemGroup>
+</Project>

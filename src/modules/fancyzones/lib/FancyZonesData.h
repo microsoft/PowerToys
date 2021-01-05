@@ -11,6 +11,7 @@
 #include <optional>
 #include <vector>
 #include <winnt.h>
+#include <lib/JsonHelpers.h>
 
 namespace FancyZonesDataTypes
 {
@@ -41,13 +42,13 @@ public:
 
     std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
-    inline const std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData>& GetDeviceInfoMap() const
+    inline const JSONHelpers::TDeviceInfoMap & GetDeviceInfoMap() const
     {
         std::scoped_lock lock{ dataLock };
         return deviceInfoMap;
     }
 
-    inline const std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData>& GetCustomZoneSetsMap() const
+    inline const JSONHelpers::TCustomZoneSetsMap & GetCustomZoneSetsMap() const
     {
         std::scoped_lock lock{ dataLock };
         return customZoneSetsMap;
@@ -84,6 +85,8 @@ public:
 
     void LoadFancyZonesData();
     void SaveFancyZonesData() const;
+    void SaveZoneSettings() const;
+    void SaveAppZoneHistory() const;
 
 private:
 #if defined(UNIT_TESTS)
@@ -127,9 +130,9 @@ private:
     // Maps app path to app's zone history data
     std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> appZoneHistoryMap{};
     // Maps device unique ID to device data
-    std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData> deviceInfoMap{};
+    JSONHelpers::TDeviceInfoMap deviceInfoMap{};
     // Maps custom zoneset UUID to it's data
-    std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData> customZoneSetsMap{};
+    JSONHelpers::TCustomZoneSetsMap customZoneSetsMap{};
 
     std::wstring zonesSettingsFileName;
     std::wstring appZoneHistoryFileName;

@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include <common/logger/logger.h>
+
 namespace NonLocalizable
 {
     const wchar_t SegoeUiFont[] = L"Segoe ui";
@@ -74,7 +76,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
     // Obtain the size of the drawing area.
     if (!GetClientRect(window, &m_clientRect))
     {
-        // TODO: Log failures and errors using spdlog
+        Logger::error("couldn't initialize ZoneWindowDrawing: GetClientRect failed");
         return;
     }
 
@@ -93,6 +95,7 @@ ZoneWindowDrawing::ZoneWindowDrawing(HWND window)
 
     if (!SUCCEEDED(hr))
     {
+        Logger::error("couldn't initialize ZoneWindowDrawing: CreateHwndRenderTarget failed with {}", hr);
         return;
     }
 
@@ -218,7 +221,7 @@ void ZoneWindowDrawing::Show(unsigned animationMillis)
 
     if (!m_animation)
     {
-        ShowWindow(m_window, SW_SHOWDEFAULT);
+        ShowWindow(m_window, SW_SHOWNA);
         if (animationMillis > 0)
         {
             m_animation.emplace(AnimationInfo{ std::chrono::steady_clock().now(), animationMillis });

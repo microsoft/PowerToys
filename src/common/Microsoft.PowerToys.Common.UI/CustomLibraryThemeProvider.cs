@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using ControlzEx.Theming;
 
-namespace Wox.Plugin
+namespace Microsoft.PowerToys.Common.UI
 {
     public class CustomLibraryThemeProvider : LibraryThemeProvider
     {

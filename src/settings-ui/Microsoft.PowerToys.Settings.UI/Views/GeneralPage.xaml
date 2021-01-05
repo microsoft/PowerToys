@@ -33,6 +33,7 @@
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
                         <Setter Target="SidePanel.Width" Value="Auto"/>
                         <Setter Target="GeneralView.(Grid.Row)" Value="1" />
+                        <Setter Target="GeneralView.Margin" Value="0" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
                         <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
@@ -50,8 +51,11 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" 
-                    x:Name="GeneralView">
+        <StackPanel Orientation="Vertical"
+                    x:Name="GeneralView"
+                    Margin="0,0,48,0"
+                    HorizontalAlignment="Left"
+                    MaxWidth="{StaticResource MaxContentWidth}">
             <TextBlock x:Uid="Admin_Mode" 
                        FontWeight="SemiBold"
                        TextWrapping="Wrap"
@@ -170,14 +174,16 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image x:Uid="PowerToys_Icon" Source="ms-appx:///Assets/Modules/PT.png"/>
+                <HyperlinkButton x:Uid="GeneralPage_ImageHyperlinkToDocs">
+                    <Image x:Uid="PowerToys_Icon" Source="ms-appx:///Assets/Modules/PT.png"/>
+                </HyperlinkButton>
             </Border>
             <StackPanel x:Name="LinksPanel"
                         Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
 
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/">
+                <HyperlinkButton x:Uid="GeneralPage_ImageHyperlinkToDocs">
                     <TextBlock x:Uid="General_Repository"/>
                 </HyperlinkButton>
 

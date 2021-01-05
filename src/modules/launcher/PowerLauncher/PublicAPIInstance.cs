@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Windows;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI;
 using Microsoft.Toolkit.Uwp.Notifications;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;

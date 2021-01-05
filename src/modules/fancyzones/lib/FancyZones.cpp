@@ -700,9 +700,7 @@ void FancyZones::ToggleEditor() noexcept
     if (showDpiWarning)
     {
         // We must show the message box in a separate thread, since this code is called from a low-level
-        // keyboard hook callback, and launching messageboxes from it has unexpected side effects,
-        // like triggering EVENT_SYSTEM_MOVESIZEEND prematurely. 
-        // TODO: understand the root cause of this, until then it's commented out.
+        // keyboard hook callback, and launching messageboxes from it has unexpected side effects
         //std::thread{ [] {
         //    MessageBoxW(nullptr,
         //                GET_RESOURCE_STRING(IDS_SPAN_ACROSS_ZONES_WARNING).c_str(),

@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Exclude Files]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[除外するファイル]]></Val>
+            <Val><![CDATA[ファイルを除外]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -86,7 +86,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Exclude Folders]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[除外するフォルダー]]></Val>
+            <Val><![CDATA[フォルダーを除外]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Exclude Subfolder Items]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[除外するサブフォルダーの項目]]></Val>
+            <Val><![CDATA[サブフォルダーの項目を除外]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -152,7 +152,7 @@
         <Str Cat="Text">
           <Val><![CDATA[All items have been filtered out.]D;]A;Please select from the options above to show items.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[すべての項目がフィルターで除外されました。]D;]A;上のオプションから選択して、項目を表示してください。]]></Val>
+            <Val><![CDATA[すべての項目がフィルターで除外されました。]D;]A;項目を表示するには、上のオプションから選択してください。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -233,7 +233,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enter the criteria below to rename the items]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[項目の名前を変更するには、以下の条件を入力します]]></Val>
+            <Val><![CDATA[項目の名前を変更するには、以下に条件を入力します]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
