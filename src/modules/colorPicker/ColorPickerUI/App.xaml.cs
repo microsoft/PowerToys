@@ -5,10 +5,9 @@
 using System;
 using System.Threading;
 using System.Windows;
-using ColorPicker;
-using ColorPicker.Helpers;
 using ColorPicker.Mouse;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI;
 
 namespace ColorPickerUI
 {
