@@ -543,9 +543,8 @@ namespace JSONHelpers
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
             Trace::FancyZones::DataChanged();
+            json::to_file(zonesSettingsFileName, root);
         }
-
-        json::to_file(zonesSettingsFileName, root);
     }
 
     void SaveAppZoneHistory(const std::wstring& appZoneHistoryFileName, const TAppZoneHistoryMap& appZoneHistoryMap)
@@ -553,7 +552,12 @@ namespace JSONHelpers
         json::JsonObject root{};
 
         root.SetNamedValue(NonLocalizable::AppZoneHistoryStr, JSONHelpers::SerializeAppZoneHistory(appZoneHistoryMap));
-        json::to_file(appZoneHistoryFileName, root);
+
+        auto before = json::from_file(appZoneHistoryFileName);
+        if (!before.has_value() || before.value().Stringify() != root.Stringify())
+        {
+            json::to_file(appZoneHistoryFileName, root);
+        }
     }
 
     TAppZoneHistoryMap ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON)
