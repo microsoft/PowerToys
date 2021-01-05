@@ -607,7 +607,7 @@
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.comhost.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SVGThumbnailProvider.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgThumbnailProvider.deps.json" />
         <!-- Files to include dll's for Markdown Preview Handler and it's dependencies -->
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\MarkdownPreviewHandler.comhost.dll" />
