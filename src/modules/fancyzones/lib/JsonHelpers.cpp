@@ -539,10 +539,14 @@ namespace JSONHelpers
                             const TAppZoneHistoryMap& appZoneHistoryMap)
 
     {
-        json::JsonObject root{};
-        json::JsonObject appZoneHistoryRoot{};
+        SaveZoneSettings(zonesSettingsFileName, deviceInfoMap, customZoneSetsMap);
+        SaveAppZoneHistory(appZoneHistoryFileName, appZoneHistoryMap);
+    }
 
-        appZoneHistoryRoot.SetNamedValue(NonLocalizable::AppZoneHistoryStr, JSONHelpers::SerializeAppZoneHistory(appZoneHistoryMap));
+    void SaveZoneSettings(const std::wstring& zonesSettingsFileName, const TDeviceInfoMap& deviceInfoMap, const TCustomZoneSetsMap& customZoneSetsMap)
+    {
+        json::JsonObject root{};
+
         root.SetNamedValue(NonLocalizable::DevicesStr, JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(NonLocalizable::CustomZoneSetsStr, JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
 
@@ -553,7 +557,14 @@ namespace JSONHelpers
         }
 
         json::to_file(zonesSettingsFileName, root);
-        json::to_file(appZoneHistoryFileName, appZoneHistoryRoot);
+    }
+
+    void SaveAppZoneHistory(const std::wstring& appZoneHistoryFileName, const TAppZoneHistoryMap& appZoneHistoryMap)
+    {
+        json::JsonObject root{};
+
+        root.SetNamedValue(NonLocalizable::AppZoneHistoryStr, JSONHelpers::SerializeAppZoneHistory(appZoneHistoryMap));
+        json::to_file(appZoneHistoryFileName, root);
     }
 
     TAppZoneHistoryMap ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON)
