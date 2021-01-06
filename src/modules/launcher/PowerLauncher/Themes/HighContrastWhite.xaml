@@ -29,22 +29,4 @@
     <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FF600000" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="Black" />
     <SolidColorBrush x:Key="DialogBorderBrush" Color="Black" />
-    
-    <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="Black" />
-    <Color x:Key="ScrollBarThumbPointerOver">#FF9a59db</Color>
-    <Color x:Key="ScrollBarThumbPointerPressed">#FF9a59db</Color>
-
-    <Color x:Key="ScrollBarBackgroundPointerOver">#FFf0f0f0</Color>
-
-    <SolidColorBrush x:Key="ScrollBarLineButtonForeground" Color="#FF000000" />
-    <Color x:Key="ScrollBarLineButtonForegroundPointerOver">#FF000000</Color>
-    <Color x:Key="ScrollBarLineButtonForegroundPointerPressed">#FF000000</Color>
-
-    <SolidColorBrush x:Key="ScrollBarLineButtonBackground" Color="Transparent"/>
-    <Color x:Key="ScrollBarLineButtonBackgroundPointerOver">#FF000000</Color>
-    <Color x:Key="ScrollBarLineButtonBackgroundPointerPressed">#FF000000</Color>
-
-    <SolidColorBrush x:Key="ToolTipBorderBrushKey" Color="#FFD0D0D0" />
-    <SolidColorBrush x:Key="ToolTipForegroundBrushKey" Color="#FF000000" />
-    <SolidColorBrush x:Key="ToolTipBackgroundBrushKey" Color="#FFFBFBFB" />
 </ResourceDictionary>

@@ -1,27 +1,23 @@
 ﻿<Window x:Class="PowerLauncher.ReportWindow"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:p="clr-namespace:PowerLauncher.Properties"
-             mc:Ignorable="d" 
-             WindowStartupLocation="CenterScreen"
-             Background="{DynamicResource SystemChromeLow}"
-             Icon="Images/app_error.dark.png"
-             Topmost="True"
-             ResizeMode="NoResize"
-             Width="760"
-             Height="560"
-             Title="{x:Static p:Resources.reportWindow_wox_got_an_error}"
-             d:DesignHeight="300" d:DesignWidth="600" x:ClassModifier="internal">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Styles/ModernScrollBarStyle.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
-    <Grid Margin="24">
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:p="clr-namespace:PowerLauncher.Properties"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource SystemChromeLow}"
+        Topmost="True"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        ResizeMode="NoResize"
+        Width="760"
+        Height="560"
+        Title="{x:Static p:Resources.reportWindow_wox_got_an_error}"
+        d:DesignHeight="300"
+        d:DesignWidth="600"
+        x:ClassModifier="internal">
+    <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="64"/>
             <RowDefinition Height="Auto"/>
@@ -54,17 +50,15 @@
                  BorderThickness="0"
                  Grid.Row="2"
                  x:Name="LogFilePathBox"
-                 Margin="0,16,0,0"
+                 Margin="-8,16,-8,16"
                  FontSize="14"
                  FontFamily="Consolas"
                  Foreground="{DynamicResource ControlTextBrushKey}"
                  IsReadOnly="True"
-                 TextWrapping="Wrap">
-            </TextBox>
+                 TextWrapping="Wrap"/>
 
         <RichTextBox x:Name="ErrorTextbox" 
                      Grid.Row="3"
-                     BorderBrush="{DynamicResource ScrollBarThumbBackground}"
                      BorderThickness="1"
                      Background="Transparent"
                      IsDocumentEnabled="True"
