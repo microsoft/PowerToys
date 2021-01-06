@@ -130,6 +130,7 @@ build:
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Telemetry.dll'
+            - 'modules\launcher\Plugins\Service\Microsoft.PowerToys.Run.Plugin.Service.dll'
             - 'modules\launcher\PowerLauncher.dll'
             - 'modules\launcher\PowerLauncher.exe'
             - 'modules\launcher\PowerLauncher.Telemetry.dll'

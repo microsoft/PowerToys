@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -100,6 +100,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="6.1.1" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NuGet.CommandLine" Version="5.7.0">
@@ -113,6 +114,7 @@
     <PackageReference Include="System.Runtime" Version="4.3.1" />    
     <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
     <PackageReference Include="System.Data.OleDb" Version="4.7.1" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.7.0" />
     <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0">
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
@@ -173,6 +175,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Images\history.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Images\icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Images\image.png">

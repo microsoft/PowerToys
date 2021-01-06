@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -9,9 +9,11 @@ using System.Net;
 using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI;
+using Microsoft.Toolkit.Uwp.Notifications;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
+using Windows.UI.Notifications;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 
@@ -33,6 +35,9 @@ namespace Wox
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
+
+            DesktopNotificationManagerCompat.RegisterActivator<LauncherNotificationActivator>();
+            DesktopNotificationManagerCompat.RegisterAumidAndComServer<LauncherNotificationActivator>("PowerToysRun");
         }
 
         public void ChangeQuery(string query, bool requery = false)
@@ -76,6 +81,18 @@ namespace Wox
             Application.Current.Dispatcher.Invoke(() =>
             {
                 MessageBox.Show(subTitle, title);
+            });
+        }
+
+        public void ShowNotification(string text)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ToastContent toastContent = new ToastContentBuilder()
+                    .AddText(text)
+                    .GetToastContent();
+                var toast = new ToastNotification(toastContent.GetXml());
+                DesktopNotificationManagerCompat.CreateToastNotifier().Show(toast);
             });
         }
 
