@@ -100,23 +100,23 @@ Our installer is two parts, an EXE and an MSI.  The EXE contains the MSI and han
 
 The installers support only the `Release` configuration, building the `Debug` configuration is not supported.
 
-### Prerequisites Building the Installer (.MSI)
+### Prerequisites for building the Installer (.MSI)
 
 1. Before building the installers, you need to build `tools\BugReportTool\BugReportTool.sln`: in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 2. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
 3. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
 
-### Compiling Installer (.MSI)
+### Locally compiling the Installer (.MSI)
 
 - From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 
-### Compiling Bootstrapper Installer (.EXE)
+### Locally compiling the Bootstrapper Installer (.EXE)
 
 - Open `installer\PowerToysBootstrapper\PowerToysBootstrapper.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The `PowerToysSetup-0.0.1-x64.exe` binary is created in the `installer\PowerToysBootstrapper\x64\Release\` folder.
 
-#### Supported arguments for EXE installer:
+#### Supported arguments for the Bootstrapper Installer (.EXE):
 
 Head over to the wiki to get the [full list of supported installer arguments][installerArgWiki].
 
