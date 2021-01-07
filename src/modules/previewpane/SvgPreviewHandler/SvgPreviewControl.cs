@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     }
                 }
 
+                svgData = SvgPreviewHandlerHelper.ScaleSvg(svgData);
                 blocked = SvgPreviewHandlerHelper.CheckBlockedElements(svgData);
             }
 #pragma warning disable CA1031 // Do not catch general exception types

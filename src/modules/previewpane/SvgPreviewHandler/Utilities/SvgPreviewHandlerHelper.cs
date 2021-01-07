@@ -68,5 +68,34 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
 
             return foundBlockedElement;
         }
+
+        /// <summary>
+        /// Edit metadata of svgData so it preview scaled properly
+        /// </summary>
+        /// <param name="svgData">Input Svg.</param>
+        /// <returns>Returns modifed filed with scaled parameters</returns>
+        public static string ScaleSvg(string svgData)
+        {
+            XElement contacts = XElement.Parse(svgData);
+            var atr = contacts.Attributes();
+            int length = contacts.Attributes().Count();
+            for (int i = 0; i < length; i++)
+            {
+                if (atr.ElementAt(i).Name == "height")
+                {
+                    atr.ElementAt(i).Value = "100%";
+                }
+
+                if (atr.ElementAt(i).Name == "width")
+                {
+                    atr.ElementAt(i).Value = "100%";
+                }
+            }
+
+            XAttribute pos = new XAttribute("position", "absolute");
+            atr = atr.Append(pos);
+            contacts.ReplaceAttributes(atr);
+            return contacts.ToString();
+        }
     }
 }
