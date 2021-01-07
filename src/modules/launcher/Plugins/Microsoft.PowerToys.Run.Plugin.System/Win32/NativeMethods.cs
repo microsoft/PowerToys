@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Plugin.Sys.Win32
+namespace Microsoft.PowerToys.Run.Plugin.System.Win32
 {
     internal class NativeMethods
     {

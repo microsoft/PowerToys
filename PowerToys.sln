@@ -241,9 +241,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest-ColorPickerUI", "s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spdlog", "src\logging\logging.vcxproj", "{7E1E3F13-2BD6-3F75-A6A7-873A2B55C60F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Sys", "src\modules\launcher\Plugins\Microsoft.Plugin.Sys\Microsoft.Plugin.Sys.csproj", "{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.System", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.System\Microsoft.PowerToys.Run.Plugin.System.csproj", "{FD8EB419-FF9C-4D88-BB6F-BF6CED37747B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Sys.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Sys.UnitTests\Microsoft.Plugin.Sys.UnitTests.csproj", "{DA5A6FE9-0040-40CC-83CC-764AE5306590}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.System.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.System.UnitTests\Microsoft.PowerToys.Run.Plugin.System.UnitTests.csproj", "{DA5A6FE9-0040-40CC-83CC-764AE5306590}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Service", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Service\Microsoft.PowerToys.Run.Plugin.Service.csproj", "{0351ADA4-0C32-4652-9BA0-41F7B602372B}"
 EndProject
