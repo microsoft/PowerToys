@@ -8,11 +8,11 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interop;
 using ManagedCommon;
-using Microsoft.Plugin.Sys.Win32;
+using Microsoft.PowerToys.Run.Plugin.System.Win32;
 using Wox.Infrastructure;
 using Wox.Plugin;
 
-namespace Microsoft.Plugin.Sys
+namespace Microsoft.PowerToys.Run.Plugin.System
 {
     public class Main : IPlugin, IPluginI18n
     {

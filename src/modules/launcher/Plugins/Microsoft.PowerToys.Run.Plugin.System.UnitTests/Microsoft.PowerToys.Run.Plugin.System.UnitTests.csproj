@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
 	<Platforms>x64</Platforms>
-    <RootNamespace>Microsoft.Plugin.Sys.UnitTests</RootNamespace>
+    <RootNamespace>Microsoft.PowerToys.Run.Plugin.System.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Plugin.Sys\Microsoft.Plugin.Sys.csproj" />
+    <ProjectReference Include="..\Microsoft.PowerToys.Run.Plugin.System\Microsoft.PowerToys.Run.Plugin.System.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">

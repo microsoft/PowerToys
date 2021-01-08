@@ -253,6 +253,9 @@
                 <Directory Id="ServicePluginFolder" Name="Service">
                   <Directory Id="ServiceImagesFolder" Name="Images" />
                 </Directory>
+                <Directory Id="SystemPluginFolder" Name="System">
+                  <Directory Id="SystemImagesFolder" Name="Images" />
+                </Directory>
               </Directory>
               <Directory Id="LauncherPropertiesFolder" Name="Properties" />
             </Directory>
@@ -995,6 +998,27 @@
       <Component Id="ServiceImagesComponent" Directory="ServiceImagesFolder" Guid="5846BF01-5BCB-47DC-9472-0E478A41B1AE">
         <File Id="ServiceDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.dark.png" />
         <File Id="ServiceLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.light.png" />
+      </Component>
+      
+      <!-- System Plugin -->
+      <Component Id="SystemComponent" Directory="SystemPluginFolder" Guid="05894C7C-7207-4669-ADB9-E02DD9DB4CCD">
+        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
+          <File Id="System_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="SystemImagesComponent" Directory="SystemImagesFolder" Guid="8886318A-0CD8-4990-85D1-50D44D5ADA21">
+        <File Id="SystemLockDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\lock.dark.png" />
+        <File Id="SystemLockLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\lock.light.png" />
+        <File Id="SystemLogoffDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\logoff.dark.png" />
+        <File Id="SystemLogoffLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\logoff.light.png" />
+        <File Id="SystemRecyclebinDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\recyclebin.dark.png" />
+        <File Id="SystemRecyclebinLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\recyclebin.light.png" />
+        <File Id="SystemRestartDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\restart.dark.png" />
+        <File Id="SystemRestartLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\restart.light.png" />
+        <File Id="SystemShutdownDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\shutdown.dark.png" />
+        <File Id="SystemShutdownLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\shutdown.light.png" />
+        <File Id="SystemSleepDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.dark.png" />
+        <File Id="SystemSleepLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.light.png" />
       </Component>
     
     </ComponentGroup>
