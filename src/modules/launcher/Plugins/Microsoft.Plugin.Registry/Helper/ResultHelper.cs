@@ -114,7 +114,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     var filteredValueName = valueList.Where(found => found.Key.Contains(searchValue, StringComparison.InvariantCultureIgnoreCase));
                     var filteredValueList = valueList.Where(found => found.Value.ToString()?.Contains(searchValue, StringComparison.InvariantCultureIgnoreCase) ?? false);
 
-                    valueList = filteredValueName.Concat(filteredValueList).ToList();
+                    valueList = filteredValueName.Concat(filteredValueList).Distinct().ToList();
                 }
 
                 foreach (var valueEntry in valueList.OrderBy(found => found.Key))

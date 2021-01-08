@@ -45,7 +45,8 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="valueName">The name of the value</param>
         /// <returns>A registry type name</returns>
         internal static object GetType(RegistryKey key, string valueName)
-            => key.GetValueKind(valueName) switch
+        {
+            return key.GetValueKind(valueName) switch
             {
                 RegistryValueKind.None => Resources.RegistryValueKindNone,
                 RegistryValueKind.Unknown => Resources.RegistryValueKindUnknown,
@@ -57,5 +58,6 @@ namespace Microsoft.Plugin.Registry.Helper
                 RegistryValueKind.QWord => "REG_QWORD",
                 _ => throw new ArgumentOutOfRangeException(nameof(valueName)),
             };
+        }
     }
 }
