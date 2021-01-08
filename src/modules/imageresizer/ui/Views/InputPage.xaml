@@ -186,8 +186,7 @@
                         ToolTip="{x:Static p:Resources.Input_ShowAdvanced}"
                         Background="Transparent"
                         Command="{Binding ShowAdvancedCommand}"
-                       
-                        />
+                        Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}"/>
 
                 <Button Grid.Column="1"
                         Style="{StaticResource AccentButtonStyle}"
