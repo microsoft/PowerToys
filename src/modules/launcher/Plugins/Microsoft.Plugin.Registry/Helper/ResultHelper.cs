@@ -193,6 +193,6 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="valueEntry">The value name and value of the registry value</param>
         /// <returns>A sub-title text</returns>
         private static string GetSubTileForRegistryValue(RegistryKey key, KeyValuePair<string, object> valueEntry)
-            => $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)} * {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}";
+            => $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)} - {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}";
     }
 }
