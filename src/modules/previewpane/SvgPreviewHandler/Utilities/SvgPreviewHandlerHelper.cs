@@ -70,31 +70,24 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
         }
 
         /// <summary>
-        /// Edit metadata of svgData so it preview scaled properly
+        /// Edit metadata of svgData so that preview scales properly
         /// </summary>
-        /// <param name="svgData">Input Svg.</param>
-        /// <returns>Returns modifed filed with scaled parameters</returns>
+        /// <param name="svgData">Input Svg</param>
+        /// <returns>Returns modifed filed with changed metadata</returns>
         public static string ScaleSvg(string svgData)
         {
             XElement contacts = XElement.Parse(svgData);
-            var atr = contacts.Attributes();
-            int length = contacts.Attributes().Count();
-            for (int i = 0; i < length; i++)
+            var attributes = contacts.Attributes();
+            for (int i = 0; i < attributes.Count(); i++)
             {
-                if (atr.ElementAt(i).Name == "height")
+                if (attributes.ElementAt(i).Name == "height" || attributes.ElementAt(i).Name == "width")
                 {
-                    atr.ElementAt(i).Value = "100%";
-                }
-
-                if (atr.ElementAt(i).Name == "width")
-                {
-                    atr.ElementAt(i).Value = "100%";
+                    attributes.ElementAt(i).Value = "100%";
                 }
             }
 
-            XAttribute pos = new XAttribute("position", "absolute");
-            atr = atr.Append(pos);
-            contacts.ReplaceAttributes(atr);
+            attributes = attributes.Append(new XAttribute("position", "absolute"));
+            contacts.ReplaceAttributes(attributes);
             return contacts.ToString();
         }
     }
