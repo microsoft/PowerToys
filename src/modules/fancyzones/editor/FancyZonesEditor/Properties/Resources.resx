@@ -319,4 +319,7 @@ To merge zones, select the zones and click "merge".</value>
   <data name="Apply_Layout" xml:space="preserve">
     <value>Apply layout</value>
   </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
 </root>
