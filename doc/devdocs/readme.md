@@ -87,38 +87,43 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\%targetFo
 --add Microsoft.VisualStudio.Component.VC.ATL.Spectre
 ```
 
-### Compiling Source Code
+### Compile source code
 
-- Open `powertoys.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
-- The PowerToys binaries will be in your repo under `x64\Release`.
+- Open `PowerToys.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
+- The PowerToys binaries will be in your repo under `x64\Release\`.
+- You can run `x64\Release\PowerToys.exe` directly without installing PowerToys, but some modules (i.e. PowerRename, ImageResizer, File Explorer extension etc.) will not be available unless you also build the installer and install PowerToys.
 
-## Building the Installers
+## Compile the installer
 
-Our installer is two parts, an EXE and an MSI.  The EXE contains the MSI and handles more complex install logic. 
-- The EXE installs all prerequisites and installs PowerToys via the MSI. Also has additional features, such as silent installation flags
-- The MSI installs PowerToys.
+Our installer is two parts, an EXE and an MSI.  The EXE (Bootstrapper) contains the MSI and handles more complex installation logic. 
+- The EXE installs all prerequisites and installs PowerToys via the MSI. It has additional features such as the installation flags (see below).
+- The MSI installs the PowerToys binaries.
 
-The installers support only the `Release` configuration, building the `Debug` configuration is not supported.
+The installer can only be compiled in `Release` mode, step 1 and 2 must be done before the MSI will be able to be compiled.
 
-### Prerequisites for building the Installer (.MSI)
+1. Compile PowerToys.sln. Instructions are listed above.
+2. Compile Bug reporting tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
+3. Compile PowerToysSetup.sln Path from root: `installer\PowerToysSetup.sln` (details listed below)
 
-1. Before building the installers, you need to build `tools\BugReportTool\BugReportTool.sln`: in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
+### Prerequisites for building the MSI installer
+
+1. Build `tools\BugReportTool\BugReportTool.sln`: in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 2. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
 3. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
 
-### Locally compiling the Installer (.MSI)
+### Locally compiling the .MSI installer
 
-- From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
+- Open `installer\PowerToysSetup.sln`: in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 
-### Locally compiling the Bootstrapper Installer (.EXE)
+### Locally compiling the .EXE Bootstrapper installer
 
-- Open `installer\PowerToysBootstrapper\PowerToysBootstrapper.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
+- Open `installer\PowerToysBootstrapper\PowerToysBootstrapper.sln`: in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The `PowerToysSetup-0.0.1-x64.exe` binary is created in the `installer\PowerToysBootstrapper\x64\Release\` folder.
 
-#### Supported arguments for the Bootstrapper Installer (.EXE):
+#### Supported arguments for the .EXE Bootstrapper installer
 
-Head over to the wiki to get the [full list of supported installer arguments][installerArgWiki].
+Head over to the wiki to see the [full list of supported installer arguments][installerArgWiki].
 
 ## Debugging
 
