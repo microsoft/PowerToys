@@ -74,41 +74,31 @@ namespace Microsoft.Plugin.Registry
                 return new List<Result>(0);
             }
 
-            List<Result> result;
-
             var searchForValueName = QueryHelper.GetQueryParts(query.Search, out var queryKey, out var queryValueName);
 
             var (baseKeyList, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKeyList is null)
             {
                 // no base key found
-                result = ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath);
+                return ResultHelper.GetResultList(RegistryHelper.GetAllBaseKeys(), _defaultIconPath);
             }
             else if (baseKeyList.Count() > 1)
             {
                 // more than one base key was found -> show results
-                result = ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
+                return ResultHelper.GetResultList(baseKeyList.Select(found => new RegistryEntry(found)), _defaultIconPath);
             }
-            else
+
+            // only one base key was found -> start search for the sub-key
+            var list = RegistryHelper.SearchForSubKey(baseKeyList.First(), subKey);
+
+            // when only one sub-key was found and a user search for values ("\\")
+            // show the filtered list of values of one sub-key
+            if (searchForValueName && list.Count == 1)
             {
-                // only one base key found -> start search for the sub key
-                var list = RegistryHelper.SearchForSubKey(baseKeyList.First(), subKey);
-
-                if (!searchForValueName)
-                {
-                    return ResultHelper.GetResultList(list, _defaultIconPath);
-                }
-
-                queryKey = QueryHelper.GetKeyWithLongBaseKey(queryKey);
-
-                var firstEntry = list.FirstOrDefault(found => found.Key != null
-                                                            && found.Key.Name.StartsWith(queryKey, StringComparison.InvariantCultureIgnoreCase));
-                result = firstEntry is null
-                    ? ResultHelper.GetResultList(list, _defaultIconPath)
-                    : ResultHelper.GetValuesFromKey(firstEntry.Key, _defaultIconPath, queryValueName);
+                return ResultHelper.GetValuesFromKey(list.First().Key, _defaultIconPath, queryValueName);
             }
 
-            return result;
+            return ResultHelper.GetResultList(list, _defaultIconPath);
         }
 
         /// <summary>
