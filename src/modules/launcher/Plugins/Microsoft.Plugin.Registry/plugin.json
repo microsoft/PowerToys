@@ -1,6 +1,6 @@
 {
   "ID": "303417D927BF4C97BCFFC78A123BE0C8",
-  "ActionKeywords": [ "HK", "hk", "Hk", "hK" ],
+  "ActionKeyword": ":",
   "Name": "Registry",
   "Description": "Search inside the Windows Registry",
   "Author": "TobiasSekan",
