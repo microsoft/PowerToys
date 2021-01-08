@@ -105,7 +105,7 @@ namespace Microsoft.Plugin.Registry.Helper
 
                 if (result.Count == 0)
                 {
-                    return GetAllSubKeys(subKey);
+                    return FindSubKey(subKey, string.Empty);
                 }
 
                 if (result.Count == 1 && index < subKeysNames.Length)
