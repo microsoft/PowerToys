@@ -76,19 +76,7 @@ namespace Microsoft.Plugin.Registry
 
             List<Result> result;
 
-            // The plugin is only triggered when the "ActionKeyword" is "HK" (case-insensitive).
-            // To make the develop of this plugin easier we put the "Query.ActionKeyword" and the "Query.Search" together,
-            // this allow us to use e.g. "HKLM" instead of "LM".
-            var searchFor = query.ActionKeyword + query.Search;
-
-            // WOX hack:
-            // This Plugin override the "Result.QueryTextDisplay" of each result, this is need to allow to work with short-hand base registry keys (e.g. HKLM).
-            // The WOX plugin use the changed "Result.QueryTextDisplay" and show "Query.ActionKeyword" + Space + "Result.QueryTextDisplay".
-            // We can't use "Query.RawQuery" because it have the same content ("Query.ActionKeyword" + Space + "Result.QueryTextDisplay").
-            // So we clear the action keyword to make sure it is not used for the display and the query.
-            query.ActionKeyword = string.Empty;
-
-            var searchForValueName = QueryHelper.GetQueryParts(searchFor, out var queryKey, out var queryValueName);
+            var searchForValueName = QueryHelper.GetQueryParts(query.Search, out var queryKey, out var queryValueName);
 
             var (baseKeyList, subKey) = RegistryHelper.GetRegistryBaseKey(queryKey);
             if (baseKeyList is null)
@@ -139,14 +127,20 @@ namespace Microsoft.Plugin.Registry
         /// <param name="oldtheme">The old <see cref="Theme"/></param>
         /// <param name="newTheme">The new <see cref="Theme"/></param>
         private void OnThemeChanged(Theme oldtheme, Theme newTheme)
-            => UpdateIconPath(newTheme);
+        {
+            UpdateIconPath(newTheme);
+        }
 
         /// <summary>
         /// Update all icons (typical called when the plugin theme has changed)
         /// </summary>
         /// <param name="theme">The new <see cref="Theme"/> for the icons</param>
         private void UpdateIconPath(Theme theme)
-            => _defaultIconPath = theme == Theme.Light || theme == Theme.HighContrastWhite ? "Images/reg.light.png" : "Images/reg.dark.png";
+        {
+            _defaultIconPath = theme == Theme.Light || theme == Theme.HighContrastWhite
+                ? "Images/reg.light.png"
+                : "Images/reg.dark.png";
+        }
 
         /// <inheritdoc/>
         public void Dispose()
@@ -176,10 +170,14 @@ namespace Microsoft.Plugin.Registry
 
         /// <inheritdoc/>
         public string GetTranslatedPluginTitle()
-            => Resources.PluginTitle;
+        {
+            return Resources.PluginTitle;
+        }
 
         /// <inheritdoc/>
         public string GetTranslatedPluginDescription()
-            => Resources.PluginDescription;
+        {
+            return Resources.PluginDescription;
+        }
     }
 }
