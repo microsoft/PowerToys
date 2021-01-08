@@ -430,7 +430,7 @@
                           Background="{DynamicResource PrimaryBackgroundBrush}"
                           PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
                           SecondaryButtonText="{x:Static props:Resources.Cancel}"
-                          PrimaryButtonText="{x:Static props:Resources.Save_Apply}"
+                          PrimaryButtonText="{x:Static props:Resources.Save}"
                           Title="{x:Static props:Resources.Edit_Layout}">
             <StackPanel Margin="0,16,0,0"
                         MinWidth="420">
