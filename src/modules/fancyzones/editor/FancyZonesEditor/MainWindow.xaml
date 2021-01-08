@@ -264,7 +264,7 @@
                                    FontSize="16"
                                    Width="32"
                                    Margin="8"
-                                   Foreground="{DynamicResource SystemAccentColorLight1Brush}"
+                                   Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
                                    FontWeight="SemiBold"
                                    HorizontalAlignment="Stretch"
                                    VerticalAlignment="Center" />
