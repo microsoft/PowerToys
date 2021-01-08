@@ -39,11 +39,11 @@ public:
     /* Describes a hotkey which can trigger an action in the PowerToy */
     struct Hotkey
     {
-        bool win = false;
-        bool ctrl = false;
-        bool shift = false;
-        bool alt = false;
-        unsigned char key = 0;
+        bool win;
+        bool ctrl;
+        bool shift;
+        bool alt;
+        unsigned char key;
 
         std::strong_ordering operator<=>(const Hotkey&) const = default;
     };
