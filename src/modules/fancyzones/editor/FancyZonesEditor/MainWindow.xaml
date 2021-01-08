@@ -85,7 +85,6 @@
         <DataTemplate x:Key="LayoutItemTemplate">
             <Grid Background="Transparent"
                   Width="232"
-                  Height="216"
                   KeyDown="LayoutItem_KeyDown"
                   MouseDown="LayoutItem_Click"
                   Margin="0,0,0,12">
@@ -124,44 +123,40 @@
                     <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="24" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="136" />
+                            <RowDefinition Height="32" />
                         </Grid.RowDefinitions>
                         <TextBlock Name="layoutName"
-                                       TextTrimming="CharacterEllipsis"
-                                       Text="{Binding Name}"
-                                       FontSize="15"
-                                       Grid.Row="0"
-                                       FontWeight="SemiBold"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Top"
-                                       Margin="0,-4,0,0"
-                                       Foreground="{DynamicResource PrimaryForegroundBrush}" />
-                           
-                        <local:LayoutPreview
-                                            Grid.Row="1"
-                            Margin="0,8,0,12"
-                            ui:ControlHelper.CornerRadius="4"
-                                             VerticalAlignment="Stretch"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding Name}"
+                                   FontSize="15"
+                                   Grid.Row="0"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Margin="0,-4,0,0"
+                                   Foreground="{DynamicResource PrimaryForegroundBrush}" />
+
+                        <local:LayoutPreview Grid.Row="1"
+                                             Margin="0,8,0,12"
+                                             ui:ControlHelper.CornerRadius="4"
+                                             VerticalAlignment="Stretch"                                
                                              HorizontalAlignment="Stretch" />
-                        <Grid Grid.Row="2" Margin="2,0,0,0">
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" >
-                                <TextBlock ToolTip="Spacing around zones" Foreground="{DynamicResource SecondaryForegroundBrush}">
-                                    <Run FontSize="10" Text="&#xE1D9;" FontFamily="Segoe MDL2 Assets" />
-                                    <Run Text=" 20" />
+                        <Grid Grid.Row="2"
+                              Margin="2,0,0,0">
+                            <StackPanel Orientation="Vertical"
+                                        VerticalAlignment="Center">
+                                <TextBlock ToolTip="{x:Static props:Resources.Space_Around_Zones}"
+                                           x:Name="SpacingTextBlock"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}">
+                                    <Run FontSize="10"
+                                         Text="&#xE1D9;"
+                                         FontFamily="Segoe MDL2 Assets" />
+                                    <Run Text=" 20" /> <!-- TO DO: Bind to spacing -->
                                 </TextBlock>
                             </StackPanel>
-                            <ui:ToggleSwitch x:Name="LayoutSwitch"
-                                             OnContent=""
-                                             OffContent=""
-                                             Margin="138,0,0,0"
-                                             Opacity="0.4"
-                                             HorizontalContentAlignment="Right"
-                                             HorizontalAlignment="Right"
-                                             Toggled="LayoutSwitch_Toggled" />
 
-                            <!-- Alternative, using a button -->
-                            <!--<Button Content="&#xE118;"
+                            <Button Content="&#xE118;"
                                     x:Name="ApplyLayoutButton"
                                     FontFamily="Segoe MDL2 Assets"
                                     FontSize="12"
@@ -177,15 +172,9 @@
                                     AutomationProperties.Name="{x:Static props:Resources.Apply_Layout}"
                                     Style="{StaticResource AccentButtonStyle}"
                                     ui:ControlHelper.CornerRadius="48">
-                                --><!--<Button.Effect>
-                                    <DropShadowEffect BlurRadius="6"
-                                                      Opacity="0.32"
-                                                      ShadowDepth="1" />
-                                </Button.Effect>--><!--
-                            </Button>-->
+                            </Button>
                         </Grid>
                     </Grid>
-                 
                 </Border>
                 <Border x:Name="SelectionHighlight"
                         CornerRadius="4"
@@ -193,37 +182,34 @@
                         Margin="6"
                         Visibility="Collapsed"
                         BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                
             </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsApplied}"
                              Value="true">
                     <Setter TargetName="layoutName"
                             Property="Foreground"
-                            Value="{DynamicResource SystemAccentColorLight1Brush}" />
+                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                    <Setter TargetName="SpacingTextBlock"
+                            Property="Foreground"
+                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                     <Setter TargetName="SelectionHighlight"
                             Property="Visibility"
                             Value="Visible" />
+                    <Setter TargetName="ApplyLayoutButton"
+                            Property="Visibility"
+                            Value="Collapsed" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsSelected}"
                              Value="true">
                     <Setter TargetName="LayoutItem"
                             Property="BorderBrush"
                             Value="{DynamicResource LayoutItemBorderPointerOverBrush}" />
-                    <Setter TargetName="LayoutSwitch"
-                            Property="IsOn"
-                            Value="True" />
-                    <Setter TargetName="LayoutSwitch"
-                            Property="Opacity"
-                            Value="1" />
-
-
-                    <!--<Setter TargetName="ApplyLayoutButton"
+                    <Setter TargetName="ApplyLayoutButton"
                             Property="BorderBrush"
                             Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                     <Setter TargetName="ApplyLayoutButton"
                             Property="Foreground"
-                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />-->
+                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
@@ -351,7 +337,7 @@
                                   TabIndex="6"
                                   AutomationProperties.LabeledBy="{Binding ElementName=CustomHeaderBlock}"
                                   ItemTemplate="{StaticResource LayoutItemTemplate}"
-                                  Margin="-8,4,-8,0"
+                                  Margin="-8,12,-8,0"
                                   Grid.Row="4">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
