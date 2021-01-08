@@ -227,7 +227,7 @@
     <value>R_esize the original pictures (don't create copies)</value>
   </data>
   <data name="Input_Resize" xml:space="preserve">
-    <value>_Resize</value>
+    <value>Resize</value>
   </data>
   <data name="Input_ShowAdvanced" xml:space="preserve">
     <value>Settings</value>
