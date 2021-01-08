@@ -117,14 +117,20 @@ namespace Microsoft.Plugin.Registry.Helper
                     valueList = filteredValueName.Concat(filteredValueList).ToList();
                 }
 
-                foreach (var valueEntry in valueList)
+                foreach (var valueEntry in valueList.OrderBy(found => found.Key))
                 {
+                    var valueName = valueEntry.Key;
+                    if (string.IsNullOrEmpty(valueName))
+                    {
+                        valueName = "(Default)";
+                    }
+
                     resultList.Add(new Result
                     {
                         ContextData = new RegistryEntry(key, valueEntry.Key, valueEntry.Value),
                         IcoPath = iconPath,
                         SubTitle = GetTruncatedText(GetSubTileForRegistryValue(key, valueEntry), MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
-                        Title = GetTruncatedText(valueEntry.Key, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
+                        Title = GetTruncatedText(valueName, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                         ToolTipData = new ToolTipData(Resources.RegistryValue, GetToolTipTextForRegistryValue(key, valueEntry)),
 
                         // Avoid user handling interrupt when move up/down inside the results of a registry key
@@ -181,10 +187,12 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="valueEntry">The value name and value of the registry value</param>
         /// <returns>A tool-tip text</returns>
         private static string GetToolTipTextForRegistryValue(RegistryKey key, KeyValuePair<string, object> valueEntry)
-            => $"{Resources.Key}\t{key.Name}{Environment.NewLine}"
-            + $"{Resources.Name}\t{valueEntry.Key}{Environment.NewLine}"
-            + $"{Resources.Type}\t{ValueHelper.GetType(key, valueEntry.Key)}{Environment.NewLine}"
-            + $"{Resources.Value}\t{ValueHelper.GetValue(key, valueEntry.Key)}";
+        {
+            return $"{Resources.Key}\t{key.Name}{Environment.NewLine}"
+                 + $"{Resources.Name}\t{valueEntry.Key}{Environment.NewLine}"
+                 + $"{Resources.Type}\t{ValueHelper.GetType(key, valueEntry.Key)}{Environment.NewLine}"
+                 + $"{Resources.Value}\t{ValueHelper.GetValue(key, valueEntry.Key)}";
+        }
 
         /// <summary>
         /// Return the sub-title text for a registry value
@@ -193,6 +201,9 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="valueEntry">The value name and value of the registry value</param>
         /// <returns>A sub-title text</returns>
         private static string GetSubTileForRegistryValue(RegistryKey key, KeyValuePair<string, object> valueEntry)
-            => $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)} - {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}";
+        {
+            return $"{Resources.Type} {ValueHelper.GetType(key, valueEntry.Key)}"
+                 + $" - {Resources.Value} {ValueHelper.GetValue(key, valueEntry.Key, 50)}";
+        }
     }
 }
