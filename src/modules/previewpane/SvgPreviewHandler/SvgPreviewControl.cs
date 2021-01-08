@@ -55,7 +55,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     }
                 }
 
-                svgData = SvgPreviewHandlerHelper.ScaleSvg(svgData);
                 blocked = SvgPreviewHandlerHelper.CheckBlockedElements(svgData);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -64,6 +63,17 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             {
                 PreviewError(ex, dataSource);
                 return;
+            }
+
+            try
+            {
+                svgData = SvgPreviewHandlerHelper.ScaleSvg(svgData);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
             }
 
             InvokeOnControlThread(() =>
