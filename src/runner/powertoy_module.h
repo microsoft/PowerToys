@@ -10,11 +10,11 @@
 
 struct PowertoyModuleDeleter
 {
-    void operator()(PowertoyModuleIface* module) const
+    void operator()(PowertoyModuleIface* pt_module) const
     {
-        if (module)
+        if (pt_module)
         {
-            module->destroy();
+            pt_module->destroy();
         }
     }
 };
@@ -31,11 +31,11 @@ struct PowertoyModuleDLLDeleter
 class PowertoyModule
 {
 public:
-    PowertoyModule(PowertoyModuleIface* module, HMODULE handle);
+    PowertoyModule(PowertoyModuleIface* pt_module, HMODULE handle);
 
     inline PowertoyModuleIface* operator->()
     {
-        return module.get();
+        return pt_module.get();
     }
 
     json::JsonObject json_config() const;
@@ -44,7 +44,7 @@ public:
 
 private:
     std::unique_ptr<HMODULE, PowertoyModuleDLLDeleter> handle;
-    std::unique_ptr<PowertoyModuleIface, PowertoyModuleDeleter> module;
+    std::unique_ptr<PowertoyModuleIface, PowertoyModuleDeleter> pt_module;
 };
 
 PowertoyModule load_powertoy(const std::wstring_view filename);
