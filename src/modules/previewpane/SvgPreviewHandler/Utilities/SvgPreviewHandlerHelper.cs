@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
         /// Edit metadata of svgData so that preview scales properly
         /// </summary>
         /// <param name="svgData">Input Svg</param>
-        /// <returns>Returns modifed filed with changed metadata</returns>
+        /// <returns>Returns modified filed with changed metadata</returns>
         public static string ScaleSvg(string svgData)
         {
             XElement contacts = XElement.Parse(svgData);
