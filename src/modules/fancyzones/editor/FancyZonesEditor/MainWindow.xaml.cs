@@ -93,7 +93,7 @@ namespace FancyZonesEditor
             EditLayoutDialog.DataContext = selectedLayoutModel;
             await EditLayoutDialog.ShowAsync();
 
-           // Apply();
+            // Apply();
         }
 
         private void LayoutItem_Focused(object sender, RoutedEventArgs e)
@@ -327,25 +327,13 @@ namespace FancyZonesEditor
 
         private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
-            }
+            monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
         }
 
         private void ApplyLayoutButton_Click(object sender, RoutedEventArgs e)
         {
             Select(((Button)sender).DataContext as LayoutModel);
             Apply();
-        }
-
-        private void LayoutSwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-            if ((sender as ToggleSwitch).IsOn)
-            {
-                Select(((ToggleSwitch)sender).DataContext as LayoutModel);
-                Apply();
-            }
         }
     }
 }
