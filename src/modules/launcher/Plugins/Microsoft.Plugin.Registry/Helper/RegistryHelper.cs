@@ -53,7 +53,7 @@ namespace Microsoft.Plugin.Registry.Helper
             }
 
             var baseKey = query.Split('\\').FirstOrDefault();
-            var subKey = query.TrimStart('\\').Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase);
+            var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
 
             var baseKeyResult = _baseKeys
                 .Where(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase))
@@ -68,7 +68,8 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <returns>A list with all registry base keys</returns>
         internal static ICollection<RegistryEntry> GetAllBaseKeys()
-            => new Collection<RegistryEntry>
+        {
+            return new Collection<RegistryEntry>
             {
                 new RegistryEntry(Win32.Registry.ClassesRoot),
                 new RegistryEntry(Win32.Registry.CurrentConfig),
@@ -77,6 +78,7 @@ namespace Microsoft.Plugin.Registry.Helper
                 new RegistryEntry(Win32.Registry.PerformanceData),
                 new RegistryEntry(Win32.Registry.Users),
             };
+        }
 
         /// <summary>
         /// Search for the given sub-key path in the given registry base key
@@ -86,6 +88,11 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <returns>A list with all found registry keys</returns>
         internal static ICollection<RegistryEntry> SearchForSubKey(in RegistryKey baseKey, in string subKeyPath)
         {
+            if (string.IsNullOrEmpty(subKeyPath))
+            {
+                return FindSubKey(baseKey, string.Empty);
+            }
+
             var subKeysNames = subKeyPath.Split('\\');
             var index = 0;
             var subKey = baseKey;
@@ -98,7 +105,7 @@ namespace Microsoft.Plugin.Registry.Helper
 
                 if (result.Count == 0)
                 {
-                    return GetAllSubKeys(baseKey);
+                    return GetAllSubKeys(subKey);
                 }
 
                 if (result.Count == 1 && index < subKeysNames.Length)
@@ -106,7 +113,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     subKey = result.First().Key;
                 }
 
-                if (subKey == null)
+                if (result.Count > 1 || subKey == null)
                 {
                     break;
                 }
@@ -124,7 +131,9 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <param name="key">The <see cref="RegistryKey"/> for the summary</param>
         /// <returns>A human readable summary</returns>
         internal static string GetSummary(in RegistryKey key)
-            => $"{Resources.SubKeys} {key.SubKeyCount} - {Resources.Values} {key.ValueCount}";
+        {
+            return $"{Resources.SubKeys} {key.SubKeyCount} - {Resources.Values} {key.ValueCount}";
+        }
 
         /// <summary>
         /// Open a given registry key in the registry editor

@@ -40,12 +40,12 @@ namespace Microsoft.Plugin.Registry.UnitTest.Helper
         }
 
         [TestMethod]
-        [DataRow(@"HKCR\*\OpenWithList", @"\*\OpenWithList")]
-        [DataRow(@"HKCU\Control Panel\Accessibility", @"\Control Panel\Accessibility")]
-        [DataRow(@"HKLM\HARDWARE\UEFI", @"\HARDWARE\UEFI")]
-        [DataRow(@"HKU\.DEFAULT\Environment", @"\.DEFAULT\Environment")]
-        [DataRow(@"HKCC\System\CurrentControlSet\Control", @"\System\CurrentControlSet\Control")]
-        [DataRow(@"HKPD\???", @"\???")]
+        [DataRow(@"HKCR\*\OpenWithList", @"*\OpenWithList")]
+        [DataRow(@"HKCU\Control Panel\Accessibility", @"Control Panel\Accessibility")]
+        [DataRow(@"HKLM\HARDWARE\UEFI", @"HARDWARE\UEFI")]
+        [DataRow(@"HKU\.DEFAULT\Environment", @".DEFAULT\Environment")]
+        [DataRow(@"HKCC\System\CurrentControlSet\Control", @"System\CurrentControlSet\Control")]
+        [DataRow(@"HKPD\???", @"???")]
         public void GetRegistryBaseKeyTestSubKey(string query, string expectedSubKey)
         {
             var (_, subKey) = RegistryHelper.GetRegistryBaseKey(query);
