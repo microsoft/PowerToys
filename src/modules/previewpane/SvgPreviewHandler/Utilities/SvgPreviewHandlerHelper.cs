@@ -70,23 +70,40 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg.Utilities
         }
 
         /// <summary>
-        /// Edit metadata of svgData so that preview scales properly
+        /// Add attribute style to SVG element in svgData so that it displays properly
         /// </summary>
         /// <param name="svgData">Input Svg</param>
-        /// <returns>Returns modified filed with changed metadata</returns>
+        /// <returns>Returns modified svgData with added style</returns>
         public static string ScaleSvg(string svgData)
         {
             XElement contacts = XElement.Parse(svgData);
             var attributes = contacts.Attributes();
+            string width = string.Empty;
+            string height = string.Empty;
+
+            // Get width and height of element and remove it afterwards because it will be added inside style attribute
             for (int i = 0; i < attributes.Count(); i++)
             {
-                if (attributes.ElementAt(i).Name == "height" || attributes.ElementAt(i).Name == "width")
+                if (attributes.ElementAt(i).Name == "height")
                 {
-                    attributes.ElementAt(i).Value = "100%";
+                    height = attributes.ElementAt(i).Value;
+                    attributes.ElementAt(i).Remove();
+                }
+
+                if (attributes.ElementAt(i).Name == "width")
+                {
+                    width = attributes.ElementAt(i).Value;
+                    attributes.ElementAt(i).Remove();
                 }
             }
 
-            attributes = attributes.Append(new XAttribute("position", "absolute"));
+            // Set style that will center SVG
+            string centering = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);";
+
+            // Set style that will downscale SVG if the preview window is smaller than default SVG size
+            string scaling = $"width: min(100%,{width}px); height: min(100%,{height}px);";
+            string style = scaling + centering;
+            attributes = attributes.Append(new XAttribute("style", style));
             contacts.ReplaceAttributes(attributes);
             return contacts.ToString();
         }
