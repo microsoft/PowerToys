@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Plugin.Calculator
+namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     public static class BracketHelper
     {

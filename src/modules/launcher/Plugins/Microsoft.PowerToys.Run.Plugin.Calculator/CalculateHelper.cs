@@ -5,7 +5,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Plugin.Calculator
+namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     public static class CalculateHelper
     {

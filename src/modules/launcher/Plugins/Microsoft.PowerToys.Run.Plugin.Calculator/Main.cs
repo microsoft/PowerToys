@@ -9,7 +9,7 @@ using ManagedCommon;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
-namespace Microsoft.Plugin.Calculator
+namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     public class Main : IPlugin, IPluginI18n, IDisposable
     {
