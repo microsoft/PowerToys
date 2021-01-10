@@ -18,7 +18,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
 
             foreach (var vscodeInstance in VSCodeInstances.instances)
             {
-                // storage.json contains path of ssh_config
+                // settings.json contains path of ssh_config
                 var vscode_settings = Path.Combine(vscodeInstance.AppData, "User\\settings.json");
 
                 if (File.Exists(vscode_settings))

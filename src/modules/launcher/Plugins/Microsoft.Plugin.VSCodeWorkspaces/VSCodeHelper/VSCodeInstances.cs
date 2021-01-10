@@ -16,7 +16,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper
 
         public static List<VSCodeInstance> instances = new List<VSCodeInstance>();
 
-        // Gets the executablePath and AppData for each instance of VSCode
+        // Gets the executablePath and AppData foreach instance of VSCode
         public static void LoadVSCodeInstances()
         {
             if (_systemPath != Environment.GetEnvironmentVariable("PATH"))

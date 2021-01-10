@@ -27,6 +27,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
         {
             var results = new List<Result>();
 
+            // Search opened workspaces
             foreach (var a in _workspacesApi.Search(query.Search))
             {
                 var title = $"{a.FolderName}";
@@ -75,6 +76,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                 });
             }
 
+            // Search opened remote machines
             foreach (var a in _machinesApi.Search(query.Search))
             {
                 var title = $"{a.Host}";
