@@ -72,7 +72,7 @@
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
     <Property Id="WixShellExecTarget" Value="[#action_runner.exe]" />
-        
+
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
     </Property>
@@ -96,9 +96,9 @@
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
         Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
-      
+
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
-      
+
     </InstallExecuteSequence>
 
     <CustomAction
@@ -220,9 +220,9 @@
             </Directory>
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
-              <Directory Id="LauncherImagesFolder" Name="Images" />               
+              <Directory Id="LauncherImagesFolder" Name="Images" />
               <Directory Id="LauncherPluginsFolder" Name="Plugins">
-                <Directory Id="CalculatorPluginFolder" Name="Microsoft.Plugin.Calculator">
+                <Directory Id="CalculatorPluginFolder" Name="Microsoft.PowerToys.Run.Plugin.Calculator">
                   <Directory Id="CalculatorImagesFolder" Name="Images" />
                   <Directory Id="CalculatorLanguagesFolder" Name="Languages" />
                 </Directory>
@@ -382,11 +382,11 @@
     <DirectoryRef Id="ToolsFolder">
       <Component Id="BugReportTool_exe" Guid="0F8E3E9F-2E86-4660-A3BF-AE4DD431B93C" Win64="yes">
         <File Source="$(var.BinX64Dir)BugReportTool\BugReportTool.exe" Id="BugReportTool.exe" KeyPath="yes" Checksum="yes" />
-      </Component>      
+      </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
-      
+
       <Component Id="Module_PowerPreview_PerUserRegistry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
         <!-- Added a separate component for Per-User registry changes -->
         <!-- Registry Key for Class Registration of Svg Preview Handler -->
@@ -468,7 +468,7 @@
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe">
           <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
         </File>
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />	
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Newtonsoft.Json.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.deps.json" />
@@ -792,7 +792,7 @@
 
   <!-- Languages for localization on build farm -->
   <?define LocLanguageList = cs;de;es;fr;hu;it;ja;ko;nl;pl;pt-BR;pt-PT;ru;sv;tr;zh-Hans;zh-Hant?>
-    
+
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
@@ -855,7 +855,7 @@
                 </Component>
                 <!-- Launcher plugin resources -->
                 <Component Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder">
-                    <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\$(var.Language)\Microsoft.Plugin.Calculator.resources.dll" />
+                    <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
                 </Component>
                 <Component Id="Launcher_Folder_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder">
                     <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
@@ -884,13 +884,13 @@
     <ComponentGroup Id="LauncherComponents">
 
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
-        
+
         <!-- Toast Notification AUMID -->
         <RegistryKey Root="HKCU" Key="SOFTWARE\Classes\AppUserModelId\PowerToysRun">
           <RegistryValue Type="string" Name="DisplayName" Value="PowerToys Run" />
           <RegistryValue Type="string" Name="IconUri" Value="[LauncherImagesFolder]icon.ico" />
         </RegistryKey>
-        
+
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
         <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;PowerLauncher.runtimeconfig.json;System.Data.OleDb.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;ManagedTelemetry.dll;PowerLauncher.Telemetry.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;ManagedCommon.dll;System.IO.Abstractions.dll;Microsoft.PowerToys.Common.UI.dll;System.ServiceProcess.ServiceController.dll;Microsoft.Toolkit.Uwp.Notifications.dll;ModernWpf.Controls.dll;ModernWpf.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
@@ -900,23 +900,23 @@
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
           <File Id="File_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
         <?endforeach?>
-      </Component>  
+      </Component>
       <Component Id="launcherImagesComponent" Directory="LauncherImagesFolder" Guid="D254220C-1DD9-4C74-8810-1AAB2F940DE8">
         <?foreach File in app.dark.png;app.light.png;app_error.dark.png;app_error.light.png;Browser.png;calculator.png;cancel.png;close.png;cmd.png;color.png;copy.png;down.png;EXE.png;file.png;find.png;folder.png;history.png;image.png;Link.png;lock.png;logoff.png;ok.png;open.png;plugin.png;recyclebin.png;restart.png;search.png;settings.png;shutdown.png;sleep.png;up.png;update.png;warning.png;icon.ico?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Images\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)modules\launcher\Images\New Message.png" />
       </Component>
-      
+
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
-        <?foreach File in plugin.json;Microsoft.Plugin.Calculator.deps.json;Microsoft.Plugin.Calculator.dll;ManagedTelemetry.dll?>
-          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\$(var.File)" />
+        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.Calculator.deps.json;Microsoft.PowerToys.Run.Plugin.Calculator.dll;ManagedTelemetry.dll?>
+          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.light.png" />
-        <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.dark.png" />
+        <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Images\calculator.light.png" />
+        <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Images\calculator.dark.png" />
       </Component>
 
       <!-- Folder Plugin -->
@@ -930,7 +930,7 @@
           <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Images\$(var.File)" />
         <?endforeach?>
       </Component>
-    
+
       <!-- Program Plugin -->
       <Component Id="ProgramComponent" Directory="ProgramPluginFolder" Guid="3C5CA6E6-3D36-4F4E-B40E-38AA5E5CB799">
         <?foreach File in plugin.json;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll;ManagedTelemetry.dll?>
@@ -942,7 +942,7 @@
           <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\Images\$(var.File)" />
         <?endforeach?>
       </Component>
-    
+
       <!-- Shell Plugin -->
       <Component Id="ShellComponent" Directory="ShellPluginFolder" Guid="6D3D7294-1804-47C9-83E5-47A8867F3801">
         <?foreach File in plugin.json;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;ManagedTelemetry.dll?>
@@ -978,7 +978,7 @@
         <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.light.png" />
       </Component>
 
-      <!-- WindowWalker Plugin -->  
+      <!-- WindowWalker Plugin -->
       <Component Id="WindowWalkerComponent" Directory="WindowWalkerPluginFolder" Guid="EB1391C9-B701-421F-80FC-ABB2FEDFAD19">
         <?foreach File in plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;ManagedTelemetry.dll?>
           <File Id="WindowWalker_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.File)" />
@@ -988,7 +988,7 @@
           <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.dark.png" />
           <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.light.png" />
       </Component>
-      
+
       <!-- Service Plugin -->
       <Component Id="ServiceComponent" Directory="ServicePluginFolder" Guid="66245D20-0078-4136-8A34-4A282FB894D5">
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll?>
@@ -999,7 +999,7 @@
         <File Id="ServiceDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.dark.png" />
         <File Id="ServiceLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Service\Images\service.light.png" />
       </Component>
-      
+
       <!-- System Plugin -->
       <Component Id="SystemComponent" Directory="SystemPluginFolder" Guid="05894C7C-7207-4669-ADB9-E02DD9DB4CCD">
         <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll?>
@@ -1020,7 +1020,7 @@
         <File Id="SystemSleepDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.dark.png" />
         <File Id="SystemSleepLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\System\Images\sleep.light.png" />
       </Component>
-    
+
     </ComponentGroup>
   </Fragment>
 </Wix>
