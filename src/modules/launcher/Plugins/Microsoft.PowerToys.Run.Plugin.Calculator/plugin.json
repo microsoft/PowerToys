@@ -7,6 +7,6 @@
     "Version":"1.0.0",
     "Language":"csharp",
     "Website":"https://aka.ms/powertoys",
-    "ExecuteFileName":"Microsoft.Plugin.Calculator.dll",
+    "ExecuteFileName":"Microsoft.PowerToys.Run.Plugin.Calculator.dll",
     "IcoPath":"Images\\calculator.dark.png"
 }
