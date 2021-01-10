@@ -1,7 +1,4 @@
 ﻿using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {

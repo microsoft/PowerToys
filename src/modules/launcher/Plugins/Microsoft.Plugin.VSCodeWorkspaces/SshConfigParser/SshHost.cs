@@ -1,28 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.Plugin.VSCodeWorkspaces.SshConfigParser
 {
     public class SshHost
     {
-        /// <summary>
-        /// Collection of identity files for the host.
-        /// </summary>
-//        public List<string> IdentityFiles 
-//        {
-//            get 
-//            {
-//                if (!Properties.TryGetValue(nameof(IdentityFile), out var collection))
-//                {
-//                    Properties[nameof(IdentityFile)] = collection = new List<string>();
-//                }
-
-//                return (List<string>) collection;
-//            }
-//        }
-
         /// <summary>
         /// Identity file for the host.
         /// </summary>

@@ -1,7 +1,4 @@
-﻿using Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper

@@ -3,8 +3,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Windows;
 
 namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {

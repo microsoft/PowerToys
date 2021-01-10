@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using Microsoft.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
 using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper;
