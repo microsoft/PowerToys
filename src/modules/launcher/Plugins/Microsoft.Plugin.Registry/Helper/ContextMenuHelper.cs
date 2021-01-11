@@ -39,12 +39,12 @@ namespace Microsoft.Plugin.Registry.Helper
                 list.Add(new ContextMenuResult
                 {
                     AcceleratorKey = Key.C,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => TryToCopyToClipBoard(entry.Key?.Name ?? entry.KeyPath),
+                    AcceleratorModifiers = ModifierKeys.Control,
+                    Action = _ => TryToCopyToClipBoard(entry.GetRegistryKey()),
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyKeyPath} (Ctrl+Shift+C)",
+                    Title = $"{Resources.CopyKeyPath} (Ctrl+C)",
                 });
             }
             else
@@ -53,34 +53,33 @@ namespace Microsoft.Plugin.Registry.Helper
                 {
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => TryToCopyToClipBoard(entry.Value?.ToString() ?? string.Empty),
+                    Action = _ => TryToCopyToClipBoard(entry.GetValueData()),
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF413",                       // F413 => Symbol: CopyTo
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyValueData} (Ctrl+Shift+D)",
+                    Title = $"{Resources.CopyValueData} (Ctrl+Shift+C)",
                 });
 
                 list.Add(new ContextMenuResult
                 {
                     AcceleratorKey = Key.C,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ => TryToCopyToClipBoard(entry.ValueName?.ToString() ?? string.Empty),
+                    AcceleratorModifiers = ModifierKeys.Control,
+                    Action = _ => TryToCopyToClipBoard(entry.GetValueNameWithKey()),
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyValueName} (Ctrl+Shift+C)",
+                    Title = $"{Resources.CopyValueName} (Ctrl+C)",
                 });
             }
 
             list.Add(new ContextMenuResult
             {
                 AcceleratorKey = Key.Enter,
-                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ => TryToOpenInRegistryEditor(entry),
                 FontFamily = "Segoe MDL2 Assets",
                 Glyph = "\xE8A7",                           // E8A7 => Symbol: OpenInNewWindow
                 PluginName = assemblyName,
-                Title = $"{Resources.OpenKeyInRegistryEditor} (Ctrl+Shift+Enter)",
+                Title = $"{Resources.OpenKeyInRegistryEditor} (Enter)",
             });
 
             return list;

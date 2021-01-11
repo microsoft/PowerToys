@@ -15,17 +15,17 @@ namespace Microsoft.Plugin.Registry.Helper
     internal static class ValueHelper
     {
         /// <summary>
-        /// Return a human readable value, of the given value name inside the given <see cref="RegistryKey"/>
+        /// Return a human readable value data, of the given value name inside the given <see cref="RegistryKey"/>
         /// </summary>
-        /// <param name="key">The <see cref="RegistryKey"/> that should contain the value name</param>
-        /// <param name="valueName">The name of the value</param>
-        /// <param name="maxLength">The maximum length for the human readable value</param>
-        /// <returns>A human readable value</returns>
+        /// <param name="key">The <see cref="RegistryKey"/> that should contain the value name.</param>
+        /// <param name="valueName">The name of the value.</param>
+        /// <param name="maxLength">The maximum length for the human readable value.</param>
+        /// <returns>A human readable value data.</returns>
         internal static string GetValue(in RegistryKey key, in string valueName, int maxLength = int.MaxValue)
         {
             var unformattedValue = key.GetValue(valueName);
 
-            var value = key.GetValueKind(valueName) switch
+            var valueData = key.GetValueKind(valueName) switch
             {
                 RegistryValueKind.DWord => $"0x{unformattedValue:X8} ({(uint)(int)unformattedValue})",
                 RegistryValueKind.QWord => $"0x{unformattedValue:X16} ({(ulong)(long)unformattedValue})",
@@ -33,9 +33,9 @@ namespace Microsoft.Plugin.Registry.Helper
                 _ => $"{unformattedValue}",
             };
 
-            return value.Length > maxLength
-                ? $"{value.Substring(0, maxLength)}..."
-                : value;
+            return valueData.Length > maxLength
+                ? $"{valueData.Substring(0, maxLength)}..."
+                : valueData;
         }
 
         /// <summary>

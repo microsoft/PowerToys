@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.Plugin.Registry.Helper;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Registry.Classes
@@ -35,7 +36,7 @@ namespace Microsoft.Plugin.Registry.Classes
         /// <summary>
         /// Gets the value of the current selected registry value.
         /// </summary>
-        internal object? Value { get; }
+        internal object? ValueData { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistryEntry"/> class.
@@ -64,12 +65,49 @@ namespace Microsoft.Plugin.Registry.Classes
         /// <param name="key">The <see cref="RegistryKey"/> for this entry.</param>
         /// <param name="valueName">The value name of the current selected registry value.</param>
         /// <param name="value">The value of the current selected registry value.</param>
-        public RegistryEntry(RegistryKey key, string valueName, object value)
+        internal RegistryEntry(RegistryKey key, string valueName, object value)
         {
             KeyPath = key.Name;
             Key = key;
             ValueName = valueName;
-            Value = value;
+            ValueData = value;
+        }
+
+        /// <summary>
+        /// Return the registry key.
+        /// </summary>
+        /// <returns>A registry key.</returns>
+        internal string GetRegistryKey()
+        {
+            return $"{Key?.Name ?? KeyPath}";
+        }
+
+        /// <summary>
+        /// Return the value name with the complete registry key.
+        /// </summary>
+        /// <returns>A value name with the complete registry key.</returns>
+        internal string GetValueNameWithKey()
+        {
+            return $"{Key?.Name ?? KeyPath}\\\\{ValueName?.ToString() ?? string.Empty}";
+        }
+
+        /// <summary>
+        /// Return the value data of a value name inside a registry key.
+        /// </summary>
+        /// <returns>A value data.</returns>
+        internal string GetValueData()
+        {
+            if (Key is null)
+            {
+                return KeyPath;
+            }
+
+            if (string.IsNullOrEmpty(ValueName))
+            {
+                return Key.Name;
+            }
+
+            return ValueHelper.GetValue(Key, ValueName);
         }
     }
 }
