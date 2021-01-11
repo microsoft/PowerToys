@@ -73,7 +73,7 @@ private:
     static const int MAX_WAIT_MILLISEC = 10000;
 
     // Hotkey to invoke the module
-    Hotkey m_hotkey = { .key = {} };
+    Hotkey m_hotkey = {};
 
     // Helper function to extract the hotkey from the settings
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings);
