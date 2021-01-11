@@ -20,6 +20,7 @@ namespace Microsoft.Plugin.Registry.Helper
     {
         /// <summary>
         /// Return a list with all context menu entries for the given <see cref="Result"/>
+        /// <para>Symbols taken from <see href="https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font"/></para>
         /// </summary>
         /// <param name="result">The result for the context menu entires</param>
         /// <param name="assemblyName">The name of the this assembly</param>
@@ -77,7 +78,7 @@ namespace Microsoft.Plugin.Registry.Helper
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ => TryToOpenInRegistryEditor(entry),
                 FontFamily = "Segoe MDL2 Assets",
-                Glyph = "\xE70F",                           // E70F => Symbol: Pencil (means "Edit")
+                Glyph = "\xE8A7",                           // E8A7 => Symbol: OpenInNewWindow
                 PluginName = assemblyName,
                 Title = $"{Resources.OpenKeyInRegistryEditor} (CTRL+SHIFT+ENTER){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
             });
