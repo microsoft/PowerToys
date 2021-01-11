@@ -41,7 +41,7 @@ json::JsonObject get_power_toys_settings()
         }
         catch (...)
         {
-            Logger::error("get_power_toys_settings: got malformed json!");
+            Logger::error("get_power_toys_settings: got malformed json");
         }
     }
     return result;
