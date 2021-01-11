@@ -705,7 +705,7 @@
     <value>Version:</value>
   </data>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
-    <value>Last checked: </value>
+    <value>Last successfully checked: </value>
   </data>
   <data name="General_Version.AutomationProperties.Name" xml:space="preserve">
     <value>Version</value>

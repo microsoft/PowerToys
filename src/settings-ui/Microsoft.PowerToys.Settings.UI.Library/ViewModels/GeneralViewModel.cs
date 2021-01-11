@@ -388,10 +388,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendCheckForUpdatesConfigMSG(customaction.ToString());
-            RequestUpdateCheckedDate();
         }
 
-        private void RequestUpdateCheckedDate()
+        public void RequestUpdateCheckedDate()
         {
             GeneralSettingsConfig.CustomActionName = "request_update_state_date";
 

@@ -85,19 +85,25 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    auto new_version_info = check_for_updates();
-                    const VersionHelper latestVersion =
-                        new_version_info ? new_version_info->version :
-                                           VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION };
+                    if (auto update_check_result = check_for_updates())
+                    {
+                        VersionHelper latestVersion{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION };
+                        bool isVersionLatest = true;
+                        if (auto new_version = std::get_if<updating::new_version_download_info>(&*update_check_result))
+                        {
+                            latestVersion = new_version->version;
+                            isVersionLatest = false;
+                        }
+                        json::JsonObject json;
+                        json.SetNamedValue(L"version", json::value(latestVersion.toWstring()));
+                        json.SetNamedValue(L"isVersionLatest", json::value(isVersionLatest));
 
-                    json::JsonObject json;
-                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(latestVersion.toWstring()));
-                    json.SetNamedValue(L"isVersionLatest", json::JsonValue::CreateBooleanValue(!new_version_info));
+                        result.emplace(json.Stringify());
 
-                    result.emplace(json.Stringify());
-                    UpdateState::store([](UpdateState& state) {
-                        state.github_update_last_checked_date.emplace(timeutil::now());
-                    });
+                        UpdateState::store([](UpdateState& state) {
+                            state.github_update_last_checked_date.emplace(timeutil::now());
+                        });
+                    }
                 }
                 else if (action == L"request_update_state_date")
                 {
@@ -107,7 +113,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                     if (update_state.github_update_last_checked_date)
                     {
                         const time_t date = *update_state.github_update_last_checked_date;
-                        json.SetNamedValue(L"updateStateDate", json::JsonValue::CreateStringValue(std::to_wstring(date)));
+                        json.SetNamedValue(L"updateStateDate", json::value(std::to_wstring(date)));
                     }
 
                     result.emplace(json.Stringify());
