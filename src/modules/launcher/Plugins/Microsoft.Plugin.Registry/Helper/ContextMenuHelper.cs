@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyRegistryKeyToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
+                    Title = $"{Resources.CopyRegistryKeyToClipboard} (Ctrl+Shift+C){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
                 });
             }
             else
@@ -57,7 +57,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF413",                       // F413 => Symbol: CopyTo
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyValueToClipboard} (CTRL+ALT+C){Environment.NewLine}{Environment.NewLine}{Resources.Value} {entry.Value}",
+                    Title = $"{Resources.CopyValueToClipboard} (Ctrl+Alt+C){Environment.NewLine}{Environment.NewLine}{Resources.Value} {entry.Value}",
                 });
 
                 list.Add(new ContextMenuResult
@@ -68,7 +68,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyValueNameToClipboard} (CTRL+SHIFT+C){Environment.NewLine}{Environment.NewLine}{Resources.Name} {entry.ValueName}",
+                    Title = $"{Resources.CopyValueNameToClipboard} (Ctrl+Shift+C){Environment.NewLine}{Environment.NewLine}{Resources.Name} {entry.ValueName}",
                 });
             }
 
@@ -80,7 +80,7 @@ namespace Microsoft.Plugin.Registry.Helper
                 FontFamily = "Segoe MDL2 Assets",
                 Glyph = "\xE8A7",                           // E8A7 => Symbol: OpenInNewWindow
                 PluginName = assemblyName,
-                Title = $"{Resources.OpenKeyInRegistryEditor} (CTRL+SHIFT+ENTER){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
+                Title = $"{Resources.OpenKeyInRegistryEditor} (Ctrl+Shift+Enter){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
             });
 
             return list;
