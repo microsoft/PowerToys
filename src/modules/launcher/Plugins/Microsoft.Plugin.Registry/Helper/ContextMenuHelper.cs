@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyKeyPath} (Ctrl+Shift+C){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
+                    Title = $"{Resources.CopyKeyPath} (Ctrl+Shift+C)",
                 });
             }
             else
@@ -57,7 +57,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF413",                       // F413 => Symbol: CopyTo
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyValueData} (Ctrl+Alt+C){Environment.NewLine}{Environment.NewLine}{Resources.Value} {entry.Value}",
+                    Title = $"{Resources.CopyValueData} (Ctrl+Alt+C)",
                 });
 
                 list.Add(new ContextMenuResult
@@ -68,7 +68,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyValueName} (Ctrl+Shift+C){Environment.NewLine}{Environment.NewLine}{Resources.Name} {entry.ValueName}",
+                    Title = $"{Resources.CopyValueName} (Ctrl+Shift+C)",
                 });
             }
 
@@ -80,7 +80,7 @@ namespace Microsoft.Plugin.Registry.Helper
                 FontFamily = "Segoe MDL2 Assets",
                 Glyph = "\xE8A7",                           // E8A7 => Symbol: OpenInNewWindow
                 PluginName = assemblyName,
-                Title = $"{Resources.OpenKeyInRegistryEditor} (Ctrl+Shift+Enter){Environment.NewLine}{Environment.NewLine}{Resources.Key} {entry.Key?.Name ?? entry.KeyPath}",
+                Title = $"{Resources.OpenKeyInRegistryEditor} (Ctrl+Shift+Enter)",
             });
 
             return list;
