@@ -152,7 +152,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
     const bool ok = json::JsonObject::TryParse(json_to_parse, j);
     if (!ok)
     {
-        Logger::error("dispatch_received_json: got malformed json");
+        Logger::error("dispatch_received_json: got malformed json: {}", json_to_parse);
         return;
     }
 
