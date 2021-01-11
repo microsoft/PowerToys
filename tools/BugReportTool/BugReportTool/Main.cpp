@@ -30,6 +30,29 @@ vector<wstring> filesToDelete = {
     L"PowerToys Run\\Settings\\QueryHistory.json"
 };
 
+vector<pair<wstring, wstring>> registryKeys = {
+    { L"HKEY_CLASSES_ROOT", L"Software\\Classes\\CLSID\\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}" },
+    { L"HKEY_CLASSES_ROOT", L"powertoys" },
+    { L"HKEY_CLASSES_ROOT", L"CLSID\\{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
+    { L"HKEY_CLASSES_ROOT", L"CLSID\\{36B27788-A8BB-4698-A756-DF9F11F64F84}" },
+    { L"HKEY_CLASSES_ROOT", L"CLSID\\{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
+    { L"HKEY_CLASSES_ROOT", L"AppID\\{CF142243-F059-45AF-8842-DBBE9783DB14}" },
+    { L"HKEY_CLASSES_ROOT", L"CLSID\\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\\InprocServer32" },
+    { L"HKEY_CLASSES_ROOT", L"CLSID\\{0440049F-D1DC-4E46-B27B-98393D79486B}" },
+    { L"HKEY_CLASSES_ROOT", L"AllFileSystemObjects\\ShellEx\\ContextMenuHandlers\\PowerRenameExt" },
+    { L"HKEY_CURRENT_USER", L"SOFTWARE\\Classes\\AppUserModelId\\PowerToysRun" },
+    { L"HKEY_CLASSES_ROOT", L".svg\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" },
+    { L"HKEY_CLASSES_ROOT", L".svg\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
+    { L"HKEY_CLASSES_ROOT", L".md\\shellex\\{8895b1c6-b41f-4c1c-a562-0d564250836f}" }
+};
+
+vector<tuple<wstring, wstring, wstring>> registryValues = {
+    { L"HKEY_LOCAL_MACHINE", L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{ddee2b8a-6807-48a6-bb20-2338174ff779}" },
+    { L"HKEY_LOCAL_MACHINE", L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers", L"{45769bcc-e8fd-42d0-947e-02beef77a1f5}" },
+    { L"HKEY_LOCAL_MACHINE", L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"prevhost.exe" },
+    { L"HKEY_LOCAL_MACHINE", L"Software\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION", L"dllhost.exe" }
+};
+
 vector<wstring> getXpathArray(wstring xpath)
 {
     vector<wstring> result;
@@ -227,6 +250,189 @@ void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
     }
 }
 
+void queryKey(HKEY key, wofstream& stream, int ident = 1)
+{
+    TCHAR achKey[255];
+    DWORD cbName;
+    TCHAR achClass[MAX_PATH] = TEXT("");
+    DWORD cchClassName = MAX_PATH;
+    DWORD cSubKeys = 0;
+    DWORD cbMaxSubKey; 
+    DWORD cchMaxClass; 
+    DWORD cValues;
+    DWORD cchMaxValue; 
+    DWORD cbMaxValueData;
+
+    DWORD i, retCode;
+
+    TCHAR achValue[255];
+    DWORD cchValue = 255;
+    LPBYTE value;
+
+    // Get the class name and the value count. 
+    retCode = RegQueryInfoKey(key,achClass, &cchClassName, NULL, &cSubKeys, &cbMaxSubKey, &cchMaxClass, &cValues, &cchMaxValue, &cbMaxValueData, NULL, NULL);
+
+    // Values
+    if (cValues)
+    {
+        for (i = 0, retCode = ERROR_SUCCESS; i < cValues; i++)
+        {
+            cchValue = 255;
+            achValue[0] = '\0';
+            value = new BYTE[16383];
+            retCode = RegEnumValue(key, i, achValue, &cchValue, NULL, NULL, value, &cchValue);
+
+            if (retCode == ERROR_SUCCESS)
+            {
+                stream << wstring(ident, '\t');
+                if (achValue[0] == '\0')
+                {
+                    stream << "Default";
+                }
+                else
+                {
+                    stream << achValue;
+                }
+
+                stream << " > " << (LPCTSTR)value << "\n";
+            }
+            else
+            {
+                stream << "Error " << retCode << "\n";
+            }
+        }
+    }
+
+    // Keys
+    if (cSubKeys)
+    {
+        std::vector<wstring> vecKeys;
+        vecKeys.reserve(cSubKeys);
+
+        for (i = 0; i < cSubKeys; ++i)
+        {
+            cbName = 255;
+            retCode = RegEnumKeyEx(key, i, achKey, &cbName, NULL, NULL, NULL, NULL);
+            if (retCode == ERROR_SUCCESS)
+            {
+                vecKeys.push_back(achKey);
+            }
+        }
+
+        // Parsing subkeys recursively
+        for (std::vector<wstring>::iterator iter = vecKeys.begin(), end = vecKeys.end(); iter != end; ++iter)
+        {
+            HKEY hTestKey;
+            if (RegOpenKeyExW(key, iter->c_str(), 0, KEY_READ, &hTestKey) == ERROR_SUCCESS)
+            {
+                stream << wstring(ident, '\t') << iter[0] << "\n";
+                queryKey(hTestKey, stream, ident++);
+                RegCloseKey(hTestKey);
+            }
+            else
+            {
+                stream << "Error " << retCode << "\n";
+            }
+        }
+    }
+}
+
+HKEY getRootKey(wstring key)
+{
+    if (key == L"HKEY_CURRENT_USER")
+    {
+        return HKEY_CURRENT_USER;
+    }
+    else if (key == L"HKEY_LOCAL_MACHINE")
+    {
+        return HKEY_LOCAL_MACHINE;
+    }
+    return HKEY_CLASSES_ROOT;
+}
+
+void reportRegistry(const filesystem::path& tmpDir)
+{
+    auto registryReportPath = tmpDir;
+    registryReportPath.append("registry.txt");
+
+    wofstream registryReport(registryReportPath);
+    try
+    {
+        for (auto k : registryKeys)
+        {
+            registryReport << k.first << "\\" << k.second << "\n";
+
+            HKEY rootKey = getRootKey(k.first);
+            HKEY outKey;
+            LONG result = RegOpenKeyEx(rootKey, k.second.c_str(), 0, KEY_READ, &outKey);
+            if (result == ERROR_SUCCESS)
+            {
+                queryKey(outKey, registryReport);
+                RegCloseKey(rootKey);
+            }
+            else
+            {
+                registryReport << "ERROR " << result << "\n";
+            }
+            registryReport << "\n";
+        }
+
+        for (auto v : registryValues)
+        {
+            registryReport << std::get<0>(v) << "\\" << std::get<1>(v) << "\n";
+
+            HKEY rootKey = getRootKey(std::get<0>(v));
+
+            // Reading size
+            DWORD dataSize = 0;
+            DWORD flags = RRF_RT_ANY;
+            DWORD type;
+            LONG result = RegGetValue(rootKey, std::get<1>(v).c_str(), std::get<2>(v).c_str(), flags, &type, NULL, &dataSize);
+            if (result == ERROR_SUCCESS)
+            {
+                // Reading value
+                if (type == REG_SZ) // string
+                {
+                    std::wstring data(dataSize / sizeof(wchar_t), L' ');
+                    result = RegGetValue(rootKey, std::get<1>(v).c_str(), std::get<2>(v).c_str(), flags, &type, &data[0], &dataSize);
+                    if (result == ERROR_SUCCESS)
+                    {
+                        registryReport << "\t" << std::get<2>(v) << " > " << data << "\n";
+                    }
+                    else
+                    {
+                        registryReport << "ERROR " << result << "\n";
+                    }
+                }
+                else
+                {
+                    DWORD data = 0;
+                    DWORD dataSize = sizeof(data);
+                    LONG retCode = RegGetValue(rootKey, std::get<1>(v).c_str(), std::get<2>(v).c_str(), flags, &type, &data, &dataSize);
+                    if (result == ERROR_SUCCESS)
+                    {
+                        registryReport << "\t" << std::get<2>(v) << " > " << data << "\n";
+                    }
+                    else
+                    {
+                        registryReport << "ERROR " << result << "\n";
+                    }
+                }
+                RegCloseKey(rootKey);
+            }
+            else
+            {
+                registryReport << "ERROR " << result << "\n";
+            }
+            registryReport << "\n";
+        }
+    }
+    catch (...)
+    {
+        printf("Failed to get registry keys\n");
+    }
+}
+
 int wmain(int argc, wchar_t* argv[], wchar_t*)
 {
     // Get path to save zip
@@ -284,6 +490,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write dotnet installation info to the temporary folder
     reportDotNetInstallationInfo(tmpDir);
+
+    // Write registry to the temporary folder
+    reportRegistry(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
