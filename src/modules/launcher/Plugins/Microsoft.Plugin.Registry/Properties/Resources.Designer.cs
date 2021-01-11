@@ -61,29 +61,29 @@ namespace Microsoft.Plugin.Registry.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy registry key to clipboard.
+        ///   Looks up a localized string similar to Copy key path.
         /// </summary>
-        internal static string CopyRegistryKeyToClipboard {
+        internal static string CopyKeyPath {
             get {
-                return ResourceManager.GetString("CopyRegistryKeyToClipboard", resourceCulture);
+                return ResourceManager.GetString("CopyKeyPath", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy value name to clipboard.
+        ///   Looks up a localized string similar to Copy value data.
         /// </summary>
-        internal static string CopyValueNameToClipboard {
+        internal static string CopyValueData {
             get {
-                return ResourceManager.GetString("CopyValueNameToClipboard", resourceCulture);
+                return ResourceManager.GetString("CopyValueData", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy value to clipboard.
+        ///   Looks up a localized string similar to Copy value name.
         /// </summary>
-        internal static string CopyValueToClipboard {
+        internal static string CopyValueName {
             get {
-                return ResourceManager.GetString("CopyValueToClipboard", resourceCulture);
+                return ResourceManager.GetString("CopyValueName", resourceCulture);
             }
         }
         

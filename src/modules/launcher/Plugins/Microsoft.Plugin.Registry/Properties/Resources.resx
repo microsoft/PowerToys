@@ -123,8 +123,8 @@
   <data name="PluginDescription" xml:space="preserve">
     <value>Search inside the Windows Registry</value>
   </data>
-  <data name="CopyRegistryKeyToClipboard" xml:space="preserve">
-    <value>Copy registry key to clipboard</value>
+  <data name="CopyKeyPath" xml:space="preserve">
+    <value>Copy key path</value>
   </data>
   <data name="Key" xml:space="preserve">
     <value>Key:</value>
@@ -132,8 +132,8 @@
   <data name="Name" xml:space="preserve">
     <value>Name:</value>
   </data>
-  <data name="CopyValueNameToClipboard" xml:space="preserve">
-    <value>Copy value name to clipboard</value>
+  <data name="CopyValueName" xml:space="preserve">
+    <value>Copy value name</value>
   </data>
   <data name="OpenKeyInRegistryEditor" xml:space="preserve">
     <value>Open key in registry editor</value>
@@ -168,7 +168,7 @@
   <data name="RegistryValueKindUnknown" xml:space="preserve">
     <value>Unsupported data type</value>
   </data>
-  <data name="CopyValueToClipboard" xml:space="preserve">
-    <value>Copy value to clipboard</value>
+  <data name="CopyValueData" xml:space="preserve">
+    <value>Copy value data</value>
   </data>
 </root>
