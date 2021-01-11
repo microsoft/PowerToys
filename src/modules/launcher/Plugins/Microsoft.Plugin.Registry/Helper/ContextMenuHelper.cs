@@ -52,12 +52,12 @@ namespace Microsoft.Plugin.Registry.Helper
                 list.Add(new ContextMenuResult
                 {
                     AcceleratorKey = Key.C,
-                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Alt,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ => TryToCopyToClipBoard(entry.Value?.ToString() ?? string.Empty),
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xF413",                       // F413 => Symbol: CopyTo
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyValueData} (Ctrl+Alt+C)",
+                    Title = $"{Resources.CopyValueData} (Ctrl+Shift+D)",
                 });
 
                 list.Add(new ContextMenuResult
