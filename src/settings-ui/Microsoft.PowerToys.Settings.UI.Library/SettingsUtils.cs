@@ -82,9 +82,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // Catch json deserialization exceptions when the file is corrupt and has an invalid json.
             // If there are any deserialization issues like in https://github.com/microsoft/PowerToys/issues/7500, log the error and create a new settings.json file.
             // This is different from the case where we have trailing zeros following a valid json file, which we have handled by trimming the trailing zeros.
-            catch (Exception ex) when (ex is FileNotFoundException || ex is JsonException)
+            catch (JsonException ex)
             {
                 Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
+            }
+            catch (FileNotFoundException)
+            {
+                Logger.LogInfo($"Settings file {fileName} for {powertoy} was not found.");
             }
 
             // If the settings file does not exist or if the file is corrupt, to create a new object with default parameters and save it to a newly created settings file.
