@@ -106,7 +106,7 @@ Once the team have approved an issue/spec, development can proceed. If no develo
 Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/readme.md).
 
 
-### How can I become a collaborateur on the PowerToys team
+### How can I become a collaborator on the PowerToys team
 
 Be a great community member. Just help out a lot and make useful additions, filing bugs/suggestions, help develop fixes and features, code reviews, and always, docs. Lets continue to make the PowerToys repository a great spot to learn and make a great set of utilities.
 
