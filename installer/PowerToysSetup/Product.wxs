@@ -246,6 +246,10 @@
                   <Directory Id="UriImagesFolder" Name="Images" />
                   <Directory Id="UriLanguagesFolder" Name="Languages" />
                 </Directory>
+                <Directory Id="VSCodeWorkspacePluginFolder" Name="Microsoft.Plugin.VSCodeWorkspace">
+                  <Directory Id="VSCodeWorkspaceImagesFolder" Name="Images" />
+                  <Directory Id="VSCodeWorkspaceLanguagesFolder" Name="Languages" />
+                </Directory>
                 <Directory Id="WindowWalkerPluginFolder" Name="Microsoft.Plugin.WindowWalker">
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
@@ -878,6 +882,9 @@
                 <Component Id="Launcher_Uri_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
                     <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
                 </Component>
+                <Component Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
+                  <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\$(var.Language)\Microsoft.Plugin.VSCodeWorkspaces.resources.dll" />
+                </Component>
                 <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
                     <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
                 </Component>
@@ -990,7 +997,20 @@
         <File Id="UriLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\Images\Uri.light.png" />
       </Component>
 
-      <!-- WindowWalker Plugin -->
+      <!-- VSCodeWorkspaces Plugin -->
+      <Component Id="VSCodeWorkspacesComponent" Directory="VSCodeWorkspacePluginFolder" Guid="78363DBD-7E38-4D5F-8987-9963DF609B94">
+        <?foreach File in plugin.json;Microsoft.Plugin.VSCodeWorkspaces.deps.json;Microsoft.Plugin.VSCodeWorkspaces.dll;ManagedTelemetry.dll?>
+        <File Id="VSCodeWorkspaces_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="VSCodeWorkspacesImagesComponent" Directory="VSCodeWorkspaceImagesFolder" Guid="6F3C0CF1-7024-4333-BFA1-850D340AEE69">
+        <File Id="VSCodeWorkspaceFolder" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\Images\code_workspace.png" />
+        <File Id="VSCodeWorkspaceFolderInsiders" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\Images\code_insiders_workspace.png" />
+        <File Id="VSCodeWorkspaceRemoteMachine" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\Images\code_machine.png" />
+        <File Id="VSCodeWorkspaceRemoteMachineInsiders" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\Images\code_insiders_machine.png" />
+      </Component>
+
+      <!-- WindowWalker Plugin -->  
       <Component Id="WindowWalkerComponent" Directory="WindowWalkerPluginFolder" Guid="EB1391C9-B701-421F-80FC-ABB2FEDFAD19">
         <?foreach File in plugin.json;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;ManagedTelemetry.dll?>
           <File Id="WindowWalker_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.File)" />
