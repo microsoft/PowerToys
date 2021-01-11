@@ -3,6 +3,8 @@
 
 #include <iterator>
 
+constexpr DWORD BUFSIZE = 1024;
+
 TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
     std::wstring _input_pipe_name,
     std::wstring _output_pipe_name,
@@ -347,69 +349,41 @@ HANDLE TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_medium_integrity_t
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(HANDLE input_pipe_handle)
 {
-    //Adapted from https://docs.microsoft.com/en-us/windows/win32/ipc/multithreaded-pipe-server
-    HANDLE hHeap = GetProcessHeap();
-    uint8_t* pchRequest = (uint8_t*)HeapAlloc(hHeap, 0, BUFSIZE * sizeof(uint8_t));
-
-    DWORD cbBytesRead = 0, cbReplyBytes = 0, cbWritten = 0;
-    BOOL fSuccess = FALSE;
-
-    // Do some extra error checking since the app will keep running even if this thread fails.
-    std::list<std::vector<uint8_t>> message_parts;
-
-    if (input_pipe_handle == NULL)
-    {
-        if (pchRequest != NULL)
-            HeapFree(hHeap, 0, pchRequest);
-        return;
-    }
-
-    if (pchRequest == NULL)
+    if (!input_pipe_handle)
     {
         return;
     }
-
-    // Loop until done reading
+    constexpr DWORD readBlockBytes = BUFSIZE;
+    std::wstring message;
+    size_t iBlock = 0;
+    message.reserve(BUFSIZE);
+    bool ok;
     do
     {
-        // Read client requests from the pipe. This simplistic code only allows messages
-        // up to BUFSIZE characters in length.
-        ZeroMemory(pchRequest, BUFSIZE * sizeof(uint8_t));
-        fSuccess = ReadFile(
-            input_pipe_handle, // handle to pipe
-            pchRequest, // buffer to receive data
-            BUFSIZE * sizeof(uint8_t), // size of buffer
-            &cbBytesRead, // number of bytes read
-            NULL); // not overlapped I/O
+        constexpr size_t charsPerBlock = readBlockBytes / sizeof(message[0]);
+        message.resize(message.size() + charsPerBlock);
+        DWORD bytesRead = 0;
+        ok = ReadFile(
+            input_pipe_handle,
+            message.data() + iBlock * charsPerBlock,
+            readBlockBytes,
+            &bytesRead,
+            nullptr);
 
-        if (!fSuccess && GetLastError() != ERROR_MORE_DATA)
+        if (!ok && GetLastError() != ERROR_MORE_DATA)
         {
             break;
         }
-        std::vector<uint8_t> part_vector;
-        part_vector.reserve(cbBytesRead);
-        std::copy(pchRequest, pchRequest + cbBytesRead, std::back_inserter(part_vector));
-        message_parts.push_back(part_vector);
-    } while (!fSuccess);
-
-    if (fSuccess)
+        iBlock++;
+    } while (!ok);
+    // trim the message's buffer
+    const auto nullCharPos = message.find_last_not_of(L'\0');
+    if (nullCharPos != std::wstring::npos)
     {
-        // Reconstruct the total_message.
-        std::vector<uint8_t> reconstructed_message;
-        size_t total_size = 0;
-        for (auto& part_vector : message_parts)
-        {
-            total_size += part_vector.size();
-        }
-        reconstructed_message.reserve(total_size);
-        for (auto& part_vector : message_parts)
-        {
-            std::move(part_vector.begin(), part_vector.end(), std::back_inserter(reconstructed_message));
-        }
-        std::wstring unicode_msg;
-        unicode_msg.assign(reinterpret_cast<std::wstring::const_pointer>(reconstructed_message.data()), reconstructed_message.size() / sizeof(std::wstring::value_type));
-        input_queue.queue_message(unicode_msg);
+        message.resize(nullCharPos + 1);
     }
+
+    input_queue.queue_message(std::move(message));
 
     // Flush the pipe to allow the client to read the pipe's contents
     // before disconnecting. Then disconnect the pipe, and close the
@@ -418,10 +392,6 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(HAND
     FlushFileBuffers(input_pipe_handle);
     DisconnectNamedPipe(input_pipe_handle);
     CloseHandle(input_pipe_handle);
-
-    HeapFree(hHeap, 0, pchRequest);
-
-    printf("InstanceThread exiting.\n");
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HANDLE token)
