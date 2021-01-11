@@ -129,7 +129,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{4AFC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Calculator", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.csproj", "{59BD9891-3837-438A-958D-ADC7F91F6F7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.VSCodeWorkspaces", "src\modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\Microsoft.Plugin.VSCodeWorkspaces.csproj", "{4D971245-7A70-41D5-BAA0-DDB5684CAF51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces\Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.csproj", "{4D971245-7A70-41D5-BAA0-DDB5684CAF51}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.WindowWalker", "src\modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.csproj", "{74F1B9ED-F59C-4FE7-B473-7B453E30837E}"
 EndProject

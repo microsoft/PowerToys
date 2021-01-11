@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces
 {
     class SystemPath
     {

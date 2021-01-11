@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class ParseVSCodeUri
     {

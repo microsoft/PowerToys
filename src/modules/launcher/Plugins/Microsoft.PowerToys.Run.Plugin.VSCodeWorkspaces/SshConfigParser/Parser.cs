@@ -8,9 +8,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using static Microsoft.Plugin.VSCodeWorkspaces.SshConfigParser.Globber;
+using static Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser.Globber;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.SshConfigParser
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 {
     // Based on code from https://github.com/dotnil/ssh-config
 

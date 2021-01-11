@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 {
     public enum VSCodeVersion
     {

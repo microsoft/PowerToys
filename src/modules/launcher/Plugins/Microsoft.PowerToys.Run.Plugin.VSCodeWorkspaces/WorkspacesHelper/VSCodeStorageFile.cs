@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class VSCodeStorageFile
     {

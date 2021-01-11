@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.SshConfigParser
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 {
     // Based on code from https://github.com/dotnil/ssh-config
     public static class Globber

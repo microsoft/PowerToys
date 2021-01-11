@@ -1,11 +1,11 @@
-﻿using Microsoft.Plugin.VSCodeWorkspaces.SshConfigParser;
-using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
+﻿using Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser;
+using Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
 {
     public class VSCodeRemoteMachinesApi
     {

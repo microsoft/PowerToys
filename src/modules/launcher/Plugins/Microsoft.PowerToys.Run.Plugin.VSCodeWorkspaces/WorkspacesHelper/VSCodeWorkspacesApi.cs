@@ -1,10 +1,10 @@
-using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
+using Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class VSCodeWorkspacesApi
     {

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using Microsoft.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
-using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
-using Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper;
+using Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
+using Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
+using Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper;
 using Wox.Plugin;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces
 {
     public class Main : IPlugin, IPluginI18n
     {

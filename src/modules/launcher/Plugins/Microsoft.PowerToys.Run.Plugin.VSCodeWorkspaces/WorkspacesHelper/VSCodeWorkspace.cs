@@ -1,6 +1,6 @@
-﻿using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
+﻿using Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class VSCodeWorkspace
     {

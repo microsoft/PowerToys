@@ -1,6 +1,6 @@
-﻿using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
+﻿using Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
 {
     public class VSCodeRemoteMachine
     {

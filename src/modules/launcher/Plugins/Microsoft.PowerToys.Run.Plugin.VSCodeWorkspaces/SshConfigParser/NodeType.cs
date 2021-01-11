@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Plugin.VSCodeWorkspaces.SshConfigParser
+﻿namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 {
     public enum NodeType
     {

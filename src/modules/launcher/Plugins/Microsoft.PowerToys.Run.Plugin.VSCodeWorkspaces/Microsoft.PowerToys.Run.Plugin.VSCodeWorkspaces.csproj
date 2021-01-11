@@ -5,8 +5,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{4D971245-7A70-41D5-BAA0-DDB5684CAF51}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Plugin.VSCodeWorkspaces</RootNamespace>
-    <AssemblyName>Microsoft.Plugin.VSCodeWorkspaces</AssemblyName>
+    <RootNamespace>Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces</RootNamespace>
+    <AssemblyName>Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces</AssemblyName>
     <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -15,7 +15,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\</OutputPath>
+    <OutputPath>..\..\..\..\..\x64\Debug\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\..\..\x64\Release\modules\launcher\Plugins\Microsoft.Plugin.VSCodeWorkspaces\</OutputPath>
+    <OutputPath>..\..\..\..\..\x64\Release\modules\launcher\Plugins\VSCodeWorkspaces\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>

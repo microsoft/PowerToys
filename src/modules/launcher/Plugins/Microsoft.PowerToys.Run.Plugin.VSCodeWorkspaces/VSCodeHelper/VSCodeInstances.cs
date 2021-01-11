@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper
+namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 {
     static class VSCodeInstances
     {
