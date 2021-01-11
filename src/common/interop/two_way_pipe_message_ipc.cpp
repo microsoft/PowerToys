@@ -365,6 +365,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(HAND
         DWORD bytesRead = 0;
         ok = ReadFile(
             input_pipe_handle,
+            // read the message directly into the string block by block simultaneously resizing it
             message.data() + iBlock * charsPerBlock,
             readBlockBytes,
             &bytesRead,
