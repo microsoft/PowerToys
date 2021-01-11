@@ -102,7 +102,8 @@ Here the options are both inline and allow for an on/off.
 
 ### 5.1: Core design and screenshots
 
-TODO: Mocks of hybrid between language and SysIcon
+Quick mock of what it could look like in a first attempt.
+![alt Mock of the UX with existing settings][uxMock]
 
 ### 5.2: Existing consideration
 
@@ -126,3 +127,4 @@ TODO:
 
 [WinSettingLanguage]: ./images/PtRunPlugin/preferredLanguages.png
 [WinSettingSysIcon]: ./images/PtRunPlugin/systemIcons.png
+[uxMock]: ./images/PtRunPlugin/pluginSettingMockUx.png
