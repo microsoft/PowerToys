@@ -92,7 +92,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// </summary>
         /// <param name="entry">The <see cref="RegistryEntry"/> to jump in</param>
         /// <returns><see langword="true"/> if the registry editor was successful open, otherwise <see langword="false"/></returns>
-        private static bool TryToOpenInRegistryEditor(in RegistryEntry entry)
+        internal static bool TryToOpenInRegistryEditor(in RegistryEntry entry)
         {
             try
             {

@@ -58,6 +58,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     result.Title = GetTruncatedText(entry.KeyPath, MaxTextLength.MaximumTitleLengthWithTwoSymbols);
                 }
 
+                result.Action = (_) => ContextMenuHelper.TryToOpenInRegistryEditor(entry);
                 result.ContextData = entry;
                 result.ToolTipData = new ToolTipData(Resources.RegistryKey, $"{Resources.Key}\t{result.Title}");
 
@@ -98,13 +99,16 @@ namespace Microsoft.Plugin.Registry.Helper
                 }
                 catch (Exception valueException)
                 {
+                    var registryEntry = new RegistryEntry(key.Name, valueException);
+
                     resultList.Add(new Result
                     {
-                        ContextData = new RegistryEntry(key.Name, valueException),
+                        ContextData = registryEntry,
                         IcoPath = iconPath,
                         SubTitle = GetTruncatedText(valueException.Message, MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                         Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                         ToolTipData = new ToolTipData(valueException.Message, valueException.ToString()),
+                        Action = (_) => ContextMenuHelper.TryToOpenInRegistryEditor(registryEntry),
                         QueryTextDisplay = key.Name,
                     });
                 }
@@ -125,13 +129,16 @@ namespace Microsoft.Plugin.Registry.Helper
                         valueName = "(Default)";
                     }
 
+                    var registryEntry = new RegistryEntry(key, valueEntry.Key, valueEntry.Value);
+
                     resultList.Add(new Result
                     {
-                        ContextData = new RegistryEntry(key, valueEntry.Key, valueEntry.Value),
+                        ContextData = registryEntry,
                         IcoPath = iconPath,
                         SubTitle = GetTruncatedText(GetSubTileForRegistryValue(key, valueEntry), MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                         Title = GetTruncatedText(valueName, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                         ToolTipData = new ToolTipData(Resources.RegistryValue, GetToolTipTextForRegistryValue(key, valueEntry)),
+                        Action = (_) => ContextMenuHelper.TryToOpenInRegistryEditor(registryEntry),
 
                         // Avoid user handling interrupt when move up/down inside the results of a registry key
                         QueryTextDisplay = $"{key.Name}{QueryHelper.QuerySplitCharacter}",
@@ -140,13 +147,16 @@ namespace Microsoft.Plugin.Registry.Helper
             }
             catch (Exception exception)
             {
+                var registryEntry = new RegistryEntry(key.Name, exception);
+
                 resultList.Add(new Result
                 {
-                    ContextData = new RegistryEntry(key.Name, exception),
+                    ContextData = registryEntry,
                     IcoPath = iconPath,
                     SubTitle = GetTruncatedText(exception.Message, MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                     Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                     ToolTipData = new ToolTipData(exception.Message, exception.ToString()),
+                    Action = (_) => ContextMenuHelper.TryToOpenInRegistryEditor(registryEntry),
                     QueryTextDisplay = key.Name,
                 });
             }
