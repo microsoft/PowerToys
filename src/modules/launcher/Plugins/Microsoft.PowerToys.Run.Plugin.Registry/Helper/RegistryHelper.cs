@@ -139,8 +139,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// Open a given registry key in the registry editor
         /// </summary>
         /// <param name="fullKey">The registry key to open</param>
-        /// <param name="startAsAdmin">when <see langword="true"/> the registry editor will start as admin.</param>
-        internal static void OpenRegistryKey(in string fullKey, bool startAsAdmin)
+        internal static void OpenRegistryKey(in string fullKey)
         {
             // it's impossible to directly open a key via command-line option, so we must override the last remember key
             Win32.Registry.SetValue(@"HKEY_Current_User\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", "LastKey", fullKey);
@@ -149,17 +148,15 @@ namespace Microsoft.Plugin.Registry.Helper
             {
                 // -m => allow multi-instance (hidden start option)
                 Arguments = "-m",
-                FileName = "regedit.exe",
-            };
 
-            if (startAsAdmin)
-            {
+                FileName = "regedit.exe",
+
                 // Start as administrator
-                processStartInfo.Verb = "runas";
+                Verb = "runas",
 
                 // Start as administrator will not work without this
-                processStartInfo.UseShellExecute = true;
-            }
+                UseShellExecute = true,
+            };
 
             Process.Start(processStartInfo);
         }

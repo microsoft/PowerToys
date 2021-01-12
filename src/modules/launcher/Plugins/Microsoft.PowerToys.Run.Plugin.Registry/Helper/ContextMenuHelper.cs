@@ -96,7 +96,7 @@ namespace Microsoft.Plugin.Registry.Helper
         {
             try
             {
-                RegistryHelper.OpenRegistryKey(entry.Key?.Name ?? entry.KeyPath, startAsAdmin: false);
+                RegistryHelper.OpenRegistryKey(entry.Key?.Name ?? entry.KeyPath);
                 return true;
             }
             catch (System.ComponentModel.Win32Exception)
