@@ -23,8 +23,6 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class MainWindow : Window
     {
-        // TODO: share the constants b/w C# Editor and FancyZoneLib
-        public const int MaxZones = 40;
         private const int DefaultWrapPanelItemSize = 164;
         private const int SmallWrapPanelItemSize = 164;
         private const int MinimalForDefaultWrapPanelsHeight = 900;
