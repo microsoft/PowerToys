@@ -140,15 +140,15 @@
   </data>
   <data name="OpenKeyInRegistryEditor" xml:space="preserve">
     <value>Open key in registry editor</value>
-    <comment>"registry editor" is the name of the OS buit-in application</comment>
+    <comment>"registry editor" is the name of the OS built-in application</comment>
   </data>
   <data name="OpenInRegistryEditorAccessExceptionText" xml:space="preserve">
     <value>You do not have enough rights to open the Windows registry editor</value>
-    <comment>"registry editor" is the name of the OS buit-in application </comment>
+    <comment>"registry editor" is the name of the OS built-in application </comment>
   </data>
   <data name="OpenInRegistryEditorAccessExceptionTitle" xml:space="preserve">
     <value>Error on open registry editor</value>
-    <comment>"registry editor" is the name of the OS buit-in application</comment>
+    <comment>"registry editor" is the name of the OS built-in application</comment>
   </data>
   <data name="SubKeys" xml:space="preserve">
     <value>Subkeys:</value>
