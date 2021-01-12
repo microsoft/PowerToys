@@ -27,7 +27,7 @@
         ResizeMode="CanResize">
     <Window.Resources>
 
-        <Converters:LayoutTypeToVisibilityConverter x:Key="LayoutTypeToVisibilityConverter" />
+        <Converters:LayoutTypeCustomToVisibilityConverter x:Key="LayoutTypeCustomToVisibilityConverter" />
 
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
@@ -156,7 +156,7 @@
                                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                                         Height="48"
                                         Style="{StaticResource AccentButtonStyle}"
-                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="&#xE104;"
@@ -170,11 +170,11 @@
                                            Text="{x:Static props:Resources.Name}"
                                            Margin="0,32,0,0"
                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}" />
+                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
                                 <TextBox Text="{Binding Name}"
                                          Margin="0,6,0,16"
                                          AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}"
-                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}"/>
+                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"/>
                                 
                                 <StackPanel Margin="0,0,0,0"
                                             Orientation="Vertical">
@@ -210,7 +210,7 @@
                                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                             Click="DeleteLayout_Click"
                                             Background="Transparent"
-                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                                         <Button.Content>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="&#xE107;"
@@ -322,7 +322,7 @@
                                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                                         Height="48"
                                         Style="{StaticResource AccentButtonStyle}"
-                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="&#xE104;"
@@ -336,11 +336,11 @@
                                            Text="{x:Static props:Resources.Name}"
                                            Margin="0,32,0,0"
                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}" />
+                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
                                 <TextBox Text="{Binding Name}"
                                          Margin="0,6,0,16"
                                          AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}"
-                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}"/>
+                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"/>
 
                                 <StackPanel Margin="0,0,0,0"
                                             Orientation="Vertical">
@@ -391,7 +391,7 @@
                                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                             Click="DeleteLayout_Click"
                                             Background="Transparent"
-                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                                         <Button.Content>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="&#xE107;"
