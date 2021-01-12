@@ -210,7 +210,7 @@ void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
     dotnetInfoPath.append("dotnet-installation-info.txt");
     try
     {
-        wofstream detnetReport(dotnetInfoPath);
+        wofstream dotnetReport(dotnetInfoPath);
         auto dotnetInfo = exec_and_read_output(LR"(dotnet --list-runtimes)");
         if (!dotnetInfo.has_value())
         {
@@ -218,7 +218,7 @@ void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
             return;
         }
 
-        detnetReport << dotnetInfo.value().c_str();
+        dotnetReport << dotnetInfo.value().c_str();
     }
     catch (...)
     {
