@@ -32,29 +32,20 @@ namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.RemoteMachinesHelper
                             var path = vscodeSettingsFile["remote.SSH.configFile"];
                             if (File.Exists(path.Value))
                             {
-                                SshConfig config = SshConfig.ParseFile(path.Value);
-
-                                foreach (var h in config.AsEnumerable())
+                                foreach (SshHost h in SshConfig.ParseFile(path.Value))
                                 {
-                                    if (h.Param.ToLower().Equals("host") && h.Value.Contains(query.ToLower()))
+                                    if (!h.Host.Equals(String.Empty))
                                     {
                                         var machine = new VSCodeRemoteMachine();
-                                        machine.Host = h.Value;
+                                        machine.Host = h.Host;
                                         machine.VSCodeInstance = vscodeInstance;
+                                        machine.HostName = h.HostName!=null?h.HostName:String.Empty;
+                                        machine.User = h.User != null ? h.User : String.Empty;
 
-                                        foreach(var r in h.Config.AsEnumerable())
+                                        if (h.Host.ToLower().Contains(query.ToLower()) || h.HostName.ToLower().Contains(query.ToLower()) || h.User.ToLower().Contains(query.ToLower()))
                                         {
-                                            if (r.Param.ToLower().Equals("hostname"))
-                                            {
-                                                machine.HostName = r.Value;
-                                            }
-                                            else if (r.Param.ToLower().Equals("user"))
-                                            {
-                                                machine.User = r.Value;
-                                            }
+                                            results.Add(machine);
                                         }
-
-                                        results.Add(machine);
                                     }
                                 }
                             }
