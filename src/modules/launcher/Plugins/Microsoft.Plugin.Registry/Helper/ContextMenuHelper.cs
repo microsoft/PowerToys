@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Registry.Helper
                     FontFamily = "Segoe MDL2 Assets",
                     Glyph = "\xE8C8",                       // E8C8 => Symbol: Copy
                     PluginName = assemblyName,
-                    Title = $"{Resources.CopyKeyPath} (Ctrl+C)",
+                    Title = $"{Resources.CopyKeyNamePath} (Ctrl+C)",
                 });
             }
             else

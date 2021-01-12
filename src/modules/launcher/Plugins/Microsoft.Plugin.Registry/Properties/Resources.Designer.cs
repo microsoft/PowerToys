@@ -61,11 +61,11 @@ namespace Microsoft.Plugin.Registry.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy key path.
+        ///   Looks up a localized string similar to Copy key name (path).
         /// </summary>
-        internal static string CopyKeyPath {
+        internal static string CopyKeyNamePath {
             get {
-                return ResourceManager.GetString("CopyKeyPath", resourceCulture);
+                return ResourceManager.GetString("CopyKeyNamePath", resourceCulture);
             }
         }
         
@@ -88,11 +88,11 @@ namespace Microsoft.Plugin.Registry.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Key:.
+        ///   Looks up a localized string similar to Key name:.
         /// </summary>
-        internal static string Key {
+        internal static string KeyName {
             get {
-                return ResourceManager.GetString("Key", resourceCulture);
+                return ResourceManager.GetString("KeyName", resourceCulture);
             }
         }
         
@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.Registry.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error on open Registry Editor.
+        ///   Looks up a localized string similar to Error on open registry editor.
         /// </summary>
         internal static string OpenInRegistryEditorAccessExceptionTitle {
             get {
@@ -160,7 +160,7 @@ namespace Microsoft.Plugin.Registry.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Registry Value.
+        ///   Looks up a localized string similar to Registry value.
         /// </summary>
         internal static string RegistryValue {
             get {
@@ -187,7 +187,7 @@ namespace Microsoft.Plugin.Registry.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sub-keys:.
+        ///   Looks up a localized string similar to Subkeys:.
         /// </summary>
         internal static string SubKeys {
             get {

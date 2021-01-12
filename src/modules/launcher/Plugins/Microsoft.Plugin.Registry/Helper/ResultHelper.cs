@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Registry.Helper
 
                 result.Action = (_) => ContextMenuHelper.TryToOpenInRegistryEditor(entry);
                 result.ContextData = entry;
-                result.ToolTipData = new ToolTipData(Resources.RegistryKey, $"{Resources.Key}\t{result.Title}");
+                result.ToolTipData = new ToolTipData(Resources.RegistryKey, $"{Resources.KeyName}\t{result.Title}");
 
                 resultList.Add(result);
             }
@@ -198,7 +198,7 @@ namespace Microsoft.Plugin.Registry.Helper
         /// <returns>A tool-tip text</returns>
         private static string GetToolTipTextForRegistryValue(RegistryKey key, KeyValuePair<string, object> valueEntry)
         {
-            return $"{Resources.Key}\t{key.Name}{Environment.NewLine}"
+            return $"{Resources.KeyName}\t{key.Name}{Environment.NewLine}"
                  + $"{Resources.Name}\t{valueEntry.Key}{Environment.NewLine}"
                  + $"{Resources.Type}\t{ValueHelper.GetType(key, valueEntry.Key)}{Environment.NewLine}"
                  + $"{Resources.Value}\t{ValueHelper.GetValue(key, valueEntry.Key)}";

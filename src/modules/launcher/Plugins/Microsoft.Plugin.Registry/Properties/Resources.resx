@@ -122,12 +122,15 @@
   </data>
   <data name="PluginDescription" xml:space="preserve">
     <value>Search inside the Windows Registry</value>
+    <comment>"this built into Windows the OS. translate accordingly, https://docs.microsoft.com/de-de/troubleshoot/windows-server/performance/windows-registry-advanced-users is an example of it translated in German"</comment>
   </data>
-  <data name="CopyKeyPath" xml:space="preserve">
-    <value>Copy key path</value>
+  <data name="CopyKeyNamePath" xml:space="preserve">
+    <value>Copy key name (path)</value>
+    <comment>'The maximum size of a key name is 255 characters.'</comment>
   </data>
-  <data name="Key" xml:space="preserve">
-    <value>Key:</value>
+  <data name="KeyName" xml:space="preserve">
+    <value>Key name:</value>
+    <comment>'The maximum size of a key name is 255 characters.'</comment>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Name:</value>
@@ -137,15 +140,18 @@
   </data>
   <data name="OpenKeyInRegistryEditor" xml:space="preserve">
     <value>Open key in registry editor</value>
+    <comment>"registry editor" is the name of the OS buit-in application</comment>
   </data>
   <data name="OpenInRegistryEditorAccessExceptionText" xml:space="preserve">
     <value>You do not have enough rights to open the Windows registry editor</value>
+    <comment>"registry editor" is the name of the OS buit-in application </comment>
   </data>
   <data name="OpenInRegistryEditorAccessExceptionTitle" xml:space="preserve">
-    <value>Error on open Registry Editor</value>
+    <value>Error on open registry editor</value>
+    <comment>"registry editor" is the name of the OS buit-in application</comment>
   </data>
   <data name="SubKeys" xml:space="preserve">
-    <value>Sub-keys:</value>
+    <value>Subkeys:</value>
   </data>
   <data name="Values" xml:space="preserve">
     <value>Values:</value>
@@ -154,13 +160,15 @@
     <value>Registry key</value>
   </data>
   <data name="RegistryValue" xml:space="preserve">
-    <value>Registry Value</value>
+    <value>Registry value</value>
   </data>
   <data name="Type" xml:space="preserve">
     <value>Type:</value>
+    <comment>See https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry-value-types for proper context of how to translate 'type'</comment>
   </data>
   <data name="Value" xml:space="preserve">
     <value>Value:</value>
+    <comment>See https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry-value-types for proper context of how to translate 'value'</comment>
   </data>
   <data name="RegistryValueKindNone" xml:space="preserve">
     <value>No data type</value>
