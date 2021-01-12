@@ -59,7 +59,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Plugin.Registry\Microsoft.Plugin.Registry.csproj" />
+    <ProjectReference Include="..\Microsoft.Plugin.Registry\Microsoft.PowerToys.Run.Plugin.Registry.csproj" />
   </ItemGroup>
 
 </Project>

@@ -305,9 +305,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Common.UI", "src\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Plugin.Registry", "src\modules\launcher\Plugins\Microsoft.Plugin.Registry\Microsoft.Plugin.Registry.csproj", "{4BABF3FE-3451-42FD-873F-3C332E18DCEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Registry", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Microsoft.PowerToys.Run.Plugin.Registry.csproj", "{4BABF3FE-3451-42FD-873F-3C332E18DCEF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Registry.UnitTest", "src\modules\launcher\Plugins\Microsoft.Plugin.Registry.UnitTest\Microsoft.Plugin.Registry.UnitTest.csproj", "{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Registry.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry.UnitTest\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.csproj", "{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
