@@ -103,7 +103,7 @@ Here the options are both inline and allow for an on/off.
 ### 5.1: Core design and screenshots
 
 Quick mock of what it could look like in a first attempt.
-![alt Mock of the UX with existing settings][uxMock]
+![alt Mock of the UX with existing settings][uxMockf]
 
 ### 5.2: Existing consideration
 

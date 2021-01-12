@@ -1845,6 +1845,7 @@ runsettings
 runtimeclass
 runtimeconfig
 Runtimes
+Rutkas
 rv
 rvalue
 rvm
@@ -2098,6 +2099,7 @@ syslog
 SYSMENU
 systemd
 SYSTEMTIME
+systray
 sz
 tadele
 Tahoma
