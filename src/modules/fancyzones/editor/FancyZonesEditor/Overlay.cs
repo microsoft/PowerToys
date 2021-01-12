@@ -101,14 +101,13 @@ namespace FancyZonesEditor
                         return;
                     }
 
-                    var prevSettings = CurrentLayoutSettings;
                     _currentDesktop = value;
 
                     MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
                     if (settings != null)
                     {
                         settings.ResetAppliedModel();
-                        settings.UpdateDesktopDependantProperties(prevSettings);
+                        settings.UpdateDefaultModels();
                     }
 
                     Update();

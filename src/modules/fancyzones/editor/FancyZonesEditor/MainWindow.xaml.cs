@@ -5,16 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
-using FancyZonesEditor.ViewModels;
 using ModernWpf.Controls;
-using ModernWpf.Controls.Primitives;
-using Windows.UI.Popups;
 
 namespace FancyZonesEditor
 {
@@ -65,17 +60,29 @@ namespace FancyZonesEditor
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount > 1)
+            var mainEditor = App.Overlay;
+            if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
-                _settings.ZoneCount--;
+                return;
+            }
+
+            if (model.TemplateZoneCount > 1)
+            {
+                model.TemplateZoneCount--;
             }
         }
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount < MaxZones)
+            var mainEditor = App.Overlay;
+            if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
-                _settings.ZoneCount++;
+                return;
+            }
+
+            if (model.TemplateZoneCount < LayoutSettings.MaxZones)
+            {
+                model.TemplateZoneCount++;
             }
         }
 
