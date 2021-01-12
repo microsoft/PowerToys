@@ -349,7 +349,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Win32Program olditem = new Win32Program
             {
                 Name = "oldpath",
-                ExecutableName = path,
+                ExecutableName = oldpath,
                 FullPath = fullPath,
             };
 
