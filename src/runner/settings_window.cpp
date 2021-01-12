@@ -41,7 +41,7 @@ json::JsonObject get_power_toys_settings()
         }
         catch (...)
         {
-            // TODO: handle malformed JSON.
+            Logger::error("get_power_toys_settings: got malformed json");
         }
     }
     return result;
@@ -154,7 +154,14 @@ void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
 
 void dispatch_received_json(const std::wstring& json_to_parse)
 {
-    const json::JsonObject j = json::JsonObject::Parse(json_to_parse);
+    json::JsonObject j;
+    const bool ok = json::JsonObject::TryParse(json_to_parse, j);
+    if (!ok)
+    {
+        Logger::error(L"dispatch_received_json: got malformed json: {}", json_to_parse);
+        return;
+    }
+
     for (const auto& base_element : j)
     {
         if (!current_settings_ipc)
