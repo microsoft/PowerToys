@@ -13,7 +13,7 @@ using Microsoft.Plugin.Registry.Helper;
 using Microsoft.Plugin.Registry.Properties;
 using Wox.Plugin;
 
-[assembly: InternalsVisibleTo("Microsoft.Plugin.Registry.UnitTest")]
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.Registry.UnitTests")]
 
 namespace Microsoft.Plugin.Registry
 {
