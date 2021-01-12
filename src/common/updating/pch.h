@@ -7,6 +7,7 @@
 #include <winrt/base.h>
 #pragma warning(default : 5205)
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
 #include <MsiQuery.h>
 #include <Shlwapi.h>
@@ -19,6 +20,8 @@
 #include <PathCch.h>
 
 #include <optional>
+#include <regex>
+#include <charconv>
 
 #include <expected.hpp>
 

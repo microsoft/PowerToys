@@ -17,8 +17,30 @@ namespace updating
         {
             return false;
         }
-        const char DESKTOP_DOTNET_RUNTIME_STRING[] = "Microsoft.WindowsDesktop.App 3.1.";
-        return runtimes->find(DESKTOP_DOTNET_RUNTIME_STRING) != std::string::npos;
+        constexpr size_t REQUIRED_MINIMAL_PATCH = 10;
+        std::regex dotnet3_1_x{ R"(Microsoft\.WindowsDesktop\.App\s3\.1\.(\d+))" };
+
+        size_t latestPatchInstalled = 0;
+        using rexit = std::sregex_iterator;
+        for (auto it = rexit{ begin(*runtimes), end(*runtimes), dotnet3_1_x }; it != rexit{}; ++it)
+        {
+            if (!it->ready() || it->size() < 2)
+            {
+                continue;
+            }
+            auto patchNumberGroup = (*it)[1];
+            if (!patchNumberGroup.matched)
+            {
+                continue;
+            }
+            const auto patchString = patchNumberGroup.str();
+            size_t patch = 0;
+            if (auto [_, ec] = std::from_chars(&*begin(patchString), &*end(patchString), patch); ec == std::errc())
+            {
+                latestPatchInstalled = std::max(patch, latestPatchInstalled);
+            }
+        }
+        return latestPatchInstalled >= REQUIRED_MINIMAL_PATCH;
     }
 
     std::optional<fs::path> download_dotnet()
