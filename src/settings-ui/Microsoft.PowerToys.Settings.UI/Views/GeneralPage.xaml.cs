@@ -56,6 +56,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     string version = json.GetNamedString("version", string.Empty);
                     bool isLatest = json.GetNamedBoolean("isVersionLatest", false);
 
+                    if (json.ContainsKey("version"))
+                    {
+                        ViewModel.RequestUpdateCheckedDate();
+                    }
+
                     var str = string.Empty;
                     if (isLatest)
                     {

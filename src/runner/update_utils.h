@@ -4,5 +4,5 @@
 
 bool start_msi_uninstallation_sequence();
 void github_update_worker();
-std::optional<updating::new_version_download_info> check_for_updates();
+std::optional<updating::github_version_info> check_for_updates();
 bool launch_pending_update();
