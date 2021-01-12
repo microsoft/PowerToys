@@ -248,12 +248,13 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
     siex.lpAttributeList = pptal;
     siex.StartupInfo.cb = sizeof(siex);
 
+    // here (flag)
     BOOL process_created = CreateProcessW(executable_path,
                                           executable_args,
                                           nullptr,
                                           nullptr,
                                           FALSE,
-                                          0,
+                                          EXTENDED_STARTUPINFO_PRESENT,
                                           nullptr,
                                           nullptr,
                                           &siex.StartupInfo,
