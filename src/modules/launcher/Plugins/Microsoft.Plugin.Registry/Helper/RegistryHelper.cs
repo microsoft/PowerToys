@@ -176,11 +176,17 @@ namespace Microsoft.Plugin.Registry.Helper
 
             try
             {
-                foreach (var subKey in parentKey.GetSubKeyNames())
+                foreach (var subKey in parentKey.GetSubKeyNames().OrderBy(found => found))
                 {
                     if (!subKey.StartsWith(searchSubKey, StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
+                    }
+
+                    if (string.Equals(subKey, searchSubKey, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        list.Add(new RegistryEntry(parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree)));
+                        return list;
                     }
 
                     try
