@@ -38,7 +38,6 @@ AGGREGATABLE
 AHybrid
 Aissue
 akamaihd
-alannt
 ALarger
 alekhyareddy
 alertsolid
@@ -117,8 +116,8 @@ atlfile
 atlstr
 attr
 Attribs
-aumid
 AUMID
+aumid
 AUTHN
 AUTOAPPEND
 autocomplete
@@ -222,6 +221,7 @@ CENTERALIGN
 cfg
 changecursor
 Changemove
+charconv
 charset
 chdir
 checkbox
@@ -279,7 +279,6 @@ codeofconduct
 codeql
 codereview
 COINIT
-Colorbrush
 colorconv
 colorhistory
 colorhistorylimit
@@ -467,8 +466,8 @@ DISPIDAMBIENTDLCONTROL
 DISPINFO
 Displayandhidethedesktop
 DISPLAYCHANGE
-displayname
 DISPLAYNAME
+displayname
 divyan
 DLACTIVEXCTLS
 DLCONTROL
@@ -655,7 +654,7 @@ ERASEBKGND
 EREOF
 EResize
 eriawan
-ERRORLEVEL
+errc
 errorlevel
 ERRORMESSAGE
 ERRORTITLE
@@ -797,7 +796,6 @@ globalplugins
 globals
 gmx
 google
-gordonwatts
 GPTR
 grayscale
 GText
@@ -857,8 +855,8 @@ HLSL
 hmenu
 hmodule
 hmon
-hmonitor
 HMONITOR
+hmonitor
 HOLDENTER
 HOLDESC
 homljgmgpmcbpjbnjpfijnhipfkiclkd
@@ -1338,7 +1336,6 @@ modulekey
 MONITORINFO
 MONITORINFOEX
 MONITORINFOEXW
-MONITORINFOF
 monitorinfof
 Monthand
 Moq
@@ -1803,6 +1800,7 @@ resw
 resx
 returnvalue
 retval
+rexit
 rfind
 rgb
 RGBQUAD
@@ -2003,6 +2001,7 @@ sql
 src
 SRCCOPY
 sre
+sregex
 SResize
 srme
 srre
@@ -2077,7 +2076,6 @@ SVGIn
 svgpreviewhandler
 svgr
 SVGSVG
-SWAPBUTTON
 Switchbetweenvirtualdesktops
 SWP
 swprintf
@@ -2167,7 +2165,6 @@ toggleright
 toggleswitch
 toolbar
 Toolchain
-Toolset
 toolset
 tooltip
 toolwindow
