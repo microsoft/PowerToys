@@ -5,8 +5,8 @@ The registry plugin allows users to search the Windows registry.
 ## Special functions (differ from the regular functions)
 
 * Support full base keys and short base keys (e.g. `HKLM` for `HKEY_LOCALE_MACHINE`).
-* Show count of sub-keys and count of values in the second result line.
-* Search for value names and values inside a registry key (syntax: `[RegistryKey]\\[ValueName]` and `[RegistryKey]\\[Value]`)
+* Show count of subkeys and count of values in the second result line.
+* Search for value names and value data inside a registry key (syntax: `[RegistryKey]\\[ValueName]` and `[RegistryKey]\\[ValueData]`)
 
 ## The Windows Registry
 
@@ -31,18 +31,17 @@ The score is currently not set on the results.
 ### Results
 
 * All results override the visible search result via `QueryTextDisplay` to avoid problems with short registry base keys (e.g. `HKLM`).
-* The most `ToolTipData` use tabs (`\t`) and new lines (`\n`).
-* The maximum length of a `Title` is set to 45 characters and will automatic truncated on the left side.
+* The length of a `Title` and `Subtitle` is automatic truncated, when it is to long.
 
 ## Microsoft.Plugin.Registry project
 
 ### Important plugin values (meta-data)
 
-| Name            | Value                              |
-| --------------- | ---------------------------------- |
-| ActionKeyword   | `*`                                |
-| ExecuteFileName | `Microsoft.Plugin.Registry.dll`    |
-| ID              | `303417D927BF4C97BCFFC78A123BE0C8` |
+| Name            | Value                                         |
+| --------------- | --------------------------------------------- |
+| ActionKeyword   | `:`                                           |
+| ExecuteFileName | `Microsoft.PowerToys.Run.Plugin.Registry.dll` |
+| ID              | `303417D927BF4C97BCFFC78A123BE0C8`            |
 
 ### Interfaces used by this plugin
 
@@ -50,25 +49,30 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 
 * `Wox.Plugin.IPlugin`
 * `Wox.Plugin.IContextMenu`
+* `Wox.Plugin.IPluginI18n`
 * `System.IDisposable`
 
 ### Program files
 
-| File                          | Content                                                                  |
-| ----------------------------- | ------------------------------------------------------------------------ |
-| `Classes\RegistryEntry.cs`    | Wrapper class for a registry key with a possible exception on access     |
-| `Constants\KeyName.cs`        | Static used short registry key names (to avoid code and string doubling) |
-| `Helper\ContextMenuHelper.cs` | All functions to build the context menu (for each result entry)          |
-| `Helper\QueryHelper.cs`       | All functions to analyze the search query                                |
-| `Helper\RegistryHelper.cs`    | All functions to search into the Windows registry (via `Win32.Registry`) |
-| `Helper\ResultHelper.cs`      | All functions to convert internal results into WOX results               |
-| `Helper\ValueHelper.cs`       | All functions to convert values into human readable values               |
-| `Images\reg.dark.png`         | Symbol for the results for the dark theme                                |
-| `Images\reg.light.png`        | Symbol for the results for the light theme                               |
-| `GlobalSuppressions.cs`       | Code suppressions (no real file, linked via *.csproj)                    |
-| `Main.cs`                     | Main class, the only place that implement the WOX interfaces             |
-| `plugin.json`                 | All meta-data for this plugin                                            |
-| `StyleCop.json`               | Code style (no real file, linked via *.csproj)                           |
+| File                                 | Content                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------ |
+| `Classes\RegistryEntry.cs`           | Wrapper class for a registry key with a possible exception on access     |
+| `Constants\KeyName.cs`               | Static used short registry key names (to avoid code and string doubling) |
+| `Constants\MaxTextLength.cs`         | Contain all maximum text lengths (for truncating)                        |
+| `Enumeration\TruncateSide.cs`        | Contain the possible truncate sides                                      |
+| `Helper\ContextMenuHelper.cs`        | All functions to build the context menu (for each result entry)          |
+| `Helper\QueryHelper.cs`              | All functions to analyze the search query                                |
+| `Helper\RegistryHelper.cs`           | All functions to search into the Windows registry (via `Win32.Registry`) |
+| `Helper\ResultHelper.cs`             | All functions to convert internal results into WOX results               |
+| `Helper\ValueHelper.cs`              | All functions to convert values into human readable values               |
+| `Images\reg.dark.png`                | Symbol for the results for the dark theme                                |
+| `Images\reg.light.png`               | Symbol for the results for the light theme                               |
+| `Properties\Resources.Designer.resx` | File that contain all translatable keys                                  |
+| `Properties\Resources.resx`          | File that contain all translatable strings in the neutral language       |
+| `GlobalSuppressions.cs`              | Code suppressions (no real file, linked via *.csproj)                    |
+| `Main.cs`                            | Main class, the only place that implement the WOX interfaces             |
+| `plugin.json`                        | All meta-data for this plugin                                            |
+| `StyleCop.json`                      | Code style (no real file, linked via *.csproj)                           |
 
 ### Important project values (*.csproj)
 
@@ -79,8 +83,8 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | Platforms       | `x64`                                                                          |
 | Nullable        | `true`                                                                         |
 | Output          | `..\..\..\..\..\x64\Debug\modules\launcher\Plugins\Microsoft.Plugin.Registry\` |
-| RootNamespace   | `Microsoft.Plugin.Registry`                                                    |
-| AssemblyName    | `Microsoft.Plugin.Registry`                                                    |
+| RootNamespace   | `Microsoft.PowerToys.Run.Plugin.Registry`                                      |
+| AssemblyName    | `Microsoft.PowerToys.Run.Plugin.Registry`                                      |
 
 ### Project dependencies
 

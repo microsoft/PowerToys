@@ -7,6 +7,6 @@
   "Version": "1.0.0",
   "Language": "csharp",
   "Website": "https://aka.ms/powertoys",
-  "ExecuteFileName": "Microsoft.Plugin.Registry.dll",
+  "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Registry.dll",
   "IcoPath": "Images\\reg.dark.png"
 }

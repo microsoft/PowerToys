@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Plugin.Registry.Classes;
-using Microsoft.Plugin.Registry.Properties;
+using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 

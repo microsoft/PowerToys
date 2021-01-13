@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Microsoft.Plugin.Registry</RootNamespace>
-    <AssemblyName>Microsoft.Plugin.Registry</AssemblyName>
+    <RootNamespace>Microsoft.PowerToys.Run.Plugin.Registry</RootNamespace>
+    <AssemblyName>Microsoft.PowerToys.Run.Plugin.Registry</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>

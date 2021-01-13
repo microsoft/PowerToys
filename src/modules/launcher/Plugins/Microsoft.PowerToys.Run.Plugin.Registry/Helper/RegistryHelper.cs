@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Constants;
-using Microsoft.Plugin.Registry.Properties;
+using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Registry.Helper

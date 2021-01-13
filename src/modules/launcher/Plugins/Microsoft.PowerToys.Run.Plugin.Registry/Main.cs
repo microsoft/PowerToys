@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using ManagedCommon;
 using Microsoft.Plugin.Registry.Classes;
 using Microsoft.Plugin.Registry.Helper;
-using Microsoft.Plugin.Registry.Properties;
+using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Wox.Plugin;
 
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.Registry.UnitTests")]
