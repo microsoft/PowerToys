@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using FancyZonesEditor.Models;
@@ -123,6 +124,8 @@ namespace FancyZonesEditor
 
         private void DuplicateLayout_Click(object sender, RoutedEventArgs e)
         {
+            CloseFlyout((DependencyObject)sender);
+
             var mainEditor = App.Overlay;
             if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
@@ -197,6 +200,8 @@ namespace FancyZonesEditor
 
         private async void DeleteLayout_Click(object sender, RoutedEventArgs e)
         {
+            CloseFlyout((DependencyObject)sender);
+
             var dialog = new ModernWpf.Controls.ContentDialog()
             {
                 Title = FancyZonesEditor.Properties.Resources.Are_You_Sure,
@@ -314,6 +319,30 @@ namespace FancyZonesEditor
         private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
             monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
+        }
+
+        private void CloseFlyout(DependencyObject closingButton)
+        {
+            try
+            {
+                var flyoutPresenter = VisualTreeHelper.GetParent(closingButton);
+                while (flyoutPresenter != null && !(flyoutPresenter is FlyoutPresenter))
+                {
+                    flyoutPresenter = VisualTreeHelper.GetParent(flyoutPresenter);
+                }
+
+                if (flyoutPresenter != null)
+                {
+                    var popup = ((FrameworkElement)flyoutPresenter).Parent as Popup;
+                    if (popup != null)
+                    {
+                        popup.IsOpen = false;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }
