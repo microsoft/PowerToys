@@ -29,8 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         }
 
         /// <summary>
-        /// Create a new <see cref="NumberTranslator"/> - returns null if no number conversion
-        /// is required between the cultures.
+        /// Create a new <see cref="NumberTranslator"/>.
         /// </summary>
         /// <param name="sourceCulture">source culture</param>
         /// <param name="targetCulture">target culture</param>
@@ -44,15 +43,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             if (targetCulture == null)
             {
-                throw new ArgumentNullException(paramName: nameof(sourceCulture));
+                throw new ArgumentNullException(paramName: nameof(targetCulture));
             }
 
-            bool conversionRequired = sourceCulture.NumberFormat.NumberDecimalSeparator != targetCulture.NumberFormat.NumberDecimalSeparator
-                                      || sourceCulture.NumberFormat.PercentGroupSeparator != targetCulture.NumberFormat.PercentGroupSeparator
-                                      || sourceCulture.NumberFormat.NumberGroupSizes != targetCulture.NumberFormat.NumberGroupSizes;
-            return conversionRequired
-                ? new NumberTranslator(sourceCulture, targetCulture)
-                : null;
+            return new NumberTranslator(sourceCulture, targetCulture);
         }
 
         /// <summary>
