@@ -1592,6 +1592,7 @@ PCWSTR
 pdb
 pdbonly
 pdf
+Pdfium
 pdo
 pdto
 pdtobj
@@ -2471,6 +2472,7 @@ XCOPY
 XDiff
 XDocument
 XElement
+xfa
 XFile
 XIncrement
 XInstance
