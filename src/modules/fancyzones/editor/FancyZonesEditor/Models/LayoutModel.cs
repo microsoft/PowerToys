@@ -232,6 +232,14 @@ namespace FancyZonesEditor.Models
             // update settings
             App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;
             App.Overlay.CurrentLayoutSettings.Type = Type;
+            App.Overlay.CurrentLayoutSettings.SensitivityRadius = SensitivityRadius;
+            App.Overlay.CurrentLayoutSettings.ZoneCount = TemplateZoneCount;
+
+            if (this is GridLayoutModel)
+            {
+                App.Overlay.CurrentLayoutSettings.ShowSpacing = ((GridLayoutModel)this).ShowSpacing;
+                App.Overlay.CurrentLayoutSettings.Spacing = ((GridLayoutModel)this).Spacing;
+            }
 
             // update temp file
             App.FancyZonesEditorIO.SerializeZoneSettings();

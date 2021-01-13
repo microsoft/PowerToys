@@ -175,7 +175,7 @@ namespace FancyZonesEditor
             }
             else if (currentApplied.Type == LayoutType.Custom)
             {
-                foreach (LayoutModel model in MainWindowSettingsModel.CustomModels)
+                foreach (LayoutModel model in CustomModels)
                 {
                     if ("{" + model.Guid.ToString().ToUpperInvariant() + "}" == currentApplied.ZonesetUuid.ToUpperInvariant())
                     {
@@ -193,6 +193,15 @@ namespace FancyZonesEditor
                     {
                         // found match
                         foundModel = model;
+                        foundModel.TemplateZoneCount = currentApplied.ZoneCount;
+                        foundModel.SensitivityRadius = currentApplied.SensitivityRadius;
+                        if (foundModel is GridLayoutModel)
+                        {
+                            ((GridLayoutModel)foundModel).ShowSpacing = currentApplied.ShowSpacing;
+                            ((GridLayoutModel)foundModel).Spacing = currentApplied.Spacing;
+                        }
+
+                        foundModel.InitTemplateZones();
                         break;
                     }
                 }
