@@ -1,22 +1,18 @@
-﻿<xaml:XamlApplication
-    x:Class="Microsoft.PowerToys.Settings.UI.App"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:xaml="using:Microsoft.Toolkit.Win32.UI.XamlHost"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters">
+﻿<xaml:XamlApplication x:Class="Microsoft.PowerToys.Settings.UI.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters" xmlns:xaml="using:Microsoft.Toolkit.Win32.UI.XamlHost">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <XamlControlsResources  xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="/Styles/_Colors.xaml" />
                 <ResourceDictionary Source="/Styles/_FontSizes.xaml" />
                 <ResourceDictionary Source="/Styles/_Thickness.xaml" />
                 <ResourceDictionary Source="/Styles/_Sizes.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
-                <ResourceDictionary Source="/Styles/Page.xaml"/>
-                <ResourceDictionary Source="/Styles/Button.xaml"/>
+                <ResourceDictionary Source="/Styles/Page.xaml" />
+                <ResourceDictionary Source="/Styles/Button.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <converters:ModuleEnabledToForegroundConverter x:Key="ModuleEnabledToForegroundConverter"/>
+            <converters:ModuleEnabledToForegroundConverter x:Key="ModuleEnabledToForegroundConverter" />
 
 
             <SolidColorBrush x:Key="DarkForegroundDisabledBrush">#66FFFFFF</SolidColorBrush>

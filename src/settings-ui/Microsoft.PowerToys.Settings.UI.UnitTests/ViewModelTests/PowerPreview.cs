@@ -57,6 +57,7 @@ namespace ViewModelTests
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.IsElevated, viewModel.IsElevated);
             Assert.AreEqual(originalSettings.Properties.EnableMdPreview, viewModel.MDRenderIsEnabled);
+            Assert.AreEqual(originalSettings.Properties.EnablePdfPreview, viewModel.PDFRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgPreview, viewModel.SVGRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableSvgThumbnail, viewModel.SVGThumbnailIsEnabled);
 
@@ -117,6 +118,24 @@ namespace ViewModelTests
 
             // act
             viewModel.MDRenderIsEnabled = true;
+        }
+
+        [TestMethod]
+        public void PDFRenderIsEnabledShouldPrevHandlerWhenSuccessful()
+        {
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnablePdfPreview);
+                return 0;
+            };
+
+            // arrange
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
+
+            // act
+            viewModel.PDFRenderIsEnabled = true;
         }
     }
 }

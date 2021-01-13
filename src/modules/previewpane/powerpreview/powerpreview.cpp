@@ -35,6 +35,14 @@ PowerPreviewModule::PowerPreviewModule() :
         L"Markdown Preview Handler",
         std::make_unique<RegistryWrapper>()));
 
+    m_fileExplorerModules.emplace_back(std::make_unique<PreviewHandlerSettings>(
+        true,
+        L"pdf-previewer-toggle-setting",
+        GET_RESOURCE_STRING(IDS_PREVPANE_PDF_SETTINGS_DESCRIPTION),
+        L"{45769bcc-e8fd-42d0-947e-02beef77a1f6}",
+        L"PDF Preview Handler",
+        std::make_unique<RegistryWrapper>()));
+
     m_fileExplorerModules.emplace_back(std::make_unique<ThumbnailProviderSettings>(
         true,
         L"svg-thumbnail-toggle-setting",
