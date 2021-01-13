@@ -64,6 +64,12 @@ namespace PowerLauncher
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         }
 
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            WindowsInteropHelper.SetPopupStyle(this);
+        }
+
         private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
         {
             if (_firstDeleteTimer != null)
