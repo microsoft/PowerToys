@@ -168,7 +168,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreviewHandlerCommon", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MarkdownPreviewHandler", "src\modules\previewpane\MarkdownPreviewHandler\MarkdownPreviewHandler.csproj", "{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-MarkdownPreviewHandler", "src\modules\previewpane\PreviewPaneUnitTests\UnitTests-MarkdownPreviewHandler.csproj", "{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-MarkdownPreviewHandler", "src\modules\previewpane\UnitTests-MarkdownPreviewHandler\UnitTests-MarkdownPreviewHandler.csproj", "{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SvgPreviewHandler", "src\modules\previewpane\SvgPreviewHandler\SvgPreviewHandler.csproj", "{DA425894-6E13-404F-8DCB-78584EC0557A}"
 EndProject
@@ -306,6 +306,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Common.UI", "src\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfPreviewHandler", "src\modules\previewpane\PdfPreviewHandler\PdfPreviewHandler.csproj", "{69E1EE8D-143A-4060-9129-4658ACF14AAF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-PdfPreviewHandler", "src\modules\previewpane\UnitTests-PdfPreviewHandler\UnitTests-PdfPreviewHandler.csproj", "{ECC20689-002A-4354-95A6-B58DF089C6FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -783,6 +785,12 @@ Global
 		{69E1EE8D-143A-4060-9129-4658ACF14AAF}.Release|Any CPU.ActiveCfg = Release|x64
 		{69E1EE8D-143A-4060-9129-4658ACF14AAF}.Release|x64.ActiveCfg = Release|x64
 		{69E1EE8D-143A-4060-9129-4658ACF14AAF}.Release|x64.Build.0 = Release|x64
+		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Debug|x64.ActiveCfg = Debug|x64
+		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Debug|x64.Build.0 = Debug|x64
+		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Release|Any CPU.ActiveCfg = Release|x64
+		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Release|x64.ActiveCfg = Release|x64
+		{ECC20689-002A-4354-95A6-B58DF089C6FF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -876,6 +884,7 @@ Global
 		{8F62026A-294B-41C6-8839-87463613F216} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{69E1EE8D-143A-4060-9129-4658ACF14AAF} = {2F305555-C296-497E-AC20-5FA1B237996A}
+		{ECC20689-002A-4354-95A6-B58DF089C6FF} = {2F305555-C296-497E-AC20-5FA1B237996A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
