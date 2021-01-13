@@ -5,14 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Plugin.Registry.Classes;
-using Microsoft.Plugin.Registry.Constants;
-using Microsoft.Plugin.Registry.Enumerations;
+using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
+using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
+using Microsoft.PowerToys.Run.Plugin.Registry.Enumerations;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Microsoft.Win32;
 using Wox.Plugin;
 
-namespace Microsoft.Plugin.Registry.Helper
+namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {
     /// <summary>
     /// Helper class to easier work with results

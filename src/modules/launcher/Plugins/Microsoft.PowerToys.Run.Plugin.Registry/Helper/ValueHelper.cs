@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Microsoft.Win32;
 
-namespace Microsoft.Plugin.Registry.Helper
+namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {
     /// <summary>
     /// Helper class to easier work with values of a <see cref="RegistryKey"/>

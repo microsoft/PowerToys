@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Plugin.Registry.Constants;
+using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
 
-namespace Microsoft.Plugin.Registry.Helper
+namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {
     /// <summary>
     /// Helper class to easier work with queries

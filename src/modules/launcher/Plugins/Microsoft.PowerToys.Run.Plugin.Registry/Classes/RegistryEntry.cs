@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.Plugin.Registry.Helper;
+using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.Win32;
 
-namespace Microsoft.Plugin.Registry.Classes
+namespace Microsoft.PowerToys.Run.Plugin.Registry.Classes
 {
     /// <summary>
     /// A entry of the registry.

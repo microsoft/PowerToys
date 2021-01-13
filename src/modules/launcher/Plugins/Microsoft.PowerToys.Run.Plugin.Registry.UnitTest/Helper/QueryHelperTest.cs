@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Plugin.Registry.Helper;
+using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Plugin.Registry.UnitTest.Helper
+namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
 {
     [TestClass]
     public sealed class QueryHelperTest
@@ -34,6 +34,8 @@ namespace Microsoft.Plugin.Registry.UnitTest.Helper
         [DataRow(@"HKCC\System\CurrentControlSet\Control", @"HKEY_CURRENT_CONFIG\System\CurrentControlSet\Control")]
         [DataRow(@"HKPD\???", @"HKEY_PERFORMANCE_DATA\???")]
         public void GetShortBaseKeyTest(string registryKeyShort, string registryKeyFull)
-            => Assert.AreEqual(registryKeyShort, QueryHelper.GetKeyWithShortBaseKey(registryKeyFull));
+        {
+            Assert.AreEqual(registryKeyShort, QueryHelper.GetKeyWithShortBaseKey(registryKeyFull));
+        }
     }
 }

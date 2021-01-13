@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Plugin.Registry.Constants;
+using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Plugin.Registry.UnitTest.Constants
+namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Constants
 {
     [TestClass]
     public sealed class KeyNameTest
@@ -20,6 +20,8 @@ namespace Microsoft.Plugin.Registry.UnitTest.Constants
         [DataRow("HKPD", KeyName.PerformanceDataShort)]
         [DataRow("HKU", KeyName.UsersShort)]
         public void TestConstants(string shortName, string baseName)
-            => Assert.AreEqual(shortName, baseName);
+        {
+            Assert.AreEqual(shortName, baseName);
+        }
     }
 }

@@ -6,12 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
-using Microsoft.Plugin.Registry.Classes;
+using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
-namespace Microsoft.Plugin.Registry.Helper
+namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {
     /// <summary>
     /// Helper class to easier work with context menu entries

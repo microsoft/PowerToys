@@ -7,12 +7,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Plugin.Registry.Classes;
-using Microsoft.Plugin.Registry.Constants;
+using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
+using Microsoft.PowerToys.Run.Plugin.Registry.Constants;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Microsoft.Win32;
 
-namespace Microsoft.Plugin.Registry.Helper
+namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 {
 #pragma warning disable CA1031 // Do not catch general exception types
 

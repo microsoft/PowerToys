@@ -4,10 +4,10 @@
 
 using System.Collections;
 using System.Linq;
-using Microsoft.Plugin.Registry.Helper;
+using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Plugin.Registry.UnitTest.Helper
+namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
 {
     [TestClass]
     public sealed class RegistryHelperTest

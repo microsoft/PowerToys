@@ -8,14 +8,14 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ManagedCommon;
-using Microsoft.Plugin.Registry.Classes;
-using Microsoft.Plugin.Registry.Helper;
+using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
+using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Wox.Plugin;
 
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.Registry.UnitTests")]
 
-namespace Microsoft.Plugin.Registry
+namespace Microsoft.PowerToys.Run.Plugin.Registry
 {
     /// <summary>
     /// Main class of this plugin that implement all used interfaces
