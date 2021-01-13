@@ -60,6 +60,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
 
                 PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewed());
             }
+            catch (PdfiumViewer.PdfException pdfException)
+            {
+                PowerToysTelemetry.Log.WriteEvent(new PdfFilePreviewError { Message = pdfException.Message });
+
+                InvokeOnControlThread(() =>
+                {
+                    Controls.Clear();
+
+                    _infoBar = GetTextBoxControl(pdfException.Message);
+
+                    Controls.Add(_infoBar);
+                });
+            }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
