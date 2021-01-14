@@ -86,6 +86,9 @@ appx
 appxmanifest
 APSTUDIO
 AQS
+arcosh
+arsinh
+artanh
 ARemapped
 argb
 argc
