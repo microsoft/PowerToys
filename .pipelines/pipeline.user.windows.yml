@@ -61,6 +61,10 @@ build:
             - 'x64/**/*.pdb'
           exclude:
             - 'x64/Release/obj/**/*.pdb'
+        - from: 'x86/Release'
+          to: 'Build_Output'
+          include:
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x86.dll'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
@@ -159,6 +163,8 @@ build:
             - 'modules\PowerRename\PowerRenameExt.dll'
             - 'modules\ShortcutGuide\ShortcutGuide\PowerToys.ShortcutGuide.exe'
             - 'modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.dll'
+            - 'modules\VideoConference\VideoConferenceModule.dll'
+            - 'modules\VideoConference\VideoConferenceProxyFilter_x64.dll'
             - 'Settings\ManagedTelemetry.dll'
             - 'Settings\Microsoft.PowerToys.Settings.UI.exe'
             - 'Settings\Microsoft.PowerToys.Settings.UI.Lib.dll'
@@ -177,6 +183,7 @@ build:
           to: 'Build_Output'
           include:
             - 'BugReportTool\BugReportTool.exe'
+            - 'WebcamReportTool\WebcamReportTool.exe'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
@@ -237,4 +244,3 @@ static_analysis_options:
     files_to_scan:
       - exclude:
         - '**/*.lcl'
-

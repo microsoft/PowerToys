@@ -7,13 +7,13 @@
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
+#include <common/SettingsAPI/FileWatcher.h>
 
 #include "FancyZones.h"
 #include "FancyZonesLib/Settings.h"
 #include "FancyZonesLib/ZoneWindow.h"
 #include "FancyZonesLib/FancyZonesData.h"
 #include "FancyZonesLib/ZoneSet.h"
-#include "FancyZonesLib/FileWatcher.h"
 #include "FancyZonesLib/WindowMoveHandler.h"
 #include "FancyZonesLib/FancyZonesWinHookEventIDs.h"
 #include "FancyZonesLib/util.h"

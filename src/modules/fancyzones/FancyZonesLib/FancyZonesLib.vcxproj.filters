@@ -78,9 +78,6 @@
     <ClInclude Include="ZoneWindowDrawing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileWatcher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CallTracer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -138,9 +135,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OnThreadExecutor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileWatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CallTracer.cpp">
