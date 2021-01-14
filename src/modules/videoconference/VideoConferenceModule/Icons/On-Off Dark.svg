@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="322" height="44" viewBox="0 0 322 44">
+  <defs>
+    <clipPath id="clip-On-Off_Dark">
+      <rect width="322" height="44"/>
+    </clipPath>
+  </defs>
+  <g id="On-Off_Dark" data-name="On-Off Dark" clip-path="url(#clip-On-Off_Dark)">
+    <rect width="322" height="44" fill="#f1f1f1"/>
+    <g id="Background" fill="#1f1f1f">
+      <path d="M 321.5 43.5 L 0.5 43.5 L 0.5 0.5 L 321.5 0.5 L 321.5 43.5 Z" stroke="none"/>
+      <path d="M 1 1 L 1 43 L 321 43 L 321 1 L 1 1 M 0 0 L 322 0 L 322 44 L 0 44 L 0 0 Z" stroke="none" fill="#313131"/>
+    </g>
+    <rect id="Divider" width="1" height="24" transform="translate(161 10)" fill="#313131"/>
+    <text id="Camera_label" data-name="Camera label" transform="translate(200 13)" fill="#fff" font-size="12" font-family="SegoeUI, Segoe UI"><tspan x="0" y="13">Camera off</tspan></text>
+    <path id="Camera_off_icon" data-name="Camera off icon" d="M12,24.9l4-2.038v8.279l-1.953-1q-.141-.072-.258-.119t-.242-.1a1.825,1.825,0,0,1-.227-.119l-.25-.159a1.726,1.726,0,0,1-.2-.159,1.556,1.556,0,0,1-.156-.167q-.07-.088-.148-.175l-.18-.2L11,27.533v-3.59H7.477l-1-1.019H12Zm3,4.593V24.508l-3,1.536v1.91ZM.148,19.716.852,19l15,15.284-.7.716-3.859-3.924H0V22.924H3.289ZM1,30.057h9.289l-6-6.113H1Z" transform="translate(171 -5)" fill="#fff"/>
+    <text id="Mic_label" data-name="Mic label" transform="translate(38 13)" fill="#fff" font-size="12" font-family="SegoeUI, Segoe UI"><tspan x="0" y="13">Microphone on</tspan></text>
+    <path id="Mic_on_icon" data-name="Mic on icon" d="M259.518,12.092a1.476,1.476,0,0,1-.589-.118,1.5,1.5,0,0,1-.8-.8,1.486,1.486,0,0,1-.118-.59V1.511a1.486,1.486,0,0,1,.118-.59,1.5,1.5,0,0,1,.8-.8A1.476,1.476,0,0,1,259.518,0h4.02a1.476,1.476,0,0,1,.589.118,1.5,1.5,0,0,1,.8.8,1.487,1.487,0,0,1,.118.59V10.58a1.487,1.487,0,0,1-.118.59,1.5,1.5,0,0,1-.8.8,1.476,1.476,0,0,1-.589.118Zm-.5-1.511a.51.51,0,0,0,.5.5h4.02a.51.51,0,0,0,.5-.5V1.511a.485.485,0,0,0-.149-.354.482.482,0,0,0-.353-.15h-4.02a.482.482,0,0,0-.353.15.485.485,0,0,0-.149.354Zm8.04-2.519v2.85a3.106,3.106,0,0,1-.251,1.244,3.2,3.2,0,0,1-1.7,1.7,3.085,3.085,0,0,1-1.241.252H262.03v1.008h2.01v1.008h-5.025V15.115h2.01V14.107h-1.837a3.085,3.085,0,0,1-1.241-.252,3.2,3.2,0,0,1-1.7-1.7A3.107,3.107,0,0,1,256,10.911V8.061h1.005v2.85a2.128,2.128,0,0,0,.173.85,2.2,2.2,0,0,0,.463.693,2.281,2.281,0,0,0,.7.472,1.981,1.981,0,0,0,.848.173h4.68a2.113,2.113,0,0,0,.848-.173,2.195,2.195,0,0,0,.691-.464,2.288,2.288,0,0,0,.471-.7,2,2,0,0,0,.173-.85V8.061Z" transform="translate(-244.073 14)" fill="#fff"/>
+  </g>
+</svg>

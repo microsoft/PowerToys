@@ -66,7 +66,12 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 2. Visual Studio Community/Professional/Enterprise 2019
 3. Once you've cloned and started the `PowerToys.sln`, in the solution explorer, if you see a dialog that says `install extra components`, click `install`
 
-### Compile source code
+**Optional step:**<br/>
+4. to build the Video Conference module, install the [WDK version 1903](https://docs.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads) ([direct download link](https://go.microsoft.com/fwlink/?linkid=2085767))<br />
+   During the installation, make sure that, when prompted, the `Install Windows Driver Kit Visual Studio extension` option is checked.
+
+
+### Compiling Source Code
 
 - Open `PowerToys.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
 - The PowerToys binaries will be in your repo under `x64\Release\`.

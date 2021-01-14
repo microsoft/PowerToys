@@ -29,7 +29,7 @@ namespace updating
     std::future<bool> try_autoupdate(const bool download_updates_automatically, const notifications::strings&);
     std::filesystem::path get_pending_updates_path();
     std::future<std::wstring> download_update(const notifications::strings&);
-    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const notifications::strings& strings, const bool prerelease = false);
+    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const notifications::strings& strings, const bool prerelease = true);
 
     // non-localized
     constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN = L"powertoyssetup";

@@ -117,6 +117,98 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Shell_VideoConference.Content" xml:space="preserve">
+    <value>Video Conference Mute</value>
+    <comment>Navigation view item name for Video Conference</comment>
+  </data>
+  <data name="VideoConference_Enable.Header" xml:space="preserve">
+    <value>Enable Video Conference</value>
+  </data>
+  <data name="VideoConference_Description.Text" xml:space="preserve">
+    <value>Video Conference Mute is a quick and easy way to do an global "mute" of both your microphone and webcam.
+Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
+  </data>
+  <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
+    <value>Mute camera and microphone</value>
+  </data>
+  <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
+    <value>Mute microphone</value>
+  </data>
+  <data name="VideoConference_CameraMuteHotkeyControl_Header.Header" xml:space="preserve">
+    <value>Mute camera</value>
+  </data>
+  <data name="VideoConference_SelectedCamera.Header" xml:space="preserve">
+    <value>Selected camera</value>
+  </data>
+  <data name="VideoConference_SelectedMicrophone.Header" xml:space="preserve">
+    <value>Selected microphone</value>
+  </data>
+  <data name="VideoConference_CameraOverlayImagePathHeader.Text" xml:space="preserve">
+    <value>Camera overlay image</value>
+  </data>
+  <data name="VideoConference_ToolbarPosition.Header" xml:space="preserve">
+    <value>Toolbar position</value>
+  </data>
+  <data name="VideoConference_ToolbarPosition_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="VideoConference_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+  <data name="VideoConference_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+  <data name="VideoConference_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+  <data name="VideoConference_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="VideoConference_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+  <data name="VideoConference_ToolbarMonitor.Header" xml:space="preserve">
+    <value>Show toolbar on</value>
+  </data>
+  <data name="VideoConference_ToolbarMonitor_Main.Content" xml:space="preserve">
+    <value>Main monitor</value>
+  </data>
+  <data name="VideoConference_ToolbarMonitor_UnderCursor.Content" xml:space="preserve">
+    <value>Monitor under cursor</value>
+  </data>
+  <data name="VideoConference_ToolbarMonitor_ActiveWindow.Content" xml:space="preserve">
+    <value>Active window monitor</value>
+  </data>
+  <data name="VideoConference_ToolbarMonitor_All.Content" xml:space="preserve">
+    <value>All monitors</value>
+  </data>
+  <data name="VideoConference_HideToolbarWhenUnmuted.Content" xml:space="preserve">
+    <value>Hide toolbar when both camera and microphone are unmuted</value>
+  </data>
+  <data name="About_VideoConference.Text" xml:space="preserve">
+    <value>About Video Conference</value>
+  </data>
+  <data name="VideoConference_Camera.Text" xml:space="preserve">
+    <value>Camera</value>
+  </data>
+  <data name="VideoConference_Microphone.Text" xml:space="preserve">
+    <value>Microphone</value>
+  </data>
+  <data name="VideoConference_Toolbar.Text" xml:space="preserve">
+    <value>Toolbar</value>
+  </data>
+  <data name="VideoConference_Shortcuts.Text" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="VideoConference_CameraOverlayImageAlt.AutomationProperties.Name" xml:space="preserve">
+    <value>Camera overlay image preview</value>
+  </data>
+  <data name="VideoConference_CameraOverlayImageBrowse.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="VideoConference_CameraOverlayImageClear.Content" xml:space="preserve">
+    <value>Clear</value>
+  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>

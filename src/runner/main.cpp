@@ -19,6 +19,7 @@
 #include <common/updating/updating.h>
 #include <common/utils/appMutex.h>
 #include <common/utils/elevation.h>
+#include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
 #include <common/winstore/winstore.h>
@@ -43,6 +44,8 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/window.h>
 #include <common/version/version.h>
+
+#include <gdiplus.h>
 
 extern updating::notifications::strings Strings;
 
@@ -148,7 +151,7 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
         chdir_current_executable();
         // Load Powertoys DLLs
 
-        const std::array<std::wstring_view, 8> knownModules = {
+        std::vector<std::wstring_view> knownModules = {
             L"modules/FancyZones/fancyzones.dll",
             L"modules/FileExplorerPreview/powerpreview.dll",
             L"modules/ImageResizer/ImageResizerExt.dll",
@@ -158,6 +161,10 @@ int runner(bool isProcessElevated, bool openSettings, bool openOobe)
             L"modules/ShortcutGuide/ShortcutGuide.dll",
             L"modules/ColorPicker/ColorPicker.dll",
         };
+        if (Is19H1OrHigher())
+        {
+            knownModules.emplace_back(L"modules/VideoConference/VideoConferenceModule.dll");
+        }
 
         for (const auto& moduleSubdir : knownModules)
         {
@@ -319,6 +326,10 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    Gdiplus::GdiplusStartupInput gpStartupInput;
+    ULONG_PTR gpToken;
+    GdiplusStartup(&gpToken, &gpStartupInput, NULL);
+
     winrt::init_apartment();
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
