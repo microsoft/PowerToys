@@ -886,7 +886,7 @@
   </data>
   <data name="ImageResizer_DefaultSize_Phone" xml:space="preserve">
     <value>Phone</value>
-    <comment>The size of the image</comment>
+    <comment>The size of the image referring to a Mobile Phone typical image size</comment>
   </data>
   <data name="ImageResizer_DefaultSize_Small" xml:space="preserve">
     <value>Small</value>
