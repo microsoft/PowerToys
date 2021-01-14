@@ -30,7 +30,7 @@ namespace CommonLibTest
 
             // Act
             settingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
-            BasePTSettingsTest actual_json = settingsUtils.GetSettings<BasePTSettingsTest>(file_name);
+            BasePTSettingsTest actual_json = settingsUtils.GetSettingsOrDefault<BasePTSettingsTest>(file_name);
 
             // Assert
             Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
@@ -48,7 +48,7 @@ namespace CommonLibTest
             BasePTSettingsTest expected_json = JsonSerializer.Deserialize<BasePTSettingsTest>(file_contents_correct_json_content);
 
             settingsUtils.SaveSettings(file_contents_correct_json_content, file_name);
-            BasePTSettingsTest actual_json = settingsUtils.GetSettings<BasePTSettingsTest>(file_name);
+            BasePTSettingsTest actual_json = settingsUtils.GetSettingsOrDefault<BasePTSettingsTest>(file_name);
 
             // Assert
             Assert.AreEqual(expected_json.ToJsonString(), actual_json.ToJsonString());
@@ -83,7 +83,7 @@ namespace CommonLibTest
             var mockSettingsUtils = new SettingsUtils(mockFileSystem);
 
             // Act
-            TestClass settings = mockSettingsUtils.GetSettings<TestClass>(string.Empty);
+            TestClass settings = mockSettingsUtils.GetSettingsOrDefault<TestClass>(string.Empty);
 
             // Assert
             Assert.AreEqual(settings.TestInt, 100);
