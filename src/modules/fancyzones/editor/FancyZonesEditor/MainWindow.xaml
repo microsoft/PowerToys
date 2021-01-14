@@ -27,8 +27,9 @@
         ResizeMode="CanResize">
     <Window.Resources>
 
-        <Converters:LayoutTypeToVisibilityConverter x:Key="LayoutTypeToVisibilityConverter" />
-
+        <Converters:LayoutTypeCustomToVisibilityConverter x:Key="LayoutTypeCustomToVisibilityConverter" />
+        <Converters:LayoutTypeTemplateToVisibilityConverter x:Key="LayoutTypeTemplateToVisibilityConverter" />
+        
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
                     Width="{Binding DisplayWidth}"
@@ -156,7 +157,7 @@
                                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                                         Height="48"
                                         Style="{StaticResource AccentButtonStyle}"
-                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="&#xE104;"
@@ -170,14 +171,60 @@
                                            Text="{x:Static props:Resources.Name}"
                                            Margin="0,32,0,0"
                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}" />
+                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
                                 <TextBox Text="{Binding Name}"
                                          Margin="0,6,0,16"
                                          AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}"
-                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}"/>
+                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"/>
                                 
                                 <StackPanel Margin="0,0,0,0"
                                             Orientation="Vertical">
+                                    <StackPanel Margin="0,0,0,8"
+                                                Orientation="Horizontal"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                Visibility="{Binding Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+
+                                        <Button x:Name="decrementZones"
+                                                Width="32"
+                                                Height="32"
+                                                Content="&#xE949;"
+                                                FontSize="14"
+                                                TabIndex="2"
+                                                HorizontalAlignment="Center"
+                                                Background="Transparent"
+                                                FontFamily="Segoe MDL2 Assets"
+                                                ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
+                                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
+                                                Style="{StaticResource DefaultButtonStyle}"
+                                                Click="DecrementZones_Click" />
+
+                                        <TextBlock x:Name="zoneCount"
+                                                   Text="{Binding TemplateZoneCount}"
+                                                   TextAlignment="Center"
+                                                   FontSize="16"
+                                                   Width="32"
+                                                   Margin="8"
+                                                   Foreground="{DynamicResource SystemAccentColorLight1Brush}"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Center" />
+
+                                        <Button x:Name="incrementZones"
+                                                Width="32"
+                                                Height="32"
+                                                FontSize="14"
+                                                TabIndex="3"
+                                                Background="Transparent"
+                                                Content="&#xE948;"
+                                                HorizontalAlignment="Center"
+                                                FontFamily="Segoe MDL2 Assets"
+                                                Style="{StaticResource DefaultButtonStyle}"
+                                                ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
+                                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
+                                                Click="IncrementZones_Click" />
+                                    </StackPanel>
+                                    
                                     <TextBlock Text="{x:Static props:Resources.Distance_adjacent_zones}"
                                                Margin="0,16,0,0"
                                                Foreground="{DynamicResource PrimaryForegroundBrush}"
@@ -210,7 +257,7 @@
                                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                             Click="DeleteLayout_Click"
                                             Background="Transparent"
-                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                                         <Button.Content>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="&#xE107;"
@@ -322,7 +369,7 @@
                                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"
                                         Height="48"
                                         Style="{StaticResource AccentButtonStyle}"
-                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                        Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="&#xE104;"
@@ -336,15 +383,61 @@
                                            Text="{x:Static props:Resources.Name}"
                                            Margin="0,32,0,0"
                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}" />
+                                           Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
                                 <TextBox Text="{Binding Name}"
                                          Margin="0,6,0,16"
                                          AutomationProperties.LabeledBy="{Binding ElementName=nameHeader}"
-                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}"/>
+                                         Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}"/>
 
                                 <StackPanel Margin="0,0,0,0"
                                             Orientation="Vertical">
-                                    <ui:ToggleSwitch x:Name="spaceAroundSetting"
+                                    <StackPanel Margin="0,0,0,8"
+                                                Orientation="Horizontal"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                Visibility="{Binding Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+
+                                        <Button x:Name="decrementZones"
+                                            Width="32"
+                                            Height="32"
+                                            Content="&#xE949;"
+                                            FontSize="14"
+                                            TabIndex="2"
+                                            HorizontalAlignment="Center"
+                                            Background="Transparent"
+                                            FontFamily="Segoe MDL2 Assets"
+                                            ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
+                                            AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
+                                            Style="{StaticResource DefaultButtonStyle}"
+                                            Click="DecrementZones_Click" />
+
+                                        <TextBlock x:Name="zoneCount"
+                                                Text="{Binding TemplateZoneCount}"
+                                                TextAlignment="Center"
+                                                FontSize="16"
+                                                Width="32"
+                                                Margin="8"
+                                                Foreground="{DynamicResource SystemAccentColorLight1Brush}"
+                                                FontWeight="SemiBold"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center" />
+
+                                        <Button x:Name="incrementZones"
+                                            Width="32"
+                                            Height="32"
+                                            FontSize="14"
+                                            TabIndex="3"
+                                            Background="Transparent"
+                                            Content="&#xE948;"
+                                            HorizontalAlignment="Center"
+                                            FontFamily="Segoe MDL2 Assets"
+                                            Style="{StaticResource DefaultButtonStyle}"
+                                            ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
+                                            AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
+                                            Click="IncrementZones_Click" />
+                                        </StackPanel>
+                                        
+                                        <ui:ToggleSwitch x:Name="spaceAroundSetting"
                                                      Header="{x:Static props:Resources.Show_Space_Zones}"
                                                      IsOn="{Binding ShowSpacing}" />
 
@@ -391,7 +484,7 @@
                                             AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                             Click="DeleteLayout_Click"
                                             Background="Transparent"
-                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeToVisibilityConverter}}">
+                                            Visibility="{Binding Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
                                         <Button.Content>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="&#xE107;"
@@ -454,51 +547,6 @@
                                x:Name="TemplatesHeaderBlock"
                                FontWeight="SemiBold"
                                FontSize="24" />
-
-                    <StackPanel Margin="-8,-2,0,0"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center">
-
-                        <Button x:Name="decrementZones"
-                                Width="32"
-                                Height="32"
-                                Content="&#xE949;"
-                                FontSize="14"
-                                TabIndex="2"
-                                HorizontalAlignment="Center"
-                                Background="Transparent"
-                                FontFamily="Segoe MDL2 Assets"
-                                ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
-                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
-                                Style="{StaticResource DefaultButtonStyle}"
-                                Click="DecrementZones_Click" />
-
-                        <TextBlock x:Name="zoneCount"
-                                   Text="{Binding ZoneCount}"
-                                   TextAlignment="Center"
-                                   FontSize="16"
-                                   Width="32"
-                                   Margin="8"
-                                   Foreground="{DynamicResource SystemAccentColorLight1Brush}"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Stretch"
-                                   VerticalAlignment="Center" />
-
-                        <Button x:Name="incrementZones"
-                                Width="32"
-                                Height="32"
-                                FontSize="14"
-                                TabIndex="3"
-                                Background="Transparent"
-                                Content="&#xE948;"
-                                HorizontalAlignment="Center"
-                                FontFamily="Segoe MDL2 Assets"
-                                Style="{StaticResource DefaultButtonStyle}"
-                                ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
-                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
-                                Click="IncrementZones_Click" />
-                    </StackPanel>
 
                     <ItemsControl ItemsSource="{Binding DefaultModels}"
                                   Grid.Row="1"

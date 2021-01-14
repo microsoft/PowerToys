@@ -9,7 +9,7 @@ using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor.Converters
 {
-    public class LayoutTypeToVisibilityConverter : IValueConverter
+    public class LayoutTypeCustomToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
