@@ -13,12 +13,17 @@
 // Therefore the simplest way is to compile these functions as native using the pragmas below.
 #pragma managed(push, off)
 #include "../utils/os-detect.h"
+// TODO: move to a separate library in common
+#include "../../modules/videoconference/VideoConferenceShared/MicrophoneDevice.h"
+#include "../../modules/videoconference/VideoConferenceShared/VideoCaptureDeviceList.h"
 #pragma managed(pop)
 
 #include <common/version/version.h>
 
+
 using namespace System;
 using namespace System::Runtime::InteropServices;
+using System::Collections::Generic::List;
 
 // https://docs.microsoft.com/en-us/cpp/dotnet/how-to-wrap-native-class-for-use-by-csharp?view=vs-2019
 namespace interop
@@ -127,6 +132,31 @@ public
         {
             return UseNewSettings();
         }
+        static List<String ^> ^ GetAllActiveMicrophoneDeviceNames() {
+            auto names = gcnew List<String ^>();
+            for (const auto& device : MicrophoneDevice::getAllActive())
+            {
+                names->Add(gcnew String(device.name().data()));
+            }
+            return names;
+        }
+
+            static List<String ^> ^
+            GetAllVideoCaptureDeviceNames() {
+                auto names = gcnew List<String ^>();
+                VideoCaptureDeviceList vcdl;
+                vcdl.EnumerateDevices();
+
+                for (UINT32 i = 0; i < vcdl.Count(); ++i)
+                {
+                    auto name = gcnew String(vcdl.GetDeviceName(i).data());
+                    if (name != L"PowerToys VideoConference")
+                    {
+                        names->Add(name);
+                    }
+                }
+                return names;
+            }
     };
 
 public

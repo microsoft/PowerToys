@@ -181,6 +181,9 @@
     <Compile Include="Views\ShortcutGuidePage.xaml.cs">
       <DependentUpon>ShortcutGuidePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\VideoConference.xaml.cs">
+      <DependentUpon>VideoConference.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\VisibleIfNotEmpty.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -219,6 +222,7 @@
     <Content Include="Assets\Modules\PowerRename.png" />
     <Content Include="Assets\Modules\PT.png" />
     <Content Include="Assets\Modules\ShortcutGuide.png" />
+    <Content Include="Assets\Modules\VideoConference.png" />
     <Content Include="Assets\SplashScreen.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
@@ -383,6 +387,10 @@
     <Page Include="Views\ShortcutGuidePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\VideoConference.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
