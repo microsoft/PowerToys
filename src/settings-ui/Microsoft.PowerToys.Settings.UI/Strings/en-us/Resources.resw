@@ -878,15 +878,19 @@
   </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
+    <comment>The size of the image</comment>
   </data>
   <data name="ImageResizer_DefaultSize_Medium" xml:space="preserve">
     <value>Medium</value>
+    <comment>The size of the image</comment>
   </data>
   <data name="ImageResizer_DefaultSize_Phone" xml:space="preserve">
     <value>Phone</value>
+    <comment>The size of the image</comment>
   </data>
   <data name="ImageResizer_DefaultSize_Small" xml:space="preserve">
     <value>Small</value>
+    <comment>The size of the image</comment>
   </data>
   <data name="ColorPicker_ImageHyperlinkToDocs.NavigateUri" xml:space="preserve">
     <value>https://aka.ms/PowerToysOverview_ColorPicker</value>
