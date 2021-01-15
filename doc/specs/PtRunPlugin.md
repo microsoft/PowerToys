@@ -123,7 +123,7 @@ TODO:
 | 2 | Action word for plug | Validate if we should shift the Action word | P1 |
 | 3 | Include in global result list for plug | Validate if we should shift the Action word from the global list | P1 |
 | 4 | Action word for plug | Validate if we should shift the default Action word | P1 |
-| 5 | Is a direct shortcut used for a plugin | Validate if we should make certain plugins have direct shortcuts.  If so, we should add in one more bit of telem, what shortcut was used to see if there are commonalities  | P1 |
+| 5 | Is a direct shortcut used for a plugin | Validate if we should make certain plugins have direct shortcuts.  If so, we should add in one more bit of telemetry, what shortcut was used to see if there are commonalities  | P1 |
 
 ## 7: Future considerations
 
