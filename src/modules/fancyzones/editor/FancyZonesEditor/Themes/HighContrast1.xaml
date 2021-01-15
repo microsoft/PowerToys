@@ -18,9 +18,8 @@
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF00ff00" />
     <SolidColorBrush x:Key="BackdropBrush" Color="#88000000" />
     <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF9a9a9a" />
-    <SolidColorBrush x:Key="ScreenItemBackgroundBrush" Color="#FF2b2b2b" />
     <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FF3b3b3b" />
-    <SolidColorBrush x:Key="LayoutItemBorderPointerOverBrush" Color="#FF454545" />
+    <SolidColorBrush x:Key="LayoutItemBackgroundPointerOverBrush" Color="#FF454545" />
     <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#BF1b1b1b" />
     <SolidColorBrush x:Key="LayoutPreviewBackgroundBrush" Color="#331B1B1B" />
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF1b1b1b" />

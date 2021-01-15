@@ -86,14 +86,11 @@ namespace FancyZonesEditor
             // Select(((Grid)sender).DataContext as LayoutModel);
         }
 
-        private async void LayoutItem_Click(object sender, MouseButtonEventArgs e)
+        private void LayoutItem_Click(object sender, MouseButtonEventArgs e)
         {
             LayoutModel selectedLayoutModel = ((Grid)sender).DataContext as LayoutModel;
             Select(selectedLayoutModel);
-            EditLayoutDialog.DataContext = selectedLayoutModel;
-            await EditLayoutDialog.ShowAsync();
-
-            // Apply();
+            Apply();
         }
 
         private void LayoutItem_Focused(object sender, RoutedEventArgs e)
@@ -221,7 +218,12 @@ namespace FancyZonesEditor
             }
         }
 
-        private void EditLayout_Click(object sender, RoutedEventArgs e)
+        private async void EditLayout_Click(object sender, RoutedEventArgs e)
+        {
+            await EditLayoutDialog.ShowAsync();
+        }
+
+        private void EditZones_Click(object sender, RoutedEventArgs e)
         {
             var mainEditor = App.Overlay;
             if (!(mainEditor.CurrentDataContext is LayoutModel model))
@@ -328,12 +330,6 @@ namespace FancyZonesEditor
         private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
             monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
-        }
-
-        private void ApplyLayoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            Select(((Button)sender).DataContext as LayoutModel);
-            Apply();
         }
     }
 }
