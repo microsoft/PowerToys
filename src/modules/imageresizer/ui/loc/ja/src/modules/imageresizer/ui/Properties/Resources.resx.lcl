@@ -742,7 +742,7 @@
       <Item ItemId=";TiffCompressOption_Zip" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[ZIP]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[zip 圧縮]]></Val>
           </Tgt>
           <Prev Cat="Text">

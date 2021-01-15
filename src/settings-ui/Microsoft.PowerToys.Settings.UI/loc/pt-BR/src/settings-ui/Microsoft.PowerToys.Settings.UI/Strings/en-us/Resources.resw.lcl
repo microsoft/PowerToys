@@ -265,12 +265,18 @@
       <Item ItemId=";ColorPicker_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/PowerToysOverview_ColorPicker]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/PowerToysOverview_ColorPicker]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ColorPicker_ShowColorName.Content" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Show color name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mostrar o nome da cor]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -418,6 +424,9 @@
       <Item ItemId=";FancyZones_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/PowerToysOverview_FancyZones]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/PowerToysOverview_FancyZones]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -640,6 +649,9 @@
       <Item ItemId=";FileExplorerPreview_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/PowerToysOverview_FileExplorerAddOns]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/PowerToysOverview_FileExplorerAddOns]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -718,6 +730,9 @@
       <Item ItemId=";GeneralPage_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/powertoys]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/powertoys]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -889,6 +904,9 @@
       <Item ItemId=";General_VersionLastChecked.Text" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Last successfully checked: ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Última verificação com êxito: ]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1228,6 +1246,9 @@
       <Item ItemId=";ImageResizer_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/PowerToysOverview_ImageResizer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/PowerToysOverview_ImageResizer]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1423,6 +1444,9 @@
       <Item ItemId=";KeyboardManager_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/PowerToysOverview_KeyboardManager]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/PowerToysOverview_KeyboardManager]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1825,6 +1849,9 @@
       <Item ItemId=";PowerRename_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/PowerToysOverview_PowerRename]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/PowerToysOverview_PowerRename]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1921,6 +1948,9 @@
       <Item ItemId=";PowerToys_Run_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/PowerToysOverview_PowerToysRun]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/PowerToysOverview_PowerToysRun]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2128,6 +2158,9 @@
       <Item ItemId=";ShortcutGuide_ImageHyperlinkToDocs.NavigateUri" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[https://aka.ms/PowerToysOverview_ShortcutGuide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[https://aka.ms/PowerToysOverview_ShortcutGuide]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
