@@ -35,6 +35,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("42")]
         [TestCase("test")]
         [TestCase("pi(2)")] // Incorrect input, constant is being treated as a function.
+        [TestCase("e(2)")]
         public void Interpret_NoResult_WhenCalled(string input)
         {
             // Arrange
@@ -62,6 +63,9 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("8.43 + 4.43 - 12.86", 0D)]
         [TestCase("8.43 + 4.43 - 12.8", 0.06D)]
         [TestCase("exp(5)", 148.413159102577D)]
+        [TestCase("e^5", 148.413159102577D)]
+        [TestCase("e*2", 5.43656365691809D)]
+        [TestCase("log(e)", 1D)]
         [TestCase("cosh(0)", 1D)]
         public void Interpret_NoErrors_WhenCalledWithRounding(string input, decimal expectedResult)
         {
