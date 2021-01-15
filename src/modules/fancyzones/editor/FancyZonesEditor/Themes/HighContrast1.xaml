@@ -24,5 +24,4 @@
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#FF1b1b1b" />
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF1b1b1b" />
     <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#E51b1b1b" />
-
 </ResourceDictionary>
