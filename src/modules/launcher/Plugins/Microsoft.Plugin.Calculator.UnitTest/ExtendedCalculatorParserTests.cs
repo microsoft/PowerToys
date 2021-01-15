@@ -62,6 +62,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("8.43 + 4.43 - 12.86", 0D)]
         [TestCase("8.43 + 4.43 - 12.8", 0.06D)]
         [TestCase("exp(5)", 148.413159102577D)]
+        [TestCase("cosh(0)", 1D)]
         public void Interpret_NoErrors_WhenCalledWithRounding(string input, decimal expectedResult)
         {
             // Arrange
@@ -120,6 +121,10 @@ namespace Microsoft.Plugin.Calculator.UnitTests
         [TestCase("sqrt( 36)", true)]
         [TestCase("max 4", false)]
         [TestCase("sin(0)", true)]
+        [TestCase("sinh(1)", true)]
+        [TestCase("tanh(0)", true)]
+        [TestCase("artanh(pi/2)", true)]
+        [TestCase("cosh", false)]
         [TestCase("cos", false)]
         [TestCase("abs", false)]
         [TestCase("1+1.1e3", true)]
@@ -136,6 +141,7 @@ namespace Microsoft.Plugin.Calculator.UnitTests
 
         [TestCase("1-1")]
         [TestCase("sin(0)")]
+        [TestCase("sinh(0)")]
         public void Interpret_MustReturnResult_WhenResultIsZero(string input)
         {
             // Arrange
