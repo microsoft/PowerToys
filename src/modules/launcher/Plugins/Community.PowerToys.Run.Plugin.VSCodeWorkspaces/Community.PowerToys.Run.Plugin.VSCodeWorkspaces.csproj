@@ -5,8 +5,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{4D971245-7A70-41D5-BAA0-DDB5684CAF51}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces</RootNamespace>
-    <AssemblyName>Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces</AssemblyName>
+    <RootNamespace>Community.PowerToys.Run.Plugin.VSCodeWorkspaces</RootNamespace>
+    <AssemblyName>Community.PowerToys.Run.Plugin.VSCodeWorkspaces</AssemblyName>
     <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

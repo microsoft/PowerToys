@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
+namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 {
     public class SshConfig
     {

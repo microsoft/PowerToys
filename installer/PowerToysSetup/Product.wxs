@@ -883,7 +883,7 @@
                     <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
                 </Component>
                 <Component Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
-                  <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
+                  <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
                 </Component>
                 <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
                     <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
@@ -999,8 +999,8 @@
 
       <!-- VSCodeWorkspaces Plugin -->
       <Component Id="VSCodeWorkspacesComponent" Directory="VSCodeWorkspacePluginFolder" Guid="78363DBD-7E38-4D5F-8987-9963DF609B94">
-        <File Id="VSCodeWorkspaceFolder_deps" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" />
-        <?foreach File in plugin.json;Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.dll?>
+        <File Id="VSCodeWorkspaceFolder_deps" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" />
+        <?foreach File in plugin.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll?>
           <File Id="VSCodeWorkspaces_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\VSCodeWorkspaces\$(var.File)" />
         <?endforeach?>
       </Component>

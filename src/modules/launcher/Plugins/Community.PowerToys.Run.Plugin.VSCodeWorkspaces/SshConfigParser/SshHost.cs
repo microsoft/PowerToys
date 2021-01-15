@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Microsoft.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
+namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser
 {
     public class SshHost
     {
