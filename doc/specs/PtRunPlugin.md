@@ -65,7 +65,7 @@ Here the options are both inline and allow for an on/off.
 
 | Term | Definition |
 |------|------------|
-| Action word | This is the concept inside PowerToys Run where you can directly invoke only that plugin(s) that use that.  An example is doing `=2+2` would only call the calculator plugin |
+| Action word | This is the concept inside PowerToys Run where you can directly invoke only that plugin(s) that use that.  An example is doing `=2+2` would only call the calculator plugin.  The UX Screenshot is calling this "Direct activation" below |
 | weight | A multiplier to increase the result value |
 | PT Run / Run | Shorthand for PowerToys Run launcher |
 
@@ -79,6 +79,8 @@ Here the options are both inline and allow for an on/off.
 | 2 | When clicked, inline options are displayed | P0 |
 | 3 | When weight multiplier is added, that target plugin's value should be increased | P0 |
 | 4 | When new settings are applied, PT Run does not have to restart | P2 |
+| 5 | When an error state is hit, the warning will be displayed to user below title for plugin | P0 |
+| 6 | Detect error state when there is no direct activation, no global result and no action word | P0 |
 
 ### 4.2: Inline Setting requirements
 
@@ -86,11 +88,12 @@ Here the options are both inline and allow for an on/off.
 |---|------------|----------|
 | 1 | Checkbox to "include results in default list" (adding in * to action keyword)  | P0 |
 | 2 | Text field for additional action word. | P0 |
-| 2 | Text field for additional action word can be blank. | P0 |
-| 3 | Do not allow action word of * | P1 |
-| 4 | Weight multiplier number box field, 0 to 10 with ability to add in a decimal.  This will need to be tweaked once the multiplier is added in after real world testing. | P1 |
-| 5 | Direct shortcut to execute a single plugin | P2 |
-| 5 | No plugin can have the same direct shortcut | P2 |
+| 3 | Action word do not have to be unique (This already is supported). | P0 |
+| 4 | Text field for additional action word can be blank. | P0 |
+| 5 | Do not allow action word of * as under the hood this is the global keyword | P1 |
+| 6 | Weight multiplier number box field, 0 to 10 with ability to add in a decimal.  This will need to be tweaked once the multiplier is added in after real world testing. | P1 |
+| 7 | Direct shortcut to execute a single plugin | P2 |
+| 8 | No plugin can have the same direct shortcut | P2 |
 
 ### 4.3: Accessibility 
 
@@ -116,8 +119,11 @@ TODO:
 
 | # | Requirement | Implication | Pri |
 | - | ------------|-------------|-----|
-| 1 | TEXT | TEXT | P0 |
-| 1 | | | |
+| 1 | The enable / disable state | Validate if a plugin should be off by default based on population | P0 |
+| 2 | Action word for plug | Validate if we should shift the Action word | P1 |
+| 3 | Include in global result list for plug | Validate if we should shift the Action word from the global list | P1 |
+| 4 | Action word for plug | Validate if we should shift the default Action word | P1 |
+| 5 | Is a direct shortcut used for a plugin | Validate if we should make certain plugins have direct shortcuts.  If so, we should add in one more bit of telem, what shortcut was used to see if there are commonalities  | P1 |
 
 ## 7: Future considerations
 
