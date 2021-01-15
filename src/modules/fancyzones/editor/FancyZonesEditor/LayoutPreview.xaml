@@ -7,8 +7,11 @@
              mc:Ignorable="d" 
              Loaded="OnLoaded"
              d:DesignHeight="450"
-             d:DesignWidth="800"
-             Background="{DynamicResource LayoutPreviewBackgroundBrush}">
-    <Grid x:Name="Body" Margin="8"
-          Background="Transparent" />
+             d:DesignWidth="800">
+    <Grid>
+        <Border CornerRadius="4"
+                Background="{DynamicResource LayoutPreviewBackgroundBrush}" />
+        <Grid x:Name="Body"
+              Background="Transparent" />
+    </Grid>
 </UserControl>

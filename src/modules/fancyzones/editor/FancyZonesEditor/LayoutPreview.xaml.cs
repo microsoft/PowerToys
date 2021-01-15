@@ -158,7 +158,7 @@ namespace FancyZonesEditor
                         ((col == 0) || (grid.CellChildMap[row, col - 1] != childIndex)))
                     {
                         // this is not a continuation of a span
-                        Rectangle rect = new Rectangle();
+                        Border rect = new Border();
                         left = colInfo[col].Start;
                         top = rowInfo[row].Start;
                         Canvas.SetTop(rect, top);
@@ -228,7 +228,7 @@ namespace FancyZonesEditor
                     if (!visited.Contains(childIndex))
                     {
                         visited.Add(childIndex);
-                        Rectangle rect = new Rectangle();
+                        Border rect = new Border();
                         Grid.SetRow(rect, row);
                         Grid.SetColumn(rect, col);
                         int span = 1;
@@ -292,7 +292,7 @@ namespace FancyZonesEditor
 
             foreach (Int32Rect zone in canvas.Zones)
             {
-                Rectangle rect = new Rectangle();
+                Border rect = new Border();
                 Canvas.SetTop(rect, zone.Y);
                 Canvas.SetLeft(rect, zone.X);
                 rect.MinWidth = zone.Width;

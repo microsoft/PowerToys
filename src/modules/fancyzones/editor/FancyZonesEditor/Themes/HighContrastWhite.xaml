@@ -11,17 +11,16 @@
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
     <SolidColorBrush x:Key="MonitorBackgroundBrush" Color="#FFffffff" />
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFffffff" />
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFf6f6f6" />
-    <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#FFefefef" />
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FFf9f9f9" />
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FFeeeeee" />
+    <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#FFF3F3F3" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF37006e" />
     <SolidColorBrush x:Key="BackdropBrush" Color="#88FFFFFF" />
     <SolidColorBrush x:Key="TitleBarSecondaryForegroundBrush" Color="#FF949494" />
-    <SolidColorBrush x:Key="ScreenItemBackgroundBrush" Color="#FFffffff" />
-    <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FFf6f6f6" />
-    <SolidColorBrush x:Key="LayoutItemBorderPointerOverBrush" Color="#FF898989" />
-    <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#88949494" />
+    <SolidColorBrush x:Key="LayoutItemBackgroundBrush" Color="#FFffffff" />
+    <SolidColorBrush x:Key="LayoutItemBackgroundPointerOverBrush" Color="#FFf2f2f2" />
+    <SolidColorBrush x:Key="LayoutPreviewZoneBackgroundBrush" Color="#88cccccc" />
     <SolidColorBrush x:Key="LayoutPreviewBackgroundBrush" Color="#19949494" />
     <SolidColorBrush x:Key="LayoutPreviewZoneBorderBrush" Color="#9c9c9c" />
     <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BFffffff" />

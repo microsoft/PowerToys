@@ -16,8 +16,8 @@
         Title="FancyZones Editor"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
-        ui:TitleBar.Background="{DynamicResource SecondaryBackgroundBrush}"
-        ui:TitleBar.InactiveBackground="{DynamicResource SecondaryBackgroundBrush}"
+        ui:TitleBar.Background="{DynamicResource TertiaryBackgroundBrush}"
+        ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
         MinWidth="360"
         WindowStartupLocation="CenterOwner"
         ContentRendered="OnContentRendered"
@@ -28,26 +28,46 @@
 
         <Converters:LayoutModelTypeToVisibilityConverter x:Key="LayoutModelTypeToVisibilityConverter" />
 
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="6"
+                          Opacity="0.24"
+                          ShadowDepth="1" />
+        
+        <Style x:Key="CardStyle"
+               TargetType="Border">
+            <Setter Property="Background"
+                    Value="{DynamicResource LayoutItemBackgroundBrush}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource LayoutItemBackgroundBrush}" />
+            <Setter Property="BorderThickness"
+                    Value="2" />
+            <Setter Property="CornerRadius"
+                    Value="4" />
+            <Setter Property="Focusable"
+                    Value="True" />
+            <Setter Property="FocusVisualStyle"
+                    Value="{StaticResource UWPFocusVisualStyle}" />
+            <Setter Property="Border.Effect"
+                    Value="{StaticResource CardShadow}" />
+            <Style.Triggers>
+                <Trigger Property="Border.IsMouseOver"
+                         Value="True">
+                    <Setter Property="Border.Background"
+                            Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
+                    <Setter Property="Border.BorderBrush"
+                            Value="{DynamicResource LayoutItemBackgroundPointerOverBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <DataTemplate x:Key="MonitorItemTemplate">
             <Border x:Name="MonitorItem"
                     Width="{Binding DisplayWidth}"
                     Height="{Binding DisplayHeight}"
                     AutomationProperties.Name="{x:Static props:Resources.Monitor}"
                     AutomationProperties.HelpText="{Binding Index}"
-                    Background="{DynamicResource MonitorBackgroundBrush}"
-                    BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
-                    BorderThickness="1"
-                    Focusable="True"
-                    CornerRadius="4"
                     Margin="8,2,8,8"
                     KeyDown="MonitorItem_KeyDown"
                     MouseDown="MonitorItem_MouseDown"
-                    FocusVisualStyle="{StaticResource UWPFocusVisualStyle}">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="6"
-                                      Opacity="0.24"
-                                      ShadowDepth="1" />
-                </Border.Effect>
+                    Style="{StaticResource CardStyle}">
                 <Border.ToolTip>
                     <ToolTip>
                         <StackPanel>
@@ -74,9 +94,9 @@
                              Value="true">
                     <Setter TargetName="IndexText"
                             Property="Foreground"
-                            Value="White" />
+                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                     <Setter TargetName="MonitorItem"
-                            Property="Background"
+                            Property="BorderBrush"
                             Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                 </DataTrigger>
             </DataTemplate.Triggers>
@@ -84,7 +104,7 @@
 
         <DataTemplate x:Key="LayoutItemTemplate">
             <Grid Background="Transparent"
-                  Width="232"
+                  Width="216"
                   KeyDown="LayoutItem_KeyDown"
                   MouseDown="LayoutItem_Click"
                   Margin="0,0,0,12">
@@ -96,7 +116,6 @@
                             </MenuItem.Icon>
                         </MenuItem>
 
-                        <!-- TO DO: Only show this for custom layouts -->
                         <MenuItem Header="{x:Static props:Resources.Delete}" Click="DeleteLayout_Click">
                             <MenuItem.Icon>
                                 <ui:FontIcon Glyph="&#xE107;" />
@@ -106,25 +125,15 @@
                 </Grid.ContextMenu>
                 
                 <Border x:Name="LayoutItem"
-                        Background="{DynamicResource LayoutItemBackgroundBrush}"
-                        BorderBrush="{DynamicResource LayoutItemBackgroundBrush}"
-                        BorderThickness="1"
-                        Focusable="True"
-                        CornerRadius="4"
+                        Style="{StaticResource CardStyle}"
                         Margin="8"
-                        FocusVisualStyle="{StaticResource UWPFocusVisualStyle}"
                         FocusManager.GotFocus="LayoutItem_Focused">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="6"
-                                          Opacity="0.24"
-                                          ShadowDepth="1" />
-                    </Border.Effect>
 
                     <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="24" />
-                            <RowDefinition Height="136" />
-                            <RowDefinition Height="32" />
+                            <RowDefinition Height="124" />
+                            <RowDefinition Height="24" />
                         </Grid.RowDefinitions>
                         <TextBlock Name="layoutName"
                                    TextTrimming="CharacterEllipsis"
@@ -137,14 +146,35 @@
                                    Margin="0,-4,0,0"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}" />
 
+                        <Button Content="&#xE104;"
+                                x:Name="EditLayoutButton"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="14"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Margin="-8,-16,-8,0"
+                                Height="36"
+                                Width="36"
+                                Padding="0"
+                                BorderBrush="Transparent"
+                                Click="EditLayout_Click"
+                                Background="Transparent"
+                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                ToolTip="{x:Static props:Resources.Edit_Layout}"
+                                AutomationProperties.Name="{x:Static props:Resources.Edit_Layout}"
+                                Style="{StaticResource AccentButtonStyle}"
+                                ui:ControlHelper.CornerRadius="36">
+                        </Button>
+
                         <local:LayoutPreview Grid.Row="1"
                                              Margin="0,8,0,12"
-                                             ui:ControlHelper.CornerRadius="4"
                                              VerticalAlignment="Stretch"                                
                                              HorizontalAlignment="Stretch" />
                         <Grid Grid.Row="2"
+                              HorizontalAlignment="Stretch"
                               Margin="2,0,0,0">
                             <StackPanel Orientation="Vertical"
+                                        HorizontalAlignment="Center"
                                         VerticalAlignment="Center">
                                 <TextBlock ToolTip="{x:Static props:Resources.Space_Around_Zones}"
                                            x:Name="SpacingTextBlock"
@@ -152,27 +182,10 @@
                                     <Run FontSize="10"
                                          Text="&#xE1D9;"
                                          FontFamily="Segoe MDL2 Assets" />
-                                    <Run Text=" 20" /> <!-- TO DO: Bind to spacing -->
+                                    <Run Text=" " />
+                                    <Run Text="20" />
                                 </TextBlock>
                             </StackPanel>
-
-                            <Button Content="&#xE118;"
-                                    x:Name="ApplyLayoutButton"
-                                    FontFamily="Segoe MDL2 Assets"
-                                    FontSize="12"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Bottom"
-                                    Width="30"
-                                    Height="30"
-                                    Click="ApplyLayoutButton_Click"
-                                    Background="Transparent"
-                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                    BorderBrush="{DynamicResource SecondaryForegroundBrush}"
-                                    ToolTip="{x:Static props:Resources.Apply_Layout}"
-                                    AutomationProperties.Name="{x:Static props:Resources.Apply_Layout}"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    ui:ControlHelper.CornerRadius="48">
-                            </Button>
                         </Grid>
                     </Grid>
                 </Border>
@@ -195,19 +208,14 @@
                     <Setter TargetName="SelectionHighlight"
                             Property="Visibility"
                             Value="Visible" />
-                    <Setter TargetName="ApplyLayoutButton"
-                            Property="Visibility"
-                            Value="Collapsed" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsSelected}"
                              Value="true">
                     <Setter TargetName="LayoutItem"
                             Property="BorderBrush"
                             Value="{DynamicResource LayoutItemBorderPointerOverBrush}" />
-                    <Setter TargetName="ApplyLayoutButton"
-                            Property="BorderBrush"
-                            Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
-                    <Setter TargetName="ApplyLayoutButton"
+                   
+                    <Setter TargetName="EditLayoutButton"
                             Property="Foreground"
                             Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
                 </DataTrigger>
@@ -238,51 +246,6 @@
                                x:Name="TemplatesHeaderBlock"
                                FontWeight="SemiBold"
                                FontSize="24" />
-
-                    <StackPanel Margin="-8,-2,0,0"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center">
-
-                        <Button x:Name="decrementZones"
-                                Width="32"
-                                Height="32"
-                                Content="&#xE949;"
-                                FontSize="14"
-                                TabIndex="2"
-                                HorizontalAlignment="Center"
-                                Background="Transparent"
-                                FontFamily="Segoe MDL2 Assets"
-                                ToolTip="{x:Static props:Resources.Zone_Count_Decrement}"
-                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Decrement}"
-                                Style="{StaticResource DefaultButtonStyle}"
-                                Click="DecrementZones_Click" />
-
-                        <TextBlock x:Name="zoneCount"
-                                   Text="{Binding ZoneCount}"
-                                   TextAlignment="Center"
-                                   FontSize="16"
-                                   Width="32"
-                                   Margin="8"
-                                   Foreground="{DynamicResource SystemControlBackgroundAccentBrush}"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Stretch"
-                                   VerticalAlignment="Center" />
-
-                        <Button x:Name="incrementZones"
-                                Width="32"
-                                Height="32"
-                                FontSize="14"
-                                TabIndex="3"
-                                Background="Transparent"
-                                Content="&#xE948;"
-                                HorizontalAlignment="Center"
-                                FontFamily="Segoe MDL2 Assets"
-                                Style="{StaticResource DefaultButtonStyle}"
-                                ToolTip="{x:Static props:Resources.Zone_Count_Increment}"
-                                AutomationProperties.Name="{x:Static props:Resources.Zone_Count_Increment}"
-                                Click="IncrementZones_Click" />
-                    </StackPanel>
 
                     <ItemsControl ItemsSource="{Binding DefaultModels}"
                                   Grid.Row="1"
@@ -369,11 +332,15 @@
                                Margin="12,-3,0,0"
                                Foreground="White" />
                 </StackPanel>
+                <Button.Effect>
+                    <DropShadowEffect BlurRadius="6"
+                                      Opacity="0.32"
+                                      ShadowDepth="1" />
+                </Button.Effect>
             </Button>
-
         </Grid>
 
-        <Grid Background="{DynamicResource SecondaryBackgroundBrush}">
+        <Grid Background="{DynamicResource TertiaryBackgroundBrush}">
             <Grid.Effect>
                 <DropShadowEffect BlurRadius="6"
                                   Opacity="0.32"
@@ -404,24 +371,6 @@
                         </ItemsControl.ItemsPanel>
 
                     </ItemsControl>
-                    <Button x:Name="ResetButton"
-                            TabIndex="1"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom"
-                            Visibility="Collapsed"
-                            AutomationProperties.Name="{x:Static props:Resources.Reset_Layout}"
-                            Margin="8"
-                            Background="Transparent"
-                            Click="Reset_Click">
-                        <Button.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE777;"
-                                           FontFamily="Segoe MDL2 Assets"
-                                           Margin="0,3,8,0" />
-                                <TextBlock Text="{x:Static props:Resources.Reset_Layout}" />
-                            </StackPanel>
-                        </Button.Content>
-                    </Button>
                 </Grid>
             </ScrollViewer>
         </Grid>
@@ -434,7 +383,7 @@
                           Title="{x:Static props:Resources.Edit_Layout}">
             <StackPanel Margin="0,16,0,0"
                         MinWidth="420">
-                <Button Click="EditLayout_Click"
+                <Button Click="EditZones_Click"
                         x:Name="editZoneLayoutButton"
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="{x:Static props:Resources.Edit_zones}"

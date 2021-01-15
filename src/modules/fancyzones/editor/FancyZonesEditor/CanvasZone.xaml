@@ -81,6 +81,7 @@
 
     <Border BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
             Background="{DynamicResource CanvasZoneBackgroundBrush}"
+            CornerRadius="4"
             BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
