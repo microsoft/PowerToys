@@ -133,7 +133,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="24" />
                             <RowDefinition Height="124" />
-                            <RowDefinition Height="24" />
+                            <RowDefinition Height="0" />
                         </Grid.RowDefinitions>
                         <TextBlock Name="layoutName"
                                    TextTrimming="CharacterEllipsis"
@@ -167,10 +167,11 @@
                         </Button>
 
                         <local:LayoutPreview Grid.Row="1"
-                                             Margin="0,8,0,12"
+                                             Margin="0,8,0,8"
                                              VerticalAlignment="Stretch"                                
                                              HorizontalAlignment="Stretch" />
                         <Grid Grid.Row="2"
+                              Visibility="Collapsed"
                               HorizontalAlignment="Stretch"
                               Margin="2,0,0,0">
                             <StackPanel Orientation="Vertical"
