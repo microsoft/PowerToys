@@ -73,6 +73,8 @@ Here the options are both inline and allow for an on/off.
 
 ### 4.1: Core requirements
 
+Most plugin information comes from `PowerToys\modules\launcher\Plugins\PLUGIN_FOLDER\plugin.json` where `PLUGIN_FOLDER` is the name of the plugin.
+
 | # | Definition | Priority |
 |---|------------|----------|
 | 1 | List of plugins with toggle On / Off | P0 |
@@ -81,6 +83,8 @@ Here the options are both inline and allow for an on/off.
 | 4 | When new settings are applied, PT Run does not have to restart | P2 |
 | 5 | When an error state is hit, the warning will be displayed to user below title for plugin | P0 |
 | 6 | Detect error state when there is no direct activation, no global result and no action word | P0 |
+| 7 | Disable file drive warning checkbox if Search plugin is disabled  | P1 |
+| 8 | Do not have warning appear if Disable file drive warning is enabled and the Search plugin is disabled  | P1 |
 
 ### 4.2: Inline Setting requirements
 
@@ -94,6 +98,7 @@ Here the options are both inline and allow for an on/off.
 | 6 | Weight multiplier number box field, 0 to 10 with ability to add in a decimal.  This will need to be tweaked once the multiplier is added in after real world testing. | P1 |
 | 7 | Direct shortcut to execute a single plugin | P2 |
 | 8 | No plugin can have the same direct shortcut | P2 |
+| 9 | Description of plugin is shown when expanded | P1 | 
 
 ### 4.3: Accessibility 
 
@@ -115,8 +120,6 @@ Right now with Wox, each plugin defines their action keywords in a json file.  W
 
 ## 6: Measurements
 
-TODO: 
-
 | # | Requirement | Implication | Pri |
 | - | ------------|-------------|-----|
 | 1 | The enable / disable state | Validate if a plugin should be off by default based on population | P0 |
@@ -127,7 +130,8 @@ TODO:
 
 ## 7: Future considerations
 
-- Additional per-plugin setting
+- Per-plugin setting
+   - This would move the setting for ignoring the file drive warning into Search plugin section
 - 3rd party plugins
 
 ## 8. Appendix
