@@ -372,7 +372,7 @@ namespace FancyZonesEditor
             Preview.Height = workArea.Height;
 
             GridLayoutModel model = Model;
-            if (model == null)
+            if (model == null || _data == null)
             {
                 return;
             }

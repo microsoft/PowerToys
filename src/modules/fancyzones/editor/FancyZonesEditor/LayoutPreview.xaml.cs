@@ -56,9 +56,11 @@ namespace FancyZonesEditor
             }
 
             _model = (LayoutModel)DataContext;
-            _model.PropertyChanged += LayoutModel_PropertyChanged;
-
-            RenderPreview();
+            if (_model != null)
+            {
+                _model.PropertyChanged += LayoutModel_PropertyChanged;
+                RenderPreview();
+            }
         }
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
