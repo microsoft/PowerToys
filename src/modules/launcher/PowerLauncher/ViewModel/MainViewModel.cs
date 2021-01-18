@@ -331,7 +331,7 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-        private string _queryText;
+        private string _queryText = string.Empty;
 
         public string QueryText
         {
