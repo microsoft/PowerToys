@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
 using ModernWpf.Controls;
@@ -224,6 +225,8 @@ namespace FancyZonesEditor
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
+            CloseFlyout((DependencyObject)sender);
+
             var mainEditor = App.Overlay;
             if (!(mainEditor.CurrentDataContext is LayoutModel model))
             {
