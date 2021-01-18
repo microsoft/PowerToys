@@ -19,6 +19,7 @@
 #include "winrt/Windows.UI.Core.h"
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <mutex>
+#include <common/logger/logger.h>
 
 using namespace winrt;
 using namespace Windows::UI;
