@@ -335,7 +335,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resize]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Изменить размер]]></Val>
+            <Val><![CDATA[Изменение размера]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[_Resize]]></Val>
@@ -743,7 +743,7 @@
         <Str Cat="Text">
           <Val><![CDATA[ZIP]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Почтовый индекс]]></Val>
+            <Val><![CDATA[ZIP]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zip]]></Val>
