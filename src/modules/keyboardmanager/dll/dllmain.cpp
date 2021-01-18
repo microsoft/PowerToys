@@ -10,8 +10,8 @@
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/debug_control.h>
-#include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/winapi_error.h>
+#include <common/logger/logger_settings.h>
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/Helpers.h>
 #include "KeyboardEventHandlers.h"
@@ -66,6 +66,10 @@ public:
     // Constructor
     KeyboardManager()
     {
+        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        logFilePath.append(LogSettings::keyboardManagerLogPath);
+        Logger::init(LogSettings::keyboardManagerLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+
         // Load the initial configuration.
         load_config();
 
