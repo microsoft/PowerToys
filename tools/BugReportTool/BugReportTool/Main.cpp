@@ -24,9 +24,10 @@ map<wstring, vector<wstring>> escapeInfo = {
 
 vector<wstring> filesToDelete = {
     L"PowerToys Run\\Cache",
-    L"PowerToys Run\\Settings\\QueryHistory.json",
     L"PowerRename\\replace-mru.json",
-    L"PowerRename\\search-mru.json"
+    L"PowerRename\\search-mru.json",
+    L"PowerToys Run\\Settings\\UserSelectedRecord.json",
+    L"PowerToys Run\\Settings\\QueryHistory.json"
 };
 
 vector<wstring> getXpathArray(wstring xpath)
