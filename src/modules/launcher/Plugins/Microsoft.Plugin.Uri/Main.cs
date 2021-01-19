@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Text;
@@ -67,10 +68,22 @@ namespace Microsoft.Plugin.Uri
                         : DefaultIconPath,
                     Action = action =>
                     {
-                        Process.Start(new ProcessStartInfo(uriResultString)
+                        try
                         {
-                            UseShellExecute = true,
-                        });
+                            Process.Start(new ProcessStartInfo(uriResultString)
+                            {
+                                UseShellExecute = true,
+                            });
+                        }
+                        catch (Win32Exception ex)
+                        {
+                            var title = $"Plugin: {Properties.Resources.Microsoft_plugin_uri_plugin_name}";
+                            var message = $"{Properties.Resources.Microsoft_plugin_uri_open_failed}: {ex.Message}";
+                            Log.Warn(message, GetType());
+                            Context.API.ShowMsg(title, message);
+                            return false;
+                        }
+
                         return true;
                     },
                 });

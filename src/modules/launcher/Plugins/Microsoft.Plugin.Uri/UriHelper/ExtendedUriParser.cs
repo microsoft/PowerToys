@@ -32,6 +32,14 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 var urlBuilder = new UriBuilder(input);
 
                 result = urlBuilder.Uri;
+
+                // Files should be processed by Folder plugin
+                if (result.IsFile)
+                {
+                    result = default;
+                    return false;
+                }
+
                 return true;
             }
             catch (System.UriFormatException)

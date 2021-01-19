@@ -40,6 +40,9 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("[::]", true, "http://[::]/")]
         [TestCase("[2001:0DB8::1]", true, "http://[2001:db8::1]/")]
         [TestCase("[2001:0DB8::1]:80", true, "http://[2001:db8::1]/")]
+        [TestCase("\\\\localhost", false, null)]
+        [TestCase("C:\\Temp", false, null)]
+        [TestCase("file://", false, null)]
         public void TryParseCanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
             // Arrange
