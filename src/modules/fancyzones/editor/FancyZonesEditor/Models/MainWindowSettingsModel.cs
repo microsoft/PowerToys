@@ -126,65 +126,6 @@ namespace FancyZonesEditor
             }
         }
 
-        // Spacing - how much space in between zones of the grid do you want
-        public int Spacing
-        {
-            get
-            {
-                return App.Overlay.CurrentLayoutSettings.Spacing;
-            }
-
-            set
-            {
-                value = Math.Max(0, value);
-                if (App.Overlay.CurrentLayoutSettings.Spacing != value)
-                {
-                    App.Overlay.CurrentLayoutSettings.Spacing = value;
-                    UpdateTemplateLayoutModels();
-                    FirePropertyChanged(nameof(Spacing));
-                }
-            }
-        }
-
-        // ShowSpacing - is the Spacing value used or ignored?
-        public bool ShowSpacing
-        {
-            get
-            {
-                return App.Overlay.CurrentLayoutSettings.ShowSpacing;
-            }
-
-            set
-            {
-                if (App.Overlay.CurrentLayoutSettings.ShowSpacing != value)
-                {
-                    App.Overlay.CurrentLayoutSettings.ShowSpacing = value;
-                    UpdateTemplateLayoutModels();
-                    FirePropertyChanged(nameof(ShowSpacing));
-                }
-            }
-        }
-
-        // SensitivityRadius - how much space inside the zone to highlight the adjacent zone too
-        public int SensitivityRadius
-        {
-            get
-            {
-                return App.Overlay.CurrentLayoutSettings.SensitivityRadius;
-            }
-
-            set
-            {
-                value = Math.Max(0, value);
-                if (App.Overlay.CurrentLayoutSettings.SensitivityRadius != value)
-                {
-                    App.Overlay.CurrentLayoutSettings.SensitivityRadius = value;
-                    UpdateTemplateLayoutModels();
-                    FirePropertyChanged(nameof(SensitivityRadius));
-                }
-            }
-        }
-
         // IsShiftKeyPressed - is the shift key currently being held down
         public bool IsShiftKeyPressed
         {
@@ -465,21 +406,6 @@ namespace FancyZonesEditor
             if (prevSettings.ZoneCount != ZoneCount)
             {
                 FirePropertyChanged(nameof(ZoneCount));
-            }
-
-            if (prevSettings.Spacing != Spacing)
-            {
-                FirePropertyChanged(nameof(Spacing));
-            }
-
-            if (prevSettings.ShowSpacing != ShowSpacing)
-            {
-                FirePropertyChanged(nameof(ShowSpacing));
-            }
-
-            if (prevSettings.SensitivityRadius != SensitivityRadius)
-            {
-                FirePropertyChanged(nameof(SensitivityRadius));
             }
         }
 
