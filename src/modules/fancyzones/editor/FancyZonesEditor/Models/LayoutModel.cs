@@ -140,6 +140,32 @@ namespace FancyZonesEditor.Models
 
         private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
 
+        // TemplateZoneCount - number of zones selected in the picker window for template layouts
+        public int TemplateZoneCount
+        {
+            get
+            {
+                return _zoneCount;
+            }
+
+            set
+            {
+                if (value != _zoneCount)
+                {
+                    _zoneCount = value;
+
+                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.ZoneCount = value;
+                    App.FancyZonesEditorIO.SerializeZoneSettings();
+
+                    InitTemplateZones();
+
+                    FirePropertyChanged(nameof(TemplateZoneCount));
+                }
+            }
+        }
+
+        private int _zoneCount = LayoutSettings.DefaultZoneCount;
+
         // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -182,6 +208,10 @@ namespace FancyZonesEditor.Models
             App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public abstract void InitTemplateZones();
+
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract void PersistData();
 
@@ -202,6 +232,14 @@ namespace FancyZonesEditor.Models
             // update settings
             App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;
             App.Overlay.CurrentLayoutSettings.Type = Type;
+            App.Overlay.CurrentLayoutSettings.SensitivityRadius = SensitivityRadius;
+            App.Overlay.CurrentLayoutSettings.ZoneCount = TemplateZoneCount;
+
+            if (this is GridLayoutModel)
+            {
+                App.Overlay.CurrentLayoutSettings.ShowSpacing = ((GridLayoutModel)this).ShowSpacing;
+                App.Overlay.CurrentLayoutSettings.Spacing = ((GridLayoutModel)this).Spacing;
+            }
 
             // update temp file
             App.FancyZonesEditorIO.SerializeZoneSettings();

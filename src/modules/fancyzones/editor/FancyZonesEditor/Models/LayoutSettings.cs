@@ -9,6 +9,7 @@ namespace FancyZonesEditor
 {
     public class LayoutSettings
     {
+        // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const bool DefaultShowSpacing = true;
 
         public const int DefaultSpacing = 16;
@@ -16,6 +17,8 @@ namespace FancyZonesEditor
         public const int DefaultZoneCount = 3;
 
         public const int DefaultSensitivityRadius = 20;
+
+        public const int MaxZones = 40;
 
         public string ZonesetUuid { get; set; } = string.Empty;
 

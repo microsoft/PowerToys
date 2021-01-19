@@ -53,6 +53,28 @@ namespace FancyZonesEditor.Models
             UpdateLayout();
         }
 
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public override void InitTemplateZones()
+        {
+            Zones.Clear();
+
+            var workingArea = App.Overlay.WorkArea;
+            int topLeftCoordinate = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(100); // TODO: replace magic numbers
+            int width = (int)(workingArea.Width * 0.4);
+            int height = (int)(workingArea.Height * 0.4);
+            Int32Rect focusZoneRect = new Int32Rect(topLeftCoordinate, topLeftCoordinate, width, height);
+            int focusRectXIncrement = (TemplateZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50); // TODO: replace magic numbers
+            int focusRectYIncrement = (TemplateZoneCount <= 1) ? 0 : (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(50); // TODO: replace magic numbers
+
+            for (int i = 0; i < TemplateZoneCount; i++)
+            {
+                Zones.Add(focusZoneRect);
+                focusZoneRect.X += focusRectXIncrement;
+                focusZoneRect.Y += focusRectYIncrement;
+            }
+        }
+
         private void UpdateLayout()
         {
             FirePropertyChanged();
