@@ -15,9 +15,10 @@ namespace Microsoft.Plugin.Calculator
         {
             Scope = new Dictionary<string, object>
             {
-                { "e", Math.E } // e is not contained in the default mages engine
-            }
+                { "e", Math.E }, // e is not contained in the default mages engine
+            },
         });
+
         public const int RoundingDigits = 10;
 
         public CalculateResult Interpret(string input)
