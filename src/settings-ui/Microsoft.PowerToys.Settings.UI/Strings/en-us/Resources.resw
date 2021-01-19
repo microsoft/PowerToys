@@ -928,6 +928,12 @@
     <value>https://aka.ms/PowerToysOverview_ShortcutGuide</value>
     <comment>URL. Do not loc</comment>
   </data>
+  <data name="FancyZones_MoveWindowBasedOnRelativePosition.Content" xml:space="preserve">
+    <value>Win + Up/Down/Left/Right to move windows based on relative position</value>
+  </data>
+  <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex.Content" xml:space="preserve">
+    <value>Win + Left/Right to move windows based on zone index</value>
+  </data>
   <data name="ColorPicker_Editor.Text" xml:space="preserve">
     <value>Editor</value>
   </data>
