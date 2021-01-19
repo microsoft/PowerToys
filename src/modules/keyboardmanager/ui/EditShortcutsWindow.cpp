@@ -48,6 +48,8 @@ static IAsyncAction OnClickAccept(
 // Function to create the Edit Shortcuts Window
 void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
+    Logger::trace("Creating Remap shortcuts window");
+
     // Window Registration
     const wchar_t szWindowClass[] = L"EditShortcutsWindow";
 

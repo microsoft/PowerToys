@@ -41,7 +41,7 @@ json::JsonObject get_power_toys_settings()
         }
         catch (...)
         {
-            // TODO: handle malformed JSON.
+            Logger::error("get_power_toys_settings: got malformed json");
         }
     }
     return result;
@@ -85,19 +85,25 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                 }
                 else if (action == L"check_for_updates")
                 {
-                    auto new_version_info = check_for_updates();
-                    const VersionHelper latestVersion =
-                        new_version_info ? new_version_info->version :
-                                           VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION };
+                    if (auto update_check_result = check_for_updates())
+                    {
+                        VersionHelper latestVersion{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION };
+                        bool isVersionLatest = true;
+                        if (auto new_version = std::get_if<updating::new_version_download_info>(&*update_check_result))
+                        {
+                            latestVersion = new_version->version;
+                            isVersionLatest = false;
+                        }
+                        json::JsonObject json;
+                        json.SetNamedValue(L"version", json::value(latestVersion.toWstring()));
+                        json.SetNamedValue(L"isVersionLatest", json::value(isVersionLatest));
 
-                    json::JsonObject json;
-                    json.SetNamedValue(L"version", json::JsonValue::CreateStringValue(latestVersion.toWstring()));
-                    json.SetNamedValue(L"isVersionLatest", json::JsonValue::CreateBooleanValue(!new_version_info));
+                        result.emplace(json.Stringify());
 
-                    result.emplace(json.Stringify());
-                    UpdateState::store([](UpdateState& state) {
-                        state.github_update_last_checked_date.emplace(timeutil::now());
-                    });
+                        UpdateState::store([](UpdateState& state) {
+                            state.github_update_last_checked_date.emplace(timeutil::now());
+                        });
+                    }
                 }
                 else if (action == L"request_update_state_date")
                 {
@@ -107,7 +113,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
                     if (update_state.github_update_last_checked_date)
                     {
                         const time_t date = *update_state.github_update_last_checked_date;
-                        json.SetNamedValue(L"updateStateDate", json::JsonValue::CreateStringValue(std::to_wstring(date)));
+                        json.SetNamedValue(L"updateStateDate", json::value(std::to_wstring(date)));
                     }
 
                     result.emplace(json.Stringify());
@@ -148,7 +154,14 @@ void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
 
 void dispatch_received_json(const std::wstring& json_to_parse)
 {
-    const json::JsonObject j = json::JsonObject::Parse(json_to_parse);
+    json::JsonObject j;
+    const bool ok = json::JsonObject::TryParse(json_to_parse, j);
+    if (!ok)
+    {
+        Logger::error(L"dispatch_received_json: got malformed json: {}", json_to_parse);
+        return;
+    }
+
     for (const auto& base_element : j)
     {
         if (!current_settings_ipc)
@@ -253,7 +266,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           nullptr,
                                           nullptr,
                                           FALSE,
-                                          0,
+                                          EXTENDED_STARTUPINFO_PRESENT,
                                           nullptr,
                                           nullptr,
                                           &siex.StartupInfo,

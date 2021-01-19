@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
             try
             {
-                PowerRenameLocalProperties localSettings = _settingsUtils.GetSettings<PowerRenameLocalProperties>(GetSettingsSubPath(), "power-rename-settings.json");
+                PowerRenameLocalProperties localSettings = _settingsUtils.GetSettingsOrDefault<PowerRenameLocalProperties>(GetSettingsSubPath(), "power-rename-settings.json");
                 Settings = new PowerRenameSettings(localSettings);
             }
             catch (Exception e)

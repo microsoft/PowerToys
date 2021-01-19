@@ -237,6 +237,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             }
         }
 
+        public static bool AutoUpdatesEnabled
+        {
+            get
+            {
+                return Helper.GetProductVersion() != "v0.0.1";
+            }
+        }
+
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This may throw if the XAML page is not initialized in tests (https://github.com/microsoft/PowerToys/pull/2676)")]
         public bool IsDarkThemeRadioButtonChecked
         {
@@ -388,10 +396,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             SendCheckForUpdatesConfigMSG(customaction.ToString());
-            RequestUpdateCheckedDate();
         }
 
-        private void RequestUpdateCheckedDate()
+        public void RequestUpdateCheckedDate()
         {
             GeneralSettingsConfig.CustomActionName = "request_update_state_date";
 

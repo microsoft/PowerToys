@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exceptions should not crash the program but will be logged until we can understand common exception scenarios")]
-        public ImageResizerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public ImageResizerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string> resourceLoader)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
                     throw;
                 }
 #endif
-                Settings = new ImageResizerSettings();
+                Settings = new ImageResizerSettings(resourceLoader);
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 

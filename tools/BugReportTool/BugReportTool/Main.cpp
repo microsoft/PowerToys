@@ -10,9 +10,9 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/json.h>
 #include <common/utils/timeutil.h>
+#include <common/utils/exec.h>
 
 #include "ReportMonitorInfo.h"
-
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
@@ -24,9 +24,10 @@ map<wstring, vector<wstring>> escapeInfo = {
 
 vector<wstring> filesToDelete = {
     L"PowerToys Run\\Cache",
-    L"PowerToys Run\\Settings\\QueryHistory.json",
     L"PowerRename\\replace-mru.json",
-    L"PowerRename\\search-mru.json"
+    L"PowerRename\\search-mru.json",
+    L"PowerToys Run\\Settings\\UserSelectedRecord.json",
+    L"PowerToys Run\\Settings\\QueryHistory.json"
 };
 
 vector<wstring> getXpathArray(wstring xpath)
@@ -204,6 +205,28 @@ void reportWindowsVersion(const filesystem::path& tmpDir)
     }
 }
 
+void reportDotNetInstallationInfo(const filesystem::path& tmpDir)
+{
+    auto dotnetInfoPath = tmpDir;
+    dotnetInfoPath.append("dotnet-installation-info.txt");
+    try
+    {
+        wofstream dotnetReport(dotnetInfoPath);
+        auto dotnetInfo = exec_and_read_output(LR"(dotnet --list-runtimes)");
+        if (!dotnetInfo.has_value())
+        {
+            printf("Failed to get dotnet installation information\n");
+            return;
+        }
+
+        dotnetReport << dotnetInfo.value().c_str();
+    }
+    catch (...)
+    {
+        printf("Failed to report dotnet installation information");
+    }
+}
+
 int wmain(int argc, wchar_t* argv[], wchar_t*)
 {
     // Get path to save zip
@@ -258,6 +281,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     // Write windows version info to the temporary folder
     reportWindowsVersion(tmpDir);
+
+    // Write dotnet installation info to the temporary folder
+    reportDotNetInstallationInfo(tmpDir);
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);

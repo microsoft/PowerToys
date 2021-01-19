@@ -20,7 +20,8 @@ namespace Microsoft.PowerToys.Common.UI
         private const string HighContrastBlackTheme = "HighContrast.Accent4";
         private const string HighContrastWhiteTheme = "HighContrast.Accent5";
 
-        private Theme currentTheme;
+        private Theme _currentTheme;
+        private Theme _settingsTheme;
         private bool _disposed;
 
         public event ThemeChangedHandler ThemeChanged;
@@ -77,7 +78,7 @@ namespace Microsoft.PowerToys.Common.UI
 
         public Theme GetCurrentTheme()
         {
-            return currentTheme;
+            return _currentTheme;
         }
 
         private static Theme GetHighContrastBaseType()
@@ -103,64 +104,64 @@ namespace Microsoft.PowerToys.Common.UI
 
         private void ResetTheme()
         {
-            ChangeTheme(currentTheme, false);
+            ChangeTheme(_settingsTheme == Theme.System ? Theme.System : _currentTheme);
         }
 
-        public void ChangeTheme(Theme theme, bool forceSystem)
+        public void ChangeTheme(Theme theme, bool fromSettings = false)
         {
-            Theme oldTheme = currentTheme;
+            if (fromSettings)
+            {
+                _settingsTheme = theme;
+            }
+
+            Theme oldTheme = _currentTheme;
 
             if (theme == Theme.System)
             {
-                currentTheme = Theme.System;
+                _currentTheme = Theme.System;
                 if (ControlzEx.Theming.WindowsThemeHelper.IsHighContrastEnabled())
                 {
                     Theme highContrastBaseType = GetHighContrastBaseType();
-                    ChangeTheme(highContrastBaseType, true);
+                    ChangeTheme(highContrastBaseType, false);
                 }
                 else
                 {
                     string baseColor = ControlzEx.Theming.WindowsThemeHelper.GetWindowsBaseColor();
-                    ChangeTheme((Theme)Enum.Parse(typeof(Theme), baseColor), true);
+                    ChangeTheme((Theme)Enum.Parse(typeof(Theme), baseColor));
                 }
             }
             else if (theme == Theme.HighContrastOne)
             {
-                currentTheme = Theme.HighContrastOne;
+                _currentTheme = Theme.HighContrastOne;
                 ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastOneTheme, true);
             }
             else if (theme == Theme.HighContrastTwo)
             {
-                currentTheme = Theme.HighContrastTwo;
+                _currentTheme = Theme.HighContrastTwo;
                 ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastTwoTheme, true);
             }
             else if (theme == Theme.HighContrastWhite)
             {
-                currentTheme = Theme.HighContrastWhite;
+                _currentTheme = Theme.HighContrastWhite;
                 ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastWhiteTheme, true);
             }
             else if (theme == Theme.HighContrastBlack)
             {
-                currentTheme = Theme.HighContrastBlack;
+                _currentTheme = Theme.HighContrastBlack;
                 ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, HighContrastBlackTheme, true);
             }
             else if (theme == Theme.Light)
             {
-                currentTheme = Theme.Light;
+                _currentTheme = Theme.Light;
                 ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, LightTheme);
             }
             else if (theme == Theme.Dark)
             {
-                currentTheme = Theme.Dark;
+                _currentTheme = Theme.Dark;
                 ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, DarkTheme);
             }
 
-            ThemeChanged?.Invoke(oldTheme, currentTheme);
-
-            if (forceSystem)
-            {
-                currentTheme = Theme.System;
-            }
+            ThemeChanged?.Invoke(oldTheme, _currentTheme);
         }
 
         private void Current_ThemeChanged(object sender, ControlzEx.Theming.ThemeChangedEventArgs e)

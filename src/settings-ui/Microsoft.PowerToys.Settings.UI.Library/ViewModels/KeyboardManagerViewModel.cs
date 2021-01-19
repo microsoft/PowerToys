@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
             {
                 try
                 {
-                    Settings = _settingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
+                    Settings = _settingsUtils.GetSettingsOrDefault<KeyboardManagerSettings>(PowerToyName);
                 }
                 catch (Exception e)
                 {
@@ -214,7 +214,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels
 
                             if (_settingsUtils.SettingsExists(PowerToyName, fileName))
                             {
-                                _profile = _settingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, fileName);
+                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
                             }
                             else
                             {

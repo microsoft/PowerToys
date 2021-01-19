@@ -61,7 +61,7 @@ namespace updating
         throw std::runtime_error("Release object doesn't have the required asset");
     }
 
-    std::future<nonstd::expected<new_version_download_info, std::wstring>> get_new_github_version_info_async(const notifications::strings& strings, const bool prerelease)
+    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const notifications::strings& strings, const bool prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
@@ -104,7 +104,7 @@ namespace updating
 
             if (github_version <= current_version)
             {
-                co_return nonstd::make_unexpected(strings.GITHUB_NEW_VERSION_UP_TO_DATE);
+                co_return version_up_to_date{};
             }
 
             Uri release_page_url{ release_object.GetNamedString(L"html_url") };
@@ -142,24 +142,29 @@ namespace updating
         return installer_download_dst;
     }
 
-    std::future<void> try_autoupdate(const bool download_updates_automatically, const notifications::strings& strings)
+    std::future<bool> try_autoupdate(const bool download_updates_automatically, const notifications::strings& strings)
     {
-        const auto new_version = co_await get_new_github_version_info_async(strings);
-        if (!new_version)
+        const auto version_check_result = co_await get_github_version_info_async(strings);
+        if (!version_check_result)
         {
-            co_return;
+            co_return false;
         }
+        if (std::holds_alternative<version_up_to_date>(*version_check_result))
+        {
+            co_return true;
+        }
+        const auto new_version = std::get<new_version_download_info>(*version_check_result);
 
         if (download_updates_automatically && !could_be_costly_connection())
         {
-            auto installer_download_dst = create_download_path() / new_version->installer_filename;
+            auto installer_download_dst = create_download_path() / new_version.installer_filename;
             bool download_success = false;
             for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
             {
                 try
                 {
                     http::HttpClient client;
-                    co_await client.download(new_version->installer_download_url, installer_download_dst);
+                    co_await client.download(new_version.installer_download_url, installer_download_dst);
                     download_success = true;
                     break;
                 }
@@ -170,44 +175,45 @@ namespace updating
             }
             if (!download_success)
             {
-                updating::notifications::show_install_error(new_version.value(), strings);
-                co_return;
+                updating::notifications::show_install_error(new_version, strings);
+                co_return false;
             }
 
-            updating::notifications::show_version_ready(new_version.value(), strings);
+            updating::notifications::show_version_ready(new_version, strings);
         }
         else
         {
-            updating::notifications::show_visit_github(new_version.value(), strings);
+            updating::notifications::show_visit_github(new_version, strings);
         }
+        co_return true;
     }
 
     std::future<std::wstring> download_update(const notifications::strings& strings)
     {
-        const auto new_version = co_await get_new_github_version_info_async(strings);
-        if (!new_version)
+        const auto version_check_result = co_await get_github_version_info_async(strings);
+        if (!version_check_result || std::holds_alternative<version_up_to_date>(*version_check_result))
         {
             co_return L"";
         }
-
-        auto installer_download_dst = create_download_path() / new_version->installer_filename;
-        updating::notifications::show_download_start(new_version.value(), strings);
+        const auto new_version = std::get<new_version_download_info>(*version_check_result);
+        auto installer_download_dst = create_download_path() / new_version.installer_filename;
+        updating::notifications::show_download_start(new_version, strings);
 
         try
         {
             auto progressUpdateHandle = [&](float progress) {
-                updating::notifications::update_download_progress(new_version.value(), progress, strings);
+                updating::notifications::update_download_progress(new_version, progress, strings);
             };
 
             http::HttpClient client;
-            co_await client.download(new_version->installer_download_url, installer_download_dst, progressUpdateHandle);
+            co_await client.download(new_version.installer_download_url, installer_download_dst, progressUpdateHandle);
         }
         catch (...)
         {
-            updating::notifications::show_install_error(new_version.value(), strings);
+            updating::notifications::show_install_error(new_version, strings);
             co_return L"";
         }
 
-        co_return new_version->installer_filename;
+        co_return new_version.installer_filename;
     }
 }

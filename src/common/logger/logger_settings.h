@@ -8,12 +8,16 @@ struct LogSettings
     inline const static std::wstring logLevelOption = L"logLevel";
     inline const static std::string runnerLoggerName = "runner";
     inline const static std::wstring runnerLogPath = L"RunnerLogs\\runner-log.txt";
+    inline const static std::string actionRunnerLoggerName = "action-runner";
+    inline const static std::wstring actionRunnerLogPath = L"RunnerLogs\\action-runner-log.txt";
     inline const static std::string launcherLoggerName = "launcher";
     inline const static std::wstring launcherLogPath = L"LogsModuleInterface\\launcher-log.txt";
     inline const static std::string fancyZonesLoggerName = "fancyzones";
     inline const static std::wstring fancyZonesLogPath = L"FancyZonesLogs\\fancyzones-log.txt";
     inline const static std::string shortcutGuideLoggerName = "shortcut-guide";
     inline const static std::wstring shortcutGuideLogPath = L"ShortcutGuideLogs\\shortcut-guide-log.txt";
+    inline const static std::string keyboardManagerLoggerName = "keyboard-manager";
+    inline const static std::wstring keyboardManagerLogPath = L"Logs\\keyboard-manager-log.txt";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

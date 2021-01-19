@@ -97,31 +97,16 @@ Team members will be happy to help review specs and guide them to completion.
 
 ### Help Wanted
 
-Once the team have approved an issue/spec, development can proceed. If no developers are immediately available, the spec can be parked ready for a developer to get started. Parked specs' issues will be labeled "Help Wanted". To find a list of development opportunities waiting for developer involvement, visit the Issues and filter on [the Help-Wanted label](https://github.com/microsoft/PowerToys/labels/Help-Wanted).
+Once the team have approved an issue/spec, development can proceed. If no developers are immediately available, the spec can be parked ready for a developer to get started. Parked specs' issues will be labeled "Help Wanted". To find a list of development opportunities waiting for developer involvement, visit the Issues and filter on [the Help-Wanted label](https://github.com/microsoft/PowerToys/labels/Help%20Wanted).
 
 ---
 
 ## Development
 
-### Fork, Clone, Branch and Create your PR
+Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/readme.md).
 
-Once you've discussed your proposed feature/fix/etc. with a team member, and you've agreed an approach or a spec has been written and approved, it's time to start development:
 
-1. Fork the repo if you haven't already
-1. Clone your fork locally
-1. Create & push a feature branch
-1. Create a [Draft Pull Request (PR)](https://github.blog/2019-02-14-introducing-draft-pull-requests/)
-1. Work on your changes
-
-### Code Review
-
-When you'd like the team to take a look, (even if the work is not yet fully-complete), mark the PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
-
-### Merge
-
-Once your code has been reviewed and approved by the requisite number of team members, it will be merged into the master branch. Once merged, your PR will be automatically closed.
-
-### How can I become a collaborateur on the PowerToys team
+### How can I become a collaborator on the PowerToys team
 
 Be a great community member. Just help out a lot and make useful additions, filing bugs/suggestions, help develop fixes and features, code reviews, and always, docs. Lets continue to make the PowerToys repository a great spot to learn and make a great set of utilities.
 
