@@ -171,8 +171,11 @@ namespace PowerLauncher.ViewModel
 
                         if (SelectedIsFromQueryResults())
                         {
+                            // todo: revert _userSelectedRecordStorage.Save() and _historyItemsStorage.Save() after https://github.com/microsoft/PowerToys/issues/9164 is done
                             _userSelectedRecord.Add(result);
+                            _userSelectedRecordStorage.Save();
                             _history.Add(result.OriginQuery.RawQuery);
+                            _historyItemsStorage.Save();
                         }
                         else
                         {
