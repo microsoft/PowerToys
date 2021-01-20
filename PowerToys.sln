@@ -305,6 +305,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Common.UI", "src\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Registry", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry\Microsoft.PowerToys.Run.Plugin.Registry.csproj", "{4BABF3FE-3451-42FD-873F-3C332E18DCEF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.Registry.UnitTests", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.Registry.UnitTest\Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.csproj", "{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -619,6 +623,14 @@ Global
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.Build.0 = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|x64.ActiveCfg = Release|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|x64.Build.0 = Release|x64
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF}.Debug|x64.ActiveCfg = Debug|x64
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF}.Debug|x64.Build.0 = Debug|x64
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF}.Release|x64.ActiveCfg = Release|x64
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF}.Release|x64.Build.0 = Release|x64
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}.Debug|x64.ActiveCfg = Debug|x64
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}.Debug|x64.Build.0 = Debug|x64
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}.Release|x64.ActiveCfg = Release|x64
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -711,6 +723,8 @@ Global
 		{B39DC643-4663-475E-B329-03F0C9918D48} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{8F62026A-294B-41C6-8839-87463613F216} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{4BABF3FE-3451-42FD-873F-3C332E18DCEF} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{0648DF05-5DDA-4BE1-B5F2-584926EBDB65} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

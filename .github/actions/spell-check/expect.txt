@@ -848,11 +848,15 @@ hinstance
 hitinfo
 HIWORD
 hk
-HKCR
+HKCC
 HKCU
+HKCR
+HKE
 hkey
 HKL
 HKLM
+HKPD
+HKU
 HLOCAL
 HLSL
 hmenu
@@ -1161,6 +1165,7 @@ Kybd
 LAlt
 lambson
 lamotile
+langword
 Lastdevice
 LASTEXITCODE
 laute
@@ -1197,6 +1202,7 @@ linkid
 Linkmenu
 linq
 LINQTo
+Linux
 listbox
 listview
 llkhf
@@ -1765,6 +1771,7 @@ REFCLSID
 refcount
 REFIID
 REGCLS
+regedit
 regex
 REGISTERCLASSFAILED
 registrypath
@@ -2092,6 +2099,7 @@ SYSCOLORCHANGE
 SYSCOMMAND
 SYSDEADCHAR
 SYSICONINDEX
+sysinfo
 SYSKEY
 syskeydown
 syskeyup
