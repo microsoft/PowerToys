@@ -88,10 +88,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="Mages" Version="1.6.0">
        <NoWarn>NU1701</NoWarn>
@@ -107,9 +103,6 @@
     <PackageReference Include="NuGet.CommandLine" Version="5.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.3.1">
-      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="SharpZipLib" Version="1.2.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />    

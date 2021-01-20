@@ -15,11 +15,50 @@ namespace PowerLauncher.ViewModel
 
         public string PluginName { get; set; }
 
-        public string Title { get; set; }
+        private string _title;
 
-        public string Glyph { get; set; }
+        public string Title
+        {
+            get => _title;
+            set
+            {
+                if (_title != value)
+                {
+                    _title = value;
+                    OnPropertyChanged(nameof(Title));
+                }
+            }
+        }
 
-        public string FontFamily { get; set; }
+        private string _glyph;
+
+        public string Glyph
+        {
+            get => _glyph;
+            set
+            {
+                if (_glyph != value)
+                {
+                    _glyph = value;
+                    OnPropertyChanged(nameof(Glyph));
+                }
+            }
+        }
+
+        private string _fontFamily;
+
+        public string FontFamily
+        {
+            get => _fontFamily;
+            set
+            {
+                if (_fontFamily != value)
+                {
+                    _fontFamily = value;
+                    OnPropertyChanged(nameof(FontFamily));
+                }
+            }
+        }
 
         public ICommand Command
         {

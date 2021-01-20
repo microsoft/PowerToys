@@ -296,15 +296,55 @@ namespace PowerLauncher.ViewModel
 
         public Brush MainWindowBorderBrush { get; set; }
 
-        public ResultsViewModel Results { get; private set; }
+        private ResultsViewModel _results;
+
+        public ResultsViewModel Results
+        {
+            get => _results;
+            private set
+            {
+                if (value != _results)
+                {
+                    _results = value;
+                    OnPropertyChanged(nameof(Results));
+                }
+            }
+        }
 
         public ResultsViewModel ContextMenu { get; private set; }
 
         public ResultsViewModel History { get; private set; }
 
-        public string SystemQueryText { get; set; } = string.Empty;
+        private string _systemQueryText = string.Empty;
 
-        public string QueryText { get; set; } = string.Empty;
+        public string SystemQueryText
+        {
+            get => _systemQueryText;
+            set
+            {
+                if (_systemQueryText != value)
+                {
+                    _systemQueryText = value;
+                    OnPropertyChanged(nameof(SystemQueryText));
+                }
+            }
+        }
+
+        private string _queryText = string.Empty;
+
+        public string QueryText
+        {
+            get => _queryText;
+
+            set
+            {
+                if (_queryText != value)
+                {
+                    _queryText = value;
+                    OnPropertyChanged(nameof(QueryText));
+                }
+            }
+        }
 
         /// <summary>
         /// we need move cursor to end when we manually changed query
@@ -380,7 +420,12 @@ namespace PowerLauncher.ViewModel
 
             set
             {
-                _visibility = value;
+                if (_visibility != value)
+                {
+                    _visibility = value;
+                    OnPropertyChanged(nameof(MainWindowVisibility));
+                }
+
                 if (value == Visibility.Visible)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
