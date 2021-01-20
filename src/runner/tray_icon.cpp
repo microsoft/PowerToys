@@ -4,6 +4,7 @@
 #include "tray_icon.h"
 #include <Windows.h>
 
+#include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/version/version.h>
 
@@ -57,6 +58,48 @@ void change_menu_item_text(const UINT item_id, wchar_t* new_text)
     SetMenuItemInfoW(h_menu, item_id, false, &menuitem);
 }
 
+void handle_tray_command(HWND window, const WPARAM command_id)
+{
+    switch (command_id)
+    {
+    case ID_SETTINGS_MENU_COMMAND:
+        open_settings_window();
+        break;
+    case ID_EXIT_MENU_COMMAND:
+        if (h_menu)
+        {
+            DestroyMenu(h_menu);
+        }
+        DestroyWindow(window);
+        break;
+    case ID_ABOUT_MENU_COMMAND:
+        if (!about_box_shown)
+        {
+            about_box_shown = true;
+            std::wstring about_msg = L"PowerToys\nVersion " + get_product_version() + L"\n\xa9 2019 Microsoft Corporation";
+            MessageBoxW(nullptr, about_msg.c_str(), L"About PowerToys", MB_OK);
+            about_box_shown = false;
+        }
+        break;
+    case ID_REPORT_BUG_COMMAND:
+        std::wstring bug_report_path = get_module_folderpath();
+        bug_report_path += L"\\Tools\\BugReportTool.exe";
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
+        sei.lpFile = bug_report_path.c_str();
+        sei.nShow = SW_HIDE;
+        if (ShellExecuteExW(&sei))
+        {
+            WaitForSingleObject(sei.hProcess, INFINITE);
+            CloseHandle(sei.hProcess);
+            static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
+            MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
+        }
+
+        break;
+    }
+}
+
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     switch (message)
@@ -82,28 +125,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         DestroyWindow(window);
         break;
     case WM_COMMAND:
-        switch (wparam)
-        {
-        case ID_SETTINGS_MENU_COMMAND:
-            open_settings_window();
-            break;
-        case ID_EXIT_MENU_COMMAND:
-            if (h_menu)
-            {
-                DestroyMenu(h_menu);
-            }
-            DestroyWindow(window);
-            break;
-        case ID_ABOUT_MENU_COMMAND:
-            if (!about_box_shown)
-            {
-                about_box_shown = true;
-                std::wstring about_msg = L"PowerToys\nVersion " + get_product_version() + L"\n\xa9 2019 Microsoft Corporation";
-                MessageBox(nullptr, about_msg.c_str(), L"About PowerToys", MB_OK);
-                about_box_shown = false;
-            }
-            break;
-        }
+        handle_tray_command(window, wparam);
         break;
     // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
     // We'll also never receive wm_taskbar_restart message if the first call to Shell_NotifyIcon failed, so we use

@@ -161,6 +161,9 @@
     <value>Exit</value>
     <comment>Exit as a verb, as in Exit the application</comment>
   </data>
+  <data name="BUGREPORT_SUCCESS" xml:space="preserve">
+    <value>Bug report .zip file has been created on your Desktop.</value>
+  </data>
   <data name="GITHUB_NEW_VERSION_USING_LOCAL_BUILD_ERROR" xml:space="preserve">
     <value>Updating from a local build is not supported.</value>
     <comment>User cannot autoupdate from a locally-built PowerToys version</comment>
