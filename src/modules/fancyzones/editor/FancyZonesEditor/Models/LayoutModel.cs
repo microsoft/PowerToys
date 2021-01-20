@@ -39,6 +39,17 @@ namespace FancyZonesEditor.Models
             Type = type;
         }
 
+        protected LayoutModel(LayoutModel other)
+        {
+            _guid = other._guid;
+            _name = other._name;
+            Type = other.Type;
+            _isSelected = other._isSelected;
+            _isApplied = other._isApplied;
+            _sensitivityRadius = other._sensitivityRadius;
+            _zoneCount = other._zoneCount;
+        }
+
         // Name - the display name for this layout model - is also used as the key in the registry
         public string Name
         {
@@ -52,7 +63,7 @@ namespace FancyZonesEditor.Models
                 if (_name != value)
                 {
                     _name = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(Name));
                 }
             }
         }
@@ -93,7 +104,7 @@ namespace FancyZonesEditor.Models
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(IsSelected));
                 }
             }
         }
@@ -113,7 +124,7 @@ namespace FancyZonesEditor.Models
                 if (_isApplied != value)
                 {
                     _isApplied = value;
-                    FirePropertyChanged();
+                    FirePropertyChanged(nameof(IsApplied));
                 }
             }
         }

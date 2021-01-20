@@ -34,6 +34,17 @@ namespace FancyZonesEditor.Models
         {
         }
 
+        public CanvasLayoutModel(CanvasLayoutModel other)
+            : base(other)
+        {
+            CanvasRect = new Rect(other.CanvasRect.X, other.CanvasRect.Y, other.CanvasRect.Width, other.CanvasRect.Height);
+
+            foreach (Int32Rect zone in other.Zones)
+            {
+                Zones.Add(zone);
+            }
+        }
+
         // Zones - the list of all zones in this layout, described as independent rectangles
         public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
 

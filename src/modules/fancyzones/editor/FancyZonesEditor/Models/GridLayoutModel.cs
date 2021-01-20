@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -151,6 +151,36 @@ namespace FancyZonesEditor.Models
             RowPercents = rowPercents;
             ColumnPercents = colsPercents;
             CellChildMap = cellChildMap;
+        }
+
+        public GridLayoutModel(GridLayoutModel other)
+            : base(other)
+        {
+            _rows = other._rows;
+            _cols = other._cols;
+            _showSpacing = other._showSpacing;
+            _spacing = other._spacing;
+
+            CellChildMap = new int[_rows, _cols];
+            for (int row = 0; row < _rows; row++)
+            {
+                for (int col = 0; col < _cols; col++)
+                {
+                    CellChildMap[row, col] = other.CellChildMap[row, col];
+                }
+            }
+
+            RowPercents = new List<int>(_rows);
+            for (int row = 0; row < _rows; row++)
+            {
+                RowPercents.Add(other.RowPercents[row]);
+            }
+
+            ColumnPercents = new List<int>(_cols);
+            for (int col = 0; col < _cols; col++)
+            {
+                ColumnPercents.Add(other.ColumnPercents[col]);
+            }
         }
 
         public void Reload(byte[] data)
