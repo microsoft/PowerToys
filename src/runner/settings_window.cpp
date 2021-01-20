@@ -390,9 +390,7 @@ void run_settings_window()
     // Due to a bug in .NET, running the Settings process as non-elevated
     // from an elevated process sometimes results in a crash.
     // TODO: Revisit this after switching to .NET 5
-    const bool force_same_elevation = true;
-
-    if (is_process_elevated() && !force_same_elevation)
+    if (is_process_elevated() && !UseNewSettings())
     {
         process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
     }
