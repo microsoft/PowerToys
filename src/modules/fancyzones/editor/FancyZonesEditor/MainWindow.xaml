@@ -381,6 +381,8 @@
                           PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
                           SecondaryButtonText="{x:Static props:Resources.Cancel}"
                           PrimaryButtonText="{x:Static props:Resources.Save}"
+                          PrimaryButtonClick="EditLayoutDialog_PrimaryButtonClick"
+                          SecondaryButtonClick="EditLayoutDialog_SecondaryButtonClick"
                           Title="{x:Static props:Resources.Edit_Layout}">
             <StackPanel Margin="0,16,0,0"
                         MinWidth="420"

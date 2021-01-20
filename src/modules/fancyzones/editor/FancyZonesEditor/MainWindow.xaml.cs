@@ -23,6 +23,7 @@ namespace FancyZonesEditor
         private const int MinimalForDefaultWrapPanelsHeight = 900;
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
+        private LayoutModel _backup = null;
 
         public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
 
@@ -217,6 +218,16 @@ namespace FancyZonesEditor
         {
             var dataContext = ((FrameworkElement)sender).DataContext;
             _settings.SetSelectedModel((LayoutModel)dataContext);
+
+            if (_settings.SelectedModel is GridLayoutModel grid)
+            {
+                _backup = new GridLayoutModel(grid);
+            }
+            else if (_settings.SelectedModel is CanvasLayoutModel canvas)
+            {
+                _backup = new CanvasLayoutModel(canvas);
+            }
+
             await EditLayoutDialog.ShowAsync();
         }
 
@@ -322,6 +333,37 @@ namespace FancyZonesEditor
         private void MonitorItem_MouseDown(object sender, MouseButtonEventArgs e)
         {
             monitorViewModel.SelectCommand.Execute((MonitorInfoModel)(sender as Border).DataContext);
+        }
+
+        // EditLayout: Cancel changes
+        private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            // restore model properties from settings
+            _settings.RestoreSelectedModel(_backup);
+            _backup = null;
+
+            Select(_settings.AppliedModel);
+        }
+
+        // EditLayout: Apply changes
+        private void EditLayoutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            var mainEditor = App.Overlay;
+            if (!(mainEditor.CurrentDataContext is LayoutModel model))
+            {
+                return;
+            }
+
+            _backup = null;
+
+            // update settings
+            if (model.Type == LayoutType.Custom)
+            {
+                App.Overlay.SaveLayoutSettings(model);
+            }
+
+            // reset selected model
+            Select(_settings.AppliedModel);
         }
     }
 }
