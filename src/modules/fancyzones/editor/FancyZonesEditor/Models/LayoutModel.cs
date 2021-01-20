@@ -132,8 +132,7 @@ namespace FancyZonesEditor.Models
                 if (value != _sensitivityRadius)
                 {
                     _sensitivityRadius = value;
-                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.SensitivityRadius = value;
-                    App.FancyZonesEditorIO.SerializeZoneSettings();
+                    FirePropertyChanged(nameof(SensitivityRadius));
                 }
             }
         }
@@ -153,12 +152,7 @@ namespace FancyZonesEditor.Models
                 if (value != _zoneCount)
                 {
                     _zoneCount = value;
-
-                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.ZoneCount = value;
-                    App.FancyZonesEditorIO.SerializeZoneSettings();
-
                     InitTemplateZones();
-
                     FirePropertyChanged(nameof(TemplateZoneCount));
                 }
             }
@@ -204,8 +198,6 @@ namespace FancyZonesEditor.Models
             {
                 customModels.Add(model);
             }
-
-            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
         // InitTemplateZones
@@ -220,28 +212,6 @@ namespace FancyZonesEditor.Models
         public void Persist()
         {
             PersistData();
-            Apply();
-        }
-
-        public void Apply()
-        {
-            MainWindowSettingsModel settings = ((App)App.Current).MainWindowSettings;
-            settings.SetAppliedModel(this);
-
-            // update settings
-            App.Overlay.CurrentLayoutSettings.ZonesetUuid = Uuid;
-            App.Overlay.CurrentLayoutSettings.Type = Type;
-            App.Overlay.CurrentLayoutSettings.SensitivityRadius = SensitivityRadius;
-            App.Overlay.CurrentLayoutSettings.ZoneCount = TemplateZoneCount;
-
-            if (this is GridLayoutModel)
-            {
-                App.Overlay.CurrentLayoutSettings.ShowSpacing = ((GridLayoutModel)this).ShowSpacing;
-                App.Overlay.CurrentLayoutSettings.Spacing = ((GridLayoutModel)this).Spacing;
-            }
-
-            // update temp file
-            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
     }
 }

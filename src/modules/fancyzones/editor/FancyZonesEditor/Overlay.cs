@@ -6,9 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using FancyZonesEditor.Models;
-using Windows.UI.Xaml.Media;
 
 namespace FancyZonesEditor
 {
@@ -199,6 +197,32 @@ namespace FancyZonesEditor
             {
                 Monitors[i].Window.Show();
             }
+        }
+
+        public void SaveLayoutSettings(LayoutModel model)
+        {
+            if (model == null)
+            {
+                return;
+            }
+
+            CurrentLayoutSettings.ZonesetUuid = model.Uuid;
+            CurrentLayoutSettings.Type = model.Type;
+            CurrentLayoutSettings.SensitivityRadius = model.SensitivityRadius;
+            CurrentLayoutSettings.ZoneCount = model.TemplateZoneCount;
+
+            if (model is GridLayoutModel grid)
+            {
+                CurrentLayoutSettings.ShowSpacing = grid.ShowSpacing;
+                CurrentLayoutSettings.Spacing = grid.Spacing;
+            }
+            else
+            {
+                CurrentLayoutSettings.ShowSpacing = false;
+                CurrentLayoutSettings.Spacing = 0;
+            }
+
+            App.FancyZonesEditorIO.SerializeZoneSettings();
         }
 
         public void OpenEditor(LayoutModel model)

@@ -175,7 +175,8 @@ namespace FancyZonesEditor
             model.Name = name + " (" + (++maxCustomIndex) + ')';
 
             model.Persist();
-            App.FancyZonesEditorIO.SerializeZoneSettings();
+
+            App.Overlay.SaveLayoutSettings(model);
         }
 
         private void Apply()
@@ -183,8 +184,8 @@ namespace FancyZonesEditor
             var mainEditor = App.Overlay;
             if (mainEditor.CurrentDataContext is LayoutModel model)
             {
-                model.Apply();
                 _settings.SetAppliedModel(model);
+                App.Overlay.SaveLayoutSettings(model);
             }
         }
 

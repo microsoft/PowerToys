@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -96,10 +96,7 @@ namespace FancyZonesEditor.Models
                 if (value != _showSpacing)
                 {
                     _showSpacing = value;
-                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.ShowSpacing = value;
-
                     FirePropertyChanged(nameof(ShowSpacing));
-                    App.FancyZonesEditorIO.SerializeZoneSettings();
                 }
             }
         }
@@ -119,10 +116,7 @@ namespace FancyZonesEditor.Models
                 if (value != _spacing)
                 {
                     _spacing = value;
-                    App.Overlay.Monitors[App.Overlay.CurrentDesktop].Settings.Spacing = value;
-
                     FirePropertyChanged(nameof(Spacing));
-                    App.FancyZonesEditorIO.SerializeZoneSettings();
                 }
             }
         }
