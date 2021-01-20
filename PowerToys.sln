@@ -305,6 +305,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Common.UI", "src\common\Microsoft.PowerToys.Common.UI\Microsoft.PowerToys.Common.UI.csproj", "{C3A17DCA-217B-462C-BB0C-BE086AF80081}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mages.Core", "src\modules\launcher\Mages.Core\Mages.Core.csproj", "{253EBA6A-F384-42B0-8106-F958335B2202}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mages.Core.Tests", "src\modules\launcher\Mages.Core.Tests\Mages.Core.Tests.csproj", "{77E50520-8C68-460A-B138-3FACEE76F170}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -619,6 +623,14 @@ Global
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Debug|x64.Build.0 = Debug|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|x64.ActiveCfg = Release|x64
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081}.Release|x64.Build.0 = Release|x64
+		{253EBA6A-F384-42B0-8106-F958335B2202}.Debug|x64.ActiveCfg = Debug|x64
+		{253EBA6A-F384-42B0-8106-F958335B2202}.Debug|x64.Build.0 = Debug|x64
+		{253EBA6A-F384-42B0-8106-F958335B2202}.Release|x64.ActiveCfg = Release|x64
+		{253EBA6A-F384-42B0-8106-F958335B2202}.Release|x64.Build.0 = Release|x64
+		{77E50520-8C68-460A-B138-3FACEE76F170}.Debug|x64.ActiveCfg = Debug|x64
+		{77E50520-8C68-460A-B138-3FACEE76F170}.Debug|x64.Build.0 = Debug|x64
+		{77E50520-8C68-460A-B138-3FACEE76F170}.Release|x64.ActiveCfg = Release|x64
+		{77E50520-8C68-460A-B138-3FACEE76F170}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -711,6 +723,8 @@ Global
 		{B39DC643-4663-475E-B329-03F0C9918D48} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{8F62026A-294B-41C6-8839-87463613F216} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{253EBA6A-F384-42B0-8106-F958335B2202} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
+		{77E50520-8C68-460A-B138-3FACEE76F170} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
